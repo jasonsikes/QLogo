@@ -26,7 +26,6 @@
 ///
 //===----------------------------------------------------------------------===//
 
-
 #include "datum.h"
 
 #include "help.h"
@@ -476,17 +475,14 @@ public:
 
 class PauseScope {
   int *pauseLevelStore;
+
 public:
-  PauseScope(int *pauseLevelPtr)
-  {
+  PauseScope(int *pauseLevelPtr) {
     pauseLevelStore = pauseLevelPtr;
     ++(*pauseLevelStore);
   }
 
-  ~PauseScope()
-  {
-    --(*pauseLevelStore);
-  }
+  ~PauseScope() { --(*pauseLevelStore); }
 };
 
 class StreamRedirect {

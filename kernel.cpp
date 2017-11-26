@@ -178,7 +178,8 @@ DatumP Kernel::registerError(DatumP anError, bool allowErract,
       e->instructionLine = currentLine;
     }
     DatumP erractP = variables.datumForName(erract);
-    bool shouldPause = (erractP != nothing) && (erractP.datumValue()->size() > 0);
+    bool shouldPause =
+        (erractP != nothing) && (erractP.datumValue()->size() > 0);
 
     if (allowErract && shouldPause) {
       sysPrint(e->errorText.printValue());

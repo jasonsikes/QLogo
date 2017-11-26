@@ -1,7 +1,8 @@
 #ifndef DATUM_H
 #define DATUM_H
 
-//===-- qlogo/datum.h - Datum class and subclasses definition -------*- C++ -*-===//
+//===-- qlogo/datum.h - Datum class and subclasses definition -------*- C++
+//-*-===//
 //
 // This file is part of QLogo.
 //
@@ -26,7 +27,6 @@
 /// contains the declaration of DatumP, a pointer to a Datum.
 ///
 //===----------------------------------------------------------------------===//
-
 
 #include <QHash>
 #include <QList>

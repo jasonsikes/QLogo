@@ -1,5 +1,6 @@
 
-//===-- qlogo/workspace.cpp - Workspace class implementation -------*- C++ -*-===//
+//===-- qlogo/workspace.cpp - Workspace class implementation -------*- C++
+//-*-===//
 //
 // This file is part of QLogo.
 //

@@ -1,5 +1,6 @@
 
-//===-- qlogo/test_controller.h - Controller class definition -------*- C++ -*-===//
+//===-- qlogo/test_controller.h - Controller class definition -------*- C++
+//-*-===//
 //
 // This file is part of QLogo.
 //

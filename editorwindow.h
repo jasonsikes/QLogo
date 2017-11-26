@@ -1,7 +1,8 @@
 #ifndef EDITORWINDOW_H
 #define EDITORWINDOW_H
 
-//===-- qlogo/editorwindow.h - EditorWindow class definition -------*- C++ -*-===//
+//===-- qlogo/editorwindow.h - EditorWindow class definition -------*- C++
+//-*-===//
 //
 // This file is part of QLogo.
 //
@@ -25,7 +26,6 @@
 /// editor window portion of the user interface.
 ///
 //===----------------------------------------------------------------------===//
-
 
 #include <QMainWindow>
 #include <QTextCharFormat>

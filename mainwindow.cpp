@@ -1,5 +1,6 @@
 
-//===-- qlogo/mainwindow.cpp - MainWindow class implementation -------*- C++ -*-===//
+//===-- qlogo/mainwindow.cpp - MainWindow class implementation -------*- C++
+//-*-===//
 //
 // This file is part of QLogo.
 //

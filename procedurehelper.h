@@ -1,7 +1,8 @@
 #ifndef PROCEDUREHELPER_H
 #define PROCEDUREHELPER_H
 
-//===-- qlogo/procedurehelper.h - ProcedureHelper class definition -------*- C++ -*-===//
+//===-- qlogo/procedurehelper.h - ProcedureHelper class definition -------*- C++
+//-*-===//
 //
 // This file is part of QLogo.
 //
@@ -25,7 +26,6 @@
 /// provides the functionality required by QLogo primative functions
 ///
 //===----------------------------------------------------------------------===//
-
 
 #include "datum.h"
 #include <QVector>

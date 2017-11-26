@@ -1,5 +1,6 @@
 
-//===-- qlogo/datum.cpp - Datum class and subclasses implementation -------*- C++ -*-===//
+//===-- qlogo/datum.cpp - Datum class and subclasses implementation -------*-
+//C++ -*-===//
 //
 // This file is part of QLogo.
 //
@@ -110,7 +111,9 @@ QString Datum::name(void) {
 
 QString Datum::showValue(bool, int, int) { return name(); }
 
-bool Datum::isEqual(DatumP other, bool) { return (other.isa() == Datum::noType); }
+bool Datum::isEqual(DatumP other, bool) {
+  return (other.isa() == Datum::noType);
+}
 
 DatumP Datum::first() {
   Q_ASSERT(false);
@@ -138,12 +141,12 @@ void Datum::setButfirstItem(DatumP) { Q_ASSERT(false); }
 
 void Datum::setFirstItem(DatumP) { Q_ASSERT(false); }
 
-bool Datum::containsDatum(DatumP , bool ) {
+bool Datum::containsDatum(DatumP, bool) {
   Q_ASSERT(false);
   return false;
 }
 
-bool Datum::isMember(DatumP, bool ) {
+bool Datum::isMember(DatumP, bool) {
   Q_ASSERT(false);
   return false;
 }
@@ -508,8 +511,8 @@ bool Word::isEqual(DatumP other, bool ignoreCase) {
     return answer;
   }
   if (ignoreCase) {
-      return rawValue().toUpper() == other.wordValue()->rawValue().toUpper();
-    }
+    return rawValue().toUpper() == other.wordValue()->rawValue().toUpper();
+  }
   return rawValue() == other.wordValue()->rawValue();
 }
 
@@ -533,7 +536,9 @@ bool Word::containsDatum(DatumP aDatum, bool ignoreCase) {
   return rawString.contains(aDatum.wordValue()->rawValue(), cs);
 }
 
-bool Word::isMember(DatumP aDatum, bool ignoreCase) { return containsDatum(aDatum, ignoreCase); }
+bool Word::isMember(DatumP aDatum, bool ignoreCase) {
+  return containsDatum(aDatum, ignoreCase);
+}
 
 DatumP Word::fromMember(DatumP aDatum, bool ignoreCase) {
   rawValue();

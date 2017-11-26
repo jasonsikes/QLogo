@@ -1,5 +1,6 @@
 
-//===-- qlogo/qlogo_controller.cpp - Controller class implementation -------*- C++ -*-===//
+//===-- qlogo/qlogo_controller.cpp - Controller class implementation -------*-
+//C++ -*-===//
 //
 // This file is part of QLogo.
 //
