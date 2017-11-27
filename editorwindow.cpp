@@ -74,19 +74,14 @@ void EditorWindow::revertChanges() {
 bool EditorWindow::eventFilter(QObject *watched, QEvent *event) {
   if (event->type() == QEvent::KeyPress) {
     QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-    QString text = keyEvent->text();
-    ushort u = 0;
-    if (text.size() == 1)
-      u = text[0].unicode();
-    switch (u) {
-    case 19: // CTRL-S
-    {
-      acceptChanges();
-      return true;
+
+    if (keyEvent->matches(QKeySequence::Save)) {
+        acceptChanges();
+        return true;
     }
-    case 18: // CTRL-R
-      revertChanges();
-      return true;
+    if (keyEvent->matches(QKeySequence::Close)) {
+        revertChanges();
+        return true;
     }
 
     return false;

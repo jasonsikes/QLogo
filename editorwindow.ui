@@ -36,7 +36,7 @@
       <item>
        <widget class="QPushButton" name="acceptButton">
         <property name="text">
-         <string>Close and SAVE Changes (CTRL-S)</string>
+         <string>Save Changes</string>
         </property>
        </widget>
       </item>
@@ -56,7 +56,7 @@
       <item>
        <widget class="QPushButton" name="revertButton">
         <property name="text">
-         <string>Close and REVERT Changes (CTRL-R)</string>
+         <string>Close Window</string>
         </property>
        </widget>
       </item>
@@ -70,7 +70,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>23</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
