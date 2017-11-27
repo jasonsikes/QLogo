@@ -1,6 +1,6 @@
 
 //===-- qlogo/propertylists.cpp - PropertyLists class implementation -------*-
-//C++ -*-===//
+// C++ -*-===//
 //
 // This file is part of QLogo.
 //

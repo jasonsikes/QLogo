@@ -76,12 +76,12 @@ bool EditorWindow::eventFilter(QObject *watched, QEvent *event) {
     QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 
     if (keyEvent->matches(QKeySequence::Save)) {
-        acceptChanges();
-        return true;
+      acceptChanges();
+      return true;
     }
     if (keyEvent->matches(QKeySequence::Close)) {
-        revertChanges();
-        return true;
+      revertChanges();
+      return true;
     }
 
     return false;

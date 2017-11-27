@@ -1,6 +1,6 @@
 
 //===-- qlogo/datum.cpp - Datum class and subclasses implementation -------*-
-//C++ -*-===//
+// C++ -*-===//
 //
 // This file is part of QLogo.
 //
