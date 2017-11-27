@@ -19,8 +19,8 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the Parser class, which is responsible
-/// for parsing text and keeping user-defined functions.
+/// This file contains the implementation of the Parser class, which is
+/// responsible for parsing text and keeping user-defined functions.
 ///
 //===----------------------------------------------------------------------===//
 

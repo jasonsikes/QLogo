@@ -19,8 +19,8 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the QLogo library text, which provides
-/// standard supporting functions to the QLogo language.
+/// This file contains the implementation of the QLogo library text, which
+/// provides standard supporting functions to the QLogo language.
 ///
 //===----------------------------------------------------------------------===//
 

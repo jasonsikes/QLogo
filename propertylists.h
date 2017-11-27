@@ -1,7 +1,8 @@
 #ifndef PROPERTYLISTS_H
 #define PROPERTYLISTS_H
 
-//===-- qlogo/propertylists.h - PropertyLists class definition -------*- C++ -*-===//
+//===-- qlogo/propertylists.h - PropertyLists class definition -------*- C++
+//-*-===//
 //
 // This file is part of QLogo.
 //
@@ -25,7 +26,6 @@
 /// provides property list functionality for the QLogo language.
 ///
 //===----------------------------------------------------------------------===//
-
 
 #include "workspace.h"
 #include <datum.h>

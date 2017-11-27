@@ -1,5 +1,6 @@
 
-//===-- qlogo/procedurehelper.cpp - ProcedureHelper class implementation -------*- C++ -*-===//
+//===-- qlogo/procedurehelper.cpp - ProcedureHelper class implementation
+//-------*- C++ -*-===//
 //
 // This file is part of QLogo.
 //

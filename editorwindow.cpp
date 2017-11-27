@@ -1,5 +1,6 @@
 
-//===-- qlogo/editorwindow.cpp - EditorWindow class implementation -------*- C++ -*-===//
+//===-- qlogo/editorwindow.cpp - EditorWindow class implementation -------*- C++
+//-*-===//
 //
 // This file is part of QLogo.
 //
@@ -19,8 +20,8 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the EditorWindow class, which is the
-/// editor window portion of the user interface.
+/// This file contains the implementation of the EditorWindow class, which is
+/// the editor window portion of the user interface.
 ///
 //===----------------------------------------------------------------------===//
 

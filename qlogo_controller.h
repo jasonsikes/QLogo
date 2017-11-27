@@ -1,7 +1,8 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-//===-- qlogo/qlogo_controller.h - Controller class definition -------*- C++ -*-===//
+//===-- qlogo/qlogo_controller.h - Controller class definition -------*- C++
+//-*-===//
 //
 // This file is part of QLogo.
 //
@@ -25,7 +26,6 @@
 /// main event dispatcher between the Kernel thread and the UI thread.
 ///
 //===----------------------------------------------------------------------===//
-
 
 class MainWindow;
 class EditorWindow;

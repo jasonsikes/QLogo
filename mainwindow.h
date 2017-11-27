@@ -26,7 +26,6 @@
 ///
 //===----------------------------------------------------------------------===//
 
-
 #include <QMainWindow>
 #include <QtGui/QOpenGLFunctions>
 
