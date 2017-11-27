@@ -590,6 +590,7 @@ QString libraryStr =
     "end\n"
     "\n"
     "make \"caseignoredp \"true\n"
+    "bury [[][caseignoredp][]]\n"
     "\n"
     "bury [` backq.word backq.unquote backq.combine backq.all.commas # "
     "backslashedp backslashed? contents buryall namelist\n"
