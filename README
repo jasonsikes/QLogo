@@ -1,0 +1,148 @@
+This is README for version 0.9 of QLogo
+
+QLogo is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 2 of the License, or
+(at your option) any later version.
+
+QLogo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with QLogo.  If not, see <http://www.gnu.org/licenses/>.
+
+
+==============================================================
+
+
+QLogo is an interpreter for the Logo language written in C++ using
+Qt and OpenGL. Specifically, it mimics (as reasonably as possible)
+the UCBLogo interpreter developed at U.C. Berkeley. In fact, the
+UCBLogo manual describes about 99.9% of the functionality. You can
+find the UCBLogo Manual here:
+
+http://people.eecs.berkeley.edu/~bh/usermanual
+
+
+==============================================================
+
+
+Compiling QLogo requires Qt version 5.5 or greater. It has been
+developed and tested on the following platforms:
+
+* Windows 10 using Visual Studio
+* Linux Fedora 26 using GNU C++
+* Mac OS X 10.13 using Clang/LLVM
+
+
+===============================================================
+
+
+There are a few nuances:
+
+
+* Colors can be specified in one of three ways:
+
+1) as a palette index (0 to 100)
+
+2) as a list of 3 percentages, one for each of red, green, blue
+
+3) as a named color from the X Color Database, e.g. "floralwhite or "lemonchiffon.
+The X Color database can be found here:
+https://en.wikipedia.org/wiki/X11_color_names
+
+
+* Changes in font properties (size, color, etc.) do not affect characters already printed.
+
+
+* The entire Logo standard library is loaded internally and buried. There is no
+  library directory at this time.
+
+
+* QLogo does not look for nor automatically load STARTUP.LG.
+
+
+* Procedures defined using TO or .MACRO are stored in an internal format. The
+  original text used is discarded. Printing out a procedure causes the text to be
+  recreated; all formatting and comments are lost. This will be fixed soon.
+
+
+* Lists are maintained using QList which is not a linked list. As such, the possible "bug"
+  of two lists being joined at some element is not possible in QLogo, e.g. a BUTFIRST of a
+  list creates a new list.
+
+
+* If ERRACT is set and its size is greater than zero, then any errors execute PAUSE.
+
+
+* Garbage collection is on-the-fly, meaning that memory is freed the moment a word/list/array
+  is no longer needed. GC and .SETSEGMENTSIZE are no-ops.
+
+
+* SAVEPICT saves a copy of the canvas in the format given by the filename's extension. For
+  example: SAVEPICT "MY_PICTURE.PNG will save in PNG format. QLogo can save an image in the
+  following formats: BMP, JPG/JPEG, PNG, PPM, XBM, and XPM
+
+
+* HELP is functional, but the text is a copy of the UCBLogo help text. As such, it should
+  be 99.9% correct. This will be fixed.
+
+
+* There is no facility yet for translation/internationalization. Yet.
+
+
+* The following commands are not implemented:
+
+SETMARGINS:        No plans.
+FILL:              No plans.
+LOADPICT:    	   This will be fixed soon.
+EPSPICT:    	   This will be replaced by SVG.
+CSLSLOAD:   	   This will be fixed soon.
+SETEDITOR:  	   QLogo uses a built-in editor.
+SETLIBLOC:         The QLogo library is stored internally.
+SETHELPLOC:        No plans.
+SETCSLSLOC:        This may be fixed soon.
+SETTEMPLOC:        QLogo doesn't create temporary files at this time.
+
+
+* The following variables have no special meaning:
+
+COMMANDLINE:       QLogo is a GUI application.
+REDEFP:            There will be another mechanism for internationalization.
+USEALTERNATENAMES: ditto
+
+
+
+
+* The following commands are NEW:
+
+
+ALLFONTS
+
+returns a list of all the fonts available on your system.
+
+CURSORINSERT
+
+sets cursor to insert mode, default.
+
+CURSOROVERWRITE
+
+sets cursor to overwrite mode.
+
+CURSORMODE
+
+outputs either INSERT or OVERWRITE
+
+BOUNDS
+
+outputs a list of two numbers giving the maximum bounds (x,y) of the canvas.
+e.g. bounds of [350 150] means that the turtle is visible if its X coordinate is
+between -350 and 350 and its Y coordinate is between -150 and 150. The coordinate
+[0, 0] is always in the center.
+
+SETBOUNDS xmax ymax
+
+sets the maximum bounds of the canvas.
+
