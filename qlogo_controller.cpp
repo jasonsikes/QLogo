@@ -116,7 +116,6 @@ Controller::Controller(QObject *parent) : QThread(parent) {
 
   setTextSize(startingTextSize);
   setFontName(startingFont);
-  setTextColor(QColor("black"), QColor("white"));
 }
 
 Controller::~Controller() {

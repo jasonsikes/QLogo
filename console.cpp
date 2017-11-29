@@ -35,6 +35,8 @@
 
 Console::Console(QWidget *parent) : QTextEdit(parent) {
   keyQueueHasChars = false;
+  textFormat.setForeground(QBrush(QWidget::palette().color(QPalette::Text)));
+  textFormat.setBackground(QBrush(QWidget::palette().color(QPalette::Base)));
 }
 
 Console::~Console() {}

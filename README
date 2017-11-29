@@ -70,8 +70,9 @@ https://en.wikipedia.org/wiki/X11_color_names
 
 
 * Lists are maintained using QList which is not a linked list. As such, the possible "bug"
-  of two lists being joined at some element is not possible in QLogo, e.g. a BUTFIRST of a
-  list creates a new list.
+  of two lists being joined at some element is not possible in QLogo. This doesn't mean that
+  the bug should be squashed; the "bug" is actually a byproduct of using linked
+  lists and is an important concept in computer science. May fix; I don't know.
 
 
 * If ERRACT is set and its size is greater than zero, then any errors execute PAUSE.
