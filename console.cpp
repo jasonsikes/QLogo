@@ -45,26 +45,23 @@ void Console::keyPressEvent(QKeyEvent *event) {
   QString text = event->text();
 
   switch (inputMode) {
-  case lineMode:
-    processLineModeKeyPressEvent(event);
-    break;
-  case charMode:
-    processCharModeKeyPressEvent(event);
-    break;
-  case inactiveMode:
-    if (text != "") {
-      ushort u = text[0].unicode();
-      if (u == toplevelCode) {
-        mainController()->addEventToQueue(toplevelEvent);
-      } else if (u == pauseCode) {
-        mainController()->addEventToQueue(pauseEvent);
-      } else {
-        keyQueue.push_back(text);
-        keyQueueHasChars = true;
-        mainController()->addEventToQueue(characterEvent);
-      }
+    case lineMode:
+      processLineModeKeyPressEvent(event);
+      break;
+    case charMode:
+      processCharModeKeyPressEvent(event);
+      break;
+    case inactiveMode:
+      if (event->matches(QKeySequence::Quit)) {
+          mainController()->addEventToQueue(toplevelEvent);
+        } else if (event->matches(QKeySequence::Close)) {
+          mainController()->addEventToQueue(pauseEvent);
+        } else if (text != "") {
+          keyQueue.push_back(text);
+          keyQueueHasChars = true;
+          mainController()->addEventToQueue(characterEvent);
+        }
     }
-  }
 }
 
 void Console::mousePressEvent(QMouseEvent *e) {
@@ -198,20 +195,27 @@ void Console::getCursorPos(int &row, int &col) {
 }
 
 void Console::processCharModeKeyPressEvent(QKeyEvent *event) {
-  QString text = event->text();
-  if (text != "") {
-    inputMode = inactiveMode;
     // If it's a paste event, pass it through so we can get the text
-    if (text[0].unicode() == 22) {
+    if (event->matches(QKeySequence::Paste)) {
       QTextEdit::keyPressEvent(event);
       if (keyQueue.size() > 0) {
-        text = keyQueue.left(1);
+        QString text = keyQueue.left(1);
         keyQueue = keyQueue.right(keyQueue.size() - 1);
         keyQueueHasChars = (keyQueue.size() > 0);
+        inputMode = inactiveMode;
+        mainController()->receiveString(text);
+        }
+    } else if (event->matches(QKeySequence::Quit)) {
+        mainController()->receiveString(toplevelString);
+    } else if (event->matches(QKeySequence::Close)) {
+        mainController()->receiveString(pauseString);
+      } else {
+        QString text = event->text();
+        if (text != "") {
+            inputMode = inactiveMode;
+            mainController()->receiveString(text);
+          }
       }
-    }
-    mainController()->receiveString(text);
-  }
 }
 
 void Console::dumpNextLineFromQueue() {
@@ -240,18 +244,18 @@ void Console::dumpNextLineFromQueue() {
 
 void Console::processLineModeKeyPressEvent(QKeyEvent *event) {
   checkCursor();
-  // qDebug() <<"Key:" <<key <<"chr:" <<event->text()[0].unicode();
-  ushort u = event->text()[0].unicode();
-  if ((u == toplevelCode) || (u == pauseCode)) {
-    mainController()->receiveString(event->text());
-    return;
-  }
 
-  if (u == 22) {
-    QTextEdit::keyPressEvent(event);
-    dumpNextLineFromQueue();
-    return;
-  }
+  if (event->matches(QKeySequence::Quit)) {
+      mainController()->receiveString(toplevelString);
+      return;
+    } else if (event->matches(QKeySequence::Close)) {
+      mainController()->receiveString(pauseString);
+      return;
+    } else if (event->matches(QKeySequence::Paste)) {
+      QTextEdit::keyPressEvent(event);
+      dumpNextLineFromQueue();
+      return;
+    }
   int key = event->key();
   if ((key == Qt::Key_Return) || (key == Qt::Key_Enter)) {
     inputMode = inactiveMode;

@@ -50,10 +50,10 @@ const char characterEvent = 'c';
 const char mouseEvent = 'm';
 const char pauseEvent = 'p';    // ctrl-W
 const char toplevelEvent = 't'; // ctrl-Q
-const ushort pauseCode = 23;
-const ushort toplevelCode = 17;
 
 extern const QString escapeChar;
+extern const QString pauseString;
+extern const QString toplevelString;
 #define C_CLEAR_TEXT 'E'
 #define C_SET_CURSOR_POS 'A'
 #define C_SET_TEXT_COLOR 'C'

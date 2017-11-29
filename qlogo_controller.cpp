@@ -50,6 +50,8 @@ qreal initialBoundX = 350;
 qreal initialBoundY = 150;
 
 const QString escapeChar = QChar(htmlEscapeChar);
+const QString pauseString = escapeChar + "PAUSE";
+const QString toplevelString = escapeChar + "TOPLEVEL";
 const double startingTextSize = 10;
 const QString startingFont = "Courier New";
 
@@ -392,23 +394,18 @@ DatumP Controller::readrawlineWithPrompt(const QString &prompt) {
   uiInputTextMutex.unlock();
 
   shouldQueueEvents = true;
-  QString s = retval.wordValue()->rawValue();
-  if (s.size() == 1) {
-    ushort u = s[0].unicode();
-    if (u == toplevelCode) {
-      return toplevelTokenP;
-    }
-    if (u == pauseCode) {
-      return pauseTokenP;
-    }
-  }
+  // TODO: throw would probably work just as well here. Let's try it soon
+  if (retval.wordValue()->rawValue() == toplevelString)
+    return toplevelTokenP;
+  if (retval.wordValue()->rawValue() == pauseString)
+    return pauseTokenP;
+
   history.listValue()->append(retval);
   return retval;
 }
 
 // This is READCHAR
 DatumP Controller::readchar() {
-  //    if (readStream == NULL) {
   shouldQueueEvents = false;
   requestCharacterSignal();
   threadMutex.lock();
@@ -419,16 +416,13 @@ DatumP Controller::readchar() {
   DatumP retval = DatumP(new Word(uiInputText));
   uiInputTextMutex.unlock();
   shouldQueueEvents = true;
-  QString s = retval.wordValue()->rawValue();
-  if (s.size() == 1) {
-    ushort u = s[0].unicode();
-    if (u == toplevelCode) {
-      return toplevelTokenP;
-    }
-    if (u == pauseCode) {
-      return pauseTokenP;
-    }
-  }
+
+  // TODO: throw would probably work just as well here. Let's try it soon
+  if (retval.wordValue()->rawValue() == toplevelString)
+    return toplevelTokenP;
+  if (retval.wordValue()->rawValue() == pauseString)
+    return pauseTokenP;
+
   return retval;
 }
 
@@ -449,7 +443,7 @@ void Controller::receiveString(const QString &s) {
   uiInputText = s;
   uiInputTextMutex.unlock();
 
-  if (dribbleStream)
+  if ((dribbleStream != NULL) && (s.size() > 0) && (s[0] != escapeChar))
     *dribbleStream << s << "\n";
 
   // Wake up the thread since it was likely sleeping
