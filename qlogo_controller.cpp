@@ -394,7 +394,7 @@ DatumP Controller::readrawlineWithPrompt(const QString &prompt) {
   uiInputTextMutex.unlock();
 
   shouldQueueEvents = true;
-  // TODO: throw would probably work just as well here. Let's try it soon
+  // TODO: throw would probably work just as well here.
   if (retval.wordValue()->rawValue() == toplevelString)
     return toplevelTokenP;
   if (retval.wordValue()->rawValue() == pauseString)
