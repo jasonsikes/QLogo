@@ -153,6 +153,8 @@ void Console::requestLineWithPrompt(const QString &prompt) {
   printString(prompt);
   inputMode = lineMode;
   beginningOfLine = textCursor().position();
+  lineInputHistory.push_back("");
+  lineInputHistoryScrollingCurrentIndex = lineInputHistory.size() - 1;
   dumpNextLineFromQueue();
 }
 
@@ -237,9 +239,15 @@ void Console::dumpNextLineFromQueue() {
       textCursor().insertBlock();
       keyQueue = keyQueue.right(keyQueue.size() - 1);
       keyQueueHasChars = (keyQueue.size() > 0);
-      mainController()->receiveString(line);
+      returnLine(line);
     }
   }
+}
+
+void Console::returnLine(const QString line)
+{
+  lineInputHistory.last() = line;
+  mainController()->receiveString(line);
 }
 
 void Console::processLineModeKeyPressEvent(QKeyEvent *event) {
@@ -255,6 +263,16 @@ void Console::processLineModeKeyPressEvent(QKeyEvent *event) {
       QTextEdit::keyPressEvent(event);
       dumpNextLineFromQueue();
       return;
+    } else if (event->matches(QKeySequence::MoveToPreviousLine)) {
+      if (lineInputHistoryScrollingCurrentIndex > 0) {
+          replaceLineWithHistoryIndex(lineInputHistoryScrollingCurrentIndex - 1);
+        }
+      return;
+    } else if (event->matches(QKeySequence::MoveToNextLine)) {
+      if (lineInputHistoryScrollingCurrentIndex < lineInputHistory.size() - 1) {
+          replaceLineWithHistoryIndex(lineInputHistoryScrollingCurrentIndex + 1);
+        }
+      return;
     }
   int key = event->key();
   if ((key == Qt::Key_Return) || (key == Qt::Key_Enter)) {
@@ -263,7 +281,7 @@ void Console::processLineModeKeyPressEvent(QKeyEvent *event) {
     QString line = field.right(field.size() - beginningOfLine);
     moveCursor(QTextCursor::End);
     textCursor().insertBlock();
-    mainController()->receiveString(line);
+    returnLine(line);
     return;
   }
   // Ignore delete if at beginning of line
@@ -273,6 +291,26 @@ void Console::processLineModeKeyPressEvent(QKeyEvent *event) {
 
   QTextEdit::keyPressEvent(event);
   checkCursor();
+}
+
+void Console::replaceLineWithHistoryIndex(int newIndex)
+{
+  // if the line that has been entered so far is defferent than
+  // the line at the current index, save it at the last.
+  QString field = toPlainText();
+  QString line = field.right(field.size() - beginningOfLine);
+  QString historyLine = lineInputHistory[lineInputHistoryScrollingCurrentIndex];
+  if (line != historyLine) {
+      lineInputHistory.last() = line;
+    }
+  // Now replace the line with that at newIndex
+  historyLine = lineInputHistory[newIndex];
+  QTextCursor cursor = textCursor();
+  cursor.setPosition(beginningOfLine);
+  cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
+  cursor.removeSelectedText();
+  cursor.insertText(historyLine);
+  lineInputHistoryScrollingCurrentIndex = newIndex;
 }
 
 bool Console::charsInQueue() { return keyQueueHasChars; }

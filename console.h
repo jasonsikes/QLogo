@@ -38,6 +38,11 @@ class Console : public QTextEdit {
   ConsoleMode_t inputMode = inactiveMode;
   QString keyQueue;
 
+  // Line input history traversing
+  QStringList lineInputHistory;
+  int lineInputHistoryScrollingCurrentIndex;
+  void replaceLineWithHistoryIndex(int newIndex);
+
 protected:
   int beginningOfLine = 0;
   bool keyQueueHasChars;
@@ -52,6 +57,7 @@ protected:
   void dumpNextLineFromQueue();
 
   void moveCursorToPos(int row, int col);
+  void returnLine(const QString line);
 
 public:
   QTextCharFormat textFormat;
