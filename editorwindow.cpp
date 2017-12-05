@@ -51,7 +51,11 @@ void EditorWindow::setContents(QString *startingText) {
 }
 
 void EditorWindow::setTextFormat(const QTextCharFormat &qtcf) {
-  ui->plainTextEdit->setCurrentCharFormat(qtcf);
+  ui->plainTextEdit->setFont(qtcf.font());
+  QPalette palette = ui->plainTextEdit->palette();
+  palette.setBrush(QPalette::Text, qtcf.foreground());
+  palette.setBrush(QPalette::Base, qtcf.background());
+  ui->plainTextEdit->setPalette(palette);
 }
 
 void EditorWindow::show() {

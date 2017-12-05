@@ -69,6 +69,7 @@ void Console::mousePressEvent(QMouseEvent *e) {
   checkCursor();
 }
 
+// TODO: the control functions should be broken out.
 void Console::printString(const QString &text) {
   QTextCursor tc = textCursor();
   QStringList stringList = text.split(escapeChar);
@@ -110,6 +111,9 @@ void Console::printString(const QString &text) {
         if (ary.size() == 2) {
           textFormat.setForeground(QBrush(QColor(ary[0].toString())));
           textFormat.setBackground(QBrush(QColor(ary[1].toString())));
+          QPalette p = palette();
+          p.setBrush(QPalette::Base, QBrush(QColor(ary[1].toString())));
+          setPalette(p);
         }
         break;
       }
