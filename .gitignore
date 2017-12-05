@@ -36,3 +36,6 @@
 
 Qt user files
 *.pro.user
+
+# doxygen output
+html
