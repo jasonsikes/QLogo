@@ -500,7 +500,8 @@ DatumP Parser::tokenizeListWithPrompt(const QString &prompt, int level,
 
   if (level == 0) {
     lineP = readwordWithPrompt(prompt, readStream);
-    if ((lineP == pauseTokenP) || (lineP == toplevelTokenP) || (lineP == nothing))
+    if ((lineP == pauseTokenP) || (lineP == toplevelTokenP) ||
+        (lineP == nothing))
       return lineP;
     src = lineP.wordValue()->rawValue();
     iter = src.begin();

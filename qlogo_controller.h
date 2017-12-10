@@ -38,7 +38,6 @@ class EditorWindow;
 #include "datum.h"
 #include <QFontDatabase>
 #include <QKeyEvent>
-#include <QMutex>
 
 // This is the chr code to begin and end escape sequences
 const ushort htmlEscapeChar = 27;

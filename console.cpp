@@ -33,6 +33,9 @@
 
 #include CONTROLLER_HEADER
 
+const QKeySequence::StandardKey toplevelKey = QKeySequence::Cancel;
+const QKeySequence::StandardKey pauseKey = QKeySequence::Close;
+
 Console::Console(QWidget *parent) : QTextEdit(parent) {
   keyQueueHasChars = false;
   textFormat.setForeground(QBrush(QWidget::palette().color(QPalette::Text)));
@@ -45,23 +48,23 @@ void Console::keyPressEvent(QKeyEvent *event) {
   QString text = event->text();
 
   switch (inputMode) {
-    case lineMode:
-      processLineModeKeyPressEvent(event);
-      break;
-    case charMode:
-      processCharModeKeyPressEvent(event);
-      break;
-    case inactiveMode:
-      if (event->matches(QKeySequence::Quit)) {
-          mainController()->addEventToQueue(toplevelEvent);
-        } else if (event->matches(QKeySequence::Close)) {
-          mainController()->addEventToQueue(pauseEvent);
-        } else if (text != "") {
-          keyQueue.push_back(text);
-          keyQueueHasChars = true;
-          mainController()->addEventToQueue(characterEvent);
-        }
+  case lineMode:
+    processLineModeKeyPressEvent(event);
+    break;
+  case charMode:
+    processCharModeKeyPressEvent(event);
+    break;
+  case inactiveMode:
+    if (event->matches(toplevelKey)) {
+      mainController()->addEventToQueue(toplevelEvent);
+    } else if (event->matches(pauseKey)) {
+      mainController()->addEventToQueue(pauseEvent);
+    } else if (text != "") {
+      keyQueue.push_back(text);
+      keyQueueHasChars = true;
+      mainController()->addEventToQueue(characterEvent);
     }
+  }
 }
 
 // TODO: the control functions should be broken out.
@@ -157,7 +160,7 @@ void Console::requestLineWithPrompt(const QString &prompt) {
   dumpNextLineFromQueue();
 }
 
-//void Console::checkCursor() {
+// void Console::checkCursor() {
 //  QTextCursor tc = textCursor();
 //  if (tc.position() < beginningOfLine) {
 //    tc.setPosition(beginningOfLine);
@@ -196,27 +199,27 @@ void Console::getCursorPos(int &row, int &col) {
 }
 
 void Console::processCharModeKeyPressEvent(QKeyEvent *event) {
-    // If it's a paste event, pass it through so we can get the text
-    if (event->matches(QKeySequence::Paste)) {
-      QTextEdit::keyPressEvent(event);
-      if (keyQueue.size() > 0) {
-        QString text = keyQueue.left(1);
-        keyQueue = keyQueue.right(keyQueue.size() - 1);
-        keyQueueHasChars = (keyQueue.size() > 0);
-        inputMode = inactiveMode;
-        mainController()->receiveString(text);
-        }
-    } else if (event->matches(QKeySequence::Quit)) {
-        mainController()->receiveString(toplevelString);
-    } else if (event->matches(QKeySequence::Close)) {
-        mainController()->receiveString(pauseString);
-      } else {
-        QString text = event->text();
-        if (text != "") {
-            inputMode = inactiveMode;
-            mainController()->receiveString(text);
-          }
-      }
+  // If it's a paste event, pass it through so we can get the text
+  if (event->matches(QKeySequence::Paste)) {
+    QTextEdit::keyPressEvent(event);
+    if (keyQueue.size() > 0) {
+      QString text = keyQueue.left(1);
+      keyQueue = keyQueue.right(keyQueue.size() - 1);
+      keyQueueHasChars = (keyQueue.size() > 0);
+      inputMode = inactiveMode;
+      mainController()->receiveString(text);
+    }
+  } else if (event->matches(toplevelKey)) {
+    mainController()->receiveString(toplevelString);
+  } else if (event->matches(pauseKey)) {
+    mainController()->receiveString(pauseString);
+  } else {
+    QString text = event->text();
+    if (text != "") {
+      inputMode = inactiveMode;
+      mainController()->receiveString(text);
+    }
+  }
 }
 
 void Console::dumpNextLineFromQueue() {
@@ -243,8 +246,7 @@ void Console::dumpNextLineFromQueue() {
   }
 }
 
-void Console::returnLine(const QString line)
-{
+void Console::returnLine(const QString line) {
   lineInputHistory.last() = line;
   mainController()->receiveString(line);
 }
@@ -255,60 +257,59 @@ void Console::processLineModeKeyPressEvent(QKeyEvent *event) {
 
   // These will only work if the cursor and anchor are
   // strictly after the prompt:
-  if ((tc.position() > beginningOfLine)
-      && (tc.anchor() > beginningOfLine)
-      && ((key == Qt::Key_Backspace) ||
-      event->matches(QKeySequence::MoveToPreviousChar))) {
-      QTextEdit::keyPressEvent(event);
-      return;
-    }
+  if ((tc.position() > beginningOfLine) && (tc.anchor() > beginningOfLine) &&
+      ((key == Qt::Key_Backspace) ||
+       event->matches(QKeySequence::MoveToPreviousChar))) {
+    QTextEdit::keyPressEvent(event);
+    return;
+  }
 
   // These will only work if the cursor and anchor are
   // on or after the prompt:
-  if ((tc.position() >= beginningOfLine)
-      && (tc.anchor() >= beginningOfLine)) {
-      if (event->matches(QKeySequence::MoveToPreviousLine)) {
-            if (lineInputHistoryScrollingCurrentIndex > 0) {
-                replaceLineWithHistoryIndex(lineInputHistoryScrollingCurrentIndex - 1);
-              }
-            return;
-        }
-      if (event->matches(QKeySequence::MoveToNextLine)) {
-            if (lineInputHistoryScrollingCurrentIndex < lineInputHistory.size() - 1) {
-                replaceLineWithHistoryIndex(lineInputHistoryScrollingCurrentIndex + 1);
-              }
-            return;
-        }
-      if (event->matches(QKeySequence::Paste)) {
-            QTextEdit::keyPressEvent(event);
-            dumpNextLineFromQueue();
-            return;
-        }
-      if (event->matches(QKeySequence::Cut) ||
-          event->matches(QKeySequence::MoveToNextChar) ||
-          ((event->text() != "") && (event->text()[0] >=' '))) {
-          QTextEdit::keyPressEvent(event);
-          return;
-        }
+  if ((tc.position() >= beginningOfLine) && (tc.anchor() >= beginningOfLine)) {
+    if (event->matches(QKeySequence::MoveToPreviousLine)) {
+      if (lineInputHistoryScrollingCurrentIndex > 0) {
+        replaceLineWithHistoryIndex(lineInputHistoryScrollingCurrentIndex - 1);
+      }
+      return;
     }
+    if (event->matches(QKeySequence::MoveToNextLine)) {
+      if (lineInputHistoryScrollingCurrentIndex < lineInputHistory.size() - 1) {
+        replaceLineWithHistoryIndex(lineInputHistoryScrollingCurrentIndex + 1);
+      }
+      return;
+    }
+    if (event->matches(QKeySequence::Paste)) {
+      QTextEdit::keyPressEvent(event);
+      dumpNextLineFromQueue();
+      return;
+    }
+    if (event->matches(QKeySequence::Cut) ||
+        event->matches(QKeySequence::MoveToNextChar) ||
+        ((event->text() != "") && (event->text()[0] >= ' '))) {
+      QTextEdit::keyPressEvent(event);
+      return;
+    }
+  }
 
   // The cursor keys will move the cursor to the beginning of the line
   // if either cursor or anchor are before the start of line
-  if ((tc.position() < beginningOfLine) ||
-      (tc.anchor() < beginningOfLine)) {
-      int pos = tc.position();
-      int anc = tc.anchor();
-      if (anc > pos) pos = anc;
-      if (pos < beginningOfLine) pos = beginningOfLine;
-      if (event->matches(QKeySequence::MoveToNextChar) ||
-          event->matches(QKeySequence::MoveToNextLine) ||
-          event->matches(QKeySequence::MoveToPreviousLine) ||
-          event->matches(QKeySequence::MoveToPreviousChar)) {
-          tc.setPosition(pos);
-          setTextCursor(tc);
-          return;
-        }
+  if ((tc.position() < beginningOfLine) || (tc.anchor() < beginningOfLine)) {
+    int pos = tc.position();
+    int anc = tc.anchor();
+    if (anc > pos)
+      pos = anc;
+    if (pos < beginningOfLine)
+      pos = beginningOfLine;
+    if (event->matches(QKeySequence::MoveToNextChar) ||
+        event->matches(QKeySequence::MoveToNextLine) ||
+        event->matches(QKeySequence::MoveToPreviousLine) ||
+        event->matches(QKeySequence::MoveToPreviousChar)) {
+      tc.setPosition(pos);
+      setTextCursor(tc);
+      return;
     }
+  }
 
   // Select and Copy can be used with the cursor anywhere
   if (event->matches(QKeySequence::Copy) ||
@@ -323,42 +324,41 @@ void Console::processLineModeKeyPressEvent(QKeyEvent *event) {
       event->matches(QKeySequence::SelectStartOfBlock) ||
       event->matches(QKeySequence::SelectStartOfDocument) ||
       event->matches(QKeySequence::SelectStartOfLine)) {
-      QTextEdit::keyPressEvent(event);
-      return;
-    }
+    QTextEdit::keyPressEvent(event);
+    return;
+  }
 
-  if (event->matches(QKeySequence::Quit)) {
-      mainController()->receiveString(toplevelString);
-      return;
-    }
-  if (event->matches(QKeySequence::Close)) {
-      mainController()->receiveString(pauseString);
-      return;
-    }
+  if (event->matches(toplevelKey)) {
+    mainController()->receiveString(toplevelString);
+    return;
+  }
+  if (event->matches(pauseKey)) {
+    mainController()->receiveString(pauseString);
+    return;
+  }
   if (event->matches(QKeySequence::InsertLineSeparator) ||
       event->matches(QKeySequence::InsertParagraphSeparator)) {
-      inputMode = inactiveMode;
-      QString field = toPlainText();
-      QString line = field.right(field.size() - beginningOfLine);
-      moveCursor(QTextCursor::End);
-      textCursor().insertBlock();
-      returnLine(line);
-      return;
-    }
+    inputMode = inactiveMode;
+    QString field = toPlainText();
+    QString line = field.right(field.size() - beginningOfLine);
+    moveCursor(QTextCursor::End);
+    textCursor().insertBlock();
+    returnLine(line);
+    return;
+  }
 
   // All else is ignored
 }
 
-void Console::replaceLineWithHistoryIndex(int newIndex)
-{
+void Console::replaceLineWithHistoryIndex(int newIndex) {
   // if the line that has been entered so far is defferent than
   // the line at the current index, save it at the last.
   QString field = toPlainText();
   QString line = field.right(field.size() - beginningOfLine);
   QString historyLine = lineInputHistory[lineInputHistoryScrollingCurrentIndex];
   if (line != historyLine) {
-      lineInputHistory.last() = line;
-    }
+    lineInputHistory.last() = line;
+  }
   // Now replace the line with that at newIndex
   historyLine = lineInputHistory[newIndex];
   QTextCursor cursor = textCursor();

@@ -62,9 +62,9 @@ void Turtle::drawTurtleWrap() {
          (lineEnd.y() < -boundY) || (lineEnd.y() > boundY)) {
 
     if (lineEnd.x() > boundX) {
-      float cy = lineStart.y() + (boundX - lineStart.x()) *
-                                     (lineEnd.y() - lineStart.y()) /
-                                     (lineEnd.x() - lineStart.x());
+      float cy = lineStart.y() +
+                 (boundX - lineStart.x()) * (lineEnd.y() - lineStart.y()) /
+                     (lineEnd.x() - lineStart.x());
       if ((cy >= -boundY) && (cy <= boundY)) {
         QVector4D e = QVector4D(boundX, cy, 0, 1);
         if (penIsDown)
@@ -81,9 +81,9 @@ void Turtle::drawTurtleWrap() {
     }
 
     if (lineEnd.x() < -boundX) {
-      float cy = lineStart.y() + (-boundX - lineStart.x()) *
-                                     (lineEnd.y() - lineStart.y()) /
-                                     (lineEnd.x() - lineStart.x());
+      float cy = lineStart.y() +
+                 (-boundX - lineStart.x()) * (lineEnd.y() - lineStart.y()) /
+                     (lineEnd.x() - lineStart.x());
       if ((cy >= -boundY) && (cy <= boundY)) {
         QVector4D e = QVector4D(-boundX, cy, 0, 1);
         if (penIsDown)
@@ -100,9 +100,9 @@ void Turtle::drawTurtleWrap() {
     }
 
     if (lineEnd.y() > boundY) {
-      float cx = lineStart.x() + (boundY - lineStart.y()) *
-                                     (lineEnd.x() - lineStart.x()) /
-                                     (lineEnd.y() - lineStart.y());
+      float cx = lineStart.x() +
+                 (boundY - lineStart.y()) * (lineEnd.x() - lineStart.x()) /
+                     (lineEnd.y() - lineStart.y());
       if ((cx >= -boundX) && (cx <= boundX)) {
         QVector4D e = QVector4D(cx, boundY, 0, 1);
         if (penIsDown)
@@ -119,9 +119,9 @@ void Turtle::drawTurtleWrap() {
     }
 
     if (lineEnd.y() < -boundY) {
-      float cx = lineStart.x() + (-boundY - lineStart.y()) *
-                                     (lineEnd.x() - lineStart.x()) /
-                                     (lineEnd.y() - lineStart.y());
+      float cx = lineStart.x() +
+                 (-boundY - lineStart.y()) * (lineEnd.x() - lineStart.x()) /
+                     (lineEnd.y() - lineStart.y());
       if ((cx >= -boundX) && (cx <= boundX)) {
         QVector4D e = QVector4D(cx, -boundY, 0, 1);
         if (penIsDown)
