@@ -46,9 +46,7 @@ class Console : public QTextEdit {
 protected:
   int beginningOfLine = 0;
   bool keyQueueHasChars;
-  void checkCursor();
   void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
-  void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
   void insertFromMimeData(const QMimeData *source) Q_DECL_OVERRIDE;
   void processLineModeKeyPressEvent(QKeyEvent *event);
   void processCharModeKeyPressEvent(QKeyEvent *event);

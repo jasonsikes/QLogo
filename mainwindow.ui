@@ -62,7 +62,7 @@
         <number>3</number>
        </property>
        <property name="textInteractionFlags">
-        <set>Qt::TextEditable|Qt::TextSelectableByKeyboard</set>
+        <set>Qt::TextEditorInteraction</set>
        </property>
       </widget>
      </widget>
@@ -75,7 +75,7 @@
      <x>0</x>
      <y>0</y>
      <width>725</width>
-     <height>28</height>
+     <height>30</height>
     </rect>
    </property>
   </widget>
