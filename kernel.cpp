@@ -144,8 +144,10 @@ bool Kernel::getLineAndRunIt(bool shouldHandleError) {
       Error::dontSay(result);
   } catch (Error *e) {
     if (shouldHandleError) {
-      if (e->tag.isWord() && (e->tag.wordValue()->keyValue() == "TOPLEVEL"))
+      if (e->tag.isWord() && (e->tag.wordValue()->keyValue() == "TOPLEVEL")) {
+        sysPrint("\n");
         return true;
+      }
       sysPrint(e->errorText.printValue());
       if (e->procedure != nothing)
         sysPrint(QString(" in ") +
