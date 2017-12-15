@@ -30,6 +30,9 @@
 #include "ui_editorwindow.h"
 #include <QTimer>
 
+const QKeySequence::StandardKey revertChangesKey = QKeySequence::Cancel;
+const QKeySequence::StandardKey saveChangesKey = QKeySequence::Save;
+
 EditorWindow::EditorWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::EditorWindow) {
   ui->setupUi(this);
@@ -79,11 +82,11 @@ bool EditorWindow::eventFilter(QObject *watched, QEvent *event) {
   if (event->type() == QEvent::KeyPress) {
     QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 
-    if (keyEvent->matches(QKeySequence::Save)) {
+    if (keyEvent->matches(saveChangesKey)) {
       acceptChanges();
       return true;
     }
-    if (keyEvent->matches(QKeySequence::Close)) {
+    if (keyEvent->matches(revertChangesKey)) {
       revertChanges();
       return true;
     }
