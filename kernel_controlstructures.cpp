@@ -423,8 +423,8 @@ DatumP Kernel::excApply(DatumP node) {
     return h.ret(retval);
   }
   case procedure: {
-    DatumP anonyProcedure =
-        parser->createProcedure(node.astnodeValue()->nodeName, tmplate);
+    DatumP anonyProcedure = parser->createProcedure(
+        node.astnodeValue()->nodeName, tmplate, nothing);
     ASTNode *procnode = new ASTNode(node.astnodeValue()->nodeName);
     DatumP procnodeP(procnode);
     procnode->addChild(anonyProcedure);

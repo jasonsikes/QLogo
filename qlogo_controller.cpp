@@ -375,9 +375,9 @@ void Controller::introduceCanvasIfItHasntBeenAlready() {
   }
 }
 
-void Controller::beginInputHistory() { history = DatumP(new List); }
+// void Controller::beginInputHistory() { history = DatumP(new List); }
 
-DatumP Controller::inputHistory() { return history; }
+// DatumP Controller::inputHistory() { return history; }
 
 // This is READRAWLINE
 DatumP Controller::readrawlineWithPrompt(const QString &prompt) {
@@ -400,7 +400,7 @@ DatumP Controller::readrawlineWithPrompt(const QString &prompt) {
   if (retval.wordValue()->rawValue() == pauseString)
     return pauseTokenP;
 
-  history.listValue()->append(retval);
+  // history.listValue()->append(retval);
   return retval;
 }
 
@@ -427,7 +427,7 @@ DatumP Controller::readchar() {
 }
 
 void Controller::run() {
-  beginInputHistory();
+  // beginInputHistory();
   kernel->initLibrary();
   bool shouldContinue = true;
   while (shouldContinue) {

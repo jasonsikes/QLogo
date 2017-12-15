@@ -331,7 +331,7 @@ DatumP Kernel::excDefine(DatumP node) {
   DatumP cmd = node.astnodeValue()->nodeName;
   DatumP procnameP = h.wordAtIndex(0);
 
-  parser->defineProcedure(cmd, procnameP, text);
+  parser->defineProcedure(cmd, procnameP, text, nothing);
 
   return nothing;
 }

@@ -116,8 +116,8 @@ public:
   ScreenModeEnum getScreenMode();
   void setSplitterSizeRatios(float canvasRatio, float consoleRatio);
   void setCursorOverwriteMode(bool shouldOverwrite);
-  void beginInputHistory();
-  DatumP inputHistory();
+  //  void beginInputHistory();
+  //  DatumP inputHistory();
 
   void setPenmode(PenModeEnum newMode);
   //    const QString& getPenmode();
@@ -223,7 +223,7 @@ protected:
 
   QString uiInputText;
   QMutex uiInputTextMutex;
-  DatumP history; // list of words
+  // DatumP history; // list of words
 
   double currentTextSize;
   QString currentFontName;

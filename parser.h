@@ -49,7 +49,9 @@ class Parser : public Workspace {
   DatumP tokenizeListWithPrompt(const QString &prompt, int level, bool isArray,
                                 bool shouldRemoveComments,
                                 QTextStream *readStream);
-
+  bool isReadingList = false;
+  DatumP listSourceText;
+  DatumP lastReadListSource();
   DatumP currentToken;
   Kernel *kernel;
 
@@ -88,9 +90,9 @@ public:
   DatumP runparse(DatumP src);
   QList<DatumP> *astFromList(List *aList);
 
-  DatumP createProcedure(DatumP cmd, DatumP text, DatumP srcText = nothing);
+  DatumP createProcedure(DatumP cmd, DatumP text, DatumP sourceText);
   void defineProcedure(DatumP cmd, DatumP procnameP, DatumP text,
-                       DatumP srcText = nothing);
+                       DatumP sourceText);
   void inputProcedure(DatumP nodeP, QTextStream *readStream);
   void copyProcedure(DatumP newnameP, DatumP oldnameP);
   void eraseProcedure(DatumP procnameP);

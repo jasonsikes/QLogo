@@ -47,7 +47,7 @@ char lastNonSpaceChar(const QString &line) {
 QHash<QString, Cmd_t> stringToCmd;
 
 void Parser::defineProcedure(DatumP cmd, DatumP procnameP, DatumP text,
-                             DatumP srcText) {
+                             DatumP sourceText) {
   lastProcedureCreatedTimestamp = QDateTime::currentMSecsSinceEpoch();
 
   procnameP.wordValue()->numberValue();
@@ -63,7 +63,7 @@ void Parser::defineProcedure(DatumP cmd, DatumP procnameP, DatumP text,
   if (stringToCmd.contains(procname))
     Error::isPrimative(procnameP);
 
-  DatumP procBody = createProcedure(cmd, text, srcText);
+  DatumP procBody = createProcedure(cmd, text, sourceText);
 
   procedures[procname] = procBody;
 
@@ -72,7 +72,7 @@ void Parser::defineProcedure(DatumP cmd, DatumP procnameP, DatumP text,
   }
 }
 
-DatumP Parser::createProcedure(DatumP cmd, DatumP text, DatumP srcText) {
+DatumP Parser::createProcedure(DatumP cmd, DatumP text, DatumP sourceText) {
   Procedure *body = new Procedure;
   DatumP bodyP(body);
 
@@ -83,7 +83,7 @@ DatumP Parser::createProcedure(DatumP cmd, DatumP text, DatumP srcText) {
   body->countOfMinParams = 0;
   body->countOfMaxParams = 0;
   body->isMacro = isMacro;
-  body->sourceText = srcText;
+  body->sourceText = sourceText;
 
   bool isOptionalDefined = false;
   bool isRestDefined = false;
@@ -283,9 +283,9 @@ DatumP Parser::procedureFulltext(DatumP procnameP, bool shouldValidate) {
 
     List *retval = new List;
 
-    retval->append(DatumP(new Word(procedureTitle(procnameP))));
-
     if (body->sourceText == nothing) {
+      retval->append(DatumP(new Word(procedureTitle(procnameP))));
+
       ListIterator b = body->instructionList.listValue()->newIterator();
 
       while (b.elementExists()) {
@@ -295,11 +295,7 @@ DatumP Parser::procedureFulltext(DatumP procnameP, bool shouldValidate) {
       DatumP end(new Word("end"));
       retval->append(end);
     } else {
-      ListIterator b = body->sourceText.listValue()->newIterator();
-
-      while (b.elementExists()) {
-        retval->append(new Word(b.element().printValue()));
-      }
+      return body->sourceText;
     }
     return DatumP(retval);
   } else if (shouldValidate) {
@@ -391,6 +387,7 @@ void Parser::inputProcedure(DatumP nodeP, QTextStream *readStream) {
     Error::procDefined(procnameP);
 
   DatumP textP(new List);
+  DatumP sourceText = lastReadListSource();
   DatumP firstLine(new List);
   for (int i = 1; i < node->countOfChildren(); ++i) {
     firstLine.listValue()->append(node->childAtIndex(i));
@@ -398,9 +395,14 @@ void Parser::inputProcedure(DatumP nodeP, QTextStream *readStream) {
   textP.listValue()->append(firstLine);
 
   // Now read in the body
-  mainController()->beginInputHistory();
+  // mainController()->beginInputHistory();
   forever {
     DatumP line = readlistWithPrompt("> ", true, readStream);
+    DatumP lineSource = lastReadListSource();
+    ListIterator lineSourceIter = lineSource.listValue()->newIterator();
+    while (lineSourceIter.elementExists()) {
+      sourceText.listValue()->append(lineSourceIter.element());
+    }
     if (line.listValue()->size() == 0)
       continue;
     DatumP first = line.listValue()->first();
@@ -412,8 +414,7 @@ void Parser::inputProcedure(DatumP nodeP, QTextStream *readStream) {
     textP.listValue()->append(line);
   }
 
-  defineProcedure(to, procnameP, textP, mainController()->inputHistory());
-  mainController()->beginInputHistory();
+  defineProcedure(to, procnameP, textP, sourceText);
 
   kernel->sysPrint(procnameP.wordValue()->printValue());
   kernel->sysPrint(" defined\n");
@@ -422,17 +423,20 @@ void Parser::inputProcedure(DatumP nodeP, QTextStream *readStream) {
 
 DatumP Parser::readrawlineWithPrompt(const QString &prompt,
                                      QTextStream *readStream) {
+  DatumP retval;
   if (readStream == NULL) {
-    DatumP line = mainController()->readrawlineWithPrompt(prompt);
-    return line;
+    retval = mainController()->readrawlineWithPrompt(prompt);
+  } else {
+    if (readStream->atEnd()) {
+      return nothing;
+    }
+    QString str = readStream->readLine();
+    if (readStream->status() != QTextStream::Ok)
+      Error::fileSystem();
+    retval = DatumP(new Word(str));
   }
-  if (readStream->atEnd()) {
-    return nothing;
-  }
-  QString str = readStream->readLine();
-  if (readStream->status() != QTextStream::Ok)
-    Error::fileSystem();
-  return DatumP(new Word(str));
+  listSourceText.listValue()->append(retval);
+  return retval;
 }
 
 DatumP Parser::readwordWithPrompt(const QString &prompt,
@@ -647,8 +651,24 @@ DatumP Parser::tokenizeListWithPrompt(const QString &prompt, int level,
 DatumP Parser::readlistWithPrompt(const QString &prompt,
                                   bool shouldRemoveComments,
                                   QTextStream *readStream) {
-  return tokenizeListWithPrompt(prompt, 0, false, shouldRemoveComments,
-                                readStream);
+  listSourceText.listValue()->clear();
+  isReadingList = true;
+  DatumP retval;
+  try {
+    retval = tokenizeListWithPrompt(prompt, 0, false, shouldRemoveComments,
+                                    readStream);
+  } catch (Error *e) {
+    isReadingList = false;
+    throw e;
+  }
+  isReadingList = false;
+  return retval;
+}
+
+DatumP Parser::lastReadListSource() {
+  DatumP retval = listSourceText;
+  listSourceText = new List;
+  return retval;
 }
 
 void Parser::runparseSpecialchars(void) {
@@ -1381,7 +1401,7 @@ QString Parser::unreadWord(Word *aWord, bool isInList) {
 Parser::Parser(Kernel *aKernel) {
   lastProcedureCreatedTimestamp = QDateTime::currentMSecsSinceEpoch();
   kernel = aKernel;
-
+  listSourceText = new List;
   if (stringToCmd.size() > 0)
     return;
 
