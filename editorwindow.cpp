@@ -30,7 +30,7 @@
 #include "ui_editorwindow.h"
 #include <QTimer>
 
-const QKeySequence::StandardKey revertChangesKey = QKeySequence::Cancel;
+const QKeySequence::StandardKey revertChangesKey = QKeySequence::Close;
 const QKeySequence::StandardKey saveChangesKey = QKeySequence::Save;
 
 EditorWindow::EditorWindow(QWidget *parent)

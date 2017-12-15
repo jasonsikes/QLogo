@@ -33,8 +33,8 @@
 
 #include CONTROLLER_HEADER
 
-const QKeySequence::StandardKey toplevelKey = QKeySequence::Cancel;
-const QKeySequence::StandardKey pauseKey = QKeySequence::Close;
+const QKeySequence::StandardKey toplevelKey = QKeySequence::Close;
+const QKeySequence::StandardKey pauseKey = QKeySequence::Save;
 
 Console::Console(QWidget *parent) : QTextEdit(parent) {
   keyQueueHasChars = false;
