@@ -3089,6 +3089,15 @@ void TestQLogo::testKernel_data() {
                                       "run :a\n"
                                    << "[hello]\n"
                                       "hello\n";
+
+  QTest::newRow("setitem list inside itself") << "make \"a [this is a test]\n"
+                                                 "setitem 1 :a :a\n"
+                                              << "setitem doesn't like [this is a test] as input\n";
+
+  QTest::newRow("setitem array inside itself") << "make \"a {this is a test}\n"
+                                                  "setitem 1 :a :a\n"
+                                               << "setitem doesn't like {this is a test} as input\n";
+
 }
 
 QTEST_APPLESS_MAIN(TestQLogo)

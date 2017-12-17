@@ -227,8 +227,10 @@ DatumP Kernel::excSetitem(DatumP node) {
     return array.datumValue()->isIndexInRange(candidate);
   });
   DatumP thing = h.validatedDatumAtIndex(2, [&array, this](DatumP candidate) {
-    if (candidate.isArray() || candidate.isList())
+    if (candidate.isArray() || candidate.isList()) {
+        if (candidate == array) return false;
       return !candidate.datumValue()->containsDatum(array, varCASEIGNOREDP());
+    }
     return true;
   });
   array.datumValue()->setItem(index, thing);
