@@ -100,7 +100,7 @@ DatumP Kernel::excRemainder(DatumP node) {
   ProcedureHelper h(this, node);
   long a = h.integerAtIndex(0);
 
-  long b = h.validatedNumberAtIndex(
+  long b = h.validatedIntegerAtIndex(
       1, [](long candidate) { return candidate != 0; });
 
   double c = a % b;
@@ -112,7 +112,7 @@ DatumP Kernel::excModulo(DatumP node) {
   ProcedureHelper h(this, node);
   long a = h.integerAtIndex(0);
 
-  long b = h.validatedNumberAtIndex(
+  long b = h.validatedIntegerAtIndex(
       1, [](long candidate) { return candidate != 0; });
 
   long r = a % b;

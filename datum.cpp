@@ -691,6 +691,7 @@ bool List::isIndexInRange(int anIndex) {
 void List::setItem(int anIndex, DatumP aValue) {
   int index = anIndex - 1;
   list[index] = aValue;
+  astParseTimeStamp = 0;
 }
 
 void List::setButfirstItem(DatumP aValue) {
@@ -700,9 +701,13 @@ void List::setButfirstItem(DatumP aValue) {
   ++estart;
   list.erase(estart, list.end());
   list.append(aValue.listValue()->list);
+  astParseTimeStamp = 0;
 }
 
-void List::setFirstItem(DatumP aValue) { list[0] = aValue; }
+void List::setFirstItem(DatumP aValue) {
+    list[0] = aValue;
+    astParseTimeStamp = 0;
+}
 
 bool List::containsDatum(DatumP aDatum, bool ignoreCase) {
   for (auto &e : list) {
