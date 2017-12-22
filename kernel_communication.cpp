@@ -576,7 +576,7 @@ DatumP Kernel::excSetcursor(DatumP node) {
 
 DatumP Kernel::excCursor(DatumP node) {
   ProcedureHelper h(this, node);
-  int row, col;
+  int row = 0, col = 0;
   mainController()->getTextCursorPos(row, col);
   List *retval = new List;
   DatumP retvalP = h.ret(retval);
