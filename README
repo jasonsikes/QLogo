@@ -29,11 +29,18 @@ http://people.eecs.berkeley.edu/~bh/usermanual
 ==============================================================
 
 
-Compiling QLogo requires Qt version 5.5 or greater. It has been
-developed and tested on the following platforms:
+Compiling
 
-* Windows 10 using Visual Studio
-* Linux Fedora 26 using GNU C++
+QLogo is being developed and tested to work with C++11 and Qt 5.6.3. Qt 5.6 is the
+last version to support Windows XP. However, QLogo is also being developed and tested
+against the newest version of Qt (5.10) so it can be assumed that any version in
+between should work just fine.
+
+
+QLogo is currently being developed and tested on the following platforms:
+
+* Windows 10 using Visual Studio 2017 and MinGW GCC 6.3.0.
+* Linux Fedora 26 using GCC 7.2.1
 * Mac OS X 10.13 using Clang/LLVM
 
 
@@ -48,13 +55,14 @@ There are a few nuances:
 1) as a palette index (0 to 100)
 
 2) as a list of 3 percentages, one for each of red, green, blue
+[0 0 0] is black, [100 100 100] is white
 
 3) as a named color from the X Color Database, e.g. "floralwhite or "lemonchiffon.
 The X Color database can be found here:
 https://en.wikipedia.org/wiki/X11_color_names
 
 
-* Changes in font properties (size, color, etc.) do not affect characters already printed.
+* Changes in font properties (size, color, family) do not affect characters already printed.
 
 
 * The entire Logo standard library is loaded internally and buried. There is no
@@ -64,15 +72,8 @@ https://en.wikipedia.org/wiki/X11_color_names
 * QLogo does not look for nor automatically load STARTUP.LG.
 
 
-* Procedures defined using TO or .MACRO are stored in an internal format. The
-  original text used is discarded. Printing out a procedure causes the text to be
-  recreated; all formatting and comments are lost. This will be fixed soon.
-
-
 * Lists are maintained using QList which is not a linked list. As such, the possible "bug"
-  of two lists being joined at some element is not possible in QLogo. This doesn't mean that
-  the bug should be squashed; the "bug" is actually a byproduct of using linked
-  lists and is an important concept in computer science. May fix; I don't know.
+  of two lists being joined at some element is not possible in QLogo.
 
 
 * If ERRACT is set and its size is greater than zero, then any errors execute PAUSE.
@@ -115,10 +116,7 @@ REDEFP:            There will be another mechanism for internationalization.
 USEALTERNATENAMES: ditto
 
 
-
-
 * The following commands are NEW:
-
 
 ALLFONTS
 
@@ -126,7 +124,7 @@ returns a list of all the fonts available on your system.
 
 CURSORINSERT
 
-sets cursor to insert mode, default.
+sets cursor to insert mode, this is the default.
 
 CURSOROVERWRITE
 
