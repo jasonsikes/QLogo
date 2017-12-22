@@ -1724,6 +1724,7 @@ void TestQLogo::testKernel_data() {
                               << "qw defined\n"
                                  "to qw\n";
 
+  // TODO: COPYDEF is slated for removal
   QTest::newRow("COPYDEF 1") << "to qw\n"
                                 "show \"Hello\n"
                                 "end\n"
@@ -2505,8 +2506,7 @@ void TestQLogo::testKernel_data() {
       << "repeat 3 [repeat 3[show repcount]] show repcount\n"
       << "1\n2\n3\n1\n2\n3\n1\n2\n3\n-1\n";
 
-  QTest::newRow("FOREVER")
-      << "to f :p1\n"
+  QTest::newRow("FOREVER") << "to f :p1\n"
          "forever [print repcount if repcount=:p1 [output \"end]]\n"
          "end\n"
          "print f 5\n"
@@ -2609,8 +2609,7 @@ void TestQLogo::testKernel_data() {
                             << "proc defined\n"
                                "1\n";
 
-  QTest::newRow("STOP")
-      << "to lp :count\n"
+  QTest::newRow("STOP") << "to lp :count\n"
          "forever [print repcount if repcount=:count [stop]]\n"
          "end\n"
          "lp 5\n"
@@ -2636,8 +2635,7 @@ void TestQLogo::testKernel_data() {
   QTest::newRow("CATCH 5") << "print catch \"err [(throw \"err \"hello)]\n"
                            << "hello\n";
 
-  QTest::newRow("CATCH 6")
-      << "print catch \"er1 [(throw \"er1 [hello there])]\n"
+  QTest::newRow("CATCH 6") << "print catch \"er1 [(throw \"er1 [hello there])]\n"
       << "hello there\n";
 
   QTest::newRow("CATCH PROCEDURE OUTPUT") << "to t\n"
@@ -2686,8 +2684,7 @@ void TestQLogo::testKernel_data() {
                               "[13 I don't know how to not_a_function "
                               "throw_error [not_a_function]]\n";
 
-  QTest::newRow("THROW 4")
-      << "catch \"error [(throw \"error [this is an error])]\n"
+  QTest::newRow("THROW 4") << "catch \"error [(throw \"error [this is an error])]\n"
          "show error\n"
       << "[35 this is an error [] []]\n";
 
@@ -2703,8 +2700,7 @@ void TestQLogo::testKernel_data() {
                               "noop defined\n"
                               "[35 misc [] []]\n";
 
-  QTest::newRow("THROW 6")
-      << "to throw_error\n"
+  QTest::newRow("THROW 6") << "to throw_error\n"
          "noop\n"
          "catch \"error [throw \"error]\n"
          "end\n"
@@ -2905,8 +2901,7 @@ void TestQLogo::testKernel_data() {
                               "20\n"
                               "30\n";
 
-  QTest::newRow("MACRO 1")
-      << ".macro myrepeat :num :instructions\n"
+  QTest::newRow("MACRO 1") << ".macro myrepeat :num :instructions\n"
          "if :num=0 [output []]\n"
          "output se :instructions (list \"myrepeat :num-1 :instructions)\n"
          "end\n"
@@ -3020,8 +3015,7 @@ void TestQLogo::testKernel_data() {
                                    "print [success]\n"
                                 << "success\n";
 
-  QTest::newRow("FIBLIST")
-      << "to fiblist :n\n"
+  QTest::newRow("FIBLIST") << "to fiblist :n\n"
          "if :n<2 [output [1 1]]\n"
          "output newfib fiblist :n-1\n"
          "end\n"
@@ -3053,8 +3047,7 @@ void TestQLogo::testKernel_data() {
                                   "can't use .macro inside a procedure in d\n"
                                   "[.macro e]\n";
 
-  QTest::newRow("Already filling")
-      << "filled 3 [filled 2 [repeat 4 [fd 100 rt 90]]]\n"
+  QTest::newRow("Already filling") << "filled 3 [filled 2 [repeat 4 [fd 100 rt 90]]]\n"
       << "Already filling\n";
 
   QTest::newRow("TO in PAUSE") << "pause\n"
@@ -3075,7 +3068,36 @@ void TestQLogo::testKernel_data() {
                                       "Can't use .macro within PAUSE\n"
                                       "fg defined\n";
 
-  //#endif
+
+  QTest::newRow("reparsing list 1") <<"make \"a [print \"hello]\n"
+                                      "run :a\n"
+                                      "setitem 2 :a \"\"hi\n"
+                                      "run :a\n"
+                                   << "hello\n"
+                                      "hi\n";
+
+  QTest::newRow("reparsing list 2") <<"make \"a [print \"hello]\n"
+                                      "run :a\n"
+                                      ".setbf :a [\"hi]\n"
+                                      "run :a\n"
+                                   << "hello\n"
+                                      "hi\n";
+
+  QTest::newRow("reparsing list 3") <<"make \"a [show [hello]]\n"
+                                      "run :a\n"
+                                      ".setfirst :a \"print\n"
+                                      "run :a\n"
+                                   << "[hello]\n"
+                                      "hello\n";
+
+  QTest::newRow("setitem list inside itself") << "make \"a [this is a test]\n"
+                                                 "setitem 1 :a :a\n"
+                                              << "setitem doesn't like [this is a test] as input\n";
+
+  QTest::newRow("setitem array inside itself") << "make \"a {this is a test}\n"
+                                                  "setitem 1 :a :a\n"
+                                               << "setitem doesn't like {this is a test} as input\n";
+
 }
 
 QTEST_APPLESS_MAIN(TestQLogo)
