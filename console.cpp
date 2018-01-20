@@ -374,3 +374,10 @@ bool Console::charsInQueue() { return keyQueueHasChars; }
 void Console::insertFromMimeData(const QMimeData *source) {
   keyQueue += source->text();
 }
+
+// Debugging an excessive CPU usage issue.
+//void Console::paintEvent(QPaintEvent *event)
+//{
+//  QTextEdit::paintEvent(event);
+//  qDebug() << "Console paint event";
+//}

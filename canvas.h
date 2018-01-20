@@ -37,6 +37,8 @@ class QOpenGLShaderProgram;
 class QOpenGLBuffer;
 class QOpenGLVertexArrayObject;
 
+
+/// Contains the information that describes a label's appearance on the Canvas.
 struct Label {
   QString text;
   QVector4D position;
@@ -48,63 +50,54 @@ struct Label {
       : text(aText), position(aPosition), color(aColor), font(aFont) {}
 };
 
-enum CanvasDrawingEventType {
+///
+enum CanvasDrawingElementType {
   canvasDrawArrayType,
   canvasDrawSetPenmodeType,
   canvasDrawSetPensizeType
 };
 
-struct CanvasDrawingArrayEvent {
+struct CanvasDrawingArrayElement {
   GLenum mode;
   GLint first;
   GLsizei count;
 };
 
-struct CanvasDrawingSetPenmodeEvent {
+struct CanvasDrawingSetPenmodeElement {
   PenModeEnum penMode;
 };
 
-struct CanvasDrawingSetPensizeEvent {
+struct CanvasDrawingSetPensizeElement {
   GLfloat width;
 };
 
-union CanvasDrawingEventU {
-  CanvasDrawingArrayEvent drawArrayEvent;
-  CanvasDrawingSetPenmodeEvent penmodeEvent;
-  CanvasDrawingSetPensizeEvent pensizeEvent;
+union CanvasDrawingElementU {
+  CanvasDrawingArrayElement drawArrayElement;
+  CanvasDrawingSetPenmodeElement penmodeElement;
+  CanvasDrawingSetPensizeElement pensizeElement;
 };
 
-struct CanvasDrawingEvent {
-  CanvasDrawingEventType type;
-  CanvasDrawingEventU u;
+struct CanvasDrawingElement {
+  CanvasDrawingElementType type;
+  CanvasDrawingElementU u;
 };
 
 class Canvas : public QOpenGLWidget, protected QOpenGLFunctions {
   Q_OBJECT
 
-protected:
   QMatrix4x4 matrix;
   QMatrix4x4 invertedMatrix;
   int w;
   int h;
 
-  QPointF worldToScreen(const QVector4D &world);
-  QVector2D screenToWorld(const QPointF &p);
+  bool isBounded = true;
 
   qreal boundsX;
   qreal boundsY;
 
   QList<Label> labels;
 
-  void initializeGL() override;
-  void resizeGL(int width, int height) override;
-  void paintGL() override;
-
-  void paintSurface();
-  void paintTurtle();
-
   GLuint matrixUniformID;
-  void updateMatrix(void);
 
   QOpenGLShaderProgram *shaderProgram;
 
@@ -133,19 +126,28 @@ protected:
   GLfloat pensizeRange[2];
   GLfloat currentPensize = 0;
 
-  QList<CanvasDrawingEvent> drawingEventList;
+  QList<CanvasDrawingElement> drawingElementList;
   GLclampf backgroundColor[4];
+
+  void paintSurface();
+  void paintTurtle();
 
   void makeTurtleVBO(void);
   void makeSurfaceVBO(void);
   void setSurfaceVertices(void);
   void renderLabels(QPainter *painter);
 
+  void updateMatrix(void);
+  QPointF worldToScreen(const QVector4D &world);
+  QVector2D screenToWorld(const QPointF &p);
+
+  void initializeGL() override;
+  void resizeGL(int width, int height) override;
+  void paintGL() override;
+
   void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
   void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
   void mouseReleaseEvent(QMouseEvent *) Q_DECL_OVERRIDE;
-
-  bool isBounded = true;
 
 public:
   Canvas(QWidget *parent = 0);

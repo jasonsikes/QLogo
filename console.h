@@ -48,6 +48,9 @@ protected:
   bool keyQueueHasChars;
   void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
   void insertFromMimeData(const QMimeData *source) Q_DECL_OVERRIDE;
+
+  // Debugging an excessive CPU usage issue
+  // void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
   void processLineModeKeyPressEvent(QKeyEvent *event);
   void processCharModeKeyPressEvent(QKeyEvent *event);
 

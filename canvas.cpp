@@ -348,17 +348,17 @@ void Canvas::paintGL() {
 
   glEnable(GL_BLEND);
 
-  for (auto iter = drawingEventList.begin(); iter != drawingEventList.end();
+  for (auto iter = drawingElementList.begin(); iter != drawingElementList.end();
        ++iter) {
 
     switch (iter->type) {
     case canvasDrawArrayType: {
-      CanvasDrawingArrayEvent &cdae = iter->u.drawArrayEvent;
+      CanvasDrawingArrayElement &cdae = iter->u.drawArrayElement;
       glDrawArrays(cdae.mode, cdae.first, cdae.count);
       break;
     }
     case canvasDrawSetPenmodeType: {
-      CanvasDrawingSetPenmodeEvent &spme = iter->u.penmodeEvent;
+      CanvasDrawingSetPenmodeElement &spme = iter->u.penmodeElement;
       switch (spme.penMode) {
       case penModePaint:
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -379,7 +379,7 @@ void Canvas::paintGL() {
       break;
     }
     case canvasDrawSetPensizeType: {
-      CanvasDrawingSetPensizeEvent &pse = iter->u.pensizeEvent;
+      CanvasDrawingSetPensizeElement &pse = iter->u.pensizeElement;
       glLineWidth(pse.width);
       break;
     }
@@ -387,7 +387,7 @@ void Canvas::paintGL() {
       qDebug() << "This is weird";
       Q_ASSERT(false);
     }
-  } // /for drawingEventList
+  } // /for drawingElementList
   linesColorBufferObject->release();
   linesVertexBufferObject->release();
   linesObject->release();
@@ -403,7 +403,7 @@ void Canvas::paintGL() {
 }
 
 void Canvas::clearScreen() {
-  drawingEventList.clear();
+  drawingElementList.clear();
 
   vertices.clear();
   vertexColors.clear();
@@ -446,18 +446,18 @@ void Canvas::renderLabels(QPainter *painter) {
 
 void Canvas::addLine(const QVector4D &vertexA, const QVector4D &vertexB,
                      const QColor &color) {
-  if (drawingEventList.isEmpty() ||
-      (drawingEventList.last().type != canvasDrawArrayType) ||
-      (drawingEventList.last().u.drawArrayEvent.mode != GL_LINES)) {
-    CanvasDrawingEvent cde;
+  if (drawingElementList.isEmpty() ||
+      (drawingElementList.last().type != canvasDrawArrayType) ||
+      (drawingElementList.last().u.drawArrayElement.mode != GL_LINES)) {
+    CanvasDrawingElement cde;
     cde.type = canvasDrawArrayType;
-    cde.u.drawArrayEvent.mode = GL_LINES;
-    cde.u.drawArrayEvent.first = vertexColors.size() / 4;
-    cde.u.drawArrayEvent.count = 0;
-    drawingEventList.push_back(cde);
+    cde.u.drawArrayElement.mode = GL_LINES;
+    cde.u.drawArrayElement.first = vertexColors.size() / 4;
+    cde.u.drawArrayElement.count = 0;
+    drawingElementList.push_back(cde);
   }
 
-  drawingEventList.last().u.drawArrayEvent.count += 2;
+  drawingElementList.last().u.drawArrayElement.count += 2;
 
   vertices.push_back(vertexA.x());
   vertices.push_back(vertexA.y());
@@ -496,12 +496,12 @@ void Canvas::addLine(const QVector4D &vertexA, const QVector4D &vertexB,
 
 void Canvas::addPolygon(const QList<QVector4D> &points,
                         const QList<QColor> &colors) {
-  CanvasDrawingEvent cde;
+  CanvasDrawingElement cde;
   cde.type = canvasDrawArrayType;
-  cde.u.drawArrayEvent.mode = GL_TRIANGLE_FAN;
-  cde.u.drawArrayEvent.first = vertexColors.size() / 4;
-  cde.u.drawArrayEvent.count = points.size();
-  drawingEventList.push_back(cde);
+  cde.u.drawArrayElement.mode = GL_TRIANGLE_FAN;
+  cde.u.drawArrayElement.first = vertexColors.size() / 4;
+  cde.u.drawArrayElement.count = points.size();
+  drawingElementList.push_back(cde);
 
   auto pIter = points.begin();
   for (auto cIter = colors.begin(); cIter != colors.end(); ++cIter) {
@@ -521,27 +521,27 @@ void Canvas::addPolygon(const QList<QVector4D> &points,
 
 void Canvas::setPenmode(PenModeEnum newMode) {
   currentPenMode = newMode;
-  if (drawingEventList.isEmpty() ||
-      (drawingEventList.last().type != canvasDrawSetPenmodeType)) {
-    CanvasDrawingEvent cde;
+  if (drawingElementList.isEmpty() ||
+      (drawingElementList.last().type != canvasDrawSetPenmodeType)) {
+    CanvasDrawingElement cde;
     cde.type = canvasDrawSetPenmodeType;
-    cde.u.penmodeEvent.penMode = newMode;
-    drawingEventList.push_back(cde);
+    cde.u.penmodeElement.penMode = newMode;
+    drawingElementList.push_back(cde);
   } else {
-    drawingEventList.last().u.penmodeEvent.penMode = newMode;
+    drawingElementList.last().u.penmodeElement.penMode = newMode;
   }
 }
 
 void Canvas::setPensize(GLfloat aSize) {
   currentPensize = aSize;
-  if (drawingEventList.isEmpty() ||
-      (drawingEventList.last().type != canvasDrawSetPensizeType)) {
-    CanvasDrawingEvent cde;
+  if (drawingElementList.isEmpty() ||
+      (drawingElementList.last().type != canvasDrawSetPensizeType)) {
+    CanvasDrawingElement cde;
     cde.type = canvasDrawSetPensizeType;
-    cde.u.pensizeEvent.width = aSize;
-    drawingEventList.push_back(cde);
+    cde.u.pensizeElement.width = aSize;
+    drawingElementList.push_back(cde);
   } else {
-    drawingEventList.last().u.pensizeEvent.width = aSize;
+    drawingElementList.last().u.pensizeElement.width = aSize;
   }
 }
 
