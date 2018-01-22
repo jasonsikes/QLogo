@@ -43,7 +43,7 @@ Turtle *mainTurtle() {
 Turtle::Turtle() : matrix(QMatrix4x4()), isVisible(true), penIsDown(true) {
   Q_ASSERT(_mainTurtle == NULL);
   _mainTurtle = this;
-  setPenColor(QColor(255, 255, 255, 255));
+  setPenColor(QColor("white"));
   mode = turtleWrap;
 }
 

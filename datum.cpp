@@ -705,8 +705,8 @@ void List::setButfirstItem(DatumP aValue) {
 }
 
 void List::setFirstItem(DatumP aValue) {
-    list[0] = aValue;
-    astParseTimeStamp = 0;
+  list[0] = aValue;
+  astParseTimeStamp = 0;
 }
 
 bool List::containsDatum(DatumP aDatum, bool ignoreCase) {

@@ -376,7 +376,7 @@ void Console::insertFromMimeData(const QMimeData *source) {
 }
 
 // Debugging an excessive CPU usage issue.
-//void Console::paintEvent(QPaintEvent *event)
+// void Console::paintEvent(QPaintEvent *event)
 //{
 //  QTextEdit::paintEvent(event);
 //  qDebug() << "Console paint event";

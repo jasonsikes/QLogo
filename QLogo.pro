@@ -1,4 +1,4 @@
-#===-- qlogo/QLogo.pro -------*- C++ -*-===#
+#----------- qlogo/QLogo.pro ---------------------
 #
 # This file is part of QLogo.
 #
@@ -36,7 +36,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 DEFINES += CONTROLLER_HEADER=\\\"qlogo_controller.h\\\"
 
-DEFINES += LOGOVERSION=\\\"0.91\\\"
+DEFINES += LOGOVERSION=\\\"0.92\\\"
 
 win32 {
     DEFINES += LOGOPLATFORM=\\\"WINDOWS\\\"

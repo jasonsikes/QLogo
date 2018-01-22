@@ -228,7 +228,8 @@ DatumP Kernel::excSetitem(DatumP node) {
   });
   DatumP thing = h.validatedDatumAtIndex(2, [&array, this](DatumP candidate) {
     if (candidate.isArray() || candidate.isList()) {
-        if (candidate == array) return false;
+      if (candidate == array)
+        return false;
       return !candidate.datumValue()->containsDatum(array, varCASEIGNOREDP());
     }
     return true;

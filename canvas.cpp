@@ -45,7 +45,6 @@ static const char *vertexShaderSource = "attribute highp vec4 posAttr;\n"
                                         "uniform highp mat4 matrix;\n"
                                         "void main() {\n"
                                         "   col = colAttr;\n"
-                                        "   //gl_Position = posAttr;\n"
                                         "   gl_Position = matrix * posAttr;\n"
                                         "}\n";
 
@@ -54,7 +53,10 @@ static const char *fragmentShaderSource = "varying lowp vec4 col;"
                                           "   gl_FragColor = col;\n"
                                           "}\n";
 
-void Canvas::makeSurfaceVBO() {
+// The height of the turtle. All other turtle vertices are derived from this.
+const GLfloat turtleHeight = 15;
+
+void Canvas::initSurfaceVBO() {
   surfaceArrayObject = new QOpenGLVertexArrayObject(this);
   surfaceArrayObject->create();
 
@@ -78,8 +80,8 @@ void Canvas::makeSurfaceVBO() {
 #define T_FLIPPER_SHOULDER .3f, .2f, .2f, 1
 #define T_FLIPPER_JOINT .5f, .4f, .4f, 1
 
-void Canvas::makeTurtleVBO(void) {
-  const GLfloat u = 15;                // length of turtle in "steps"
+void Canvas::initTurtleVBO(void) {
+  const GLfloat u = 15;                // height of turtle
   const GLfloat sr = u * 0.33333f;     // shell radius
   const float a = (float)M_PI * 2 / 5; // shell tile inner angle
   const GLfloat he = 1.2f;             // head side proportion from neck
@@ -213,8 +215,8 @@ void Canvas::initializeGL() {
   shaderProgram->link();
   shaderProgram->bind();
 
-  makeTurtleVBO();
-  makeSurfaceVBO();
+  initTurtleVBO();
+  initSurfaceVBO();
   setSurfaceVertices();
 
   linesObject = new QOpenGLVertexArrayObject(this);
@@ -238,15 +240,12 @@ void Canvas::initializeGL() {
   setPenmode(penModePaint);
 }
 
-void Canvas::getBounds(qreal &x, qreal &y) {
-  x = boundsX;
-  y = boundsY;
-}
-
 void Canvas::updateMatrix() {
-  float aspect = (h == 0) ? 1 : (float)w / h;
+  float aspect = (widgetHeight == 0) ? 1 : (float)widgetWidth / widgetHeight;
   float boundsAspect = boundsX / boundsY;
   float largestBound = (boundsX > boundsY) ? boundsX : boundsY;
+  // Sqrt(3) is the Z-axis view angle (in radians) where things start looking
+  // distorted (in my opinion).
   float zPlane = sqrt(3) * largestBound;
   float fovy = (2 * 180 / M_PI) * atan(boundsY / zPlane);
   if (boundsAspect > aspect) {
@@ -261,31 +260,40 @@ void Canvas::updateMatrix() {
 }
 
 void Canvas::resizeGL(int width, int height) {
-  w = width;
-  h = height;
-  glViewport(0, 0, w, h);
+  widgetWidth = width;
+  widgetHeight = height;
+  glViewport(0, 0, widgetWidth, widgetHeight);
   updateMatrix();
 }
 
 void Canvas::paintSurface() {
-  const QColor &bg = QWidget::palette().color(QWidget::backgroundRole());
-  glClearColor(bg.redF(), bg.greenF(), bg.blueF(), bg.alphaF());
-  glClear(GL_COLOR_BUFFER_BIT);
-  // draw the bounding box
-  surfaceArrayObject->bind();
-  surfaceVertexBufferObject->bind();
-  shaderProgram->enableAttributeArray("posAttr");
-  shaderProgram->setAttributeBuffer("posAttr", GL_FLOAT, 0, 4);
+  if (isBounded) {
 
-  surfaceColorBufferObject->bind();
-  shaderProgram->enableAttributeArray("colAttr");
-  shaderProgram->setAttributeBuffer("colAttr", GL_FLOAT, 0, 4);
+    // Draw the Qt-default background color
+    const QColor &bg = QWidget::palette().color(QWidget::backgroundRole());
+    glClearColor(bg.redF(), bg.greenF(), bg.blueF(), bg.alphaF());
+    glClear(GL_COLOR_BUFFER_BIT);
 
-  glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    // draw the surface rectangle
+    surfaceArrayObject->bind();
+    surfaceVertexBufferObject->bind();
+    shaderProgram->enableAttributeArray("posAttr");
+    shaderProgram->setAttributeBuffer("posAttr", GL_FLOAT, 0, 4);
 
-  surfaceColorBufferObject->release();
-  surfaceVertexBufferObject->release();
-  surfaceArrayObject->release();
+    surfaceColorBufferObject->bind();
+    shaderProgram->enableAttributeArray("colAttr");
+    shaderProgram->setAttributeBuffer("colAttr", GL_FLOAT, 0, 4);
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    surfaceColorBufferObject->release();
+    surfaceVertexBufferObject->release();
+    surfaceArrayObject->release();
+  } else {
+    glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2],
+                 backgroundColor[3]);
+    glClear(GL_COLOR_BUFFER_BIT);
+  }
 }
 
 void Canvas::paintTurtle() {
@@ -312,21 +320,7 @@ void Canvas::paintTurtle() {
   t_object->release();
 }
 
-void Canvas::paintGL() {
-  QPainter painter(this);
-  painter.beginNativePainting();
-  shaderProgram->bind();
-
-  shaderProgram->setUniformValue(matrixUniformID, matrix);
-
-  if (isBounded) {
-    paintSurface();
-  } else {
-    glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2],
-                 backgroundColor[3]);
-    glClear(GL_COLOR_BUFFER_BIT);
-  }
-
+void Canvas::paintElements() {
   linesObject->bind();
   void *addrVertices = (vertices.size() > 0) ? &vertices[0] : NULL;
   void *addrVerticexColors =
@@ -391,6 +385,29 @@ void Canvas::paintGL() {
   linesColorBufferObject->release();
   linesVertexBufferObject->release();
   linesObject->release();
+}
+
+void Canvas::paintLabels(QPainter *painter) {
+  for (QList<Label>::iterator iter = labels.begin(); iter != labels.end();
+       ++iter) {
+    Label &l = *iter;
+    QPointF p = worldToScreen(l.position);
+    painter->setPen(l.color);
+    painter->setFont(l.font);
+    painter->drawText(p, l.text);
+  }
+}
+
+void Canvas::paintGL() {
+  QPainter painter(this);
+  painter.beginNativePainting();
+  shaderProgram->bind();
+
+  shaderProgram->setUniformValue(matrixUniformID, matrix);
+
+  paintSurface();
+
+  paintElements();
 
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   if ((mainTurtle() != NULL) && (mainTurtle()->isTurtleVisible())) {
@@ -399,7 +416,8 @@ void Canvas::paintGL() {
   shaderProgram->release();
 
   painter.endNativePainting();
-  renderLabels(&painter);
+
+  paintLabels(&painter);
 }
 
 void Canvas::clearScreen() {
@@ -417,13 +435,15 @@ void Canvas::clearScreen() {
 
 QPointF Canvas::worldToScreen(const QVector4D &world) {
   QVector2D pv = (world * matrix).toVector2DAffine();
-  return QPointF((pv.x() + 1) * w / 2, h - (pv.y() + 1) * h / 2);
+  return QPointF((pv.x() + 1) * widgetWidth / 2,
+                 widgetHeight - (pv.y() + 1) * widgetHeight / 2);
 }
 
 // This will calculate the position on the [Z=0] - plane.
 // We will have to rethink this if we implement camera movement.
 QVector2D Canvas::screenToWorld(const QPointF &p) {
-  QPointF q(2 * p.x() / w - 1, -2 * (p.y() - h) / h - 1);
+  QPointF q(2 * p.x() / widgetWidth - 1,
+            -2 * (p.y() - widgetHeight) / widgetHeight - 1);
   QVector4D s0(q.x(), q.y(), 0, 1);
   QVector4D s1(q.x(), q.y(), 1, 1);
   QVector3D p0 = (s0 * invertedMatrix).toVector3DAffine();
@@ -431,17 +451,6 @@ QVector2D Canvas::screenToWorld(const QPointF &p) {
   float u = -p0.z() / (p1.z() - p0.z());
   return QVector2D(p0.x() + u * (p1.x() - p0.x()),
                    p0.y() + u * (p1.y() - p0.y()));
-}
-
-void Canvas::renderLabels(QPainter *painter) {
-  for (QList<Label>::iterator iter = labels.begin(); iter != labels.end();
-       ++iter) {
-    Label &l = *iter;
-    QPointF p = worldToScreen(l.position);
-    painter->setPen(l.color);
-    painter->setFont(l.font);
-    painter->drawText(p, l.text);
-  }
 }
 
 void Canvas::addLine(const QVector4D &vertexA, const QVector4D &vertexB,
@@ -464,10 +473,10 @@ void Canvas::addLine(const QVector4D &vertexA, const QVector4D &vertexB,
   vertices.push_back(vertexA.z());
   vertices.push_back(1);
   if (currentPenMode == penModeReverse) {
-    vertexColors.push_back(255);
-    vertexColors.push_back(255);
-    vertexColors.push_back(255);
-    vertexColors.push_back(255);
+    vertexColors.push_back(UCHAR_MAX);
+    vertexColors.push_back(UCHAR_MAX);
+    vertexColors.push_back(UCHAR_MAX);
+    vertexColors.push_back(UCHAR_MAX);
   } else {
     vertexColors.push_back(color.red());
     vertexColors.push_back(color.green());
@@ -480,10 +489,10 @@ void Canvas::addLine(const QVector4D &vertexA, const QVector4D &vertexB,
   vertices.push_back(vertexB.z());
   vertices.push_back(1);
   if (currentPenMode == penModeReverse) {
-    vertexColors.push_back(255);
-    vertexColors.push_back(255);
-    vertexColors.push_back(255);
-    vertexColors.push_back(255);
+    vertexColors.push_back(UCHAR_MAX);
+    vertexColors.push_back(UCHAR_MAX);
+    vertexColors.push_back(UCHAR_MAX);
+    vertexColors.push_back(UCHAR_MAX);
   } else {
     vertexColors.push_back(color.red());
     vertexColors.push_back(color.green());
@@ -551,9 +560,14 @@ bool Canvas::isPenSizeValid(GLfloat aSize) {
 
 QImage Canvas::getImage() { return grabFramebuffer(); }
 
-void Canvas::setBounds(qreal x, qreal y) {
-  boundsX = x;
-  boundsY = y;
+void Canvas::getBounds(qreal &xMax, qreal &yMax) {
+  xMax = boundsX;
+  yMax = boundsY;
+}
+
+void Canvas::setBounds(qreal xMax, qreal yMax) {
+  boundsX = xMax;
+  boundsY = yMax;
 
   updateMatrix();
   setSurfaceVertices();

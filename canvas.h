@@ -37,7 +37,6 @@ class QOpenGLShaderProgram;
 class QOpenGLBuffer;
 class QOpenGLVertexArrayObject;
 
-
 /// Contains the information that describes a label's appearance on the Canvas.
 struct Label {
   QString text;
@@ -50,7 +49,6 @@ struct Label {
       : text(aText), position(aPosition), color(aColor), font(aFont) {}
 };
 
-///
 enum CanvasDrawingElementType {
   canvasDrawArrayType,
   canvasDrawSetPenmodeType,
@@ -58,9 +56,9 @@ enum CanvasDrawingElementType {
 };
 
 struct CanvasDrawingArrayElement {
-  GLenum mode;
-  GLint first;
-  GLsizei count;
+  GLenum mode;   // GL_LINES or GL_TRIANGLE_FAN
+  GLint first;   // the index of the first vertex in the vertex array
+  GLsizei count; // the number of vertices to draw
 };
 
 struct CanvasDrawingSetPenmodeElement {
@@ -82,22 +80,32 @@ struct CanvasDrawingElement {
   CanvasDrawingElementU u;
 };
 
+/// The widget where turtle graphics are drawn.
 class Canvas : public QOpenGLWidget, protected QOpenGLFunctions {
   Q_OBJECT
 
+  // The matrix that converts world coordinates to screen coordinates.
   QMatrix4x4 matrix;
-  QMatrix4x4 invertedMatrix;
-  int w;
-  int h;
+  GLuint matrixUniformID; // matrix ID for GLSL
 
+  // the inverse of matrix. Used for converting mouse coordinates to world
+  // coordinates.
+  QMatrix4x4 invertedMatrix;
+  int widgetWidth;
+  int widgetHeight;
+
+  // If the turtle is bounded (FENCE or WRAP), only the bounded portion of
+  // the background is drawn. Otherwise, the background is drawn over the
+  // entire widget.
   bool isBounded = true;
 
+  // Visible vertices on the X axis range from -boundsX to +boundsX
   qreal boundsX;
+  // Visible vertices on the Y axis range from -boundsY to +boundsY
   qreal boundsY;
 
+  // The collection of text labels. Rendered after lines and polygons
   QList<Label> labels;
-
-  GLuint matrixUniformID;
 
   QOpenGLShaderProgram *shaderProgram;
 
@@ -117,25 +125,32 @@ class Canvas : public QOpenGLWidget, protected QOpenGLFunctions {
   QOpenGLBuffer *t_color_bo;
   QOpenGLBuffer *t_index_bo;
 
-  // User-generated lines
+  // Vertices information for user-generated lines and polygons
   QVector<GLfloat> vertices;
   QVector<GLubyte> vertexColors;
 
+  // draw, erase, or reverse
   PenModeEnum currentPenMode;
 
-  GLfloat pensizeRange[2];
+  GLfloat pensizeRange[2]; // Minimum and maximum valid pen sizes
   GLfloat currentPensize = 0;
 
+  // The main data structure for all of the drawn elements on the canvas
+  // (sans labels).
   QList<CanvasDrawingElement> drawingElementList;
+
   GLclampf backgroundColor[4];
 
+  // Some initializers
+  void initTurtleVBO(void);
+  void initSurfaceVBO(void);
+  void setSurfaceVertices(void);
+
+  // These are called by paintGL()
   void paintSurface();
   void paintTurtle();
-
-  void makeTurtleVBO(void);
-  void makeSurfaceVBO(void);
-  void setSurfaceVertices(void);
-  void renderLabels(QPainter *painter);
+  void paintElements();
+  void paintLabels(QPainter *painter);
 
   void updateMatrix(void);
   QPointF worldToScreen(const QVector4D &world);
@@ -150,27 +165,71 @@ class Canvas : public QOpenGLWidget, protected QOpenGLFunctions {
   void mouseReleaseEvent(QMouseEvent *) Q_DECL_OVERRIDE;
 
 public:
+  /// Construct a Canvas
   Canvas(QWidget *parent = 0);
 
+  /// Sets the background color to c.
+  ///
+  /// The background is drawn either as a filled rectangle when isBounded=true
+  /// or the background color fills the entire widget when isBounded=false.
   void setBackgroundColor(const QColor &c);
 
+  /// Adds a line to the list of elements to be drawn.
   void addLine(const QVector4D &vertexA, const QVector4D &vertexB,
                const QColor &color);
+
+  /// Adds a polygon to the list of elements to be drawn.
   void addPolygon(const QList<QVector4D> &points, const QList<QColor> &colors);
+
+  /// Adds a text label to the list of elements to be drawn.
   void addLabel(const QString &aText, const QVector4D &aLocation,
                 const QColor &aColor, const QFont &aFont);
 
+  /// Clears the screen and removes all drawing elements from their respective
+  /// lists.
   void clearScreen();
-  void setBounds(qreal x, qreal y);
-  void getBounds(qreal &x, qreal &y);
+
+  /// Sets the bounds of the drawing portion of the Canvas.
+  ///
+  /// The bounds describe both the minimum and maximum values for each axis.
+  /// The center is always at position (0,0). The X values range from -xMax to
+  /// +xMax. Likewise, the Y values range from -yMax to +yMax.
+  ///
+  /// Note, the bounds to not translate to pixels. Rather, the bounds describe a
+  /// rectangle that is maximized to fit inside of the widget. When the widget
+  /// is resized the bounds rectangle is zoomed in/out to fit accordingly.
+  ///
+  /// Note that the bounding rectangle is shown only if isBounded=true.
+  /// Otherwise, the background color fills the entire widget.
+  void setBounds(qreal xMax, qreal yMax);
+
+  /// Sets xMax and yMax to the bounds of the rectangle.
+  void getBounds(qreal &xMax, qreal &yMax);
+
+  /// Returns a QImage of the Canvas.
+  ///
+  /// This returns a framebuffer grab. So if the bounds rectangle does
+  /// not have the same proportions as the widget (which it almost never will)
+  /// the returned image will include some widget background.
   QImage getImage();
 
-  bool getIsBounded();
+  /// Sets whether or not the bounds may be shown as a subportion of the widget.
+  ///
+  /// If aIsBounded is true then the bounding rectangle may be shown on top of
+  /// the background of the widget. Otherwise, the entire widget background will
+  /// be set to the rectangle's background color.
   void setIsBounded(bool aIsBounded);
 
+  /// Returns true if the bounding rectangle is drawn on top of the widget.
+  bool getIsBounded();
+
+  /// Sets future lines and polygons to be drawn using newMode.
   void setPenmode(PenModeEnum newMode);
 
+  /// Sets the width of future lines drawn to aSize.
   void setPensize(GLfloat aSize);
+
+  /// Returns true if aSize is a valid pen size.
   bool isPenSizeValid(GLfloat aSize);
 };
 
