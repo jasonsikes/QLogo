@@ -43,6 +43,7 @@ class MainWindow : public QMainWindow {
   Controller *controller;
   enum WaitingMode { notWaiting, waitingForKeypress, waitingForLine };
   WaitingMode waitingFor;
+  void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
 public:
   explicit MainWindow(QWidget *parent = 0);

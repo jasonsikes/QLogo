@@ -524,6 +524,10 @@ DatumP Kernel::runList(DatumP listP, const QString startTag) {
       Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
       break;
     }
+    case systemEvent: {
+      Error::throwError(DatumP(new Word("SYSTEM")), nothing);
+      break;
+    }
     case pauseEvent: {
       pause();
       break;

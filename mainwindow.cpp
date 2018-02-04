@@ -77,3 +77,9 @@ void MainWindow::setSplitterSizeRatios(float canvasRatio, float consoleRatio) {
 }
 
 void MainWindow::hideCanvas() { setSplitterSizeRatios(0, 1); }
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    controller->shutdownEvent();
+    event->ignore();
+}

@@ -52,6 +52,8 @@ qreal initialBoundY = 150;
 const QString escapeChar = QChar(htmlEscapeChar);
 const QString pauseString = escapeChar + "PAUSE";
 const QString toplevelString = escapeChar + "TOPLEVEL";
+const QString systemString = escapeChar + "SYSTEM";
+
 const double startingTextSize = 10;
 const QString startingFont = "Courier New";
 
@@ -382,6 +384,9 @@ DatumP Controller::interceptInputInterrupt(DatumP message)
         if (msgString == toplevelString) {
             Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
         }
+        if (msgString == systemString) {
+            Error::throwError(DatumP(new Word("SYSTEM")), nothing);
+        }
         if (msgString == pauseString) {
             kernel->pause();
             return nothing;
@@ -438,9 +443,17 @@ void Controller::run() {
   kernel->initLibrary();
   bool shouldContinue = true;
   while (shouldContinue) {
-
     shouldContinue = kernel->getLineAndRunIt();
   }
+}
+
+void Controller::shutdownEvent()
+{
+    if (shouldQueueEvents) {
+        addEventToQueue(systemEvent);
+    } else {
+        receiveString(systemString);
+    }
 }
 
 void Controller::mwait(unsigned long msecs) { QThread::msleep(msecs); }

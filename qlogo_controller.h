@@ -47,12 +47,15 @@ extern qreal initialBoundY;
 
 const char characterEvent = 'c';
 const char mouseEvent = 'm';
+const char systemEvent = 's';   // window close
 const char pauseEvent = 'p';    // ctrl-W
 const char toplevelEvent = 't'; // ctrl-Q
 
 extern const QString escapeChar;
 extern const QString pauseString;
 extern const QString toplevelString;
+extern const QString systemString;
+
 #define C_CLEAR_TEXT 'E'
 #define C_SET_CURSOR_POS 'A'
 #define C_SET_TEXT_COLOR 'C'
@@ -138,6 +141,7 @@ public:
   bool eventQueueIsEmpty();
   char nextQueueEvent();
   void addEventToQueue(char eventChar);
+  void shutdownEvent();
 
   // QTextStream *readStream;
 
