@@ -73,7 +73,6 @@ class Kernel {
   DatumP readlistWithPrompt(const QString &prompt, bool shouldRemoveComments,
                             QTextStream *stream);
   DatumP readWordWithPrompt(const QString prompt, QTextStream *stream);
-  DatumP pause();
 
   DatumP currentError;
   DatumP currentProcedure;
@@ -123,6 +122,7 @@ public:
   void sysPrint(const QString &text);
   DatumP registerError(DatumP anError, bool allowErract = false,
                        bool allowRecovery = false);
+  DatumP pause();
 
   Turtle *turtle;
   bool isInputRedirected();

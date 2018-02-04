@@ -242,6 +242,8 @@ protected:
   bool eventQueueEmpty = true;
   bool shouldQueueEvents = true;
 
+  DatumP interceptInputInterrupt(DatumP message);
+
   QTextStream *dribbleStream;
 };
 

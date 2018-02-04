@@ -452,8 +452,6 @@ DatumP Parser::readwordWithPrompt(const QString &prompt,
   forever {
     if (line == nothing)
       return DatumP(new Word(retval));
-    if ((line == pauseTokenP) || (line == toplevelTokenP))
-      return line;
 
     const QString &t = line.wordValue()->rawValue();
     retval.reserve(retval.size() + t.size());
@@ -504,9 +502,9 @@ DatumP Parser::tokenizeListWithPrompt(const QString &prompt, int level,
 
   if (level == 0) {
     lineP = readwordWithPrompt(prompt, readStream);
-    if ((lineP == pauseTokenP) || (lineP == toplevelTokenP) ||
-        (lineP == nothing))
-      return lineP;
+
+    if (lineP == nothing) return nothing;
+
     src = lineP.wordValue()->rawValue();
     iter = src.begin();
   }
@@ -632,8 +630,6 @@ DatumP Parser::tokenizeListWithPrompt(const QString &prompt, int level,
       lineP = readwordWithPrompt("{ ", readStream);
     else
       lineP = readwordWithPrompt("[ ", readStream);
-    if ((lineP == pauseTokenP) || (lineP == toplevelTokenP))
-      return lineP;
     if (lineP != nothing) {
       src = lineP.wordValue()->rawValue();
       iter = src.begin();

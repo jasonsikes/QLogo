@@ -380,10 +380,6 @@ public:
   bool isBetweenBars = false;
 };
 
-extern Datum pauseToken;
-extern DatumP pauseTokenP;
-extern Datum toplevelToken;
-extern DatumP toplevelTokenP;
 extern Datum notADatum;
 extern DatumP nothing;
 

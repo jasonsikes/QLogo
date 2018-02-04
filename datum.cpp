@@ -203,7 +203,7 @@ DatumP::DatumP(const DatumP &other) noexcept {
 DatumP::DatumP(bool b) { d = b ? &trueWord : &falseWord; }
 
 void DatumP::destroy() {
-  if ((d != &notADatum) && (d != &pauseToken) && (d != &toplevelToken)) {
+  if (d != &notADatum) {
     d->release();
     if (d->shouldDelete()) {
       // qDebug() <<"destroyed";
@@ -1038,7 +1038,3 @@ bool WordIterator::elementExists() { return (charIter != end); }
 
 Datum notADatum;
 DatumP nothing(&notADatum);
-Datum pauseToken;
-DatumP pauseTokenP(&pauseToken);
-Datum toplevelToken;
-DatumP toplevelTokenP(&toplevelToken);

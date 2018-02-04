@@ -375,55 +375,62 @@ void Controller::introduceCanvasIfItHasntBeenAlready() {
   }
 }
 
-// void Controller::beginInputHistory() { history = DatumP(new List); }
-
-// DatumP Controller::inputHistory() { return history; }
+DatumP Controller::interceptInputInterrupt(DatumP message)
+{
+    if (message.isWord()) {
+        const QString &msgString = message.wordValue()->keyValue();
+        if (msgString == toplevelString) {
+            Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
+        }
+        if (msgString == pauseString) {
+            kernel->pause();
+            return nothing;
+        }
+    }
+    return message;
+}
 
 // This is READRAWLINE
 DatumP Controller::readrawlineWithPrompt(const QString &prompt) {
-  shouldQueueEvents = false;
-  requestLineWithPromptSignal(prompt);
-  if (dribbleStream)
-    *dribbleStream << prompt;
-  threadMutex.lock();
-  condition.wait(&threadMutex);
-  threadMutex.unlock();
+    forever {
+        shouldQueueEvents = false;
+        requestLineWithPromptSignal(prompt);
+        if (dribbleStream)
+            *dribbleStream << prompt;
+        threadMutex.lock();
+        condition.wait(&threadMutex);
+        threadMutex.unlock();
 
-  uiInputTextMutex.lock();
-  DatumP retval = DatumP(new Word(uiInputText));
-  uiInputTextMutex.unlock();
+        uiInputTextMutex.lock();
+        DatumP retval = DatumP(new Word(uiInputText));
+        uiInputTextMutex.unlock();
 
-  shouldQueueEvents = true;
-  // TODO: throw would probably work just as well here.
-  if (retval.wordValue()->rawValue() == toplevelString)
-    return toplevelTokenP;
-  if (retval.wordValue()->rawValue() == pauseString)
-    return pauseTokenP;
+        shouldQueueEvents = true;
 
-  // history.listValue()->append(retval);
-  return retval;
+        retval = interceptInputInterrupt(retval);
+
+        if (retval != nothing) return retval;
+    }
 }
 
 // This is READCHAR
 DatumP Controller::readchar() {
-  shouldQueueEvents = false;
-  requestCharacterSignal();
-  threadMutex.lock();
-  condition.wait(&threadMutex);
-  threadMutex.unlock();
+    forever {
+        shouldQueueEvents = false;
+        requestCharacterSignal();
+        threadMutex.lock();
+        condition.wait(&threadMutex);
+        threadMutex.unlock();
 
-  uiInputTextMutex.lock();
-  DatumP retval = DatumP(new Word(uiInputText));
-  uiInputTextMutex.unlock();
-  shouldQueueEvents = true;
+        uiInputTextMutex.lock();
+        DatumP retval = DatumP(new Word(uiInputText));
+        uiInputTextMutex.unlock();
+        shouldQueueEvents = true;
 
-  // TODO: throw would probably work just as well here. Let's try it soon
-  if (retval.wordValue()->rawValue() == toplevelString)
-    return toplevelTokenP;
-  if (retval.wordValue()->rawValue() == pauseString)
-    return pauseTokenP;
+        retval = interceptInputInterrupt(retval);
 
-  return retval;
+        if (retval != nothing) return retval;
+    }
 }
 
 void Controller::run() {

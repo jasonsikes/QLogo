@@ -285,30 +285,12 @@ long Kernel::randomFromRange(long start, long end) {
 
 DatumP Kernel::readRawLineWithPrompt(const QString prompt,
                                      QTextStream *stream) {
-  forever {
-    DatumP retval = parser->readrawlineWithPrompt(prompt, stream);
-    if (retval == toplevelTokenP)
-      Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
-    if (retval == pauseTokenP) {
-      pause();
-      continue;
-    }
-    return retval;
-  }
+    return parser->readrawlineWithPrompt(prompt, stream);
 }
 
 DatumP Kernel::readChar() {
   if (readStream == NULL) {
-    forever {
-      DatumP retval = mainController()->readchar();
-      if (retval == toplevelTokenP)
-        Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
-      if (retval == pauseTokenP) {
-        pause();
-        continue;
-      }
-      return retval;
-    }
+      return mainController()->readchar();
   }
 
   if (readStream->atEnd())
@@ -322,30 +304,11 @@ DatumP Kernel::readChar() {
 DatumP Kernel::readlistWithPrompt(const QString &prompt,
                                   bool shouldRemoveComments,
                                   QTextStream *stream) {
-  forever {
-    DatumP retval =
-        parser->readlistWithPrompt(prompt, shouldRemoveComments, stream);
-    if (retval == toplevelTokenP)
-      Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
-    if (retval == pauseTokenP) {
-      pause();
-      continue;
-    }
-    return retval;
-  }
+    return parser->readlistWithPrompt(prompt, shouldRemoveComments, stream);
 }
 
 DatumP Kernel::readWordWithPrompt(const QString prompt, QTextStream *stream) {
-  forever {
-    DatumP retval = parser->readwordWithPrompt(prompt, stream);
-    if (retval == toplevelTokenP)
-      Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
-    if (retval == pauseTokenP) {
-      pause();
-      continue;
-    }
-    return retval;
-  }
+    return parser->readwordWithPrompt(prompt, stream);
 }
 
 void Kernel::makeVarLocal(const QString &varname) {
