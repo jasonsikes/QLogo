@@ -45,6 +45,7 @@ const char characterEvent = 'c';
 const char mouseEvent = 'm';
 const char pauseEvent = 'p';    // ctrl-W
 const char toplevelEvent = 't'; // ctrl-Q
+const char systemEvent = 's';   // window close
 
 enum ScreenModeEnum {
   initScreenMode,
