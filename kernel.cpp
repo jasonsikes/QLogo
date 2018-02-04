@@ -30,6 +30,7 @@
 #include <QColor>
 #include <QFont>
 #include <QImage>
+#include <QApplication> // quit()
 
 #include "error.h"
 #include "library.h"
@@ -144,9 +145,16 @@ bool Kernel::getLineAndRunIt(bool shouldHandleError) {
       Error::dontSay(result);
   } catch (Error *e) {
     if (shouldHandleError) {
-      if (e->tag.isWord() && (e->tag.wordValue()->keyValue() == "TOPLEVEL")) {
-        sysPrint("\n");
-        return true;
+      if (e->tag.isWord()) {
+          if (e->tag.wordValue()->keyValue() == "TOPLEVEL") {
+              sysPrint("\n");
+              return true;
+          }
+          if (e->tag.wordValue()->keyValue() == "SYSTEM") {
+              sysPrint("\n");
+              QApplication::quit();
+              return false;
+          }
       }
       sysPrint(e->errorText.printValue());
       if (e->procedure != nothing)

@@ -27,7 +27,6 @@
 #include "error.h"
 #include "kernel.h"
 #include "parser.h"
-#include <QApplication> // quit()
 
 #include CONTROLLER_HEADER
 
@@ -69,7 +68,7 @@ DatumP Kernel::excRunresult(DatumP node) {
 DatumP Kernel::excBye(DatumP node) {
   ProcedureHelper h(this, node);
 
-  QApplication::quit();
+  Error::throwError(DatumP(new Word("SYSTEM")), nothing);
 
   return h.ret();
 }
