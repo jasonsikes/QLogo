@@ -241,12 +241,6 @@ DatumP Kernel::excCatch(DatumP node) {
       variables.setDatumForName(tempErract, erract);
     }
 
-    //        if ((tag == "ERROR")
-    //                && (((e->code == 21) || (e->code == 35) || (e->code ==
-    //                -1))
-    //                    && (*(e->tag.wordValue()->keyValue()) == "ERROR")
-    //                    || ((e->code!= 14) && (e->code != 21) && (e->code !=
-    //                    35) && (e->code != -1)))) {
     if ((tag == "ERROR") &&
         (((e->code == 14) && (e->tag.wordValue()->keyValue()) == "ERROR") ||
          (e->code != 14))) {

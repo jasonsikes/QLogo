@@ -49,7 +49,6 @@ public:
   static void setKernel(Kernel *aKernel);
 
   // Throwers for all the error messages
-  // static void fatalInternal(QString sourceFile, int lineNo);
   static void turtleOutOfBounds();
   static DatumP doesntLike(DatumP who, DatumP what, bool allowErract = false,
                            bool allowRecovery = false);

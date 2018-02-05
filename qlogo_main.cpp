@@ -16,14 +16,14 @@
 // along with QLogo.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "mainwindow.h"
+#include "qlogo_controller.h"
 #include <QApplication>
 
 int main(int argc, char *argv[]) {
   QApplication a(argc, argv);
 
-  MainWindow window;
-  window.show();
+  Controller c;
+  c.start();
 
   return a.exec();
 }

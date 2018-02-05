@@ -80,7 +80,7 @@ class Controller : public QThread {
 public:
   Controller(QObject *parent = 0);
   ~Controller();
-  void setMainWindow(MainWindow *w);
+  //void setMainWindow(MainWindow *w);
   const QString *editText(QString *text);
   void halt() {}
   bool atEnd();
@@ -119,14 +119,10 @@ public:
   ScreenModeEnum getScreenMode();
   void setSplitterSizeRatios(float canvasRatio, float consoleRatio);
   void setCursorOverwriteMode(bool shouldOverwrite);
-  //  void beginInputHistory();
-  //  DatumP inputHistory();
 
   void setPenmode(PenModeEnum newMode);
-  //    const QString& getPenmode();
 
   void setPensize(double aSize);
-  //    double pensize();
   bool isPenSizeValid(GLfloat aSize);
 
   QVector2D mousePos;
@@ -142,8 +138,6 @@ public:
   char nextQueueEvent();
   void addEventToQueue(char eventChar);
   void shutdownEvent();
-
-  // QTextStream *readStream;
 
 public slots:
 
@@ -227,7 +221,6 @@ protected:
 
   QString uiInputText;
   QMutex uiInputTextMutex;
-  // DatumP history; // list of words
 
   double currentTextSize;
   QString currentFontName;

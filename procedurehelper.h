@@ -53,8 +53,6 @@ public:
   ProcedureHelper(Kernel *aParent, DatumP sourceNode);
   ~ProcedureHelper();
 
-  // bool v(const double d);
-
   int countOfChildren() { return parameters.size(); }
 
   DatumP validatedDatumAtIndex(int index, validatorP v);

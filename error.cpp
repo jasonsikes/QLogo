@@ -42,13 +42,6 @@ Error::Error(int aNumber, DatumP aErrorText) {
 
 void Error::setKernel(Kernel *aKernel) { mainKernel = aKernel; }
 
-// void Error::fatalInternal(QString sourceFile, int lineNo)
-//{
-//    QString message("Fatal internal error in %1, line %2");
-//    message = message.arg(sourceFile).arg(lineNo);
-//    throw new Error(0, message);
-//}
-
 void Error::turtleOutOfBounds() {
   QString message("Turtle out of bounds");
   mainKernel->registerError(new Error(3, message), true);

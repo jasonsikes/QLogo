@@ -70,6 +70,9 @@ Controller::Controller(QObject *parent) : QThread(parent) {
   boundY = initialBoundY;
 
   kernel = new Kernel;
+  mainWindow = new MainWindow;
+  mainWindow->show();
+
 
   qRegisterMetaType<QList<QVector4D>>("QList<QVector4D>");
   qRegisterMetaType<QList<QVector4D>>("QList<QColor>");
@@ -124,11 +127,12 @@ Controller::Controller(QObject *parent) : QThread(parent) {
 
 Controller::~Controller() {
   setDribble("");
+  delete mainWindow;
   delete kernel;
   _maincontroller = NULL;
 }
 
-void Controller::setMainWindow(MainWindow *w) { mainWindow = w; }
+//void Controller::setMainWindow(MainWindow *w) { mainWindow = w; }
 
 bool Controller::setDribble(const QString &filePath) {
   if (filePath == "") {
@@ -272,21 +276,21 @@ void Controller::printToConsole(const QString &s) {
 }
 
 void Controller::setTextCursorPos(int row, int col) {
-  mainController()->printToConsole(escapeChar + C_SET_CURSOR_POS +
-                                   QString::number(row) + C_DELIM +
-                                   QString::number(col) + escapeChar);
+  printToConsole(escapeChar + C_SET_CURSOR_POS +
+                 QString::number(row) + C_DELIM +
+                 QString::number(col) + escapeChar);
 }
 
 void Controller::setTextSize(double newSize) {
   currentTextSize = newSize;
-  mainController()->printToConsole(escapeChar + C_SET_TEXT_SIZE +
-                                   QString::number(newSize) + escapeChar);
+  printToConsole(escapeChar + C_SET_TEXT_SIZE +
+                 QString::number(newSize) + escapeChar);
 }
 
 void Controller::setFontName(const QString &aName) {
   currentFontName = aName;
-  mainController()->printToConsole(escapeChar + C_SET_FONT + aName +
-                                   escapeChar);
+  printToConsole(escapeChar + C_SET_FONT + aName +
+                 escapeChar);
 }
 
 const QString Controller::getFontName() { return currentFontName; }
@@ -304,7 +308,7 @@ void Controller::getTextCursorPos(int &row, int &col) {
 
 void Controller::setTextColor(const QColor &foreground,
                               const QColor &background) {
-  mainController()->printToConsole(
+  printToConsole(
       escapeChar + C_SET_TEXT_COLOR + foreground.name(QColor::HexArgb) +
       C_DELIM + background.name(QColor::HexArgb) + escapeChar);
 }
@@ -354,7 +358,7 @@ bool Controller::atEnd() {
 }
 
 void Controller::clearScreenText() {
-  mainController()->printToConsole(escapeChar + C_CLEAR_TEXT + escapeChar);
+  printToConsole(escapeChar + C_CLEAR_TEXT + escapeChar);
 }
 
 bool Controller::keyQueueHasChars() { return mainWindow->consoleHasChars(); }
@@ -439,7 +443,6 @@ DatumP Controller::readchar() {
 }
 
 void Controller::run() {
-  // beginInputHistory();
   kernel->initLibrary();
   bool shouldContinue = true;
   while (shouldContinue) {

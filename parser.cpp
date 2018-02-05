@@ -395,7 +395,6 @@ void Parser::inputProcedure(DatumP nodeP, QTextStream *readStream) {
   textP.listValue()->append(firstLine);
 
   // Now read in the body
-  // mainController()->beginInputHistory();
   forever {
     DatumP line = readlistWithPrompt("> ", true, readStream);
     DatumP lineSource = lastReadListSource();
@@ -806,7 +805,6 @@ DatumP Parser::runparseNumber() {
 numberSuccessful:
   double value = result.toDouble();
   runparseCIter = iter;
-  // runparseRetval->append(new Word(value));
   return DatumP(new Word(value));
 }
 

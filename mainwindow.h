@@ -40,7 +40,7 @@ class MainWindow;
 class MainWindow : public QMainWindow {
   Q_OBJECT
 
-  Controller *controller;
+//  Controller *controller;
   enum WaitingMode { notWaiting, waitingForKeypress, waitingForLine };
   WaitingMode waitingFor;
   void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;

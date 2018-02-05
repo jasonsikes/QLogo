@@ -206,7 +206,6 @@ void DatumP::destroy() {
   if (d != &notADatum) {
     d->release();
     if (d->shouldDelete()) {
-      // qDebug() <<"destroyed";
       delete d;
     }
   }
@@ -264,11 +263,6 @@ bool DatumP::isWord() { return d->isa() == Datum::wordType; }
 bool DatumP::isError() { return d->isa() == Datum::errorType; }
 
 Word *DatumP::wordValue() {
-  // static int count = 0;
-  // qDebug() <<d->print() <<" count = " <<++count;
-  if (d->isa() != Datum::wordType) {
-    qDebug() << "Hello";
-  }
   Q_ASSERT(d->isa() == Datum::wordType);
   return (Word *)d;
 }
@@ -332,18 +326,13 @@ DatumP ASTNode::childAtIndex(unsigned index) { return children.at(index); }
 
 ASTNode::ASTNode(DatumP aNodeName) {
   nodeName = aNodeName;
-  // qDebug() <<"created node" <<name <<"at" <<this <<"count ="
-  // <<++countOfNodes;
 }
 
 ASTNode::ASTNode(const char *aNodeName) {
   nodeName = DatumP(new Word(aNodeName));
-  // qDebug() <<"created node" <<name <<"at" <<this <<"count ="
-  // <<++countOfNodes;
 }
 
 ASTNode::~ASTNode() {
-  // qDebug() <<"DELETED node" <<name    ;
 }
 
 Datum::DatumType ASTNode::isa() { return astnodeType; }

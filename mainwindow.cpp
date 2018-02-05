@@ -46,14 +46,11 @@ MainWindow::MainWindow(QWidget *parent)
 
   ui->splitter->setSizes(QList<int>() << 200 << 200);
 
-  controller = new Controller();
-  controller->setMainWindow(this);
   ui->mainConsole->setFocus();
 
-  connect(ui->splitter, SIGNAL(splitterMoved(int, int)), controller,
+  connect(ui->splitter, SIGNAL(splitterMoved(int, int)), mainController(),
           SLOT(splitterMoved(int, int)), Qt::AutoConnection);
 
-  controller->start();
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -80,6 +77,6 @@ void MainWindow::hideCanvas() { setSplitterSizeRatios(0, 1); }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    controller->shutdownEvent();
+    mainController()->shutdownEvent();
     event->ignore();
 }
