@@ -81,7 +81,7 @@ void Canvas::initSurfaceVBO() {
 #define T_FLIPPER_JOINT .5f, .4f, .4f, 1
 
 void Canvas::initTurtleVBO(void) {
-  const GLfloat u = 15;                // height of turtle
+  const GLfloat u = turtleHeight;      // height of turtle
   const GLfloat sr = u * 0.33333f;     // shell radius
   const float a = (float)M_PI * 2 / 5; // shell tile inner angle
   const GLfloat he = 1.2f;             // head side proportion from neck
