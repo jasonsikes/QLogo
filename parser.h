@@ -117,6 +117,8 @@ public:
   QString unreadList(List *aList, bool isInList = false);
   QString unreadWord(Word *aWord, bool isInList = false);
   QString unreadArray(Array *anArray);
+
+  QString printoutDatum(DatumP aDatum);
 };
 
 #endif // PARSER_H

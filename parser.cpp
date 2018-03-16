@@ -1392,6 +1392,21 @@ QString Parser::unreadWord(Word *aWord, bool isInList) {
   return retval;
 }
 
+QString Parser::printoutDatum(DatumP aDatum) {
+  switch (aDatum.isa()) {
+  case Datum::wordType:
+    return unreadWord(aDatum.wordValue());
+    break;
+  case Datum::listType:
+    return unreadList(aDatum.listValue(), true);
+  case Datum::arrayType:
+    return unreadArray(aDatum.arrayValue());
+  default:
+    Q_ASSERT(false);
+  }
+  return "";
+}
+
 Parser::Parser(Kernel *aKernel) {
   lastProcedureCreatedTimestamp = QDateTime::currentMSecsSinceEpoch();
   kernel = aKernel;

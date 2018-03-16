@@ -213,7 +213,7 @@ QString Kernel::createPrintoutFromContentsList(DatumP contentslist,
     } else {
       QString line = QString("Make \"%1 %2\n")
                          .arg(varname)
-                         .arg(parser->unreadDatum(value));
+                         .arg(parser->printoutDatum(value));
       retval += line;
     }
   }
@@ -228,9 +228,9 @@ QString Kernel::createPrintoutFromContentsList(DatumP contentslist,
       DatumP nameP = j.element();
       DatumP valueP = j.element();
       QString line = QString("Pprop %1 %2 %3\n")
-                         .arg(parser->unreadDatum(listnameP))
-                         .arg(parser->unreadDatum(nameP))
-                         .arg(parser->unreadDatum(valueP));
+                         .arg(parser->printoutDatum(listnameP))
+                         .arg(parser->printoutDatum(nameP))
+                         .arg(parser->printoutDatum(valueP));
       retval += line;
     }
   }

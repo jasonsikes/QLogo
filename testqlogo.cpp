@@ -2079,6 +2079,10 @@ void TestQLogo::testKernel_data() {
                                  "Make \"Q \"34\\ 34\n"
                                  "Pprop \"joe 2 \"hello\\ there\n";
 
+  QTest::newRow("PRINTOUT 4") <<"pprop \"test \"test [this is a test]\n"
+                                "po [[][][test]]\n"
+                             << "Pprop \"test \"TEST [this is a test]\n";
+
   QTest::newRow("PRINTOUT ERROR 1") << "po [po]\n"
                                     << "po is a primitive\n";
 
