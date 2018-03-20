@@ -79,14 +79,8 @@ DatumP Kernel::excFput(DatumP node) {
     return candidate.isList() || candidate.isWord();
   });
   if (list.isList()) {
-    List *retval = new List;
-    DatumP retvalP = h.ret(retval);
-    retval->append(thing);
-    ListIterator iter = list.listValue()->newIterator();
-    while (iter.elementExists()) {
-      retval->append(iter.element());
-    }
-    return retvalP;
+    DatumP retval = list.listValue()->fput(thing);
+    return h.ret(retval);
   }
   QString retval = thing.wordValue()->rawValue();
   retval.append(list.wordValue()->rawValue());

@@ -29,13 +29,14 @@
 //===----------------------------------------------------------------------===//
 
 #include <QHash>
-#include <QList>
 #include <QString>
 #include <QVector>
+#include <QList>
 
 class ASTNode;
 class Word;
 class List;
+class ListNode;
 class Array;
 class Error;
 class DatumP;
@@ -69,6 +70,7 @@ public:
     noType,
     wordType,
     listType,
+      listNodeType,
     arrayType,
     astnodeType,
     procedureType,
@@ -127,6 +129,7 @@ public:
   Datum *datumValue() { return d; }
   Word *wordValue();
   List *listValue();
+  ListNode *listNodeValue();
   Procedure *procedureValue();
   ASTNode *astnodeValue();
   Array *arrayValue();
@@ -233,13 +236,20 @@ public:
   Iterator newIterator(void);
 };
 
+class ListNode : public Datum {
+    DatumType isa() { return listNodeType; }
+public:
+    DatumP item;
+    DatumP next;
+};
+
 class List : public Datum {
   friend class ListIterator;
   friend class Array;
   friend class Parser;
 
 protected:
-  QList<DatumP> list;
+  DatumP head;
   QList<DatumP> astList;
   qint64 astParseTimeStamp;
 
@@ -264,6 +274,7 @@ public:
   DatumP last();
   DatumP butlast(void);
   void prepend(DatumP element);
+  DatumP fput(DatumP item);
   DatumP datumAtIndex(int anIndex);
   bool isIndexInRange(int anIndex);
   void setItem(int anIndex, DatumP aValue);
@@ -346,12 +357,11 @@ public:
 
 class ListIterator : public Iterator {
 protected:
-  QList<DatumP>::iterator listIter;
-  QList<DatumP>::iterator end;
+    DatumP ptr;
 
 public:
   ListIterator();
-  ListIterator(QList<DatumP> *aList);
+  ListIterator(DatumP head);
   DatumP element();
   bool elementExists();
 };

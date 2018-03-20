@@ -3110,6 +3110,13 @@ void TestQLogo::testKernel_data() {
       << "make \"a {this is a test}\n"
          "setitem 1 :a :a\n"
       << "setitem doesn't like {this is a test} as input\n";
+
+  QTest::newRow("Ice Cream") // from: https://people.eecs.berkeley.edu/~bh/v3ch3/algs.html
+          << "make \"one [Ice cream is delicious.]\n"
+          "make \"two fput \"Spinach butfirst butfirst :one\n"
+          ".setfirst butfirst butfirst :two \"disgusting.\n"
+          "print :one\n"
+          << "Ice cream is disgusting.\n";
 }
 
 QTEST_APPLESS_MAIN(TestQLogo)

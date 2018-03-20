@@ -275,6 +275,14 @@ List *DatumP::listValue() {
   return (List *)d;
 }
 
+ListNode *DatumP::listNodeValue() {
+  if (d->isa() != Datum::listNodeType) {
+    qDebug() << "Hello";
+  }
+  Q_ASSERT(d->isa() == Datum::listNodeType);
+  return (ListNode *)d;
+}
+
 Array *DatumP::arrayValue() {
   Q_ASSERT(d->isa() == Datum::arrayType);
   return (Array *)d;
@@ -575,14 +583,26 @@ List::List() { astParseTimeStamp = 0; }
 
 List::List(Array *source) {
   astParseTimeStamp = 0;
-  list = source->array.toList();
+  auto aryIter = source->newIterator();
+  DatumP prev;
+  if (aryIter.elementExists()) {
+      head = new ListNode;
+      head.listNodeValue()->item = aryIter.element();
+      prev = head;
+  }
+  while (aryIter.elementExists()) {
+      ListNode *newNode = new ListNode;
+      prev.listNodeValue()->next = newNode;
+      newNode->item = aryIter.element();
+      prev = newNode;
+  }
 }
 
 List::~List() {}
 
 List::List(List *source) {
   astParseTimeStamp = 0;
-  list = source->list;
+  head = source->head;
 }
 
 Datum::DatumType List::isa() { return listType; }
@@ -594,24 +614,24 @@ QString List::name() {
 
 QString List::printValue(bool fullPrintp, int printDepthLimit,
                          int printWidthLimit) {
-  QString retval = "";
-  auto iter = list.begin();
-  if (iter == list.end()) {
-    return retval;
+  DatumP iter = head;
+  if (iter == nothing) {
+    return "";
   }
   if ((printDepthLimit == 0) || (printWidthLimit == 0)) {
     return "...";
   }
   int printWidth = printWidthLimit - 1;
-  retval = iter->showValue(fullPrintp, printDepthLimit - 1, printWidthLimit);
-  while (++iter != list.end()) {
+  QString retval = iter.listNodeValue()->item.showValue(fullPrintp, printDepthLimit - 1, printWidthLimit);
+  while (iter.listNodeValue()->next != nothing) {
+      iter = iter.listNodeValue()->next;
     retval.append(QString(" "));
     if (printWidth == 0) {
       retval.append("...");
       break;
     }
     retval.append(
-        iter->showValue(fullPrintp, printDepthLimit - 1, printWidthLimit));
+        iter.listNodeValue()->item.showValue(fullPrintp, printDepthLimit - 1, printWidthLimit));
     --printWidth;
   }
   return retval;
@@ -668,104 +688,175 @@ exit_false:
 }
 
 DatumP List::first() {
-  Q_ASSERT(list.size() > 0);
-  return list.first();
+  Q_ASSERT(head != nothing);
+  return head.listNodeValue()->item;
 }
 
 bool List::isIndexInRange(int anIndex) {
-  --anIndex;
-  return ((anIndex >= 0) && (anIndex < list.size()));
+    if (anIndex < 1) return false;
+    ListIterator iter = newIterator();
+    while (iter.elementExists()) {
+        --anIndex;
+        iter.element();
+        if (anIndex == 0) return true;
+    }
+    return false;
 }
 
 void List::setItem(int anIndex, DatumP aValue) {
-  int index = anIndex - 1;
-  list[index] = aValue;
+    DatumP ptr = head;
+    while (anIndex > 1) {
+        --anIndex;
+        ptr = ptr.listNodeValue()->next;
+    }
+  ptr.listNodeValue()->item = aValue;
   astParseTimeStamp = 0;
 }
 
 void List::setButfirstItem(DatumP aValue) {
-  Q_ASSERT(list.size() > 0);
+  Q_ASSERT(head != nothing);
   Q_ASSERT(aValue.isList());
-  auto estart = list.begin();
-  ++estart;
-  list.erase(estart, list.end());
-  list.append(aValue.listValue()->list);
-  astParseTimeStamp = 0;
+    head.listNodeValue()->next = aValue.listValue()->head;
+    astParseTimeStamp = 0;
 }
 
 void List::setFirstItem(DatumP aValue) {
-  list[0] = aValue;
+    Q_ASSERT(head != nothing);
+    head.listNodeValue()->item = aValue;
   astParseTimeStamp = 0;
 }
 
 bool List::containsDatum(DatumP aDatum, bool ignoreCase) {
-  for (auto &e : list) {
-    if (e == aDatum)
-      return true;
-    if (e.datumValue()->containsDatum(aDatum, ignoreCase))
-      return true;
-  }
+    ListIterator iter = newIterator();
+    while (iter.elementExists()) {
+        DatumP e = iter.element();
+        if (e == aDatum)
+            return true;
+        if (e.datumValue()->containsDatum(aDatum, ignoreCase))
+          return true;
+    }
   return false;
 }
 
 bool List::isMember(DatumP aDatum, bool ignoreCase) {
-  for (auto &iter : list) {
-    if (iter.isEqual(aDatum, ignoreCase))
-      return true;
-  }
+    ListIterator iter = newIterator();
+    while (iter.elementExists()) {
+        if (aDatum.isEqual(iter.element(), ignoreCase))
+            return true;
+    }
   return false;
 }
 
 DatumP List::fromMember(DatumP aDatum, bool ignoreCase) {
   List *retval = new List;
-  for (int i = 0; i < list.size(); ++i) {
-    if (list[i].isEqual(aDatum, ignoreCase)) {
-      retval->list.append(list.mid(i));
-      break;
-    }
+  DatumP ptr = head;
+  while (ptr != nothing) {
+      DatumP e = ptr.listNodeValue()->item;
+      if (e.isEqual(aDatum, ignoreCase)) {
+          retval->head = ptr;
+          break;
+      }
+      ptr = ptr.listNodeValue()->next;
   }
   return DatumP(retval);
 }
 
 DatumP List::datumAtIndex(int anIndex) {
   Q_ASSERT(isIndexInRange(anIndex));
-  --anIndex;
-  return list.at(anIndex);
+    DatumP ptr = head;
+    while (anIndex > 1) {
+        --anIndex;
+        ptr = ptr.listNodeValue()->next;
+    }
+  return ptr.listNodeValue()->item;
 }
 
 DatumP List::butfirst() {
+    Q_ASSERT(head != nothing);
   List *retval = new List;
-  retval->list = list.mid(1, list.size() - 1);
+    retval->head = head.listNodeValue()->next;
   return DatumP(retval);
 }
 
 void List::clear() {
-  list.clear();
+  head = nothing;
   astList.clear();
   astParseTimeStamp = 0;
 }
 
 void List::append(DatumP element) {
-  list.push_back(element);
+    ListNode *newNode = new ListNode;
+    newNode->item = element;
+    if (head == nothing) {
+        head = newNode;
+        return;
+    }
+    DatumP ptr(head);
+    while (ptr.listNodeValue()->next != nothing) {
+        ptr = ptr.listNodeValue()->next;
+    }
+    ptr.listNodeValue()->next = newNode;
   astParseTimeStamp = 0;
 }
 
-int List::size() { return list.size(); }
+int List::size() {
+    int retval = 0;
+    DatumP ptr = head;
+    while (ptr != nothing) {
+        ptr = ptr.listNodeValue()->next;
+        ++retval;
+    }
+    return retval;
+}
 
-DatumP List::last() { return list.last(); }
+DatumP List::last() {
+    Q_ASSERT(head != nothing);
+    DatumP retval = head;
+    while (retval.listNodeValue()->next != nothing) {
+        retval = retval.listNodeValue()->next;
+    }
+    return retval.listNodeValue()->item;
+}
 
 DatumP List::butlast() {
   List *retval = new List;
-  retval->list = list.mid(0, list.size() - 1);
+  if (head.listNodeValue()->next != nothing) {
+      DatumP src = head;
+      DatumP dest;
+      while (src.listNodeValue()->next != nothing) {
+          ListNode *newnode = new ListNode;
+          newnode->item = src.listNodeValue()->item;
+          if (retval->head == nothing) {
+              retval->head = newnode;
+          } else {
+            dest.listNodeValue()->next = newnode;
+          }
+          dest = newnode;
+          src = src.listNodeValue()->next;
+      }
+  }
   return DatumP(retval);
 }
 
 void List::prepend(DatumP element) {
-  list.prepend(element);
+    ListNode *newnode = new ListNode;
+    newnode->item = element;
+    newnode->next = head;
+    head = newnode;
   astParseTimeStamp = 0;
 }
 
-ListIterator List::newIterator() { return ListIterator(&list); }
+DatumP List::fput(DatumP item)
+{
+    ListNode *newnode = new ListNode;
+    List *retval = new List;
+    newnode->item = item;
+    newnode->next = head;
+    retval->head = newnode;
+    return retval;
+}
+
+ListIterator List::newIterator() { return ListIterator(head); }
 
 /******************************************
  *
@@ -783,7 +874,12 @@ Array::Array(int aOrigin, int aSize) {
 
 Array::Array(int aOrigin, List *source) {
   origin = aOrigin;
-  array = source->list.toVector();
+  array.reserve(source->size());
+  DatumP ptr = source->head;
+  while (ptr != nothing) {
+      array.push_back(ptr.listNodeValue()->item);
+      ptr = ptr.listNodeValue()->next;
+  }
 }
 
 Array::~Array() {}
@@ -979,14 +1075,17 @@ bool Iterator::elementExists() {
 
 ListIterator::ListIterator() {}
 
-ListIterator::ListIterator(QList<DatumP> *aList) {
-  listIter = aList->begin();
-  end = aList->end();
+ListIterator::ListIterator(DatumP head) {
+    ptr = head;
 }
 
-DatumP ListIterator::element() { return *listIter++; }
+DatumP ListIterator::element() {
+    DatumP retval = ptr.listNodeValue()->item;
+    ptr = ptr.listNodeValue()->next;
+    return retval;
+}
 
-bool ListIterator::elementExists() { return (listIter != end); }
+bool ListIterator::elementExists() { return (ptr != nothing); }
 
 /******************************************
  *
