@@ -579,10 +579,14 @@ DatumP Word::butfirst() {
  *
  ******************************************/
 
-List::List() { astParseTimeStamp = 0; }
+List::List() {
+    astParseTimeStamp = 0;
+    listSize = 0;
+}
 
 List::List(Array *source) {
   astParseTimeStamp = 0;
+  listSize = source->size();
   auto aryIter = source->newIterator();
   DatumP prev;
   if (aryIter.elementExists()) {
@@ -603,6 +607,7 @@ List::~List() {}
 List::List(List *source) {
   astParseTimeStamp = 0;
   head = source->head;
+  listSize = source->size();
 }
 
 Datum::DatumType List::isa() { return listType; }
@@ -693,14 +698,7 @@ DatumP List::first() {
 }
 
 bool List::isIndexInRange(int anIndex) {
-    if (anIndex < 1) return false;
-    ListIterator iter = newIterator();
-    while (iter.elementExists()) {
-        --anIndex;
-        iter.element();
-        if (anIndex == 0) return true;
-    }
-    return false;
+    return (anIndex >= 1) && (anIndex <= listSize);
 }
 
 void List::setItem(int anIndex, DatumP aValue) {
@@ -718,6 +716,7 @@ void List::setButfirstItem(DatumP aValue) {
   Q_ASSERT(aValue.isList());
     head.listNodeValue()->next = aValue.listValue()->head;
     astParseTimeStamp = 0;
+    listSize = aValue.listValue()->size() + 1;
 }
 
 void List::setFirstItem(DatumP aValue) {
@@ -758,6 +757,7 @@ DatumP List::fromMember(DatumP aDatum, bool ignoreCase) {
       }
       ptr = ptr.listNodeValue()->next;
   }
+  retval->setListSize();
   return DatumP(retval);
 }
 
@@ -775,17 +775,21 @@ DatumP List::butfirst() {
     Q_ASSERT(head != nothing);
   List *retval = new List;
     retval->head = head.listNodeValue()->next;
+    retval->listSize = listSize - 1;
   return DatumP(retval);
 }
 
 void List::clear() {
   head = nothing;
+  listSize = 0;
   astList.clear();
   astParseTimeStamp = 0;
 }
 
+// This should NOT be used in cases where a list may be shared
 void List::append(DatumP element) {
     ListNode *newNode = new ListNode;
+    ++listSize;
     newNode->item = element;
     if (head == nothing) {
         head = newNode;
@@ -799,16 +803,6 @@ void List::append(DatumP element) {
   astParseTimeStamp = 0;
 }
 
-int List::size() {
-    int retval = 0;
-    DatumP ptr = head;
-    while (ptr != nothing) {
-        ptr = ptr.listNodeValue()->next;
-        ++retval;
-    }
-    return retval;
-}
-
 DatumP List::last() {
     Q_ASSERT(head != nothing);
     DatumP retval = head;
@@ -820,6 +814,7 @@ DatumP List::last() {
 
 DatumP List::butlast() {
   List *retval = new List;
+  retval->listSize = listSize - 1;
   if (head.listNodeValue()->next != nothing) {
       DatumP src = head;
       DatumP dest;
@@ -843,6 +838,7 @@ void List::prepend(DatumP element) {
     newnode->item = element;
     newnode->next = head;
     head = newnode;
+    ++listSize;
   astParseTimeStamp = 0;
 }
 
@@ -853,7 +849,18 @@ DatumP List::fput(DatumP item)
     newnode->item = item;
     newnode->next = head;
     retval->head = newnode;
+    retval->listSize = listSize + 1;
     return retval;
+}
+
+void List::setListSize()
+{
+    listSize = 0;
+    DatumP ptr = head;
+    while (ptr != nothing) {
+        ++listSize;
+        ptr = ptr.listNodeValue()->next;
+    }
 }
 
 ListIterator List::newIterator() { return ListIterator(head); }

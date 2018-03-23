@@ -3117,6 +3117,36 @@ void TestQLogo::testKernel_data() {
           ".setfirst butfirst butfirst :two \"disgusting.\n"
           "print :one\n"
           << "Ice cream is disgusting.\n";
+
+  QTest::newRow("listSize 1")
+          << "make \"a {this is an array}\n"
+             "make \"b arraytolist :a\n"
+             "show count :b\n"
+          << "4\n";
+
+  QTest::newRow("listSize 2")
+          << "make \"a [this is a list]\n"
+             "make \"b :a\n"
+             "show count :b\n"
+          << "4\n";
+
+  QTest::newRow("listSize 3")
+          << "make \"a [this is a bit of a longer list]\n"
+             "make \"b member \"a :a\n"
+             "show count :b\n"
+          << "6\n";
+
+  QTest::newRow("listSize 4")
+          << "make \"a [this is a list]\n"
+             "make \"b butfirst :a\n"
+             "show count :b\n"
+          << "3\n";
+
+  QTest::newRow("listSize 5")
+          << "make \"a [this is a list]\n"
+             "make \"b butlast :a\n"
+             "show count :b\n"
+          << "3\n";
 }
 
 QTEST_APPLESS_MAIN(TestQLogo)

@@ -250,8 +250,10 @@ class List : public Datum {
 
 protected:
   DatumP head;
+  int listSize;
   QList<DatumP> astList;
   qint64 astParseTimeStamp;
+  void setListSize();
 
 public:
   List();
@@ -270,7 +272,7 @@ public:
 
   void clear();
   void append(DatumP element);
-  int size();
+  int size() { return listSize; }
   DatumP last();
   DatumP butlast(void);
   void prepend(DatumP element);
