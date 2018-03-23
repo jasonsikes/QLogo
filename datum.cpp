@@ -591,14 +591,15 @@ List::List(Array *source) {
   DatumP prev;
   if (aryIter.elementExists()) {
       head = new ListNode;
+      lastNode = head;
       head.listNodeValue()->item = aryIter.element();
       prev = head;
   }
   while (aryIter.elementExists()) {
-      ListNode *newNode = new ListNode;
-      prev.listNodeValue()->next = newNode;
-      newNode->item = aryIter.element();
-      prev = newNode;
+      lastNode = new ListNode;
+      prev.listNodeValue()->next = lastNode;
+      lastNode.listNodeValue()->item = aryIter.element();
+      prev = lastNode;
   }
 }
 
@@ -607,6 +608,7 @@ List::~List() {}
 List::List(List *source) {
   astParseTimeStamp = 0;
   head = source->head;
+  lastNode = source->lastNode;
   listSize = source->size();
 }
 
@@ -753,6 +755,7 @@ DatumP List::fromMember(DatumP aDatum, bool ignoreCase) {
       DatumP e = ptr.listNodeValue()->item;
       if (e.isEqual(aDatum, ignoreCase)) {
           retval->head = ptr;
+          retval->lastNode = lastNode;
           break;
       }
       ptr = ptr.listNodeValue()->next;
@@ -776,11 +779,13 @@ DatumP List::butfirst() {
   List *retval = new List;
     retval->head = head.listNodeValue()->next;
     retval->listSize = listSize - 1;
+    retval->lastNode = lastNode;
   return DatumP(retval);
 }
 
 void List::clear() {
   head = nothing;
+  lastNode = nothing;
   listSize = 0;
   astList.clear();
   astParseTimeStamp = 0;
@@ -793,23 +798,17 @@ void List::append(DatumP element) {
     newNode->item = element;
     if (head == nothing) {
         head = newNode;
+        lastNode = newNode;
         return;
     }
-    DatumP ptr(head);
-    while (ptr.listNodeValue()->next != nothing) {
-        ptr = ptr.listNodeValue()->next;
-    }
-    ptr.listNodeValue()->next = newNode;
+    lastNode.listNodeValue()->next = newNode;
+    lastNode = newNode;
   astParseTimeStamp = 0;
 }
 
 DatumP List::last() {
-    Q_ASSERT(head != nothing);
-    DatumP retval = head;
-    while (retval.listNodeValue()->next != nothing) {
-        retval = retval.listNodeValue()->next;
-    }
-    return retval.listNodeValue()->item;
+    Q_ASSERT(lastNode != nothing);
+    return lastNode.listNodeValue()->item;
 }
 
 DatumP List::butlast() {
@@ -817,16 +816,16 @@ DatumP List::butlast() {
   retval->listSize = listSize - 1;
   if (head.listNodeValue()->next != nothing) {
       DatumP src = head;
-      DatumP dest;
       while (src.listNodeValue()->next != nothing) {
           ListNode *newnode = new ListNode;
           newnode->item = src.listNodeValue()->item;
           if (retval->head == nothing) {
               retval->head = newnode;
+              retval->lastNode = newnode;
           } else {
-            dest.listNodeValue()->next = newnode;
+            retval->lastNode.listNodeValue()->next = newnode;
+            retval->lastNode = newnode;
           }
-          dest = newnode;
           src = src.listNodeValue()->next;
       }
   }

@@ -250,6 +250,7 @@ class List : public Datum {
 
 protected:
   DatumP head;
+  DatumP lastNode;
   int listSize;
   QList<DatumP> astList;
   qint64 astParseTimeStamp;
