@@ -72,7 +72,13 @@ SOURCES += qlogo_main.cpp\
     help.cpp \
     kernel_controlstructures.cpp \
     error.cpp \
-    library.cpp
+    library.cpp \
+    datum_word.cpp \
+    datum_astnode.cpp \
+    datum_list.cpp \
+    datum_array.cpp \
+    datum_datump.cpp \
+    datum_iterator.cpp
 
 
 HEADERS  += mainwindow.h \
