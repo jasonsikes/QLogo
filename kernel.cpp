@@ -38,7 +38,11 @@
 
 #include CONTROLLER_HEADER
 
+// The maximum depth of procedure iterations before error is thrown.
+const int maxIterationDepth = 1000;
+
 ProcedureScope::ProcedureScope(Kernel *exec, DatumP procname) {
+  ++(exec->procedureIterationDepth);
   procedureHistory = exec->callingProcedure;
   exec->callingProcedure = exec->currentProcedure;
   exec->currentProcedure = procname;
@@ -48,6 +52,7 @@ ProcedureScope::ProcedureScope(Kernel *exec, DatumP procname) {
 }
 
 ProcedureScope::~ProcedureScope() {
+  --(kernel->procedureIterationDepth);
   kernel->currentProcedure = kernel->callingProcedure;
   kernel->callingProcedure = procedureHistory;
   kernel->currentLine = kernel->callingLine;
@@ -428,6 +433,9 @@ DatumP Kernel::executeProcedureCore(DatumP node) {
 DatumP Kernel::executeProcedure(DatumP node) {
   Scope s(&variables);
 
+  if (procedureIterationDepth > maxIterationDepth) {
+      Error::stackOverflow();
+    }
   DatumP retval = executeProcedureCore(node);
   while (retval.isASTNode()) {
     KernelMethod method = retval.astnodeValue()->kernel;

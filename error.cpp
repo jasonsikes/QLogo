@@ -221,6 +221,12 @@ DatumP Error::noApply(DatumP what) {
   return mainKernel->registerError(new Error(44, message), true, true);
 }
 
+void Error::stackOverflow()
+{
+  QString message("Stack overflow");
+  mainKernel->registerError(new Error(2, message));
+}
+
 void Error::throwError(DatumP aTag, DatumP aOutput) {
   Error *e;
   if (aTag.wordValue()->keyValue() == "ERROR") {

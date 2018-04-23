@@ -82,6 +82,7 @@ public:
   static DatumP macroReturned(DatumP aOutput);
   static DatumP insideRunresult(DatumP cmdName);
   static DatumP noApply(DatumP what);
+  static void stackOverflow();
 };
 
 #endif // ERROR_H

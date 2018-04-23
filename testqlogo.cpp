@@ -3147,6 +3147,13 @@ void TestQLogo::testKernel_data() {
              "make \"b butlast :a\n"
              "show count :b\n"
           << "3\n";
+
+  QTest::newRow("stack overflow error")
+          << "to qw\n"
+             "qw\n"
+             "end\n"
+             "qw\n"
+          << "qw defined\nStack overflow in qw\n[qw]\n";
 }
 
 QTEST_APPLESS_MAIN(TestQLogo)

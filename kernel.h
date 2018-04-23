@@ -55,6 +55,7 @@ class Kernel {
   Help help;
   long repcount = -1;
   int pauseLevel = 0;
+  int procedureIterationDepth = 0;
 
   QVector<QColor> palette;
   PropertyLists plists;
