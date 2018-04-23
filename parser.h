@@ -121,4 +121,30 @@ public:
   QString printoutDatum(DatumP aDatum);
 };
 
+class Procedure : public Datum {
+
+public:
+  QStringList requiredInputs;
+  QStringList optionalInputs;
+  QList<DatumP> optionalDefaults;
+  QString restInput;
+  int defaultNumber;
+  int countOfMinParams;
+  int countOfMaxParams;
+  QHash<const QString, DatumP> tagToLine;
+  bool isMacro;
+  DatumP sourceText;
+
+  DatumP instructionList;
+  DatumType isa() { return Datum::procedureType; }
+
+  Procedure() {
+    instructionList = DatumP(new List);
+    countOfMaxParams = -1;
+    countOfMinParams = 0;
+  }
+};
+
+
+
 #endif // PARSER_H

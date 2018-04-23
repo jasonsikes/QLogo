@@ -39,3 +39,6 @@ Qt user files
 
 # doxygen output
 html
+
+# Added by Dolphin file manager GUI
+.directory

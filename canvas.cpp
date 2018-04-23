@@ -220,7 +220,7 @@ void Canvas::initializeGL() {
   setSurfaceVertices();
 
   linesObject = new QOpenGLVertexArrayObject(this);
-  linesObject->create();
+  linesObject->create(); // TODO: check return value
 
   linesVertexBufferObject = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
   linesVertexBufferObject->create();

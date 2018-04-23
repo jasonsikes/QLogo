@@ -20,7 +20,7 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the List class, which is the basic
+/// This file contains the implementation of the List class, which is the general
 /// container of sequence data. A list may contain words, lists or arrays.
 /// Is is implemented by using a linked list.
 ///
@@ -181,6 +181,7 @@ void List::setFirstItem(DatumP aValue) {
   astParseTimeStamp = 0;
 }
 
+// TODO: Check for cyclic list structures.
 bool List::containsDatum(DatumP aDatum, bool ignoreCase) {
     ListIterator iter = newIterator();
     while (iter.elementExists()) {

@@ -46,15 +46,12 @@ DatumP nodes() {
 
 Datum::Datum() {
   retainCount = 0;
-  isMutable = true;
   ++countOfNodes;
   if (countOfNodes > maxCountOfNodes)
     maxCountOfNodes = countOfNodes;
 }
 
 Datum::~Datum() { --countOfNodes; }
-
-void Datum::setImmutable() { isMutable = false; }
 
 QString Datum::printValue(bool, int, int) { return name(); }
 
@@ -134,6 +131,6 @@ int Datum::size() {
 
 
 
-
+// Values to represent no data (NULL)
 Datum notADatum;
 DatumP nothing(&notADatum);
