@@ -424,7 +424,6 @@ public:
   DatumP excTest(DatumP node);
   DatumP excIftrue(DatumP node);
   DatumP excIffalse(DatumP node);
-  DatumP excOutputCore(DatumP node);
   DatumP excStop(DatumP node);
   DatumP excOutput(DatumP node);
   DatumP excCatch(DatumP node);

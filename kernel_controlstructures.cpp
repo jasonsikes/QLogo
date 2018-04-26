@@ -176,18 +176,12 @@ DatumP Kernel::excIffalse(DatumP node) {
   return h.ret(retval);
 }
 
-// Used by excOutput to make sure that OUTPUT actually outputs
-DatumP Kernel::excOutputCore(DatumP node) {
-  DatumP p = node.astnodeValue()->childAtIndex(0);
-  KernelMethod method = p.astnodeValue()->kernel;
-  DatumP retval = (this->*method)(p);
-  if (retval == nothing)
-    Error::didntOutput(p.astnodeValue()->nodeName,
-                       node.astnodeValue()->nodeName);
-  return retval;
-}
+// The commands STOP, OUTPUT, and .MAYBEOUTPUT return an ASTNode instead of a
+// Word, List, or Array.
+//
+// The caller is responsible for dissecting the node and acting appropriately.
+//
 
-// Unlike other "execute..." commands, this and excOutput output an ASTNode
 DatumP Kernel::excStop(DatumP node) {
   if (currentProcedure == nothing) {
     Error::notInsideProcedure(node.astnodeValue()->nodeName);
@@ -195,23 +189,19 @@ DatumP Kernel::excStop(DatumP node) {
   return node;
 }
 
-// Unlike other "execute..." commands, this and excStop output an ASTNode
 DatumP Kernel::excOutput(DatumP node) {
   if (currentProcedure == nothing) {
     Error::notInsideProcedure(node.astnodeValue()->nodeName);
   }
 
-  ASTNode *retval = new ASTNode(node.astnodeValue()->nodeName);
-  retval->addChild(node.astnodeValue()->childAtIndex(0));
-  retval->kernel = &Kernel::excOutputCore;
-  return DatumP(retval);
+  return node;
 }
 
 DatumP Kernel::excDotMaybeoutput(DatumP node) {
   if (currentProcedure == nothing) {
     Error::notInsideProcedure(node.astnodeValue()->nodeName);
   }
-  return node.astnodeValue()->childAtIndex(0);
+  return node;
 }
 
 DatumP Kernel::excCatch(DatumP node) {
@@ -228,14 +218,23 @@ DatumP Kernel::excCatch(DatumP node) {
 
   try {
     retval = runList(instructionlist);
-    while (retval.isASTNode()) {
-      KernelMethod method = retval.astnodeValue()->kernel;
-      if (method == &Kernel::excStop) {
-        retval = nothing;
-      } else {
-        retval = (this->*method)(retval);
+    if (retval.isASTNode()) {
+        KernelMethod method = retval.astnodeValue()->kernel;
+        if (method == &Kernel::excStop) {
+            retval = nothing;
+          } else if ((method == &Kernel::excOutput) || (method == &Kernel::excDotMaybeoutput)) {
+            DatumP p = retval.astnodeValue()->childAtIndex(0);
+            KernelMethod temp_method = p.astnodeValue()->kernel;
+            DatumP temp_retval = (this->*temp_method)(p);
+            if ((temp_retval == nothing) && (method == &Kernel::excOutput)) {
+                Error::didntOutput(p.astnodeValue()->nodeName,
+                                   retval.astnodeValue()->nodeName);
+              }
+            retval = temp_retval;
+          } else {
+            retval = (this->*method)(retval);
+          }
       }
-    }
   } catch (Error *e) {
     if (variables.doesExist(erract)) {
       variables.setDatumForName(tempErract, erract);

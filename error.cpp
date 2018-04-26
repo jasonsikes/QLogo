@@ -30,6 +30,8 @@
 
 Kernel *mainKernel;
 
+// TODO: the errors and their numbers should be listed as consts in the header.
+
 Error::Error(int aNumber, const QString &aErrorText) {
   code = aNumber;
   errorText = DatumP(new Word(aErrorText));

@@ -425,7 +425,21 @@ DatumP Kernel::executeProcedureCore(DatumP node) {
 
   if (h.isTraced && retval.isASTNode()) {
     KernelMethod method = retval.astnodeValue()->kernel;
-    retval = (this->*method)(retval);
+    if (method == &Kernel::excStop) {
+        retval = nothing;
+      } else if (method == &Kernel::excOutput) {
+        DatumP p = retval.astnodeValue()->childAtIndex(0);
+        KernelMethod temp_method = p.astnodeValue()->kernel;
+        DatumP temp_retval = (this->*temp_method)(p);
+        if (temp_retval == nothing)
+          Error::didntOutput(p.astnodeValue()->nodeName,
+                             retval.astnodeValue()->nodeName);
+        retval = temp_retval;
+      } else if (method == &Kernel::excDotMaybeoutput) {
+        retval = retval.astnodeValue()->childAtIndex(0);
+      } else {
+        retval = (this->*method)(retval);
+      } // /if method == ...
   }
   return h.ret(retval);
 }
@@ -437,16 +451,37 @@ DatumP Kernel::executeProcedure(DatumP node) {
       Error::stackOverflow();
     }
   DatumP retval = executeProcedureCore(node);
+  ASTNode *lastOutputCmd = NULL;
+
   while (retval.isASTNode()) {
-    KernelMethod method = retval.astnodeValue()->kernel;
-    if (method == &Kernel::executeProcedure) {
-      retval = executeProcedureCore(retval);
-    } else if (method == &Kernel::excStop) {
-      retval = nothing;
-    } else {
-      retval = (this->*method)(retval);
-    }
-  }
+      KernelMethod method = retval.astnodeValue()->kernel;
+      if ((method == &Kernel::excOutput) || (method == &Kernel::excDotMaybeoutput)) {
+          if (method == &Kernel::excOutput) {
+              lastOutputCmd = retval.astnodeValue();
+            }
+          node = retval.astnodeValue()->childAtIndex(0);
+          method = node.astnodeValue()->kernel;
+
+          // if the output is a procedure, then trampoline
+          if (method == &Kernel::executeProcedure) {
+              retval = executeProcedureCore(node);
+            } else {
+              retval = (this->*method)(node);
+            }
+          if ((retval == nothing) && (lastOutputCmd != NULL)) {
+              Error::didntOutput(node.astnodeValue()->nodeName, lastOutputCmd->nodeName);
+            }
+        } else if (method == &Kernel::excStop) {
+          if (lastOutputCmd == NULL) {
+              return nothing;
+            } else {
+              Error::didntOutput(node.astnodeValue()->nodeName,
+                                 lastOutputCmd->nodeName);
+            }
+        } else {
+          retval = (this->*method)(retval);
+        }
+    } // /while isASTNode
 
   return retval;
 }
