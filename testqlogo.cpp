@@ -3164,6 +3164,11 @@ void TestQLogo::testKernel_data() {
              "end\n"
              "print qw 100000\n"
           << "qw defined\n0\n";
+
+  QTest::newRow("fput list to word")
+          << "fput [hi] \"hello\n"
+          << "fput doesn't like hello as input\n";
+
 }
 
 QTEST_APPLESS_MAIN(TestQLogo)

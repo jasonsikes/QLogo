@@ -75,7 +75,8 @@ DatumP Kernel::excSentence(DatumP node) {
 DatumP Kernel::excFput(DatumP node) {
   ProcedureHelper h(this, node);
   DatumP thing = h.datumAtIndex(0);
-  DatumP list = h.validatedDatumAtIndex(1, [](DatumP candidate) {
+  DatumP list = h.validatedDatumAtIndex(1, [&thing](DatumP candidate) {
+          if (candidate.isWord()) return thing.isWord();
     return candidate.isList() || candidate.isWord();
   });
   if (list.isList()) {
