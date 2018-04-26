@@ -39,7 +39,7 @@
 #include CONTROLLER_HEADER
 
 // The maximum depth of procedure iterations before error is thrown.
-const int maxIterationDepth = 1000;
+const int maxIterationDepth = 300;
 
 ProcedureScope::ProcedureScope(Kernel *exec, DatumP procname) {
   ++(exec->procedureIterationDepth);

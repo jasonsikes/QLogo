@@ -3157,7 +3157,7 @@ void TestQLogo::testKernel_data() {
 
   // If this test causes a segfault, then tail recursion optomization is broken.
   // This test takes a whole second on my hardware.
-  QTest::newRow("tail recursion optomization")
+  QTest::newRow("tail recursion optimization")
           << "to qw :i\n"
              "if :i < 0 [output 0]\n"
              "output qw :i-1\n"
