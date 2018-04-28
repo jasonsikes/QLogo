@@ -141,6 +141,9 @@ DatumP ProcedureHelper::datumAtIndex(int index, bool canRunlist) {
   DatumP retval = parameters.at(index);
   if (canRunlist && retval.isList()) {
     retval = parent->runList(retval);
+    if ( ! retval.isList() && ! retval.isArray() && ! retval.isWord()) {
+        reject(index);
+      }
   }
   return retval;
 }

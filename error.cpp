@@ -209,9 +209,9 @@ DatumP Error::macroReturned(DatumP aOutput) {
   return mainKernel->registerError(new Error(ecMacroReturned, message), true, true);
 }
 
-DatumP Error::insideRunresult(DatumP cmdName) {
-  QString message = "Can't use %1 inside RUNRESULT";
-  message = message.arg(cmdName.showValue());
+DatumP Error::insideRunresult(DatumP cmdName, DatumP listName) {
+  QString message = "Can't use %1 inside %2";
+  message = message.arg(cmdName.showValue()).arg(listName.showValue());
   return mainKernel->registerError(new Error(ecNoStop, message), true, true);
 }
 

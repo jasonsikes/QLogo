@@ -3157,6 +3157,7 @@ void TestQLogo::testKernel_data() {
 
   // If this test causes a segfault, then tail recursion optomization is broken.
   // This test takes a whole second on my hardware.
+  // (Five seconds on a Raspberry Pi.)
   QTest::newRow("tail recursion optimization")
           << "to qw :i\n"
              "if :i < 0 [output 0]\n"
@@ -3168,6 +3169,15 @@ void TestQLogo::testKernel_data() {
   QTest::newRow("fput list to word")
           << "fput [hi] \"hello\n"
           << "fput doesn't like hello as input\n";
+
+  QTest::newRow("OUTPUT within IF")
+      << "to az\n"
+         "if [output \"true] [output 0]\n"
+         "end\n"
+         "az\n"
+      << "az defined\n"
+         "if doesn't like [output \"true] as input in az\n"
+         "[if [output \"true] [output 0]]\n";
 
 }
 

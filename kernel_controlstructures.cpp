@@ -55,7 +55,7 @@ DatumP Kernel::excRunresult(DatumP node) {
   DatumP temp = runList(instructionList);
 
   if (temp.isASTNode()) {
-    temp = Error::insideRunresult(temp.astnodeValue()->nodeName);
+    temp = Error::insideRunresult(temp.astnodeValue()->nodeName, node.astnodeValue()->nodeName);
   }
 
   if (temp != nothing) {

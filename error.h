@@ -137,7 +137,7 @@ public:
   static void notInsideProcedure(DatumP what);
   static void throwError(DatumP aTag, DatumP aOutput);
   static DatumP macroReturned(DatumP aOutput);
-  static DatumP insideRunresult(DatumP cmdName);
+  static DatumP insideRunresult(DatumP cmdName, DatumP listName);
   static DatumP noApply(DatumP what);
   static void stackOverflow();
 };
