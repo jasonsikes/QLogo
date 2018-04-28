@@ -185,7 +185,7 @@ DatumP Kernel::registerError(DatumP anError, bool allowErract,
   ProcedureHelper::setIsErroring(anError != nothing);
   if (anError != nothing) {
     Error *e = currentError.errorValue();
-    if (e->code == 35) {
+    if (e->code == Error::ecUserGen) {
       e->procedure = callingProcedure;
       e->instructionLine = callingLine;
     } else {
@@ -613,12 +613,12 @@ DatumP Kernel::pause() {
         shouldContinue = getLineAndRunIt(false);
       }
     } catch (Error *e) {
-      if ((e->code == 14) && (e->tag.wordValue()->keyValue() == "PAUSE")) {
+      if ((e->code == Error::ecNoCatch) && (e->tag.wordValue()->keyValue() == "PAUSE")) {
         DatumP retval = e->output;
         registerError(nothing);
         return retval;
       }
-      if ((e->code == 14) && (e->tag.wordValue()->keyValue() == "TOPLEVEL")) {
+      if ((e->code == Error::ecNoCatch) && (e->tag.wordValue()->keyValue() == "TOPLEVEL")) {
         throw e;
       }
       sysPrint(e->errorText.printValue());

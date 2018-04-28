@@ -2624,7 +2624,7 @@ void TestQLogo::testKernel_data() {
 
   QTest::newRow("CATCH 1") << "catch \"error [notafunc]\n"
                               "show error\n"
-                           << "[13 I don't know how to notafunc [] []]\n";
+                           << "[24 I don't know how to notafunc [] []]\n";
 
   QTest::newRow("CATCH 2") << "catch \"err [notafunc]\n"
                            << "I don't know how to notafunc\n";
@@ -2688,7 +2688,7 @@ void TestQLogo::testKernel_data() {
                               "level2\n"
                            << "throw_error defined\n"
                               "level2 defined\n"
-                              "[13 I don't know how to not_a_function "
+                              "[24 I don't know how to not_a_function "
                               "throw_error [not_a_function]]\n";
 
   QTest::newRow("THROW 4")

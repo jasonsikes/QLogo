@@ -241,11 +241,11 @@ DatumP Kernel::excCatch(DatumP node) {
     }
 
     if ((tag == "ERROR") &&
-        (((e->code == 14) && (e->tag.wordValue()->keyValue()) == "ERROR") ||
-         (e->code != 14))) {
+        (((e->code == Error::ecNoCatch) && (e->tag.wordValue()->keyValue()) == "ERROR") ||
+         (e->code != Error::ecNoCatch))) {
       ProcedureHelper::setIsErroring(false);
       return nothing;
-    } else if ((e->code == 14) && (tag == e->tag.wordValue()->keyValue())) {
+    } else if ((e->code == Error::ecNoCatch) && (tag == e->tag.wordValue()->keyValue())) {
       DatumP retval = e->output;
       registerError(nothing);
       return h.ret(retval);

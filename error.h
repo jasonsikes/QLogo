@@ -28,16 +28,73 @@
 
 #include "datum.h"
 
+
+
+
 class Kernel;
 
 class Error : public Datum {
-protected:
-  Error(int aNumber, const QString &aErrorText);
+public:
 
-  Error(int aNumber, DatumP aErrorText);
+  enum errorCode {
+    ecFatalInternal =  0, //Fatal internal error (can't be caught)
+    ecOutOfMemory =  1, //Out of memory
+    ecStackOverflow =  2, //Stack overflow
+    ecTurtleOutOfBounds =  3, //Turtle out of bounds
+    ecDoesntLike =  4, //PROC doesn't like DATUM as input (not recoverable)
+    ecDidntOutput =  5, //PROC didn't output to PROC
+    ecNotEnoughInputs = 6, //Not enough inputs to PROC
+    ecDowsntLikeRec = 7, //PROC doesn't like DATUM as input (recoverable)
+    ecTooManyParens = 8, //Too much inside ()'s
+    ecNoSay = 9, //You don't say what to do with DATUM
+    ecNoCloseParen = 10, //')' not found
+    ecNoValue = 11, //VAR has no value
+    ecUnexpectedCloseParen = 12, //Unexpected ')'
+    ecNoHowRec = 13, //I don't know how to PROC (recoverable)
+    ecNoCatch = 14, //Can't find catch tag for THROWTAG
+    ecAlreadyDefined = 15, //PROC is already defined
+    ecStopped = 16, //Stopped
+    ecAlreadyDribbling = 17, //Already dribbling
+    ecFileSystem = 18, //File system error
+    ecCmdInPause = 19, //Can't use Command within PAUSE
+    //was: Assuming you mean IFELSE, not IF (warning only)
+    ecShadowed = 20, //VAR shadowed by local in procedure call (warning only)
+    ecThrow = 21, //Throw "Error
+    ecPrimitive = 22, //PROC is a primitive
+    ecToInsideProc = 23, //Can't use TO inside a procedure
+    ecNoHow = 24, //I don't know how to PROC (not recoverable)
+    ecNoTest = 25, //IFTRUE/IFFALSE without TEST
+    ecUnexpectedCloseSquare = 26, //Unexpected ']'
+    ecUnexpectedCloseCurly = 27, //Unexpected '}'
+    ecAlreadyFilling = 28, //Already filling
+    //was: Couldn't initialize graphics
+    ecMacroReturned = 29, //Macro returned VALUE instead of a list
+    ecNoSay2 = 30, //You don't say what to do with VALUE
+    ecNotInsideProc = 31, //Can only use STOP or OUTPUT inside a procedure
+    ecDoesntLike2 = 32, //APPLY doesn't like BADTHING as input
+    ecEnd = 33, //END inside multi-line instruction
+    ecReallyOutOfMem = 34, //Really out of memory (can't be caught)
+    ecUserGen = 35, //user-generated error message (THROW "ERROR [message])
+    ecEnd2 = 36, //END inside multi-line instruction
+    ecBadDefault = 37, //Bad default expression for optional input: EXPR
+    ecNoStop = 38, //Can't use OUTPUT or STOP inside RUNRESULT
+    ecAssume = 39 , //Assuming you meant 'FD 100', not FD100 (or similar)
+    ecCantOpen = 40, //I can't open file FILENAME
+    ecAlreadyOpen = 41, //File FILENAME already open
+    ecNotOpen = 42, //File FILENAME not open
+    ecListMultExpr = 43, //Runlist [EXPR EXPR] has more than one expression.
+    ecNoApply = 44 // Can't use '?' without APPLY
+  };
+
+
+protected:
+  Error(errorCode aNumber, const QString &aErrorText);
+
+  Error(errorCode aNumber, DatumP aErrorText);
 
 public:
-  int code;
+
+  errorCode code;
   DatumP tag;
   DatumP errorText;
   DatumP output;
