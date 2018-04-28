@@ -134,6 +134,7 @@ public:
   void setIsMouseButtonDown(bool aIsMouseButtonDown);
   QString addStandoutToString(const QString &src);
 
+  void clearEventQueue();
   bool eventQueueIsEmpty();
   char nextQueueEvent();
   void addEventToQueue(char eventChar);
@@ -234,7 +235,6 @@ protected:
   int button = 0;
 
   QList<char> eventQueue;
-  void clearEventQueue();
   QMutex eventQueueMutex;
   bool eventQueueEmpty = true;
   bool shouldQueueEvents = true;

@@ -181,6 +181,7 @@ bool Kernel::getLineAndRunIt(bool shouldHandleError) {
 DatumP Kernel::registerError(DatumP anError, bool allowErract,
                              bool allowRecovery) {
   const QString erract = "ERRACT";
+  mainController()->clearEventQueue();
   currentError = anError;
   ProcedureHelper::setIsErroring(anError != nothing);
   if (anError != nothing) {
@@ -551,6 +552,7 @@ DatumP Kernel::runList(DatumP listP, const QString startTag) {
     }
   }
 
+  // After the end of each line in a procedure handle events
   while (!mainController()->eventQueueIsEmpty()) {
     char event = mainController()->nextQueueEvent();
     DatumP action;

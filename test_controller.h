@@ -83,6 +83,7 @@ public:
                  const QFont &) {}
   QString addStandoutToString(const QString &src);
   bool keyQueueHasChars();
+  void clearEventQueue() {}
   bool setDribble(const QString &filePath);
   bool isDribbling();
   void setScrunch(double, double) {}
