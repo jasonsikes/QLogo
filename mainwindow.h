@@ -49,19 +49,6 @@ class MainWindow : public QMainWindow {
 
 public:
 
-  enum MainWindowMessage : char {
-      C_CONSOLE_PRINT_STRING,
-      C_CONSOLE_SET_TEXT_SIZE,
-      C_CONSOLE_SET_CURSOR_POS,
-      C_CONSOLE_SET_TEXT_COLOR,
-      C_CONSOLE_CLEAR_TEXT,
-      C_CONSOLE_SET_FONT,
-      C_CONSOLE_REQUEST_CHARACTER,
-      C_CONSOLE_REQUEST_LINE,
-      C_CONSOLE_REQUEST_CURSOR_POS,
-      C_CANVAS_SET_TURTLE_POS
-  };
-
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
 

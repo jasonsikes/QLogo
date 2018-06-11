@@ -78,7 +78,8 @@ SOURCES += qlogo_main.cpp\
     datum_list.cpp \
     datum_array.cpp \
     datum_datump.cpp \
-    datum_iterator.cpp
+    datum_iterator.cpp \
+    message.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -96,7 +97,8 @@ HEADERS  += mainwindow.h \
     editorwindow.h \
     help.h \
     error.h \
-    library.h
+    library.h \
+    message.h
 
 FORMS    += mainwindow.ui \
     editorwindow.ui

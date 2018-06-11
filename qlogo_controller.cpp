@@ -41,6 +41,7 @@
 #include "console.h"
 #include "error.h"
 #include "kernel.h"
+#include "message.h"
 
 // For rand()
 #include <stdlib.h>
@@ -272,10 +273,7 @@ QString Controller::addStandoutToString(const QString &src) {
 void Controller::printToConsole(const QString &s) {
   if (dribbleStream)
     *dribbleStream << s;
-  int length = s.length();
-  QByteArray message(1, MainWindow::C_CONSOLE_PRINT_STRING);
-  message.append((char*)&length, sizeof(int));
-  message.append((char*)s.constData(), length * sizeof(QChar));
+  const QByteArray message = messageFromConsolePrintString(s);
   sendMessage(message);
 }
 
@@ -287,8 +285,7 @@ void Controller::setTextCursorPos(int row, int col) {
 
 void Controller::setTextSize(double newSize) {
     currentTextSize = newSize;
-    QByteArray message(1, MainWindow::C_CONSOLE_SET_TEXT_SIZE);
-    message.append((char*)&currentTextSize, sizeof(double));
+    const QByteArray message = messageFromConsoleSetTextSize(currentTextSize);
     sendMessage(message);
 }
 

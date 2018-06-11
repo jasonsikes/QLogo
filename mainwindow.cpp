@@ -30,6 +30,7 @@
 #include "datum.h"
 #include "qlogo_controller.h"
 #include "ui_mainwindow.h"
+#include "message.h"
 #include <QDebug>
 #include <QKeyEvent>
 #include <QScrollBar>
@@ -86,26 +87,17 @@ void MainWindow::takeMesage(const QByteArray &message)
 {
     // The first byte of the message is the command.
     // (The params, if any, are in the remainder of the message.)
-    const char *data = message.constData();
-    char command = data[0];
+    char command = message.constData()[0];
 
     switch (command) {
     case C_CONSOLE_PRINT_STRING: {
-
-        // The first parameter is the length of the string to print
-        int *length = ((int*)&data[1]);
-        // The second parameter is the string to print
-        const QChar *str = ((const QChar *)&data[1 + sizeof(int)]);
-
-        QString text = QString::fromRawData(str, *length);
+        const QString text = consolePrintStringFromMessage(message);
         ui->mainConsole->printString(text);
         break;
     }
     case C_CONSOLE_SET_TEXT_SIZE: {
-
-        // The first parameter is the new size of text
-        double *size = ((double*)&data[1]);
-        ui->mainConsole->setTextSize(*size);
+        double size = consoleSetTextSizeFromMessage(message);
+        ui->mainConsole->setTextSize(size);
         break;
     }
     default:
