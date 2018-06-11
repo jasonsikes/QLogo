@@ -67,6 +67,13 @@ void Console::keyPressEvent(QKeyEvent *event) {
   }
 }
 
+void Console::setTextSize(double pointSize)
+{
+    QFont f = textFormat.font();
+    f.setPointSize(pointSize);
+    textFormat.setFont(f);
+}
+
 // TODO: the control functions should be broken out.
 void Console::printString(const QString &text) {
   QTextCursor tc = textCursor();
@@ -79,16 +86,6 @@ void Console::printString(const QString &text) {
         QBrush bg = textFormat.background();
         textFormat.setBackground(textFormat.foreground());
         textFormat.setForeground(bg);
-        break;
-      }
-      case C_SET_TEXT_SIZE: {
-        QStringRef sizeStringref = i->rightRef(i->size() - 1);
-        double pointSize = sizeStringref.toDouble();
-        if (pointSize > 0) {
-          QFont f = textFormat.font();
-          f.setPointSize(pointSize);
-          textFormat.setFont(f);
-        }
         break;
       }
       case C_SET_CURSOR_POS: {

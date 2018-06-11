@@ -168,7 +168,6 @@ public slots:
   editingHasEndedSlot(const QString *text); // NULL means text was "reverted"
 
   // Console
-  void printToScreenSlot(const QString &text);
   void requestCharacterSlot();
   void requestLineWithPromptSlot(const QString &line);
   void getTextCursorPosSlot(int &row, int &col);
@@ -195,6 +194,7 @@ signals:
   // MainWindow
   void setSplitterSizesSignal(float canvasRatio, float consoleRatio);
   void openEditorWindowSignal(QString *text);
+  void sendMessage(const QByteArray &message);
 
   // Console
   void printToScreenSignal(const QString &text);

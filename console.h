@@ -67,6 +67,7 @@ public:
   void requestCharacter(void);
   void requestLineWithPrompt(const QString &prompt);
   void getCursorPos(int &row, int &col);
+  void setTextSize(double pointSize);
 };
 
 #endif // CONSOLE_H
