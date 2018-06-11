@@ -1,4 +1,4 @@
-This is README for version 0.92 of QLogo
+This is README for candidate 0.93 of QLogo
 
 QLogo is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -40,8 +40,9 @@ any version in between should work just fine.
 QLogo is currently being developed and tested on the following platforms:
 
 * Windows 10 using Visual Studio 2017 and MinGW GCC 6.3.0.
-* SUSE Tumbleweed using GCC 7.3.1
+* Ubuntu 18.04 LTS using GCC 7.3.0
 * Mac OS X 10.13 using Clang/LLVM
+* Raspberry PI 3 using Raspbian
 
 
 ===============================================================
@@ -63,7 +64,7 @@ There are a few nuances:
 
 
 * Changes in font properties (size, color, family) do not affect characters
-  already printed. This enables multiple colors on the same text field.
+  already printed. This enables multiple colors and fonts on the same console.
   
 
 
@@ -136,7 +137,7 @@ SETTEMPLOC: ...... QLogo doesn't create temporary files at this time.
 
 * The following variables have no special meaning:
 
-COMMANDLINE: ..... QLogo is a GUI application at the moment although a
+COMMANDLINE: ..... QLogo is a GUI application at the moment, although a
                    significant amount of thought is being given to make this
                    also a command-line program.
 
@@ -159,13 +160,13 @@ CURSORMODE: .... Outputs either INSERT or OVERWRITE
 
 BOUNDS: ........ Outputs a list of two numbers giving the maximum bounds (x,y)
                  of the canvas.  e.g. bounds of [350 150] means that the
-                 turtle is visible if its X coordinate is between -350 and 350
-                 and its Y coordinate is between -150 and 150. The coordinate
+                 turtle is visible if its X-coordinate is between -350 and 350
+                 and its Y-coordinate is between -150 and 150. The coordinate
                  [0, 0] is always in the center.
 
 SETBOUNDS: ..... Takes two integers and sets outer bounds of the canvas.
 
-MATRIX: ........ This exists for debugging and may be removed soon. Outputs a
+MATRIX: ........ This exists for debugging and may be removed. Outputs a
                  list of four lists, each sublist contains four numbers. This
                  is the matrix that represents the current turtle state. In
                  row-major order.
