@@ -570,7 +570,10 @@ DatumP Kernel::excSetcursor(DatumP node) {
       return false;
     return true;
   });
-  mainController()->setTextCursorPos(v[0], v[1]);
+  QVector<int> position;
+  position << (int)v[0];
+  position << (int)v[1];
+  mainController()->setTextCursorPos(position);
   return nothing;
 }
 

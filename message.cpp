@@ -1,5 +1,8 @@
 #include "message.h"
 
+//
+// C_CONSOLE_PRINT_STRING
+//
 
 const QString consolePrintStringFromMessage(const QByteArray message)
 {
@@ -18,6 +21,10 @@ const QByteArray messageFromConsolePrintString(const QString str)
   return message;
 }
 
+//
+// C_CONSOLE_SET_TEXT_SIZE
+//
+
 double consoleSetTextSizeFromMessage(const QByteArray message)
 {
   const char *data = message.constData();
@@ -29,5 +36,29 @@ double consoleSetTextSizeFromMessage(const QByteArray message)
 const QByteArray messageFromConsoleSetTextSize(double size){
   QByteArray message(1, C_CONSOLE_SET_TEXT_SIZE);
   message.append((char*)&size, sizeof(double));
+  return message;
+}
+
+//
+// C_CONSOLE_SET_CURSOR_POS
+//
+
+QVector<int> consoleSetCursorPosFromMessage(const QByteArray message)
+{
+  const char *data = message.constData();
+
+  int *row = ((int*)&data[1]);
+  int *column = ((int*)&data[1 + sizeof(int)]);
+  QVector<int> retval;
+  retval << *row;
+  retval << *column;
+  return retval;
+}
+
+const QByteArray messageFromConsoleSetCursorPos(QVector<int> position)
+{
+  QByteArray message(1, C_CONSOLE_SET_CURSOR_POS);
+  message.append((char*)&position.first(), sizeof(int));
+  message.append((char*)&position.last(), sizeof(int));
   return message;
 }

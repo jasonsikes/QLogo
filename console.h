@@ -55,7 +55,6 @@ protected:
   void processModeKeyPressEvent(QKeyEvent *event);
   void dumpNextLineFromQueue();
 
-  void moveCursorToPos(int row, int col);
   void returnLine(const QString line);
 
 public:
@@ -68,6 +67,7 @@ public:
   void requestLineWithPrompt(const QString &prompt);
   void getCursorPos(int &row, int &col);
   void setTextSize(double pointSize);
+  void setCursorPosition(QVector<int> position);
 };
 
 #endif // CONSOLE_H

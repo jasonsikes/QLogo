@@ -87,7 +87,7 @@ public:
   bool keyQueueHasChars();
   DatumP readrawlineWithPrompt(const QString &prompt);
   DatumP readchar();
-  void setTextCursorPos(int row, int col);
+  void setTextCursorPos(QVector<int> position);
   void getTextCursorPos(int &row, int &col);
   void setTextColor(const QColor &foreground, const QColor &background);
   void printToConsole(const QString &s);

@@ -22,11 +22,12 @@
 ///
 /// \file
 /// This file contains the declarations of the Message functions, which are the
-/// mechanism that assembles and disassembles messages passed between the
+/// mechanisms that assemble and disassemble messages passed between the
 /// Kernel and MainWindow.
 ///
 //===----------------------------------------------------------------------===//
 #include <QString>
+#include <QVector>
 
 enum MessageCommandChar : char {
     C_CONSOLE_PRINT_STRING,
@@ -41,8 +42,9 @@ enum MessageCommandChar : char {
     C_CANVAS_SET_TURTLE_POS
 };
 
-/// Create a printable string from a message.
-const QString consolePrintStringFromMessage(const QByteArray message);
+//
+// MESSAGE COMPOSITION
+//
 
 /// Create a C_CONSOLE_PRINT_STRING message from a QString.
 ///
@@ -51,13 +53,31 @@ const QString consolePrintStringFromMessage(const QByteArray message);
 ///  * QChar* data (as returned by QString::constData)
 const QByteArray messageFromConsolePrintString(const QString str);
 
-/// Retrieve double from a C_CONSOLE_SET_TEXT_SIZE message.
-double consoleSetTextSizeFromMessage(const QByteArray message);
-
 /// Create a C_CONSOLE_SET_TEXT_SIZE message from a double.
 ///
 /// The format of the message is:
 ///  * double size
 const QByteArray messageFromConsoleSetTextSize(double size);
+
+
+/// Create a C_CONSOLE_SET_CURSOR_POS message from two integers.
+///
+/// The format of the message is:
+///  * int row
+///  * int column
+const QByteArray messageFromConsoleSetCursorPos(QVector<int> position);
+
+//
+// MESSAGE DECOMPOSITION
+//
+
+/// Create a printable string from a message.
+const QString consolePrintStringFromMessage(const QByteArray message);
+
+/// Retrieve double from a C_CONSOLE_SET_TEXT_SIZE message.
+double consoleSetTextSizeFromMessage(const QByteArray message);
+
+/// Retrieve two integers from a C_CONSOLE_SET_CURSOR_POS message
+QVector<int> consoleSetCursorPosFromMessage(const QByteArray message);
 
 #endif // MESSAGE_H

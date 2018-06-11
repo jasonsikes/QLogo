@@ -100,6 +100,11 @@ void MainWindow::takeMesage(const QByteArray &message)
         ui->mainConsole->setTextSize(size);
         break;
     }
+      case C_CONSOLE_SET_CURSOR_POS: {
+          QVector<int> position = consoleSetCursorPosFromMessage(message);
+          ui->mainConsole->setCursorPosition(position);
+          break;
+        }
     default:
         break;
     }

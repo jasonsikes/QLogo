@@ -277,10 +277,9 @@ void Controller::printToConsole(const QString &s) {
   sendMessage(message);
 }
 
-void Controller::setTextCursorPos(int row, int col) {
-//  printToConsole(escapeChar + C_SET_CURSOR_POS +
-//                 QString::number(row) + C_DELIM +
-//                 QString::number(col) + escapeChar);
+void Controller::setTextCursorPos(QVector<int> position) {
+  const QByteArray message = messageFromConsoleSetCursorPos(position);
+  sendMessage(message);
 }
 
 void Controller::setTextSize(double newSize) {

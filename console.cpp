@@ -88,18 +88,6 @@ void Console::printString(const QString &text) {
         textFormat.setForeground(bg);
         break;
       }
-      case C_SET_CURSOR_POS: {
-        QStringRef rowcolStringref = i->rightRef(i->size() - 1);
-        QVector<QStringRef> ary = rowcolStringref.split(C_DELIM);
-        if (ary.size() == 2) {
-          bool rowOK, colOK;
-          int row = ary[0].toInt(&rowOK);
-          int col = ary[1].toInt(&colOK);
-          if (rowOK && colOK)
-            moveCursorToPos(row, col);
-        }
-        break;
-      }
       case C_SET_TEXT_COLOR: {
         QStringRef rowcolStringref = i->rightRef(i->size() - 1);
         QVector<QStringRef> ary = rowcolStringref.split(C_DELIM);
@@ -157,7 +145,17 @@ void Console::requestLineWithPrompt(const QString &prompt) {
   dumpNextLineFromQueue();
 }
 
-void Console::moveCursorToPos(int row, int col) {
+void Console::getCursorPos(int &row, int &col) {
+  QTextCursor tc = textCursor();
+  row = tc.blockNumber();
+  col = tc.positionInBlock();
+}
+
+void Console::setCursorPosition(QVector<int> position)
+{
+  int row = position.first();
+  int col = position.last();
+
   int countOfRows = document()->blockCount();
   while (countOfRows <= row) {
     moveCursor(QTextCursor::End);
@@ -179,12 +177,6 @@ void Console::moveCursorToPos(int row, int col) {
     tc.setPosition(line.position() + col);
   }
   setTextCursor(tc);
-}
-
-void Console::getCursorPos(int &row, int &col) {
-  QTextCursor tc = textCursor();
-  row = tc.blockNumber();
-  col = tc.positionInBlock();
 }
 
 void Console::processCharModeKeyPressEvent(QKeyEvent *event) {
