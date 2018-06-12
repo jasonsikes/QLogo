@@ -81,7 +81,11 @@ void Console::setTextColor(QVector<QColor> colors)
   QPalette p = palette();
   p.setBrush(QPalette::Base, QBrush(colors.last()));
   setPalette(p);
+}
 
+void Console::clearText()
+{
+  QTextEdit::clear();
 }
 
 // TODO: the control functions should be broken out.
@@ -96,10 +100,6 @@ void Console::printString(const QString &text) {
         QBrush bg = textFormat.background();
         textFormat.setBackground(textFormat.foreground());
         textFormat.setForeground(bg);
-        break;
-      }
-      case C_CLEAR_TEXT: {
-        QTextEdit::clear();
         break;
       }
       case C_SET_FONT: {

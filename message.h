@@ -75,6 +75,9 @@ const QByteArray messageFromConsoleSetCursorPos(QVector<int> position);
 ///  * QRgba background
 const QByteArray messageFromConsoleSetTextColor(QVector<QColor> colors);
 
+/// Create a C_CONSOLE_CLEAR_TEXT message.
+const QByteArray messageFromConsoleClearText(void);
+
 //
 // MESSAGE DECOMPOSITION
 //

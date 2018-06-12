@@ -110,6 +110,10 @@ void MainWindow::takeMesage(const QByteArray &message)
           ui->mainConsole->setTextColor(colors);
           break;
         }
+      case C_CONSOLE_CLEAR_TEXT: {
+          ui->mainConsole->clearText();
+          break;
+        }
     default:
         break;
     }

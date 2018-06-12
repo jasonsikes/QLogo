@@ -92,3 +92,13 @@ const QByteArray messageFromConsoleSetTextColor(QVector<QColor> colors)
   message.append((char*)&background, sizeof(QRgba64));
   return message;
 }
+
+//
+// C_CONSOLE_CLEAR_TEXT
+//
+
+const QByteArray messageFromConsoleClearText(void)
+{
+  QByteArray message(1, C_CONSOLE_CLEAR_TEXT);
+  return message;
+}

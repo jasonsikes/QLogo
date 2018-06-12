@@ -358,7 +358,8 @@ bool Controller::atEnd() {
 }
 
 void Controller::clearScreenText() {
-//  printToConsole(escapeChar + C_CLEAR_TEXT + escapeChar);
+  const QByteArray message = messageFromConsoleClearText();
+  sendMessage(message);
 }
 
 bool Controller::keyQueueHasChars() { return mainWindow->consoleHasChars(); }

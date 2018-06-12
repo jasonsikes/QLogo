@@ -69,6 +69,7 @@ public:
   void setTextSize(double pointSize);
   void setCursorPosition(QVector<int> position);
   void setTextColor(QVector<QColor> colors);
+  void clearText(void);
 };
 
 #endif // CONSOLE_H
