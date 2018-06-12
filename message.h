@@ -28,6 +28,7 @@
 //===----------------------------------------------------------------------===//
 #include <QString>
 #include <QVector>
+#include <QColor>
 
 enum MessageCommandChar : char {
     C_CONSOLE_PRINT_STRING,
@@ -59,13 +60,20 @@ const QByteArray messageFromConsolePrintString(const QString str);
 ///  * double size
 const QByteArray messageFromConsoleSetTextSize(double size);
 
-
 /// Create a C_CONSOLE_SET_CURSOR_POS message from two integers.
 ///
 /// The format of the message is:
 ///  * int row
 ///  * int column
 const QByteArray messageFromConsoleSetCursorPos(QVector<int> position);
+
+
+/// Create a C_CONSOLE_SET_TEXT_COLOR message from two QColors.
+///
+/// The format of the message is:
+///  * QRgba foreground
+///  * QRgba background
+const QByteArray messageFromConsoleSetTextColor(QVector<QColor> colors);
 
 //
 // MESSAGE DECOMPOSITION
@@ -79,5 +87,8 @@ double consoleSetTextSizeFromMessage(const QByteArray message);
 
 /// Retrieve two integers from a C_CONSOLE_SET_CURSOR_POS message
 QVector<int> consoleSetCursorPosFromMessage(const QByteArray message);
+
+/// Retrieve two colors from a C_CONSOLE_SET_TEXT_COLOR message
+QVector<QColor> consoleSetTextColorFromMessage(const QByteArray message);
 
 #endif // MESSAGE_H

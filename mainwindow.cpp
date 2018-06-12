@@ -94,15 +94,20 @@ void MainWindow::takeMesage(const QByteArray &message)
         const QString text = consolePrintStringFromMessage(message);
         ui->mainConsole->printString(text);
         break;
-    }
+        }
     case C_CONSOLE_SET_TEXT_SIZE: {
         double size = consoleSetTextSizeFromMessage(message);
         ui->mainConsole->setTextSize(size);
         break;
-    }
+        }
       case C_CONSOLE_SET_CURSOR_POS: {
           QVector<int> position = consoleSetCursorPosFromMessage(message);
           ui->mainConsole->setCursorPosition(position);
+          break;
+        }
+      case C_CONSOLE_SET_TEXT_COLOR: {
+          QVector<QColor> colors = consoleSetTextColorFromMessage(message);
+          ui->mainConsole->setTextColor(colors);
           break;
         }
     default:

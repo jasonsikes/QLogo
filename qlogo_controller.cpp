@@ -309,9 +309,12 @@ void Controller::getTextCursorPos(int &row, int &col) {
 
 void Controller::setTextColor(const QColor &foreground,
                               const QColor &background) {
-//  printToConsole(
-//      escapeChar + C_SET_TEXT_COLOR + foreground.name(QColor::HexArgb) +
-//      C_DELIM + background.name(QColor::HexArgb) + escapeChar);
+
+  QVector<QColor> colors;
+  colors << foreground;
+  colors << background;
+  const QByteArray message = messageFromConsoleSetTextColor(colors);
+  sendMessage(message);
 }
 
 void Controller::getTextCursorPosSlot(int &row, int &col) {

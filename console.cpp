@@ -74,6 +74,16 @@ void Console::setTextSize(double pointSize)
     textFormat.setFont(f);
 }
 
+void Console::setTextColor(QVector<QColor> colors)
+{
+  textFormat.setForeground(QBrush(colors.first()));
+  textFormat.setBackground(QBrush(colors.last()));
+  QPalette p = palette();
+  p.setBrush(QPalette::Base, QBrush(colors.last()));
+  setPalette(p);
+
+}
+
 // TODO: the control functions should be broken out.
 void Console::printString(const QString &text) {
   QTextCursor tc = textCursor();
@@ -86,18 +96,6 @@ void Console::printString(const QString &text) {
         QBrush bg = textFormat.background();
         textFormat.setBackground(textFormat.foreground());
         textFormat.setForeground(bg);
-        break;
-      }
-      case C_SET_TEXT_COLOR: {
-        QStringRef rowcolStringref = i->rightRef(i->size() - 1);
-        QVector<QStringRef> ary = rowcolStringref.split(C_DELIM);
-        if (ary.size() == 2) {
-          textFormat.setForeground(QBrush(QColor(ary[0].toString())));
-          textFormat.setBackground(QBrush(QColor(ary[1].toString())));
-          QPalette p = palette();
-          p.setBrush(QPalette::Base, QBrush(QColor(ary[1].toString())));
-          setPalette(p);
-        }
         break;
       }
       case C_CLEAR_TEXT: {
