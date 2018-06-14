@@ -288,10 +288,10 @@ void Controller::setTextSize(double newSize) {
     sendMessage(message);
 }
 
-void Controller::setFontName(const QString &aName) {
-//  currentFontName = aName;
-//  printToConsole(escapeChar + C_SET_FONT + aName +
-//                 escapeChar);
+void Controller::setFontName(const QString aName) {
+  currentFontName = aName;
+  const QByteArray message = messageFromConsoleSetFont(aName);
+  sendMessage(message);
 }
 
 const QString Controller::getFontName() { return currentFontName; }

@@ -78,6 +78,10 @@ const QByteArray messageFromConsoleSetTextColor(QVector<QColor> colors);
 /// Create a C_CONSOLE_CLEAR_TEXT message.
 const QByteArray messageFromConsoleClearText(void);
 
+/// Create a C_CONSOLE_SET_FONT message.
+const QByteArray messageFromConsoleSetFont(const QString str);
+
+
 //
 // MESSAGE DECOMPOSITION
 //
@@ -88,10 +92,14 @@ const QString consolePrintStringFromMessage(const QByteArray message);
 /// Retrieve double from a C_CONSOLE_SET_TEXT_SIZE message.
 double consoleSetTextSizeFromMessage(const QByteArray message);
 
-/// Retrieve two integers from a C_CONSOLE_SET_CURSOR_POS message
+/// Retrieve two integers from a C_CONSOLE_SET_CURSOR_POS message.
 QVector<int> consoleSetCursorPosFromMessage(const QByteArray message);
 
-/// Retrieve two colors from a C_CONSOLE_SET_TEXT_COLOR message
+/// Retrieve two colors from a C_CONSOLE_SET_TEXT_COLOR message.
 QVector<QColor> consoleSetTextColorFromMessage(const QByteArray message);
+
+/// Retrieve a font name from a C_CONSOLE_SET_FONT message.
+const QString consoleSetFontFromMessage(const QByteArray message);
+
 
 #endif // MESSAGE_H

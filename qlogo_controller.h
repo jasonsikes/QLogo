@@ -106,7 +106,7 @@ public:
   void clearScreenText();
   void setTextSize(double newSize);
   double getTextSize();
-  void setFontName(const QString &aName);
+  void setFontName(const QString aName);
   const QString getFontName();
   QStringList getAllFontNames();
   void updateCanvas(void);

@@ -62,7 +62,7 @@ public:
   Console(QWidget *parent = 0);
   ~Console();
   bool charsInQueue();
-  void printString(const QString &text);
+  void printString(const QString text);
   void requestCharacter(void);
   void requestLineWithPrompt(const QString &prompt);
   void getCursorPos(int &row, int &col);
@@ -70,6 +70,7 @@ public:
   void setCursorPosition(QVector<int> position);
   void setTextColor(QVector<QColor> colors);
   void clearText(void);
+  void setTextFont(const QString fontName);
 };
 
 #endif // CONSOLE_H

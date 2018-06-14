@@ -114,6 +114,11 @@ void MainWindow::takeMesage(const QByteArray &message)
           ui->mainConsole->clearText();
           break;
         }
+      case C_CONSOLE_SET_FONT: {
+          const QString font = consoleSetFontFromMessage(message);
+          ui->mainConsole->setTextFont(font);
+          break;
+        }
     default:
         break;
     }

@@ -102,3 +102,25 @@ const QByteArray messageFromConsoleClearText(void)
   QByteArray message(1, C_CONSOLE_CLEAR_TEXT);
   return message;
 }
+
+//
+// C_CONSOLE_SET_FONT
+//
+
+const QString consoleSetFontFromMessage(const QByteArray message)
+{
+    const char *data = message.constData();
+    int *length = (int*)&data[1];
+    const QChar *str = (const QChar *)&data[1 + sizeof(int)];
+    return QString::fromRawData(str, *length);
+}
+
+const QByteArray messageFromConsoleSetFont(const QString str)
+{
+  int length = str.length();
+  QByteArray message(1, C_CONSOLE_SET_FONT);
+  message.append((char*)&length, sizeof(int));
+  message.append((char*)str.constData(), length * sizeof(QChar));
+  return message;
+}
+

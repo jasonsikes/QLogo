@@ -74,6 +74,14 @@ void Console::setTextSize(double pointSize)
     textFormat.setFont(f);
 }
 
+void Console::setTextFont(const QString fontName)
+{
+  QFont f = textFormat.font();
+  f.setFamily(fontName);
+  textFormat.setFont(f);
+
+}
+
 void Console::setTextColor(QVector<QColor> colors)
 {
   textFormat.setForeground(QBrush(colors.first()));
@@ -89,7 +97,7 @@ void Console::clearText()
 }
 
 // TODO: the control functions should be broken out.
-void Console::printString(const QString &text) {
+void Console::printString(const QString text) {
   QTextCursor tc = textCursor();
   QStringList stringList = text.split(escapeChar);
   bool isEscaped = false;
@@ -100,13 +108,6 @@ void Console::printString(const QString &text) {
         QBrush bg = textFormat.background();
         textFormat.setBackground(textFormat.foreground());
         textFormat.setForeground(bg);
-        break;
-      }
-      case C_SET_FONT: {
-        QString fontNameString = i->right(i->size() - 1);
-        QFont f = textFormat.font();
-        f.setFamily(fontNameString);
-        textFormat.setFont(f);
         break;
       }
       default:
