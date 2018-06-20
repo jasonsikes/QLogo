@@ -1,5 +1,24 @@
 This is README for candidate 0.93 of QLogo
 
+IMPORTANT!!!
+
+QLogo is in a state of transition. The latest source has parts that are broken
+and will be repaired later.
+
+If you want a fully working version of QLogo source you need to checkout
+Version 0.92! You can get this by issuing the following command in your
+local QLogo repository:
+
+$ git checkout v0.92
+
+You can also download QLogo Version 0.92 source on QLogo's download page:
+
+https://www.qlogo.org/download/
+
+
+==============================================================
+
+
 QLogo is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 2 of the License, or
