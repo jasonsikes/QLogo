@@ -448,6 +448,7 @@ public:
   DatumP excMacrop(DatumP node);
 
   DatumP excNoop(DatumP node); // Some LOGO commands have no action in QLogo
+  DatumP excErrorNoGui(DatumP node); // Some LOGO commands require a GUI which might not exist
 
   // SPECIAL VARIABLES
 

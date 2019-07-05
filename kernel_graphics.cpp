@@ -27,7 +27,8 @@
 #include "error.h"
 #include "kernel.h"
 
-#include CONTROLLER_HEADER
+#include "logocontroller.h"
+#include "qlogocontroller.h"
 
 #include <math.h>
 

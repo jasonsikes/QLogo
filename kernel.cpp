@@ -36,10 +36,11 @@
 #include "library.h"
 #include "turtle.h"
 
-#include CONTROLLER_HEADER
+#include "logocontroller.h"
+#include "qlogocontroller.h"
 
 // The maximum depth of procedure iterations before error is thrown.
-const int maxIterationDepth = 300;
+const int maxIterationDepth = 1000;
 
 ProcedureScope::ProcedureScope(Kernel *exec, DatumP procname) {
   ++(exec->procedureIterationDepth);
@@ -181,12 +182,11 @@ bool Kernel::getLineAndRunIt(bool shouldHandleError) {
 DatumP Kernel::registerError(DatumP anError, bool allowErract,
                              bool allowRecovery) {
   const QString erract = "ERRACT";
-  mainController()->clearEventQueue();
   currentError = anError;
   ProcedureHelper::setIsErroring(anError != nothing);
   if (anError != nothing) {
     Error *e = currentError.errorValue();
-    if (e->code == Error::ecUserGen) {
+    if (e->code == 35) {
       e->procedure = callingProcedure;
       e->instructionLine = callingLine;
     } else {
@@ -552,7 +552,6 @@ DatumP Kernel::runList(DatumP listP, const QString startTag) {
     }
   }
 
-  // After the end of each line in a procedure handle events
   while (!mainController()->eventQueueIsEmpty()) {
     char event = mainController()->nextQueueEvent();
     DatumP action;
@@ -601,6 +600,12 @@ DatumP Kernel::excNoop(DatumP node) {
   return h.ret();
 }
 
+DatumP Kernel::excErrorNoGui(DatumP node) {
+  ProcedureHelper h(this, node);
+  Error::noGraphics();
+  return h.ret();
+}
+
 DatumP Kernel::pause() {
   ProcedureScope procScope(this, nothing);
   PauseScope levelScope(&pauseLevel);
@@ -615,12 +620,12 @@ DatumP Kernel::pause() {
         shouldContinue = getLineAndRunIt(false);
       }
     } catch (Error *e) {
-      if ((e->code == Error::ecNoCatch) && (e->tag.wordValue()->keyValue() == "PAUSE")) {
+      if ((e->code == 14) && (e->tag.wordValue()->keyValue() == "PAUSE")) {
         DatumP retval = e->output;
         registerError(nothing);
         return retval;
       }
-      if ((e->code == Error::ecNoCatch) && (e->tag.wordValue()->keyValue() == "TOPLEVEL")) {
+      if ((e->code == 14) && (e->tag.wordValue()->keyValue() == "TOPLEVEL")) {
         throw e;
       }
       sysPrint(e->errorText.printValue());

@@ -26,12 +26,11 @@
 ///
 //===----------------------------------------------------------------------===//
 
-
-
 #include <QMainWindow>
 #include <QtGui/QOpenGLFunctions>
+#include <QProcess>
+#include <QDataStream>
 
-class Controller;
 class Canvas;
 class Console;
 
@@ -42,84 +41,36 @@ class MainWindow;
 class MainWindow : public QMainWindow {
   Q_OBJECT
 
-//  Controller *controller;
-  enum WaitingMode { notWaiting, waitingForKeypress, waitingForLine };
-  WaitingMode waitingFor;
-  void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
+    enum windowMode_t {
+        windowMode_noWait,
+        windowMode_waitForChar,
+        windowMode_waitForRawline,
+    };
 
 public:
-
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
-
   void show();
-
-  /// Returns 'true' if there are keystrokes in the input buffer
-  bool consoleHasChars();
-
-  /// Returns a pointer to the Canvas object.
-  Canvas *mainCanvas();
-
-  /// Returns a pointer to the Consoleobject.
-  Console *mainConsole();
-
-  /// Programatically set the ratio of canvas size versus console size.
-  void setSplitterSizeRatios(float canvasRatio, float consoleRatio);
-
-public slots:
-
-  void hideCanvas();
-
-  /// Accept a message (command) from the iterpreter.
-  ///
-  /// This is the means by which output is presented to the user.
-  /// Messages passed from the Controller have a single QChar prefix.
-  /// The remainder of the message will be formatted according to the prefix:
-  ///
-  /// Console messages:
-  ///
-  /// C_CONSOLE_PRINT_STRING
-  ///  : int length (as reported by QString::size)
-  ///  : QChar* data (as returned by QString::constData)
-  ///
-  /// C_CONSOLE_SET_TEXT_SIZE
-  ///  : double new size of text
-  ///
-  /// C_CONSOLE_SET_CURSOR_POS
-  ///  : int row
-  ///  : int column
-  ///
-  /// C_CONSOLE_SET_TEXT_COLOR
-  ///  : qint16 foreground red
-  ///  : qint16 foreground green
-  ///  : qint16 foreground blue
-  ///  : qint16 foreground alpha
-  ///  : qint16 background red
-  ///  : qint16 background green
-  ///  : qint16 background blue
-  ///  : qint16 background alpha
-  ///
-  /// C_CONSOLE_CLEAR_TEXT
-  ///
-  /// C_CONSOLE_SET_FONT
-  ///  : int length (as reported by QString::size)
-  ///  : QChar* data (as returned by QString::constData)
-  ///
-  /// C_CONSOLE_REQUEST_CHARACTER
-  ///
-  /// C_CONSOLE_REQUEST_LINE
-  ///
-  /// C_CONSOLE_REQUEST_CURSOR_POS
-  ///
-  ///
-  /// Canvas Messages
-  ///
-  /// C_CANVAS_SET_TURTLE_POS
-  ///  : float* data (as reported by QMatrix4x4::data)
-  void takeMesage(const QByteArray &message);
 
 private:
   Ui::MainWindow *ui;
+
+  QProcess *logoProcess;
+  QDataStream logoStream;
+
+  windowMode_t windowMode;
+
+  int startLogo();
+  void beginReadRawline();
+
+public slots:
+  void readStandardOutput();
+  void readStandardError();
+  void processStarted();
+  void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
+  void errorOccurred(QProcess::ProcessError error);
+
+  void sendRawlineSlot(const QString &line);
 };
 
 #endif // MAINWINDOW_H

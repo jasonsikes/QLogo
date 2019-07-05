@@ -30,7 +30,8 @@
 #include <qdatetime.h>
 #include <qdebug.h>
 
-#include CONTROLLER_HEADER
+#include "logocontroller.h"
+#include "qlogocontroller.h"
 
 static const QString specialChars("+-()*%/<>=");
 
@@ -42,6 +43,16 @@ char lastNonSpaceChar(const QString &line) {
       break;
   }
   return retval;
+}
+
+// return the method pointer if a GUI is available,
+// else return a pointer to the excErrorNoGUI method
+KernelMethod ifGUI(KernelMethod method) {
+  extern bool hasGUI;
+  if (hasGUI) {
+      return method;
+    }
+  return &Kernel::excErrorNoGui;
 }
 
 QHash<QString, Cmd_t> stringToCmd;
@@ -424,7 +435,7 @@ DatumP Parser::readrawlineWithPrompt(const QString &prompt,
                                      QTextStream *readStream) {
   DatumP retval;
   if (readStream == NULL) {
-    retval = mainController()->readrawlineWithPrompt(prompt);
+    retval = mainController()->readRawlineWithPrompt(prompt);
   } else {
     if (readStream->atEnd()) {
       return nothing;
@@ -1181,7 +1192,6 @@ DatumP Parser::parseCommand(bool isVararg) {
       DatumP child;
       if (minParams < 0) {
         child = currentToken;
-        qDebug() << "Adding child:" << currentToken.printValue();
         advanceToken();
       } else {
         child = parseExp();
@@ -1465,9 +1475,9 @@ Parser::Parser(Kernel *aKernel) {
 
   stringToCmd["CLEARTEXT"] = {&Kernel::excCleartext, 0, 0, 0};
   stringToCmd["CT"] = stringToCmd["CLEARTEXT"];
-  stringToCmd["CURSORINSERT"] = {&Kernel::excCursorInsert, 0, 0, 0};
-  stringToCmd["CURSOROVERWRITE"] = {&Kernel::excCursorOverwrite, 0, 0, 0};
-  stringToCmd["CURSORMODE"] = {&Kernel::excCursorMode, 0, 0, 0};
+  stringToCmd["CURSORINSERT"] = {ifGUI(&Kernel::excCursorInsert), 0, 0, 0};
+  stringToCmd["CURSOROVERWRITE"] = {ifGUI(&Kernel::excCursorOverwrite), 0, 0, 0};
+  stringToCmd["CURSORMODE"] = {ifGUI(&Kernel::excCursorMode), 0, 0, 0};
 
   stringToCmd["CLOSE"] = {&Kernel::excClose, 1, 1, 1};
   stringToCmd["CLOSEALL"] = {&Kernel::excCloseall, 0, 0, 0};
@@ -1521,7 +1531,7 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["MEMBER"] = {&Kernel::excMember, 2, 2, 2};
   stringToCmd["LOWERCASE"] = {&Kernel::excLowercase, 1, 1, 1};
   stringToCmd["UPPERCASE"] = {&Kernel::excUppercase, 1, 1, 1};
-  stringToCmd["STANDOUT"] = {&Kernel::excStandout, 1, 1, 1};
+  stringToCmd["STANDOUT"] = {ifGUI(&Kernel::excStandout), 1, 1, 1};
   stringToCmd["PARSE"] = {&Kernel::excParse, 1, 1, 1};
   stringToCmd["RUNPARSE"] = {&Kernel::excRunparse, 1, 1, 1};
 
@@ -1540,106 +1550,106 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["RERANDOM"] = {&Kernel::excRerandom, 0, 0, 1};
   stringToCmd["THING"] = {&Kernel::excThing, 1, 1, 1};
   stringToCmd["WAIT"] = {&Kernel::excWait, 1, 1, 1};
-  stringToCmd["SETCURSOR"] = {&Kernel::excSetcursor, 1, 1, 1};
-  stringToCmd["CURSOR"] = {&Kernel::excCursor, 0, 0, 0};
-  stringToCmd["SETTEXTCOLOR"] = {&Kernel::excSettextcolor, 1, 2, 2};
+  stringToCmd["SETCURSOR"] = {ifGUI(&Kernel::excSetcursor), 1, 1, 1};
+  stringToCmd["CURSOR"] = {ifGUI(&Kernel::excCursor), 0, 0, 0};
+  stringToCmd["SETTEXTCOLOR"] = {ifGUI(&Kernel::excSettextcolor), 1, 2, 2};
   stringToCmd["SETTC"] = stringToCmd["SETTEXTCOLOR"];
-  stringToCmd["SETTEXTSIZE"] = {&Kernel::excSettextsize, 1, 1, 1};
-  stringToCmd["INCREASEFONT"] = {&Kernel::excIncreasefont, 0, 0, 0};
-  stringToCmd["DECREASEFONT"] = {&Kernel::excDecreasefont, 0, 0, 0};
-  stringToCmd["SETTEXTSIZE"] = {&Kernel::excSettextsize, 1, 1, 1};
-  stringToCmd["TEXTSIZE"] = {&Kernel::excTextsize, 0, 0, 0};
-  stringToCmd["SETFONT"] = {&Kernel::excSetfont, 1, 1, 1};
-  stringToCmd["FONT"] = {&Kernel::excFont, 0, 0, 0};
-  stringToCmd["ALLFONTS"] = {&Kernel::excAllfonts, 0, 0, 0};
+  stringToCmd["SETTEXTSIZE"] = {ifGUI(&Kernel::excSettextsize), 1, 1, 1};
+  stringToCmd["INCREASEFONT"] = {ifGUI(&Kernel::excIncreasefont), 0, 0, 0};
+  stringToCmd["DECREASEFONT"] = {ifGUI(&Kernel::excDecreasefont), 0, 0, 0};
+  stringToCmd["SETTEXTSIZE"] = {ifGUI(&Kernel::excSettextsize), 1, 1, 1};
+  stringToCmd["TEXTSIZE"] = {ifGUI(&Kernel::excTextsize), 0, 0, 0};
+  stringToCmd["SETFONT"] = {ifGUI(&Kernel::excSetfont), 1, 1, 1};
+  stringToCmd["FONT"] = {ifGUI(&Kernel::excFont), 0, 0, 0};
+  stringToCmd["ALLFONTS"] = {ifGUI(&Kernel::excAllfonts), 0, 0, 0};
 
-  stringToCmd["FORWARD"] = {&Kernel::excForward, 1, 1, 1};
+  stringToCmd["FORWARD"] = {ifGUI(&Kernel::excForward), 1, 1, 1};
   stringToCmd["FD"] = stringToCmd["FORWARD"];
-  stringToCmd["BACK"] = {&Kernel::excBack, 1, 1, 1};
+  stringToCmd["BACK"] = {ifGUI(&Kernel::excBack), 1, 1, 1};
   stringToCmd["BK"] = stringToCmd["BACK"];
-  stringToCmd["RIGHT"] = {&Kernel::excRight, 1, 1, 1};
+  stringToCmd["RIGHT"] = {ifGUI(&Kernel::excRight), 1, 1, 1};
   stringToCmd["RT"] = stringToCmd["RIGHT"];
-  stringToCmd["LEFT"] = {&Kernel::excLeft, 1, 1, 1};
+  stringToCmd["LEFT"] = {ifGUI(&Kernel::excLeft), 1, 1, 1};
   stringToCmd["LT"] = stringToCmd["LEFT"];
-  stringToCmd["CLEARSCREEN"] = {&Kernel::excClearscreen, 0, 0, 0};
+  stringToCmd["CLEARSCREEN"] = {ifGUI(&Kernel::excClearscreen), 0, 0, 0};
   stringToCmd["CS"] = stringToCmd["CLEARSCREEN"];
-  stringToCmd["CLEAN"] = {&Kernel::excClean, 0, 0, 0};
-  stringToCmd["PENUP"] = {&Kernel::excPenup, 0, 0, 0};
+  stringToCmd["CLEAN"] = {ifGUI(&Kernel::excClean), 0, 0, 0};
+  stringToCmd["PENUP"] = {ifGUI(&Kernel::excPenup), 0, 0, 0};
   stringToCmd["PU"] = stringToCmd["PENUP"];
-  stringToCmd["PENDOWN"] = {&Kernel::excPendown, 0, 0, 0};
+  stringToCmd["PENDOWN"] = {ifGUI(&Kernel::excPendown), 0, 0, 0};
   stringToCmd["PD"] = stringToCmd["PENDOWN"];
-  stringToCmd["PENDOWNP"] = {&Kernel::excPendownp, 0, 0, 0};
+  stringToCmd["PENDOWNP"] = {ifGUI(&Kernel::excPendownp), 0, 0, 0};
   stringToCmd["PENDOWN?"] = stringToCmd["PENDOWNP"];
-  stringToCmd["HIDETURTLE"] = {&Kernel::excHideturtle, 0, 0, 0};
+  stringToCmd["HIDETURTLE"] = {ifGUI(&Kernel::excHideturtle), 0, 0, 0};
   stringToCmd["HT"] = stringToCmd["HIDETURTLE"];
-  stringToCmd["SHOWTURTLE"] = {&Kernel::excShowturtle, 0, 0, 0};
+  stringToCmd["SHOWTURTLE"] = {ifGUI(&Kernel::excShowturtle), 0, 0, 0};
   stringToCmd["ST"] = stringToCmd["SHOWTURTLE"];
   // stringToCmd["SETXYZ"]         = {&Kernel::excSetXYZ, 3,3,3};
-  stringToCmd["SETXY"] = {&Kernel::excSetXY, 2, 2, 2};
-  stringToCmd["SETX"] = {&Kernel::excSetX, 1, 1, 1};
-  stringToCmd["SETY"] = {&Kernel::excSetY, 1, 1, 1};
+  stringToCmd["SETXY"] = {ifGUI(&Kernel::excSetXY), 2, 2, 2};
+  stringToCmd["SETX"] = {ifGUI(&Kernel::excSetX), 1, 1, 1};
+  stringToCmd["SETY"] = {ifGUI(&Kernel::excSetY), 1, 1, 1};
   // stringToCmd["SETZ"]           = {&Kernel::excSetZ, 1,1,1};
-  stringToCmd["SETPOS"] = {&Kernel::excSetpos, 1, 1, 1};
-  stringToCmd["POS"] = {&Kernel::excPos, 0, 0, 1};
-  stringToCmd["HOME"] = {&Kernel::excHome, 0, 0, 0};
-  stringToCmd["HEADING"] = {&Kernel::excHeading, 0, 0, 1};
-  stringToCmd["SETHEADING"] = {&Kernel::excSetheading, 1, 1, 2};
+  stringToCmd["SETPOS"] = {ifGUI(&Kernel::excSetpos), 1, 1, 1};
+  stringToCmd["POS"] = {ifGUI(&Kernel::excPos), 0, 0, 1};
+  stringToCmd["HOME"] = {ifGUI(&Kernel::excHome), 0, 0, 0};
+  stringToCmd["HEADING"] = {ifGUI(&Kernel::excHeading), 0, 0, 1};
+  stringToCmd["SETHEADING"] = {ifGUI(&Kernel::excSetheading), 1, 1, 2};
   stringToCmd["SETH"] = stringToCmd["SETHEADING"];
-  stringToCmd["ARC"] = {&Kernel::excArc, 2, 2, 2};
-  stringToCmd["TOWARDS"] = {&Kernel::excTowards, 1, 1, 1};
-  stringToCmd["SCRUNCH"] = {&Kernel::excScrunch, 0, 0, 0};
-  stringToCmd["SETSCRUNCH"] = {&Kernel::excSetscrunch, 2, 2, 2};
-  stringToCmd["LABEL"] = {&Kernel::excLabel, 1, 1, 1};
-  stringToCmd["LABELHEIGHT"] = {&Kernel::excLabelheight, 0, 0, 0};
-  stringToCmd["SETLABELHEIGHT"] = {&Kernel::excSetlabelheight, 1, 1, 1};
-  stringToCmd["SHOWNP"] = {&Kernel::excShownp, 0, 0, 0};
+  stringToCmd["ARC"] = {ifGUI(&Kernel::excArc), 2, 2, 2};
+  stringToCmd["TOWARDS"] = {ifGUI(&Kernel::excTowards), 1, 1, 1};
+  stringToCmd["SCRUNCH"] = {ifGUI(&Kernel::excScrunch), 0, 0, 0};
+  stringToCmd["SETSCRUNCH"] = {ifGUI(&Kernel::excSetscrunch), 2, 2, 2};
+  stringToCmd["LABEL"] = {ifGUI(&Kernel::excLabel), 1, 1, 1};
+  stringToCmd["LABELHEIGHT"] = {ifGUI(&Kernel::excLabelheight), 0, 0, 0};
+  stringToCmd["SETLABELHEIGHT"] = {ifGUI(&Kernel::excSetlabelheight), 1, 1, 1};
+  stringToCmd["SHOWNP"] = {ifGUI(&Kernel::excShownp), 0, 0, 0};
   stringToCmd["SHOWN?"] = stringToCmd["SHOWNP"];
-  stringToCmd["SETPENCOLOR"] = {&Kernel::excSetpencolor, 1, 1, 1};
+  stringToCmd["SETPENCOLOR"] = {ifGUI(&Kernel::excSetpencolor), 1, 1, 1};
   stringToCmd["SETPC"] = stringToCmd["SETPENCOLOR"];
-  stringToCmd["PENCOLOR"] = {&Kernel::excPencolor, 0, 0, 0};
+  stringToCmd["PENCOLOR"] = {ifGUI(&Kernel::excPencolor), 0, 0, 0};
   stringToCmd["PC"] = stringToCmd["PENCOLOR"];
-  stringToCmd["SETPALETTE"] = {&Kernel::excSetpalette, 2, 2, 2};
-  stringToCmd["PALETTE"] = {&Kernel::excPalette, 1, 1, 1};
-  stringToCmd["BACKGROUND"] = {&Kernel::excBackground, 0, 0, 0};
+  stringToCmd["SETPALETTE"] = {ifGUI(&Kernel::excSetpalette), 2, 2, 2};
+  stringToCmd["PALETTE"] = {ifGUI(&Kernel::excPalette), 1, 1, 1};
+  stringToCmd["BACKGROUND"] = {ifGUI(&Kernel::excBackground), 0, 0, 0};
   stringToCmd["BG"] = stringToCmd["BACKGROUND"];
-  stringToCmd["SETBACKGROUND"] = {&Kernel::excSetbackground, 1, 1, 1};
+  stringToCmd["SETBACKGROUND"] = {ifGUI(&Kernel::excSetbackground), 1, 1, 1};
   stringToCmd["SETBG"] = stringToCmd["SETBACKGROUND"];
-  stringToCmd["SAVEPICT"] = {&Kernel::excSavepict, 1, 1, 1};
+  stringToCmd["SAVEPICT"] = {ifGUI(&Kernel::excSavepict), 1, 1, 1};
 
-  stringToCmd["PENPAINT"] = {&Kernel::excPenpaint, 0, 0, 0};
+  stringToCmd["PENPAINT"] = {ifGUI(&Kernel::excPenpaint), 0, 0, 0};
   stringToCmd["PPT"] = stringToCmd["PENPAINT"];
-  stringToCmd["PENERASE"] = {&Kernel::excPenerase, 0, 0, 0};
+  stringToCmd["PENERASE"] = {ifGUI(&Kernel::excPenerase), 0, 0, 0};
   stringToCmd["PE"] = stringToCmd["PENERASE"];
-  stringToCmd["PENREVERSE"] = {&Kernel::excPenreverse, 0, 0, 0};
+  stringToCmd["PENREVERSE"] = {ifGUI(&Kernel::excPenreverse), 0, 0, 0};
   stringToCmd["PX"] = stringToCmd["PENREVERSE"];
-  stringToCmd["PENMODE"] = {&Kernel::excPenmode, 0, 0, 0};
-  stringToCmd["SETPENSIZE"] = {&Kernel::excSetpensize, 1, 1, 1};
-  stringToCmd["PENSIZE"] = {&Kernel::excPensize, 0, 0, 0};
-  stringToCmd["FILLED"] = {&Kernel::excFilled, 2, 2, 2};
+  stringToCmd["PENMODE"] = {ifGUI(&Kernel::excPenmode), 0, 0, 0};
+  stringToCmd["SETPENSIZE"] = {ifGUI(&Kernel::excSetpensize), 1, 1, 1};
+  stringToCmd["PENSIZE"] = {ifGUI(&Kernel::excPensize), 0, 0, 0};
+  stringToCmd["FILLED"] = {ifGUI(&Kernel::excFilled), 2, 2, 2};
 
-  stringToCmd["WRAP"] = {&Kernel::excWrap, 0, 0, 0};
-  stringToCmd["FENCE"] = {&Kernel::excFence, 0, 0, 0};
-  stringToCmd["WINDOW"] = {&Kernel::excWindow, 0, 0, 0};
-  stringToCmd["TURTLEMODE"] = {&Kernel::excTurtlemode, 0, 0, 0};
+  stringToCmd["WRAP"] = {ifGUI(&Kernel::excWrap), 0, 0, 0};
+  stringToCmd["FENCE"] = {ifGUI(&Kernel::excFence), 0, 0, 0};
+  stringToCmd["WINDOW"] = {ifGUI(&Kernel::excWindow), 0, 0, 0};
+  stringToCmd["TURTLEMODE"] = {ifGUI(&Kernel::excTurtlemode), 0, 0, 0};
 
-  stringToCmd["MOUSEPOS"] = {&Kernel::excMousepos, 0, 0, 0};
-  stringToCmd["CLICKPOS"] = {&Kernel::excClickpos, 0, 0, 0};
-  stringToCmd["BOUNDS"] = {&Kernel::excBounds, 0, 0, 0};
-  stringToCmd["SETBOUNDS"] = {&Kernel::excSetbounds, 2, 2, 2};
+  stringToCmd["MOUSEPOS"] = {ifGUI(&Kernel::excMousepos), 0, 0, 0};
+  stringToCmd["CLICKPOS"] = {ifGUI(&Kernel::excClickpos), 0, 0, 0};
+  stringToCmd["BOUNDS"] = {ifGUI(&Kernel::excBounds), 0, 0, 0};
+  stringToCmd["SETBOUNDS"] = {ifGUI(&Kernel::excSetbounds), 2, 2, 2};
 
-  stringToCmd["TEXTSCREEN"] = {&Kernel::excTextscreen, 0, 0, 0};
+  stringToCmd["TEXTSCREEN"] = {ifGUI(&Kernel::excTextscreen), 0, 0, 0};
   stringToCmd["TS"] = stringToCmd["TEXTSCREEN"];
-  stringToCmd["FULLSCREEN"] = {&Kernel::excFullscreen, 0, 0, 0};
+  stringToCmd["FULLSCREEN"] = {ifGUI(&Kernel::excFullscreen), 0, 0, 0};
   stringToCmd["FS"] = stringToCmd["FULLSCREEN"];
-  stringToCmd["SPLITSCREEN"] = {&Kernel::excSplitscreen, 0, 0, 0};
+  stringToCmd["SPLITSCREEN"] = {ifGUI(&Kernel::excSplitscreen), 0, 0, 0};
   stringToCmd["SS"] = stringToCmd["SPLITSCREEN"];
-  stringToCmd["SCREENMODE"] = {&Kernel::excScreenmode, 0, 0, 0};
+  stringToCmd["SCREENMODE"] = {ifGUI(&Kernel::excScreenmode), 0, 0, 0};
 
-  stringToCmd["BUTTONP"] = {&Kernel::excButtonp, 0, 0, 0};
+  stringToCmd["BUTTONP"] = {ifGUI(&Kernel::excButtonp), 0, 0, 0};
   stringToCmd["BUTTON?"] = stringToCmd["BUTTONP"];
-  stringToCmd["BUTTON"] = {&Kernel::excButton, 0, 0, 0};
+  stringToCmd["BUTTON"] = {ifGUI(&Kernel::excButton), 0, 0, 0};
 
-  stringToCmd["MATRIX"] = {&Kernel::excMatrix, 0, 0, 0}; // for debugging
+  stringToCmd["MATRIX"] = {ifGUI(&Kernel::excMatrix), 0, 0, 0}; // for debugging
 
   stringToCmd["SUM"] = {&Kernel::excSum, 0, 2, -1};
   stringToCmd["DIFFERENCE"] = {&Kernel::excDifference, 2, 2, 2};

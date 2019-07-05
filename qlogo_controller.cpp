@@ -41,7 +41,6 @@
 #include "console.h"
 #include "error.h"
 #include "kernel.h"
-#include "message.h"
 
 // For rand()
 #include <stdlib.h>
@@ -111,8 +110,8 @@ Controller::Controller(QObject *parent) : QThread(parent) {
   connect(this, SIGNAL(setCursorOverwriteModeSignal(bool)), this,
           SLOT(setCursorOverwriteModeSlot(bool)), Qt::QueuedConnection);
 
-  connect(this, SIGNAL(sendMessage(QByteArray)),
-          mainWindow, SLOT(takeMesage(QByteArray)), Qt::QueuedConnection);
+  connect(this, SIGNAL(printToScreenSignal(QString)), this,
+          SLOT(printToScreenSlot(QString)), Qt::QueuedConnection);
   connect(this, SIGNAL(getTextCursorPosSignal(int &, int &)), this,
           SLOT(getTextCursorPosSlot(int &, int &)),
           Qt::BlockingQueuedConnection);
@@ -273,25 +272,25 @@ QString Controller::addStandoutToString(const QString &src) {
 void Controller::printToConsole(const QString &s) {
   if (dribbleStream)
     *dribbleStream << s;
-  const QByteArray message = messageFromConsolePrintString(s);
-  sendMessage(message);
+  printToScreenSignal(s);
 }
 
-void Controller::setTextCursorPos(QVector<int> position) {
-  const QByteArray message = messageFromConsoleSetCursorPos(position);
-  sendMessage(message);
+void Controller::setTextCursorPos(int row, int col) {
+  printToConsole(escapeChar + C_SET_CURSOR_POS +
+                 QString::number(row) + C_DELIM +
+                 QString::number(col) + escapeChar);
 }
 
 void Controller::setTextSize(double newSize) {
-    currentTextSize = newSize;
-    const QByteArray message = messageFromConsoleSetTextSize(currentTextSize);
-    sendMessage(message);
+  currentTextSize = newSize;
+  printToConsole(escapeChar + C_SET_TEXT_SIZE +
+                 QString::number(newSize) + escapeChar);
 }
 
-void Controller::setFontName(const QString aName) {
+void Controller::setFontName(const QString &aName) {
   currentFontName = aName;
-  const QByteArray message = messageFromConsoleSetFont(aName);
-  sendMessage(message);
+  printToConsole(escapeChar + C_SET_FONT + aName +
+                 escapeChar);
 }
 
 const QString Controller::getFontName() { return currentFontName; }
@@ -309,16 +308,17 @@ void Controller::getTextCursorPos(int &row, int &col) {
 
 void Controller::setTextColor(const QColor &foreground,
                               const QColor &background) {
-
-  QVector<QColor> colors;
-  colors << foreground;
-  colors << background;
-  const QByteArray message = messageFromConsoleSetTextColor(colors);
-  sendMessage(message);
+  printToConsole(
+      escapeChar + C_SET_TEXT_COLOR + foreground.name(QColor::HexArgb) +
+      C_DELIM + background.name(QColor::HexArgb) + escapeChar);
 }
 
 void Controller::getTextCursorPosSlot(int &row, int &col) {
   mainWindow->mainConsole()->getCursorPos(row, col);
+}
+
+void Controller::printToScreenSlot(const QString &text) {
+  mainWindow->mainConsole()->printString(text);
 }
 
 void Controller::requestCharacterSlot() {
@@ -358,8 +358,7 @@ bool Controller::atEnd() {
 }
 
 void Controller::clearScreenText() {
-  const QByteArray message = messageFromConsoleClearText();
-  sendMessage(message);
+  printToConsole(escapeChar + C_CLEAR_TEXT + escapeChar);
 }
 
 bool Controller::keyQueueHasChars() { return mainWindow->consoleHasChars(); }

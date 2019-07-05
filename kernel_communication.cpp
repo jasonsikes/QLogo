@@ -28,7 +28,8 @@
 #include "kernel.h"
 #include "parser.h"
 
-#include CONTROLLER_HEADER
+#include "logocontroller.h"
+#include "qlogocontroller.h"
 
 #include <QByteArray> // for SHELL
 #include <QDir>
@@ -570,10 +571,7 @@ DatumP Kernel::excSetcursor(DatumP node) {
       return false;
     return true;
   });
-  QVector<int> position;
-  position << (int)v[0];
-  position << (int)v[1];
-  mainController()->setTextCursorPos(position);
+  mainController()->setTextCursorPos(v[0], v[1]);
   return nothing;
 }
 
@@ -591,9 +589,7 @@ DatumP Kernel::excCursor(DatumP node) {
 DatumP Kernel::excSettextcolor(DatumP node) {
   ProcedureHelper h(this, node);
   QColor foreground;
-  // TODO: current background color might not be white
   QColor background = QColor("white");
-  // TODO: if foregroundP and backgroundP are unused, consider removing
   DatumP foregroundP =
       h.validatedDatumAtIndex(0, [&foreground, this](DatumP candidate) {
         return colorFromDatumP(foreground, candidate);

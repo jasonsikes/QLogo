@@ -28,49 +28,47 @@
 
 #include <QTextEdit>
 
-class QMimeData;
 
 class Console : public QTextEdit {
   Q_OBJECT
 
-  enum ConsoleMode_t { inactiveMode, lineMode, charMode };
-
-  ConsoleMode_t inputMode = inactiveMode;
-  QString keyQueue;
-
-  // Line input history traversing
-  QStringList lineInputHistory;
-  int lineInputHistoryScrollingCurrentIndex;
-  void replaceLineWithHistoryIndex(int newIndex);
-
 protected:
-  int beginningOfLine = 0;
-  bool keyQueueHasChars;
-  void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
-  void insertFromMimeData(const QMimeData *source) Q_DECL_OVERRIDE;
 
-  void processLineModeKeyPressEvent(QKeyEvent *event);
-  void processCharModeKeyPressEvent(QKeyEvent *event);
+    // Key press events
+    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+    void processLineModeKeyPressEvent(QKeyEvent *event);
+    void processCharModeKeyPressEvent(QKeyEvent *);
+    void processNoWaitKeyPressEvent(QKeyEvent *event);
 
-  void processModeKeyPressEvent(QKeyEvent *event);
-  void dumpNextLineFromQueue();
+    enum consoleMode_t {
+        consoleModeNoWait,
+        consoleModeWaitingForChar,
+        consoleModeWaitingForRawline,
+    };
+    consoleMode_t consoleMode;
+    int beginningOfRawline;
+    int beginningOfRawlineInBlock;
 
-  void returnLine(const QString line);
+    // Line input history
+    QStringList lineInputHistory;
+    int lineInputHistoryScrollingCurrentIndex;
+    void replaceLineWithHistoryIndex(int newIndex);
 
+    // Keypress and paste buffers
+    QString keyQueue;
+    void insertNextLineFromQueue();
+    void insertFromMimeData(const QMimeData *source) Q_DECL_OVERRIDE;
 public:
-  QTextCharFormat textFormat;
   Console(QWidget *parent = 0);
   ~Console();
-  bool charsInQueue();
+
+  QTextCharFormat textFormat;
+
   void printString(const QString text);
-  void requestCharacter(void);
-  void requestLineWithPrompt(const QString &prompt);
-  void getCursorPos(int &row, int &col);
-  void setTextSize(double pointSize);
-  void setCursorPosition(QVector<int> position);
-  void setTextColor(QVector<QColor> colors);
-  void clearText(void);
-  void setTextFont(const QString fontName);
+  void requestRawline();
+
+signals:
+  void sendRawlineSignal(const QString &rawLine);
 };
 
 #endif // CONSOLE_H

@@ -28,7 +28,8 @@
 #include "kernel.h"
 #include "parser.h"
 
-#include CONTROLLER_HEADER
+#include "logocontroller.h"
+#include "qlogocontroller.h"
 
 const QString inputlistStr = "*inputlist*";
 
@@ -55,7 +56,7 @@ DatumP Kernel::excRunresult(DatumP node) {
   DatumP temp = runList(instructionList);
 
   if (temp.isASTNode()) {
-    temp = Error::insideRunresult(temp.astnodeValue()->nodeName, node.astnodeValue()->nodeName);
+    temp = Error::insideRunresult(temp.astnodeValue()->nodeName);
   }
 
   if (temp != nothing) {
@@ -241,11 +242,11 @@ DatumP Kernel::excCatch(DatumP node) {
     }
 
     if ((tag == "ERROR") &&
-        (((e->code == Error::ecNoCatch) && (e->tag.wordValue()->keyValue()) == "ERROR") ||
-         (e->code != Error::ecNoCatch))) {
+        (((e->code == 14) && (e->tag.wordValue()->keyValue()) == "ERROR") ||
+         (e->code != 14))) {
       ProcedureHelper::setIsErroring(false);
       return nothing;
-    } else if ((e->code == Error::ecNoCatch) && (tag == e->tag.wordValue()->keyValue())) {
+    } else if ((e->code == 14) && (tag == e->tag.wordValue()->keyValue())) {
       DatumP retval = e->output;
       registerError(nothing);
       return h.ret(retval);

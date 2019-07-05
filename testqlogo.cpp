@@ -2624,7 +2624,7 @@ void TestQLogo::testKernel_data() {
 
   QTest::newRow("CATCH 1") << "catch \"error [notafunc]\n"
                               "show error\n"
-                           << "[24 I don't know how to notafunc [] []]\n";
+                           << "[13 I don't know how to notafunc [] []]\n";
 
   QTest::newRow("CATCH 2") << "catch \"err [notafunc]\n"
                            << "I don't know how to notafunc\n";
@@ -2688,7 +2688,7 @@ void TestQLogo::testKernel_data() {
                               "level2\n"
                            << "throw_error defined\n"
                               "level2 defined\n"
-                              "[24 I don't know how to not_a_function "
+                              "[13 I don't know how to not_a_function "
                               "throw_error [not_a_function]]\n";
 
   QTest::newRow("THROW 4")
@@ -3157,8 +3157,7 @@ void TestQLogo::testKernel_data() {
 
   // If this test causes a segfault, then tail recursion optomization is broken.
   // This test takes a whole second on my hardware.
-  // (Five seconds on a Raspberry Pi.)
-  QTest::newRow("tail recursion optimization")
+  QTest::newRow("tail recursion optomization")
           << "to qw :i\n"
              "if :i < 0 [output 0]\n"
              "output qw :i-1\n"
@@ -3169,15 +3168,6 @@ void TestQLogo::testKernel_data() {
   QTest::newRow("fput list to word")
           << "fput [hi] \"hello\n"
           << "fput doesn't like hello as input\n";
-
-  QTest::newRow("OUTPUT within IF")
-      << "to az\n"
-         "if [output \"true] [output 0]\n"
-         "end\n"
-         "az\n"
-      << "az defined\n"
-         "if doesn't like [output \"true] as input in az\n"
-         "[if [output \"true] [output 0]]\n";
 
 }
 

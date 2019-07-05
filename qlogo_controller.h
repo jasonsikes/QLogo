@@ -87,7 +87,7 @@ public:
   bool keyQueueHasChars();
   DatumP readrawlineWithPrompt(const QString &prompt);
   DatumP readchar();
-  void setTextCursorPos(QVector<int> position);
+  void setTextCursorPos(int row, int col);
   void getTextCursorPos(int &row, int &col);
   void setTextColor(const QColor &foreground, const QColor &background);
   void printToConsole(const QString &s);
@@ -106,7 +106,7 @@ public:
   void clearScreenText();
   void setTextSize(double newSize);
   double getTextSize();
-  void setFontName(const QString aName);
+  void setFontName(const QString &aName);
   const QString getFontName();
   QStringList getAllFontNames();
   void updateCanvas(void);
@@ -134,7 +134,6 @@ public:
   void setIsMouseButtonDown(bool aIsMouseButtonDown);
   QString addStandoutToString(const QString &src);
 
-  void clearEventQueue();
   bool eventQueueIsEmpty();
   char nextQueueEvent();
   void addEventToQueue(char eventChar);
@@ -168,6 +167,7 @@ public slots:
   editingHasEndedSlot(const QString *text); // NULL means text was "reverted"
 
   // Console
+  void printToScreenSlot(const QString &text);
   void requestCharacterSlot();
   void requestLineWithPromptSlot(const QString &line);
   void getTextCursorPosSlot(int &row, int &col);
@@ -194,7 +194,6 @@ signals:
   // MainWindow
   void setSplitterSizesSignal(float canvasRatio, float consoleRatio);
   void openEditorWindowSignal(QString *text);
-  void sendMessage(const QByteArray &message);
 
   // Console
   void printToScreenSignal(const QString &text);
@@ -235,6 +234,7 @@ protected:
   int button = 0;
 
   QList<char> eventQueue;
+  void clearEventQueue();
   QMutex eventQueueMutex;
   bool eventQueueEmpty = true;
   bool shouldQueueEvents = true;

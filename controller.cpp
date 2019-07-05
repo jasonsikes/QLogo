@@ -1,5 +1,5 @@
 
-//===-- qlogo/test_controller.cpp - Controller class implementation -------*-
+//===-- qlogo/logo_controller.cpp - Controller class implementation -------*-
 // C++ -*-===//
 //
 // This file is part of QLogo.
@@ -20,12 +20,12 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the Controller class, which is a
-/// stand-in replacement controller class for testing.
+/// This file contains the implementation of the Controller class, which
+/// provides the I/O interfaces.
 ///
 //===----------------------------------------------------------------------===//
 
-#include "test_controller.h"
+#include "controller.h"
 
 #include <QDebug>
 
@@ -41,7 +41,6 @@
 
 Controller *_maincontroller = NULL;
 qreal initialBoundXY = 150;
-bool hasGUI = true;
 
 Controller *mainController() {
   Q_ASSERT(_maincontroller != NULL);
@@ -49,18 +48,17 @@ Controller *mainController() {
 }
 
 Controller::Controller(QObject *parent) : QObject(parent) {
-  Q_ASSERT(_maincontroller == NULL);
-  readStream = NULL;
-  writeStream = NULL;
-  dribbleStream = NULL;
-  _maincontroller = this;
-  kernel = new Kernel;
+    Q_ASSERT(_maincontroller == NULL);
+    readStream = NULL;
+    writeStream = NULL;
+    dribbleStream = NULL;
+    _maincontroller = this;
+    kernel = new Kernel;
 }
 
 Controller::~Controller() {
-  setDribble("");
-  delete kernel;
-  _maincontroller = NULL;
+    delete kernel;
+    _maincontroller = NULL;
 }
 
 bool Controller::setDribble(const QString &filePath) {
@@ -90,61 +88,15 @@ QString Controller::addStandoutToString(const QString &src) {
   return retval;
 }
 
-void Controller::printToConsole(const QString &s) {
-  if (writeStream == NULL) {
-    *outStream << s;
-    if (dribbleStream)
-      *dribbleStream << s;
-  } else {
-    *writeStream << s;
-  }
-}
 
-bool Controller::atEnd() { return inStream->atEnd(); }
-
-bool Controller::keyQueueHasChars() { return !inStream->atEnd(); }
-
-// This is READRAWLINE
-DatumP Controller::readrawlineWithPrompt(const QString &) {
-  QTextStream *stream = (readStream == NULL) ? inStream : readStream;
-  if (stream->atEnd())
-    return nothing;
-  QString inputText = stream->readLine();
-  DatumP retval = DatumP(new Word(inputText));
-
-  return retval;
-}
-
-// This is READCHAR
-DatumP Controller::readchar() {
-  QChar c;
-  QTextStream *stream = (readStream == NULL) ? inStream : readStream;
-  if (stream->atEnd())
-    return nothing;
-  *stream >> c;
-  DatumP retval = DatumP(new Word(c));
-  return retval;
-}
-
-QString Controller::run(const QString &aInput) {
-  QString input = aInput;
-  QString output = "";
-
-  inStream = new QTextStream(&input, QIODevice::ReadOnly);
-  outStream = new QTextStream(&output, QIODevice::WriteOnly);
+int Controller::run(void) {
+  kernel->initLibrary();
 
   bool shouldContinue = true;
   while (shouldContinue) {
     shouldContinue = kernel->getLineAndRunIt();
   }
 
-  delete inStream;
-  delete outStream;
-
-  return output;
+  return 0;
 }
 
-void Controller::mwait(unsigned long msecs) {
-  outStream->flush();
-  QThread::msleep(msecs);
-}
