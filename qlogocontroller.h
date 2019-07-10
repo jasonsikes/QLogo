@@ -15,12 +15,15 @@ class QLogoController : public Controller
 
     // Return values from getMessage()
     QString rawLine;
+    QChar rawChar;
+
 public:
     QLogoController(QObject *parent = 0);
     ~QLogoController();
 
     void printToConsole(const QString &s);
     DatumP readRawlineWithPrompt(const QString &prompt);
+    DatumP readchar();
 };
 
 #endif // QLOGOCONTROLLER_H

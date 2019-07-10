@@ -62,6 +62,7 @@ private:
 
   int startLogo();
   void beginReadRawline();
+  void beginReadChar();
 
 public slots:
   void readStandardOutput();
@@ -71,6 +72,7 @@ public slots:
   void errorOccurred(QProcess::ProcessError error);
 
   void sendRawlineSlot(const QString &line);
+  void sendCharSlot(QChar c);
 };
 
 #endif // MAINWINDOW_H

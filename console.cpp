@@ -68,6 +68,14 @@ void Console::requestRawline()
 }
 
 
+void Console::requestChar()
+{
+    consoleMode = consoleModeWaitingForChar;
+
+    insertNextCharFromQueue();
+}
+
+
 void Console::keyPressEvent(QKeyEvent *event)
 {
     // TODO: User interface interrupt event handling
@@ -84,9 +92,16 @@ void Console::keyPressEvent(QKeyEvent *event)
 }
 
 
-void Console::processCharModeKeyPressEvent(QKeyEvent *)
+void Console::processCharModeKeyPressEvent(QKeyEvent *event)
 {
-  // TODO: NOOP for now
+  QString t = event->text();
+  if (t.length() > 0) {
+      consoleMode = consoleModeNoWait;
+      if (t.length() > 1) {
+          keyQueue.push_back(t.right(t.length()-1));
+      }
+      sendCharSignal(t[0]);
+  }
 }
 
 
@@ -234,6 +249,17 @@ void Console::insertNextLineFromQueue() {
       sendRawlineSignal(line);
     }
   }
+}
+
+
+void Console::insertNextCharFromQueue()
+{
+    if (keyQueue.size() > 0) {
+        consoleMode = consoleModeNoWait;
+        QChar c = keyQueue[0];
+        keyQueue = keyQueue.right(keyQueue.size() - 1);
+        sendCharSignal(c);
+    }
 }
 
 

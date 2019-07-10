@@ -63,8 +63,8 @@ MainWindow::~MainWindow()
 
 int MainWindow::startLogo()
 {
-  QString command = "/home/jsikes/Projects/build-logo-Desktop-Debug/logo"; // On my Linux
-  //QString command = "/Volumes/jsikes/bin/logo"; // on my Mac
+  //QString command = "/home/jsikes/Projects/build-logo-Desktop-Debug/logo"; // On my Linux
+  QString command = "/Volumes/jsikes/bin/logo"; // on my Mac
   QStringList arguments;
   arguments << "--QLogoGUI";
 
@@ -92,6 +92,9 @@ int MainWindow::startLogo()
   connect(ui->mainConsole, &Console::sendRawlineSignal,
           this, &MainWindow::sendRawlineSlot);
 
+  connect(ui->mainConsole, &Console::sendCharSignal,
+          this, &MainWindow::sendCharSlot);
+
   logoProcess->start(command, arguments);
   return 0;
 }
@@ -118,6 +121,9 @@ void MainWindow::readStandardOutput()
         logoStream >> messageType;
         switch(messageType)
         {
+        case W_ZERO:
+            qDebug() <<"Zero!";
+            break;
         case C_CONSOLE_PRINT_STRING:
         {
             QString text;
@@ -128,7 +134,11 @@ void MainWindow::readStandardOutput()
         case C_CONSOLE_REQUEST_LINE:
             beginReadRawline();
             break;
+        case C_CONSOLE_REQUEST_CHAR:
+            beginReadChar();
+            break;
         default:
+            qDebug() <<"was not expecting" <<messageType;
             break;
 
         }
@@ -139,9 +149,10 @@ void MainWindow::readStandardOutput()
 void MainWindow::readStandardError()
 {
   QByteArray ary = logoProcess->readAllStandardError();
-  QMessageBox msgBox;
-  msgBox.setText(ary);
-  msgBox.exec();
+  qDebug() <<ary;
+//  QMessageBox msgBox;
+//  msgBox.setText(ary);
+//  msgBox.exec();
 }
 
 void MainWindow::errorOccurred(QProcess::ProcessError error)
@@ -157,10 +168,20 @@ void MainWindow::beginReadRawline()
 }
 
 
+void MainWindow::beginReadChar()
+{
+    windowMode = windowMode_waitForChar;
+    ui->mainConsole->requestChar();
+}
+
+
+void MainWindow::sendCharSlot(QChar c)
+{
+    logoStream << (message_t)C_CONSOLE_CHAR_READ << c;
+}
+
+
 void MainWindow::sendRawlineSlot(const QString &line)
 {
-    QByteArray buffer;
-    QDataStream out(&buffer, QIODevice::WriteOnly);
-    out << (message_t)C_CONSOLE_RAWLINE_READ << line;
-    logoStream << buffer;
+    logoStream << (message_t)C_CONSOLE_RAWLINE_READ << line;
 }

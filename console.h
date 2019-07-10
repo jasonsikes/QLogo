@@ -57,7 +57,9 @@ protected:
     // Keypress and paste buffers
     QString keyQueue;
     void insertNextLineFromQueue();
+    void insertNextCharFromQueue();
     void insertFromMimeData(const QMimeData *source) Q_DECL_OVERRIDE;
+
 public:
   Console(QWidget *parent = 0);
   ~Console();
@@ -66,9 +68,11 @@ public:
 
   void printString(const QString text);
   void requestRawline();
+  void requestChar();
 
 signals:
   void sendRawlineSignal(const QString &rawLine);
+  void sendCharSignal(QChar c);
 };
 
 #endif // CONSOLE_H
