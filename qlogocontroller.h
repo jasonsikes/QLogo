@@ -4,6 +4,7 @@
 #include "controller.h"
 #include "message.h"
 #include <QDataStream>
+#include <QFile>
 
 class QLogoController : public Controller
 {
