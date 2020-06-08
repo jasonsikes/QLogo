@@ -30,6 +30,8 @@
 *.exe
 *.out
 *.app
+QLogo
+logo
 
 # Emacs temp files
 *~
@@ -42,3 +44,12 @@ html
 
 # Added by Dolphin file manager GUI
 .directory
+
+# CMake-generated files
+CMakeFiles
+CMakeLists.txt.user
+Makefile
+logo_autogen
+CMakeCache.txt
+QLogo_autogen
+cmake_install.cmake

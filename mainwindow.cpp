@@ -34,6 +34,7 @@
 #include <QScrollBar>
 #include <QTimer>
 #include <QMessageBox>
+#include <QDir>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -63,8 +64,7 @@ MainWindow::~MainWindow()
 
 int MainWindow::startLogo()
 {
-  //QString command = "/home/jsikes/Projects/build-logo-Desktop-Debug/logo"; // On my Linux
-  QString command = "/Volumes/jsikes/bin/logo"; // on my Mac
+  QString command = QCoreApplication::applicationDirPath().append("/logo");
   QStringList arguments;
   arguments << "--QLogoGUI";
 

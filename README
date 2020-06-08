@@ -51,17 +51,31 @@ Compiling
 
 QLogo is being developed and tested to work with C++11 and Qt 5.6.3. (Qt 5.6 is
 the last version to support Windows XP). However, QLogo is also being developed
-and tested against newer versions of Qt (I have 5.10) so it can be assumed that
+and tested against newer versions of Qt (I have 5.15) so it can be assumed that
 any version in between should work just fine.
 
 
 QLogo is currently being developed and tested on the following platforms:
 
-* Windows 10 using Visual Studio 2017 and MinGW GCC 6.3.0.
-* OpenSUSE LEAP 15 using gcc 7.4.1
-* Mac OS X 10.14 using Clang/LLVM
-* Raspberry PI 3 using Raspbian
+* Windows 10 using Visual Studio 2019
+* OpenSUSE LEAP 15.1 using gcc 7.5.0
+* Mac OS X 10.15 using Clang/LLVM
 
+To build:
+
+$ cmake CMakeLists.txt
+
+$ make
+
+This will give you two executables:
+
+1. "logo": this is the Logo interpreter that can be run from the command line.
+
+2. "QLogo": this is the graphical user interface that runs logo and gives you
+the turtle. (The turtle is one of the many things that's broken right now, but
+when it works again this is where you'll find it.)
+
+There is no "make install" step yet.
 
 ===============================================================
 
@@ -76,7 +90,7 @@ There are a few nuances:
 2) as a list of 3 percentages, one for each of red, green, blue [0 0 0] is
    black, [100 100 100] is white
 
-3) as a named color from the X Color Database, e.g. "white or "lemonchiffon.
+3) as a named color from the X Color Database, e.g. "white" or "lemonchiffon".
    The X Color database can be found here:
    https://en.wikipedia.org/wiki/X11_color_names
 
