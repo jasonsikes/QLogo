@@ -28,7 +28,7 @@ set(LOGO_SOURCES datum.cpp parser.cpp turtle.cpp vars.cpp kernel.cpp propertylis
 
 set(LOGO_HEADERS datum.h parser.h turtle.h vars.h kernel.h propertylists.h workspace.h procedurehelper.h help.h error.h message.h qlogocontroller.h logocontroller.h controller.h)
 
-add_definitions(-DLOGOPLATFORM="UNIX" -DLOGOVERSION="0.93" -DCONTROLLER_HEADER="logo_controller.h")
+add_definitions(-DLOGOVERSION="0.93" -DCONTROLLER_HEADER="logo_controller.h")
 
 if(APPLE)
   add_definitions(-DLOGOPLATFORM="OSX")
