@@ -38,6 +38,7 @@ logo
 
 Qt user files
 *.pro.user*
+CMakeLists.txt.user*
 
 # doxygen output
 html

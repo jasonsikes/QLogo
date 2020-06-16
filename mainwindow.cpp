@@ -36,6 +36,19 @@
 #include <QMessageBox>
 #include <QDir>
 
+
+// Wrapper function for sending data to the logo interpreter
+void MainWindow::sendMessage(std::function<void (QDataStream*)> func)
+{
+    QByteArray buffer;
+    QDataStream bufferStream(&buffer, QIODevice::WriteOnly);
+    func(&bufferStream);
+    quint32 datalen = buffer.size();
+    logoProcess->write((const char*)&datalen, sizeof(quint32));
+    logoProcess->write(buffer);
+}
+
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   ui->setupUi(this);
@@ -69,8 +82,6 @@ int MainWindow::startLogo()
   arguments << "--QLogoGUI";
 
   logoProcess = new QProcess(this);
-
-  logoStream.setDevice(logoProcess);
 
   // TODO: maybe call setWorkingDirectory()
 
@@ -113,13 +124,24 @@ void MainWindow::processFinished(int exitCode, QProcess::ExitStatus exitStatus)
 
 }
 
-
+// TODO: rename this. It sounds confusing.
 void MainWindow::readStandardOutput()
 {
+    int readResult;
     do {
-        message_t messageType;
-        logoStream >> messageType;
-        switch(messageType)
+        quint32 datalen;
+        message_t header;
+        QByteArray buffer;
+        QDataStream inDataStream;
+        readResult = logoProcess->read((char*)&datalen, sizeof(quint32));
+        if (readResult < 1) // TODO: We need better checks for input throughout this function.
+            break;
+        buffer.resize(datalen);
+        logoProcess->read(buffer.data(), datalen);
+        QDataStream *dataStream = new QDataStream(&buffer, QIODevice::ReadOnly);
+
+        *dataStream >> header;
+        switch(header)
         {
         case W_ZERO:
             qDebug() <<"Zero!";
@@ -127,7 +149,7 @@ void MainWindow::readStandardOutput()
         case C_CONSOLE_PRINT_STRING:
         {
             QString text;
-            logoStream >> text;
+            *dataStream >> text;
             ui->mainConsole->printString(text);
             break;
         }
@@ -138,18 +160,19 @@ void MainWindow::readStandardOutput()
             beginReadChar();
             break;
         default:
-            qDebug() <<"was not expecting" <<messageType;
+            qDebug() <<"was not expecting" <<header;
             break;
 
         }
-    } while ( ! logoStream.atEnd());
+        delete dataStream;
+    } while (1);
 }
 
 
 void MainWindow::readStandardError()
 {
-  QByteArray ary = logoProcess->readAllStandardError();
-  qDebug() <<ary;
+    QByteArray ary = logoProcess->readAllStandardError();
+    qDebug() <<"stderr: " <<ary;
 //  QMessageBox msgBox;
 //  msgBox.setText(ary);
 //  msgBox.exec();
@@ -177,11 +200,15 @@ void MainWindow::beginReadChar()
 
 void MainWindow::sendCharSlot(QChar c)
 {
-    logoStream << (message_t)C_CONSOLE_CHAR_READ << c;
+    sendMessage([&](QDataStream *out) {
+        *out << (message_t)C_CONSOLE_CHAR_READ << c;
+    });
 }
 
 
 void MainWindow::sendRawlineSlot(const QString &line)
 {
-    logoStream << (message_t)C_CONSOLE_RAWLINE_READ << line;
+    sendMessage([&](QDataStream *out) {
+        *out << (message_t)C_CONSOLE_RAWLINE_READ << line;
+    });
 }

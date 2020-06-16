@@ -8,9 +8,6 @@
 
 class QLogoController : public Controller
 {
-    QDataStream guiInstream;
-    QFile guiIn;
-    QFile guiOut;
     message_t getMessage();
     void waitForMessage(message_t expectedType);
 

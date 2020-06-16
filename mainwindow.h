@@ -30,6 +30,7 @@
 #include <QtGui/QOpenGLFunctions>
 #include <QProcess>
 #include <QDataStream>
+#include <functional>
 
 class Canvas;
 class Console;
@@ -56,13 +57,13 @@ private:
   Ui::MainWindow *ui;
 
   QProcess *logoProcess;
-  QDataStream logoStream;
 
   windowMode_t windowMode;
 
   int startLogo();
   void beginReadRawline();
   void beginReadChar();
+  void sendMessage(std::function<void (QDataStream*)> func);
 
 public slots:
   void readStandardOutput();
