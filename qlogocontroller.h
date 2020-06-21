@@ -2,7 +2,7 @@
 #define QLOGOCONTROLLER_H
 
 #include "controller.h"
-#include "message.h"
+#include "constants.h"
 #include <QDataStream>
 #include <QFile>
 

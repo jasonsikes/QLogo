@@ -14,7 +14,7 @@ find_package(Qt5Widgets REQUIRED)
 
 set(QLOGO_SOURCES qlogo_main.cpp mainwindow.cpp canvas.cpp console.cpp)
 
-set(QLOGO_HEADERS mainwindow.h canvas.h console.h message.h)
+set(QLOGO_HEADERS mainwindow.h canvas.h console.h constants.h)
 
 set(QLOGO_UI mainwindow.ui)
 
@@ -26,7 +26,7 @@ target_link_libraries(QLogo Qt5::Widgets)
 
 set(LOGO_SOURCES datum.cpp parser.cpp turtle.cpp vars.cpp kernel.cpp propertylists.cpp kernel_datastructureprimitives.cpp kernel_communication.cpp kernel_arithmetic.cpp kernel_graphics.cpp kernel_workspacemanagement.cpp workspace.cpp procedurehelper.cpp help.cpp kernel_controlstructures.cpp error.cpp library.cpp datum_word.cpp datum_astnode.cpp datum_list.cpp datum_array.cpp datum_datump.cpp datum_iterator.cpp logo_main.cpp qlogocontroller.cpp logocontroller.cpp controller.cpp)
 
-set(LOGO_HEADERS datum.h parser.h turtle.h vars.h kernel.h propertylists.h workspace.h procedurehelper.h help.h error.h message.h qlogocontroller.h logocontroller.h controller.h)
+set(LOGO_HEADERS datum.h parser.h turtle.h vars.h kernel.h propertylists.h workspace.h procedurehelper.h help.h error.h constants.h qlogocontroller.h logocontroller.h controller.h)
 
 add_definitions(-DLOGOVERSION="0.93" -DCONTROLLER_HEADER="logo_controller.h")
 

@@ -28,7 +28,7 @@
 #include "mainwindow.h"
 #include "canvas.h"
 #include "ui_mainwindow.h"
-#include "message.h"
+#include "constants.h"
 #include <QDebug>
 #include <QKeyEvent>
 #include <QScrollBar>
