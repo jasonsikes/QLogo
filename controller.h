@@ -110,6 +110,8 @@ public:
   void beginInputHistory() {}
   DatumP inputHistory() { return nothing; }
 
+  virtual void setTurtlePos(const QMatrix4x4 &) {}
+
   void setPenmode(PenModeEnum) {}
   void setScreenMode(ScreenModeEnum) {}
   ScreenModeEnum getScreenMode() { return textScreenMode; }

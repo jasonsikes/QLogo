@@ -22,6 +22,9 @@ public:
     void printToConsole(const QString &s);
     DatumP readRawlineWithPrompt(const QString &prompt);
     DatumP readchar();
+
+    void setTurtlePos(const QMatrix4x4 &newTurtlePos);
+
 };
 
 #endif // QLOGOCONTROLLER_H

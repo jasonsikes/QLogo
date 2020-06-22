@@ -121,3 +121,10 @@ DatumP QLogoController::readchar()
 
   return DatumP(new Word(rawChar));
 }
+
+void QLogoController::setTurtlePos(const QMatrix4x4 &newTurtlePos)
+{
+  sendMessage([&](QDataStream *out) {
+    *out << (message_t)C_CANVAS_UPDATE_TURTLE_POS << newTurtlePos;
+  });
+}

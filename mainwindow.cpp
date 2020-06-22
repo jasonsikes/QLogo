@@ -146,19 +146,26 @@ void MainWindow::readStandardOutput()
         case W_ZERO:
             qDebug() <<"Zero!";
             break;
-        case C_CONSOLE_PRINT_STRING:
+        case C_CONSOLE_PRINT_STRING: // 1
         {
             QString text;
             *dataStream >> text;
             ui->mainConsole->printString(text);
             break;
         }
-        case C_CONSOLE_REQUEST_LINE:
+        case C_CONSOLE_REQUEST_LINE: // 2
             beginReadRawline();
             break;
-        case C_CONSOLE_REQUEST_CHAR:
+        case C_CONSOLE_REQUEST_CHAR: // 3
             beginReadChar();
             break;
+        case C_CANVAS_UPDATE_TURTLE_POS: // 6
+            {
+              QMatrix4x4 matrix;
+              *dataStream >> matrix;
+              ui->mainCanvas->setTurtleMatrix(matrix);
+              break;
+            }
         default:
             qDebug() <<"was not expecting" <<header;
             break;
