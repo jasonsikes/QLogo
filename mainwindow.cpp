@@ -166,6 +166,17 @@ void MainWindow::readStandardOutput()
               ui->mainCanvas->setTurtleMatrix(matrix);
               break;
             }
+          case C_CANVAS_DRAW_LINE: // 7
+            {
+              QVector3D a, b;
+              QColor color;
+              *dataStream
+                  >> a
+                  >> b
+                  >> color;
+              ui->mainCanvas->addLine(a, b, color);
+              break;
+            }
         default:
             qDebug() <<"was not expecting" <<header;
             break;

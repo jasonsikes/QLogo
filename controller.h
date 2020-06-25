@@ -71,7 +71,7 @@ public:
   QVector2D mousePos;
   QVector2D clickPos;
 
-  void drawLine(const QVector4D &, const QVector4D &, const QColor &) {}
+  virtual void drawLine(const QVector4D &, const QVector4D &, const QColor &) {}
   void drawPolygon(const QList<QVector4D> &, const QList<QColor> &) {}
   void updateCanvas(void) {}
   void clearScreen(void) {}

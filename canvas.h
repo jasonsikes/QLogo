@@ -22,18 +22,61 @@
 ///
 /// \file
 /// This file contains the declaration of the Canvas class, which is the
-/// graphics portion of the user interface.
+/// graphics portion of the user interface, where the turtle roams.
 ///
 //===----------------------------------------------------------------------===//
 
 #include <QOpenGLFunctions>
 #include <QOpenGLWidget>
 #include <QMatrix4x4>
+#include "constants.h"
 
 class QOpenGLShaderProgram;
 class QOpenGLBuffer;
 class QOpenGLVertexArrayObject;
 
+/// Contains the information that describes a label's appearance on the Canvas.
+struct Label {
+  QString text;
+  QVector4D position;
+  QColor color;
+  QFont font;
+
+  Label(const QString &aText, const QVector4D &aPosition, const QColor &aColor,
+        const QFont &aFont)
+      : text(aText), position(aPosition), color(aColor), font(aFont) {}
+};
+
+enum CanvasDrawingElementType {
+  canvasDrawArrayType,
+  canvasDrawSetPenmodeType,
+  canvasDrawSetPensizeType
+};
+
+struct CanvasDrawingArrayElement {
+  GLenum mode;   // GL_LINES or GL_TRIANGLE_FAN
+  GLint first;   // the index of the first vertex in the vertex array
+  GLsizei count; // the number of vertices to draw
+};
+
+struct CanvasDrawingSetPenmodeElement {
+  PenModeEnum penMode;
+};
+
+struct CanvasDrawingSetPensizeElement {
+  GLfloat width;
+};
+
+union CanvasDrawingElementU {
+  CanvasDrawingArrayElement drawArrayElement;
+  CanvasDrawingSetPenmodeElement penmodeElement;
+  CanvasDrawingSetPensizeElement pensizeElement;
+};
+
+struct CanvasDrawingElement {
+  CanvasDrawingElementType type;
+  CanvasDrawingElementU u;
+};
 
 /// The widget where turtle graphics are drawn.
 class Canvas : public QOpenGLWidget, protected QOpenGLFunctions {
@@ -47,6 +90,10 @@ class Canvas : public QOpenGLWidget, protected QOpenGLFunctions {
   qreal boundsX;
   // Visible vertices on the Y axis range from -boundsY to +boundsY
   qreal boundsY;
+
+  // The main data structure for all of the drawn elements on the canvas
+  // (sans labels).
+  QList<CanvasDrawingElement> drawingElementList;
 
   GLclampf backgroundColor[4];
 
@@ -89,11 +136,21 @@ class Canvas : public QOpenGLWidget, protected QOpenGLFunctions {
   QOpenGLBuffer *t_index_bo;
 
 
+  // Vertices information for user-generated lines and polygons
+  QVector<GLfloat> vertices;
+  QVector<GLubyte> vertexColors;
+
+  // draw, erase, or reverse
+  PenModeEnum currentPenMode;
+
+  GLfloat pensizeRange[2]; // Minimum and maximum valid pen sizes
+  GLfloat currentPensize = 0;
+
 
   // These are called by paintGL()
   void paintSurface();
   void paintTurtle();
-  //void paintElements();
+  void paintElements();
   //void paintLabels(QPainter *painter);
 
   void updateMatrix(void);
@@ -104,7 +161,15 @@ public:
 
   void setTurtleMatrix(const QMatrix4x4 &matrix);
   void setTurtleIsVisible(bool isVisible);
+  void addLine(const QVector3D &vertexA, const QVector3D &vertexB, const QColor &color);
 
-};
+  /// Sets future lines and polygons to be drawn using newMode.
+  void setPenmode(PenModeEnum newMode);
+
+  /// Sets the width of future lines drawn to aSize.
+  void setPensize(GLfloat aSize);
+
+  /// Returns true if aSize is a valid pen size.
+  bool isPenSizeValid(GLfloat aSize);};
 
 #endif // CANVAS_H

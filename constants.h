@@ -25,6 +25,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
+
 #include <QChar>
 #include <QDebug>
 
@@ -39,6 +40,7 @@ enum messageCategory : message_t {
     C_CONSOLE_CHAR_READ, // A char returned from the GUI
 
     C_CANVAS_UPDATE_TURTLE_POS, // Tell the GUI to update the turtle matrix
+    C_CANVAS_DRAW_LINE, // Draw a line on the canvas
 };
 
 const QChar escapeChar = 27;
@@ -48,6 +50,12 @@ const QChar escapeChar = 27;
 
 const float initialBoundX = 150;
 const float initialBoundY = 150;
+
+const float startingPensize = 1;
+
+enum PenModeEnum { penModePaint, penModeErase, penModeReverse };
+
+enum TurtleModeEnum { turtleWrap, turtleFence, turtleWindow };
 
 
 #endif // CONSTANTS_H

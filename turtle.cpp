@@ -51,8 +51,10 @@ Turtle::Turtle() : matrix(QMatrix4x4()), isVisible(true), penIsDown(true) {
 Turtle::~Turtle() { _mainTurtle = NULL; }
 
 void Turtle::preTurtleMovement() {
-  if (penIsDown)
+  if (penIsDown) {
     lineStart = matrix.column(3).toVector3DAffine();
+    lineStart[3] = 1;
+    }
 }
 
 void Turtle::drawTurtleWrap() {

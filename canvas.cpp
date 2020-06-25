@@ -219,25 +219,25 @@ void Canvas::initializeGL() {
   initSurfaceVBO();
   setSurfaceVertices();
 
-//  linesObject = new QOpenGLVertexArrayObject(this);
-//  linesObject->create(); // TODO: check return value
+  linesObject = new QOpenGLVertexArrayObject(this);
+  linesObject->create(); // TODO: check return value
 
-//  linesVertexBufferObject = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
-//  linesVertexBufferObject->create();
-//  linesVertexBufferObject->setUsagePattern(QOpenGLBuffer::StaticDraw);
+  linesVertexBufferObject = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
+  linesVertexBufferObject->create();
+  linesVertexBufferObject->setUsagePattern(QOpenGLBuffer::StaticDraw);
 
-//  linesColorBufferObject = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
-//  linesColorBufferObject->create();
-//  linesColorBufferObject->setUsagePattern(QOpenGLBuffer::StaticDraw);
+  linesColorBufferObject = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
+  linesColorBufferObject->create();
+  linesColorBufferObject->setUsagePattern(QOpenGLBuffer::StaticDraw);
 
   shaderProgram->release();
 
   matrixUniformID = shaderProgram->uniformLocation("matrix");
 
-//  glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, pensizeRange);
+  glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, pensizeRange);
 
-//  setPensize(startingPensize);
-//  setPenmode(penModePaint);
+  setPensize(startingPensize);
+  setPenmode(penModePaint);
 }
 
 void Canvas::updateMatrix() {
@@ -269,6 +269,56 @@ void Canvas::setTurtleMatrix(const QMatrix4x4 &matrix)
 void Canvas::setTurtleIsVisible(bool isVisible)
 {
   turtleIsVisible = isVisible;
+  update();
+}
+
+void Canvas::addLine(const QVector3D &vertexA, const QVector3D &vertexB, const QColor &color)
+{
+  if (drawingElementList.isEmpty() ||
+      (drawingElementList.last().type != canvasDrawArrayType) ||
+      (drawingElementList.last().u.drawArrayElement.mode != GL_LINES)) {
+    CanvasDrawingElement cde;
+    cde.type = canvasDrawArrayType;
+    cde.u.drawArrayElement.mode = GL_LINES;
+    cde.u.drawArrayElement.first = vertexColors.size() / 4;
+    cde.u.drawArrayElement.count = 0;
+    drawingElementList.push_back(cde);
+  }
+
+  drawingElementList.last().u.drawArrayElement.count += 2;
+
+  vertices.push_back(vertexA.x());
+  vertices.push_back(vertexA.y());
+  vertices.push_back(vertexA.z());
+  vertices.push_back(1);
+  if (currentPenMode == penModeReverse) {
+    vertexColors.push_back(UCHAR_MAX);
+    vertexColors.push_back(UCHAR_MAX);
+    vertexColors.push_back(UCHAR_MAX);
+    vertexColors.push_back(UCHAR_MAX);
+  } else {
+    vertexColors.push_back(color.red());
+    vertexColors.push_back(color.green());
+    vertexColors.push_back(color.blue());
+    vertexColors.push_back(color.alpha());
+  }
+
+  vertices.push_back(vertexB.x());
+  vertices.push_back(vertexB.y());
+  vertices.push_back(vertexB.z());
+  vertices.push_back(1);
+  if (currentPenMode == penModeReverse) {
+    vertexColors.push_back(UCHAR_MAX);
+    vertexColors.push_back(UCHAR_MAX);
+    vertexColors.push_back(UCHAR_MAX);
+    vertexColors.push_back(UCHAR_MAX);
+  } else {
+    vertexColors.push_back(color.red());
+    vertexColors.push_back(color.green());
+    vertexColors.push_back(color.blue());
+    vertexColors.push_back(color.alpha());
+  }
+
   update();
 }
 
@@ -333,6 +383,73 @@ void Canvas::paintTurtle() {
   t_object->release();
 }
 
+void Canvas::paintElements() {
+  linesObject->bind();
+  void *addrVertices = (vertices.size() > 0) ? &vertices[0] : NULL;
+  void *addrVerticexColors =
+      (vertexColors.size() > 0) ? &vertexColors[0] : NULL;
+
+  linesVertexBufferObject->bind();
+  linesVertexBufferObject->allocate(addrVertices,
+                                    vertices.size() * sizeof(GLfloat));
+
+  shaderProgram->enableAttributeArray("posAttr");
+  shaderProgram->setAttributeBuffer("posAttr", GL_FLOAT, 0, 4);
+
+  linesColorBufferObject->bind();
+  linesColorBufferObject->allocate(addrVerticexColors,
+                                   vertexColors.size() * sizeof(GLubyte));
+
+  shaderProgram->enableAttributeArray("colAttr");
+  shaderProgram->setAttributeBuffer("colAttr", GL_UNSIGNED_BYTE, 0, 4);
+
+  glEnable(GL_BLEND);
+
+  for (auto iter = drawingElementList.begin(); iter != drawingElementList.end();
+       ++iter) {
+
+    switch (iter->type) {
+    case canvasDrawArrayType: {
+      CanvasDrawingArrayElement &cdae = iter->u.drawArrayElement;
+      glDrawArrays(cdae.mode, cdae.first, cdae.count);
+      break;
+    }
+    case canvasDrawSetPenmodeType: {
+      CanvasDrawingSetPenmodeElement &spme = iter->u.penmodeElement;
+      switch (spme.penMode) {
+      case penModePaint:
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        break;
+      case penModeReverse:
+        glBlendColor(0, 0, 0, 1);
+        glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_CONSTANT_COLOR);
+        break;
+      case penModeErase:
+        glBlendColor(backgroundColor[0], backgroundColor[1], backgroundColor[2],
+                     backgroundColor[3]);
+        glBlendFunc(GL_CONSTANT_COLOR, GL_ZERO);
+        break;
+      default:
+        qDebug() << "I'm not even supposed to be here";
+        Q_ASSERT(false);
+      }
+      break;
+    }
+    case canvasDrawSetPensizeType: {
+      CanvasDrawingSetPensizeElement &pse = iter->u.pensizeElement;
+      glLineWidth(pse.width);
+      break;
+    }
+    default:
+      qDebug() << "This is weird";
+      Q_ASSERT(false);
+    }
+  } // /for drawingElementList
+  linesColorBufferObject->release();
+  linesVertexBufferObject->release();
+  linesObject->release();
+}
+
 
 void Canvas::paintGL() {
   QPainter painter(this);
@@ -343,7 +460,7 @@ void Canvas::paintGL() {
 
   paintSurface();
 
-  //paintElements();
+  paintElements();
 
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   if (turtleIsVisible) {
@@ -385,5 +502,32 @@ void Canvas::setSurfaceVertices() {
   shaderProgram->enableAttributeArray("colAttr");
   shaderProgram->setAttributeBuffer("colAttr", GL_FLOAT, 0, 4);
   surfaceColorBufferObject->release();
+}
+
+
+void Canvas::setPenmode(PenModeEnum newMode) {
+  currentPenMode = newMode;
+  if (drawingElementList.isEmpty() ||
+      (drawingElementList.last().type != canvasDrawSetPenmodeType)) {
+    CanvasDrawingElement cde;
+    cde.type = canvasDrawSetPenmodeType;
+    cde.u.penmodeElement.penMode = newMode;
+    drawingElementList.push_back(cde);
+  } else {
+    drawingElementList.last().u.penmodeElement.penMode = newMode;
+  }
+}
+
+void Canvas::setPensize(GLfloat aSize) {
+  currentPensize = aSize;
+  if (drawingElementList.isEmpty() ||
+      (drawingElementList.last().type != canvasDrawSetPensizeType)) {
+    CanvasDrawingElement cde;
+    cde.type = canvasDrawSetPensizeType;
+    cde.u.pensizeElement.width = aSize;
+    drawingElementList.push_back(cde);
+  } else {
+    drawingElementList.last().u.pensizeElement.width = aSize;
+  }
 }
 

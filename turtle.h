@@ -29,15 +29,10 @@
 #include <QColor>
 #include <QMatrix4x4>
 #include <map>
+#include "constants.h"
 
 #include "datum.h"
 #include <math.h>
-
-const float startingPensize = 1;
-
-enum PenModeEnum { penModePaint, penModeErase, penModeReverse };
-
-enum TurtleModeEnum { turtleWrap, turtleFence, turtleWindow };
 
 class Turtle {
   QMatrix4x4 matrix;
@@ -54,7 +49,7 @@ class Turtle {
   QList<QColor> fillVertexColors;
   QColor fillColor;
   PenModeEnum penMode = penModePaint;
-  double penSize = 1;
+  double penSize = startingPensize;
 
   double scrunchX = 1;
   double scrunchY = 1;
