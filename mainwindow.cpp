@@ -35,17 +35,19 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QDir>
-
+#include <QThread>
 
 // Wrapper function for sending data to the logo interpreter
 void MainWindow::sendMessage(std::function<void (QDataStream*)> func)
 {
+    qint64 datawritten;
     QByteArray buffer;
     QDataStream bufferStream(&buffer, QIODevice::WriteOnly);
     func(&bufferStream);
-    quint32 datalen = buffer.size();
-    logoProcess->write((const char*)&datalen, sizeof(quint32));
-    logoProcess->write(buffer);
+    qint64 datalen = buffer.size();
+    buffer.prepend((const char*)&datalen, sizeof(qint64));
+    datawritten = logoProcess->write(buffer);
+    Q_ASSERT(datawritten == buffer.size());
 }
 
 
@@ -129,15 +131,17 @@ void MainWindow::readStandardOutput()
 {
     int readResult;
     do {
-        quint32 datalen;
+        qint64 datalen;
         message_t header;
         QByteArray buffer;
         QDataStream inDataStream;
-        readResult = logoProcess->read((char*)&datalen, sizeof(quint32));
-        if (readResult < 1) // TODO: We need better checks for input throughout this function.
-            break;
+        readResult = logoProcess->read((char*)&datalen, sizeof(qint64));
+        if (readResult == 0) break;
+        Q_ASSERT(readResult == sizeof(qint64));
+
         buffer.resize(datalen);
-        logoProcess->read(buffer.data(), datalen);
+        readResult = logoProcess->read(buffer.data(), datalen);
+        Q_ASSERT(readResult == (int)datalen);
         QDataStream *dataStream = new QDataStream(&buffer, QIODevice::ReadOnly);
 
         *dataStream >> header;

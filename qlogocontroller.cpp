@@ -5,18 +5,21 @@
 #include <unistd.h>
 
 #ifdef _WIN32
+// For setmode(..., O_BINARY)
 #include <fcntl.h>
 #endif
 
 // Wrapper function for sending data to the GUI
 void sendMessage(std::function<void (QDataStream*)> func)
 {
+    qint64 datawritten;
     QByteArray buffer;
     QDataStream bufferStream(&buffer, QIODevice::WriteOnly);
     func(&bufferStream);
-    quint32 datalen = buffer.size();
-    write(STDOUT_FILENO, &datalen, sizeof(quint32));
-    write(STDOUT_FILENO, buffer.constData(), buffer.size());
+    qint64 datalen = buffer.size();
+    buffer.prepend((const char *)&datalen, sizeof(qint64));
+    datawritten = write(STDOUT_FILENO, buffer.constData(), buffer.size());
+    Q_ASSERT(datawritten == buffer.size());
 }
 
 
@@ -25,6 +28,7 @@ QLogoController::QLogoController(QObject *parent) : Controller(parent)
 #ifdef _WIN32
     // That dreaded \r\n <-> \n problem
     setmode(STDOUT_FILENO, O_BINARY);
+    setmode(STDIN_FILENO, O_BINARY);
 #endif
 }
 
@@ -42,12 +46,20 @@ QLogoController::~QLogoController()
  */
 message_t QLogoController::getMessage()
 {
-    quint32 datalen;
+    qint64 datalen;
+    qint64 dataread;
     message_t header;
-    read(STDIN_FILENO, &datalen, sizeof(quint32));
+    do {
+        dataread = read(STDIN_FILENO, &datalen, sizeof(qint64));
+        if (dataread == 0) {
+            QThread::msleep(100);
+        }
+    } while(dataread == 0);
+    Q_ASSERT(dataread == sizeof(qint64));
     QByteArray buffer;
     buffer.resize(datalen);
-    read(STDIN_FILENO, buffer.data(), datalen);
+    dataread = read(STDIN_FILENO, buffer.data(), datalen);
+    Q_ASSERT(dataread == datalen);
     QDataStream bufferStream(&buffer, QIODevice::ReadOnly);
 
     bufferStream >> header;

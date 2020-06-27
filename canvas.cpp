@@ -27,6 +27,7 @@
 
 #include "constants.h"
 #include "canvas.h"
+#include "math.h"
 
 #include <QPainter>
 #include <QtGui/QOpenGLBuffer>
