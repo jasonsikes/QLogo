@@ -32,15 +32,16 @@
 using message_t = quint8;
 
 enum messageCategory : message_t {
-    W_ZERO = 0, // Zeroes get ignored
+    W_ZERO = 0,             // Zeroes get ignored
     C_CONSOLE_PRINT_STRING, // Print text to the GUI
     C_CONSOLE_REQUEST_LINE, // Ask the GUI for a raw line.
     C_CONSOLE_REQUEST_CHAR, // Ask the GUI for a single char.
     C_CONSOLE_RAWLINE_READ, // A line returned from the GUI
-    C_CONSOLE_CHAR_READ, // A char returned from the GUI
+    C_CONSOLE_CHAR_READ,    // A char returned from the GUI
 
     C_CANVAS_UPDATE_TURTLE_POS, // Tell the GUI to update the turtle matrix
-    C_CANVAS_DRAW_LINE, // Draw a line on the canvas
+    C_CANVAS_DRAW_LINE,         // Draw a line on the canvas
+    C_CANVAS_CLEAR_SCREEN,      // Clear the graphics screen
 };
 
 const QChar escapeChar = 27;

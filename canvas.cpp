@@ -474,6 +474,19 @@ void Canvas::paintGL() {
   //paintLabels(&painter);
 }
 
+void Canvas::clearScreen() {
+  drawingElementList.clear();
+
+  vertices.clear();
+  vertexColors.clear();
+  //labels.clear();
+
+  setPenmode(currentPenMode);
+  setPensize(currentPensize);
+
+  update();
+}
+
 void Canvas::setSurfaceVertices() {
   GLfloat surfaceVertices[] = {
       (GLfloat)boundsX,  (GLfloat)-boundsY, 0, 1, // 3

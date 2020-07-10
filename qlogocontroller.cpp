@@ -153,3 +153,10 @@ void QLogoController::drawLine(const QVector4D &start, const QVector4D &end, con
          << color;
   });
 }
+
+void QLogoController::clearScreen()
+{
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CANVAS_CLEAR_SCREEN;
+    });
+}

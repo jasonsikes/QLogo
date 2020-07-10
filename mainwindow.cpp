@@ -181,6 +181,9 @@ void MainWindow::readStandardOutput()
               ui->mainCanvas->addLine(a, b, color);
               break;
             }
+        case C_CANVAS_CLEAR_SCREEN: // 8
+            ui->mainCanvas->clearScreen();
+            break;
         default:
             qDebug() <<"was not expecting" <<header;
             break;

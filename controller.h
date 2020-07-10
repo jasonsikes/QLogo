@@ -74,7 +74,7 @@ public:
   virtual void drawLine(const QVector4D &, const QVector4D &, const QColor &) {}
   void drawPolygon(const QList<QVector4D> &, const QList<QColor> &) {}
   void updateCanvas(void) {}
-  void clearScreen(void) {}
+  virtual void clearScreen(void) {}
   void clearScreenText(void) {}
   void drawLabel(const QString &, const QVector4D &, const QColor &,
                  const QFont &) {}

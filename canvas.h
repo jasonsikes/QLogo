@@ -170,6 +170,13 @@ public:
   void setPensize(GLfloat aSize);
 
   /// Returns true if aSize is a valid pen size.
-  bool isPenSizeValid(GLfloat aSize);};
+  bool isPenSizeValid(GLfloat aSize);
+
+
+  /// Clears the screen and removes all drawing elements from their respective
+  /// lists.
+  void clearScreen();
+
+};
 
 #endif // CANVAS_H
