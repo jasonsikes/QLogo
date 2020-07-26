@@ -1173,11 +1173,9 @@ tests['EQUAL? 1'] = {
 
 tests['EQUAL? 2'] = {
     'in' :
-    "make \"CASEIGNOREDP \"true\n"
     "show equalp [{hello}] [{hellO}]\n"
     ,
     'out' :
-    '? '
     '? '
     "true\n"
 }
@@ -1238,9 +1236,11 @@ tests['EQUAL? 8'] = {
 
 tests['EQUAL? 9'] = {
         'in' :
+    "make \"caseignoredp \"false\n"
     "show equalp [{hello}] [{hellO}]\n"
 ,
         'out' :
+    '? '
     '? '
 "false\n"
 }
@@ -1256,13 +1256,13 @@ tests['NOTEQUAL? 1'] = {
 
 tests['NOTEQUAL? 2'] = {
     'in' :
-    "make \"CASEIGNOREDP \"true\n"
+    "make \"CASEIGNOREDP \"false\n"
     "show notequalp [{hello}] [{hellO}]\n"
     ,
     'out' :
     '? '
     '? '
-    "false\n"
+    "true\n"
 }
 
 tests['NOTEQUAL? 3'] = {
@@ -1320,14 +1320,14 @@ tests['NOTEQUAL? 8'] = {
 }
 
 # TODO: BAD RESULT
-# tests['NOTEQUAL? 9'] = {
-#         'in' :
-#     "show notequalp [{hello}] [{hellO}]\n"
-# ,
-#         'out' :
-#     '? '
-# "true\n"
-# }
+tests['NOTEQUAL? 9'] = {
+        'in' :
+    "show notequalp [{hello}] [{hellO}]\n"
+,
+        'out' :
+    '? '
+"false\n"
+}
 
 tests['BEFORE? 1'] = {
     'in' :
@@ -2659,7 +2659,7 @@ tests['define to'] = {
     "to is already defined\n"
 }
 
-# TODO: BAD test
+# Skipping because non-GUI logo is plain text only.
 # tests['standout'] = {
 #         'in' :
 #     "show standout \"bold\n"
@@ -7707,8 +7707,8 @@ for name in sorted(tests.keys()):
     t_in = test['in']
     t_ex = test['out']
 
-    if name != 'EQUAL? 9':
-        continue
+    # if name != 'EQUAL? 9' and name != 'DRIBBLE':
+    #     continue
 
     print name,'...',
 
