@@ -1311,7 +1311,6 @@ tests['NOTEQUAL? 8'] = {
     "false\n"
 }
 
-# TODO: BAD RESULT
 tests['NOTEQUAL? 9'] = {
         'in' :
     "show notequalp [{hello}] [{hellO}]\n"
@@ -4083,8 +4082,6 @@ tests['OR and NOT list'] = {
     "true\n"
 }
 
-# TODO: BAD test result
-# Dribble text should include the print command, and 'nodribble'
 tests['DRIBBLE'] = {
         'in' :
     "make \"d \"dribble.txt\n"
@@ -4513,18 +4510,25 @@ tests['COPYDEF 1'] = {
     "Hello\n"
 }
 
-# TODO: I don't know why this was originally commented out.
-# //tests['COPYDEF 2'] = {
+# TODO: QLogo's implementation of COPYDEF preserves the name.
+# So the output of FULLTEXT includes "to qw" instead of "to we".
+# WONT_FIX because, again, COPYDEF is slated for removal.
+# tests['COPYDEF 2'] = {
 #     'in' :
 #     "to qw\n"
-#     //                                "show \"Hello\n"
-#     //                                "end\n"
-#     //                                "copydef \"we \"qw\n"
-#     //                                "show fulltext \"we\n"
-#     //                             ,
+#                                 "show \"Hello\n"
+#                                 "end\n"
+#                                 "copydef \"we \"qw\n"
+#                                 "show fulltext \"we\n"
+#                              ,
 #     'out' :
+#     '? '
+#     '> '
+#     '> '
 #     "qw defined\n"
-#     //                                "[to we show \"Hello end]\n"
+#     '? '
+#     '? '
+#                                 "[to we show \"Hello end]\n"
 # }
 
 tests['COPYDEF 3'] = {
@@ -7701,7 +7705,7 @@ for name in sorted(tests.keys()):
     t_in = test['in']
     t_ex = test['out']
 
-    # if name != 'DRIBBLE':
+    # if name != 'COPYDEF 2':
     #     continue
 
     print name,'...',
