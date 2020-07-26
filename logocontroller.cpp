@@ -38,6 +38,8 @@ DatumP LogoController::readRawlineWithPrompt(const QString &prompt) {
   printToConsole(prompt);
   outStream->flush();
   QString inputText = stream->readLine();
+  if (dribbleStream)
+      *dribbleStream << inputText <<"\n";
   DatumP retval = DatumP(new Word(inputText));
 
   return retval;

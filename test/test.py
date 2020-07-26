@@ -2,18 +2,10 @@
 
 # Run one test or all the tests on logo.
 #
-# usage: ./test.py [testID]
+# usage: ./test.py
 #
-# Optional: testID = Will only run test identified by testID,
-#                    other tests are skipped. 
 
-import sys
 import subprocess
-
-#print "count of params:", len(sys.argv)
-#
-#if len(sys.argv) > 1:
-#    print "param:", sys.argv[1]
 
 # TODO: I need to find a way to make this portable
 exe = '/Users/jsikes/Documents/WindowsBackpack/build-QLogo-Desktop_Qt_5_15_0_clang_64bit-Debug/logo'
@@ -4092,35 +4084,37 @@ tests['OR and NOT list'] = {
 }
 
 # TODO: BAD test result
-# tests['DRIBBLE'] = {
-#         'in' :
-#     "make \"d \"dribble.txt\n"
-#                               "dribble :d\n"
-#                               "print [hi]\n"
-#                               "nodribble\n"
-#                               "openread :d\n"
-#                               "setread :d\n"
-#                               "show readrawline\n"
-#                               "show readrawline\n"
-#                               "close :d\n"
-#                               "erf :d\n"
-# ,
-#         'out' :
-#     '? '
-#     '? '
-#     '? '
-# "hi\n"
-#     '? '
-#     '? '
-#     '? '
-#     '? '
-#     '? '
-#     "hi\n"
-#     '? '
-#     "[]\n"
-#     '? '
-#     '? '
-# }
+# Dribble text should include the print command, and 'nodribble'
+tests['DRIBBLE'] = {
+        'in' :
+    "make \"d \"dribble.txt\n"
+                              "dribble :d\n"
+                              "print [hi]\n"
+                              "nodribble\n"
+                              "openread :d\n"
+                              "setread :d\n"
+                              "repeat 4[show readrawline]\n"
+                              "close :d\n"
+                              "erf :d\n"
+,
+        'out' :
+    '? '
+    '? '
+    '? '
+    "hi\n"
+    '? '
+    '? '
+    '? '
+    '? '
+    '? '
+    "print [hi]\n"
+    "hi\n"
+    '? '
+    "nodribble\n"
+    "[]\n"
+    '? '
+    '? '
+}
 
 tests['double DRIBBLE'] = {
     'in' :
@@ -7707,7 +7701,7 @@ for name in sorted(tests.keys()):
     t_in = test['in']
     t_ex = test['out']
 
-    # if name != 'EQUAL? 9' and name != 'DRIBBLE':
+    # if name != 'DRIBBLE':
     #     continue
 
     print name,'...',
