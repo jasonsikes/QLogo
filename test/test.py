@@ -7668,9 +7668,8 @@ tests['stack overflow error'] = {
     "[qw]\n"
 }
 
-# If this test causes a segfault, then tail recursion optomization is broken.
-# This test takes a whole second on my hardware.
-tests['tail recursion optomization'] = {
+# If these tests cause a segfault, then tail recursion optomization is broken.
+tests['tail recursion procedure 1'] = {
         'in' :
 "to qw :i\n"
              "if :i < 0 [output 0]\n"
@@ -7686,6 +7685,118 @@ tests['tail recursion optomization'] = {
 "qw defined\n"
     '? '
     "0\n"
+}
+
+tests['tail recursion procedure 2'] = {
+        'in' :
+"to qw :i\n"
+             "if :i > 0 [output qw :i-1]\n"
+             "output 0\n"
+             "end\n"
+             "print qw 100000\n"
+,
+        'out' :
+    '? '
+    '> '
+    '> '
+    '> '
+"qw defined\n"
+    '? '
+    "0\n"
+}
+
+tests['tail recursion macro 1'] = {
+        'in' :
+".macro qw\n"
+             "if :i < 0 [output []]\n"
+    "make \"i :i-1\n"
+             "output [qw]\n"
+             "end\n"
+    "make \"i 100000\n"
+             "qw\n"
+,
+        'out' :
+    '? '
+    '> '
+    '> '
+    '> '
+    '> '
+"qw defined\n"
+    '? '
+    '? '
+}
+
+tests['tail recursion macro 2'] = {
+        'in' :
+".macro qw\n"
+             "if :i > 0 [output [make \"i :i-1 qw]]\n"
+             "output []\n"
+             "end\n"
+    "make \"i 100000\n"
+             "qw\n"
+,
+        'out' :
+    '? '
+    '> '
+    '> '
+    '> '
+"qw defined\n"
+    '? '
+    '? '
+}
+
+tests['tail recursion macro 3'] = {
+        'in' :
+".macro qw\n"
+             "if :i > 0 [output [we qw]]\n"
+             "output []\n"
+             "end\n"
+    "to we\n"
+    "make \"i :i-1\n"
+    "stop\n"
+    "end\n"
+    "make \"i 100000\n"
+             "qw\n"
+,
+        'out' :
+    '? '
+    '> '
+    '> '
+    '> '
+"qw defined\n"
+    '? '
+    '> '
+    '> '
+    '> '
+"we defined\n"
+    '? '
+    '? '
+}
+
+tests['tail recursion macro 4'] = {
+        'in' :
+".macro qw\n"
+             "if :i > 0 [output [make \"i we :i qw]]\n"
+             "output []\n"
+             "end\n"
+    "to we :a\n"
+    "output :a-1\n"
+    "end\n"
+    "make \"i 100000\n"
+             "qw\n"
+,
+        'out' :
+    '? '
+    '> '
+    '> '
+    '> '
+"qw defined\n"
+    '? '
+    '> '
+    '> '
+"we defined\n"
+    '? '
+    '? '
 }
 
 tests['fput list to word'] = {
@@ -7705,7 +7816,7 @@ for name in sorted(tests.keys()):
     t_in = test['in']
     t_ex = test['out']
 
-    # if name != 'COPYDEF 2':
+    # if name != 'tail recursion macro 4':
     #     continue
 
     print name,'...',

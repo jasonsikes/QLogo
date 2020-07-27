@@ -488,10 +488,24 @@ DatumP Kernel::executeProcedure(DatumP node) {
 }
 
 DatumP Kernel::executeMacro(DatumP node) {
-  DatumP retval = executeProcedure(node);
-  if (!retval.isList())
-    return Error::macroReturned(retval);
-  return runList(retval);
+    bool wasExecutingMacro = isRunningMacroResult;
+    isRunningMacroResult = true;
+    try {
+        while (node.isASTNode()) {
+            node = executeProcedure(node);
+            if (!node.isList()) {
+                isRunningMacroResult = wasExecutingMacro;
+                return Error::macroReturned(node);
+            }
+            node = runList(node);
+        }
+    } catch (Error *e) {
+        isRunningMacroResult = wasExecutingMacro;
+        throw e;
+    }
+
+    isRunningMacroResult = wasExecutingMacro;
+    return node;
 }
 
 ASTNode *Kernel::astnodeValue(DatumP caller, DatumP value) {
@@ -527,7 +541,8 @@ DatumP Kernel::runList(DatumP listP, const QString startTag) {
   bool tagHasBeenFound = !shouldSearchForTag;
 
   QList<DatumP> *parsedList = parser->astFromList(listP.listValue());
-  for (auto &statement : *parsedList) {
+  for (int i = 0; i < parsedList->size(); ++i) {
+    DatumP statement = parsedList->at(i);
     if (retval != nothing) {
       if (retval.isASTNode()) {
         return retval;
@@ -536,6 +551,9 @@ DatumP Kernel::runList(DatumP listP, const QString startTag) {
     }
     KernelMethod method = statement.astnodeValue()->kernel;
     if (tagHasBeenFound) {
+        if (isRunningMacroResult && (method == &Kernel::executeMacro) && (i == parsedList->size()-1)) {
+            return statement;
+        }
       retval = (this->*method)(statement);
     } else {
       if (method == &Kernel::excTag) {
@@ -552,6 +570,8 @@ DatumP Kernel::runList(DatumP listP, const QString startTag) {
     }
   }
 
+  // TODO: Move this to beginning of function
+  // Because it is conceivable to enter a loop where we never reach here.
   while (!mainController()->eventQueueIsEmpty()) {
     char event = mainController()->nextQueueEvent();
     DatumP action;

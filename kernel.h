@@ -56,6 +56,7 @@ class Kernel {
   long repcount = -1;
   int pauseLevel = 0;
   int procedureIterationDepth = 0;
+  bool isRunningMacroResult = false;
 
   QVector<QColor> palette;
   PropertyLists plists;
