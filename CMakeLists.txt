@@ -41,3 +41,5 @@ endif()
 add_executable(logo ${LOGO_SOURCES} ${LOGO_HEADERS})
 
 target_link_libraries(logo Qt5::Core Qt5::Widgets)
+
+install(TARGETS QLogo logo RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
