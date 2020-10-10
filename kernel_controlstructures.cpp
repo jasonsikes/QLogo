@@ -223,7 +223,7 @@ DatumP Kernel::excCatch(DatumP node) {
         KernelMethod method = retval.astnodeValue()->kernel;
         if (method == &Kernel::excStop) {
             retval = nothing;
-          } else if ((method == &Kernel::excOutput) || (method == &Kernel::excDotMaybeoutput)) {
+          } else if ((method == &Kernel::excOutput) || (method == &Kernel::excDotMaybeoutput) || ((method == &Kernel::excStop) && (retval.astnodeValue()->countOfChildren() > 0))) {
             DatumP p = retval.astnodeValue()->childAtIndex(0);
             KernelMethod temp_method = p.astnodeValue()->kernel;
             DatumP temp_retval = (this->*temp_method)(p);
@@ -231,6 +231,9 @@ DatumP Kernel::excCatch(DatumP node) {
                 Error::didntOutput(p.astnodeValue()->nodeName,
                                    retval.astnodeValue()->nodeName);
               }
+            if ((temp_retval != nothing) && (method == &Kernel::excStop)) {
+                Error::dontSay(retval.astnodeValue()->nodeName);
+            }
             retval = temp_retval;
           } else {
             retval = (this->*method)(retval);
@@ -320,10 +323,6 @@ DatumP Kernel::excContinue(DatumP node) {
 
 DatumP Kernel::excTag(DatumP) { return nothing; }
 
-// This doesn't do anything or get called. It's just a token that gets passed
-// when GOTO is used
-DatumP Kernel::excGotoCore(DatumP) { return nothing; }
-
 DatumP Kernel::excGoto(DatumP node) {
   ProcedureHelper h(this, node);
   if (currentProcedure == nothing)
@@ -338,7 +337,7 @@ DatumP Kernel::excGoto(DatumP node) {
         ->tagToLine.contains(tag);
   });
   ASTNode *a = new ASTNode("GOTO");
-  a->kernel = &Kernel::excGotoCore;
+  a->kernel = &Kernel::excGotoToken;
   a->addChild(tagP);
   return DatumP(a);
 }

@@ -20,7 +20,8 @@
 ///
 /// \file
 /// This file contains the implementation of the Help class, which contains
-/// the QLogo help text.
+/// the QLogo help text. The text are almost word-for-word copies of the help
+/// text files contained in UCBLogo
 ///
 //===----------------------------------------------------------------------===//
 

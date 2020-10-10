@@ -436,7 +436,7 @@ public:
   DatumP excDotMaybeoutput(DatumP node);
   DatumP excTag(DatumP);
   DatumP excGoto(DatumP node);
-  DatumP excGotoCore(DatumP);
+  DatumP excGotoToken(DatumP);
 
   // TEMPLATE-BASED ITERATION
 

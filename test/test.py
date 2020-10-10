@@ -8,8 +8,8 @@
 import subprocess
 
 # TODO: I need to find a way to make this portable
-exe = '/Users/jsikes/Documents/WindowsBackpack/build-QLogo-Desktop_Qt_5_15_0_clang_64bit-Debug/logo'
-    
+exe = '/Users/jsikes/Projects/build-QLogo-Desktop_Qt_5_9_9_clang_64bit-Debug/logo'
+
 tests = {}
 
 
@@ -7799,6 +7799,49 @@ tests['tail recursion macro 4'] = {
     '? '
 }
 
+tests['tail recursion STOP 1'] = {
+    'in' :
+    "to we :a\n"
+    "if [:a > 0] [make \"b :b+1 we :a-1 stop]\n"
+    "end\n"
+    "make \"b 0\n"
+    "we 100000\n"
+    "print :b\n"
+    ,
+    'out' :
+    '? '
+    '> '
+    '> '
+    "we defined\n"
+    '? '
+    '? '
+    '? '
+    "100000\n"
+}
+
+tests['tail recursion error 1'] = {
+    'in' :
+    "to foo\n"
+    "output print 3\n"
+    "end\n"
+    "to baz\n"
+    "show foo\n"
+    "end\n"
+    "baz\n"
+    ,
+    'out' :
+    '? '
+    '> '
+    '> '
+    "foo defined\n"
+    '? '
+    '> '
+    '> '
+    "baz defined\n"
+    '? '
+    "print didn't output to output  in foo\n"
+}
+
 tests['fput list to word'] = {
 'in' :
 "fput [hi] \"hello\n"
@@ -7808,6 +7851,8 @@ tests['fput list to word'] = {
 "fput doesn't like hello as input\n"
 }
 
+
+
 bad_tests  = 0
 good_tests = 0
 
@@ -7816,7 +7861,7 @@ for name in sorted(tests.keys()):
     t_in = test['in']
     t_ex = test['out']
 
-    # if name != 'tail recursion macro 4':
+    # if name != 'tail recursion STOP 1':
     #     continue
 
     print name,'...',

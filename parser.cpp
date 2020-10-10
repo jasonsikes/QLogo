@@ -1063,6 +1063,7 @@ DatumP Parser::parseTermexp() {
     }
 
     advanceToken();
+    retval = parseStopIfExists(retval);
     return retval;
   }
 
@@ -1100,7 +1101,22 @@ DatumP Parser::parseTermexp() {
   }
 
   // If all else fails, it must be a function with the default number of params
-  return parseCommand(false);
+  return parseStopIfExists(parseCommand(false));
+}
+
+// First, check to see that the next token is indeed the STOP command.
+// If it is, create a new node for STOP, and add the command node
+// as a child to the STOP node.
+DatumP Parser::parseStopIfExists(DatumP command)
+{
+    if ((currentToken != nothing) && currentToken.isWord()
+            && (currentToken.wordValue()->keyValue() == "STOP")) {
+        // Consume and create the STOP node
+        DatumP stopCmd = parseCommand(false);
+        stopCmd.astnodeValue()->addChild(command);
+        return stopCmd;
+    }
+    return command;
 }
 
 DatumP Parser::astnodeWithLiterals(DatumP cmd, DatumP params) {

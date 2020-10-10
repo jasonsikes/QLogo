@@ -37,13 +37,13 @@ along with QLogo.  If not, see <http://www.gnu.org/licenses/>.
 
 QLogo is an interpreter for the Logo language written in C++ using
 Qt and OpenGL. It mimics (as much as I find reasonable) the UCBLogo
-interpreter developed at U.C. Berkeley.
+interpreter developed by Brian Harvey at U.C. Berkeley.
 
 You can find the UCBLogo Manual here:
 
 http://people.eecs.berkeley.edu/~bh/usermanual
 
-The differences between QLogo and UCBLogo are described below in the
+The differences between QLogo and UCBLogo are described in the
 "nuances" section below.
 
 ==============================================================

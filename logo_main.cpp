@@ -22,9 +22,8 @@ void processOptions(QCoreApplication *a)
   parser.addOptions({
                       {"QLogoGUI",
                        QCoreApplication::translate("main",
-                       "Set the input and output to the format used by the QLogo GUI Application. "
-                       "This option is meant to be set by the QLogo Application which "
-                       "communicates with logo using QLogo as a front end.")},
+                       "DO NOT USE! Set the input and output to the format used by "
+                       "the QLogo GUI Application. Useless elsewhere.")},
                     });
 
   parser.process(*a);

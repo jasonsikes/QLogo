@@ -75,6 +75,7 @@ class Parser : public Workspace {
   DatumP parseminusexp();
   DatumP parseTermexp();
   DatumP parseCommand(bool isVararg);
+  DatumP parseStopIfExists(DatumP command);
   DatumP astnodeFromCommand(DatumP command, int &minParams, int &defaultParams,
                             int &maxParams);
 

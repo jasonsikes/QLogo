@@ -81,6 +81,12 @@ StreamRedirect::~StreamRedirect() {
   exec->systemReadStream = originalSystemReadStream;
 }
 
+
+// This doesn't do anything or get called. It's just a token that gets passed
+// when GOTO is used
+DatumP Kernel::excGotoToken(DatumP) { return nothing; }
+
+
 bool Kernel::isInputRedirected() { return readStream != NULL; }
 
 bool Kernel::numbersFromList(QVector<double> &retval, DatumP l) {
@@ -407,7 +413,7 @@ DatumP Kernel::executeProcedureCore(DatumP node) {
       retval = runList(currentLine);
       if (retval.isASTNode()) {
         ASTNode *a = retval.astnodeValue();
-        if (a->kernel == &Kernel::excGotoCore) {
+        if (a->kernel == &Kernel::excGotoToken) {
           QString tag = a->childAtIndex(0).wordValue()->keyValue();
           DatumP startingLine = proc.procedureValue()->tagToLine[tag];
           iter =
@@ -438,6 +444,11 @@ DatumP Kernel::executeProcedureCore(DatumP node) {
         retval = temp_retval;
       } else if (method == &Kernel::excDotMaybeoutput) {
         retval = retval.astnodeValue()->childAtIndex(0);
+      } else if ((method == &Kernel::excStop) && (retval.astnodeValue()->countOfChildren() > 0)) {
+        retval = retval.astnodeValue()->childAtIndex(0);
+        if (retval != nothing) {
+            Error::dontSay(retval);
+        }
       } else {
         retval = (this->*method)(retval);
       } // /if method == ...
@@ -456,7 +467,7 @@ DatumP Kernel::executeProcedure(DatumP node) {
 
   while (retval.isASTNode()) {
       KernelMethod method = retval.astnodeValue()->kernel;
-      if ((method == &Kernel::excOutput) || (method == &Kernel::excDotMaybeoutput)) {
+      if ((method == &Kernel::excOutput) || (method == &Kernel::excDotMaybeoutput) || ((method == &Kernel::excStop) && (retval.astnodeValue()->countOfChildren() > 0))) {
           if (method == &Kernel::excOutput) {
               lastOutputCmd = retval.astnodeValue();
             }
@@ -542,13 +553,13 @@ DatumP Kernel::runList(DatumP listP, const QString startTag) {
 
   QList<DatumP> *parsedList = parser->astFromList(listP.listValue());
   for (int i = 0; i < parsedList->size(); ++i) {
-    DatumP statement = parsedList->at(i);
     if (retval != nothing) {
       if (retval.isASTNode()) {
         return retval;
       }
       Error::dontSay(retval);
     }
+    DatumP statement = (*parsedList)[i];
     KernelMethod method = statement.astnodeValue()->kernel;
     if (tagHasBeenFound) {
         if (isRunningMacroResult && (method == &Kernel::executeMacro) && (i == parsedList->size()-1)) {
