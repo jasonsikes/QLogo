@@ -7819,6 +7819,26 @@ tests['tail recursion STOP 1'] = {
     "100000\n"
 }
 
+tests['tail recursion STOP 2'] = {
+    'in' :
+    "to we :a\n"
+    "if [:a > 0] [make \"b :b+1 (stop we :a-1)]\n"
+    "end\n"
+    "make \"b 0\n"
+    "we 100000\n"
+    "print :b\n"
+    ,
+    'out' :
+    '? '
+    '> '
+    '> '
+    "we defined\n"
+    '? '
+    '? '
+    '? '
+    "100000\n"
+}
+
 tests['tail recursion error 1'] = {
     'in' :
     "to foo\n"
@@ -7861,8 +7881,8 @@ for name in sorted(tests.keys()):
     t_in = test['in']
     t_ex = test['out']
 
-    # if name != 'tail recursion STOP 1':
-    #     continue
+    if name != 'tail recursion STOP 2':
+        continue
 
     print name,'...',
 

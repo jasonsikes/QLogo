@@ -1782,7 +1782,7 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["IFT"] = stringToCmd["IFTRUE"];
   stringToCmd["IFFALSE"] = {&Kernel::excIffalse, 1, 1, 1};
   stringToCmd["IFF"] = stringToCmd["IFFALSE"];
-  stringToCmd["STOP"] = {&Kernel::excStop, 0, 0, 0};
+  stringToCmd["STOP"] = {&Kernel::excStop, 0, 0, 1};
   stringToCmd["OUTPUT"] = {&Kernel::excOutput, 1, 1, 1};
   stringToCmd["OP"] = stringToCmd["OUTPUT"];
   stringToCmd["CATCH"] = {&Kernel::excCatch, 2, 2, 2};
