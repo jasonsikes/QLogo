@@ -1160,7 +1160,7 @@ tests['EQUAL? 1'] = {
     ,
     'out' :
     '? '
-    "true\n"
+    "false\n"
 }
 
 tests['EQUAL? 2'] = {
@@ -1169,7 +1169,7 @@ tests['EQUAL? 2'] = {
     ,
     'out' :
     '? '
-    "true\n"
+    "false\n"
 }
 
 tests['EQUAL? 3'] = {
@@ -1178,7 +1178,7 @@ tests['EQUAL? 3'] = {
     ,
     'out' :
     '? '
-    "true\n"
+    "false\n"
 }
 
 tests['EQUAL? 4'] = {
@@ -1243,7 +1243,7 @@ tests['NOTEQUAL? 1'] = {
     ,
     'out' :
     '? '
-    "false\n"
+    "true\n"
 }
 
 tests['NOTEQUAL? 2'] = {
@@ -1263,7 +1263,7 @@ tests['NOTEQUAL? 3'] = {
     ,
     'out' :
     '? '
-    "false\n"
+    "true\n"
 }
 
 tests['NOTEQUAL? 4'] = {
@@ -1317,7 +1317,7 @@ tests['NOTEQUAL? 9'] = {
 ,
         'out' :
     '? '
-"false\n"
+"true\n"
 }
 
 tests['BEFORE? 1'] = {
@@ -7881,8 +7881,8 @@ for name in sorted(tests.keys()):
     t_in = test['in']
     t_ex = test['out']
 
-    if name != 'tail recursion STOP 2':
-        continue
+    # if name != 'tail recursion STOP 2':
+    #     continue
 
     print name,'...',
 

@@ -96,40 +96,9 @@ QString Array::showValue(bool fullPrintp, int printDepthLimit,
   return "...";
 }
 
-bool Array::isEqual(DatumP other, bool ignoreCase) {
-  ArrayIterator iter;
-  ArrayIterator otherIter;
+bool Array::isEqual(DatumP other, bool) {
   Array *o = other.arrayValue();
-  int myIndex = aryVisited.indexOf(this);
-  int otherIndex = otherAryVisited.indexOf(o);
-  if (myIndex != otherIndex)
-    goto exit_false;
-
-  if (myIndex > -1)
-    return true;
-
-  if (size() != o->size())
-    goto exit_false;
-
-  iter = newIterator();
-  otherIter = o->newIterator();
-  aryVisited.push_back(this);
-  otherAryVisited.push_back(o);
-
-  while (iter.elementExists()) {
-    DatumP value = iter.element();
-    DatumP otherValue = otherIter.element();
-    if (!value.isEqual(otherValue, ignoreCase))
-      goto exit_false;
-  }
-  aryVisited.pop_back();
-  otherAryVisited.pop_back();
-  return true;
-
-exit_false:
-  aryVisited.clear();
-  otherAryVisited.clear();
-  return false;
+  return this == o;
 }
 
 int Array::size() { return array.size(); }
