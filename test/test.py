@@ -7,8 +7,7 @@
 
 import subprocess
 
-# TODO: I need to find a way to make this portable
-exe = '/Users/jsikes/Projects/build-QLogo-Desktop_Qt_5_9_9_clang_64bit-Debug/logo'
+exe = '../logo'
 
 tests = {}
 
@@ -7881,8 +7880,8 @@ for name in sorted(tests.keys()):
     t_in = test['in']
     t_ex = test['out']
 
-    if name != 'tail recursion STOP 2':
-        continue
+    # if name != 'tail recursion STOP 2':
+    #     continue
 
     print name,'...',
 
