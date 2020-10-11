@@ -311,9 +311,6 @@ DatumP Kernel::excTo(DatumP node) {
   if (currentProcedure != nothing) {
     Error::toInProc(node.astnodeValue()->nodeName);
   }
-  if (pauseLevel > 0) {
-    Error::toInPause(node.astnodeValue()->nodeName);
-  }
   parser->inputProcedure(node, systemReadStream);
   return nothing;
 }

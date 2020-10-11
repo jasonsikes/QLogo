@@ -7462,44 +7462,6 @@ tests['MACRO in TO'] = {
 # "Already filling\n"
 # }
 
-tests['TO in PAUSE'] = {
-    'in' :
-    "pause\n"
-    "to pr\n"
-    "co\n"
-    "to fg\n"
-    "end\n"
-    ,
-    'out' :
-    '? '
-    "Pausing...\n"
-    '? '
-    "Can't use to within PAUSE\n"
-    '? '
-    '? '
-    '> '
-    "fg defined\n"
-}
-
-tests['.MACRO in PAUSE'] = {
-    'in' :
-    "pause\n"
-    ".macro pr\n"
-    "co\n"
-    ".macro fg\n"
-    "end\n"
-    ,
-    'out' :
-    '? '
-    "Pausing...\n"
-    '? '
-    "Can't use .macro within PAUSE\n"
-    '? '
-    '? '
-    '> '
-    "fg defined\n"
-}
-
 tests['reparsing list 1'] = {
     'in' :
     "make \"a [print \"hello]\n"
