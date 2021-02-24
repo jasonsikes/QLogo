@@ -433,7 +433,14 @@ DatumP Kernel::executeProcedureCore(DatumP node) {
   if (h.isTraced && retval.isASTNode()) {
     KernelMethod method = retval.astnodeValue()->kernel;
     if (method == &Kernel::excStop) {
-        retval = nothing;
+        if (retval.astnodeValue()->countOfChildren() > 0) {
+            retval = retval.astnodeValue()->childAtIndex(0);
+            if (retval != nothing) {
+                Error::dontSay(retval);
+            }
+        } else {
+            retval = nothing;
+        }
       } else if (method == &Kernel::excOutput) {
         DatumP p = retval.astnodeValue()->childAtIndex(0);
         KernelMethod temp_method = p.astnodeValue()->kernel;
@@ -444,11 +451,6 @@ DatumP Kernel::executeProcedureCore(DatumP node) {
         retval = temp_retval;
       } else if (method == &Kernel::excDotMaybeoutput) {
         retval = retval.astnodeValue()->childAtIndex(0);
-      } else if ((method == &Kernel::excStop) && (retval.astnodeValue()->countOfChildren() > 0)) {
-        retval = retval.astnodeValue()->childAtIndex(0);
-        if (retval != nothing) {
-            Error::dontSay(retval);
-        }
       } else {
         retval = (this->*method)(retval);
       } // /if method == ...

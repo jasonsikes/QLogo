@@ -3,7 +3,7 @@
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
   <property name="windowModality">
-   <enum>Qt::ApplicationModal</enum>
+   <enum>Qt::NonModal</enum>
   </property>
   <property name="geometry">
    <rect>
@@ -81,7 +81,7 @@
      <x>0</x>
      <y>0</y>
      <width>725</width>
-     <height>25</height>
+     <height>24</height>
     </rect>
    </property>
   </widget>

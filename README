@@ -59,8 +59,8 @@ to get this compiled and working on Windows XP which means Qt 5.6.
 QLogo is currently being developed and tested on the following platforms:
 
 * Windows 10 using gcc 8.1.0
-* OpenSUSE LEAP 15.1 using gcc 7.5.0
-* Mac OS X 10.15 using Clang 11.0.3
+* OpenSUSE LEAP 15.2 using gcc 7.5.0
+* Mac OS X 11.1 using Clang 12.0.0
 
 To build:
 
