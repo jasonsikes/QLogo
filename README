@@ -60,7 +60,7 @@ QLogo is currently being developed and tested on the following platforms:
 
 * Windows 10 using gcc 8.1.0
 * OpenSUSE LEAP 15.2 using gcc 7.5.0
-* Mac OS X 11.2 using Clang 12.0.0
+* Mac OS X 11.3 using Clang 12.0.5
 
 To build:
 

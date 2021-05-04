@@ -7,8 +7,7 @@
 
 import subprocess
 
-# TODO: I need to find a way to make this portable
-exe = '/Users/jsikes/Projects/build-QLogo-Desktop_Qt_5_9_9_clang_64bit-Debug/logo'
+exe = '../logo'
 
 tests = {}
 
