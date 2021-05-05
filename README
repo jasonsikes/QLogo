@@ -51,14 +51,10 @@ The differences between QLogo and UCBLogo are described in the
 
 Compiling
 
-QLogo is being developed and tested to work with C++11 and Qt 5.9 and 5.15 so it
-can be assumed that any version in between should work just fine. It is my hope
-to get this compiled and working on Windows XP which means Qt 5.6.
+QLogo requires Qt6 and is currently being developed and tested on the following
+platforms:
 
-
-QLogo is currently being developed and tested on the following platforms:
-
-* Windows 10 using gcc 8.1.0
+* Windows 10 using MinGW 8.1.0 
 * OpenSUSE LEAP 15.2 using gcc 7.5.0
 * Mac OS X 11.3 using Clang 12.0.5
 

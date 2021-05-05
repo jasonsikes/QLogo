@@ -1,4 +1,5 @@
 #include "logocontroller.h"
+#include <QIODevice>
 
 LogoController::LogoController(QObject *parent): Controller(parent)
 {

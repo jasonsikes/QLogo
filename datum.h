@@ -316,7 +316,7 @@ Q_DECLARE_TYPEINFO(DatumP, Q_MOVABLE_TYPE);
 /// and an array of zero or more children.
 class ASTNode : public Datum {
 protected:
-  std::vector<DatumP> children;
+  QVector<DatumP> children;
 
 public:
 

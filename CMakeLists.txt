@@ -2,7 +2,9 @@ project(QLogo)
 
 cmake_minimum_required(VERSION 3.5)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -10,7 +12,7 @@ set(CMAKE_AUTOMOC ON)
 
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt6 COMPONENTS OpenGLWidgets REQUIRED)
 
 set(QLOGO_SOURCES qlogo_main.cpp mainwindow.cpp canvas.cpp console.cpp)
 
@@ -20,7 +22,7 @@ set(QLOGO_UI mainwindow.ui)
 
 add_executable(QLogo ${QLOGO_SOURCES} ${QLOGO_HEADERS} ${QLOGO_UI})
 
-target_link_libraries(QLogo Qt5::Widgets)
+target_link_libraries(QLogo Qt6::Widgets Qt6::OpenGLWidgets)
 
 
 
@@ -40,6 +42,6 @@ endif()
 
 add_executable(logo ${LOGO_SOURCES} ${LOGO_HEADERS})
 
-target_link_libraries(logo Qt5::Core Qt5::Widgets)
+target_link_libraries(logo Qt6::Core Qt6::Widgets)
 
 install(TARGETS QLogo logo RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

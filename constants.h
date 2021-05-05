@@ -44,7 +44,7 @@ enum messageCategory : message_t {
     C_CANVAS_CLEAR_SCREEN,      // Clear the graphics screen
 };
 
-const QChar escapeChar = 27;
+const QChar escapeChar(27);
 
 #define dv(x) qDebug()<<#x<<'='<<x
 

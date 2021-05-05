@@ -30,9 +30,9 @@
 #include "math.h"
 
 #include <QPainter>
-#include <QtGui/QOpenGLBuffer>
-#include <QtGui/QOpenGLShaderProgram>
-#include <QtGui/QOpenGLVertexArrayObject>
+#include <QOpenGLBuffer>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLVertexArrayObject>
 
 
 inline GLfloat lerp(float a, float b, float t) { return a * t + b * (1 - t); }
