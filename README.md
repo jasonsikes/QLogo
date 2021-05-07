@@ -47,7 +47,7 @@ You can find the UCBLogo Manual here:
 http://people.eecs.berkeley.edu/~bh/usermanual
 
 The differences between QLogo and UCBLogo are described in the
-"nuances" section below.
+*nuances* section below.
 
 ***
 
@@ -89,10 +89,10 @@ There is no "make install" step yet.
 
    1. as a palette index (0 to 100)
 
-   2. as a list of 3 percentages, one for each of red, green, blue [0 0 0] is
-   black, [100 100 100] is white
+   2. as a list of 3 percentages, one for each of red, green, blue `[0 0 0]` is
+   black, `[100 100 100]` is white
 
-   3. as a named color from the X Color Database, e.g. "white" or "lemonchiffon".
+   3. as a named color from the X Color Database, e.g. `white` or `lemonchiffon`.
    The X Color database can be found here:
    https://en.wikipedia.org/wiki/X11_color_names
 
@@ -107,25 +107,25 @@ There is no "make install" step yet.
   no library directory at this time.
 
 
-* QLogo does not look for nor automatically load STARTUP.LG.
+* QLogo does not look for nor automatically load `STARTUP.LG`.
 
 
-* If ERRACT is set and its size is greater than zero, then any errors execute
-  PAUSE. This was necessary because I couldn't find a reliable way to prevent
+* If `ERRACT` is set and its size is greater than zero, then any errors execute
+  `PAUSE`. This was necessary because I couldn't find a reliable way to prevent
   infinite loops during error handling.
   
 
 * Garbage collection is on-the-fly, meaning that memory is freed the moment a
-  word/list/array is no longer needed. GC and .SETSEGMENTSIZE are no-ops.
+  word/list/array is no longer needed. `GC` and `.SETSEGMENTSIZE` are no-ops.
 
 
-* SAVEPICT saves a copy of the canvas in the format given by the filename's
-  extension. For example: SAVEPICT "MY_PICTURE.PNG will save in PNG
+* `SAVEPICT` saves a copy of the canvas in the format given by the filename's
+  extension. For example: `SAVEPICT "MY_PICTURE.PNG` will save in PNG
   format. QLogo can save an image in the following formats: BMP, JPG/JPEG,
   PNG, PPM, XBM, and XPM
 
 
-* HELP is functional, but the text is a copy of the UCBLogo help text. As
+* `HELP` is functional, but the text is a copy of the UCBLogo help text. As
   such, it should be 99.9% correct. This will be fixed.
 
 
@@ -134,7 +134,7 @@ There is no "make install" step yet.
 
 ## The following commands are not implemented:
 
-### SETMARGINS:
+`SETMARGINS`:
 
 The original purpose of the command was to enable text to
 be visible on projectors which cut off outer boundaries of
@@ -144,7 +144,7 @@ that QLogo is a windowed application so an instructor or
 presentor can move the window to a different position.
 
 
-### FILL:
+`FILL`:
 
 Two reasons: One of the user interface principles was that
 the canvas should be device resolution-independent. That
@@ -156,78 +156,78 @@ dramatically depending on the size of the canvas. The other
 reason is that the Flood Fill algorithm can slow down
 window resizing. Use FILLED instead.
 
-### LOADPICT:
+`LOADPICT`:
 
 This will be implemented soon.
 
-### EPSPICT:
+`EPSPICT`:
 
 This will be replaced by SVGPICT.
 
-### CSLSLOAD:
+`CSLSLOAD`:
 
 Not implemented yet.
 
-### SETCSLSLOC:
+`SETCSLSLOC`:
 
 Not implemented yet.
 
-### SETEDITOR:
+`SETEDITOR`:
 
 QLogo uses a built-in editor.
 
-### SETLIBLOC:
+`SETLIBLOC`:
 
 The QLogo library is stored internally.
 
-### SETHELPLOC:
+`SETHELPLOC`:
 
 The help text is stored internally by the
 application. There is no external file.
 
-### SETTEMPLOC:
+`SETTEMPLOC`:
 
 QLogo doesn't create temporary files at this time.
 
 
 ## The following variables have no special meaning:
 
-### COMMANDLINE:
+`COMMANDLINE`:
 
 QLogo is a GUI application at the moment, although a
 significant amount of thought is being given to make this
 also a command-line program.
 
-### REDEFP:
+`REDEFP`:
 
 Qt has strong support for internationalization, but QLogo
 is not designed at this time to take advantage of
 that. Internationalization will be supported soon.
 
-### USEALTERNATENAMES:
+`USEALTERNATENAMES`:
 
 Ditto.
 
 
 ## The following commands are NEW:
 
-### ALLFONTS:
+`ALLFONTS`:
 
 Returns a list of all the fonts available on your system.
 
-### CURSORINSERT:
+`CURSORINSERT`:
 
 Sets cursor to insert mode, this is the default.
 
-### CURSOROVERWRITE:
+`CURSOROVERWRITE`:
 
 Sets cursor to overwrite mode.
 
-### CURSORMODE:
+`CURSORMODE`:
 
 Outputs either INSERT or OVERWRITE
 
-### BOUNDS:
+`BOUNDS`:
 
 Outputs a list of two numbers giving the maximum bounds (x,y)
 of the canvas.  e.g. bounds of [350 150] means that the
@@ -235,12 +235,12 @@ turtle is visible if its X-coordinate is between -350 and 350
 and its Y-coordinate is between -150 and 150. The coordinate
 [0, 0] is always in the center.
 
-### SETBOUNDS:
+`SETBOUNDS`:
 
 Takes two integers and sets outer bounds of the canvas.
 See BOUNDS.
 
-### MATRIX:
+`MATRIX`:
 
 This exists for debugging and may be removed. Outputs a
 list of four lists, each sublist contains four numbers. This
