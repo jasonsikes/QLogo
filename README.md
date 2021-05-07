@@ -31,7 +31,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with QLogo.  If not, see <http://www.gnu.org/licenses/>.
+along with QLogo.  If not, see http://www.gnu.org/licenses/.
 
 
 ***
@@ -47,7 +47,7 @@ You can find the UCBLogo Manual here:
 http://people.eecs.berkeley.edu/~bh/usermanual
 
 The differences between QLogo and UCBLogo are described in the
-*nuances* section below.
+**nuances** section below.
 
 ***
 
@@ -87,12 +87,12 @@ There is no "make install" step yet.
 
 * Colors can be specified in one of three ways:
 
-   *. as a palette index (0 to 100)
+   * as a palette index (0 to 100)
 
-   *. as a list of 3 percentages, one for each of red, green, blue `[0 0 0]` is
+   * as a list of 3 percentages, one for each of red, green, blue `[0 0 0]` is
    black, `[100 100 100]` is white
 
-   *. as a named color from the X Color Database, e.g. `white` or `lemonchiffon`.
+   * as a named color from the X Color Database, e.g. `white` or `lemonchiffon`.
    The X Color database can be found here:
    https://en.wikipedia.org/wiki/X11_color_names
 
@@ -225,7 +225,7 @@ Sets cursor to overwrite mode.
 
 `CURSORMODE`:
 
-Outputs either INSERT or OVERWRITE
+Outputs either `INSERT` or `OVERWRITE`.
 
 `BOUNDS`:
 
@@ -233,12 +233,12 @@ Outputs a list of two numbers giving the maximum bounds (x,y)
 of the canvas.  e.g. bounds of [350 150] means that the
 turtle is visible if its X-coordinate is between -350 and 350
 and its Y-coordinate is between -150 and 150. The coordinate
-[0, 0] is always in the center.
+[0, 0] is always in the center. See `SETBOUNDS`
 
 `SETBOUNDS`:
 
 Takes two integers and sets outer bounds of the canvas.
-See BOUNDS.
+See `BOUNDS`.
 
 `MATRIX`:
 
