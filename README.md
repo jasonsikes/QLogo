@@ -87,12 +87,12 @@ There is no "make install" step yet.
 
 * Colors can be specified in one of three ways:
 
-   1. as a palette index (0 to 100)
+   *. as a palette index (0 to 100)
 
-   2. as a list of 3 percentages, one for each of red, green, blue `[0 0 0]` is
+   *. as a list of 3 percentages, one for each of red, green, blue `[0 0 0]` is
    black, `[100 100 100]` is white
 
-   3. as a named color from the X Color Database, e.g. `white` or `lemonchiffon`.
+   *. as a named color from the X Color Database, e.g. `white` or `lemonchiffon`.
    The X Color database can be found here:
    https://en.wikipedia.org/wiki/X11_color_names
 
@@ -132,7 +132,7 @@ There is no "make install" step yet.
 * There is no facility yet for translation/internationalization. Yet.
 
 
-## The following commands are not implemented:
+### The following commands are not implemented:
 
 `SETMARGINS`:
 
@@ -190,7 +190,7 @@ application. There is no external file.
 QLogo doesn't create temporary files at this time.
 
 
-## The following variables have no special meaning:
+### The following variables have no special meaning:
 
 `COMMANDLINE`:
 
@@ -209,7 +209,7 @@ that. Internationalization will be supported soon.
 Ditto.
 
 
-## The following commands are NEW:
+### The following commands are NEW:
 
 `ALLFONTS`:
 
