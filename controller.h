@@ -71,12 +71,12 @@ public:
   QVector2D mousePos;
   QVector2D clickPos;
 
-  virtual void drawLine(const QVector4D &, const QVector4D &, const QColor &) {}
-  void drawPolygon(const QList<QVector4D> &, const QList<QColor> &) {}
+  virtual void drawLine(const QVector3D &, const QVector3D &, const QColor &) {}
+  void drawPolygon(const QList<QVector3D> &, const QList<QColor> &) {}
   void updateCanvas(void) {}
   virtual void clearScreen(void) {}
   void clearScreenText(void) {}
-  void drawLabel(const QString &, const QVector4D &, const QColor &,
+  void drawLabel(const QString &, const QVector3D &, const QColor &,
                  const QFont &) {}
   QString addStandoutToString(const QString &src);
   virtual bool keyQueueHasChars() { return false; }

@@ -24,7 +24,7 @@ public:
     DatumP readchar();
 
     void setTurtlePos(const QMatrix4x4 &newTurtlePos);
-    void drawLine(const QVector4D &start, const QVector4D &end, const QColor &color);
+    void drawLine(const QVector3D &start, const QVector3D &end, const QColor &color);
     void clearScreen();
 
 };

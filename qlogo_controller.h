@@ -94,11 +94,11 @@ public:
   void receiveString(const QString &line);
   bool setDribble(const QString &filePath);
   bool isDribbling();
-  void drawLabel(const QString &aText, const QVector4D &aLocation,
+  void drawLabel(const QString &aText, const QVector3D &aLocation,
                  const QColor &aColor, const QFont &aFont);
-  void drawLine(const QVector4D &vertexA, const QVector4D &vertexB,
+  void drawLine(const QVector3D &vertexA, const QVector3D &vertexB,
                 const QColor &color);
-  void drawPolygon(const QList<QVector4D> &vertices,
+  void drawPolygon(const QList<QVector3D> &vertices,
                    const QList<QColor> &colors);
   void setBounds(qreal x, qreal y);
   void getBounds(qreal &x, qreal &y);

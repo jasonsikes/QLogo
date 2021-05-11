@@ -370,7 +370,7 @@ DatumP Kernel::excLabel(DatumP node) {
   QString text = h.wordAtIndex(0).wordValue()->printValue();
   double x = 0, y = 0, z = 0;
   mainTurtle()->getxyz(x, y, z);
-  QVector4D pos(x, y, z, 1);
+  QVector3D pos(x, y, z);
   mainController()->drawLabel(text, pos, mainTurtle()->getPenColor(),
                               labelFont);
   return nothing;

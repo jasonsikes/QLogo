@@ -21,7 +21,8 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains constants shared between the QLogo/logo programs.
+/// This file contains constants and data structures shared between the QLogo/logo
+/// programs.
 ///
 //===----------------------------------------------------------------------===//
 

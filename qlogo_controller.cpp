@@ -196,7 +196,7 @@ void Controller::addLabelSlot(const QString &aText, const QVector4D &aLocation,
   mainWindow->mainCanvas()->addLabel(aText, aLocation, aColor, aFont);
 }
 
-void Controller::drawLine(const QVector4D &vertexA, const QVector4D &vertexB,
+void Controller::drawLine(const QVector3D &vertexA, const QVector3D &vertexB,
                           const QColor &color) {
   drawLineSignal(vertexA, vertexB, color);
 }
@@ -207,7 +207,7 @@ void Controller::drawLineSlot(const QVector4D &vertexA,
   mainWindow->mainCanvas()->addLine(vertexA, vertexB, color);
 }
 
-void Controller::drawPolygon(const QList<QVector4D> &vertices,
+void Controller::drawPolygon(const QList<QVector3D> &vertices,
                              const QList<QColor> &colors) {
   addPolygonSignal(vertices, colors);
 }

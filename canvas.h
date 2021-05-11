@@ -38,11 +38,11 @@ class QOpenGLVertexArrayObject;
 /// Contains the information that describes a label's appearance on the Canvas.
 struct Label {
   QString text;
-  QVector4D position;
+  QVector3D position;
   QColor color;
   QFont font;
 
-  Label(const QString &aText, const QVector4D &aPosition, const QColor &aColor,
+  Label(const QString &aText, const QVector3D &aPosition, const QColor &aColor,
         const QFont &aFont)
       : text(aText), position(aPosition), color(aColor), font(aFont) {}
 };

@@ -42,10 +42,10 @@ class Turtle {
   void drawTurtleFence();
   void drawTurtleWindow();
   QColor penColor;
-  QVector4D lineStart;
+  QVector3D lineStart;
   TurtleModeEnum mode = turtleFence;
   bool isFilling = false;
-  QList<QVector4D> fillVertices;
+  QList<QVector3D> fillVertices;
   QList<QColor> fillVertexColors;
   QColor fillColor;
   PenModeEnum penMode = penModePaint;
