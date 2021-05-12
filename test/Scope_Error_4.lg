@@ -1,0 +1,5 @@
+to f1
+repeat 5[if repcount = 3 [2*2]]
+end
+f1
+show repcount

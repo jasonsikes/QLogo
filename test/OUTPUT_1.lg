@@ -1,0 +1,7 @@
+to t1
+output 2*2
+end
+to t2
+output 2*t1
+end
+show t2

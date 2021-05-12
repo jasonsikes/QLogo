@@ -1,0 +1,12 @@
+step [[c1 c10] [p1]]
+to c1 [:p1 2*2] [:p2 3+3]
+(print :p1 :p2)
+end
+c1
+
+to c10
+(c1 10 20)
+end
+c10
+
+

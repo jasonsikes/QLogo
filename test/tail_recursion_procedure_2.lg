@@ -1,0 +1,5 @@
+to qw :i
+if :i > 0 [output qw :i-1]
+output 0
+end
+print qw 100000

@@ -1,0 +1,1 @@
+show firsts [{array1 array2 array3} [list1 list2 list3] foo bar]

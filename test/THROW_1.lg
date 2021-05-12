@@ -1,0 +1,5 @@
+to throw_error
+(throw "error [this is an error])
+end
+throw_error
+show error

@@ -1,0 +1,8 @@
+to t
+throw "q
+end
+to c
+catch "q [output t]
+print "caught
+end
+c

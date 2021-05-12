@@ -1,0 +1,3 @@
+test "true
+iff [print "hello]
+print "boogie

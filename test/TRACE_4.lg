@@ -1,0 +1,2 @@
+trace [[* + make][def][]]
+make "def 2*2+5

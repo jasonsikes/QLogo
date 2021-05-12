@@ -1,0 +1,9 @@
+openupdate "TestQLogoFileIO7.txt
+setwrite "TestQLogoFileIO7.txt
+make "a writer
+setwrite []
+show :a
+setread "TestQLogoFileIO7.txt
+show reader
+close "TestQLogoFileIO7.txt
+erf "TestQLogoFileIO7.txt

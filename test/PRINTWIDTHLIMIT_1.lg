@@ -1,0 +1,7 @@
+make "printwidthlimit 1
+show [[[] [] []]]
+show [this is a test]
+show {this is a test}
+show [[this is a test]]
+show {{this is a test}}
+show "12345678901234567890

@@ -1,0 +1,4 @@
+make "a 1
+make "b [make "a :A+1]
+repeat 10 :b
+print :a

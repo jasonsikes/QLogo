@@ -1,0 +1,5 @@
+to proc1
+show "hello
+end
+copydef "proc2 "proc1
+show primitive? "proc2

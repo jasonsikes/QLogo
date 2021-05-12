@@ -1,0 +1,6 @@
+make "line "go_
+openwrite [line 50 50]
+setwrite "line
+print "Cougs
+closeall
+show :line

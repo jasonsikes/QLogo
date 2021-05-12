@@ -1,0 +1,1 @@
+print catch "err [(throw "err "hello)]

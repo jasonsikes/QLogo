@@ -1,0 +1,2 @@
+make "a {this is a test}
+setitem 1 :a :a

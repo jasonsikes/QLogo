@@ -1,0 +1,8 @@
+to proc
+goto [tag1]
+tag "y2
+print [this shouldn't print]
+tag [tag1]
+print [this shouldn't print, either]
+end
+proc

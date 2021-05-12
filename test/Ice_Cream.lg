@@ -1,0 +1,4 @@
+make "one [Ice cream is delicious.]
+make "two fput "Spinach butfirst butfirst :one
+.setfirst butfirst butfirst :two "disgusting.
+print :one

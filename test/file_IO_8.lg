@@ -1,0 +1,14 @@
+make "f "TestQLogoFileIO8.txt
+openupdate :f
+setwrite :f
+print [this is a test]
+setwrite []
+setread :f
+setreadpos 0
+show eofp
+show readpos
+make "a readrawline
+show eofp
+show readpos
+close :f
+erf :f

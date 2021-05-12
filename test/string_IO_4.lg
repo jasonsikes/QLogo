@@ -1,0 +1,3 @@
+openread [line]
+setread "line
+show readrawline

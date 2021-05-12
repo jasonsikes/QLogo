@@ -1,0 +1,7 @@
+to foo
+output print 3
+end
+to baz
+show foo
+end
+baz

@@ -1,0 +1,2 @@
+catch "err1 [throw "err2]
+show error

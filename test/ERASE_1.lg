@@ -1,0 +1,12 @@
+to a1 :p1
+show :p1
+end
+make "q 2*2
+pprop 1 2 3
+pprop 2 3 4
+pot [[a1] [q] [1 2]]
+erase [[a1] [q] []]
+er [[] [] [1 2]]
+pot [[a1]]
+pot [[] [q]]
+pot [[][][1 2]]

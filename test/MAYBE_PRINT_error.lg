@@ -1,0 +1,4 @@
+to maybePrint
+.maybeoutput print "hello
+end
+print maybePrint

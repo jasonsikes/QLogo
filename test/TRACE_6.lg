@@ -1,0 +1,2 @@
+trace [[* + pprop][][list2]]
+pprop "list2 "item1 4*4+3

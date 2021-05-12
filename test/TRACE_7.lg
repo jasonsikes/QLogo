@@ -1,0 +1,14 @@
+to l1 :p1
+(show "l1 :p1)
+end
+to l2 :p1
+l1 :p1
+end
+to l3 :p1
+l2 :p1
+end
+to l4 :p1
+l3 :p1
+end
+trace [[l1 l2 l3 l4]]
+l4 10

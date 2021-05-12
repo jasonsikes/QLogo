@@ -1,0 +1,6 @@
+make "allowgetset "true
+make "a [a b c [d e f]]
+make "b [a b c [d e f]]
+.setfirst :a :a
+.setfirst :b :b
+show a=b

@@ -1,0 +1,7 @@
+to f1
+test 2=2
+make "a 22
+make "b print :a
+end
+f1
+iff [show :a]

@@ -1,0 +1,4 @@
+to a1 [:p1]
+print :p1
+end
+show arity "a1

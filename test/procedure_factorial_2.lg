@@ -1,0 +1,4 @@
+to factorial :x
+ifelse :x = 1 [output 1] [output :x * factorial :x-1]
+end
+show factorial 4

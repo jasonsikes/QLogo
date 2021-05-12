@@ -1,0 +1,2 @@
+copydef "proc2 "print
+show primitivep "proc2

@@ -1,0 +1,6 @@
+openwrite "TestQLogoFileIO10a.txt
+openwrite "TestQLogoFileIO10b.txt
+closeall
+show allopen
+erf "TestQLogoFileIO10a.txt
+erf "TestQLogoFileIO10b.txt

@@ -1,0 +1,4 @@
+to maybeWord
+.maybeoutput "hello
+end
+maybeWord

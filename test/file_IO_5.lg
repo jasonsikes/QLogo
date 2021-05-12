@@ -1,0 +1,4 @@
+openwrite "TestQLogoFileIO5.txt
+show allopen
+close "TestQLogoFileIO5.txt
+erf "TestQLogoFileIO5.txt

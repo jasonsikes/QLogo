@@ -1,0 +1,2 @@
+catch "error [notafunc]
+show error

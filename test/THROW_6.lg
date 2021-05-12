@@ -1,0 +1,8 @@
+to throw_error
+noop
+catch "error [throw "error]
+end
+to noop
+end
+throw_error
+show error

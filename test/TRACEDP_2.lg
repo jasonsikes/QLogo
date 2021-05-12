@@ -1,0 +1,2 @@
+trace [[tracedproc]]
+show traced? [tracedproc]

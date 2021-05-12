@@ -1,0 +1,6 @@
+to iter :p1 :i
+if :i <=0 [output :p1]
+output iter :p1 * 2 :i-1
+end
+trace "iter
+print iter 4 5

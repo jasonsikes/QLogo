@@ -1,0 +1,4 @@
+make "fullprintp "true
+show "|hello|
+show "|hello there|
+print [hello |there you|]

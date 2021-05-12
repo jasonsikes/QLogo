@@ -1,0 +1,7 @@
+to t1 :x
+output 2*:x
+end
+to t2
+output 2*t1 5
+end
+show t2

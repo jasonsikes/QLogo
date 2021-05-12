@@ -1,0 +1,4 @@
+to f :p1
+forever [print repcount if repcount=:p1 [output "end]]
+end
+print f 5

@@ -1,0 +1,3 @@
+.defmacro "m2 [[] [output [print "hello]]]
+show macro? "m2
+m2

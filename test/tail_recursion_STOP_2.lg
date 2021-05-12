@@ -1,0 +1,6 @@
+to we :a
+if [:a > 0] [make "b :b+1 (stop we :a-1)]
+end
+make "b 0
+we 100000
+print :b

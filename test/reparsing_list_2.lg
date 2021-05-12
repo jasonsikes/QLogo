@@ -1,0 +1,4 @@
+make "a [print "hello]
+run :a
+.setbf :a ["hi]
+run :a

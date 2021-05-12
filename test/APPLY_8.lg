@@ -1,0 +1,4 @@
+show apply [? * ?] [3]
+show apply [? + ?2] [3 4]
+show apply [[x y] :x*:y] [4 5]
+show apply [[x y] [output :x * :y]] [5 6]

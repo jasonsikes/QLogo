@@ -1,0 +1,8 @@
+to throw_error
+(throw "error [this is an error] )
+end
+to level2
+throw_error
+end
+catch "error [level2]
+show error

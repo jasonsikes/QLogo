@@ -1,0 +1,4 @@
+to tp [:p1 [1 2 3]]
+show :p1
+end
+tp

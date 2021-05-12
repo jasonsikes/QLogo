@@ -1,0 +1,7 @@
+to f1
+local "a
+make "a 22
+make "b print :a
+end
+f1
+show :a

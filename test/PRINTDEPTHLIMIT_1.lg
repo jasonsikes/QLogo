@@ -1,0 +1,6 @@
+make "printdepthlimit 1
+show [[[] [] []]]
+show [this is a test]
+show {this is a test}
+show [[this is a test]]
+show {{this is a test}}

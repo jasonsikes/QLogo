@@ -1,0 +1,4 @@
+make "printdepthlimit 0
+show "hello
+show [this is a test]
+show {this is a test}

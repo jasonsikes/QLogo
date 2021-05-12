@@ -1,0 +1,4 @@
+make "a [show [hello]]
+run :a
+.setfirst :a "print
+run :a

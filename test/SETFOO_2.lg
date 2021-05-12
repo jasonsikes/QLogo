@@ -1,0 +1,7 @@
+make "allowgetset "true
+to proc
+global "foo
+setfoo 1
+end
+proc
+show :foo

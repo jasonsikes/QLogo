@@ -1,0 +1,6 @@
+openwrite [text 100]
+setwrite "text
+show allopen
+closeall
+show first :text
+show last butlast :text

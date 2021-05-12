@@ -1,0 +1,4 @@
+step [[] [v1]]
+local "v1
+make "v1 "hello
+show :v1

@@ -1,0 +1,10 @@
+to i1 :p :i
+if :i<=0 [output :p]
+output i2 :p*2 :i-1
+end
+to i2 :p :i
+if :i<=0 [output :p]
+output i1 :p+5 :i-1
+end
+trace [[i1 i2]]
+print i1 4 5

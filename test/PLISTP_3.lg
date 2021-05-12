@@ -1,0 +1,3 @@
+pprop 1 2 3
+remprop 1 2
+show plistp 1

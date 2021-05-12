@@ -1,0 +1,4 @@
+make "a [print "hello]
+run :a
+setitem 2 :a ""hi
+run :a

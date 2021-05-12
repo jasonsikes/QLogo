@@ -1,0 +1,5 @@
+to f1 :P1
+show namep "p1
+end
+f1 1
+show name? "p1

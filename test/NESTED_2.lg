@@ -1,0 +1,3 @@
+make "a [a b c [d e f]]
+.setfirst :a :a
+show :a

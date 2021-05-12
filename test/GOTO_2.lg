@@ -1,0 +1,9 @@
+to proc
+goto :t1
+tag "y2
+print [this shouldn't print]
+tag "tag1
+print [this should print]
+end
+make "t1 "tag1
+proc

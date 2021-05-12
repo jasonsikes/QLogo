@@ -1,0 +1,3 @@
+make "a "b
+make "b 8
+print thing :a

@@ -1,0 +1,4 @@
+make "fullprintp "true
+show "|hello there|
+make "fullprintp "false
+show "|hello there|

@@ -1,0 +1,8 @@
+to qw :p1
+local "a
+make "a :p1
+show :a
+end
+make "a 12
+qw 23
+show :a

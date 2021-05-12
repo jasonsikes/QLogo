@@ -1,0 +1,2 @@
+make "a fput "hello [there]
+show :a

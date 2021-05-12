@@ -1,0 +1,1 @@
+show (bitand 15 7 30)

@@ -1,0 +1,8 @@
+to f1
+local "a
+make "a 22
+make "b print :a
+end
+make "a "lobotomy
+f1
+show :a

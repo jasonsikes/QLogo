@@ -1,0 +1,2 @@
+make "a arraytolist {{hello} there}
+show :a

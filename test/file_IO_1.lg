@@ -1,0 +1,10 @@
+make "f "TestQLogoFileIO1.txt
+openwrite :f
+setwrite :f
+print [this is a test.]
+closeall
+openread :f
+setread :f
+show readrawline
+closeall
+erf :f

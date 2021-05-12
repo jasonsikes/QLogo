@@ -1,0 +1,4 @@
+openwrite "TestQLogoFileIO9.txt
+close "TestQLogoFileIO9.txt
+show allopen
+erf "TestQLogoFileIO9.txt

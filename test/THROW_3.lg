@@ -1,0 +1,8 @@
+to throw_error
+not_a_function
+end
+to level2
+catch "error [throw_error]
+show error
+end
+level2

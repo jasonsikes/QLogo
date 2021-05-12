@@ -1,0 +1,3 @@
+test "false
+ift [print "hello]
+print "boogie

@@ -1,0 +1,4 @@
+to proc1
+show "hello
+end
+show primitive? "proc1

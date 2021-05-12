@@ -1,0 +1,6 @@
+make "a 1
+pprop 1 2 3
+to bro
+print 1
+end
+show contents

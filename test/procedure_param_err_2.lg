@@ -1,0 +1,4 @@
+to tp :p1 :p2 [:p3 1] [:p4 2]
+(show :p1 :p2 :p3 :p4)
+end
+(tp 1)

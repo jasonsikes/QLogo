@@ -1,0 +1,4 @@
+.macro m
+output []
+end
+show macrop "m

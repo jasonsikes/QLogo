@@ -1,0 +1,5 @@
+to tp :p1 :p2 [:p3 :v1] [:p4 2] [:p5]
+(show :p1 :p2 :p3 :p4 :p5)
+end
+make "v1 20
+tp 4 5*5

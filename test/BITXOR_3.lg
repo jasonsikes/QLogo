@@ -1,0 +1,1 @@
+show (bitxor 15 7 32)

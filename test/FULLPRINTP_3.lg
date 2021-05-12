@@ -1,0 +1,5 @@
+make "fullprintp "true
+show [hello\ there people]
+print [[hello\ there]]
+print [{hello\ there}]
+print [{|hello there| people}]

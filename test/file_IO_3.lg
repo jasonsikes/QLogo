@@ -1,0 +1,8 @@
+make "f "TestQLogoFileIO3.txt
+openwrite :f
+setwrite :f
+print [this is a test]
+make "a writepos
+closeall
+erf :f
+print :a

@@ -1,0 +1,2 @@
+trace [[* + print][][]]
+(print 2+2 3*3)

@@ -1,0 +1,8 @@
+to fiblist :n
+if :n<2 [output [1 1]]
+output newfib fiblist :n-1
+end
+to newfib :list
+output fput (sum first :list first butfirst :list) :list
+end
+print fiblist 5

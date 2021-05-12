@@ -1,0 +1,4 @@
+to lp :count
+forever [print repcount if repcount=:count [stop]]
+end
+lp 5
