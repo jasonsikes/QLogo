@@ -42,6 +42,7 @@ enum messageCategory : message_t {
 
     C_CANVAS_UPDATE_TURTLE_POS, // Tell the GUI to update the turtle matrix
     C_CANVAS_DRAW_LINE,         // Draw a line on the canvas
+    C_CANVAS_DRAW_POLYGON,      // Draw a polygon on the canvas
     C_CANVAS_CLEAR_SCREEN,      // Clear the graphics screen
 };
 

@@ -151,6 +151,16 @@ void QLogoController::drawLine(const QVector3D &start, const QVector3D &end, con
   });
 }
 
+void QLogoController::drawPolygon(const QList<QVector3D> &points, const QList<QColor> &colors)
+{
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CANVAS_DRAW_POLYGON
+           << points
+           << colors;
+    });
+}
+
+
 void QLogoController::clearScreen()
 {
     sendMessage([&](QDataStream *out) {

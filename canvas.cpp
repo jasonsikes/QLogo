@@ -323,6 +323,32 @@ void Canvas::addLine(const QVector3D &vertexA, const QVector3D &vertexB, const Q
   update();
 }
 
+void Canvas::addPolygon(const QList<QVector3D> &points,
+                        const QList<QColor> &colors) {
+  CanvasDrawingElement cde;
+  cde.type = canvasDrawArrayType;
+  cde.u.drawArrayElement.mode = GL_TRIANGLE_FAN;
+  cde.u.drawArrayElement.first = vertexColors.size() / 4;
+  cde.u.drawArrayElement.count = points.size();
+  drawingElementList.push_back(cde);
+
+  auto pIter = points.begin();
+  for (auto cIter = colors.begin(); cIter != colors.end(); ++cIter, ++pIter) {
+    vertices.push_back(pIter->x());
+    vertices.push_back(pIter->y());
+    vertices.push_back(pIter->z());
+    vertices.push_back(1);
+    vertexColors.push_back(cIter->red());
+    vertexColors.push_back(cIter->green());
+    vertexColors.push_back(cIter->blue());
+    vertexColors.push_back(cIter->alpha());
+  }
+
+  update();
+}
+
+
+
 void Canvas::resizeGL(int width, int height) {
   widgetWidth = width;
   widgetHeight = height;

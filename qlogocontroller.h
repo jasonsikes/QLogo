@@ -25,6 +25,7 @@ public:
 
     void setTurtlePos(const QMatrix4x4 &newTurtlePos);
     void drawLine(const QVector3D &start, const QVector3D &end, const QColor &color);
+    void drawPolygon(const QList<QVector3D> &points, const QList<QColor> &colors);
     void clearScreen();
 
 };

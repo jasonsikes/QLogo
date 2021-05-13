@@ -162,6 +162,8 @@ public:
   void setTurtleMatrix(const QMatrix4x4 &matrix);
   void setTurtleIsVisible(bool isVisible);
   void addLine(const QVector3D &vertexA, const QVector3D &vertexB, const QColor &color);
+  void addPolygon(const QList<QVector3D> &points, const QList<QColor> &colors);
+
 
   /// Sets future lines and polygons to be drawn using newMode.
   void setPenmode(PenModeEnum newMode);

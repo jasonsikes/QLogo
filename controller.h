@@ -72,7 +72,7 @@ public:
   QVector2D clickPos;
 
   virtual void drawLine(const QVector3D &, const QVector3D &, const QColor &) {}
-  void drawPolygon(const QList<QVector3D> &, const QList<QColor> &) {}
+  virtual void drawPolygon(const QList<QVector3D> &, const QList<QColor> &) {}
   void updateCanvas(void) {}
   virtual void clearScreen(void) {}
   void clearScreenText(void) {}

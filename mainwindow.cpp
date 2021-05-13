@@ -150,27 +150,27 @@ void MainWindow::readStandardOutput()
         case W_ZERO:
             qDebug() <<"Zero!";
             break;
-        case C_CONSOLE_PRINT_STRING: // 1
+        case C_CONSOLE_PRINT_STRING:
         {
             QString text;
             *dataStream >> text;
             ui->mainConsole->printString(text);
             break;
         }
-        case C_CONSOLE_REQUEST_LINE: // 2
+        case C_CONSOLE_REQUEST_LINE:
             beginReadRawline();
             break;
-        case C_CONSOLE_REQUEST_CHAR: // 3
+        case C_CONSOLE_REQUEST_CHAR:
             beginReadChar();
             break;
-        case C_CANVAS_UPDATE_TURTLE_POS: // 6
+        case C_CANVAS_UPDATE_TURTLE_POS:
             {
               QMatrix4x4 matrix;
               *dataStream >> matrix;
               ui->mainCanvas->setTurtleMatrix(matrix);
               break;
             }
-          case C_CANVAS_DRAW_LINE: // 7
+          case C_CANVAS_DRAW_LINE:
             {
               QVector3D a, b;
               QColor color;
@@ -181,7 +181,17 @@ void MainWindow::readStandardOutput()
               ui->mainCanvas->addLine(a, b, color);
               break;
             }
-        case C_CANVAS_CLEAR_SCREEN: // 8
+        case C_CANVAS_DRAW_POLYGON:
+        {
+            QList<QVector3D> points;
+            QList<QColor> colors;
+            *dataStream
+                    >> points
+                    >> colors;
+            ui->mainCanvas->addPolygon(points, colors);
+            break;
+        }
+        case C_CANVAS_CLEAR_SCREEN:
             ui->mainCanvas->clearScreen();
             break;
         default:
