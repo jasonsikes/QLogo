@@ -91,6 +91,7 @@ QString Controller::addStandoutToString(const QString &src) {
 
 int Controller::run(void) {
   kernel->initLibrary();
+  initialize();
 
   bool shouldContinue = true;
   while (shouldContinue) {

@@ -20,8 +20,8 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the declaration of the Controller class, which is a
-/// stand-in replacement controller class for testing.
+/// This file contains the declaration of the Controller class, which is the
+/// superclass for both LogoController and QLogoController.
 ///
 //===----------------------------------------------------------------------===//
 
@@ -35,6 +35,7 @@
 #include <QObject>
 #include <QThread>
 #include <QVector2D>
+#include <QFont>
 
 class Kernel;
 class QTextStream;
@@ -60,6 +61,9 @@ class Controller : public QObject {
 public:
   Controller(QObject *parent = 0);
   ~Controller();
+
+  // TODO: Lots of these virtual functions should just throw errors since they should only be used in a GUI
+  virtual void initialize() {}
   virtual DatumP readRawlineWithPrompt(const QString &) { return nothing; }
   virtual DatumP readchar() { return nothing; }
   virtual bool atEnd() { return true; }
@@ -76,8 +80,8 @@ public:
   void updateCanvas(void) {}
   virtual void clearScreen(void) {}
   void clearScreenText(void) {}
-  void drawLabel(const QString &, const QVector3D &, const QColor &,
-                 const QFont &) {}
+  virtual void drawLabel(const QString &, const QVector3D &, const QColor &,
+                         const QFont &) {}
   QString addStandoutToString(const QString &src);
   virtual bool keyQueueHasChars() { return false; }
   bool setDribble(const QString &filePath);
@@ -92,7 +96,7 @@ public:
     x = boundsX;
     y = boundsY;
   }
-  void setCanvasBackgroundColor(QColor) {}
+  virtual void setCanvasBackgroundColor(QColor) {}
   QColor getCanvasBackgroundColor(void) { return QColor(); }
   QImage getCanvasImage() { return QImage(); }
   bool getIsMouseButtonDown() { return false; }
@@ -100,12 +104,17 @@ public:
   void setTextCursorPos(int, int) {}
   void getTextCursorPos(int &, int &) {}
   void setTextColor(const QColor &, const QColor &) {}
-  void setTextSize(int) {}
-  double getTextSize() { return 12; }
-  QString getFontName() { return "Courier New"; }
-  void setFontName(QString) {}
-  QStringList getAllFontNames() { return QStringList(); }
+  virtual void setTextSize(double) {}
+  virtual double getTextSize() { return 12; }
+  virtual QString getFontName() { return "Courier New"; }
+  virtual void setFontName(QString) {}
+  virtual const QStringList getAllFontNames() { return QStringList(); }
   void setCursorOverwriteMode(bool) {}
+
+  virtual void setLabelSize(double) {}
+  virtual double getLabelSize() { return 12; }
+  virtual QFont getLabelFont() { return QFont(); }
+  virtual void setLabelFontName(const QString &) {}
 
   void beginInputHistory() {}
   DatumP inputHistory() { return nothing; }
@@ -116,8 +125,8 @@ public:
   void setScreenMode(ScreenModeEnum) {}
   ScreenModeEnum getScreenMode() { return textScreenMode; }
 
-  void setPensize(double) {}
-  bool isPenSizeValid(double) { return true; }
+  virtual void setPensize(double) {}
+  virtual bool isPenSizeValid(double) { return false; }
   void setIsCanvasBounded(bool) {}
   void setSplitterSizeRatios(float, float) {}
 

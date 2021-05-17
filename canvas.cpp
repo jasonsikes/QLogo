@@ -273,6 +273,12 @@ void Canvas::setTurtleIsVisible(bool isVisible)
   update();
 }
 
+QPointF Canvas::worldToScreen(const QVector4D &world) {
+  QVector2D pv = (world * matrix).toVector2DAffine();
+  return QPointF((pv.x() + 1) * widgetWidth / 2,
+                 widgetHeight - (pv.y() + 1) * widgetHeight / 2);
+}
+
 void Canvas::addLine(const QVector3D &vertexA, const QVector3D &vertexB, const QColor &color)
 {
   if (drawingElementList.isEmpty() ||
@@ -347,6 +353,20 @@ void Canvas::addPolygon(const QList<QVector3D> &points,
   update();
 }
 
+void Canvas::addLabel(const QString &aText, const QVector3D &aLocation,
+                      const QColor &aColor, const QFont &aFont) {
+  labels.push_back(Label(aText, aLocation, aColor, aFont));
+  update();
+}
+
+void Canvas::setBackgroundColor(const QColor &c) {
+  backgroundColor[0] = c.redF();
+  backgroundColor[1] = c.greenF();
+  backgroundColor[2] = c.blueF();
+  backgroundColor[3] = c.alphaF();
+  setSurfaceVertices();
+  update();
+}
 
 
 void Canvas::resizeGL(int width, int height) {
@@ -477,6 +497,17 @@ void Canvas::paintElements() {
   linesObject->release();
 }
 
+void Canvas::paintLabels(QPainter *painter) {
+  for (QList<Label>::iterator iter = labels.begin(); iter != labels.end();
+       ++iter) {
+    Label &l = *iter;
+    QPointF p = worldToScreen(l.position);
+    painter->setPen(l.color);
+    painter->setFont(l.font);
+    painter->drawText(p, l.text);
+  }
+}
+
 
 void Canvas::paintGL() {
   QPainter painter(this);
@@ -497,7 +528,7 @@ void Canvas::paintGL() {
 
   painter.endNativePainting();
 
-  //paintLabels(&painter);
+  paintLabels(&painter);
 }
 
 void Canvas::clearScreen() {
@@ -505,7 +536,7 @@ void Canvas::clearScreen() {
 
   vertices.clear();
   vertexColors.clear();
-  //labels.clear();
+  labels.clear();
 
   setPenmode(currentPenMode);
   setPensize(currentPensize);

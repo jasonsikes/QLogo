@@ -372,7 +372,7 @@ DatumP Kernel::excLabel(DatumP node) {
   mainTurtle()->getxyz(x, y, z);
   QVector3D pos(x, y, z);
   mainController()->drawLabel(text, pos, mainTurtle()->getPenColor(),
-                              labelFont);
+                              mainController()->getLabelFont());
   return nothing;
 }
 
@@ -380,7 +380,7 @@ DatumP Kernel::excSetlabelheight(DatumP node) {
   ProcedureHelper h(this, node);
   double height = h.validatedNumberAtIndex(
       0, [](double candidate) { return candidate > 0; });
-  labelFont.setPointSizeF(height);
+  mainController()->setLabelSize(height);
   return nothing;
 }
 
@@ -463,7 +463,7 @@ DatumP Kernel::excTurtlemode(DatumP node) {
 
 DatumP Kernel::excLabelheight(DatumP node) {
   ProcedureHelper h(this, node);
-  double retval = labelFont.pointSizeF();
+  double retval = mainController()->getLabelSize();
   return h.ret(new Word(retval));
 }
 

@@ -36,6 +36,7 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QThread>
+#include <QFontDatabase>
 
 // Wrapper function for sending data to the logo interpreter
 void MainWindow::sendMessage(std::function<void (QDataStream*)> func)
@@ -113,6 +114,18 @@ int MainWindow::startLogo()
 }
 
 
+void MainWindow::initialize()
+{
+    qDebug() <<"Init";
+    sendMessage([&](QDataStream *out) {
+        *out << (message_t)W_INITIALIZE
+             << QFontDatabase::families()
+             << QFontDatabase::systemFont(QFontDatabase::FixedFont)
+             << ui->mainCanvas->minimumPenSize()
+             << ui->mainCanvas->maximumPenSize();
+    });
+
+}
 
 void MainWindow::processStarted()
 {
@@ -150,6 +163,11 @@ void MainWindow::readStandardOutput()
         case W_ZERO:
             qDebug() <<"Zero!";
             break;
+        case W_INITIALIZE:
+        {
+            initialize();
+            break;
+        }
         case C_CONSOLE_PRINT_STRING:
         {
             QString text;
@@ -194,6 +212,35 @@ void MainWindow::readStandardOutput()
         case C_CANVAS_CLEAR_SCREEN:
             ui->mainCanvas->clearScreen();
             break;
+        case C_CANVAS_DRAW_LABEL:
+        {
+            QString aString;
+            QVector3D aPosition;
+            QColor aColor;
+            QFont aFont;
+            *dataStream
+                    >> aString
+                    >> aPosition
+                    >> aColor
+                    >> aFont;
+            ui->mainCanvas->addLabel(aString, aPosition, aColor, aFont);
+            break;
+        }
+        case C_CANVAS_SET_BACKGROUND_COLOR:
+        {
+            QColor aColor;
+            *dataStream
+                    >> aColor;
+            ui->mainCanvas->setBackgroundColor(aColor);
+            break;
+        }
+        case C_CANVAS_SET_PENSIZE:
+        {
+            double newSize;
+            *dataStream >> newSize;
+            ui->mainCanvas->setPensize((GLfloat)newSize);
+            break;
+        }
         default:
             qDebug() <<"was not expecting" <<header;
             break;
@@ -207,7 +254,7 @@ void MainWindow::readStandardOutput()
 void MainWindow::readStandardError()
 {
     QByteArray ary = logoProcess->readAllStandardError();
-    qDebug() <<"stderr: " <<ary;
+    qDebug() <<"stderr: " <<QString(ary);
 //  QMessageBox msgBox;
 //  msgBox.setText(ary);
 //  msgBox.exec();

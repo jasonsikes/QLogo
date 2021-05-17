@@ -65,6 +65,8 @@ private:
   void beginReadChar();
   void sendMessage(std::function<void (QDataStream*)> func);
 
+  void initialize();
+
 public slots:
   void readStandardOutput();
   void readStandardError();

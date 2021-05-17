@@ -39,6 +39,15 @@ QLogoController::~QLogoController()
 
 }
 
+void QLogoController::initialize()
+{
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)W_INITIALIZE;
+    });
+    waitForMessage(W_INITIALIZE);
+
+}
+
 /* a message has three parts:
  * 1. A quint detailing how many bytes are in the remainder of the message (datalen).
  * 2. An enum describing the type of data (header).
@@ -68,6 +77,16 @@ message_t QLogoController::getMessage()
     case W_ZERO:
         qDebug() <<"ZERO!";
         break;
+    case W_INITIALIZE:
+    {
+        bufferStream >> allFontNames
+                     >> textFont
+                     >> minPensize
+                     >> maxPensize;
+        qDebug() << textFont;
+        labelFont = textFont;
+        break;
+    }
     case C_CONSOLE_RAWLINE_READ:
         bufferStream >> rawLine;
         break;
@@ -160,10 +179,41 @@ void QLogoController::drawPolygon(const QList<QVector3D> &points, const QList<QC
     });
 }
 
+// TODO: We are having a problem with the font
+void QLogoController::drawLabel(const QString &aString, const QVector3D &aPosition, const QColor &aColor,
+                                const QFont &aFont)
+{
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CANVAS_DRAW_LABEL
+           << aString
+           << aPosition
+           << aColor
+           << aFont;
+    });
+}
+
+void QLogoController::setCanvasBackgroundColor(QColor aColor)
+{
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CANVAS_SET_BACKGROUND_COLOR
+           << aColor;
+    });
+}
 
 void QLogoController::clearScreen()
 {
     sendMessage([&](QDataStream *out) {
       *out << (message_t)C_CANVAS_CLEAR_SCREEN;
     });
+}
+
+void QLogoController::setPensize(double aSize)
+{
+    if (aSize == penSize)
+        return;
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CANVAS_SET_PENSIZE
+           << aSize;
+    });
+    penSize = aSize;
 }

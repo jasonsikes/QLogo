@@ -51,7 +51,6 @@ class Kernel {
   Parser *parser;
   Vars variables;
   DatumP filePrefix;
-  QFont labelFont;
   Help help;
   long repcount = -1;
   int pauseLevel = 0;

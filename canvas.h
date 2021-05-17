@@ -36,15 +36,16 @@ class QOpenGLBuffer;
 class QOpenGLVertexArrayObject;
 
 /// Contains the information that describes a label's appearance on the Canvas.
-struct Label {
+class Label {
+public:
   QString text;
-  QVector3D position;
+  QVector4D position;
   QColor color;
   QFont font;
 
   Label(const QString &aText, const QVector3D &aPosition, const QColor &aColor,
         const QFont &aFont)
-      : text(aText), position(aPosition), color(aColor), font(aFont) {}
+      : text(aText), color(aColor), font(aFont) { position = QVector4D(aPosition, 1); }
 };
 
 enum CanvasDrawingElementType {
@@ -117,6 +118,9 @@ class Canvas : public QOpenGLWidget, protected QOpenGLFunctions {
   void resizeGL(int width, int height) override;
   void paintGL() override;
 
+  // The collection of text labels
+  QList<Label> labels;
+
   QOpenGLShaderProgram *shaderProgram;
 
   // Border Surface VBO
@@ -151,7 +155,7 @@ class Canvas : public QOpenGLWidget, protected QOpenGLFunctions {
   void paintSurface();
   void paintTurtle();
   void paintElements();
-  //void paintLabels(QPainter *painter);
+  void paintLabels(QPainter *painter);
 
   void updateMatrix(void);
 
@@ -163,7 +167,8 @@ public:
   void setTurtleIsVisible(bool isVisible);
   void addLine(const QVector3D &vertexA, const QVector3D &vertexB, const QColor &color);
   void addPolygon(const QList<QVector3D> &points, const QList<QColor> &colors);
-
+  void addLabel(const QString &aText, const QVector3D &aLocation,
+                const QColor &aColor, const QFont &aFont);
 
   /// Sets future lines and polygons to be drawn using newMode.
   void setPenmode(PenModeEnum newMode);
@@ -174,10 +179,23 @@ public:
   /// Returns true if aSize is a valid pen size.
   bool isPenSizeValid(GLfloat aSize);
 
+  /// Sets the background color to c.
+  ///
+  /// The background is drawn either as a filled rectangle when isBounded=true
+  /// or the background color fills the entire widget when isBounded=false.
+  void setBackgroundColor(const QColor &c);
+
+  QPointF worldToScreen(const QVector4D &world);
 
   /// Clears the screen and removes all drawing elements from their respective
   /// lists.
   void clearScreen();
+
+  /// Get the minimum pen size
+  double minimumPenSize() { return pensizeRange[0];}
+
+  /// Get the maximum pen size
+  double maximumPenSize() { return pensizeRange[1];}
 
 };
 
