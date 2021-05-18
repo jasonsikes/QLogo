@@ -475,7 +475,6 @@ public:
 /// The container for data. The QLogo List is implemented as a linked list.
 class List : public Datum {
   friend class ListIterator;
-  friend class Array; // TODO: See if we can remove this.
   friend class Parser; // Parser needs access to astList and astParseTimeStamp
 
 protected:

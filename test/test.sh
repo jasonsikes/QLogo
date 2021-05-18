@@ -37,11 +37,15 @@ done
 
 if (( ${#failed_tests[@]} )); then
     echo
-    echo FAILED TESTS:
+    echo ============================
+    echo ==== FAILED TESTS:
+    echo ====
     for f in ${failed_tests[@]}
     do
-	echo $f
+	echo ==== $f
+	echo ====
     done
+    echo ============================
     exit 1
 fi
 

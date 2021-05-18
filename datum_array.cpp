@@ -42,10 +42,10 @@ Array::Array(int aOrigin, int aSize) {
 Array::Array(int aOrigin, List *source) {
   origin = aOrigin;
   array.reserve(source->size());
-  DatumP ptr = source->head;
-  while (ptr != nothing) {
-      array.push_back(ptr.listNodeValue()->item);
-      ptr = ptr.listNodeValue()->next;
+  auto iter = source->newIterator();
+
+  while (iter.elementExists()) {
+      array.push_back(iter.element());
   }
 }
 
