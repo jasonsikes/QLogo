@@ -81,8 +81,9 @@ public:
   bool isDribbling();
   void setScrunch(double, double) { Error::noGraphics(); }
   void getScrunch(double &, double &) { Error::noGraphics(); }
-  void setBounds(qreal x, qreal y) { Error::noGraphics(); }
-  void getBounds(qreal &x, qreal &y) { Error::noGraphics(); }
+  virtual void setBounds(double x, double y) { Error::noGraphics(); }
+  virtual double boundX() { Error::noGraphics(); return 0; }
+  virtual double boundY() { Error::noGraphics(); return 0; }
   virtual void setCanvasBackgroundColor(QColor) { Error::noGraphics(); }
   QColor getCanvasBackgroundColor(void) { Error::noGraphics(); return QColor(); }
   QImage getCanvasImage() { Error::noGraphics(); return QImage(); }

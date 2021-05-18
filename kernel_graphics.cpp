@@ -324,8 +324,9 @@ DatumP Kernel::excFence(DatumP node) {
 
 DatumP Kernel::excBounds(DatumP node) {
   ProcedureHelper h(this, node);
-  double x, y;
-  mainController()->getBounds(x, y);
+  double x = mainController()->boundX();
+  double y = mainController()->boundY();
+
   List *retval = new List;
   retval->append(new Word(x));
   retval->append(new Word(y));

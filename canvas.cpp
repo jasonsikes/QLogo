@@ -194,6 +194,26 @@ void Canvas::initTurtleVBO(void) {
   t_object->release();
 }
 
+void Canvas::initLinesVBO()
+{
+    linesObject = new QOpenGLVertexArrayObject(this);
+    bool isOK = linesObject->create();
+
+    // If this fails, then I don't know what to do.
+    if ( ! isOK) {
+        qDebug() <<"Failed OpenGL init!";
+        qDebug() << "This won't work.";
+    }
+
+    linesVertexBufferObject = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
+    linesVertexBufferObject->create();
+    linesVertexBufferObject->setUsagePattern(QOpenGLBuffer::StaticDraw);
+
+    linesColorBufferObject = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
+    linesColorBufferObject->create();
+    linesColorBufferObject->setUsagePattern(QOpenGLBuffer::StaticDraw);
+}
+
 
 Canvas::Canvas(QWidget *parent) : QOpenGLWidget(parent) {
   boundsX = initialBoundX;
@@ -219,17 +239,7 @@ void Canvas::initializeGL() {
   initTurtleVBO();
   initSurfaceVBO();
   setSurfaceVertices();
-
-  linesObject = new QOpenGLVertexArrayObject(this);
-  linesObject->create(); // TODO: check return value
-
-  linesVertexBufferObject = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
-  linesVertexBufferObject->create();
-  linesVertexBufferObject->setUsagePattern(QOpenGLBuffer::StaticDraw);
-
-  linesColorBufferObject = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
-  linesColorBufferObject->create();
-  linesColorBufferObject->setUsagePattern(QOpenGLBuffer::StaticDraw);
+  initLinesVBO();
 
   shaderProgram->release();
 
@@ -368,6 +378,13 @@ void Canvas::setBackgroundColor(const QColor &c) {
   update();
 }
 
+void Canvas::setBounds(double x, double y)
+{
+    boundsX = x;
+    boundsY = y;
+    updateMatrix();
+    update();
+}
 
 void Canvas::resizeGL(int width, int height) {
   widgetWidth = width;

@@ -20,6 +20,9 @@ class QLogoController : public Controller
     double maxPensize;
     double penSize;
 
+    double xbound;
+    double ybound;
+
     QStringList allFontNames;
     QFont textFont;
     QFont labelFont;
@@ -41,6 +44,11 @@ public:
     void drawLabel(const QString &, const QVector3D &, const QColor &,
                            const QFont &);
     void setCanvasBackgroundColor(QColor);
+
+    void setBounds(double x, double y);
+    double boundX() { return xbound; }
+    double boundY() { return ybound; }
+
     bool isPenSizeValid(double candidate) { return ((candidate >= minPensize) && (candidate <= maxPensize)); }
 
     void setTextSize(double aSize) { textFont.setPointSizeF(aSize); } // Move to cpp

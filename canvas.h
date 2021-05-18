@@ -88,9 +88,9 @@ class Canvas : public QOpenGLWidget, protected QOpenGLFunctions {
   bool canvasIsBounded;
 
   // Visible vertices on the X axis range from -boundsX to +boundsX
-  qreal boundsX;
+  double boundsX;
   // Visible vertices on the Y axis range from -boundsY to +boundsY
-  qreal boundsY;
+  double boundsY;
 
   // The main data structure for all of the drawn elements on the canvas
   // (sans labels).
@@ -99,6 +99,7 @@ class Canvas : public QOpenGLWidget, protected QOpenGLFunctions {
   GLclampf backgroundColor[4];
 
   // Some initializers
+  void initLinesVBO(void);
   void initTurtleVBO(void);
   void initSurfaceVBO(void);
   void setSurfaceVertices(void);
@@ -196,6 +197,15 @@ public:
 
   /// Get the maximum pen size
   double maximumPenSize() { return pensizeRange[1];}
+
+  /// Get the maximum X bound
+  double xbound() { return boundsX; }
+
+  /// Get the maximum Y bound
+  double ybound() { return boundsY; }
+
+  /// Set the maximum X and Y bounds
+  void setBounds(double x, double y);
 
 };
 

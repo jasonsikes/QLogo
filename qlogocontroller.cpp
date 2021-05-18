@@ -82,7 +82,10 @@ message_t QLogoController::getMessage()
         bufferStream >> allFontNames
                      >> textFont
                      >> minPensize
-                     >> maxPensize;
+                     >> maxPensize
+                     >> xbound
+                     >> ybound
+                ;
         qDebug() << textFont;
         labelFont = textFont;
         break;
@@ -205,6 +208,20 @@ void QLogoController::clearScreen()
     sendMessage([&](QDataStream *out) {
       *out << (message_t)C_CANVAS_CLEAR_SCREEN;
     });
+}
+
+void QLogoController::setBounds(double x, double y)
+{
+    if ((xbound == x) && (ybound == y))
+        return;
+    xbound = x;
+    ybound = y;
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CANVAS_SETBOUNDS
+           << xbound
+           << ybound;
+    });
+
 }
 
 void QLogoController::setPensize(double aSize)

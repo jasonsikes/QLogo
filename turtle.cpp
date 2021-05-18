@@ -59,8 +59,9 @@ void Turtle::preTurtleMovement() {
 
 void Turtle::drawTurtleWrap() {
   QVector3D lineEnd = matrix.column(3).toVector3DAffine();
-  qreal boundX, boundY;
-  mainController()->getBounds(boundX, boundY);
+  double boundX = mainController()->boundX();
+  double boundY = mainController()->boundY();
+
   while ((lineEnd.x() < -boundX) || (lineEnd.x() > boundX) ||
          (lineEnd.y() < -boundY) || (lineEnd.y() > boundY)) {
 
@@ -151,8 +152,9 @@ void Turtle::drawTurtleWrap() {
 
 void Turtle::drawTurtleFence() {
   QVector3D lineEnd = matrix.column(3).toVector3DAffine();
-  qreal boundX, boundY;
-  mainController()->getBounds(boundX, boundY);
+  double boundX = mainController()->boundX();
+  double boundY = mainController()->boundY();
+
   if ((lineEnd.x() < -boundX) || (lineEnd.x() > boundX) ||
       (lineEnd.y() < -boundY) || (lineEnd.y() > boundY)) {
     qreal w = matrix(3, 3);
@@ -269,9 +271,10 @@ void Turtle::getxyz(qreal &x, qreal &y, qreal &z) {
 void Turtle::setMode(TurtleModeEnum newMode) {
   mode = newMode;
   if (mode != turtleWindow) {
-    qreal boundX, boundY;
-    mainController()->getBounds(boundX, boundY);
-    QVector3D pos = matrix.column(3).toVector3DAffine();
+      double boundX = mainController()->boundX();
+      double boundY = mainController()->boundY();
+
+      QVector3D pos = matrix.column(3).toVector3DAffine();
     if ((pos.x() < -boundX) || (pos.x() > boundX) || (pos.y() < -boundY) ||
         (pos.y() > boundY)) {
       matrix.setToIdentity();

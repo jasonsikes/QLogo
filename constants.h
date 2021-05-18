@@ -48,6 +48,7 @@ enum messageCategory : message_t {
     C_CANVAS_DRAW_LABEL,              // Draw a label on the canvas
     C_CANVAS_CLEAR_SCREEN,            // Clear the graphics screen
     C_CANVAS_SET_BACKGROUND_COLOR,    // Set the canvas background color
+    C_CANVAS_SETBOUNDS,               // Set the X and Y bounds of the drawing surface area
     C_CANVAS_SET_PENSIZE,             // Set the drawing pen size
 };
 

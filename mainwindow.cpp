@@ -118,11 +118,15 @@ void MainWindow::initialize()
 {
     qDebug() <<"Init";
     sendMessage([&](QDataStream *out) {
-        *out << (message_t)W_INITIALIZE
-             << QFontDatabase::families()
-             << QFontDatabase::systemFont(QFontDatabase::FixedFont)
-             << ui->mainCanvas->minimumPenSize()
-             << ui->mainCanvas->maximumPenSize();
+        *out
+        << (message_t)W_INITIALIZE
+        << QFontDatabase::families()
+        << QFontDatabase::systemFont(QFontDatabase::FixedFont)
+        << ui->mainCanvas->minimumPenSize()
+        << ui->mainCanvas->maximumPenSize()
+        << ui->mainCanvas->xbound()
+        << ui->mainCanvas->ybound()
+           ;
     });
 
 }
@@ -212,6 +216,15 @@ void MainWindow::readStandardOutput()
         case C_CANVAS_CLEAR_SCREEN:
             ui->mainCanvas->clearScreen();
             break;
+        case C_CANVAS_SETBOUNDS:
+        {
+            double x,y;
+            *dataStream
+                    >> x
+                    >> y;
+            ui->mainCanvas->setBounds(x, y);
+            break;
+        }
         case C_CANVAS_DRAW_LABEL:
         {
             QString aString;
