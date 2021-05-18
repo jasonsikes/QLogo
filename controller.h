@@ -36,17 +36,10 @@
 #include <QThread>
 #include <QVector2D>
 #include <QFont>
+#include "error.h"
 
 class Kernel;
 class QTextStream;
-
-extern qreal initialBoundXY;
-
-const char characterEvent = 'c';
-const char mouseEvent = 'm';
-const char pauseEvent = 'p';    // ctrl-W
-const char toplevelEvent = 't'; // ctrl-Q
-const char systemEvent = 's';   // window close
 
 enum ScreenModeEnum {
   initScreenMode,
@@ -55,6 +48,7 @@ enum ScreenModeEnum {
   splitScreenMode
 };
 
+
 class Controller : public QObject {
   Q_OBJECT
 
@@ -62,7 +56,6 @@ public:
   Controller(QObject *parent = 0);
   ~Controller();
 
-  // TODO: Lots of these virtual functions should just throw errors since they should only be used in a GUI
   virtual void initialize() {}
   virtual DatumP readRawlineWithPrompt(const QString &) { return nothing; }
   virtual DatumP readchar() { return nothing; }
@@ -75,63 +68,57 @@ public:
   QVector2D mousePos;
   QVector2D clickPos;
 
-  virtual void drawLine(const QVector3D &, const QVector3D &, const QColor &) {}
-  virtual void drawPolygon(const QList<QVector3D> &, const QList<QColor> &) {}
-  void updateCanvas(void) {}
-  virtual void clearScreen(void) {}
+  virtual void drawLine(const QVector3D &, const QVector3D &, const QColor &) { Error::noGraphics(); }
+  virtual void drawPolygon(const QList<QVector3D> &, const QList<QColor> &) { Error::noGraphics(); }
+  void updateCanvas(void) { Error::noGraphics(); }
+  virtual void clearScreen(void) { Error::noGraphics(); }
   void clearScreenText(void) {}
   virtual void drawLabel(const QString &, const QVector3D &, const QColor &,
-                         const QFont &) {}
+                         const QFont &) { Error::noGraphics(); }
   QString addStandoutToString(const QString &src);
   virtual bool keyQueueHasChars() { return false; }
   bool setDribble(const QString &filePath);
   bool isDribbling();
-  void setScrunch(double, double) {}
-  void getScrunch(double &, double &) {}
-  void setBounds(qreal x, qreal y) {
-    boundsX = x;
-    boundsY = y;
-  }
-  void getBounds(qreal &x, qreal &y) {
-    x = boundsX;
-    y = boundsY;
-  }
-  virtual void setCanvasBackgroundColor(QColor) {}
-  QColor getCanvasBackgroundColor(void) { return QColor(); }
-  QImage getCanvasImage() { return QImage(); }
-  bool getIsMouseButtonDown() { return false; }
-  int getButton() { return 0; }
-  void setTextCursorPos(int, int) {}
-  void getTextCursorPos(int &, int &) {}
-  void setTextColor(const QColor &, const QColor &) {}
-  virtual void setTextSize(double) {}
-  virtual double getTextSize() { return 12; }
-  virtual QString getFontName() { return "Courier New"; }
-  virtual void setFontName(QString) {}
-  virtual const QStringList getAllFontNames() { return QStringList(); }
-  void setCursorOverwriteMode(bool) {}
+  void setScrunch(double, double) { Error::noGraphics(); }
+  void getScrunch(double &, double &) { Error::noGraphics(); }
+  void setBounds(qreal x, qreal y) { Error::noGraphics(); }
+  void getBounds(qreal &x, qreal &y) { Error::noGraphics(); }
+  virtual void setCanvasBackgroundColor(QColor) { Error::noGraphics(); }
+  QColor getCanvasBackgroundColor(void) { Error::noGraphics(); return QColor(); }
+  QImage getCanvasImage() { Error::noGraphics(); return QImage(); }
+  bool getIsMouseButtonDown() { Error::noGraphics(); return false; }
+  int getButton() { Error::noGraphics();  return 0; }
+  void setTextCursorPos(int, int) { Error::noGraphics(); }
+  void getTextCursorPos(int &, int &) { Error::noGraphics(); }
+  void setTextColor(const QColor &, const QColor &) { Error::noGraphics(); }
+  virtual void setTextSize(double) { Error::noGraphics(); }
+  virtual double getTextSize() { Error::noGraphics(); return 12; }
+  virtual QString getFontName() { Error::noGraphics();  return "Courier New"; }
+  virtual void setFontName(QString) { Error::noGraphics(); }
+  virtual const QStringList getAllFontNames() { Error::noGraphics(); return QStringList(); }
+  void setCursorOverwriteMode(bool) { Error::noGraphics(); }
 
-  virtual void setLabelSize(double) {}
-  virtual double getLabelSize() { return 12; }
-  virtual QFont getLabelFont() { return QFont(); }
-  virtual void setLabelFontName(const QString &) {}
+  virtual void setLabelSize(double) { Error::noGraphics(); }
+  virtual double getLabelSize() { Error::noGraphics(); return 12; }
+  virtual QFont getLabelFont() { Error::noGraphics(); return QFont(); }
+  virtual void setLabelFontName(const QString &) { Error::noGraphics(); }
 
   void beginInputHistory() {}
   DatumP inputHistory() { return nothing; }
 
-  virtual void setTurtlePos(const QMatrix4x4 &) {}
+  virtual void setTurtlePos(const QMatrix4x4 &) { Error::noGraphics(); }
 
-  void setPenmode(PenModeEnum) {}
-  void setScreenMode(ScreenModeEnum) {}
-  ScreenModeEnum getScreenMode() { return textScreenMode; }
+  void setPenmode(PenModeEnum) { Error::noGraphics(); }
+  void setScreenMode(ScreenModeEnum) { Error::noGraphics(); }
+  ScreenModeEnum getScreenMode() { Error::noGraphics(); return textScreenMode; }
 
-  virtual void setPensize(double) {}
-  virtual bool isPenSizeValid(double) { return false; }
-  void setIsCanvasBounded(bool) {}
-  void setSplitterSizeRatios(float, float) {}
+  virtual void setPensize(double) { Error::noGraphics(); }
+  virtual bool isPenSizeValid(double) { Error::noGraphics(); return false; }
+  void setIsCanvasBounded(bool) { Error::noGraphics(); }
+  void setSplitterSizeRatios(float, float) { Error::noGraphics(); }
 
-  bool eventQueueIsEmpty() { return true; }
-  char nextQueueEvent() { return 'x'; }
+  bool eventQueueIsEmpty() { Error::noGraphics(); return true; }
+  char nextQueueEvent() { Error::noGraphics(); return 'x'; }
 
   Kernel *kernel;
 

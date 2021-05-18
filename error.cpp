@@ -20,7 +20,7 @@
 ///
 /// \file
 /// This file contains the implementation of the Error class, which stores
-/// error information during exceptions.
+/// and reports error information during exceptions.
 ///
 //===----------------------------------------------------------------------===//
 
@@ -29,8 +29,6 @@
 #include <QDebug>
 
 Kernel *mainKernel;
-
-// TODO: the errors and their numbers should be listed as consts in the header.
 
 Error::Error(int aNumber, const QString &aErrorText) {
   code = aNumber;

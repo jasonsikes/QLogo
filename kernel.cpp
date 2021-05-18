@@ -544,6 +544,38 @@ DatumP Kernel::runList(DatumP listP, const QString startTag) {
   bool shouldSearchForTag = (startTag != "");
   DatumP retval;
 
+  //  while (!mainController()->eventQueueIsEmpty()) {
+  //    char event = mainController()->nextQueueEvent();
+  //    DatumP action;
+  //    switch (event) {
+  //    case mouseEvent: {
+  //      action = varBUTTONACT();
+  //      break;
+  //    }
+  //    case characterEvent: {
+  //      action = varKEYACT();
+  //      break;
+  //    }
+  //    case toplevelEvent: {
+  //      Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
+  //      break;
+  //    }
+  //    case systemEvent: {
+  //      Error::throwError(DatumP(new Word("SYSTEM")), nothing);
+  //      break;
+  //    }
+  //    case pauseEvent: {
+  //      pause();
+  //      break;
+  //    }
+  //    }
+  //    if (action != nothing) {
+  //      retval = runList(action);
+  //      if (retval != nothing)
+  //        Error::dontSay(retval);
+  //    }
+  //  }
+
   if (listP.isWord())
     listP = parser->runparse(listP);
 
@@ -580,40 +612,6 @@ DatumP Kernel::runList(DatumP listP, const QString startTag) {
           }
         }
       }
-    }
-  }
-
-  // TODO: Move this to beginning of function
-  // Because it is conceivable to enter a loop where we never reach here.
-  while (!mainController()->eventQueueIsEmpty()) {
-    char event = mainController()->nextQueueEvent();
-    DatumP action;
-    switch (event) {
-    case mouseEvent: {
-      action = varBUTTONACT();
-      break;
-    }
-    case characterEvent: {
-      action = varKEYACT();
-      break;
-    }
-    case toplevelEvent: {
-      Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
-      break;
-    }
-    case systemEvent: {
-      Error::throwError(DatumP(new Word("SYSTEM")), nothing);
-      break;
-    }
-    case pauseEvent: {
-      pause();
-      break;
-    }
-    }
-    if (action != nothing) {
-      DatumP localRetval = runList(action);
-      if (localRetval != nothing)
-        Error::dontSay(localRetval);
     }
   }
 
