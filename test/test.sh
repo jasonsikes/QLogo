@@ -9,13 +9,19 @@
 # FILENAME is the optional name of the logo script WITH the .lg extension.
 #
 # If FILENAME is not specified then this will go through all the .lg files
-# in this directory.
+# in current directory.
 
 filename="$1"
+
+failed_tests=()
 
 run_test() {
     f="$1"
     ../logo < $f | diff "${f%.lg}.out" -
+    if [ $? -eq 1 ]
+    then
+	failed_tests+=($f)
+    fi
 }
 
 if [ -n "$filename" ]
@@ -28,3 +34,15 @@ for a in *.lg; do
     echo $a
     run_test $a
 done
+
+if (( ${#failed_tests[@]} )); then
+    echo
+    echo FAILED TESTS:
+    for f in ${failed_tests[@]}
+    do
+	echo $f
+    done
+    exit 1
+fi
+
+exit 0
