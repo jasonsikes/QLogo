@@ -364,8 +364,8 @@ void Canvas::addPolygon(const QList<QVector3D> &points,
 }
 
 void Canvas::addLabel(const QString &aText, const QVector3D &aLocation,
-                      const QColor &aColor, const QFont &aFont) {
-  labels.push_back(Label(aText, aLocation, aColor, aFont));
+                      const QColor &aColor) {
+  labels.push_back(Label(aText, aLocation, aColor, labelFont));
   update();
 }
 
@@ -376,6 +376,16 @@ void Canvas::setBackgroundColor(const QColor &c) {
   backgroundColor[3] = c.alphaF();
   setSurfaceVertices();
   update();
+}
+
+void Canvas::setLabelFontName(const QString name)
+{
+    labelFont.setFamily(name);
+}
+
+void Canvas::setLabelFontSize(double aSize)
+{
+    labelFont.setPointSizeF(aSize);
 }
 
 void Canvas::setBounds(double x, double y)

@@ -608,20 +608,20 @@ DatumP Kernel::excSettextcolor(DatumP node) {
 
 DatumP Kernel::excIncreasefont(DatumP node) {
   ProcedureHelper h(this, node);
-  double f = mainController()->getTextSize();
+  double f = mainController()->getTextFontSize();
   f += 2;
   // There doesn't appear to be a maximum font size.
-  mainController()->setTextSize(f);
+  mainController()->setTextFontSize(f);
   return h.ret();
 }
 
 DatumP Kernel::excDecreasefont(DatumP node) {
   ProcedureHelper h(this, node);
-  double f = mainController()->getTextSize();
+  double f = mainController()->getTextFontSize();
   f -= 2;
   if (f < 2)
     f = 2;
-  mainController()->setTextSize(f);
+  mainController()->setTextFontSize(f);
   return h.ret();
 }
 
@@ -629,26 +629,26 @@ DatumP Kernel::excSettextsize(DatumP node) {
   ProcedureHelper h(this, node);
   double newSize = h.validatedNumberAtIndex(
       0, [](double candidate) { return candidate >= 1; });
-  mainController()->setTextSize(newSize);
+  mainController()->setTextFontSize(newSize);
   return nothing;
 }
 
 DatumP Kernel::excTextsize(DatumP node) {
   ProcedureHelper h(this, node);
-  double size = mainController()->getTextSize();
+  double size = mainController()->getTextFontSize();
   return h.ret(new Word(size));
 }
 
 DatumP Kernel::excSetfont(DatumP node) {
   ProcedureHelper h(this, node);
   QString fontName = h.wordAtIndex(0).wordValue()->printValue();
-  mainController()->setFontName(fontName);
+  mainController()->setTextFontName(fontName);
   return nothing;
 }
 
 DatumP Kernel::excFont(DatumP node) {
   ProcedureHelper h(this, node);
-  QString retval = mainController()->getFontName();
+  QString retval = mainController()->getTextFontName();
   return h.ret(new Word(retval));
 }
 

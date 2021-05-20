@@ -80,14 +80,14 @@ message_t QLogoController::getMessage()
     case W_INITIALIZE:
     {
         bufferStream >> allFontNames
-                     >> textFont
+                     >> textFontName
+                     >> textFontSize
                      >> minPensize
                      >> maxPensize
                      >> xbound
                      >> ybound
                 ;
-        qDebug() << textFont;
-        labelFont = textFont;
+        labelFontName = textFontName;
         break;
     }
     case C_CONSOLE_RAWLINE_READ:
@@ -125,6 +125,37 @@ void QLogoController::printToConsole(const QString &s)
     } else {
       *writeStream << s;
     }
+}
+
+void QLogoController::setTextFontName(const QString aFontName)
+{
+    if (textFontName == aFontName)
+        return;
+    // TODO: Validate font name
+    textFontName = aFontName;
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CONSOLE_SET_FONT_NAME << textFontName;
+    });
+}
+
+void QLogoController::setTextFontSize(double aSize)
+{
+    if (textFontSize == aSize)
+        return;
+    textFontSize = aSize;
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CONSOLE_SET_FONT_SIZE << textFontSize;
+    });
+}
+
+double QLogoController::getTextFontSize()
+{
+    return textFontSize;
+}
+
+const QString QLogoController::getTextFontName()
+{
+    return textFontName;
 }
 
 // TODO: I believe this is only called if the input readStream is NULL
@@ -182,17 +213,46 @@ void QLogoController::drawPolygon(const QList<QVector3D> &points, const QList<QC
     });
 }
 
-// TODO: We are having a problem with the font
-void QLogoController::drawLabel(const QString &aString, const QVector3D &aPosition, const QColor &aColor,
-                                const QFont &aFont)
+void QLogoController::drawLabel(const QString &aString, const QVector3D &aPosition, const QColor &aColor)
 {
     sendMessage([&](QDataStream *out) {
       *out << (message_t)C_CANVAS_DRAW_LABEL
            << aString
            << aPosition
-           << aColor
-           << aFont;
+           << aColor;
     });
+}
+
+void QLogoController::setLabelFontName(const QString &aName)
+{
+    if (aName == labelFontName)
+        return;
+    labelFontName = aName;
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CANVAS_SET_FONT_NAME
+           << aName;
+    });
+}
+
+void QLogoController::setLabelFontSize(double aSize)
+{
+    if (aSize == labelFontSize)
+        return;
+    labelFontSize = aSize;
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CANVAS_SET_FONT_SIZE
+           << labelFontSize;
+    });
+}
+
+const QString QLogoController::getLabelFontName()
+{
+    return labelFontName;
+}
+
+double QLogoController::getLabelFontSize()
+{
+    return labelFontSize;
 }
 
 void QLogoController::setCanvasBackgroundColor(QColor aColor)

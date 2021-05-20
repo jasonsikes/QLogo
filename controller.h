@@ -73,8 +73,7 @@ public:
   void updateCanvas(void) { Error::noGraphics(); }
   virtual void clearScreen(void) { Error::noGraphics(); }
   void clearScreenText(void) {}
-  virtual void drawLabel(const QString &, const QVector3D &, const QColor &,
-                         const QFont &) { Error::noGraphics(); }
+  virtual void drawLabel(const QString &, const QVector3D &, const QColor &) { Error::noGraphics(); }
   QString addStandoutToString(const QString &src);
   virtual bool keyQueueHasChars() { return false; }
   bool setDribble(const QString &filePath);
@@ -92,16 +91,16 @@ public:
   void setTextCursorPos(int, int) { Error::noGraphics(); }
   void getTextCursorPos(int &, int &) { Error::noGraphics(); }
   void setTextColor(const QColor &, const QColor &) { Error::noGraphics(); }
-  virtual void setTextSize(double) { Error::noGraphics(); }
-  virtual double getTextSize() { Error::noGraphics(); return 12; }
-  virtual QString getFontName() { Error::noGraphics();  return "Courier New"; }
-  virtual void setFontName(QString) { Error::noGraphics(); }
+  virtual void setTextFontSize(double) { Error::noGraphics(); }
+  virtual double getTextFontSize() { Error::noGraphics(); return 12; }
+  virtual const QString getTextFontName() { Error::noGraphics();  return "Courier New"; }
+  virtual void setTextFontName(const QString) { Error::noGraphics(); }
   virtual const QStringList getAllFontNames() { Error::noGraphics(); return QStringList(); }
   void setCursorOverwriteMode(bool) { Error::noGraphics(); }
 
-  virtual void setLabelSize(double) { Error::noGraphics(); }
-  virtual double getLabelSize() { Error::noGraphics(); return 12; }
-  virtual QFont getLabelFont() { Error::noGraphics(); return QFont(); }
+  virtual void setLabelFontSize(double) { Error::noGraphics(); }
+  virtual double getLabelFontSize() { Error::noGraphics(); return 12; }
+  virtual const QString getLabelFontName() { Error::noGraphics(); return QString(); }
   virtual void setLabelFontName(const QString &) { Error::noGraphics(); }
 
   void beginInputHistory() {}

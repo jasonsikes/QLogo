@@ -60,15 +60,18 @@ protected:
     void insertNextCharFromQueue();
     void insertFromMimeData(const QMimeData *source) Q_DECL_OVERRIDE;
 
+    QTextCharFormat textFormat;
+
 public:
   Console(QWidget *parent = 0);
   ~Console();
 
-  QTextCharFormat textFormat;
-
   void printString(const QString text);
   void requestRawline();
   void requestChar();
+
+  void setTextFontName(const QString aName);
+  void setTextFontSize(double aSize);
 
 signals:
   void sendRawlineSignal(const QString &rawLine);

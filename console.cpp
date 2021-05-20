@@ -57,6 +57,19 @@ void Console::printString(const QString text) {
   ensureCursorVisible();
 }
 
+void Console::setTextFontName(const QString aName)
+{
+    QFont f = textFormat.font();
+    f.setFamily(aName);
+    textFormat.setFont(f);
+}
+
+void Console::setTextFontSize(double aSize)
+{
+    QFont f = textFormat.font();
+    f.setPointSizeF(aSize);
+    textFormat.setFont(f);
+}
 
 void Console::requestRawline()
 {

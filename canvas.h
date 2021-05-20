@@ -122,6 +122,9 @@ class Canvas : public QOpenGLWidget, protected QOpenGLFunctions {
   // The collection of text labels
   QList<Label> labels;
 
+  // The current label drawing font
+  QFont labelFont;
+
   QOpenGLShaderProgram *shaderProgram;
 
   // Border Surface VBO
@@ -169,7 +172,10 @@ public:
   void addLine(const QVector3D &vertexA, const QVector3D &vertexB, const QColor &color);
   void addPolygon(const QList<QVector3D> &points, const QList<QColor> &colors);
   void addLabel(const QString &aText, const QVector3D &aLocation,
-                const QColor &aColor, const QFont &aFont);
+                const QColor &aColor);
+
+  void setLabelFontSize(double aSize);
+  void setLabelFontName(const QString name);
 
   /// Sets future lines and polygons to be drawn using newMode.
   void setPenmode(PenModeEnum newMode);

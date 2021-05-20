@@ -41,6 +41,8 @@ enum messageCategory : message_t {
     C_CONSOLE_REQUEST_CHAR, // Ask the GUI for a single char.
     C_CONSOLE_RAWLINE_READ, // A line returned from the GUI
     C_CONSOLE_CHAR_READ,    // A char returned from the GUI
+    C_CONSOLE_SET_FONT_NAME,// Set the console font name
+    C_CONSOLE_SET_FONT_SIZE,// Set the console font size
 
     C_CANVAS_UPDATE_TURTLE_POS,       // Tell the GUI to update the turtle matrix
     C_CANVAS_DRAW_LINE,               // Draw a line on the canvas
@@ -50,6 +52,8 @@ enum messageCategory : message_t {
     C_CANVAS_SET_BACKGROUND_COLOR,    // Set the canvas background color
     C_CANVAS_SETBOUNDS,               // Set the X and Y bounds of the drawing surface area
     C_CANVAS_SET_PENSIZE,             // Set the drawing pen size
+    C_CANVAS_SET_FONT_NAME,           // Set the label font name
+    C_CANVAS_SET_FONT_SIZE,           // Set the label font size
 };
 
 const QChar escapeChar(27);

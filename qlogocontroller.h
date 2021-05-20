@@ -24,8 +24,11 @@ class QLogoController : public Controller
     double ybound;
 
     QStringList allFontNames;
-    QFont textFont;
-    QFont labelFont;
+    QString textFontName;
+    qreal textFontSize;
+
+    QString labelFontName;
+    qreal labelFontSize;
 
 public:
     QLogoController(QObject *parent = 0);
@@ -41,8 +44,7 @@ public:
     void drawLine(const QVector3D &start, const QVector3D &end, const QColor &color);
     void drawPolygon(const QList<QVector3D> &points, const QList<QColor> &colors);
     void clearScreen();
-    void drawLabel(const QString &, const QVector3D &, const QColor &,
-                           const QFont &);
+    void drawLabel(const QString &, const QVector3D &, const QColor &);
     void setCanvasBackgroundColor(QColor);
 
     void setBounds(double x, double y);
@@ -51,16 +53,16 @@ public:
 
     bool isPenSizeValid(double candidate) { return ((candidate >= minPensize) && (candidate <= maxPensize)); }
 
-    void setTextSize(double aSize) { textFont.setPointSizeF(aSize); } // Move to cpp
-    double getTextSize() { return textFont.pointSizeF(); }
-    QString getFontName() { return textFont.family(); }
-    void setFontName(const QString aFamily) { textFont.setFamily(aFamily); } // Move to cpp
+    void setTextFontSize(double aSize);
+    double getTextFontSize();
+    const QString getTextFontName();
+    void setTextFontName(const QString aFontName);
     const QStringList getAllFontNames() { return allFontNames; }
 
-    void setLabelSize(double aSize) { labelFont.setPointSizeF(aSize); } // Move to cpp
-    double getLabelSize() { return labelFont.pointSizeF(); }
-    QFont getLabelFont() { return labelFont; }
-    void setLabelFontName(const QString &aName) { labelFont.setFamily(aName); } // Move to cpp
+    void setLabelFontSize(double aSize);
+    double getLabelFontSize();
+    const QString getLabelFontName();
+    void setLabelFontName(const QString &aName);
 
     void setPensize(double);
 };

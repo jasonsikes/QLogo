@@ -116,12 +116,18 @@ int MainWindow::startLogo()
 
 void MainWindow::initialize()
 {
-    qDebug() <<"Init";
+    QFont defaultFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    ui->mainConsole->setTextFontSize(defaultFont.pointSizeF());
+    ui->mainConsole->setTextFontName(defaultFont.family());
+    ui->mainCanvas->setLabelFontSize(defaultFont.pointSizeF());
+    ui->mainCanvas->setLabelFontName(defaultFont.family());
+
     sendMessage([&](QDataStream *out) {
         *out
         << (message_t)W_INITIALIZE
         << QFontDatabase::families()
-        << QFontDatabase::systemFont(QFontDatabase::FixedFont)
+        << defaultFont.family()
+        << (double)defaultFont.pointSizeF()
         << ui->mainCanvas->minimumPenSize()
         << ui->mainCanvas->maximumPenSize()
         << ui->mainCanvas->xbound()
@@ -152,7 +158,7 @@ void MainWindow::readStandardOutput()
         message_t header;
         QByteArray buffer;
         QDataStream inDataStream;
-        readResult = logoProcess->read((char*)&datalen, sizeof(qint64));
+             readResult = logoProcess->read((char*)&datalen, sizeof(qint64));
         if (readResult == 0) break;
         Q_ASSERT(readResult == sizeof(qint64));
 
@@ -165,6 +171,7 @@ void MainWindow::readStandardOutput()
         switch(header)
         {
         case W_ZERO:
+            // This only exists to help catch errors.
             qDebug() <<"Zero!";
             break;
         case W_INITIALIZE:
@@ -177,6 +184,20 @@ void MainWindow::readStandardOutput()
             QString text;
             *dataStream >> text;
             ui->mainConsole->printString(text);
+            break;
+        }
+        case C_CONSOLE_SET_FONT_NAME:
+        {
+            QString name;
+            *dataStream >> name;
+            ui->mainConsole->setTextFontName(name);
+            break;
+        }
+        case C_CONSOLE_SET_FONT_SIZE:
+        {
+            double aSize;
+            *dataStream >> aSize;
+            ui->mainConsole->setTextFontSize(aSize);
             break;
         }
         case C_CONSOLE_REQUEST_LINE:
@@ -225,18 +246,30 @@ void MainWindow::readStandardOutput()
             ui->mainCanvas->setBounds(x, y);
             break;
         }
+        case C_CANVAS_SET_FONT_NAME:
+        {
+            QString name;
+            *dataStream >> name;
+            ui->mainCanvas->setLabelFontName(name);
+            break;
+        }
+        case C_CANVAS_SET_FONT_SIZE:
+        {
+            double aSize;
+            *dataStream >> aSize;
+            ui->mainCanvas->setLabelFontSize(aSize);
+            break;
+        }
         case C_CANVAS_DRAW_LABEL:
         {
             QString aString;
             QVector3D aPosition;
             QColor aColor;
-            QFont aFont;
             *dataStream
                     >> aString
                     >> aPosition
-                    >> aColor
-                    >> aFont;
-            ui->mainCanvas->addLabel(aString, aPosition, aColor, aFont);
+                    >> aColor;
+            ui->mainCanvas->addLabel(aString, aPosition, aColor);
             break;
         }
         case C_CANVAS_SET_BACKGROUND_COLOR:
