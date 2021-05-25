@@ -72,7 +72,7 @@ void Turtle::drawTurtleWrap() {
       if ((cy >= -boundY) && (cy <= boundY)) {
         QVector3D e = QVector3D(boundX, cy, 0);
         if (penIsDown)
-          mainController()->drawLine(lineStart, e, penColor);
+          mainController()->drawLine(lineStart, e, penColor, penColor);
         lineStart = QVector3D(-boundX, cy, lineEnd.z());
         lineEnd =
             QVector3D(lineEnd.x() - 2 * boundX, lineEnd.y(), lineEnd.z());
@@ -91,7 +91,7 @@ void Turtle::drawTurtleWrap() {
       if ((cy >= -boundY) && (cy <= boundY)) {
         QVector3D e = QVector3D(-boundX, cy, 0);
         if (penIsDown)
-          mainController()->drawLine(lineStart, e, penColor);
+          mainController()->drawLine(lineStart, e, penColor, penColor);
         lineStart = QVector3D(boundX, cy, lineEnd.z());
         lineEnd =
             QVector3D(lineEnd.x() + 2 * boundX, lineEnd.y(), lineEnd.z());
@@ -110,7 +110,7 @@ void Turtle::drawTurtleWrap() {
       if ((cx >= -boundX) && (cx <= boundX)) {
         QVector3D e = QVector3D(cx, boundY, 0);
         if (penIsDown)
-          mainController()->drawLine(lineStart, e, penColor);
+          mainController()->drawLine(lineStart, e, penColor, penColor);
         lineStart = QVector3D(cx, -boundY, lineEnd.z());
         lineEnd =
             QVector3D(lineEnd.x(), lineEnd.y() - 2 * boundY, lineEnd.z());
@@ -129,7 +129,7 @@ void Turtle::drawTurtleWrap() {
       if ((cx >= -boundX) && (cx <= boundX)) {
         QVector3D e = QVector3D(cx, -boundY, 0);
         if (penIsDown)
-          mainController()->drawLine(lineStart, e, penColor);
+          mainController()->drawLine(lineStart, e, penColor, penColor);
         lineStart = QVector3D(cx, boundY, lineEnd.z());
         lineEnd =
             QVector3D(lineEnd.x(), lineEnd.y() + 2 * boundY, lineEnd.z());
@@ -146,7 +146,7 @@ void Turtle::drawTurtleWrap() {
     fillVertices.push_back(lineEnd);
     fillVertexColors.push_back(fillColor);
   } else if (penIsDown) {
-    mainController()->drawLine(lineStart, lineEnd, penColor);
+    mainController()->drawLine(lineStart, lineEnd, penColor, penColor);
   }
 }
 
@@ -169,7 +169,7 @@ void Turtle::drawTurtleFence() {
     fillVertices.push_back(lineEnd);
     fillVertexColors.push_back(fillColor);
   } else if (penIsDown) {
-    mainController()->drawLine(lineStart, lineEnd, penColor);
+    mainController()->drawLine(lineStart, lineEnd, penColor, penColor);
   }
 }
 
@@ -180,7 +180,7 @@ void Turtle::drawTurtleWindow() {
     fillVertices.push_back(lineEnd);
     fillVertexColors.push_back(fillColor);
   } else if (penIsDown) {
-    mainController()->drawLine(lineStart, lineEnd, penColor);
+    mainController()->drawLine(lineStart, lineEnd, penColor, penColor);
   }
 }
 
@@ -220,7 +220,7 @@ void Turtle::drawArc(qreal angle, qreal radius) {
       qreal p2y = cos(a2) * radius;
       QVector3D v1 = (matrix * QVector4D(p1x, p1y, 0, 1)).toVector3DAffine();
       QVector3D v2 = (matrix * QVector4D(p2x, p2y, 0, 1)).toVector3DAffine();
-      mainController()->drawLine(v1, v2, penColor);
+      mainController()->drawLine(v1, v2, penColor, penColor);
     }
   }
 }

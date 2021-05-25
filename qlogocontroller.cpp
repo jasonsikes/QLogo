@@ -194,13 +194,14 @@ void QLogoController::setTurtlePos(const QMatrix4x4 &newTurtlePos)
   });
 }
 
-void QLogoController::drawLine(const QVector3D &start, const QVector3D &end, const QColor &color)
+void QLogoController::drawLine(const QVector3D &start, const QVector3D &end, const QColor &startColor, const QColor &endColor)
 {
   sendMessage([&](QDataStream *out) {
     *out << (message_t)C_CANVAS_DRAW_LINE
          << start
          << end
-         << color;
+         << startColor
+         << endColor;
   });
 }
 

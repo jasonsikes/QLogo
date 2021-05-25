@@ -68,7 +68,7 @@ public:
   QVector2D mousePos;
   QVector2D clickPos;
 
-  virtual void drawLine(const QVector3D &, const QVector3D &, const QColor &) { Error::noGraphics(); }
+  virtual void drawLine(const QVector3D &, const QVector3D &, const QColor &, const QColor &) { Error::noGraphics(); }
   virtual void drawPolygon(const QList<QVector3D> &, const QList<QColor> &) { Error::noGraphics(); }
   void updateCanvas(void) { Error::noGraphics(); }
   virtual void clearScreen(void) { Error::noGraphics(); }
