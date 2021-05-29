@@ -50,14 +50,14 @@ void Error::turtleOutOfBounds() {
 DatumP Error::doesntLike(DatumP who, DatumP what, bool allowErract,
                          bool allowRecovery) {
   QString message("%1 doesn't like %2 as input");
-  message = message.arg(who.showValue()).arg(what.showValue());
+  message = message.arg(who.showValue(),what.showValue());
   return mainKernel->registerError(new Error(ERR_DOESNT_LIKE, message), allowErract,
                                    allowRecovery);
 }
 
 void Error::didntOutput(DatumP src, DatumP dest) {
   QString message("%1 didn't output to %2");
-  message = message.arg(src.showValue()).arg(dest.showValue());
+  message = message.arg(src.showValue(),dest.showValue());
   mainKernel->registerError(new Error(ERR_DIDNT_OUTPUT, message), true);
 }
 

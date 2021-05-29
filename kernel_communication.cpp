@@ -47,7 +47,7 @@ QString Kernel::filepathForFilename(DatumP filenameP) {
     prefix = QDir::homePath();
   }
 
-  QString retval = QString("%1/%2").arg(prefix).arg(filename);
+  QString retval = QString("%1/%2").arg(prefix, filename);
   return retval;
 }
 
