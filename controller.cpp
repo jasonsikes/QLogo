@@ -29,6 +29,8 @@
 
 #include <QDebug>
 
+#include <signal.h>
+
 #include "kernel.h"
 
 // For rand()
@@ -38,6 +40,35 @@
 
 #include <QFile>
 #include <QTextStream>
+
+
+SignalsEnum_t lastSignal = noSignal;
+
+// Not a part of Controller because we are handling interrupts
+static void handle_signal(int sig)
+{
+    switch(sig) {
+    case SIGINT:
+        lastSignal = interruptSignal;
+    break;
+    case SIGTSTP:
+        lastSignal = pauseSignal;
+    break;
+    case SIGQUIT:
+        lastSignal = quitSignal;
+        break;
+    default:
+        qDebug() <<"Not expecting signal: " <<sig;
+    }
+}
+
+static void initSignals()
+{
+    signal(SIGINT, handle_signal);
+    signal(SIGTSTP, handle_signal);
+    signal(SIGQUIT, handle_signal);
+}
+
 
 Controller *_maincontroller = NULL;
 qreal initialBoundXY = 150;
@@ -89,9 +120,19 @@ QString Controller::addStandoutToString(const QString &src) {
 }
 
 
+SignalsEnum_t Controller::latestSignal()
+{
+    SignalsEnum_t retval = lastSignal;
+    lastSignal = noSignal;
+    return retval;
+}
+
+
 int Controller::run(void) {
   kernel->initLibrary();
   initialize();
+
+  initSignals();
 
   bool shouldContinue = true;
   while (shouldContinue) {

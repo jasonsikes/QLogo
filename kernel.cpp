@@ -576,6 +576,15 @@ DatumP Kernel::runList(DatumP listP, const QString startTag) {
   //    }
   //  }
 
+  SignalsEnum_t latestSignal = mainController()->latestSignal();
+  if (latestSignal == interruptSignal) {
+      Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
+  } else if (latestSignal == pauseSignal) {
+      pause();
+  } else if (latestSignal == quitSignal) {
+      Error::throwError(DatumP(new Word("SYSTEM")), nothing);
+  }
+
   if (listP.isWord())
     listP = parser->runparse(listP);
 
