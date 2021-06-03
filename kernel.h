@@ -110,6 +110,9 @@ class Kernel {
 
   void initPalette(void);
 
+  /// Initialize LOGO system variables
+  void initVariables(void);
+
   DatumP buildContentsList(showContents_t showWhat);
   QString createPrintoutFromContentsList(DatumP contentslist,
                                          bool shouldValidate = true);

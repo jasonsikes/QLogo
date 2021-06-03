@@ -701,4 +701,7 @@ extern Datum notADatum;
 /// A pointer to notADatum, like NULL.
 extern DatumP nothing;
 
+extern Word trueWord;
+extern Word falseWord;
+
 #endif // DATUM_H

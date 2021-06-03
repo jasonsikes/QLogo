@@ -252,6 +252,25 @@ void Kernel::initPalette() {
 
 void Kernel::initLibrary() { executeText(libraryStr); }
 
+
+// TODO: System vars need standardization
+void Kernel::initVariables(void)
+{
+    const QString logoPlatform = "LOGOPLATFORM";
+    const QString logoVersion = "LOGOVERSION";
+    const QString allowGetSet = "ALLOWGETSET";
+
+    DatumP platform(new Word(LOGOPLATFORM));
+    DatumP version(new Word(LOGOVERSION));
+    DatumP trueDatumP(&trueWord);
+    variables.setDatumForName(platform, logoPlatform);
+    variables.setDatumForName(version, logoVersion);
+    variables.setDatumForName(trueDatumP, allowGetSet);
+    variables.bury(logoPlatform);
+    variables.bury(logoVersion);
+    variables.bury(allowGetSet);
+}
+
 Kernel::Kernel() {
   readStream = NULL;
   systemReadStream = NULL;
@@ -263,19 +282,12 @@ Kernel::Kernel() {
   ProcedureHelper::setParser(parser);
   Error::setKernel(this);
 
+  initVariables();
   initPalette();
 
   filePrefix = nothing;
 
-  const QString logoPlatform = "LOGOPLATFORM";
-  const QString logoVersion = "LOGOVERSION";
-
-  DatumP platform(new Word(LOGOPLATFORM));
-  DatumP version(new Word(LOGOVERSION));
-  variables.setDatumForName(platform, logoPlatform);
-  variables.setDatumForName(version, logoVersion);
-  variables.bury(logoPlatform);
-  variables.bury(logoVersion);
+  initVariables();
 }
 
 Kernel::~Kernel() {
