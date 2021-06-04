@@ -1,0 +1,7 @@
+? > > a1 defined
+? ? ? ? to a1 :p1
+show :p1
+end
+Make "Q 4
+Pprop 1 2 3
+Pprop 2 3 4

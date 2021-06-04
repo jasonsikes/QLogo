@@ -1,0 +1,3 @@
+? > > > > > > proc defined
+? goto doesn't like tag2 as input in proc
+[goto "tag2]

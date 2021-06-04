@@ -1,0 +1,6 @@
+? ? > > c1 defined
+? P1 shadowed by local in procedure call
+[(print :p1 :p2)] >>>4 6
+? > > c10 defined
+? [(c1 10 20)] >>>P1 shadowed by local in procedure call in c10
+[(print :p1 :p2)] >>>10 20

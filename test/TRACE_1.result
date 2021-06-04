@@ -1,0 +1,7 @@
+? ? ( + 2 2 )
++ outputs 4
+( * 3 3 )
+* outputs 9
+( print 4 9 )
+4 9
+print stops

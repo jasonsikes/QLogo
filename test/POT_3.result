@@ -1,0 +1,4 @@
+? > > a1 defined
+? ? ? to a1 [:P1 "|a test|]
+Make "Q "34\ 34
+Plist "joe = [2 hello\ there]

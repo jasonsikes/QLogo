@@ -1,0 +1,2 @@
+? > > qw defined
+? [to qw :p1 [:p2 2] (show "Hello, :p1 :p2) end]

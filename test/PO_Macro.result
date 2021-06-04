@@ -1,0 +1,4 @@
+? > > m defined
+? .macro m :p1
+output sentence "print ":p1
+end

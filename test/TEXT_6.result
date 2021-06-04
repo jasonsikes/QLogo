@@ -1,0 +1,2 @@
+? > > qw defined
+? [[P1 [P2 2*2] [P3] 10] [(show "Hello, :p1 :p2 "and :p3)]]

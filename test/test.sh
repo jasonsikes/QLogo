@@ -17,7 +17,7 @@ failed_tests=()
 
 run_test() {
     f="$1"
-    ../logo < $f | diff "${f%.lg}.out" -
+    ../logo < $f | diff "${f%.lg}.result" -
     if [ $? -eq 1 ]
     then
 	failed_tests+=($f)

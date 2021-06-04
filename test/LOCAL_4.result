@@ -1,0 +1,3 @@
+? > > > > qw defined
+? local doesn't like {a} as input in qw
+[local {a}]

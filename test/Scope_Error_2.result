@@ -1,0 +1,5 @@
+? > > > > f1 defined
+? 22
+print didn't output to make in f1
+[make "b print :a]
+? iff without TEST

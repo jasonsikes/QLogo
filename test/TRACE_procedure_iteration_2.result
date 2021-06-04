@@ -1,0 +1,15 @@
+? > > > i1 defined
+? > > > i2 defined
+? ? ( i1 4 5 )
+ ( i2 8 4 )
+  ( i1 13 3 )
+   ( i2 26 2 )
+    ( i1 31 1 )
+     ( i2 62 0 )
+     i2 outputs 62
+    i1 outputs 62
+   i2 outputs 62
+  i1 outputs 62
+ i2 outputs 62
+i1 outputs 62
+62

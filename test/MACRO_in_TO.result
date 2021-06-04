@@ -1,0 +1,3 @@
+? > > d defined
+? can't use .macro inside a procedure in d
+[.macro e]

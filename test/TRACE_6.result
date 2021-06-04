@@ -1,0 +1,7 @@
+? ? ( * 4 4 )
+* outputs 16
+( + 16 3 )
++ outputs 19
+( pprop "list2 "item1 19 )
+Pprop "list2 "item1 19
+pprop stops
