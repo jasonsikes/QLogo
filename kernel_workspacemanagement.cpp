@@ -379,13 +379,14 @@ DatumP Kernel::excMake(DatumP node) {
 DatumP Kernel::excSetfoo(DatumP node) {
   ProcedureHelper h(this, node);
 
-  QString foo = node.astnodeValue()->nodeName.wordValue()->keyValue();
+  DatumP nodeName = node.astnodeValue()->nodeName;
+  QString foo = nodeName.wordValue()->keyValue();
 
   QString lvalue = foo.right(foo.size() - 3);
   DatumP rvalue = h.datumAtIndex(0);
 
   if (!variables.doesExist(lvalue)) {
-    variables.setVarAsLocal(lvalue);
+    Error::noHow(nodeName);
   }
 
   variables.setDatumForName(rvalue, lvalue);
