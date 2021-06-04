@@ -1,6 +1,7 @@
+make "allowgetset "false
 to proc
 global "foo
 setfoo 1
 end
 proc
-show :foo
+

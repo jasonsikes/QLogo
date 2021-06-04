@@ -1,0 +1,4 @@
+make "allowgetset "false
+make "foo "bar
+print foo
+
