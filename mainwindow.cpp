@@ -116,11 +116,14 @@ int MainWindow::startLogo()
 
 void MainWindow::initialize()
 {
+    QList<int> sizes;
+    sizes << 0 << 100;
     QFont defaultFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     ui->mainConsole->setTextFontSize(defaultFont.pointSizeF());
     ui->mainConsole->setTextFontName(defaultFont.family());
     ui->mainCanvas->setLabelFontSize(defaultFont.pointSizeF());
     ui->mainCanvas->setLabelFontName(defaultFont.family());
+    ui->splitter->setSizes(sizes);
 
     sendMessage([&](QDataStream *out) {
         *out
@@ -145,8 +148,11 @@ void MainWindow::processStarted()
 
 void MainWindow::processFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-  qDebug() <<"processFinished()" <<exitCode << exitStatus;
-
+    if (exitStatus == QProcess::NormalExit) {
+        QApplication::exit(0);
+    } else {
+        qDebug() <<"processFinished()" <<exitCode << exitStatus;
+    }
 }
 
 // TODO: rename this. It sounds confusing.
