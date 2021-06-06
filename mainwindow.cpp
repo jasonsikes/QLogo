@@ -369,6 +369,5 @@ void MainWindow::sendRawlineSlot(const QString &line)
 
 void MainWindow::splitterHasMovedSlot(int, int)
 {
-    qDebug() <<"splitter moved";
     hasShownCanvas = true;
 }
