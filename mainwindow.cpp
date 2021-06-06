@@ -109,6 +109,9 @@ int MainWindow::startLogo()
   connect(ui->mainConsole, &Console::sendCharSignal,
           this, &MainWindow::sendCharSlot);
 
+  connect(ui->splitter, &QSplitter::splitterMoved,
+          this, &MainWindow::splitterHasMovedSlot);
+
   logoProcess->start(command, arguments);
   return 0;
 }
@@ -139,6 +142,16 @@ void MainWindow::initialize()
     });
 
 }
+
+void MainWindow::introduceCanvas() {
+    if (hasShownCanvas)
+        return;
+    hasShownCanvas = true;
+    QList<int>sizes;
+    sizes << 75 << 25;
+    ui->splitter->setSizes(sizes);
+}
+
 
 void MainWindow::processStarted()
 {
@@ -217,6 +230,7 @@ void MainWindow::readStandardOutput()
               QMatrix4x4 matrix;
               *dataStream >> matrix;
               ui->mainCanvas->setTurtleMatrix(matrix);
+              introduceCanvas();
               break;
             }
           case C_CANVAS_DRAW_LINE:
@@ -228,6 +242,7 @@ void MainWindow::readStandardOutput()
                   >> b
                   >> color;
               ui->mainCanvas->addLine(a, b, color);
+              introduceCanvas();
               break;
             }
         case C_CANVAS_DRAW_POLYGON:
@@ -238,10 +253,12 @@ void MainWindow::readStandardOutput()
                     >> points
                     >> colors;
             ui->mainCanvas->addPolygon(points, colors);
+            introduceCanvas();
             break;
         }
         case C_CANVAS_CLEAR_SCREEN:
             ui->mainCanvas->clearScreen();
+            introduceCanvas();
             break;
         case C_CANVAS_SETBOUNDS:
         {
@@ -276,6 +293,7 @@ void MainWindow::readStandardOutput()
                     >> aPosition
                     >> aColor;
             ui->mainCanvas->addLabel(aString, aPosition, aColor);
+            introduceCanvas();
             break;
         }
         case C_CANVAS_SET_BACKGROUND_COLOR:
@@ -284,6 +302,7 @@ void MainWindow::readStandardOutput()
             *dataStream
                     >> aColor;
             ui->mainCanvas->setBackgroundColor(aColor);
+            introduceCanvas();
             break;
         }
         case C_CANVAS_SET_PENSIZE:
@@ -345,4 +364,11 @@ void MainWindow::sendRawlineSlot(const QString &line)
     sendMessage([&](QDataStream *out) {
         *out << (message_t)C_CONSOLE_RAWLINE_READ << line;
     });
+}
+
+
+void MainWindow::splitterHasMovedSlot(int, int)
+{
+    qDebug() <<"splitter moved";
+    hasShownCanvas = true;
 }

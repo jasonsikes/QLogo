@@ -59,6 +59,7 @@ private:
   QProcess *logoProcess;
 
   windowMode_t windowMode;
+  bool hasShownCanvas = false;
 
   int startLogo();
   void beginReadRawline();
@@ -66,6 +67,7 @@ private:
   void sendMessage(std::function<void (QDataStream*)> func);
 
   void initialize();
+  void introduceCanvas();
 
 public slots:
   void readStandardOutput();
@@ -76,6 +78,7 @@ public slots:
 
   void sendRawlineSlot(const QString &line);
   void sendCharSlot(QChar c);
+  void splitterHasMovedSlot(int, int);
 };
 
 #endif // MAINWINDOW_H
