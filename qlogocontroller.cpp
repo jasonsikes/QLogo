@@ -30,11 +30,13 @@ QLogoController::QLogoController(QObject *parent) : Controller(parent)
     setmode(STDOUT_FILENO, O_BINARY);
     setmode(STDIN_FILENO, O_BINARY);
 #endif
+    inputThread.start();
 }
 
 
 QLogoController::~QLogoController()
 {
+    inputThread.quit();
     setDribble("");
 
 }
@@ -55,20 +57,15 @@ void QLogoController::initialize()
  */
 message_t QLogoController::getMessage()
 {
-    qint64 datalen;
-    qint64 dataread;
+    // TODO: Antipattern here. Set up signal mechanism.
+    // Best place is probably in thread class.
     message_t header;
-    do {
-        dataread = read(STDIN_FILENO, &datalen, sizeof(qint64));
-        if (dataread == 0) {
-            QThread::msleep(100);
-        }
-    } while(dataread == 0);
-    Q_ASSERT(dataread == sizeof(qint64));
-    QByteArray buffer;
-    buffer.resize(datalen);
-    dataread = read(STDIN_FILENO, buffer.data(), datalen);
-    Q_ASSERT(dataread == datalen);
+    QByteArray buffer = inputThread.getMessage();
+    while (buffer.size() == 0) {
+        QThread::msleep(100);
+        buffer = inputThread.getMessage();
+    }
+
     QDataStream bufferStream(&buffer, QIODevice::ReadOnly);
 
     bufferStream >> header;

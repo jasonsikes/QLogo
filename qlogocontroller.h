@@ -6,9 +6,11 @@
 #include <QDataStream>
 #include <QFile>
 #include <QFont>
+#include "inputqueuethread.h"
 
 class QLogoController : public Controller
 {
+    InputQueueThread inputThread;
     message_t getMessage();
     void waitForMessage(message_t expectedType);
 
