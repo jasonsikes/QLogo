@@ -2,6 +2,7 @@
 #include <QMessageBox>
 #include <QByteArray>
 #include <QDataStream>
+#include <QApplication>
 #include <unistd.h>
 
 #ifdef _WIN32
@@ -33,11 +34,18 @@ QLogoController::QLogoController(QObject *parent) : Controller(parent)
     inputThread.start();
 }
 
+void QLogoController::systemStop()
+{
+    inputThread.exit(0);
+    while (inputThread.isRunning());
+    qDebug() <<"We are done";
+    setDribble("");
+    QApplication::quit();
+}
+
 
 QLogoController::~QLogoController()
 {
-    inputThread.quit();
-    setDribble("");
 
 }
 
@@ -57,15 +65,9 @@ void QLogoController::initialize()
  */
 message_t QLogoController::getMessage()
 {
-    // TODO: Antipattern here. Set up signal mechanism.
-    // Best place is probably in thread class.
     message_t header;
-    QByteArray buffer = inputThread.getMessage();
-    while (buffer.size() == 0) {
-        QThread::msleep(100);
-        buffer = inputThread.getMessage();
-    }
 
+    QByteArray buffer = inputThread.getMessage();
     QDataStream bufferStream(&buffer, QIODevice::ReadOnly);
 
     bufferStream >> header;

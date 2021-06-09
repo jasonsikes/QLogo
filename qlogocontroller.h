@@ -35,6 +35,7 @@ class QLogoController : public Controller
 public:
     QLogoController(QObject *parent = 0);
     ~QLogoController();
+    void systemStop();
 
     void initialize();
 

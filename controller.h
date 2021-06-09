@@ -72,6 +72,7 @@ public:
   virtual bool atEnd() { return true; }
   virtual void printToConsole(const QString &) {}
   int run(void);
+  virtual void systemStop(void);
   virtual void mwait(unsigned long) {}
   const QString *editText(const QString *) { return NULL; }
 

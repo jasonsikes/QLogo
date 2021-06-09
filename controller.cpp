@@ -40,7 +40,7 @@
 
 #include <QFile>
 #include <QTextStream>
-
+#include <QApplication>
 
 SignalsEnum_t lastSignal = noSignal;
 
@@ -140,5 +140,10 @@ int Controller::run(void) {
   }
 
   return 0;
+}
+
+void Controller::systemStop()
+{
+    QApplication::quit();
 }
 

@@ -164,7 +164,7 @@ bool Kernel::getLineAndRunIt(bool shouldHandleError) {
           }
           if (e->tag.wordValue()->keyValue() == "SYSTEM") {
               sysPrint("\n");
-              QApplication::quit();
+              mainController()->systemStop();
               return false;
           }
       }

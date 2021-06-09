@@ -1,5 +1,6 @@
 #include "inputqueuethread.h"
 #include <unistd.h>
+#include <QDebug>
 //#include "constants.h"
 
 InputQueueThread::InputQueueThread(QObject *parent) : QThread(parent)
@@ -7,15 +8,22 @@ InputQueueThread::InputQueueThread(QObject *parent) : QThread(parent)
 
 }
 
+// TODO: This spin loop is an antipattern. Fix it.
 QByteArray InputQueueThread::getMessage()
 {
     QByteArray retval;
-    QMutexLocker locker(&mutex);
 
-    if (! list.isEmpty()) {
-        retval = list.takeFirst();
-    }
-    dataIsAvailable = ! list.isEmpty();
+    do {
+        mutex.lock();
+        if (! list.isEmpty()) {
+            retval = list.takeFirst();
+        }
+        dataIsAvailable = ! list.isEmpty();
+        mutex.unlock();
+        if (retval.size() == 0)
+            msleep(100);
+    } while (retval.size() == 0);
+
     return retval;
 }
 
@@ -37,6 +45,7 @@ void InputQueueThread::run()
         do {
             dataread = read(STDIN_FILENO, &datalen, sizeof(qint64));
             if (dataread == 0) {
+                qDebug() <<"No data read";
                 QThread::msleep(100);
             }
         } while(dataread == 0);
