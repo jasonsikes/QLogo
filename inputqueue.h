@@ -1,11 +1,11 @@
-#ifndef INPUTQUEUETHREAD_H
-#define INPUTQUEUETHREAD_H
+#ifndef INPUTQUEUE_H
+#define INPUTQUEUE_H
 
 #include <QThread>
 #include <QByteArrayList>
 #include <QMutexLocker>
 
-class InputQueueThread : public QThread
+class InputQueue : public QThread
 {
     bool dataIsAvailable = false;
     QByteArrayList list;
@@ -13,7 +13,7 @@ class InputQueueThread : public QThread
 
     void run() override;
 public:
-    explicit InputQueueThread(QObject *parent = nullptr);
+    explicit InputQueue(QObject *parent = nullptr);
 
     /// Get a message.
     /// If no message is available this will simply return an empty QByteArray
@@ -31,4 +31,4 @@ public:
 
 };
 
-#endif // INPUTQUEUETHREAD_H
+#endif // INPUTQUEUE_H

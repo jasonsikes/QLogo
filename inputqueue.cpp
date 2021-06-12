@@ -1,15 +1,15 @@
-#include "inputqueuethread.h"
+#include "inputqueue.h"
 #include <unistd.h>
 #include <QDebug>
 //#include "constants.h"
 
-InputQueueThread::InputQueueThread(QObject *parent) : QThread(parent)
+InputQueue::InputQueue(QObject *parent) : QThread(parent)
 {
 
 }
 
 // TODO: This spin loop is an antipattern. Fix it.
-QByteArray InputQueueThread::getMessage()
+QByteArray InputQueue::getMessage()
 {
     QByteArray retval;
 
@@ -28,7 +28,7 @@ QByteArray InputQueueThread::getMessage()
 }
 
 
-void InputQueueThread::clearQueue()
+void InputQueue::clearQueue()
 {
     QMutexLocker locker(&mutex);
     dataIsAvailable = false;
@@ -36,7 +36,7 @@ void InputQueueThread::clearQueue()
 }
 
 
-void InputQueueThread::run()
+void InputQueue::run()
 {
     qint64 datalen;
     qint64 dataread;

@@ -31,13 +31,13 @@ QLogoController::QLogoController(QObject *parent) : Controller(parent)
     setmode(STDOUT_FILENO, O_BINARY);
     setmode(STDIN_FILENO, O_BINARY);
 #endif
-    inputThread.start();
+    messageQueue.start();
 }
 
 void QLogoController::systemStop()
 {
-    inputThread.exit(0);
-    while (inputThread.isRunning());
+    messageQueue.exit(0);
+    while (messageQueue.isRunning());
     qDebug() <<"We are done";
     setDribble("");
     QApplication::quit();
@@ -67,7 +67,7 @@ message_t QLogoController::getMessage()
 {
     message_t header;
 
-    QByteArray buffer = inputThread.getMessage();
+    QByteArray buffer = messageQueue.getMessage();
     QDataStream bufferStream(&buffer, QIODevice::ReadOnly);
 
     bufferStream >> header;
