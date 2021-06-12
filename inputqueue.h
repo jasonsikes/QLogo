@@ -5,30 +5,32 @@
 #include <QByteArrayList>
 #include <QMutexLocker>
 
-class InputQueue : public QThread
+class InputQueueThread : public QThread
 {
-    bool dataIsAvailable = false;
     QByteArrayList list;
     QMutex mutex;
 
     void run() override;
 public:
-    explicit InputQueue(QObject *parent = nullptr);
+    explicit InputQueueThread(QObject *parent = nullptr);
 
     /// Get a message.
-    /// If no message is available this will simply return an empty QByteArray
+    /// Will wait until message is available.
     QByteArray getMessage();
-
-    /// Clear the Queue.
-    /// Necessary after interrupt.
-    void clearQueue();
-
-    /// No mutex for efficiency.
-    /// TRUE: Data is probably available.
-    /// FALSE: Data is probably not available.
-    bool queueHasData() { return dataIsAvailable; }
 
 
 };
+
+class InputQueue : public QObject
+{
+    InputQueueThread thread;
+public:
+    explicit InputQueue(QObject *parent = nullptr);
+    void stopQueue();
+    void startQueue();
+    QByteArray getMessage();
+};
+
+
 
 #endif // INPUTQUEUE_H

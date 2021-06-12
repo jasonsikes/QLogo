@@ -31,13 +31,11 @@ QLogoController::QLogoController(QObject *parent) : Controller(parent)
     setmode(STDOUT_FILENO, O_BINARY);
     setmode(STDIN_FILENO, O_BINARY);
 #endif
-    messageQueue.start();
 }
 
 void QLogoController::systemStop()
 {
-    messageQueue.exit(0);
-    while (messageQueue.isRunning());
+    messageQueue.stopQueue();
     qDebug() <<"We are done";
     setDribble("");
     QApplication::quit();
@@ -51,6 +49,8 @@ QLogoController::~QLogoController()
 
 void QLogoController::initialize()
 {
+    messageQueue.startQueue();
+
     sendMessage([&](QDataStream *out) {
       *out << (message_t)W_INITIALIZE;
     });

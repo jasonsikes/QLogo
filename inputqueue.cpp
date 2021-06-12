@@ -3,13 +3,13 @@
 #include <QDebug>
 //#include "constants.h"
 
-InputQueue::InputQueue(QObject *parent) : QThread(parent)
+InputQueueThread::InputQueueThread(QObject *parent) : QThread(parent)
 {
 
 }
 
 // TODO: This spin loop is an antipattern. Fix it.
-QByteArray InputQueue::getMessage()
+QByteArray InputQueueThread::getMessage()
 {
     QByteArray retval;
 
@@ -18,7 +18,6 @@ QByteArray InputQueue::getMessage()
         if (! list.isEmpty()) {
             retval = list.takeFirst();
         }
-        dataIsAvailable = ! list.isEmpty();
         mutex.unlock();
         if (retval.size() == 0)
             msleep(100);
@@ -28,15 +27,8 @@ QByteArray InputQueue::getMessage()
 }
 
 
-void InputQueue::clearQueue()
-{
-    QMutexLocker locker(&mutex);
-    dataIsAvailable = false;
-    list.clear();
-}
 
-
-void InputQueue::run()
+void InputQueueThread::run()
 {
     qint64 datalen;
     qint64 dataread;
@@ -60,7 +52,29 @@ void InputQueue::run()
             list.append(*newAry);
             delete newAry;
             mutex.unlock();
-            dataIsAvailable = true;
         }
     }
+}
+
+
+InputQueue::InputQueue(QObject *parent) : QObject(parent)
+{
+
+}
+
+void InputQueue::startQueue()
+{
+    // TODO: connections
+    thread.start();
+    // TODO: Wait until thread has started
+}
+
+QByteArray InputQueue::getMessage()
+{
+    return thread.getMessage();
+}
+
+void InputQueue::stopQueue()
+{
+    // TODO: don't crash
 }
