@@ -2,24 +2,22 @@
 #define INPUTQUEUE_H
 
 #include <QThread>
-#include <QByteArrayList>
-#include <QMutexLocker>
+#include <QByteArray>
 #include <QEventLoop>
 
 class InputQueueThread : public QThread
 {
     Q_OBJECT
-    QByteArrayList list;
-    QMutex mutex;
 
     void run() override;
+
 public:
     explicit InputQueueThread(QObject *parent = nullptr);
-
 
 signals:
     void sendMessage(QByteArray msg);
 };
+
 
 class InputQueue : public QObject
 {
@@ -27,17 +25,23 @@ class InputQueue : public QObject
     InputQueueThread thread;
     QByteArray message;
     QEventLoop eventLoop;
+
+private slots:
+    // Connected to sendMessage signal from thread.
+    void receiveMessage(QByteArray aMessage);
+
 public:
     explicit InputQueue(QObject *parent = nullptr);
-    void stopQueue();
+
+    /// Start the input thread.
     void startQueue();
+
+    /// Stop the input thread.
+    void stopQueue();
 
     /// Get a message.
     /// Will wait until message is available.
     QByteArray getMessage();
-
-public slots:
-    void receiveMessage(QByteArray aMessage);
 };
 
 

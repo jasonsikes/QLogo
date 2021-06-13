@@ -12,20 +12,18 @@ void InputQueueThread::run()
 {
     qint64 datalen;
     qint64 dataread;
-    QByteArray buffer;
+    QByteArray message;
     forever {
-        do {
-            dataread = read(STDIN_FILENO, &datalen, sizeof(qint64));
-            if (dataread == 0) {
-                qDebug() <<"No data read";
-                QThread::msleep(100);
-            }
-        } while(dataread == 0);
+        dataread = read(STDIN_FILENO, &datalen, sizeof(qint64));
+        if (dataread <= 0) {
+            // I guess we're done.
+            return;
+        }
         Q_ASSERT(dataread == sizeof(qint64));
-        buffer.resize(datalen);
-        dataread = read(STDIN_FILENO, buffer.data(), datalen);
+        message.resize(datalen);
+        dataread = read(STDIN_FILENO, message.data(), datalen);
         Q_ASSERT(dataread == datalen);
-        emit sendMessage(buffer);
+        emit sendMessage(message);
     }
 }
 
@@ -37,12 +35,15 @@ InputQueue::InputQueue(QObject *parent) : QObject(parent)
 
 void InputQueue::startQueue()
 {
-    connect(&thread, SIGNAL(sendMessage(QByteArray)), this, SLOT(receiveMessage(QByteArray)), Qt::QueuedConnection);
+    // The QueuedConnection allows us to queue the messages
+    connect(&thread, SIGNAL(sendMessage(QByteArray)),
+            this, SLOT(receiveMessage(QByteArray)), Qt::QueuedConnection);
     thread.start();
 }
 
 QByteArray InputQueue::getMessage()
 {
+    // Wait for a message signal from thread.
     eventLoop.exec();
     return message;
 }
@@ -55,5 +56,7 @@ void InputQueue::receiveMessage(QByteArray aMessage)
 
 void InputQueue::stopQueue()
 {
-    // TODO: don't crash
+    // Close stdin which will interrupt the thread.
+    close(STDIN_FILENO);
+    thread.wait();
 }
