@@ -1,31 +1,11 @@
 #include "inputqueue.h"
 #include <unistd.h>
 #include <QDebug>
-//#include "constants.h"
 
 InputQueueThread::InputQueueThread(QObject *parent) : QThread(parent)
 {
 
 }
-
-// TODO: This spin loop is an antipattern. Fix it.
-QByteArray InputQueueThread::getMessage()
-{
-    QByteArray retval;
-
-    do {
-        mutex.lock();
-        if (! list.isEmpty()) {
-            retval = list.takeFirst();
-        }
-        mutex.unlock();
-        if (retval.size() == 0)
-            msleep(100);
-    } while (retval.size() == 0);
-
-    return retval;
-}
-
 
 
 void InputQueueThread::run()
@@ -45,14 +25,7 @@ void InputQueueThread::run()
         buffer.resize(datalen);
         dataread = read(STDIN_FILENO, buffer.data(), datalen);
         Q_ASSERT(dataread == datalen);
-        {
-            // Force a deep copy for thread safety.
-            QByteArray *newAry = new QByteArray(buffer.data(), buffer.size());
-            mutex.lock();
-            list.append(*newAry);
-            delete newAry;
-            mutex.unlock();
-        }
+        emit sendMessage(buffer);
     }
 }
 
@@ -64,14 +37,20 @@ InputQueue::InputQueue(QObject *parent) : QObject(parent)
 
 void InputQueue::startQueue()
 {
-    // TODO: connections
+    connect(&thread, SIGNAL(sendMessage(QByteArray)), this, SLOT(receiveMessage(QByteArray)), Qt::QueuedConnection);
     thread.start();
-    // TODO: Wait until thread has started
 }
 
 QByteArray InputQueue::getMessage()
 {
-    return thread.getMessage();
+    eventLoop.exec();
+    return message;
+}
+
+void InputQueue::receiveMessage(QByteArray aMessage)
+{
+    message = aMessage;
+    eventLoop.exit(0);
 }
 
 void InputQueue::stopQueue()
