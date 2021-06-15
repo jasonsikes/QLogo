@@ -295,3 +295,8 @@ void QLogoController::setPensize(double aSize)
     });
     penSize = aSize;
 }
+
+void QLogoController::mwait(unsigned long msecs) {
+  QThread::msleep(msecs);
+}
+

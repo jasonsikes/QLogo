@@ -37,6 +37,7 @@
 #include <QDir>
 #include <QThread>
 #include <QFontDatabase>
+#include <signal.h>
 
 // Wrapper function for sending data to the logo interpreter
 void MainWindow::sendMessage(std::function<void (QDataStream*)> func)
@@ -114,6 +115,21 @@ int MainWindow::startLogo()
 
   logoProcess->start(command, arguments);
   return 0;
+}
+
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    qint64 pid = logoProcess->processId();
+    // Tell the process to die, then ignore.
+    // Because when the process dies another signal will be sent to close the application.
+    if (pid > 0) {
+        kill(pid, SIGINT);
+        event->ignore();
+    } else {
+        event->accept();
+    }
+
 }
 
 
@@ -326,9 +342,6 @@ void MainWindow::readStandardError()
 {
     QByteArray ary = logoProcess->readAllStandardError();
     qDebug() <<"stderr: " <<QString(ary);
-//  QMessageBox msgBox;
-//  msgBox.setText(ary);
-//  msgBox.exec();
 }
 
 void MainWindow::errorOccurred(QProcess::ProcessError error)

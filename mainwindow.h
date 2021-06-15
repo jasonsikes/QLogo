@@ -48,6 +48,9 @@ class MainWindow : public QMainWindow {
         windowMode_waitForRawline,
     };
 
+protected:
+    void closeEvent ( QCloseEvent * event );
+
 public:
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();

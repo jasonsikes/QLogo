@@ -68,6 +68,7 @@ public:
     void setLabelFontName(const QString &aName);
 
     void setPensize(double);
+    void mwait(unsigned long msecs);
 };
 
 #endif // QLOGOCONTROLLER_H
