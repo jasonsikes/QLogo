@@ -552,50 +552,24 @@ DatumP Kernel::executeValueOf(DatumP node) {
   return retval;
 }
 
+SignalsEnum_t Kernel::interruptCheck()
+{
+    SignalsEnum_t latestSignal = mainController()->latestSignal();
+    if (latestSignal == toplevelSignal) {
+        Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
+    } else if (latestSignal == pauseSignal) {
+        pause();
+    } else if (latestSignal == systemSignal) {
+        Error::throwError(DatumP(new Word("SYSTEM")), nothing);
+    }
+    return latestSignal;
+}
+
 DatumP Kernel::runList(DatumP listP, const QString startTag) {
   bool shouldSearchForTag = (startTag != "");
   DatumP retval;
 
-  //  while (!mainController()->eventQueueIsEmpty()) {
-  //    char event = mainController()->nextQueueEvent();
-  //    DatumP action;
-  //    switch (event) {
-  //    case mouseEvent: {
-  //      action = varBUTTONACT();
-  //      break;
-  //    }
-  //    case characterEvent: {
-  //      action = varKEYACT();
-  //      break;
-  //    }
-  //    case toplevelEvent: {
-  //      Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
-  //      break;
-  //    }
-  //    case systemEvent: {
-  //      Error::throwError(DatumP(new Word("SYSTEM")), nothing);
-  //      break;
-  //    }
-  //    case pauseEvent: {
-  //      pause();
-  //      break;
-  //    }
-  //    }
-  //    if (action != nothing) {
-  //      retval = runList(action);
-  //      if (retval != nothing)
-  //        Error::dontSay(retval);
-  //    }
-  //  }
-
-  SignalsEnum_t latestSignal = mainController()->latestSignal();
-  if (latestSignal == interruptSignal) {
-      Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
-  } else if (latestSignal == pauseSignal) {
-      pause();
-  } else if (latestSignal == quitSignal) {
-      Error::throwError(DatumP(new Word("SYSTEM")), nothing);
-  }
+  interruptCheck();
 
   if (listP.isWord())
     listP = parser->runparse(listP);

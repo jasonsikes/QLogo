@@ -49,13 +49,13 @@ static void handle_signal(int sig)
 {
     switch(sig) {
     case SIGINT:
-        lastSignal = interruptSignal;
+        lastSignal = toplevelSignal;
     break;
     case SIGTSTP:
         lastSignal = pauseSignal;
     break;
     case SIGQUIT:
-        lastSignal = quitSignal;
+        lastSignal = systemSignal;
         break;
     default:
         qDebug() <<"Not expecting signal: " <<sig;
@@ -64,9 +64,16 @@ static void handle_signal(int sig)
 
 static void initSignals()
 {
-    signal(SIGINT, handle_signal);
-    signal(SIGTSTP, handle_signal);
-    signal(SIGQUIT, handle_signal);
+    signal(SIGINT, handle_signal);  // TOPLEVEL
+    signal(SIGTSTP, handle_signal); // PAUSE
+    signal(SIGQUIT, handle_signal); // SYSTEM
+}
+
+static void restoreSignals()
+{
+    signal(SIGINT, SIG_DFL);
+    signal(SIGTSTP, SIG_DFL);
+    signal(SIGQUIT, SIG_DFL);
 }
 
 
@@ -88,6 +95,7 @@ Controller::Controller(QObject *parent) : QObject(parent) {
 }
 
 Controller::~Controller() {
+    restoreSignals();
     delete kernel;
     _maincontroller = NULL;
 }

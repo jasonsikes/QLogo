@@ -70,5 +70,12 @@ enum PenModeEnum { penModePaint, penModeErase, penModeReverse };
 
 enum TurtleModeEnum { turtleWrap, turtleFence, turtleWindow };
 
+enum SignalsEnum_t : int {
+    noSignal = 0,
+    systemSignal,            // CTRL-Backslash, kill logo            [ THROW "SYSTEM ]
+    toplevelSignal,       // CTRL-C,         kill running script  [ THROW "TOPLEVEL ]
+    pauseSignal            // CTRL-Z,         pause running script [ PAUSE ]
+};
+
 
 #endif // CONSTANTS_H

@@ -32,6 +32,7 @@
 #include "procedurehelper.h"
 #include "propertylists.h"
 #include "vars.h"
+#include "constants.h"
 
 #include <QColor>
 #include <QFile>
@@ -116,6 +117,9 @@ class Kernel {
   DatumP buildContentsList(showContents_t showWhat);
   QString createPrintoutFromContentsList(DatumP contentslist,
                                          bool shouldValidate = true);
+
+  /// Check for interrupts and handle them accordingly.
+  SignalsEnum_t interruptCheck();
 
 public:
   Kernel();

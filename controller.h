@@ -48,13 +48,6 @@ enum ScreenModeEnum {
   splitScreenMode
 };
 
-enum SignalsEnum_t : int {
-    noSignal = 0,
-    quitSignal,            // CTRL-Backslash, kill logo            [ THROW "SYSTEM ]
-    interruptSignal,       // CTRL-C,         kill running script  [ THROW "TOPLEVEL ]
-    pauseSignal            // CTRL-Z,         pause running script [ PAUSE ]
-};
-
 
 class Controller : public QObject {
   Q_OBJECT
@@ -141,6 +134,7 @@ protected:
   QTextStream *writeStream;
 
   QTextStream *dribbleStream;
+
 };
 
 Controller *mainController();
