@@ -183,7 +183,7 @@ DatumP Kernel::excIffalse(DatumP node) {
 // The caller is responsible for dissecting the node and acting appropriately.
 //
 
-DatumP Kernel::excStop(DatumP node) {
+DatumP Kernel:: excStop(DatumP node) {
   if (currentProcedure == nothing) {
     Error::notInsideProcedure(node.astnodeValue()->nodeName);
   }
@@ -301,7 +301,9 @@ DatumP Kernel::excError(DatumP node) {
 
 DatumP Kernel::excPause(DatumP node) {
   ProcedureHelper h(this, node);
-
+  if (currentProcedure == nothing) {
+      Error::notInsideProcedure(node.astnodeValue()->nodeName);
+  }
   return h.ret(pause());
 }
 

@@ -200,7 +200,7 @@ DatumP Kernel::registerError(DatumP anError, bool allowErract,
       e->instructionLine = currentLine;
     }
     DatumP erractP = variables.datumForName(erract);
-    bool shouldPause =
+    bool shouldPause = (currentProcedure != nothing) &&
         (erractP != nothing) && (erractP.datumValue()->size() > 0);
 
     if (allowErract && shouldPause) {
@@ -556,9 +556,11 @@ SignalsEnum_t Kernel::interruptCheck()
 {
     SignalsEnum_t latestSignal = mainController()->latestSignal();
     if (latestSignal == toplevelSignal) {
-        Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
+        if (currentProcedure != nothing)
+            Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
     } else if (latestSignal == pauseSignal) {
-        pause();
+        if (currentProcedure != nothing)
+            pause();
     } else if (latestSignal == systemSignal) {
         Error::throwError(DatumP(new Word("SYSTEM")), nothing);
     }
