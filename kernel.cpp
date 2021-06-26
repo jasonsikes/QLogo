@@ -635,8 +635,12 @@ DatumP Kernel::excErrorNoGui(DatumP node) {
 }
 
 DatumP Kernel::pause() {
+    if (isPausing) {
+        sysPrint("Already Pausing");
+        return nothing;
+    }
   ProcedureScope procScope(this, nothing);
-  PauseScope levelScope(&pauseLevel);
+  isPausing = true;
   StreamRedirect streamScope(this, NULL, NULL);
 
   sysPrint("Pausing...\n");
@@ -651,9 +655,11 @@ DatumP Kernel::pause() {
       if ((e->code == 14) && (e->tag.wordValue()->keyValue() == "PAUSE")) {
         DatumP retval = e->output;
         registerError(nothing);
+        isPausing = false;
         return retval;
       }
       if ((e->code == 14) && (e->tag.wordValue()->keyValue() == "TOPLEVEL")) {
+          isPausing = false;
         throw e;
       }
       sysPrint(e->errorText.printValue());
@@ -661,5 +667,6 @@ DatumP Kernel::pause() {
       registerError(nothing);
     }
   }
+  isPausing = false;
   return nothing;
 }

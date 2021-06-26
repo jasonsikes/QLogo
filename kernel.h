@@ -57,6 +57,7 @@ class Kernel {
   int pauseLevel = 0;
   int procedureIterationDepth = 0;
   bool isRunningMacroResult = false;
+  bool isPausing = false;
 
   QVector<QColor> palette;
   PropertyLists plists;
@@ -479,18 +480,6 @@ class ProcedureScope {
 public:
   ProcedureScope(Kernel *exec, DatumP procname);
   ~ProcedureScope();
-};
-
-class PauseScope {
-  int *pauseLevelStore;
-
-public:
-  PauseScope(int *pauseLevelPtr) {
-    pauseLevelStore = pauseLevelPtr;
-    ++(*pauseLevelStore);
-  }
-
-  ~PauseScope() { --(*pauseLevelStore); }
 };
 
 class StreamRedirect {
