@@ -37,8 +37,8 @@ enum messageCategory : message_t {
     W_INITIALIZE,           // The initialization message, either request or response
 
     C_CONSOLE_PRINT_STRING, // Print text to the GUI
-    C_CONSOLE_REQUEST_LINE, // Ask the GUI for a raw line.
-    C_CONSOLE_REQUEST_CHAR, // Ask the GUI for a single char.
+    C_CONSOLE_REQUEST_LINE, // Ask the GUI for a raw line
+    C_CONSOLE_REQUEST_CHAR, // Ask the GUI for a single char
     C_CONSOLE_RAWLINE_READ, // A line returned from the GUI
     C_CONSOLE_CHAR_READ,    // A char returned from the GUI
     C_CONSOLE_SET_FONT_NAME,// Set the console font name
@@ -73,8 +73,8 @@ enum TurtleModeEnum { turtleWrap, turtleFence, turtleWindow };
 enum SignalsEnum_t : int {
     noSignal = 0,
     systemSignal,            // CTRL-Backslash, kill logo            [ THROW "SYSTEM ]
-    toplevelSignal,       // CTRL-C,         kill running script  [ THROW "TOPLEVEL ]
-    pauseSignal            // CTRL-Z,         pause running script [ PAUSE ]
+    toplevelSignal,          // CTRL-C,         kill running script  [ THROW "TOPLEVEL ]
+    pauseSignal              // CTRL-Z,         pause running script [ PAUSE ]
 };
 
 

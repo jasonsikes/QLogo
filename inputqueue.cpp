@@ -41,6 +41,7 @@ void InputQueue::startQueue()
     thread.start();
 }
 
+// TODO: The names getMessage() and receiveMessage() are ambiguous.
 QByteArray InputQueue::getMessage()
 {
     // Wait for a message signal from thread.

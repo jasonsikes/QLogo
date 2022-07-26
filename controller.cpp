@@ -95,7 +95,6 @@ Controller::Controller(QObject *parent) : QObject(parent) {
 }
 
 Controller::~Controller() {
-    restoreSignals();
     delete kernel;
     _maincontroller = NULL;
 }
@@ -146,6 +145,8 @@ int Controller::run(void) {
   while (shouldContinue) {
     shouldContinue = kernel->getLineAndRunIt();
   }
+
+  restoreSignals();
 
   return 0;
 }
