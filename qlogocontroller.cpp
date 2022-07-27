@@ -37,7 +37,6 @@ void QLogoController::systemStop()
 {
     messageQueue.stopQueue();
 
-    qDebug() <<"We are done";
     setDribble("");
     QApplication::quit();
 }
