@@ -35,6 +35,10 @@ QLogoController::QLogoController(QObject *parent) : Controller(parent)
 
 void QLogoController::systemStop()
 {
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)W_CLOSE_PIPE;
+    });
+
     messageQueue.stopQueue();
 
     qDebug() <<"We are done";
@@ -90,6 +94,16 @@ message_t QLogoController::getMessage()
         labelFontName = textFontName;
         break;
     }
+    case S_SYSTEM:
+        Error::throwError(DatumP(new Word("SYSTEM")), nothing);
+        break;
+    case S_TOPLEVEL:
+        qDebug() <<"TOPLEVEL triggered";
+        Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
+        break;
+    case S_PAUSE:
+        Error::throwError(DatumP(new Word("PAUSE")), nothing);
+        break;
     case C_CONSOLE_RAWLINE_READ:
         bufferStream >> rawLine;
         break;

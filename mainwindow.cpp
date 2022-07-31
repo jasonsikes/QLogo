@@ -124,7 +124,12 @@ void MainWindow::closeEvent(QCloseEvent *event)
     // Tell the process to die, then ignore.
     // Because when the process dies another signal will be sent to close the application.
     if (pid > 0) {
-        kill(pid, SIGINT);
+        sendMessage([&](QDataStream *out) {
+            *out
+            << (message_t)S_SYSTEM;
+        });
+        logoProcess->closeWriteChannel();
+
         event->ignore();
     } else {
         event->accept();
@@ -212,6 +217,11 @@ void MainWindow::readStandardOutput()
         case W_INITIALIZE:
         {
             initialize();
+            break;
+        }
+        case W_CLOSE_PIPE:
+        {
+            logoProcess->closeWriteChannel();
             break;
         }
         case C_CONSOLE_PRINT_STRING:

@@ -35,6 +35,11 @@ using message_t = quint8;
 enum messageCategory : message_t {
     W_ZERO = 0,             // Zeroes get ignored
     W_INITIALIZE,           // The initialization message, either request or response
+    W_CLOSE_PIPE,           //The interpreter tells the GUI to close the iter-process pipe
+
+    S_SYSTEM,             // SYSTEM signal (End everything)
+    S_TOPLEVEL,           // TOPLEVEL signal (End currently-running procedure, drop back to prompt)
+    S_PAUSE,              // PAUSE signal (stop currently running procedure, may resume later)
 
     C_CONSOLE_PRINT_STRING, // Print text to the GUI
     C_CONSOLE_REQUEST_LINE, // Ask the GUI for a raw line

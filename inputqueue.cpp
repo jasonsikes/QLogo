@@ -22,6 +22,10 @@ void InputQueueThread::run()
         Q_ASSERT(dataread == sizeof(qint64));
         message.resize(datalen);
         dataread = read(STDIN_FILENO, message.data(), datalen);
+        if (dataread <= 0) {
+            // Like tears in rain, time to die.
+            return;
+        }
         Q_ASSERT(dataread == datalen);
         emit sendMessage(message);
     }
@@ -57,7 +61,6 @@ void InputQueue::receiveMessage(QByteArray aMessage)
 
 void InputQueue::stopQueue()
 {
-    // Close stdin which will interrupt the thread.
-    close(STDIN_FILENO);
+    // The QLogo GUI closes the pipe so there is nothing to do except wait.
     thread.wait();
 }
