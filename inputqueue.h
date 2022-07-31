@@ -39,12 +39,8 @@ public:
     /// Stop the input thread.
     void stopQueue();
 
-    /// Check for a message.
-    /// Does not block.
-    bool isMessageAvailable();
-
     /// Get a message.
-    /// Will block until message is available.
+    /// Will wait until message is available.
     QByteArray getMessage();
 };
 
