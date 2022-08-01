@@ -190,6 +190,9 @@ DatumP Kernel::excArc(DatumP node) {
   double angle = h.numberAtIndex(0);
   double radius = h.numberAtIndex(1);
 
+  // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
+  angle = 0 - angle;
+
   if ((angle < -360) || (angle > 360))
     angle = 360;
 
