@@ -44,6 +44,20 @@
 
 SignalsEnum_t lastSignal = noSignal;
 
+#ifdef _WIN32
+
+static void initSignals()
+{
+    //TODO: I need to find out how to handle keyboard interrupts in Windows
+}
+
+static void restoreSignals()
+{
+
+}
+
+#else
+
 // Not a part of Controller because we are handling interrupts
 static void handle_signal(int sig)
 {
@@ -76,6 +90,7 @@ static void restoreSignals()
     signal(SIGQUIT, SIG_DFL);
 }
 
+#endif
 
 Controller *_maincontroller = NULL;
 qreal initialBoundXY = 150;
