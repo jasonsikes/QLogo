@@ -223,7 +223,8 @@ DatumP Kernel::excCatch(DatumP node) {
         KernelMethod method = retval.astnodeValue()->kernel;
         if (method == &Kernel::excStop) {
             retval = nothing;
-          } else if ((method == &Kernel::excOutput) || (method == &Kernel::excDotMaybeoutput) || ((method == &Kernel::excStop) && (retval.astnodeValue()->countOfChildren() > 0))) {
+          } else if ((method == &Kernel::excOutput) || (method == &Kernel::excDotMaybeoutput) ||
+                     ((method == &Kernel::excStop) && (retval.astnodeValue()->countOfChildren() > 0))) {
             DatumP p = retval.astnodeValue()->childAtIndex(0);
             KernelMethod temp_method = p.astnodeValue()->kernel;
             DatumP temp_retval = (this->*temp_method)(p);

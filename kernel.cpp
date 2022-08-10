@@ -658,7 +658,8 @@ DatumP Kernel::pause() {
         isPausing = false;
         return retval;
       }
-      if ((e->code == 14) && (e->tag.wordValue()->keyValue() == "TOPLEVEL")) {
+      if ((e->code == 14) && ((e->tag.wordValue()->keyValue() == "TOPLEVEL")
+                              || (e->tag.wordValue()->keyValue() == "SYSTEM"))) {
           isPausing = false;
         throw e;
       }
