@@ -894,8 +894,15 @@ QList<DatumP> *Parser::astFromList(List *aList) {
     aList->astList.clear();
     advanceToken();
 
-    while (currentToken != nothing) {
-      aList->astList.push_back(parseExp());
+    try {
+        while (currentToken != nothing) {
+            aList->astList.push_back(parseExp());
+        }
+    } catch (Error *e) {
+        // If there was a syntax error, then delete the parsed list
+        aList->astList.clear();
+        aList->astParseTimeStamp = 0;
+        throw e;
     }
   }
   return &aList->astList;
