@@ -1457,21 +1457,21 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["WORD"] = {&Kernel::excWord, 0, 2, -1};
   stringToCmd["LIST"] = {&Kernel::excList, 0, 2, -1};
   stringToCmd["SENTENCE"] = {&Kernel::excSentence, 0, 2, -1};
-  stringToCmd["SE"] = stringToCmd["SENTENCE"];
+  stringToCmd["SE"] = {&Kernel::excSentence, 0, 2, -1};
   stringToCmd["FPUT"] = {&Kernel::excFput, 2, 2, 2};
   stringToCmd["LPUT"] = {&Kernel::excLput, 2, 2, 2};
   stringToCmd["ARRAY"] = {&Kernel::excArray, 1, 1, 2};
   stringToCmd["LISTTOARRAY"] = {&Kernel::excListtoarray, 1, 1, 2};
   stringToCmd["ARRAYTOLIST"] = {&Kernel::excArraytolist, 1, 1, 1};
   stringToCmd["READLIST"] = {&Kernel::excReadlist, 0, 0, 0};
-  stringToCmd["RL"] = stringToCmd["READLIST"];
+  stringToCmd["RL"] = {&Kernel::excReadlist, 0, 0, 0};
   stringToCmd["READWORD"] = {&Kernel::excReadword, 0, 0, 0};
-  stringToCmd["RW"] = stringToCmd["READWORD"];
+  stringToCmd["RW"] = {&Kernel::excReadword, 0, 0, 0};
   stringToCmd["READRAWLINE"] = {&Kernel::excReadrawline, 0, 0, 0};
   stringToCmd["READCHAR"] = {&Kernel::excReadchar, 0, 0, 0};
-  stringToCmd["RC"] = stringToCmd["READCHAR"];
+  stringToCmd["RC"] = {&Kernel::excReadchar, 0, 0, 0};
   stringToCmd["READCHARS"] = {&Kernel::excReadchars, 1, 1, 1};
-  stringToCmd["RCS"] = stringToCmd["READCHARS"];
+  stringToCmd["RCS"] = {&Kernel::excReadchars, 1, 1, 1};
   stringToCmd["SHELL"] = {&Kernel::excShell, 1, 1, 2};
 
   stringToCmd["SETPREFIX"] = {&Kernel::excSetprefix, 1, 1, 1};
@@ -1490,14 +1490,14 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["SETREADPOS"] = {&Kernel::excSetreadpos, 1, 1, 1};
   stringToCmd["SETWRITEPOS"] = {&Kernel::excSetwritepos, 1, 1, 1};
   stringToCmd["EOFP"] = {&Kernel::excEofp, 0, 0, 0};
-  stringToCmd["EOF?"] = stringToCmd["EOFP"];
+  stringToCmd["EOF?"] = {&Kernel::excEofp, 0, 0, 0};
   stringToCmd["KEYP"] = {&Kernel::excKeyp, 0, 0, 0};
-  stringToCmd["KEY?"] = stringToCmd["KEYP"];
+  stringToCmd["KEY?"] = {&Kernel::excKeyp, 0, 0, 0};
   stringToCmd["DRIBBLE"] = {&Kernel::excDribble, 1, 1, 1};
   stringToCmd["NODRIBBLE"] = {&Kernel::excNodribble, 0, 0, 0};
 
   stringToCmd["CLEARTEXT"] = {&Kernel::excCleartext, 0, 0, 0};
-  stringToCmd["CT"] = stringToCmd["CLEARTEXT"];
+  stringToCmd["CT"] = {&Kernel::excCleartext, 0, 0, 0};
   stringToCmd["CURSORINSERT"] = {ifGUI(&Kernel::excCursorInsert), 0, 0, 0};
   stringToCmd["CURSOROVERWRITE"] = {ifGUI(&Kernel::excCursorOverwrite), 0, 0, 0};
   stringToCmd["CURSORMODE"] = {ifGUI(&Kernel::excCursorMode), 0, 0, 0};
@@ -1505,17 +1505,17 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["CLOSE"] = {&Kernel::excClose, 1, 1, 1};
   stringToCmd["CLOSEALL"] = {&Kernel::excCloseall, 0, 0, 0};
   stringToCmd["ERASEFILE"] = {&Kernel::excErasefile, 1, 1, 1};
-  stringToCmd["ERF"] = stringToCmd["ERASEFILE"];
+  stringToCmd["ERF"] = {&Kernel::excErasefile, 1, 1, 1};
 
   stringToCmd["FIRST"] = {&Kernel::excFirst, 1, 1, 1};
   stringToCmd["LAST"] = {&Kernel::excLast, 1, 1, 1};
   stringToCmd["BUTFIRST"] = {&Kernel::excButfirst, 1, 1, 1};
-  stringToCmd["BF"] = stringToCmd["BUTFIRST"];
+  stringToCmd["BF"] = {&Kernel::excButfirst, 1, 1, 1};
   stringToCmd["FIRSTS"] = {&Kernel::excFirsts, 1, 1, 1};
   stringToCmd["BUTFIRSTS"] = {&Kernel::excButfirsts, 1, 1, 1};
-  stringToCmd["BFS"] = stringToCmd["BUTFIRSTS"];
+  stringToCmd["BFS"] = {&Kernel::excButfirsts, 1, 1, 1};
   stringToCmd["BUTLAST"] = {&Kernel::excButlast, 1, 1, 1};
-  stringToCmd["BL"] = stringToCmd["BUTLAST"];
+  stringToCmd["BL"] = {&Kernel::excButlast, 1, 1, 1};
   stringToCmd["ITEM"] = {&Kernel::excItem, 2, 2, 2};
 
   stringToCmd["SETITEM"] = {&Kernel::excSetitem, 3, 3, 3};
@@ -1524,28 +1524,28 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd[".SETITEM"] = {&Kernel::excDotSetitem, 3, 3, 3};
 
   stringToCmd["WORDP"] = {&Kernel::excWordp, 1, 1, 1};
-  stringToCmd["WORD?"] = stringToCmd["WORDP"];
+  stringToCmd["WORD?"] = {&Kernel::excWordp, 1, 1, 1};
   stringToCmd["LISTP"] = {&Kernel::excListp, 1, 1, 1};
-  stringToCmd["LIST?"] = stringToCmd["LISTP"];
+  stringToCmd["LIST?"] = {&Kernel::excListp, 1, 1, 1};
   stringToCmd["ARRAYP"] = {&Kernel::excArrayp, 1, 1, 1};
-  stringToCmd["ARRAY?"] = stringToCmd["ARRAYP"];
+  stringToCmd["ARRAY?"] = {&Kernel::excArrayp, 1, 1, 1};
   stringToCmd["EMPTYP"] = {&Kernel::excEmptyp, 1, 1, 1};
-  stringToCmd["EMPTY?"] = stringToCmd["EMPTYP"];
+  stringToCmd["EMPTY?"] = {&Kernel::excEmptyp, 1, 1, 1};
   stringToCmd["EQUALP"] = {&Kernel::excEqualp, 2, 2, 2};
-  stringToCmd["EQUAL?"] = stringToCmd["EQUALP"];
+  stringToCmd["EQUAL?"] = {&Kernel::excEqualp, 2, 2, 2};
   stringToCmd["NOTEQUALP"] = {&Kernel::excNotequal, 2, 2, 2};
-  stringToCmd["NOTEQUAL?"] = stringToCmd["NOTEQUALP"];
+  stringToCmd["NOTEQUAL?"] = {&Kernel::excNotequal, 2, 2, 2};
   stringToCmd["BEFOREP"] = {&Kernel::excBeforep, 2, 2, 2};
-  stringToCmd["BEFORE?"] = stringToCmd["BEFOREP"];
+  stringToCmd["BEFORE?"] = {&Kernel::excBeforep, 2, 2, 2};
   stringToCmd[".EQ"] = {&Kernel::excDotEq, 2, 2, 2};
   stringToCmd["MEMBERP"] = {&Kernel::excMemberp, 2, 2, 2};
-  stringToCmd["MEMBER?"] = stringToCmd["MEMBERP"];
+  stringToCmd["MEMBER?"] = {&Kernel::excMemberp, 2, 2, 2};
   stringToCmd["SUBSTRINGP"] = {&Kernel::excSubstringp, 2, 2, 2};
-  stringToCmd["SUBSTRING?"] = stringToCmd["SUBSTRINGP"];
+  stringToCmd["SUBSTRING?"] = {&Kernel::excSubstringp, 2, 2, 2};
   stringToCmd["NUMBERP"] = {&Kernel::excNumberp, 1, 1, 1};
-  stringToCmd["NUMBER?"] = stringToCmd["NUMBERP"];
+  stringToCmd["NUMBER?"] = {&Kernel::excNumberp, 1, 1, 1};
   stringToCmd["VBARREDP"] = {&Kernel::excVbarredp, 1, 1, 1};
-  stringToCmd["VBARRED?"] = stringToCmd["VBARREDP"];
+  stringToCmd["VBARRED?"] = {&Kernel::excVbarredp, 1, 1, 1};
 
   stringToCmd["COUNT"] = {&Kernel::excCount, 1, 1, 1};
   stringToCmd["ASCII"] = {&Kernel::excAscii, 1, 1, 1};
@@ -1560,10 +1560,10 @@ Parser::Parser(Kernel *aKernel) {
 
   stringToCmd["MINUS"] = {&Kernel::excMinus, 1, 1, 1};
   stringToCmd["-"] = {&Kernel::excMinus, 1, 1, 1};
-  stringToCmd["--"] = stringToCmd["-"];
+  stringToCmd["--"] = {&Kernel::excMinus, 1, 1, 1};
 
   stringToCmd["PRINT"] = {&Kernel::excPrint, 0, 1, -1};
-  stringToCmd["PR"] = stringToCmd["PRINT"];
+  stringToCmd["PR"] = {&Kernel::excPrint, 0, 1, -1};
   stringToCmd["TYPE"] = {&Kernel::excType, 0, 1, -1};
   stringToCmd["SHOW"] = {&Kernel::excShow, 0, 1, -1};
   stringToCmd["MAKE"] = {&Kernel::excMake, 2, 2, 2};
@@ -1576,7 +1576,7 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["SETCURSOR"] = {ifGUI(&Kernel::excSetcursor), 1, 1, 1};
   stringToCmd["CURSOR"] = {ifGUI(&Kernel::excCursor), 0, 0, 0};
   stringToCmd["SETTEXTCOLOR"] = {ifGUI(&Kernel::excSettextcolor), 1, 2, 2};
-  stringToCmd["SETTC"] = stringToCmd["SETTEXTCOLOR"];
+  stringToCmd["SETTC"] = {ifGUI(&Kernel::excSettextcolor), 1, 2, 2};
   stringToCmd["SETTEXTSIZE"] = {ifGUI(&Kernel::excSettextsize), 1, 1, 1};
   stringToCmd["INCREASEFONT"] = {ifGUI(&Kernel::excIncreasefont), 0, 0, 0};
   stringToCmd["DECREASEFONT"] = {ifGUI(&Kernel::excDecreasefont), 0, 0, 0};
@@ -1587,26 +1587,26 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["ALLFONTS"] = {ifGUI(&Kernel::excAllfonts), 0, 0, 0};
 
   stringToCmd["FORWARD"] = {ifGUI(&Kernel::excForward), 1, 1, 1};
-  stringToCmd["FD"] = stringToCmd["FORWARD"];
+  stringToCmd["FD"] = {ifGUI(&Kernel::excForward), 1, 1, 1};
   stringToCmd["BACK"] = {ifGUI(&Kernel::excBack), 1, 1, 1};
-  stringToCmd["BK"] = stringToCmd["BACK"];
+  stringToCmd["BK"] = {ifGUI(&Kernel::excBack), 1, 1, 1};
   stringToCmd["RIGHT"] = {ifGUI(&Kernel::excRight), 1, 1, 1};
-  stringToCmd["RT"] = stringToCmd["RIGHT"];
+  stringToCmd["RT"] = {ifGUI(&Kernel::excRight), 1, 1, 1};
   stringToCmd["LEFT"] = {ifGUI(&Kernel::excLeft), 1, 1, 1};
-  stringToCmd["LT"] = stringToCmd["LEFT"];
+  stringToCmd["LT"] = {ifGUI(&Kernel::excLeft), 1, 1, 1};
   stringToCmd["CLEARSCREEN"] = {ifGUI(&Kernel::excClearscreen), 0, 0, 0};
-  stringToCmd["CS"] = stringToCmd["CLEARSCREEN"];
+  stringToCmd["CS"] = {ifGUI(&Kernel::excClearscreen), 0, 0, 0};
   stringToCmd["CLEAN"] = {ifGUI(&Kernel::excClean), 0, 0, 0};
   stringToCmd["PENUP"] = {ifGUI(&Kernel::excPenup), 0, 0, 0};
-  stringToCmd["PU"] = stringToCmd["PENUP"];
+  stringToCmd["PU"] = {ifGUI(&Kernel::excPenup), 0, 0, 0};
   stringToCmd["PENDOWN"] = {ifGUI(&Kernel::excPendown), 0, 0, 0};
-  stringToCmd["PD"] = stringToCmd["PENDOWN"];
+  stringToCmd["PD"] = {ifGUI(&Kernel::excPendown), 0, 0, 0};
   stringToCmd["PENDOWNP"] = {ifGUI(&Kernel::excPendownp), 0, 0, 0};
-  stringToCmd["PENDOWN?"] = stringToCmd["PENDOWNP"];
+  stringToCmd["PENDOWN?"] = {ifGUI(&Kernel::excPendownp), 0, 0, 0};
   stringToCmd["HIDETURTLE"] = {ifGUI(&Kernel::excHideturtle), 0, 0, 0};
-  stringToCmd["HT"] = stringToCmd["HIDETURTLE"];
+  stringToCmd["HT"] = {ifGUI(&Kernel::excHideturtle), 0, 0, 0};
   stringToCmd["SHOWTURTLE"] = {ifGUI(&Kernel::excShowturtle), 0, 0, 0};
-  stringToCmd["ST"] = stringToCmd["SHOWTURTLE"];
+  stringToCmd["ST"] = {ifGUI(&Kernel::excShowturtle), 0, 0, 0};
   // stringToCmd["SETXYZ"]         = {&Kernel::excSetXYZ, 3,3,3};
   stringToCmd["SETXY"] = {ifGUI(&Kernel::excSetXY), 2, 2, 2};
   stringToCmd["SETX"] = {ifGUI(&Kernel::excSetX), 1, 1, 1};
@@ -1617,7 +1617,7 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["HOME"] = {ifGUI(&Kernel::excHome), 0, 0, 0};
   stringToCmd["HEADING"] = {ifGUI(&Kernel::excHeading), 0, 0, 1};
   stringToCmd["SETHEADING"] = {ifGUI(&Kernel::excSetheading), 1, 1, 2};
-  stringToCmd["SETH"] = stringToCmd["SETHEADING"];
+  stringToCmd["SETH"] = {ifGUI(&Kernel::excSetheading), 1, 1, 2};
   stringToCmd["ARC"] = {ifGUI(&Kernel::excArc), 2, 2, 2};
   stringToCmd["TOWARDS"] = {ifGUI(&Kernel::excTowards), 1, 1, 1};
   stringToCmd["SCRUNCH"] = {ifGUI(&Kernel::excScrunch), 0, 0, 0};
@@ -1626,25 +1626,25 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["LABELHEIGHT"] = {ifGUI(&Kernel::excLabelheight), 0, 0, 0};
   stringToCmd["SETLABELHEIGHT"] = {ifGUI(&Kernel::excSetlabelheight), 1, 1, 1};
   stringToCmd["SHOWNP"] = {ifGUI(&Kernel::excShownp), 0, 0, 0};
-  stringToCmd["SHOWN?"] = stringToCmd["SHOWNP"];
+  stringToCmd["SHOWN?"] = {ifGUI(&Kernel::excShownp), 0, 0, 0};
   stringToCmd["SETPENCOLOR"] = {ifGUI(&Kernel::excSetpencolor), 1, 1, 1};
-  stringToCmd["SETPC"] = stringToCmd["SETPENCOLOR"];
+  stringToCmd["SETPC"] = {ifGUI(&Kernel::excSetpencolor), 1, 1, 1};
   stringToCmd["PENCOLOR"] = {ifGUI(&Kernel::excPencolor), 0, 0, 0};
-  stringToCmd["PC"] = stringToCmd["PENCOLOR"];
+  stringToCmd["PC"] = {ifGUI(&Kernel::excPencolor), 0, 0, 0};
   stringToCmd["SETPALETTE"] = {ifGUI(&Kernel::excSetpalette), 2, 2, 2};
   stringToCmd["PALETTE"] = {ifGUI(&Kernel::excPalette), 1, 1, 1};
   stringToCmd["BACKGROUND"] = {ifGUI(&Kernel::excBackground), 0, 0, 0};
-  stringToCmd["BG"] = stringToCmd["BACKGROUND"];
+  stringToCmd["BG"] = {ifGUI(&Kernel::excBackground), 0, 0, 0};
   stringToCmd["SETBACKGROUND"] = {ifGUI(&Kernel::excSetbackground), 1, 1, 1};
-  stringToCmd["SETBG"] = stringToCmd["SETBACKGROUND"];
+  stringToCmd["SETBG"] = {ifGUI(&Kernel::excSetbackground), 1, 1, 1};
   stringToCmd["SAVEPICT"] = {ifGUI(&Kernel::excSavepict), 1, 1, 1};
 
   stringToCmd["PENPAINT"] = {ifGUI(&Kernel::excPenpaint), 0, 0, 0};
-  stringToCmd["PPT"] = stringToCmd["PENPAINT"];
+  stringToCmd["PPT"] = {ifGUI(&Kernel::excPenpaint), 0, 0, 0};
   stringToCmd["PENERASE"] = {ifGUI(&Kernel::excPenerase), 0, 0, 0};
-  stringToCmd["PE"] = stringToCmd["PENERASE"];
+  stringToCmd["PE"] = {ifGUI(&Kernel::excPenerase), 0, 0, 0};
   stringToCmd["PENREVERSE"] = {ifGUI(&Kernel::excPenreverse), 0, 0, 0};
-  stringToCmd["PX"] = stringToCmd["PENREVERSE"];
+  stringToCmd["PX"] = {ifGUI(&Kernel::excPenreverse), 0, 0, 0};
   stringToCmd["PENMODE"] = {ifGUI(&Kernel::excPenmode), 0, 0, 0};
   stringToCmd["SETPENSIZE"] = {ifGUI(&Kernel::excSetpensize), 1, 1, 1};
   stringToCmd["PENSIZE"] = {ifGUI(&Kernel::excPensize), 0, 0, 0};
@@ -1661,15 +1661,15 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["SETBOUNDS"] = {ifGUI(&Kernel::excSetbounds), 2, 2, 2};
 
   stringToCmd["TEXTSCREEN"] = {ifGUI(&Kernel::excTextscreen), 0, 0, 0};
-  stringToCmd["TS"] = stringToCmd["TEXTSCREEN"];
+  stringToCmd["TS"] = {ifGUI(&Kernel::excTextscreen), 0, 0, 0};
   stringToCmd["FULLSCREEN"] = {ifGUI(&Kernel::excFullscreen), 0, 0, 0};
-  stringToCmd["FS"] = stringToCmd["FULLSCREEN"];
+  stringToCmd["FS"] = {ifGUI(&Kernel::excFullscreen), 0, 0, 0};
   stringToCmd["SPLITSCREEN"] = {ifGUI(&Kernel::excSplitscreen), 0, 0, 0};
-  stringToCmd["SS"] = stringToCmd["SPLITSCREEN"];
+  stringToCmd["SS"] = {ifGUI(&Kernel::excSplitscreen), 0, 0, 0};
   stringToCmd["SCREENMODE"] = {ifGUI(&Kernel::excScreenmode), 0, 0, 0};
 
   stringToCmd["BUTTONP"] = {ifGUI(&Kernel::excButtonp), 0, 0, 0};
-  stringToCmd["BUTTON?"] = stringToCmd["BUTTONP"];
+  stringToCmd["BUTTON?"] = {ifGUI(&Kernel::excButtonp), 0, 0, 0};
   stringToCmd["BUTTON"] = {ifGUI(&Kernel::excButton), 0, 0, 0};
 
   stringToCmd["MATRIX"] = {ifGUI(&Kernel::excMatrix), 0, 0, 0}; // for debugging
@@ -1705,13 +1705,13 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["FORM"] = {&Kernel::excForm, 3, 3, 3};
 
   stringToCmd["LESSP"] = {&Kernel::excLessp, 2, 2, 2};
-  stringToCmd["LESS?"] = stringToCmd["LESSP"];
+  stringToCmd["LESS?"] = {&Kernel::excLessp, 2, 2, 2};
   stringToCmd["GREATERP"] = {&Kernel::excGreaterp, 2, 2, 2};
-  stringToCmd["GREATER?"] = stringToCmd["GREATERP"];
+  stringToCmd["GREATER?"] = {&Kernel::excGreaterp, 2, 2, 2};
   stringToCmd["LESSEQUALP"] = {&Kernel::excLessequalp, 2, 2, 2};
-  stringToCmd["LESSEQUAL?"] = stringToCmd["LESSEQUALP"];
+  stringToCmd["LESSEQUAL?"] = {&Kernel::excLessequalp, 2, 2, 2};
   stringToCmd["GREATEREQUALP"] = {&Kernel::excGreaterequalp, 2, 2, 2};
-  stringToCmd["GREATEREQUAL?"] = stringToCmd["GREATEREQUALP"];
+  stringToCmd["GREATEREQUAL?"] = {&Kernel::excGreaterequalp, 2, 2, 2};
 
   stringToCmd["DEFINE"] = {&Kernel::excDefine, 2, 2, 2};
   stringToCmd["TEXT"] = {&Kernel::excText, 1, 1, 1};
@@ -1726,15 +1726,15 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["PLIST"] = {&Kernel::excPlist, 1, 1, 1};
 
   stringToCmd["PROCEDUREP"] = {&Kernel::excProcedurep, 1, 1, 1};
-  stringToCmd["PROCEDURE?"] = stringToCmd["PROCEDUREP"];
+  stringToCmd["PROCEDURE?"] = {&Kernel::excProcedurep, 1, 1, 1};
   stringToCmd["PRIMITIVEP"] = {&Kernel::excPrimitivep, 1, 1, 1};
-  stringToCmd["PRIMITIVE?"] = stringToCmd["PRIMITIVEP"];
+  stringToCmd["PRIMITIVE?"] = {&Kernel::excPrimitivep, 1, 1, 1};
   stringToCmd["DEFINEDP"] = {&Kernel::excDefinedp, 1, 1, 1};
-  stringToCmd["DEFINED?"] = stringToCmd["DEFINEDP"];
+  stringToCmd["DEFINED?"] = {&Kernel::excDefinedp, 1, 1, 1};
   stringToCmd["NAMEP"] = {&Kernel::excNamep, 1, 1, 1};
-  stringToCmd["NAME?"] = stringToCmd["NAMEP"];
+  stringToCmd["NAME?"] = {&Kernel::excNamep, 1, 1, 1};
   stringToCmd["PLISTP"] = {&Kernel::excPlistp, 1, 1, 1};
-  stringToCmd["PLIST?"] = stringToCmd["PLISTP"];
+  stringToCmd["PLIST?"] = {&Kernel::excPlistp, 1, 1, 1};
 
   stringToCmd["CONTENTS"] = {&Kernel::excContents, 0, 0, 0};
   stringToCmd["BURIED"] = {&Kernel::excBuried, 0, 0, 0};
@@ -1748,11 +1748,11 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["NODES"] = {&Kernel::excNodes, 0, 0, 0};
 
   stringToCmd["PRINTOUT"] = {&Kernel::excPrintout, 1, 1, 1};
-  stringToCmd["PO"] = stringToCmd["PRINTOUT"];
+  stringToCmd["PO"] = {&Kernel::excPrintout, 1, 1, 1};
   stringToCmd["POT"] = {&Kernel::excPot, 1, 1, 1};
 
   stringToCmd["ERASE"] = {&Kernel::excErase, 1, 1, 1};
-  stringToCmd["ER"] = stringToCmd["ERASE"];
+  stringToCmd["ER"] = {&Kernel::excErase, 1, 1, 1};
   stringToCmd["ERALL"] = {&Kernel::excErall, 0, 0, 0};
   stringToCmd["ERPS"] = {&Kernel::excErps, 0, 0, 0};
   stringToCmd["ERNS"] = {&Kernel::excErns, 0, 0, 0};
@@ -1760,17 +1760,17 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["BURY"] = {&Kernel::excBury, 1, 1, 1};
   stringToCmd["UNBURY"] = {&Kernel::excUnbury, 1, 1, 1};
   stringToCmd["BURIEDP"] = {&Kernel::excBuriedp, 1, 1, 1};
-  stringToCmd["BURIED?"] = stringToCmd["BURIEDP"];
+  stringToCmd["BURIED?"] = {&Kernel::excBuriedp, 1, 1, 1};
   stringToCmd["TRACE"] = {&Kernel::excTrace, 1, 1, 1};
   stringToCmd["UNTRACE"] = {&Kernel::excUntrace, 1, 1, 1};
   stringToCmd["TRACEDP"] = {&Kernel::excTracedp, 1, 1, 1};
-  stringToCmd["TRACED?"] = stringToCmd["TRACEDP"];
+  stringToCmd["TRACED?"] = {&Kernel::excTracedp, 1, 1, 1};
   stringToCmd["STEP"] = {&Kernel::excStep, 1, 1, 1};
   stringToCmd["UNSTEP"] = {&Kernel::excUnstep, 1, 1, 1};
   stringToCmd["STEPPEDP"] = {&Kernel::excSteppedp, 1, 1, 1};
-  stringToCmd["STEPPED?"] = stringToCmd["STEPPEDP"];
+  stringToCmd["STEPPED?"] = {&Kernel::excSteppedp, 1, 1, 1};
   stringToCmd["EDIT"] = {&Kernel::excEdit, 0, -1, 1};
-  stringToCmd["ED"] = stringToCmd["EDIT"];
+  stringToCmd["ED"] = {&Kernel::excEdit, 0, -1, 1};
   stringToCmd["EDITFILE"] = {&Kernel::excEditfile, 1, 1, 1};
   stringToCmd["SAVE"] = {&Kernel::excSave, 0, -1, 1};
   stringToCmd["LOAD"] = {&Kernel::excLoad, 1, 1, 1};
@@ -1786,18 +1786,18 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["IFELSE"] = {&Kernel::excIfelse, 3, 3, 3};
   stringToCmd["TEST"] = {&Kernel::excTest, 1, 1, 1};
   stringToCmd["IFTRUE"] = {&Kernel::excIftrue, 1, 1, 1};
-  stringToCmd["IFT"] = stringToCmd["IFTRUE"];
+  stringToCmd["IFT"] = {&Kernel::excIftrue, 1, 1, 1};
   stringToCmd["IFFALSE"] = {&Kernel::excIffalse, 1, 1, 1};
-  stringToCmd["IFF"] = stringToCmd["IFFALSE"];
+  stringToCmd["IFF"] = {&Kernel::excIffalse, 1, 1, 1};
   stringToCmd["STOP"] = {&Kernel::excStop, 0, 0, 1};
   stringToCmd["OUTPUT"] = {&Kernel::excOutput, 1, 1, 1};
-  stringToCmd["OP"] = stringToCmd["OUTPUT"];
+  stringToCmd["OP"] = {&Kernel::excOutput, 1, 1, 1};
   stringToCmd["CATCH"] = {&Kernel::excCatch, 2, 2, 2};
   stringToCmd["THROW"] = {&Kernel::excThrow, 1, 1, 2};
   stringToCmd["ERROR"] = {&Kernel::excError, 0, 0, 0};
   stringToCmd["PAUSE"] = {&Kernel::excPause, 0, 0, 0};
   stringToCmd["CONTINUE"] = {&Kernel::excContinue, 0, -1, 1};
-  stringToCmd["CO"] = stringToCmd["CONTINUE"];
+  stringToCmd["CO"] = {&Kernel::excContinue, 0, -1, 1};
   stringToCmd["BYE"] = {&Kernel::excBye, 0, 0, 0};
   stringToCmd[".MAYBEOUTPUT"] = {&Kernel::excDotMaybeoutput, 1, 1, 1};
   stringToCmd["TAG"] = {&Kernel::excTag, 1, 1, 1};
@@ -1807,10 +1807,10 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["?"] = {&Kernel::excNamedSlot, 0, 0, 1};
 
   stringToCmd["TO"] = {&Kernel::excTo, -1, -1, -1};
-  stringToCmd[".MACRO"] = stringToCmd["TO"];
-  stringToCmd[".DEFMACRO"] = stringToCmd["DEFINE"];
+  stringToCmd[".MACRO"] = {&Kernel::excTo, -1, -1, -1};
+  stringToCmd[".DEFMACRO"] = {&Kernel::excDefine, 2, 2, 2};
   stringToCmd["MACROP"] = {&Kernel::excMacrop, 1, 1, 1};
-  stringToCmd["MACRO?"] = stringToCmd["MACROP"];
+  stringToCmd["MACRO?"] = {&Kernel::excMacrop, 1, 1, 1};
 
   stringToCmd["GC"] = {&Kernel::excNoop, 0, 0, -1};
   stringToCmd[".SETSEGMENTSIZE"] = {&Kernel::excNoop, 1, 1, 1};
@@ -1819,22 +1819,21 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["REFRESH"] = {&Kernel::excNoop, 0, 0, 0};
   stringToCmd["NOREFRESH"] = {&Kernel::excNoop, 0, 0, 0};
 
-  stringToCmd["+"] = stringToCmd["SUM"]; // {&Kernel::executeWrongUseOf, 0,0,0};
+  stringToCmd["+"] = {&Kernel::excSum, 0, 2, -1};
   stringToCmd["*"] =
-      stringToCmd["PRODUCT"]; // {&Kernel::executeWrongUseOf, 0,0,0};
+      {&Kernel::excProduct, 0, 2, -1};
   stringToCmd["/"] =
-      stringToCmd["QUOTIENT"]; // {&Kernel::executeWrongUseOf, 0,0,0};
+      {&Kernel::excQuotient, 1, 2, 2};
   stringToCmd[">"] =
-      stringToCmd["GREATERP"]; // {&Kernel::executeWrongUseOf, 0,0,0};
+      {&Kernel::excGreaterp, 2, 2, 2};
   stringToCmd["<"] =
-      stringToCmd["LESSP"]; // {&Kernel::executeWrongUseOf, 0,0,0};
+      {&Kernel::excLessp, 2, 2, 2};
   stringToCmd["="] =
-      stringToCmd["EQUALP"]; // {&Kernel::executeWronstringToCmd["PRODUCT"]; //
-                             // gUseOf, 0,0,0};
+      {&Kernel::excEqualp, 2, 2, 2};
   stringToCmd[">="] =
-      stringToCmd["GREATEREQUALP"]; // {&Kernel::executeWrongUseOf, 0,0,0};
+      {&Kernel::excGreaterequalp, 2, 2, 2};
   stringToCmd["<="] =
-      stringToCmd["LESSEQUALP"]; // {&Kernel::executeWrongUseOf, 0,0,0};
+      {&Kernel::excLessequalp, 2, 2, 2};
   stringToCmd["<>"] =
-      stringToCmd["NOTEQUALP"]; // {&Kernel::executeWrongUseOf, 0,0,0};
+      {&Kernel::excNotequal, 2, 2, 2};
 }
