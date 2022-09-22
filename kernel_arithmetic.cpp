@@ -26,8 +26,6 @@
 
 #include "kernel.h"
 
-#include "logocontroller.h"
-#include "qlogocontroller.h"
 
 #include <functional>
 #include <math.h>

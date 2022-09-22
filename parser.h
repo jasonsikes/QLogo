@@ -27,7 +27,6 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum.h"
-//#include "vars.h"
 #include "workspace.h"
 #include <QHash>
 

@@ -26,7 +26,6 @@
 
 #include "kernel.h"
 #include "parser.h"
-//#include <math.h>
 #include <QColor>
 #include <QFont>
 #include <QImage>
@@ -36,8 +35,7 @@
 #include "library.h"
 #include "turtle.h"
 
-#include "logocontroller.h"
-#include "qlogocontroller.h"
+#include "controller.h"
 
 // The maximum depth of procedure iterations before error is thrown.
 const int maxIterationDepth = 1000;

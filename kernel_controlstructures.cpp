@@ -28,10 +28,7 @@
 #include "kernel.h"
 #include "parser.h"
 
-#include "logocontroller.h"
-#include "qlogocontroller.h"
-
-const QString inputlistStr = "*inputlist*";
+static const QString inputlistStr (QStringLiteral("*inputlist*"));
 
 // CONTROL STRUCTURES
 

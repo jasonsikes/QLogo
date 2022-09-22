@@ -25,15 +25,15 @@
 //===----------------------------------------------------------------------===//
 
 #include "parser.h"
+#include "QtCore/qstringliteral.h"
+#include "controller.h"
 #include "error.h"
 #include "kernel.h"
 #include <qdatetime.h>
 #include <qdebug.h>
 
-#include "logocontroller.h"
-#include "qlogocontroller.h"
 
-static const QString specialChars("+-()*%/<>=");
+const QString specialChars(QStringLiteral ("+-()*%/<>="));
 
 char lastNonSpaceChar(const QString &line) {
   char retval = ' ';

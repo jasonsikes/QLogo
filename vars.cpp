@@ -26,9 +26,13 @@
 
 #include "vars.h"
 #include "QDebug"
+#include "QtCore/qstringliteral.h"
 #include <QSet>
 
-const QString tf = "*tf*";
+// UCBLogo allows "if" and "then" to be separate commands.
+// We store the test result in the var table with a special name
+// and I hope that nobody else ever creates a variable with this name.
+static const QString tf(QStringLiteral("*tf*"));
 
 Vars::Vars() { upScope(); }
 

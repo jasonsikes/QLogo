@@ -32,8 +32,7 @@
 #include <QVector3D>
 #include <QVector4D>
 
-#include "logocontroller.h"
-#include "qlogocontroller.h"
+#include "controller.h"
 
 Turtle *_mainTurtle = NULL;
 

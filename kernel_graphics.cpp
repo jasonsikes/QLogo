@@ -26,9 +26,9 @@
 
 #include "error.h"
 #include "kernel.h"
+#include "turtle.h"
 
-#include "logocontroller.h"
-#include "qlogocontroller.h"
+#include "controller.h"
 
 #include <math.h>
 

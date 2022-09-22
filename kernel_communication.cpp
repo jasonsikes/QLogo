@@ -28,8 +28,7 @@
 #include "kernel.h"
 #include "parser.h"
 
-#include "logocontroller.h"
-#include "qlogocontroller.h"
+#include "controller.h"
 
 #include <QByteArray> // for SHELL
 #include <QDir>

@@ -28,8 +28,7 @@
 #include "kernel.h"
 #include "parser.h"
 
-#include "logocontroller.h"
-#include "qlogocontroller.h"
+#include "controller.h"
 
 QString Kernel::executeText(const QString &text) {
   QString inText = text;

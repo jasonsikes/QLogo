@@ -28,7 +28,6 @@
 
 #include <QColor>
 #include <QMatrix4x4>
-#include <map>
 #include "constants.h"
 
 #include "datum.h"

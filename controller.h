@@ -28,8 +28,8 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
+#include "constants.h"
 #include "datum.h"
-#include "turtle.h"
 #include <QColor>
 #include <QImage>
 #include <QObject>
