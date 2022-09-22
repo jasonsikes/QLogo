@@ -265,6 +265,14 @@ void MainWindow::readStandardOutput()
               introduceCanvas();
               break;
             }
+        case C_CANVAS_SET_TURTLE_IS_VISIBLE:
+            {
+              bool isVisible;
+              *dataStream >> isVisible;
+              ui->mainCanvas->setTurtleIsVisible(isVisible);
+              introduceCanvas();
+              break;
+            }
           case C_CANVAS_DRAW_LINE:
             {
               QVector3D a, b;

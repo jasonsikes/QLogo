@@ -208,6 +208,13 @@ void QLogoController::setTurtlePos(const QMatrix4x4 &newTurtlePos)
   });
 }
 
+void QLogoController::setTurtleIsVisible(bool isVisible)
+{
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CANVAS_SET_TURTLE_IS_VISIBLE << isVisible;
+    });
+}
+
 void QLogoController::drawLine(const QVector3D &start, const QVector3D &end, const QColor &startColor, const QColor &endColor)
 {
   sendMessage([&](QDataStream *out) {

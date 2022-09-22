@@ -50,6 +50,7 @@ enum messageCategory : message_t {
     C_CONSOLE_SET_FONT_SIZE,// Set the console font size
 
     C_CANVAS_UPDATE_TURTLE_POS,       // Update the turtle matrix
+    C_CANVAS_SET_TURTLE_IS_VISIBLE,   // Show/hide the turtle
     C_CANVAS_DRAW_LINE,               // Draw a line on the canvas
     C_CANVAS_DRAW_POLYGON,            // Draw a polygon on the canvas
     C_CANVAS_DRAW_LABEL,              // Draw a label on the canvas

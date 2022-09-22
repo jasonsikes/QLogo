@@ -282,7 +282,7 @@ DatumP Kernel::excScrunch(DatumP node) {
 DatumP Kernel::excShowturtle(DatumP node) {
   ProcedureHelper h(this, node);
   mainTurtle()->setIsTurtleVisible(true);
-  mainController()->updateCanvas();
+  mainController()->setTurtleIsVisible(true);
 
   return h.ret();
 }
@@ -290,7 +290,7 @@ DatumP Kernel::excShowturtle(DatumP node) {
 DatumP Kernel::excHideturtle(DatumP node) {
   ProcedureHelper h(this, node);
   mainTurtle()->setIsTurtleVisible(false);
-  mainController()->updateCanvas();
+  mainController()->setTurtleIsVisible(false);
 
   return h.ret();
 }

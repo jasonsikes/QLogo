@@ -44,6 +44,7 @@ public:
     DatumP readchar();
 
     void setTurtlePos(const QMatrix4x4 &newTurtlePos);
+    void setTurtleIsVisible(bool isVisible);
     void drawLine(const QVector3D &start, const QVector3D &end, const QColor &startColor, const QColor &endColor);
     void drawPolygon(const QList<QVector3D> &points, const QList<QColor> &colors);
     void clearScreen();

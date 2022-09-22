@@ -111,7 +111,7 @@ public:
   DatumP inputHistory() { return nothing; }
 
   virtual void setTurtlePos(const QMatrix4x4 &) { Error::noGraphics(); }
-
+  virtual void setTurtleIsVisible(bool) { Error::noGraphics(); }
   void setPenmode(PenModeEnum) { Error::noGraphics(); }
   void setScreenMode(ScreenModeEnum) { Error::noGraphics(); }
   ScreenModeEnum getScreenMode() { Error::noGraphics(); return textScreenMode; }
