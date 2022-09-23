@@ -137,7 +137,7 @@ bool Controller::setDribble(const QString &filePath) {
 bool Controller::isDribbling() { return dribbleStream != NULL; }
 
 QString Controller::addStandoutToString(const QString &src) {
-  QString retval = QString("<b>") + src + "</b>";
+  QString retval = escapeString + src + escapeString;
   return retval;
 }
 

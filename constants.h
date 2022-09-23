@@ -63,6 +63,7 @@ enum messageCategory : message_t {
 };
 
 const QChar escapeChar(27);
+const QString escapeString(escapeChar);
 
 #define dv(x) qDebug()<<#x<<'='<<x
 
