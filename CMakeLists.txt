@@ -16,9 +16,9 @@ set(LOGO_VERSION 0.93)
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets OpenGLWidgets)
 
-set(QLOGO_SOURCES qlogo_main.cpp mainwindow.cpp canvas.cpp console.cpp
-    mainwindow.h canvas.h console.h constants.h
-    mainwindow.ui)
+set(QLOGO_SOURCES qlogo_main.cpp mainwindow.cpp canvas.cpp console.cpp editorwindow.cpp
+    mainwindow.h canvas.h console.h constants.h editorwindow.h
+    mainwindow.ui editorwindow.ui)
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(QLogo

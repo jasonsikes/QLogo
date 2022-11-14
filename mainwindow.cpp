@@ -29,6 +29,7 @@
 #include "canvas.h"
 #include "ui_mainwindow.h"
 #include "constants.h"
+#include "editorwindow.h"
 #include <QDebug>
 #include <QKeyEvent>
 #include <QScrollBar>
@@ -170,6 +171,33 @@ void MainWindow::initialize()
 
 }
 
+void MainWindow::openEditorWindow(const QString startingText)
+{
+    if (editWindow == NULL) {
+      editWindow = new EditorWindow;
+
+      connect(editWindow, SIGNAL(editingHasEndedSignal(QString)), this,
+              SLOT(editingHasEndedSlot(QString)));
+    }
+
+    editWindow->setTextFormat(ui->mainConsole->getFont());
+    editWindow->setContents(startingText);
+    editWindow->show();
+    editWindow->activateWindow();
+    editWindow->setFocus();
+}
+
+
+void MainWindow::editingHasEndedSlot(QString text)
+{
+    sendMessage([&](QDataStream *out) {
+        *out
+        << (message_t)C_CONSOLE_END_EDIT_TEXT
+        << text;
+    });
+}
+
+
 void MainWindow::introduceCanvas() {
     if (hasShownCanvas)
         return;
@@ -257,6 +285,13 @@ void MainWindow::readStandardOutput()
         case C_CONSOLE_REQUEST_CHAR:
             beginReadChar();
             break;
+        case C_CONSOLE_BEGIN_EDIT_TEXT:
+        {
+            QString startingText;
+            *dataStream >> startingText;
+            openEditorWindow(startingText);
+            break;
+        }
         case C_CANVAS_UPDATE_TURTLE_POS:
             {
               QMatrix4x4 matrix;

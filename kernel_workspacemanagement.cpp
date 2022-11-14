@@ -48,10 +48,10 @@ QString Kernel::executeText(const QString &text) {
 }
 
 void Kernel::editAndRunWorkspaceText() {
-  const QString *textRetval = mainController()->editText(&workspaceText);
-  if (textRetval != NULL) {
-    workspaceText = *textRetval;
-    QString output = executeText(*textRetval);
+  const QString textRetval = mainController()->editText(workspaceText);
+  if (textRetval != workspaceText) {
+    workspaceText = textRetval;
+    QString output = executeText(textRetval);
     if (varLOADNOISILY()) {
       sysPrint(output);
     }
@@ -67,9 +67,9 @@ void Kernel::editAndRunFile() {
   QTextStream in(&file);
   QString fileText = in.readAll();
 
-  const QString *textRetval = mainController()->editText(&fileText);
-  if (textRetval != NULL) {
-    fileText = *textRetval;
+  const QString textRetval = mainController()->editText(fileText);
+  if (textRetval != "") {
+    fileText = textRetval;
     file.seek(0);
     file.resize(0);
     QTextStream out(&file);
@@ -880,6 +880,7 @@ DatumP Kernel::excEdit(DatumP node) {
              editFileName.wordValue()->printValue() != "") {
     editAndRunFile();
   } else {
+      workspaceText = "";
     editAndRunWorkspaceText();
   }
 

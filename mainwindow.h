@@ -34,6 +34,7 @@
 
 class Canvas;
 class Console;
+class EditorWindow;
 
 namespace Ui {
 class MainWindow;
@@ -63,6 +64,7 @@ private:
 
   windowMode_t windowMode;
   bool hasShownCanvas = false;
+  EditorWindow *editWindow = NULL;
 
   int startLogo();
   void beginReadRawline();
@@ -71,6 +73,7 @@ private:
 
   void initialize();
   void introduceCanvas();
+  void openEditorWindow(const QString startingText);
 
 public slots:
   void readStandardOutput();
@@ -82,6 +85,7 @@ public slots:
   void sendRawlineSlot(const QString &line);
   void sendCharSlot(QChar c);
   void splitterHasMovedSlot(int, int);
+  void editingHasEndedSlot(QString text);
 };
 
 #endif // MAINWINDOW_H

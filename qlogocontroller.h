@@ -18,6 +18,9 @@ class QLogoController : public Controller
     QString rawLine;
     QChar rawChar;
 
+    // Text returned from editor winow
+    QString editorText;
+
     double minPensize;
     double maxPensize;
     double penSize;
@@ -42,6 +45,7 @@ public:
     void printToConsole(const QString &s);
     DatumP readRawlineWithPrompt(const QString &prompt);
     DatumP readchar();
+    const QString editText(const QString startText);
 
     void setTurtlePos(const QMatrix4x4 &newTurtlePos);
     void setTurtleIsVisible(bool isVisible);

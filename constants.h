@@ -41,13 +41,15 @@ enum messageCategory : message_t {
     S_TOPLEVEL,           // TOPLEVEL signal (End currently-running procedure, drop back to prompt)
     S_PAUSE,              // PAUSE signal (stop currently running procedure, may resume later)
 
-    C_CONSOLE_PRINT_STRING, // Print text to the GUI
-    C_CONSOLE_REQUEST_LINE, // Ask the GUI for a raw line
-    C_CONSOLE_REQUEST_CHAR, // Ask the GUI for a single char
-    C_CONSOLE_RAWLINE_READ, // A line returned from the GUI
-    C_CONSOLE_CHAR_READ,    // A char returned from the GUI
-    C_CONSOLE_SET_FONT_NAME,// Set the console font name
-    C_CONSOLE_SET_FONT_SIZE,// Set the console font size
+    C_CONSOLE_PRINT_STRING,    // Print text to the GUI
+    C_CONSOLE_REQUEST_LINE,    // Ask the GUI for a raw line
+    C_CONSOLE_REQUEST_CHAR,    // Ask the GUI for a single char
+    C_CONSOLE_RAWLINE_READ,    // A line returned from the GUI
+    C_CONSOLE_CHAR_READ,       // A char returned from the GUI
+    C_CONSOLE_SET_FONT_NAME,   // Set the console font name
+    C_CONSOLE_SET_FONT_SIZE,   // Set the console font size
+    C_CONSOLE_BEGIN_EDIT_TEXT, // Open the text editor window
+    C_CONSOLE_END_EDIT_TEXT,   // Text editor has finished
 
     C_CANVAS_UPDATE_TURTLE_POS,       // Update the turtle matrix
     C_CANVAS_SET_TURTLE_IS_VISIBLE,   // Show/hide the turtle

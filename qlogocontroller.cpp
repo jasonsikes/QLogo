@@ -111,6 +111,9 @@ message_t QLogoController::getMessage()
     case C_CONSOLE_CHAR_READ:
         bufferStream >> rawChar;
         break;
+    case C_CONSOLE_END_EDIT_TEXT:
+        bufferStream >> editorText;
+        break;
     default:
         qDebug() <<"I don't know how I got " << header;
         break;
@@ -140,6 +143,17 @@ void QLogoController::printToConsole(const QString &s)
     } else {
       *writeStream << s;
     }
+}
+
+const QString QLogoController::editText(const QString startText)
+{
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CONSOLE_BEGIN_EDIT_TEXT << startText;
+    });
+
+    waitForMessage(C_CONSOLE_END_EDIT_TEXT);
+
+    return editorText;
 }
 
 void QLogoController::setTextFontName(const QString aFontName)

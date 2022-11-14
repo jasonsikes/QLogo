@@ -72,6 +72,7 @@ public:
 
   void setTextFontName(const QString aName);
   void setTextFontSize(double aSize);
+  const QTextCharFormat getFont() { return textFormat;}
 
 signals:
   void sendRawlineSignal(const QString &rawLine);

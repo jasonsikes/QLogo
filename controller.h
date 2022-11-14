@@ -67,7 +67,7 @@ public:
   int run(void);
   virtual void systemStop(void);
   virtual void mwait(unsigned long) {}
-  const QString *editText(const QString *) { return NULL; }
+  virtual const QString editText(const QString ) { Error::noGraphics(); return QString(""); }
 
   QVector2D mousePos;
   QVector2D clickPos;
