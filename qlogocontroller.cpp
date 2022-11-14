@@ -145,6 +145,13 @@ void QLogoController::printToConsole(const QString &s)
     }
 }
 
+void QLogoController::clearScreenText()
+{
+    sendMessage([&](QDataStream *out) {
+        *out << (message_t)C_CANVAS_CLEAR_SCREEN_TEXT;
+    });
+}
+
 const QString QLogoController::editText(const QString startText)
 {
     sendMessage([&](QDataStream *out) {

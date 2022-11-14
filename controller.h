@@ -76,7 +76,7 @@ public:
   virtual void drawPolygon(const QList<QVector3D> &, const QList<QColor> &) { Error::noGraphics(); }
   void updateCanvas(void) { Error::noGraphics(); }
   virtual void clearScreen(void) { Error::noGraphics(); }
-  void clearScreenText(void) {}
+  virtual void clearScreenText(void) { Error::noGraphics(); }
   virtual void drawLabel(const QString &, const QVector3D &, const QColor &) { Error::noGraphics(); }
   QString addStandoutToString(const QString &src);
   virtual bool keyQueueHasChars() { return false; }

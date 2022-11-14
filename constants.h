@@ -62,6 +62,7 @@ enum messageCategory : message_t {
     C_CANVAS_SET_PENSIZE,             // Set the drawing pen size
     C_CANVAS_SET_FONT_NAME,           // Set the label font name
     C_CANVAS_SET_FONT_SIZE,           // Set the label font size
+    C_CANVAS_CLEAR_SCREEN_TEXT,       // Clear text from Console
 };
 
 const QChar escapeChar(27);

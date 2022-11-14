@@ -74,6 +74,7 @@ public:
 
     void setPensize(double);
     void mwait(unsigned long msecs);
+    void clearScreenText();
 };
 
 #endif // QLOGOCONTROLLER_H

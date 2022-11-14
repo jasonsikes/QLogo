@@ -292,6 +292,9 @@ void MainWindow::readStandardOutput()
             openEditorWindow(startingText);
             break;
         }
+        case C_CANVAS_CLEAR_SCREEN_TEXT:
+            ui->mainConsole->setPlainText("");
+            break;
         case C_CANVAS_UPDATE_TURTLE_POS:
             {
               QMatrix4x4 matrix;
