@@ -408,6 +408,8 @@ void Parser::inputProcedure(DatumP nodeP, QTextStream *readStream) {
   // Now read in the body
   forever {
     DatumP line = readlistWithPrompt("> ", true, readStream);
+    if ( ! line.isList()) // this must be the end of the input
+        break;
     DatumP lineSource = lastReadListSource();
     ListIterator lineSourceIter = lineSource.listValue()->newIterator();
     while (lineSourceIter.elementExists()) {
