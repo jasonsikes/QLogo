@@ -13,6 +13,9 @@
 
 filename="$1"
 
+logo_binary=logo
+logo_path="../$logo_binary"
+
 failed_tests=()
 
 run_test() {
@@ -24,16 +27,22 @@ run_test() {
     fi
 }
 
-if [ -n "$filename" ]
+if [ ! -f "$logo_path" ]
 then
-    run_test $filename
+    echo "Error: could not find '$logo_binary' in parent directory."
+    echo "There should be a logo executable or a symbolic link in my parent diectory."
     exit 0
 fi
 
-for a in *.lg; do
-    echo $a
-    run_test $a
-done
+if [ -n "$filename" ]
+then
+    run_test $filename
+else
+    for a in *.lg; do
+	echo $a
+	run_test $a
+    done
+fi
 
 if (( ${#failed_tests[@]} )); then
     echo
