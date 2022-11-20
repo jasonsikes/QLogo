@@ -254,16 +254,16 @@ void Turtle::rotate(qreal angle, char axis) {
 void Turtle::setxyz(qreal x, qreal y, qreal z) {
   preTurtleMovement();
   qreal w = matrix(3, 3);
-  matrix(0, 3) = x * scrunchX * w;
-  matrix(1, 3) = y * scrunchY * w;
+  matrix(0, 3) = x * w;
+  matrix(1, 3) = y * w;
   matrix(2, 3) = z * w;
   postTurtleMovement();
 }
 
 void Turtle::getxyz(qreal &x, qreal &y, qreal &z) {
   qreal w = matrix(3, 3);
-  x = matrix(0, 3) / scrunchX / w;
-  y = matrix(1, 3) / scrunchY / w;
+  x = matrix(0, 3) / w;
+  y = matrix(1, 3) / w;
   z = matrix(2, 3) / w;
 }
 
@@ -314,20 +314,20 @@ qreal Turtle::getHeading(char axis) {
 void Turtle::setxy(qreal x, qreal y) {
   preTurtleMovement();
   qreal w = matrix(3, 3);
-  matrix(0, 3) = x * scrunchX * w;
-  matrix(1, 3) = y * scrunchY * w;
+  matrix(0, 3) = x * w;
+  matrix(1, 3) = y * w;
   postTurtleMovement();
 }
 
 void Turtle::setx(qreal x) {
   preTurtleMovement();
-  matrix(0, 3) = x * scrunchX * matrix(3, 3);
+  matrix(0, 3) = x * matrix(3, 3);
   postTurtleMovement();
 }
 
 void Turtle::sety(qreal y) {
   preTurtleMovement();
-  matrix(1, 3) = y * scrunchY * matrix(3, 3);
+  matrix(1, 3) = y * matrix(3, 3);
   postTurtleMovement();
 }
 
@@ -341,7 +341,7 @@ void Turtle::home(bool canDraw) {
   if (canDraw)
     preTurtleMovement();
   matrix =
-      QMatrix4x4(scrunchX, 0, 0, 0, 0, scrunchY, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+      QMatrix4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
   if (canDraw)
     postTurtleMovement();
 }
@@ -404,16 +404,3 @@ DatumP Turtle::print() {
   return DatumP(new Word(retval));
 }
 
-void Turtle::setScrunch(double x, double y) {
-  QMatrix4x4 m = QMatrix4x4(x / scrunchX, 0, 0, 0, 0, y / scrunchY, 0, 0, 0, 0,
-                            1, 0, 0, 0, 0, 1);
-  matrix *= m;
-  scrunchX = x;
-  scrunchY = y;
-  mainController()->setTurtlePos(matrix);
-}
-
-void Turtle::getScrunch(double &x, double &y) {
-  x = scrunchX;
-  y = scrunchY;
-}

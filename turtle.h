@@ -50,9 +50,6 @@ class Turtle {
   PenModeEnum penMode = penModePaint;
   double penSize = startingPensize;
 
-  double scrunchX = 1;
-  double scrunchY = 1;
-
   bool isVisible;
   bool penIsDown;
 
@@ -92,9 +89,6 @@ public:
 
   void beginFillWithColor(const QColor &aFillColor);
   void endFill();
-
-  void setScrunch(double x, double y);
-  void getScrunch(double &x, double &y);
 };
 
 Turtle *mainTurtle();

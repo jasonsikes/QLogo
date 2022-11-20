@@ -87,7 +87,7 @@ There is no "make install" step yet.
 
 * Colors can be specified in one of three ways:
 
-   * as a palette index (0 to 100)
+   * as a palette index (0 to 100), same as UCBLogo
 
    * as a list of 3 percentages, one for each of red, green, blue `[0 0 0]` is
    black, `[100 100 100]` is white
@@ -117,6 +117,12 @@ There is no "make install" step yet.
 
 * Garbage collection is on-the-fly, meaning that memory is freed the moment a
   word/list/array is no longer needed. `GC` and `.SETSEGMENTSIZE` are no-ops.
+
+
+* No scunching. UCBLogo provided a scrunch to compensate for older CRT screens
+  with non-square pixels. This enabled turtle operations to maintain consistent
+  physical height-width. `SCRUNCH` and `SETSCRUNCH` are no-ops.
+
 
 
 * `SAVEPICT` saves a copy of the canvas in the format given by the filename's

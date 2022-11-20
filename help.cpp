@@ -1972,9 +1972,10 @@ void Help::setGraphics() {
   set("SCRUNCH",
       "SCRUNCH\n"
       "\n"
-      "        outputs a list containing two numbers, the X and Y scrunch\n"
-      "        factors, as used by SETSCRUNCH.  (But note that SETSCRUNCH\n"
-      "        takes two numbers as inputs, not one list of numbers.)\n"
+      "        outputs a list containing two numbers, [1 1]. Scrunch is not needed\n"
+      "        since pixels are square in modern systems. Previously, scrunch was\n"
+      "        needed in systems to compensate for pixels being generally nonstandard\n"
+      "        shape.\n"
       "\n");
 
   //    TURTLE AND WINDOW CONTROL
@@ -2162,33 +2163,9 @@ void Help::setGraphics() {
   set("SETSCRUNCH",
       "SETSCRUNCH xscale yscale\n"
       "\n"
-      "        adjusts the aspect ratio and scaling of the graphics display.\n"
-      "        After this command is used, all further turtle motion will be\n"
-      "        adjusted by multiplying the horizontal and vertical extent of\n"
-      "        the motion by the two numbers given as inputs.  For example,\n"
-      "        after the instruction \"SETSCRUNCH 2 1\" motion at a heading "
-      "of\n"
-      "        45 degrees will move twice as far horizontally as vertically.\n"
-      "        If your squares don't come out square, try this.  "
-      "(Alternatively,\n"
-      "        you can deliberately misadjust the aspect ratio to draw an "
-      "ellipse.)\n"
-      "\n"
-      "        In wxWidgets only, SETSCRUNCH also changes the size of the text "
-      "font\n"
-      "        used for the LABEL command to try to keep the height of "
-      "characters\n"
-      "        scaled with the vertical turtle step size.\n"
-      "\n"
-      "        For all modern computers For DOS machines, the scale factors "
-      "are\n"
-      "        initially set according to what the hardware claims the aspect "
-      "ratio\n"
-      "        is, but the hardware sometimes lies.  For DOS, the values set "
-      "by\n"
-      "        SETSCRUNCH are remembered in a file (called SCRUNCH.DAT) and "
-      "are\n"
-      "        automatically put into effect when a Logo session begins.\n"
+      "        Does nothing in QLogo. Scrunch is no longer needed since pixels are\n"
+      "        square in modern systems. Previously, scrunch was needed in systems\n"
+      "        to compensate for pixels being generally nonstandard shape.\n"
       "\n");
 
   //    TURTLE AND WINDOW QUERIES

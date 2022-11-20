@@ -268,12 +268,9 @@ DatumP Kernel::excTowards(DatumP node) {
 
 DatumP Kernel::excScrunch(DatumP node) {
   ProcedureHelper h(this, node);
-  double x = 0;
-  double y = 0;
-  mainTurtle()->getScrunch(x, y);
   List *retval = new List;
-  retval->append(DatumP(new Word(x)));
-  retval->append(DatumP(new Word(y)));
+  retval->append(DatumP(new Word(1)));
+  retval->append(DatumP(new Word(1)));
   return h.ret(retval);
 }
 
@@ -421,11 +418,6 @@ DatumP Kernel::excSplitscreen(DatumP node) {
 
 DatumP Kernel::excSetscrunch(DatumP node) {
   ProcedureHelper h(this, node);
-  auto v = [](double candidate) { return candidate != 0; };
-
-  double x = h.validatedNumberAtIndex(0, v);
-  double y = h.validatedNumberAtIndex(1, v);
-  mainTurtle()->setScrunch(x, y);
   return nothing;
 }
 

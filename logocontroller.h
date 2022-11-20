@@ -74,7 +74,6 @@ public:
 
   virtual void drawLine(const QVector3D &, const QVector3D &, const QColor &, const QColor &) { Error::noGraphics(); }
   virtual void drawPolygon(const QList<QVector3D> &, const QList<QColor> &) { Error::noGraphics(); }
-  void updateCanvas(void) { Error::noGraphics(); }
   virtual void clearScreen(void) { Error::noGraphics(); }
   virtual void clearScreenText(void) { Error::noGraphics(); }
   virtual void drawLabel(const QString &, const QVector3D &, const QColor &) { Error::noGraphics(); }
@@ -82,8 +81,6 @@ public:
   virtual bool keyQueueHasChars();
   bool setDribble(const QString &filePath);
   bool isDribbling();
-  void setScrunch(double, double) { Error::noGraphics(); }
-  void getScrunch(double &, double &) { Error::noGraphics(); }
   virtual void setBounds(double x, double y) { Error::noGraphics(); }
   virtual double boundX() { Error::noGraphics(); return 0; }
   virtual double boundY() { Error::noGraphics(); return 0; }
