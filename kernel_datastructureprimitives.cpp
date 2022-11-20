@@ -28,7 +28,7 @@
 #include "parser.h"
 #include <QTextStream>
 
-#include "controller.h"
+#include "logocontroller.h"
 
 // CONSTRUCTORS
 

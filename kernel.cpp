@@ -35,7 +35,7 @@
 #include "library.h"
 #include "turtle.h"
 
-#include "controller.h"
+#include "logocontroller.h"
 
 // The maximum depth of procedure iterations before error is thrown.
 const int maxIterationDepth = 1000;

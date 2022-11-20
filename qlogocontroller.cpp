@@ -25,7 +25,7 @@ void sendMessage(std::function<void (QDataStream*)> func)
 }
 
 
-QLogoController::QLogoController(QObject *parent) : Controller(parent)
+QLogoController::QLogoController(QObject *parent) : LogoController(parent)
 {
 #ifdef _WIN32
     // That dreaded \r\n <-> \n problem

@@ -1,5 +1,4 @@
 #include "qlogocontroller.h"
-#include "logocontroller.h"
 #include <QCoreApplication>
 #include <QCommandLineParser>
 
@@ -40,7 +39,7 @@ int main(int argc, char **argv)
 
   processOptions(&application);
 
-  Controller *mainController;
+  LogoController *mainController;
   if (hasGUI) {
       mainController = new QLogoController;
   } else {

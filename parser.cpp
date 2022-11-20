@@ -26,7 +26,7 @@
 
 #include "parser.h"
 #include "QtCore/qstringliteral.h"
-#include "controller.h"
+#include "logocontroller.h"
 #include "error.h"
 #include "kernel.h"
 #include <qdatetime.h>

@@ -28,7 +28,7 @@
 #include "kernel.h"
 #include "turtle.h"
 
-#include "controller.h"
+#include "logocontroller.h"
 
 #include <math.h>
 

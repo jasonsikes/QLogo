@@ -1,14 +1,15 @@
 #ifndef QLOGOCONTROLLER_H
 #define QLOGOCONTROLLER_H
 
-#include "controller.h"
+#include "logocontroller.h"
 #include "constants.h"
 #include <QDataStream>
 #include <QFile>
 #include <QFont>
 #include "inputqueue.h"
+#include "datum.h"
 
-class QLogoController : public Controller
+class QLogoController : public LogoController
 {
     InputQueue messageQueue;
     message_t getMessage();
