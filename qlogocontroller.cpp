@@ -91,6 +91,7 @@ message_t QLogoController::getMessage()
                      >> maxPensize
                      >> xbound
                      >> ybound
+                     >> currentBackgroundColor
                 ;
         labelFontName = textFontName;
         break;
@@ -301,10 +302,16 @@ double QLogoController::getLabelFontSize()
 
 void QLogoController::setCanvasBackgroundColor(QColor aColor)
 {
+    currentBackgroundColor = aColor;
     sendMessage([&](QDataStream *out) {
       *out << (message_t)C_CANVAS_SET_BACKGROUND_COLOR
            << aColor;
     });
+}
+
+QColor QLogoController::getCanvasBackgroundColor(void)
+{
+    return currentBackgroundColor;
 }
 
 void QLogoController::clearScreen()

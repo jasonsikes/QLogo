@@ -85,7 +85,7 @@ public:
   virtual double boundX() { Error::noGraphics(); return 0; }
   virtual double boundY() { Error::noGraphics(); return 0; }
   virtual void setCanvasBackgroundColor(QColor) { Error::noGraphics(); }
-  QColor getCanvasBackgroundColor(void) { Error::noGraphics(); return QColor(); }
+  virtual QColor getCanvasBackgroundColor(void) { Error::noGraphics(); return QColor(); }
   QImage getCanvasImage() { Error::noGraphics(); return QImage(); }
   bool getIsMouseButtonDown() { Error::noGraphics(); return false; }
   int getButton() { Error::noGraphics();  return 0; }

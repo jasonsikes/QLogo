@@ -154,6 +154,7 @@ void MainWindow::initialize()
     ui->mainConsole->setTextFontName(defaultFont.family());
     ui->mainCanvas->setLabelFontSize(defaultFont.pointSizeF());
     ui->mainCanvas->setLabelFontName(defaultFont.family());
+    ui->mainCanvas->setBackgroundColor(QColor(startingColor));
     ui->splitter->setSizes(sizes);
 
     sendMessage([&](QDataStream *out) {
@@ -166,6 +167,7 @@ void MainWindow::initialize()
         << ui->mainCanvas->maximumPenSize()
         << ui->mainCanvas->xbound()
         << ui->mainCanvas->ybound()
+        << QColor(startingColor)
            ;
     });
 

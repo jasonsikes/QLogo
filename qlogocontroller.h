@@ -29,6 +29,8 @@ class QLogoController : public LogoController
     double xbound;
     double ybound;
 
+    QColor currentBackgroundColor;
+
     QStringList allFontNames;
     QString textFontName;
     qreal textFontSize;
@@ -59,6 +61,7 @@ public:
     void setBounds(double x, double y);
     double boundX() { return xbound; }
     double boundY() { return ybound; }
+    QColor getCanvasBackgroundColor(void);
 
     bool isPenSizeValid(double candidate) { return ((candidate >= minPensize) && (candidate <= maxPensize)); }
 

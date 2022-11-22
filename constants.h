@@ -76,6 +76,8 @@ const float initialBoundY = 150;
 
 const float startingPensize = 1;
 
+const Qt::GlobalColor startingColor = Qt::black;
+
 enum PenModeEnum { penModePaint, penModeErase, penModeReverse };
 
 enum TurtleModeEnum { turtleWrap, turtleFence, turtleWindow };
