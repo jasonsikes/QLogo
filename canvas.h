@@ -85,7 +85,7 @@ class Canvas : public QOpenGLWidget, protected QOpenGLFunctions {
   QMatrix4x4 turtleMatrix;
   bool turtleIsVisible;
 
-  bool canvasIsBounded;
+  bool canvasIsBounded = true;
 
   // Visible vertices on the X axis range from -boundsX to +boundsX
   double boundsX;
@@ -212,6 +212,9 @@ public:
 
   /// Set the maximum X and Y bounds
   void setBounds(double x, double y);
+
+  /// Return a screenshot of the canvas
+  QImage getImage();
 
 };
 

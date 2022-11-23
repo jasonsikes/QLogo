@@ -115,6 +115,9 @@ message_t QLogoController::getMessage()
     case C_CONSOLE_END_EDIT_TEXT:
         bufferStream >> editorText;
         break;
+    case C_CANVAS_GET_IMAGE:
+        bufferStream >> canvasImage;
+        break;
     default:
         qDebug() <<"I don't know how I got " << header;
         break;
@@ -320,6 +323,18 @@ void QLogoController::clearScreen()
       *out << (message_t)C_CANVAS_CLEAR_SCREEN;
     });
 }
+
+QImage QLogoController::getCanvasImage()
+{
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CANVAS_GET_IMAGE;
+    });
+
+    waitForMessage(C_CANVAS_GET_IMAGE);
+
+    return canvasImage;
+}
+
 
 void QLogoController::setBounds(double x, double y)
 {

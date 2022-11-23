@@ -392,6 +392,11 @@ void MainWindow::readStandardOutput()
             ui->mainCanvas->setPensize((GLfloat)newSize);
             break;
         }
+        case C_CANVAS_GET_IMAGE:
+        {
+            sendCanvasImage();
+            break;
+        }
         default:
             qDebug() <<"was not expecting" <<header;
             break;
@@ -440,6 +445,15 @@ void MainWindow::sendRawlineSlot(const QString &line)
 {
     sendMessage([&](QDataStream *out) {
         *out << (message_t)C_CONSOLE_RAWLINE_READ << line;
+    });
+}
+
+
+void MainWindow::sendCanvasImage()
+{
+    QImage image = ui->mainCanvas->getImage();
+    sendMessage([&](QDataStream *out) {
+        *out << (message_t)C_CANVAS_GET_IMAGE << image;
     });
 }
 

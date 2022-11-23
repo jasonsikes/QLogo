@@ -75,6 +75,8 @@ private:
   void introduceCanvas();
   void openEditorWindow(const QString startingText);
 
+  void sendCanvasImage();
+
 public slots:
   void readStandardOutput();
   void readStandardError();

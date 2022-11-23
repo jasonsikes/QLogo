@@ -629,3 +629,39 @@ void Canvas::setPensize(GLfloat aSize) {
   }
 }
 
+
+QImage Canvas::getImage()
+{
+    QImage framebuffer = grabFramebuffer();
+
+    if (framebuffer.width() * framebuffer.height() == 0)
+        return framebuffer;
+
+    // If our canvas has bounds, then clip
+    if (canvasIsBounded) {
+        double fbwidth = framebuffer.width();
+        double fbheight = framebuffer.height();
+        double fbaspect = fbheight / fbwidth;
+        double canvasaspect = boundsY / boundsX;
+        double x = 0;
+        double y = 0;
+        double width = fbwidth;
+        double height = fbheight;
+
+        if (fbaspect > canvasaspect) {
+            // clip top and bottom
+            height = fbwidth * canvasaspect;
+            if (height > fbheight) height = fbheight;
+            y = (fbheight - height) / 2;
+        } else {
+            // clip left and right
+            width = fbheight / canvasaspect;
+            if (width > fbwidth) width = fbwidth;
+            x = (fbwidth - width) / 2;
+        }
+        framebuffer = framebuffer.copy((int)x, (int)y, (int)width, (int)height);
+    }
+    return framebuffer;
+
+}
+
