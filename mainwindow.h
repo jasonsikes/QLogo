@@ -57,6 +57,8 @@ public:
   ~MainWindow();
   void show();
 
+  void mouseButtonWasPressed(QVector2D position, int buttonID);
+
 private:
   Ui::MainWindow *ui;
 
@@ -88,6 +90,9 @@ public slots:
   void sendCharSlot(QChar c);
   void splitterHasMovedSlot(int, int);
   void editingHasEndedSlot(QString text);
+
+  void mouseclickedSlot(const QVector2D position, int buttonID);
+
 };
 
 #endif // MAINWINDOW_H

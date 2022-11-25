@@ -9,7 +9,7 @@ class InputQueueThread : public QThread
 {
     Q_OBJECT
 
-    void run() override;
+    void run() Q_DECL_OVERRIDE;
 
 public:
     explicit InputQueueThread(QObject *parent = nullptr);

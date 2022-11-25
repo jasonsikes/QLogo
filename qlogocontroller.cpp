@@ -118,6 +118,11 @@ message_t QLogoController::getMessage()
     case C_CANVAS_GET_IMAGE:
         bufferStream >> canvasImage;
         break;
+    case C_CANVAS_MOUSE_BUTTON_DOWN:
+        bufferStream >> clickPos
+                     >> lastButtonpressID;
+        qDebug() <<"Mouse button down: " << clickPos;
+        break;
     default:
         qDebug() <<"I don't know how I got " << header;
         break;
@@ -333,6 +338,11 @@ QImage QLogoController::getCanvasImage()
     waitForMessage(C_CANVAS_GET_IMAGE);
 
     return canvasImage;
+}
+
+bool QLogoController::getIsMouseButtonDown()
+{
+    return false;
 }
 
 

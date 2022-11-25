@@ -64,6 +64,7 @@ enum messageCategory : message_t {
     C_CANVAS_SET_FONT_SIZE,           // Set the label font size
     C_CANVAS_CLEAR_SCREEN_TEXT,       // Clear text from Console
     C_CANVAS_GET_IMAGE,               // Get a screenshot of the current image
+    C_CANVAS_MOUSE_BUTTON_DOWN,       // A mouse button was pressed
 };
 
 const QChar escapeChar(27);

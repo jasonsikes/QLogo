@@ -120,6 +120,9 @@ int MainWindow::startLogo()
   connect(ui->splitter, &QSplitter::splitterMoved,
           this, &MainWindow::splitterHasMovedSlot);
 
+  connect(ui->mainCanvas, &Canvas::sendMouseclickedSignal,
+          this, &MainWindow::mouseclickedSlot);
+
   logoProcess->start(command, arguments);
   return 0;
 }
@@ -431,6 +434,19 @@ void MainWindow::beginReadChar()
     windowMode = windowMode_waitForChar;
     ui->mainConsole->requestChar();
 }
+
+
+void MainWindow::mouseclickedSlot(QVector2D position, int buttonID)
+{
+    qDebug() <<"Mouse presssed start" <<position;
+    sendMessage([&](QDataStream *out) {
+        *out << (message_t)C_CANVAS_MOUSE_BUTTON_DOWN
+             << position
+             << buttonID;
+    });
+    qDebug() <<"Mouse presssed end";
+}
+
 
 
 void MainWindow::sendCharSlot(QChar c)

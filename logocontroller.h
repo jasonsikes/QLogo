@@ -69,9 +69,6 @@ public:
   virtual void mwait(unsigned long);
   virtual const QString editText(const QString ) { Error::noGraphics(); return QString(""); }
 
-  QVector2D mousePos;
-  QVector2D clickPos;
-
   virtual void drawLine(const QVector3D &, const QVector3D &, const QColor &, const QColor &) { Error::noGraphics(); }
   virtual void drawPolygon(const QList<QVector3D> &, const QList<QColor> &) { Error::noGraphics(); }
   virtual void clearScreen(void) { Error::noGraphics(); }
@@ -87,8 +84,12 @@ public:
   virtual void setCanvasBackgroundColor(QColor) { Error::noGraphics(); }
   virtual QColor getCanvasBackgroundColor(void) { Error::noGraphics(); return QColor(); }
   virtual QImage getCanvasImage() { Error::noGraphics(); return QImage(); }
-  bool getIsMouseButtonDown() { Error::noGraphics(); return false; }
+
+  virtual bool getIsMouseButtonDown() { Error::noGraphics(); return false; }
   int getButton() { Error::noGraphics();  return 0; }
+  QVector2D lastMouseclickPosition() { return clickPos; }
+  QVector2D mousePosition() { return mousePos; }
+
   void setTextCursorPos(int, int) { Error::noGraphics(); }
   void getTextCursorPos(int &, int &) { Error::noGraphics(); }
   void setTextColor(const QColor &, const QColor &) { Error::noGraphics(); }
@@ -127,11 +128,15 @@ protected:
   qreal boundsX = 150;
   qreal boundsY = 150;
 
+  QVector2D mousePos = QVector2D(0,0);
+  QVector2D clickPos = QVector2D(0,0);
+  int lastButtonpressID = 0;
+
   QTextStream *readStream;
   QTextStream *writeStream;
 
   QTextStream *dribbleStream;
-protected:
+
     QTextStream *inStream;
     QTextStream *outStream;
 
