@@ -52,6 +52,8 @@ enum ScreenModeEnum {
 class LogoController : public QObject {
   Q_OBJECT
 
+    virtual void processInputMessageQueue() {}
+
 public:
   LogoController(QObject *parent = 0);
   ~LogoController();
@@ -87,8 +89,8 @@ public:
 
   virtual bool getIsMouseButtonDown() { Error::noGraphics(); return false; }
   int getButton() { Error::noGraphics();  return 0; }
-  QVector2D lastMouseclickPosition() { return clickPos; }
-  QVector2D mousePosition() { return mousePos; }
+  virtual QVector2D lastMouseclickPosition() { Error::noGraphics(); return clickPos; }
+  QVector2D mousePosition() { Error::noGraphics(); return mousePos; }
 
   void setTextCursorPos(int, int) { Error::noGraphics(); }
   void getTextCursorPos(int &, int &) { Error::noGraphics(); }

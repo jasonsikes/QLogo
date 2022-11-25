@@ -15,7 +15,7 @@ public:
     explicit InputQueueThread(QObject *parent = nullptr);
 
 signals:
-    void sendMessage(QByteArray msg);
+    void sendMessage();
 };
 
 
@@ -28,7 +28,7 @@ class InputQueue : public QObject
 
 private slots:
     // Connected to sendMessage signal from thread.
-    void receiveMessage(QByteArray aMessage);
+    void receiveMessage();
 
 public:
     explicit InputQueue(QObject *parent = nullptr);
@@ -42,6 +42,10 @@ public:
     /// Get a message.
     /// Will wait until message is available.
     QByteArray getMessage();
+
+    /// Ask if there is a message in the queue
+    /// Returns immediately
+    bool isMessageAvailable();
 };
 
 

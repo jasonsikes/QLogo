@@ -438,13 +438,11 @@ void MainWindow::beginReadChar()
 
 void MainWindow::mouseclickedSlot(QVector2D position, int buttonID)
 {
-    qDebug() <<"Mouse presssed start" <<position;
     sendMessage([&](QDataStream *out) {
         *out << (message_t)C_CANVAS_MOUSE_BUTTON_DOWN
              << position
              << buttonID;
     });
-    qDebug() <<"Mouse presssed end";
 }
 
 

@@ -1,6 +1,11 @@
 #include "inputqueue.h"
 #include <unistd.h>
 #include <QDebug>
+#include <QQueue>
+#include <QMutex>
+
+QMutex queueLock;
+QQueue<QByteArray> messageQueue;
 
 InputQueueThread::InputQueueThread(QObject *parent) : QThread(parent)
 {
@@ -27,7 +32,10 @@ void InputQueueThread::run()
             return;
         }
         Q_ASSERT(dataread == datalen);
-        emit sendMessage(message);
+        queueLock.lock();
+        messageQueue.enqueue(message);
+        queueLock.unlock();
+        emit sendMessage();
     }
 }
 
@@ -39,23 +47,46 @@ InputQueue::InputQueue(QObject *parent) : QObject(parent)
 
 void InputQueue::startQueue()
 {
-    // The QueuedConnection allows us to queue the messages
-    connect(&thread, SIGNAL(sendMessage(QByteArray)),
-            this, SLOT(receiveMessage(QByteArray)), Qt::QueuedConnection);
+    connect(&thread, SIGNAL(sendMessage()),
+            this, SLOT(receiveMessage()), Qt::QueuedConnection);
     thread.start();
 }
 
 // TODO: The names getMessage() and receiveMessage() are ambiguous.
 QByteArray InputQueue::getMessage()
 {
-    // Wait for a message signal from thread.
-    eventLoop.exec();
-    return message;
+    QByteArray message;
+    // If there is a message already in the queue, return that.
+    queueLock.lock();
+    bool isMessageQueued = ! messageQueue.isEmpty();
+    if (isMessageQueued)
+        message = messageQueue.dequeue();
+    queueLock.unlock();
+    if (isMessageQueued) return message;
+
+    // Wait for a message.
+    forever {
+        eventLoop.exec();
+
+        queueLock.lock();
+        isMessageQueued = ! messageQueue.isEmpty();
+        if (isMessageQueued)
+            message = messageQueue.dequeue();
+        queueLock.unlock();
+        if (isMessageQueued) return message;
+    }
 }
 
-void InputQueue::receiveMessage(QByteArray aMessage)
+bool InputQueue::isMessageAvailable()
 {
-    message = aMessage;
+    queueLock.lock();
+    bool retval = ! messageQueue.isEmpty();
+    queueLock.unlock();
+    return retval;
+}
+
+void InputQueue::receiveMessage()
+{
     eventLoop.exit(0);
 }
 

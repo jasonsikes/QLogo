@@ -65,9 +65,9 @@ void QLogoController::initialize()
 }
 
 /* a message has three parts:
- * 1. A quint detailing how many bytes are in the remainder of the message (datalen).
- * 2. An enum describing the type of data (header).
- * 3. The data (varies).
+ * 1. datalen: A quint detailing how many bytes are in the remainder of the message.
+ * 2. header:  An enum describing the type of data.
+ * 3. The data (varies, may be empty).
  */
 message_t QLogoController::getMessage()
 {
@@ -121,13 +121,20 @@ message_t QLogoController::getMessage()
     case C_CANVAS_MOUSE_BUTTON_DOWN:
         bufferStream >> clickPos
                      >> lastButtonpressID;
-        qDebug() <<"Mouse button down: " << clickPos;
         break;
     default:
         qDebug() <<"I don't know how I got " << header;
         break;
     }
     return header;
+}
+
+
+void QLogoController::processInputMessageQueue()
+{
+    while (messageQueue.isMessageAvailable()) {
+        getMessage();
+    }
 }
 
 
@@ -343,6 +350,12 @@ QImage QLogoController::getCanvasImage()
 bool QLogoController::getIsMouseButtonDown()
 {
     return false;
+}
+
+QVector2D QLogoController::lastMouseclickPosition()
+{
+    processInputMessageQueue();
+    return clickPos;
 }
 
 

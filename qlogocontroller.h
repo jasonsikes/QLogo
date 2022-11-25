@@ -39,6 +39,8 @@ class QLogoController : public LogoController
     QString labelFontName;
     qreal labelFontSize;
 
+    void processInputMessageQueue();
+
 public:
     QLogoController(QObject *parent = 0);
     ~QLogoController();
@@ -59,6 +61,7 @@ public:
     void drawLabel(const QString &, const QVector3D &, const QColor &);
     void setCanvasBackgroundColor(QColor);
     bool getIsMouseButtonDown();
+    QVector2D lastMouseclickPosition();
 
     void setBounds(double x, double y);
     double boundX() { return xbound; }
