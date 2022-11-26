@@ -94,6 +94,14 @@ void Console::requestChar()
 }
 
 
+void Console::getCursorPos(int &row, int &col)
+{
+  QTextCursor tc = textCursor();
+  row = tc.blockNumber();
+  col = tc.positionInBlock();
+}
+
+
 void Console::keyPressEvent(QKeyEvent *event)
 {
     // TODO: User interface interrupt event handling
@@ -220,7 +228,7 @@ void Console::processLineModeKeyPressEvent(QKeyEvent *event)
       moveCursor(QTextCursor::End);
       textCursor().insertBlock();
       lineInputHistory.last() = line;
-      sendRawlineSignal(line);
+      emit sendRawlineSignal(line);
       return;
     }
 
@@ -264,7 +272,7 @@ void Console::insertNextLineFromQueue() {
       QString line = block.right(block.size() - beginningOfRawlineInBlock);
       textCursor().insertBlock();
       keyQueue = keyQueue.right(keyQueue.size() - 1);
-      sendRawlineSignal(line);
+      emit sendRawlineSignal(line);
     }
   }
 }
@@ -276,7 +284,7 @@ void Console::insertNextCharFromQueue()
         consoleMode = consoleModeNoWait;
         QChar c = keyQueue[0];
         keyQueue = keyQueue.right(keyQueue.size() - 1);
-        sendCharSignal(c);
+        emit sendCharSignal(c);
     }
 }
 

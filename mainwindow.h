@@ -71,6 +71,8 @@ private:
   int startLogo();
   void beginReadRawline();
   void beginReadChar();
+  void sendConsoleCursorPosition();
+
   void sendMessage(std::function<void (QDataStream*)> func);
 
   void initialize();

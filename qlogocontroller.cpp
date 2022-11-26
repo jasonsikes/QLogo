@@ -115,6 +115,10 @@ message_t QLogoController::getMessage()
     case C_CONSOLE_END_EDIT_TEXT:
         bufferStream >> editorText;
         break;
+    case C_CONSOLE_GET_TEXT_CURSOR_POS:
+        bufferStream >> cursorRow
+                     >> cursorCol;
+        break;
     case C_CANVAS_GET_IMAGE:
         bufferStream >> canvasImage;
         break;
@@ -181,6 +185,18 @@ void QLogoController::clearScreenText()
         *out << (message_t)C_CANVAS_CLEAR_SCREEN_TEXT;
     });
 }
+
+void QLogoController::getTextCursorPos(int &row, int &col)
+{
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CONSOLE_GET_TEXT_CURSOR_POS;
+    });
+
+    waitForMessage(C_CONSOLE_GET_TEXT_CURSOR_POS);
+    row = cursorRow;
+    col = cursorCol;
+}
+
 
 const QString QLogoController::editText(const QString startText)
 {

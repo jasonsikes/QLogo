@@ -303,6 +303,11 @@ void MainWindow::readStandardOutput()
             openEditorWindow(startingText);
             break;
         }
+        case C_CONSOLE_GET_TEXT_CURSOR_POS:
+        {
+            sendConsoleCursorPosition();
+            break;
+        }
         case C_CANVAS_CLEAR_SCREEN_TEXT:
             ui->mainConsole->setPlainText("");
             break;
@@ -482,6 +487,19 @@ void MainWindow::sendRawlineSlot(const QString &line)
 {
     sendMessage([&](QDataStream *out) {
         *out << (message_t)C_CONSOLE_RAWLINE_READ << line;
+    });
+}
+
+
+void MainWindow::sendConsoleCursorPosition()
+{
+    int row = 0;
+    int col = 0;
+    ui->mainConsole->getCursorPos(row, col);
+    sendMessage([&](QDataStream *out) {
+        *out << (message_t)C_CONSOLE_GET_TEXT_CURSOR_POS
+             << row
+             << col;
     });
 }
 

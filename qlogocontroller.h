@@ -19,6 +19,9 @@ class QLogoController : public LogoController
     QString rawLine;
     QChar rawChar;
 
+    int cursorRow;
+    int cursorCol;
+
     // Text returned from editor winow
     QString editorText;
 
@@ -78,6 +81,7 @@ public:
     void setTextFontName(const QString aFontName);
     const QStringList getAllFontNames() { return allFontNames; }
     QString addStandoutToString(const QString src);
+    void getTextCursorPos(int &row, int &col);
 
     void setLabelFontSize(double aSize);
     double getLabelFontSize();
