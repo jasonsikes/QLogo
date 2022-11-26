@@ -154,12 +154,6 @@ bool LogoController::setDribble(const QString &filePath) {
 
 bool LogoController::isDribbling() { return dribbleStream != NULL; }
 
-QString LogoController::addStandoutToString(const QString &src) {
-  QString retval = escapeString + src + escapeString;
-  return retval;
-}
-
-
 SignalsEnum_t LogoController::latestSignal()
 {
     SignalsEnum_t retval = lastSignal;

@@ -76,7 +76,7 @@ public:
   virtual void clearScreen(void) { Error::noGraphics(); }
   virtual void clearScreenText(void) { Error::noGraphics(); }
   virtual void drawLabel(const QString &, const QVector3D &, const QColor &) { Error::noGraphics(); }
-  QString addStandoutToString(const QString &src);
+  virtual QString addStandoutToString(const QString src) { return src; };
   virtual bool keyQueueHasChars();
   bool setDribble(const QString &filePath);
   bool isDribbling();

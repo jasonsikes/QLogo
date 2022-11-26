@@ -77,6 +77,7 @@ public:
     const QString getTextFontName();
     void setTextFontName(const QString aFontName);
     const QStringList getAllFontNames() { return allFontNames; }
+    QString addStandoutToString(const QString src);
 
     void setLabelFontSize(double aSize);
     double getLabelFontSize();

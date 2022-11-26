@@ -168,6 +168,13 @@ void QLogoController::printToConsole(const QString &s)
     }
 }
 
+
+QString QLogoController::addStandoutToString(const QString src) {
+  QString retval = escapeString + src + escapeString;
+  return retval;
+}
+
+
 void QLogoController::clearScreenText()
 {
     sendMessage([&](QDataStream *out) {
