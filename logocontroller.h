@@ -62,7 +62,7 @@ public:
   SignalsEnum_t latestSignal();
 
   virtual void initialize() {}
-  virtual DatumP readRawlineWithPrompt(const QString &);
+  virtual DatumP readRawlineWithPrompt(const QString);
   virtual DatumP readchar();
   virtual bool atEnd();
   virtual void printToConsole(const QString &);

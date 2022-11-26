@@ -67,7 +67,7 @@ public:
   ~Console();
 
   void printString(const QString text);
-  void requestRawline();
+  void requestRawlineWithPrompt(const QString prompt);
   void requestChar();
 
   void getCursorPos(int &row, int &col);

@@ -69,7 +69,7 @@ private:
   EditorWindow *editWindow = NULL;
 
   int startLogo();
-  void beginReadRawline();
+  void beginReadRawlineWithPrompt(const QString prompt);
   void beginReadChar();
   void sendConsoleCursorPosition();
 

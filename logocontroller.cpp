@@ -101,7 +101,7 @@ bool LogoController::atEnd() { return inStream->atEnd(); }
 bool LogoController::keyQueueHasChars() { return !inStream->atEnd(); }
 
 // This is READRAWLINE
-DatumP LogoController::readRawlineWithPrompt(const QString &prompt) {
+DatumP LogoController::readRawlineWithPrompt(const QString prompt) {
   QTextStream *stream = (readStream == NULL) ? inStream : readStream;
   if (stream->atEnd())
     return nothing;

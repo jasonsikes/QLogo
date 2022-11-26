@@ -291,8 +291,12 @@ void MainWindow::readStandardOutput()
             break;
         }
         case C_CONSOLE_REQUEST_LINE:
-            beginReadRawline();
+        {
+            QString prompt;
+            *dataStream >> prompt;
+            beginReadRawlineWithPrompt(prompt);
             break;
+        }
         case C_CONSOLE_REQUEST_CHAR:
             beginReadChar();
             break;
@@ -441,10 +445,10 @@ void MainWindow::errorOccurred(QProcess::ProcessError error)
 }
 
 
-void MainWindow::beginReadRawline()
+void MainWindow::beginReadRawlineWithPrompt(const QString prompt)
 {
     windowMode = windowMode_waitForRawline;
-    ui->mainConsole->requestRawline();
+    ui->mainConsole->requestRawlineWithPrompt(prompt);
 }
 
 

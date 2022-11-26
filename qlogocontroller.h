@@ -52,7 +52,7 @@ public:
     void initialize();
 
     void printToConsole(const QString &s);
-    DatumP readRawlineWithPrompt(const QString &prompt);
+    DatumP readRawlineWithPrompt(const QString prompt);
     DatumP readchar();
     const QString editText(const QString startText);
 

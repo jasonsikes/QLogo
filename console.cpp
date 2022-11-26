@@ -73,10 +73,11 @@ void Console::setTextFontSize(double aSize)
     textFormat.setFont(f);
 }
 
-void Console::requestRawline()
+void Console::requestRawlineWithPrompt(const QString prompt)
 {
     consoleMode = consoleModeWaitingForRawline;
     moveCursor(QTextCursor::End);
+    printString(prompt);
     beginningOfRawline = textCursor().position();
     beginningOfRawlineInBlock = textCursor().positionInBlock();
     lineInputHistory.push_back("");
