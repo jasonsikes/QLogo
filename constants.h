@@ -52,6 +52,7 @@ enum messageCategory : message_t {
     C_CONSOLE_END_EDIT_TEXT,       // Text editor has finished
     C_CONSOLE_TEXT_CURSOR_POS,     // Position of text cursor (row,col)
     C_CONSOLE_SET_TEXT_CURSOR_POS, // Set text cursor position
+    C_CONSOLE_SET_CURSOR_MODE,     // Set text cursor insert/overwrite
 
     C_CANVAS_UPDATE_TURTLE_POS,       // Update the turtle matrix
     C_CANVAS_SET_TURTLE_IS_VISIBLE,   // Show/hide the turtle

@@ -100,7 +100,8 @@ public:
   virtual const QString getTextFontName() { Error::noGraphics();  return "Courier New"; }
   virtual void setTextFontName(const QString) { Error::noGraphics(); }
   virtual const QStringList getAllFontNames() { Error::noGraphics(); return QStringList(); }
-  void setCursorOverwriteMode(bool) { Error::noGraphics(); }
+  virtual void setCursorOverwriteMode(bool) { Error::noGraphics(); }
+  virtual bool cursorOverwriteMode() { Error::noGraphics(); return false; }
 
   virtual void setLabelFontSize(double) { Error::noGraphics(); }
   virtual double getLabelFontSize() { Error::noGraphics(); return 12; }

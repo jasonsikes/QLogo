@@ -22,6 +22,11 @@ class QLogoController : public LogoController
     int cursorRow;
     int cursorCol;
 
+    /// cursorOverwriteMode:
+    /// true:  cursor overwrites previously-written text
+    /// false: cursor inserts text (default)
+    bool cursoreModeIsOverwrite = false;
+
     // Text returned from editor winow
     QString editorText;
 
@@ -83,6 +88,8 @@ public:
     QString addStandoutToString(const QString src);
     void getTextCursorPos(int &row, int &col);
     void setTextCursorPos(int row, int col);
+    void setCursorOverwriteMode(bool isOverwriteMode);
+    bool cursorOverwriteMode();
     void setLabelFontSize(double aSize);
     double getLabelFontSize();
     const QString getLabelFontName();

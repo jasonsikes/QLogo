@@ -69,7 +69,6 @@ class Kernel {
   QTextStream *systemReadStream;
   QTextStream *writeStream;
   QTextStream *systemWriteStream;
-  bool cursorOverwrite = false;
   void lprint(QTextStream *stream, const QString &text);
   DatumP readRawLineWithPrompt(const QString prompt, QTextStream *stream);
   DatumP readChar();

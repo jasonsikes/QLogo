@@ -320,6 +320,13 @@ void MainWindow::readStandardOutput()
             ui->mainConsole->setTextCursorPosition(row, col);
             break;
         }
+        case C_CONSOLE_SET_CURSOR_MODE:
+        {
+            bool mode;
+            *dataStream >> mode;
+            ui->mainConsole->setOverwriteMode(mode);
+            break;
+        }
         case C_CANVAS_CLEAR_SCREEN_TEXT:
             ui->mainConsole->setPlainText("");
             break;

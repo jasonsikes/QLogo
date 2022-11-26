@@ -207,6 +207,20 @@ void QLogoController::setTextCursorPos(int row, int col)
     });
 }
 
+void QLogoController::setCursorOverwriteMode(bool isOverwriteMode)
+{
+    cursoreModeIsOverwrite = isOverwriteMode;
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CONSOLE_SET_CURSOR_MODE
+           << isOverwriteMode;
+    });
+}
+
+bool QLogoController::cursorOverwriteMode()
+{
+    return cursoreModeIsOverwrite;
+}
+
 
 const QString QLogoController::editText(const QString startText)
 {

@@ -60,6 +60,8 @@ protected:
     void insertNextCharFromQueue();
     void insertFromMimeData(const QMimeData *source) Q_DECL_OVERRIDE;
 
+    void writeTextFragment(const QString text);
+
     QTextCharFormat textFormat;
 
 public:

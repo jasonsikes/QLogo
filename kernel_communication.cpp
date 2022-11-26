@@ -663,21 +663,20 @@ DatumP Kernel::excAllfonts(DatumP node) {
 
 DatumP Kernel::excCursorInsert(DatumP node) {
   ProcedureHelper h(this, node);
-  cursorOverwrite = false;
   mainController()->setCursorOverwriteMode(false);
   return h.ret(nothing);
 }
 
 DatumP Kernel::excCursorOverwrite(DatumP node) {
   ProcedureHelper h(this, node);
-  cursorOverwrite = true;
   mainController()->setCursorOverwriteMode(true);
   return h.ret(nothing);
 }
 
 DatumP Kernel::excCursorMode(DatumP node) {
   ProcedureHelper h(this, node);
-  QString retval = cursorOverwrite ? "OVERWRITE" : "INSERT";
+  bool mode = mainController()->cursorOverwriteMode();
+  QString retval = mode ? "OVERWRITE" : "INSERT";
   DatumP retvalP(new Word(retval));
   return h.ret(retvalP);
 }

@@ -43,8 +43,32 @@ Console::Console(QWidget *parent) : QTextEdit(parent) {
 
 Console::~Console() {}
 
+// Write a fragment of text
+void Console::writeTextFragment(const QString text)
+{
+    QTextCursor tc = textCursor();
+    // If we are overwriting, delete the previous text before inserting
+    if (overwriteMode()) {
+        int len = text.length();
+        int pos = tc.positionInBlock();
+        int lineLen = tc.block().length() - 1; // minus one for "newline"
+        if (pos < lineLen) {
+            if ((pos + len) > lineLen) {
+                tc.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+                tc.removeSelectedText();
+            }
+            else if (len > 0) {
+                tc.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, len);
+                tc.removeSelectedText();
+            }
+        }
+    }
+    tc.setCharFormat(textFormat);
+    tc.insertText(text);
+}
+
+
 void Console::printString(const QString text) {
-  QTextCursor tc = textCursor();
   QStringList stringList = text.split(escapeChar);
   for (auto i = stringList.begin(); i != stringList.end(); ++i) {
 
@@ -53,8 +77,7 @@ void Console::printString(const QString text) {
           textFormat.setBackground(textFormat.foreground());
           textFormat.setForeground(bg);
       }
-      tc.setCharFormat(textFormat);
-      tc.insertText(*i);
+      writeTextFragment(*i);
   }
   ensureCursorVisible();
 }
