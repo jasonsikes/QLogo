@@ -107,9 +107,6 @@ public:
   virtual const QString getLabelFontName() { Error::noGraphics(); return QString(); }
   virtual void setLabelFontName(const QString &) { Error::noGraphics(); }
 
-  void beginInputHistory() {}
-  DatumP inputHistory() { return nothing; }
-
   virtual void setTurtlePos(const QMatrix4x4 &) { Error::noGraphics(); }
   virtual void setTurtleIsVisible(bool) { Error::noGraphics(); }
   void setPenmode(PenModeEnum) { Error::noGraphics(); }
@@ -120,9 +117,6 @@ public:
   virtual bool isPenSizeValid(double) { Error::noGraphics(); return false; }
   void setIsCanvasBounded(bool) { Error::noGraphics(); }
   void setSplitterSizeRatios(float, float) { Error::noGraphics(); }
-
-  bool eventQueueIsEmpty() { Error::noGraphics(); return true; }
-  char nextQueueEvent() { Error::noGraphics(); return 'x'; }
 
   Kernel *kernel;
 
