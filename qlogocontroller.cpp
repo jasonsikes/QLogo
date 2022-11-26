@@ -115,7 +115,7 @@ message_t QLogoController::getMessage()
     case C_CONSOLE_END_EDIT_TEXT:
         bufferStream >> editorText;
         break;
-    case C_CONSOLE_GET_TEXT_CURSOR_POS:
+    case C_CONSOLE_TEXT_CURSOR_POS:
         bufferStream >> cursorRow
                      >> cursorCol;
         break;
@@ -189,12 +189,22 @@ void QLogoController::clearScreenText()
 void QLogoController::getTextCursorPos(int &row, int &col)
 {
     sendMessage([&](QDataStream *out) {
-      *out << (message_t)C_CONSOLE_GET_TEXT_CURSOR_POS;
+      *out << (message_t)C_CONSOLE_TEXT_CURSOR_POS;
     });
 
-    waitForMessage(C_CONSOLE_GET_TEXT_CURSOR_POS);
+    waitForMessage(C_CONSOLE_TEXT_CURSOR_POS);
     row = cursorRow;
     col = cursorCol;
+}
+
+
+void QLogoController::setTextCursorPos(int row, int col)
+{
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CONSOLE_SET_TEXT_CURSOR_POS
+           << row
+           << col;
+    });
 }
 
 

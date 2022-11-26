@@ -303,9 +303,17 @@ void MainWindow::readStandardOutput()
             openEditorWindow(startingText);
             break;
         }
-        case C_CONSOLE_GET_TEXT_CURSOR_POS:
+        case C_CONSOLE_TEXT_CURSOR_POS:
         {
             sendConsoleCursorPosition();
+            break;
+        }
+        case C_CONSOLE_SET_TEXT_CURSOR_POS:
+        {
+            int row, col;
+            *dataStream >> row
+                        >> col;
+            ui->mainConsole->setTextCursorPosition(row, col);
             break;
         }
         case C_CANVAS_CLEAR_SCREEN_TEXT:
@@ -497,7 +505,7 @@ void MainWindow::sendConsoleCursorPosition()
     int col = 0;
     ui->mainConsole->getCursorPos(row, col);
     sendMessage([&](QDataStream *out) {
-        *out << (message_t)C_CONSOLE_GET_TEXT_CURSOR_POS
+        *out << (message_t)C_CONSOLE_TEXT_CURSOR_POS
              << row
              << col;
     });

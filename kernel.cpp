@@ -88,6 +88,8 @@ DatumP Kernel::excGotoToken(DatumP) { return nothing; }
 bool Kernel::isInputRedirected() { return readStream != NULL; }
 
 bool Kernel::numbersFromList(QVector<double> &retval, DatumP l) {
+    if ( ! l.isList())
+        return false;
   ListIterator iter = l.listValue()->newIterator();
 
   retval.clear();

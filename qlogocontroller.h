@@ -82,7 +82,7 @@ public:
     const QStringList getAllFontNames() { return allFontNames; }
     QString addStandoutToString(const QString src);
     void getTextCursorPos(int &row, int &col);
-
+    void setTextCursorPos(int row, int col);
     void setLabelFontSize(double aSize);
     double getLabelFontSize();
     const QString getLabelFontName();

@@ -50,7 +50,8 @@ enum messageCategory : message_t {
     C_CONSOLE_SET_FONT_SIZE,       // Set the console font size
     C_CONSOLE_BEGIN_EDIT_TEXT,     // Open the text editor window
     C_CONSOLE_END_EDIT_TEXT,       // Text editor has finished
-    C_CONSOLE_GET_TEXT_CURSOR_POS, // Position of text cursor (row,col)
+    C_CONSOLE_TEXT_CURSOR_POS,     // Position of text cursor (row,col)
+    C_CONSOLE_SET_TEXT_CURSOR_POS, // Set text cursor position
 
     C_CANVAS_UPDATE_TURTLE_POS,       // Update the turtle matrix
     C_CANVAS_SET_TURTLE_IS_VISIBLE,   // Show/hide the turtle

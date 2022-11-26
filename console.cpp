@@ -101,6 +101,32 @@ void Console::getCursorPos(int &row, int &col)
   col = tc.positionInBlock();
 }
 
+void Console::setTextCursorPosition(int row, int col)
+{
+    int countOfRows = document()->blockCount();
+    while (countOfRows <= row) {
+      moveCursor(QTextCursor::End);
+      textCursor().insertBlock();
+      ++countOfRows;
+    }
+
+    QTextBlock line = document()->findBlockByNumber(row);
+    int countOfCols = line.length();
+
+    QTextCursor tc = textCursor();
+    if (countOfCols <= col) {
+      tc.setPosition(line.position());
+      tc.movePosition(QTextCursor::EndOfBlock);
+      QString fill = QString(col - countOfCols + 1, QChar(' '));
+      tc.insertText(fill);
+      tc.movePosition(QTextCursor::EndOfBlock);
+    } else {
+      tc.setPosition(line.position() + col);
+    }
+    setTextCursor(tc);
+}
+
+
 
 void Console::keyPressEvent(QKeyEvent *event)
 {

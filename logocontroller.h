@@ -92,7 +92,7 @@ public:
   virtual QVector2D lastMouseclickPosition() { Error::noGraphics(); return clickPos; }
   virtual QVector2D mousePosition() { Error::noGraphics(); return mousePos; }
 
-  void setTextCursorPos(int, int) { Error::noGraphics(); }
+  virtual void setTextCursorPos(int, int) { Error::noGraphics(); }
   virtual void getTextCursorPos(int &, int &) { Error::noGraphics(); }
   void setTextColor(const QColor &, const QColor &) { Error::noGraphics(); }
   virtual void setTextFontSize(double) { Error::noGraphics(); }
