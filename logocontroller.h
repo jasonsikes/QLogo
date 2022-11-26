@@ -88,9 +88,9 @@ public:
   virtual QImage getCanvasImage() { Error::noGraphics(); return QImage(); }
 
   virtual bool getIsMouseButtonDown() { Error::noGraphics(); return false; }
-  int getButton() { Error::noGraphics();  return 0; }
+  virtual int getAndResetButtonID() { Error::noGraphics();  return 0; }
   virtual QVector2D lastMouseclickPosition() { Error::noGraphics(); return clickPos; }
-  QVector2D mousePosition() { Error::noGraphics(); return mousePos; }
+  virtual QVector2D mousePosition() { Error::noGraphics(); return mousePos; }
 
   void setTextCursorPos(int, int) { Error::noGraphics(); }
   void getTextCursorPos(int &, int &) { Error::noGraphics(); }
@@ -133,6 +133,7 @@ protected:
   QVector2D mousePos = QVector2D(0,0);
   QVector2D clickPos = QVector2D(0,0);
   int lastButtonpressID = 0;
+  bool isMouseButtonDown = false;
 
   QTextStream *readStream;
   QTextStream *writeStream;

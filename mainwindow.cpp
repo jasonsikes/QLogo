@@ -123,6 +123,12 @@ int MainWindow::startLogo()
   connect(ui->mainCanvas, &Canvas::sendMouseclickedSignal,
           this, &MainWindow::mouseclickedSlot);
 
+  connect(ui->mainCanvas, &Canvas::sendMousemovedSignal,
+          this, &MainWindow::mousemovedSlot);
+
+  connect(ui->mainCanvas, &Canvas::sendMouseReleasedSignal,
+          this, &MainWindow::mousereleasedSlot);
+
   logoProcess->start(command, arguments);
   return 0;
 }
@@ -442,6 +448,23 @@ void MainWindow::mouseclickedSlot(QVector2D position, int buttonID)
         *out << (message_t)C_CANVAS_MOUSE_BUTTON_DOWN
              << position
              << buttonID;
+    });
+}
+
+
+void MainWindow::mousemovedSlot(QVector2D position)
+{
+    sendMessage([&](QDataStream *out) {
+        *out << (message_t)C_CANVAS_MOUSE_MOVED
+             << position;
+    });
+}
+
+
+void MainWindow::mousereleasedSlot()
+{
+    sendMessage([&](QDataStream *out) {
+        *out << (message_t)C_CANVAS_MOUSE_BUTTON_UP;
     });
 }
 

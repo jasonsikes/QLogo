@@ -121,6 +121,13 @@ message_t QLogoController::getMessage()
     case C_CANVAS_MOUSE_BUTTON_DOWN:
         bufferStream >> clickPos
                      >> lastButtonpressID;
+        isMouseButtonDown = true;
+        break;
+    case C_CANVAS_MOUSE_BUTTON_UP:
+        isMouseButtonDown = false;
+        break;
+    case C_CANVAS_MOUSE_MOVED:
+        bufferStream >> mousePos;
         break;
     default:
         qDebug() <<"I don't know how I got " << header;
@@ -349,13 +356,30 @@ QImage QLogoController::getCanvasImage()
 
 bool QLogoController::getIsMouseButtonDown()
 {
-    return false;
+    processInputMessageQueue();
+    return isMouseButtonDown;
 }
 
 QVector2D QLogoController::lastMouseclickPosition()
 {
     processInputMessageQueue();
     return clickPos;
+}
+
+
+int QLogoController::getAndResetButtonID()
+{
+    processInputMessageQueue();
+    int retval = lastButtonpressID;
+    lastButtonpressID = 0;
+    return retval;
+}
+
+
+QVector2D QLogoController::mousePosition()
+{
+    processInputMessageQueue();
+    return mousePos;
 }
 
 

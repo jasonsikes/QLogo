@@ -87,6 +87,7 @@ class Canvas : public QOpenGLWidget, protected QOpenGLFunctions {
   bool turtleIsVisible;
 
   bool canvasIsBounded = true;
+  bool mouseButtonPressed = false;
 
   // Visible vertices on the X axis range from -boundsX to +boundsX
   double boundsX;
@@ -165,6 +166,8 @@ class Canvas : public QOpenGLWidget, protected QOpenGLFunctions {
   void updateMatrix(void);
 
   void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+  void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+  void mouseReleaseEvent(QMouseEvent *) Q_DECL_OVERRIDE;
 
 public:
   /// Construct a Canvas
@@ -223,6 +226,8 @@ public:
 
 signals:
   void sendMouseclickedSignal(const QVector2D position, int buttonID);
+  void sendMousemovedSignal(const QVector2D position);
+  void sendMouseReleasedSignal();
 
 };
 

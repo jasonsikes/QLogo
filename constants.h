@@ -65,6 +65,8 @@ enum messageCategory : message_t {
     C_CANVAS_CLEAR_SCREEN_TEXT,       // Clear text from Console
     C_CANVAS_GET_IMAGE,               // Get a screenshot of the current image
     C_CANVAS_MOUSE_BUTTON_DOWN,       // A mouse button was pressed
+    C_CANVAS_MOUSE_MOVED,             // Mouse moved over the canvas
+    C_CANVAS_MOUSE_BUTTON_UP,         // A mouse button was released
 };
 
 const QChar escapeChar(27);

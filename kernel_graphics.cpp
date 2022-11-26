@@ -641,15 +641,12 @@ DatumP Kernel::excSavepict(DatumP node) {
 
 // MOUSE QUERIES
 
-// MOUSEPOS: outputs the coordinates of the mouse
-// CLICKPOS: outputs the coordinates that the mouse was at when a mouse button was most recently pushed
-// BUTTONP:  outputs TRUE if a mouse button is down and the mouse is over the graphics window
-// BUTTON:   outputs 0 if no mouse button has been pushed inside the Logo window since the last call to BUTTON. Otherwise, it outputs an integer between 1 and 3
 DatumP Kernel::excMousepos(DatumP node) {
   ProcedureHelper h(this, node);
   List *retval = new List;
-//  retval->append(DatumP(new Word(mainController()->mousePos.x())));
-//  retval->append(DatumP(new Word(mainController()->mousePos.y())));
+  QVector2D position = mainController()->mousePosition();
+  retval->append(DatumP(new Word(position.x())));
+  retval->append(DatumP(new Word(position.y())));
   return h.ret(retval);
 }
 
@@ -669,5 +666,5 @@ DatumP Kernel::excButtonp(DatumP node) {
 
 DatumP Kernel::excButton(DatumP node) {
   ProcedureHelper h(this, node);
-  return h.ret(new Word(mainController()->getButton()));
+  return h.ret(new Word(mainController()->getAndResetButtonID()));
 }

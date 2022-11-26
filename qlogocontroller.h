@@ -61,7 +61,9 @@ public:
     void drawLabel(const QString &, const QVector3D &, const QColor &);
     void setCanvasBackgroundColor(QColor);
     bool getIsMouseButtonDown();
+    int getAndResetButtonID();
     QVector2D lastMouseclickPosition();
+    QVector2D mousePosition();
 
     void setBounds(double x, double y);
     double boundX() { return xbound; }
