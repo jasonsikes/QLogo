@@ -207,6 +207,16 @@ void QLogoController::setTextCursorPos(int row, int col)
     });
 }
 
+
+void QLogoController::setTextColor(const QColor foregroundColor, const QColor backgroundColor)
+{
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CONSOLE_SET_TEXT_COLOR
+           << foregroundColor
+           << backgroundColor;
+    });
+}
+
 void QLogoController::setCursorOverwriteMode(bool isOverwriteMode)
 {
     cursoreModeIsOverwrite = isOverwriteMode;

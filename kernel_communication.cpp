@@ -588,7 +588,7 @@ DatumP Kernel::excCursor(DatumP node) {
 DatumP Kernel::excSettextcolor(DatumP node) {
   ProcedureHelper h(this, node);
   QColor foreground;
-  QColor background = QColor("white");
+  QColor background;
   DatumP foregroundP =
       h.validatedDatumAtIndex(0, [&foreground, this](DatumP candidate) {
         return colorFromDatumP(foreground, candidate);

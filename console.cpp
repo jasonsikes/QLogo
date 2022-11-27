@@ -69,6 +69,8 @@ void Console::writeTextFragment(const QString text)
 
 
 void Console::printString(const QString text) {
+    // Because STANDOUT requires characters added to strings, we have to
+    // handle them here.
   QStringList stringList = text.split(escapeChar);
   for (auto i = stringList.begin(); i != stringList.end(); ++i) {
 
@@ -95,6 +97,19 @@ void Console::setTextFontSize(double aSize)
     f.setPointSizeF(aSize);
     textFormat.setFont(f);
 }
+
+void Console::setTextFontColor(QColor foreground, QColor background)
+{
+    textFormat.setForeground(QBrush(foreground));
+    if (background.isValid()) {
+        QBrush brush = QBrush(background);
+        textFormat.setBackground(brush);
+        QPalette p = palette();
+        p.setBrush(QPalette::Base, brush);
+        setPalette(p);
+    }
+}
+
 
 void Console::requestRawlineWithPrompt(const QString prompt)
 {
@@ -176,7 +191,7 @@ void Console::processCharModeKeyPressEvent(QKeyEvent *event)
       if (t.length() > 1) {
           keyQueue.push_back(t.right(t.length()-1));
       }
-      sendCharSignal(t[0]);
+      emit sendCharSignal(t[0]);
   }
 }
 

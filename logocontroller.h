@@ -94,7 +94,7 @@ public:
 
   virtual void setTextCursorPos(int, int) { Error::noGraphics(); }
   virtual void getTextCursorPos(int &, int &) { Error::noGraphics(); }
-  void setTextColor(const QColor &, const QColor &) { Error::noGraphics(); }
+  virtual void setTextColor(const QColor, const QColor) { Error::noGraphics(); }
   virtual void setTextFontSize(double) { Error::noGraphics(); }
   virtual double getTextFontSize() { Error::noGraphics(); return 12; }
   virtual const QString getTextFontName() { Error::noGraphics();  return "Courier New"; }

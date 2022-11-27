@@ -327,6 +327,15 @@ void MainWindow::readStandardOutput()
             ui->mainConsole->setOverwriteMode(mode);
             break;
         }
+        case C_CONSOLE_SET_TEXT_COLOR:
+        {
+            QColor foreground;
+            QColor background;
+            *dataStream >> foreground
+                        >> background;
+            ui->mainConsole->setTextFontColor(foreground,background);
+            break;
+        }
         case C_CANVAS_CLEAR_SCREEN_TEXT:
             ui->mainConsole->setPlainText("");
             break;

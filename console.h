@@ -76,6 +76,7 @@ public:
   void setTextCursorPosition(int row, int col);
   void setTextFontName(const QString aName);
   void setTextFontSize(double aSize);
+  void setTextFontColor(QColor foreground, QColor background);
   const QTextCharFormat getFont() { return textFormat;}
 
 signals:

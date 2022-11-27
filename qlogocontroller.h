@@ -88,6 +88,7 @@ public:
     QString addStandoutToString(const QString src);
     void getTextCursorPos(int &row, int &col);
     void setTextCursorPos(int row, int col);
+    void setTextColor(const QColor foregroundColor, const QColor backgroundColor);
     void setCursorOverwriteMode(bool isOverwriteMode);
     bool cursorOverwriteMode();
     void setLabelFontSize(double aSize);
