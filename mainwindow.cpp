@@ -156,15 +156,13 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::initialize()
 {
-    QList<int> sizes;
-    sizes << 0 << 100;
     QFont defaultFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     ui->mainConsole->setTextFontSize(defaultFont.pointSizeF());
     ui->mainConsole->setTextFontName(defaultFont.family());
     ui->mainCanvas->setLabelFontSize(defaultFont.pointSizeF());
     ui->mainCanvas->setLabelFontName(defaultFont.family());
     ui->mainCanvas->setBackgroundColor(QColor(startingColor));
-    ui->splitter->setSizes(sizes);
+    setSplitterforMode(initScreenMode);
 
     sendMessage([&](QDataStream *out) {
         *out
@@ -213,9 +211,7 @@ void MainWindow::introduceCanvas() {
     if (hasShownCanvas)
         return;
     hasShownCanvas = true;
-    QList<int>sizes;
-    sizes << 75 << 25;
-    ui->splitter->setSizes(sizes);
+    setSplitterforMode(splitScreenMode);
 }
 
 
@@ -267,6 +263,13 @@ void MainWindow::readStandardOutput()
         case W_CLOSE_PIPE:
         {
             logoProcess->closeWriteChannel();
+            break;
+        }
+        case W_SET_SCREENMODE:
+        {
+            ScreenModeEnum newMode;
+            *dataStream >> newMode;
+            setSplitterforMode(newMode);
             break;
         }
         case C_CONSOLE_PRINT_STRING:
@@ -434,6 +437,11 @@ void MainWindow::readStandardOutput()
             ui->mainCanvas->setPensize((GLfloat)newSize);
             break;
         }
+        case C_CANVAS_SET_PENMODE:
+            PenModeEnum newMode;
+            *dataStream >> newMode;
+            ui->mainCanvas->setPenmode(newMode);
+            break;
         case C_CANVAS_GET_IMAGE:
         {
             sendCanvasImage();
@@ -446,6 +454,31 @@ void MainWindow::readStandardOutput()
         }
         delete dataStream;
     } while (1);
+}
+
+
+void MainWindow::setSplitterforMode(ScreenModeEnum mode)
+{
+    float canvasSize, consoleSize;
+    switch (mode) {
+    case initScreenMode:
+        canvasSize = initScreenSize;
+        break;
+    case textScreenMode:
+        canvasSize = textScreenSize;
+        break;
+    case fullScreenMode:
+        canvasSize = fullScreenSize;
+        break;
+    case splitScreenMode:
+        canvasSize = splitScreenSize;
+        break;
+    }
+    QList<int>sizes = ui->splitter->sizes();
+    float splitterSize = sizes[0] + sizes[1];
+    canvasSize = canvasSize * splitterSize;
+    consoleSize = splitterSize - canvasSize;
+    ui->splitter->setSizes(QList<int>() << (int)canvasSize << (int)consoleSize);
 }
 
 

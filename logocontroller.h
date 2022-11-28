@@ -41,13 +41,6 @@
 class Kernel;
 class QTextStream;
 
-enum ScreenModeEnum {
-  initScreenMode,
-  textScreenMode,
-  fullScreenMode,
-  splitScreenMode
-};
-
 
 class LogoController : public QObject {
   Q_OBJECT
@@ -110,9 +103,9 @@ public:
 
   virtual void setTurtlePos(const QMatrix4x4 &) { Error::noGraphics(); }
   virtual void setTurtleIsVisible(bool) { Error::noGraphics(); }
-  void setPenmode(PenModeEnum) { Error::noGraphics(); }
-  void setScreenMode(ScreenModeEnum) { Error::noGraphics(); }
-  ScreenModeEnum getScreenMode() { Error::noGraphics(); return textScreenMode; }
+  virtual void setPenmode(PenModeEnum) { Error::noGraphics(); }
+  virtual void setScreenMode(ScreenModeEnum) { Error::noGraphics(); }
+  virtual ScreenModeEnum getScreenMode() { Error::noGraphics(); return textScreenMode; }
 
   virtual void setPensize(double) { Error::noGraphics(); }
   virtual bool isPenSizeValid(double) { Error::noGraphics(); return false; }

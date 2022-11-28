@@ -35,7 +35,8 @@ using message_t = quint8;
 enum messageCategory : message_t {
     W_ZERO = 0,             // Zeroes get ignored
     W_INITIALIZE,           // The initialization message, either request or response
-    W_CLOSE_PIPE,           //The interpreter tells the GUI to close the iter-process pipe
+    W_CLOSE_PIPE,           // The interpreter tells the GUI to close the iter-process pipe
+    W_SET_SCREENMODE,       // Set the screenmode (splitscreen, fullscreen, textscreen)
 
     S_SYSTEM,             // SYSTEM signal (End everything)
     S_TOPLEVEL,           // TOPLEVEL signal (End currently-running procedure, drop back to prompt)
@@ -71,6 +72,7 @@ enum messageCategory : message_t {
     C_CANVAS_MOUSE_BUTTON_DOWN,       // A mouse button was pressed
     C_CANVAS_MOUSE_MOVED,             // Mouse moved over the canvas
     C_CANVAS_MOUSE_BUTTON_UP,         // A mouse button was released
+    C_CANVAS_SET_PENMODE,             // Set canvas pen mode
 };
 
 const QChar escapeChar(27);
@@ -96,6 +98,20 @@ enum SignalsEnum_t : int {
     toplevelSignal,          // CTRL-C,         kill running script  [ THROW "TOPLEVEL ]
     pauseSignal              // CTRL-Z,         pause running script [ PAUSE ]
 };
+
+
+enum ScreenModeEnum {
+  initScreenMode,
+  textScreenMode,
+  fullScreenMode,
+  splitScreenMode
+};
+
+// Canvas size proportions for each mode.
+const float textScreenSize  = 0.0;
+const float fullScreenSize  = 0.8;
+const float splitScreenSize = 0.8;
+const float initScreenSize  = 0.0;
 
 
 #endif // CONSTANTS_H

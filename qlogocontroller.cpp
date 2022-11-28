@@ -308,6 +308,29 @@ void QLogoController::setTurtlePos(const QMatrix4x4 &newTurtlePos)
   });
 }
 
+void QLogoController::setPenmode(PenModeEnum aMode)
+{
+    if (aMode == currentPenmode)
+        return;
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CANVAS_SET_PENMODE << aMode;
+    });
+}
+
+
+void QLogoController::setScreenMode(ScreenModeEnum newMode)
+{
+    screenMode = newMode;
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)W_SET_SCREENMODE << newMode;
+    });
+}
+
+ScreenModeEnum QLogoController::getScreenMode()
+{
+    return screenMode;
+}
+
 void QLogoController::setTurtleIsVisible(bool isVisible)
 {
     sendMessage([&](QDataStream *out) {

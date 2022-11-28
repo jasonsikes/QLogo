@@ -31,6 +31,7 @@
 #include <QProcess>
 #include <QDataStream>
 #include <functional>
+#include "constants.h"
 
 class Canvas;
 class Console;
@@ -77,6 +78,7 @@ private:
 
   void initialize();
   void introduceCanvas();
+  void setSplitterforMode(ScreenModeEnum mode);
   void openEditorWindow(const QString startingText);
 
   void sendCanvasImage();

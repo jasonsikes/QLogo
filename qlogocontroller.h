@@ -33,6 +33,7 @@ class QLogoController : public LogoController
     double minPensize;
     double maxPensize;
     double penSize;
+    PenModeEnum currentPenmode = penModePaint;
 
     double xbound;
     double ybound;
@@ -43,6 +44,8 @@ class QLogoController : public LogoController
     QStringList allFontNames;
     QString textFontName;
     qreal textFontSize;
+
+    ScreenModeEnum screenMode;
 
     QString labelFontName;
     qreal labelFontSize;
@@ -63,6 +66,7 @@ public:
 
     void setTurtlePos(const QMatrix4x4 &newTurtlePos);
     void setTurtleIsVisible(bool isVisible);
+    void setPenmode(PenModeEnum aMode);
     void drawLine(const QVector3D &start, const QVector3D &end, const QColor &startColor, const QColor &endColor);
     void drawPolygon(const QList<QVector3D> &points, const QList<QColor> &colors);
     void clearScreen();
@@ -72,6 +76,8 @@ public:
     int getAndResetButtonID();
     QVector2D lastMouseclickPosition();
     QVector2D mousePosition();
+    void setScreenMode(ScreenModeEnum newMode);
+    ScreenModeEnum getScreenMode();
 
     void setBounds(double x, double y);
     double boundX() { return xbound; }
