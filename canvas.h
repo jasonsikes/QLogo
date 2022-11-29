@@ -221,6 +221,12 @@ public:
   /// Set the maximum X and Y bounds
   void setBounds(double x, double y);
 
+  /// Set whether the view should use the whole widget or a box within
+  void setIsBounded(bool aIsBounded) { canvasIsBounded = aIsBounded; update(); }
+
+  /// Returns true if the bounds are drawn
+  bool isBounded() { return canvasIsBounded; }
+
   /// Return a screenshot of the canvas
   QImage getImage();
 

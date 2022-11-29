@@ -394,6 +394,13 @@ void MainWindow::readStandardOutput()
             ui->mainCanvas->setBounds(x, y);
             break;
         }
+        case C_CANVAS_SET_IS_BOUNDED:
+        {
+            bool isBounded;
+            *dataStream >> isBounded;
+            ui->mainCanvas->setIsBounded(isBounded);
+            break;
+        }
         case C_CANVAS_SET_FONT_NAME:
         {
             QString name;

@@ -331,6 +331,21 @@ ScreenModeEnum QLogoController::getScreenMode()
     return screenMode;
 }
 
+void QLogoController::setIsCanvasBounded(bool aIsBounded)
+{
+    if (canvasIsBounded == aIsBounded)
+        return;
+    canvasIsBounded = aIsBounded;
+    sendMessage([&](QDataStream *out) {
+      *out << (message_t)C_CANVAS_SET_IS_BOUNDED << aIsBounded;
+    });
+}
+
+bool QLogoController::isCanvasBounded()
+{
+    return canvasIsBounded;
+}
+
 void QLogoController::setTurtleIsVisible(bool isVisible)
 {
     sendMessage([&](QDataStream *out) {

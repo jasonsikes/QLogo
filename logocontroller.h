@@ -109,7 +109,8 @@ public:
 
   virtual void setPensize(double) { Error::noGraphics(); }
   virtual bool isPenSizeValid(double) { Error::noGraphics(); return false; }
-  void setIsCanvasBounded(bool) { Error::noGraphics(); }
+  virtual void setIsCanvasBounded(bool) { Error::noGraphics(); }
+  virtual bool isCanvasBounded() { Error::noGraphics(); return false; }
   void setSplitterSizeRatios(float, float) { Error::noGraphics(); }
 
   Kernel *kernel;

@@ -37,6 +37,7 @@ class QLogoController : public LogoController
 
     double xbound;
     double ybound;
+    bool canvasIsBounded = true;
 
     QColor currentBackgroundColor;
     QImage canvasImage;
@@ -83,6 +84,8 @@ public:
     double boundX() { return xbound; }
     double boundY() { return ybound; }
     QColor getCanvasBackgroundColor(void);
+    void setIsCanvasBounded(bool aIsBounded);
+    bool isCanvasBounded();
 
     bool isPenSizeValid(double candidate) { return ((candidate >= minPensize) && (candidate <= maxPensize)); }
     QImage getCanvasImage();

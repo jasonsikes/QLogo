@@ -311,7 +311,11 @@ DatumP Kernel::excWrap(DatumP node) {
   TurtleModeEnum newMode = turtleWrap;
   if (mainTurtle()->getMode() != newMode) {
     mainTurtle()->setMode(newMode);
-    mainController()->setIsCanvasBounded(true);
+    if (mainController()->isCanvasBounded() == false) {
+        mainController()->setIsCanvasBounded(true);
+        mainTurtle()->home(false);
+        mainController()->clearScreen();
+    }
   }
   return h.ret();
 }
@@ -331,7 +335,11 @@ DatumP Kernel::excFence(DatumP node) {
   TurtleModeEnum newMode = turtleFence;
   if (mainTurtle()->getMode() != newMode) {
     mainTurtle()->setMode(newMode);
-    mainController()->setIsCanvasBounded(true);
+    if (mainController()->isCanvasBounded() == false) {
+        mainController()->setIsCanvasBounded(true);
+        mainTurtle()->home(false);
+        mainController()->clearScreen();
+    }
   }
   return h.ret();
 }

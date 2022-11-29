@@ -64,6 +64,7 @@ enum messageCategory : message_t {
     C_CANVAS_CLEAR_SCREEN,            // Clear the graphics screen
     C_CANVAS_SET_BACKGROUND_COLOR,    // Set the canvas background color
     C_CANVAS_SETBOUNDS,               // Set the X and Y bounds of the drawing surface area
+    C_CANVAS_SET_IS_BOUNDED,          // Determine whether canvas draws in a box or whole widget
     C_CANVAS_SET_PENSIZE,             // Set the drawing pen size
     C_CANVAS_SET_FONT_NAME,           // Set the label font name
     C_CANVAS_SET_FONT_SIZE,           // Set the label font size
