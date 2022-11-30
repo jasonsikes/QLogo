@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=QLogo
-GenericName=QLogo Programming Environment
+GenericName=UCBLogo Programming Environment
 Exec=QLogo
 Icon=QLogo
 Comment=A UCBLogo-compatible interpreter using Qt and OpenGL
