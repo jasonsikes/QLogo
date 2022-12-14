@@ -28,7 +28,6 @@
 
 #include "datum.h"
 
-#include "help.h"
 #include "procedurehelper.h"
 #include "propertylists.h"
 #include "vars.h"
@@ -52,7 +51,6 @@ class Kernel {
   Parser *parser;
   Vars variables;
   DatumP filePrefix;
-  Help help;
   long repcount = -1;
   int pauseLevel = 0;
   int procedureIterationDepth = 0;

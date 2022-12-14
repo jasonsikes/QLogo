@@ -1,0 +1,7 @@
+Version 0.94
+ * First release of logo and QLogo
+ * QLogo and logo are now separate programs.
+   * logo is the language interpreter
+   * QLogo is the GUI that is specific to the logo program
+   * Removed help documentation.
+

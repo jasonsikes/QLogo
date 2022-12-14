@@ -1,38 +1,22 @@
 # This is README for QLogo.
 
-## IMPORTANT!!!
+## Downloading
 
-QLogo is in a state of transition. This version barely works!
+In this place I used to say, "This version barely works. Download
+an older version."
 
-If you want a fully working version of QLogo source you need to checkout
-Version 0.92! You can get this either by issuing the following command in your
-local QLogo repository:
+That was from when I had made a significant change which broke a
+lot of things. Now those broken things have been fixed up, and I
+can now say that the current version of QLogo is the most stable.
 
-```
-$ git checkout v0.92
-```
+I am not providing compiled versions of QLogo at this time. Windows
+and Macos systems require me to sign the binaries. (This is a
+good thing.) I still have yet to learn how to do that.
 
-OR, you can download QLogo Version 0.92 source on QLogo's download page:
-
-https://www.qlogo.org/download/
-
-
-***
-
-
-QLogo is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-QLogo is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with QLogo.  If not, see http://www.gnu.org/licenses/.
-
+Please note that there are now TWO executables: logo and QLogo. The
+*logo* executable works as a standalone command-line program. The
+*QLogo* executable is a sort of terminal that also provides the
+turtle.
 
 ***
 
@@ -41,6 +25,29 @@ along with QLogo.  If not, see http://www.gnu.org/licenses/.
 QLogo is an interpreter for the Logo language written in C++ using
 Qt and OpenGL. It mimics (as much as I find reasonable) the UCBLogo
 interpreter developed by Brian Harvey at U.C. Berkeley.
+
+Copyright (C) 2017-2022 Jason Sikes
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+***
+
+The help files included in this package derive from UCBLogo under
+terms of the GNU General Public License as published by the Free
+Software Foundation, version 3.
+
+You should have received a copy of the GNU General Public License along
+with this program. If not, see https://www.gnu.org/licenses/.
+
+***
 
 You can find the UCBLogo Manual here:
 
@@ -54,12 +61,7 @@ The differences between QLogo and UCBLogo are described in the
 
 ## Compiling
 
-QLogo requires Qt6 and is currently being developed and tested on the following
-platforms:
-
-* Windows 10 using MinGW 8.1.0 
-* OpenSUSE LEAP 15.2 using gcc 7.5.0
-* Mac OS X 11.3 using Clang 12.0.5
+QLogo requires Qt6 and cmake.
 
 ### To build:
 
@@ -98,10 +100,8 @@ There is no "make install" step yet.
 
 
 * Changes in font properties (size, color, family) do not affect characters
-  already printed. This enables multiple colors and fonts on the same console,
-  but it disables any flash or strobe effect.
+  already printed. This enables multiple colors and fonts on the same console.
   
-
 
 * The entire Logo standard library is loaded internally and buried. There is
   no library directory at this time.
@@ -122,7 +122,6 @@ There is no "make install" step yet.
 * No scunching. UCBLogo provided a scrunch to compensate for older CRT screens
   with non-square pixels. This enabled turtle operations to maintain consistent
   physical height-width. `SCRUNCH` and `SETSCRUNCH` are no-ops.
-
 
 
 * `SAVEPICT` saves a copy of the canvas in the format given by the filename's
@@ -180,7 +179,8 @@ Not implemented yet.
 
 `SETEDITOR`:
 
-QLogo uses a built-in editor.
+QLogo uses a built-in editor. If you run the logo program by itself,
+no editor is available.
 
 `SETLIBLOC`:
 
@@ -223,15 +223,20 @@ Returns a list of all the fonts available on your system.
 
 `CURSORINSERT`:
 
-Sets cursor to insert mode, this is the default.
+Sets cursor to insert mode in QLogo. This is the default.
 
 `CURSOROVERWRITE`:
 
-Sets cursor to overwrite mode.
+Sets cursor to overwrite mode in QLogo.
 
 `CURSORMODE`:
 
 Outputs either `INSERT` or `OVERWRITE`.
+
+`STANDOUT`:
+
+This works in QLogo by switching the font's foreground and background
+colors. It isn't implemented for text terminals.
 
 `BOUNDS`:
 

@@ -948,24 +948,10 @@ DatumP Kernel::excLoad(DatumP node) {
 
 DatumP Kernel::excHelp(DatumP node) {
   ProcedureHelper h(this, node);
-  if (h.countOfChildren() > 0) {
-    QString cmdName = h.wordAtIndex(0).wordValue()->keyValue();
-    DatumP textP = help.helpForKeyword(cmdName);
-    if (textP == nothing) {
-      QString message = QString("No help available on %1\n")
-                            .arg(h.wordAtIndex(0).wordValue()->printValue());
-      sysPrint(message);
-    } else {
-      QString message = help.helpForKeyword(cmdName).wordValue()->printValue();
-      sysPrint(message);
-    }
-  } else {
-    DatumP keywordsP = help.allKeywords();
-    ListIterator iter = keywordsP.listValue()->newIterator();
-    while (iter.elementExists()) {
-      sysPrint(iter.element().wordValue()->printValue() + "\n");
-    }
-  }
+
+  sysPrint("Sorry, help is not available in this version of QLogo.\n"
+	   "The UCBLogo manual, from which QLogo is based, is available\n"
+	   "at https://people.eecs.berkeley.edu/~bh/usermanual\n");
 
   return nothing;
 }

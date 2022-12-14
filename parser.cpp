@@ -1776,7 +1776,7 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["EDITFILE"] = {&Kernel::excEditfile, 1, 1, 1};
   stringToCmd["SAVE"] = {&Kernel::excSave, 0, -1, 1};
   stringToCmd["LOAD"] = {&Kernel::excLoad, 1, 1, 1};
-  stringToCmd["HELP"] = {&Kernel::excHelp, 0, -1, 1};
+  stringToCmd["HELP"] = {&Kernel::excHelp, 0, -1, -1};
 
   // CONTROL STRUCTURES
 
