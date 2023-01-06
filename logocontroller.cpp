@@ -56,6 +56,10 @@ static void restoreSignals()
 }
 
 
+#endif
+
+
+
 LogoController *mainController() {
   Q_ASSERT(_maincontroller != NULL);
   return _maincontroller;
@@ -182,8 +186,4 @@ void LogoController::systemStop()
 {
     QApplication::quit();
 }
-
-
-
-#endif
 
