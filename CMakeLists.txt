@@ -42,12 +42,12 @@ set(LOGO_SOURCES datum.cpp parser.cpp turtle.cpp vars.cpp kernel.cpp propertylis
     qlogocontroller.h logocontroller.h library.h inputqueue.h)
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(logo
+    qt_add_executable(QLogo-cli
         MANUAL_FINALIZATION
         ${LOGO_SOURCES}
     )
 else()
-    add_executable(logo
+    add_executable(QLogo-cli
         ${LOGO_SOURCES}
     )
 endif()
@@ -61,9 +61,9 @@ else()
   add_definitions(-DLOGOPLATFORM="UNIX")
 endif()
 
-target_link_libraries(logo PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(QLogo-cli PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Widgets)
 
-set_target_properties(logo PROPERTIES
+set_target_properties(QLogo-cli PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
@@ -76,7 +76,7 @@ set_target_properties(QLogo PROPERTIES
 )
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(QLogo)
-    qt_finalize_executable(logo)
+    qt_finalize_executable(QLogo-cli)
 endif()
 
-install(TARGETS QLogo logo RUNTIME DESTINATION . BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS QLogo QLogo-cli RUNTIME DESTINATION . BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR})
