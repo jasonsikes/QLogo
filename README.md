@@ -2,12 +2,7 @@
 
 ## Downloading
 
-In this place I used to say, "This version barely works. Download
-an older version."
-
-That was from when I had made a significant change which broke a
-lot of things. Now those broken things have been fixed up, and I
-can now say that the current version of QLogo is the most stable.
+At this time the most recent commit is, I believe, the most stable.
 
 I am not providing compiled versions of QLogo at this time. Windows
 and Macos systems require me to sign the binaries. (This is a
@@ -15,7 +10,7 @@ good thing.) I still have yet to learn how to do that.
 
 Please note that there are now TWO executables: logo and QLogo. The
 *logo* executable works as a standalone command-line program. The
-*QLogo* executable is a sort of terminal that also provides the
+*QLogo* executable is a sort of GUI terminal that also provides a
 turtle.
 
 ***
@@ -26,7 +21,7 @@ QLogo is an interpreter for the Logo language written in C++ using
 Qt and OpenGL. It mimics (as much as I find reasonable) the UCBLogo
 interpreter developed by Brian Harvey at U.C. Berkeley.
 
-Copyright (C) 2017-2022 Jason Sikes
+Copyright (C) 2017-2023 Jason Sikes
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -76,8 +71,7 @@ This will give you two executables:
 1. "logo": this is the Logo interpreter that can be run from the command line.
 
 2. "QLogo": this is the graphical user interface that runs logo and gives you
-the turtle. (The turtle is one of the many things that's broken right now, but
-when it works again this is where you'll find it.)
+the turtle.
 
 There is no "make install" step yet.
 
@@ -130,8 +124,8 @@ There is no "make install" step yet.
   PNG, PPM, XBM, and XPM
 
 
-* `HELP` is functional, but the text is a copy of the UCBLogo help text. As
-  such, it should be 99.9% correct. This will be fixed.
+* `HELP` is not functional. I am moving the help text to the file system so
+  that it can be loaded as needed.
 
 
 * There is no facility yet for translation/internationalization. Yet.
@@ -144,22 +138,22 @@ There is no "make install" step yet.
 The original purpose of the command was to enable text to
 be visible on projectors which cut off outer boundaries of
 a computer screen. Projectors and monitors produced in the
-last few years show all of the computer screen. On top of
-that QLogo is a windowed application so an instructor or
-presentor can move the window to a different position.
+last few years show all of the computer screen. In addition,
+QLogo is a windowed application so an instructor or presentor
+can move the window to a different position.
 
 
 `FILL`:
 
-Two reasons: One of the user interface principles was that
+Two reasons: One of the user interface principles is that
 the canvas should be device resolution-independent. That
 means when the QLogo window is resized or the separator
 between the text and the graphics is moved the graphics
-will remain consistent. The Flood Fill algorithm depends on
-specific pixels which means that the display can change
-dramatically depending on the size of the canvas. The other
-reason is that the Flood Fill algorithm can slow down
-window resizing. Use FILLED instead.
+will be redrawn with the new dimensions. The Flood Fill
+algorithm depends on specific pixels which means that the
+display can change dramatically depending on the size of
+the canvas. The other reason is that the Flood Fill
+algorithm can slow down window resizing. Use FILLED instead.
 
 `LOADPICT`:
 
@@ -179,8 +173,8 @@ Not implemented yet.
 
 `SETEDITOR`:
 
-QLogo uses a built-in editor. If you run the logo program by itself,
-no editor is available.
+QLogo uses a built-in editor. If you run the logo program on the
+command line, no editor is available.
 
 `SETLIBLOC`:
 
@@ -188,8 +182,7 @@ The QLogo library is stored internally.
 
 `SETHELPLOC`:
 
-The help text is stored internally by the
-application. There is no external file.
+Not implemented yet.
 
 `SETTEMPLOC`:
 
@@ -200,9 +193,7 @@ QLogo doesn't create temporary files at this time.
 
 `COMMANDLINE`:
 
-QLogo is a GUI application at the moment, although a
-significant amount of thought is being given to make this
-also a command-line program.
+Not implemented yet.
 
 `REDEFP`:
 
