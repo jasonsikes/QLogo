@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop">
-  <id>QLogo.desktop</id>
+  <id>QLogo-GUI.desktop</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0+</project_license>
 
-  <name>QLogo</name>
+  <name>QLogo-GUI</name>
   
   <summary>A UCBLogo-compatible interpreter using Qt and OpenGL</summary>
   <description>

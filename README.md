@@ -68,10 +68,10 @@ $ make
 
 This will give you two executables:
 
-1. "logo": this is the Logo interpreter that can be run from the command line.
+1. "qlogo": this is the Logo interpreter that can be run from the command line.
 
-2. "QLogo": this is the graphical user interface that runs logo and gives you
-the turtle.
+2. "QLogo-GUI": this is the graphical user interface that runs qlogo and gives
+you the turtle.
 
 There is no "make install" step yet.
 
