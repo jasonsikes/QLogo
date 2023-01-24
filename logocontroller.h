@@ -36,7 +36,6 @@
 #include <QThread>
 #include <QVector2D>
 #include <QFont>
-#include <signal.h>
 #include "error.h"
 
 class Kernel;

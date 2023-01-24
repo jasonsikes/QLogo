@@ -2,6 +2,7 @@
 #include <QIODevice>
 #include "kernel.h"
 #include <QApplication>
+#include <signal.h>
 
 LogoController *_maincontroller = NULL;
 qreal initialBoundXY = 150;
