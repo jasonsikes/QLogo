@@ -13,14 +13,14 @@
 
 filename="$1"
 
-logo_binary=logo
+logo_binary=qlogo
 logo_path="../$logo_binary"
 
 failed_tests=()
 
 run_test() {
     f="$1"
-    ../logo < $f | diff "${f%.lg}.result" -
+    $logo_path < $f | diff "${f%.lg}.result" -
     if [ $? -eq 1 ]
     then
 	failed_tests+=($f)
