@@ -31,6 +31,13 @@
 int Object::counter = 0;
 
 
+Object::Object()
+{
+  parents.reserve(0);
+
+  initLicenseplate();
+}
+
 Object::Object(DatumP aParent)
 {
   Q_ASSERT(aParent.isObject());
@@ -38,7 +45,7 @@ Object::Object(DatumP aParent)
   parents.reserve(1);
   parents.push_back(aParent);
 
-  licenseplate = QString("G%1").arg(++counter);
+  initLicenseplate();
 }
 
 
@@ -53,7 +60,13 @@ Object::Object(List *aParents)
       parents.push_back(element);
     }
 
-  licenseplate = QString("G%1").arg(++counter);
+  initLicenseplate();
+}
+
+
+void Object::initLicenseplate()
+{
+  havemake("licenseplate", DatumP(new Word(QString("G%1").arg(++counter))));
 }
 
 
@@ -65,14 +78,20 @@ Datum::DatumType Object::isa()
 
 QString Object::name()
 {
-  return licenseplate;
+  return licenseplate();
+}
+
+
+const QString Object::licenseplate()
+{
+  return valueForName("licenseplate").wordValue()->name();
 }
 
 
 QString Object::printValue(bool fullPrintp, int printDepthLimit,
                    int printWidthLimit)
 {
-  return licenseplate;
+  return licenseplate();
 }
 
 

@@ -131,6 +131,9 @@ public:
   DatumP pause();
 
   Turtle *turtle;
+  Object *logoObject;
+  DatumP currentObject;
+
   bool isInputRedirected();
   void initLibrary();
 

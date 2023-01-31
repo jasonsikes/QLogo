@@ -653,9 +653,14 @@ protected:
   QHash<QString, DatumP> variables;
   QHash<QString, DatumP> procedures;
   QList<DatumP> parents;
-  QString licenseplate;
+
+  void initLicenseplate();
+  const QString licenseplate();
 
 public:
+
+  /// constructor for Logo Object. Should only be used once.
+  Object();
 
   /// Creates an object whose parent is aParent
   Object(DatumP aParent);

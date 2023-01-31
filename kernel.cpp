@@ -277,6 +277,8 @@ Kernel::Kernel() {
   writeStream = NULL;
   systemWriteStream = NULL;
 
+  logoObject = new Object();
+  currentObject = DatumP(logoObject);
   turtle = new Turtle;
   parser = new Parser(this);
   ProcedureHelper::setParser(parser);
