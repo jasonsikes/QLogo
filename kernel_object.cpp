@@ -114,3 +114,11 @@ DatumP Kernel::excLogo(DatumP node) {
 }
 
 
+DatumP Kernel::excParents(DatumP node) {
+  ProcedureHelper h(this, node);
+  List *parents = currentObject.objectValue()->getParents();
+  DatumP retval(parents);
+  return h.ret(retval);
+}
+
+

@@ -452,6 +452,7 @@ public:
   DatumP excAsk(DatumP node);
   DatumP excSelf(DatumP node);
   DatumP excLogo(DatumP node);
+  DatumP excParents(DatumP node);
 
   // TEMPLATE-BASED ITERATION
 

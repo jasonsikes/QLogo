@@ -1,0 +1,6 @@
+? []
+? ? [${Object G1}]
+? ? [${Object G2}]
+? ? [${Object G2} ${Object G3} ${Object G1}]
+? ${Object G2}
+? [${Object G3} ${Object G1}]
