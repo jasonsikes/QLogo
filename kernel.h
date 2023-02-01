@@ -445,6 +445,10 @@ public:
   DatumP excGoto(DatumP node);
   DatumP excGotoToken(DatumP);
 
+  // Objects
+
+  DatumP excSomething(DatumP);
+
   // TEMPLATE-BASED ITERATION
 
   DatumP excApply(DatumP node);

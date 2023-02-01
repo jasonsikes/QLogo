@@ -66,7 +66,7 @@ Object::Object(List *aParents)
 
 void Object::initLicenseplate()
 {
-  havemake("licenseplate", DatumP(new Word(QString("G%1").arg(++counter))));
+  havemake("LICENSEPLATE", DatumP(new Word(QString("G%1").arg(++counter))));
 }
 
 
@@ -84,14 +84,19 @@ QString Object::name()
 
 const QString Object::licenseplate()
 {
-  return valueForName("licenseplate").wordValue()->name();
+  return valueForName("LICENSEPLATE").wordValue()->printValue();
 }
 
 
 QString Object::printValue(bool fullPrintp, int printDepthLimit,
                    int printWidthLimit)
 {
-  return licenseplate();
+  if (variables.contains("NAME"))
+    {
+      return QString("${Object %1: %2}").arg(licenseplate(), variables["NAME"].printValue());
+    }
+
+  return QString("${Object %1}").arg(licenseplate());
 }
 
 
@@ -110,6 +115,7 @@ bool Object::isEqual(DatumP other, bool ignoreCase)
 
 void Object::havemake(const QString name, DatumP value)
 {
+  // TODO: some values must be words for certain names (name, licenseplate).
   variables[name] = value;
 }
 

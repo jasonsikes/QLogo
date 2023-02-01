@@ -1814,12 +1814,21 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["MACROP"] = {&Kernel::excMacrop, 1, 1, 1};
   stringToCmd["MACRO?"] = {&Kernel::excMacrop, 1, 1, 1};
 
+  // Objects
+
+  stringToCmd["SOMETHING"] = {&Kernel::excSomething, 0, 0, 0};
+
+
+  // Depricated
+
   stringToCmd["GC"] = {&Kernel::excNoop, 0, 0, -1};
   stringToCmd[".SETSEGMENTSIZE"] = {&Kernel::excNoop, 1, 1, 1};
   stringToCmd["SETPENPATTERN"] = {&Kernel::excNoop, 1, 1, 1};
   stringToCmd["PENPATTERN"] = {&Kernel::excNoop, 1, 1, 1};
   stringToCmd["REFRESH"] = {&Kernel::excNoop, 0, 0, 0};
   stringToCmd["NOREFRESH"] = {&Kernel::excNoop, 0, 0, 0};
+
+  // Operators that work as prefix
 
   stringToCmd["+"] = {&Kernel::excSum, 0, 2, -1};
   stringToCmd["*"] =

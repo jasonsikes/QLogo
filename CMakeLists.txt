@@ -37,7 +37,7 @@ set(LOGO_SOURCES datum.cpp parser.cpp turtle.cpp vars.cpp kernel.cpp propertylis
     kernel_communication.cpp kernel_arithmetic.cpp kernel_graphics.cpp kernel_workspacemanagement.cpp workspace.cpp
     procedurehelper.cpp kernel_controlstructures.cpp error.cpp library.cpp datum_word.cpp datum_astnode.cpp
     datum_list.cpp datum_array.cpp datum_datump.cpp datum_iterator.cpp logo_main.cpp qlogocontroller.cpp logocontroller.cpp
-    inputqueue.cpp datum_object.cpp
+    inputqueue.cpp datum_object.cpp kernel_object.cpp
     datum.h parser.h turtle.h vars.h kernel.h propertylists.h workspace.h procedurehelper.h error.h constants.h
     qlogocontroller.h logocontroller.h library.h inputqueue.h)
 
