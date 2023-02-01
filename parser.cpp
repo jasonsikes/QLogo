@@ -1818,6 +1818,8 @@ Parser::Parser(Kernel *aKernel) {
 
   stringToCmd["SOMETHING"] = {&Kernel::excSomething, 0, 0, 0};
   stringToCmd["KINDOF"] = {&Kernel::excKindof, 1, 1, -1};
+  stringToCmd["ASK"] = {&Kernel::excAsk, 2, 2, 2};
+  stringToCmd["SELF"] = {&Kernel::excSelf, 0, 0, 0};
 
 
   // Depricated

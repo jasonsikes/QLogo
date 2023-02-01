@@ -30,7 +30,26 @@
 
 //#include "logocontroller.h"
 
+// RAII for temporary default object change.
+// Restores object when this instance is destroyed.
+class RaiiSetObject
+{
+protected:
+  Kernel *theKernel;
+  DatumP originalObject;
 
+public:
+  RaiiSetObject (Kernel *aKernel, Object *tempObject) {
+    theKernel = aKernel;
+    originalObject = theKernel->currentObject;
+    theKernel->currentObject = tempObject;
+  }
+
+  ~RaiiSetObject()
+  {
+    theKernel->currentObject = originalObject;
+  }
+};
 
 DatumP Kernel::excSomething(DatumP node) {
   ProcedureHelper h(this, node);
@@ -67,3 +86,24 @@ DatumP Kernel::excKindof(DatumP node) {
   DatumP retval(new Object(&parents));
   return h.ret(retval);
 }
+
+
+DatumP Kernel::excAsk(DatumP node) {
+  ProcedureHelper h(this, node);
+  Object *obj = h.objectAtIndex(0).objectValue();
+  DatumP list = h.listAtIndex(1);
+  DatumP retval;
+  {
+    RaiiSetObject o(this, obj);
+    retval = runList(list);
+  }
+  return h.ret(retval);
+}
+
+
+DatumP Kernel::excSelf(DatumP node) {
+  ProcedureHelper h(this, node);
+  return h.ret(currentObject);
+}
+
+
