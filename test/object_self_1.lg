@@ -1,0 +1,6 @@
+make "a something
+make "b self
+show self = self
+show self = :a
+show :a = :b
+show self = :b

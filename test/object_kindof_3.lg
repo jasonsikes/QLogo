@@ -1,0 +1,5 @@
+make "a something
+make "b kindof :a
+make "c kindof (se :a :b)
+(show :a :b :c)
+(print :a :b :c)

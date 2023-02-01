@@ -1,0 +1,5 @@
+make "a something
+make "b kindof :a
+ask :a [show :b]
+ask :b [ask :a [show self] show self]
+show self
