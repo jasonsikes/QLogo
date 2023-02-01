@@ -152,6 +152,13 @@ DatumP ProcedureHelper::wordAtIndex(int index, bool canRunlist) {
   return retval;
 }
 
+DatumP ProcedureHelper::objectAtIndex(int index, bool canRunlist) {
+  DatumP retval = datumAtIndex(index, canRunlist);
+  while (!retval.isObject())
+    retval = reject(retval, true, true);
+  return retval;
+}
+
 bool ProcedureHelper::boolAtIndex(int index, bool canRunlist) {
   DatumP retval = wordAtIndex(index, canRunlist);
   forever {

@@ -37,3 +37,33 @@ DatumP Kernel::excSomething(DatumP node) {
   DatumP retval(new Object(logoObject));
   return h.ret(retval);
 }
+
+
+DatumP Kernel::excKindof(DatumP node) {
+  ProcedureHelper h(this, node);
+
+  // Input may be a list of objects
+  if ((h.countOfChildren() == 1) && (h.datumAtIndex(0).isList())) {
+      DatumP listP = h.validatedListAtIndex(0, [](DatumP candidate) {
+          List *list = candidate.listValue();
+          if (list->size() == 0) return false;
+          ListIterator i = list->newIterator();
+          while (i.elementExists()) {
+          if ( ! i.element().isObject())
+          return false;
+    }
+          return true;
+    });
+      DatumP retval(new Object(listP.listValue()));
+      return h.ret(retval);
+    }
+
+  // Otherwise each input is a list
+  List parents;
+  for (int i = 0; i < h.countOfChildren(); ++i) {
+      DatumP o = h.objectAtIndex(i);
+      parents.append(o);
+    }
+  DatumP retval(new Object(&parents));
+  return h.ret(retval);
+}

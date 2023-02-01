@@ -1451,9 +1451,9 @@ Parser::Parser(Kernel *aKernel) {
 
   // DATA STRUCTURE PRIMITIVES (MIN, default, MAX)
   // (MIN = -1)     = All parameters are read as list, e.g. "TO PROC :p1"
-  // becomes ["TO", "PROC", ":p1"] (default = -1) = All parameters are consumed
-  // until end of line (MAX = -1)     = All parameters are consumed within
-  // parens
+  // becomes ["TO", "PROC", ":p1"]
+  // (default = -1) = All parameters are consumed until end of line
+  // (MAX = -1)     = All parameters are consumed within parens
   stringToCmd["SAVE"] = {&Kernel::excShow, 0, -1, 1};
 
   stringToCmd["WORD"] = {&Kernel::excWord, 0, 2, -1};
@@ -1817,6 +1817,7 @@ Parser::Parser(Kernel *aKernel) {
   // Objects
 
   stringToCmd["SOMETHING"] = {&Kernel::excSomething, 0, 0, 0};
+  stringToCmd["KINDOF"] = {&Kernel::excKindof, 1, 1, -1};
 
 
   // Depricated

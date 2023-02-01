@@ -448,6 +448,7 @@ public:
   // Objects
 
   DatumP excSomething(DatumP);
+  DatumP excKindof(DatumP node);
 
   // TEMPLATE-BASED ITERATION
 

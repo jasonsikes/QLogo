@@ -58,6 +58,7 @@ public:
   DatumP validatedDatumAtIndex(int index, validatorP v);
   DatumP datumAtIndex(int index, bool canRunlist = false);
   DatumP wordAtIndex(int index, bool canRunlist = false);
+  DatumP objectAtIndex(int index, bool canRunlist = false);
   DatumP listAtIndex(int index);
   DatumP validatedListAtIndex(int index, validatorL v);
   DatumP arrayAtIndex(int index);
