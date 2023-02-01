@@ -1,0 +1,7 @@
+make "a something
+make "b logo
+show self = logo
+show logo = :a
+show :a = :b
+show logo = :b
+ask :a [show logo]

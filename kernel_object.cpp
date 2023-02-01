@@ -107,3 +107,10 @@ DatumP Kernel::excSelf(DatumP node) {
 }
 
 
+DatumP Kernel::excLogo(DatumP node) {
+  ProcedureHelper h(this, node);
+  DatumP retval(logoObject);
+  return h.ret(retval);
+}
+
+
