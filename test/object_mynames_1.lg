@@ -1,0 +1,8 @@
+havemake "foo "bar
+show mynamep "foo
+make "a something
+ask :a [havemake "bar "baz]
+ask :a [show mynamep "bar]
+ask :a [show myname? "baz]
+ask :a [show mynamep "foo]
+show myname? "bar

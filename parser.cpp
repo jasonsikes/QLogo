@@ -1824,6 +1824,9 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["PARENTS"] = {&Kernel::excParents, 0, 0, 0};
   stringToCmd["HAVE"] = {&Kernel::excHave, 1, 1, 1};
   stringToCmd["HAVEMAKE"] = {&Kernel::excHavemake, 2, 2, 2};
+  stringToCmd["MYNAMES"] = {&Kernel::excMynames, 0, 0, 0};
+  stringToCmd["MYNAMEP"] = {&Kernel::excMynamep, 1, 1, 1};
+  stringToCmd["MYNAME?"] = {&Kernel::excMynamep, 1, 1, 1};
 
 
   // Depricated

@@ -455,6 +455,8 @@ public:
   DatumP excParents(DatumP node);
   DatumP excHave(DatumP node);
   DatumP excHavemake(DatumP node);
+  DatumP excMynames(DatumP node);
+  DatumP excMynamep(DatumP node);
 
   // TEMPLATE-BASED ITERATION
 

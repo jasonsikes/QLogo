@@ -147,3 +147,20 @@ DatumP Kernel::excHavemake(DatumP node) {
 }
 
 
+DatumP Kernel::excMynames(DatumP node) {
+  ProcedureHelper h(this, node);
+  List *names = currentObject.objectValue()->getVarnames();
+  DatumP retval(names);
+  return h.ret(retval);
+}
+
+
+DatumP Kernel::excMynamep(DatumP node) {
+  ProcedureHelper h(this, node);
+  QString key = h.wordAtIndex(0).wordValue()->keyValue();
+  Object *hasVar = currentObject.objectValue()->hasVar(key);
+  DatumP retval(hasVar != NULL);
+  return h.ret(retval);
+}
+
+
