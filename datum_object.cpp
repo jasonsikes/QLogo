@@ -91,7 +91,8 @@ const QString Object::licenseplate()
 QString Object::printValue(bool fullPrintp, int printDepthLimit,
                    int printWidthLimit)
 {
-  if (variables.contains("NAME"))
+  if (variables.contains("NAME")
+      && ( ! variables["NAME"].isNothing()))
     {
       return QString("${Object %1: %2}").arg(licenseplate(), variables["NAME"].printValue());
     }

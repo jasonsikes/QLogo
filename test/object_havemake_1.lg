@@ -1,0 +1,8 @@
+make "a something
+ask :a [havemake "licenseplate "ABC123]
+show :a
+ask :a [havemake "name "Joe]
+show :a
+make "b something
+ask :b [have "name]
+show :b

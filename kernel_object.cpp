@@ -122,3 +122,28 @@ DatumP Kernel::excParents(DatumP node) {
 }
 
 
+DatumP Kernel::excHave(DatumP node) {
+  ProcedureHelper h(this, node);
+  QString key = h.wordAtIndex(0).wordValue()->keyValue();
+  // Only add the key if it doesn't already exist
+  // (We don't want to replace an existing value with 'nothing'.)
+  if (currentObject.objectValue()->hasVar(key) == NULL)
+    currentObject.objectValue()->havemake(key, nothing);
+  return nothing;
+}
+
+
+DatumP Kernel::excHavemake(DatumP node) {
+  ProcedureHelper h(this, node);
+  QString key = h.wordAtIndex(0).wordValue()->keyValue();
+  DatumP value;
+  if ((key == "NAME") || (key == "LICENSEPLATE")) {
+      value = h.wordAtIndex(1);
+    } else {
+      value = h.datumAtIndex(1);
+    }
+  currentObject.objectValue()->havemake(key, value);
+  return nothing;
+}
+
+

@@ -453,6 +453,8 @@ public:
   DatumP excSelf(DatumP node);
   DatumP excLogo(DatumP node);
   DatumP excParents(DatumP node);
+  DatumP excHave(DatumP node);
+  DatumP excHavemake(DatumP node);
 
   // TEMPLATE-BASED ITERATION
 
