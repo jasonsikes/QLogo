@@ -76,11 +76,16 @@ void Parser::defineProcedure(DatumP cmd, DatumP procnameP, DatumP text,
 
   DatumP procBody = createProcedure(cmd, text, sourceText);
 
-  procedures[procname] = procBody;
+  Object *currentObject = kernel->currentObject.objectValue();
+  if (currentObject == kernel->logoObject) {
+      procedures[procname] = procBody;
+      if (kernel->isInputRedirected() && kernel->varUNBURYONEDIT()) {
+        unbury(procname);
+      }
+    } else {
+      currentObject->setProc(procname, procBody);
+    }
 
-  if (kernel->isInputRedirected() && kernel->varUNBURYONEDIT()) {
-    unbury(procname);
-  }
 }
 
 DatumP Parser::createProcedure(DatumP cmd, DatumP text, DatumP sourceText) {
@@ -394,8 +399,14 @@ void Parser::inputProcedure(DatumP nodeP, QTextStream *readStream) {
       (firstChar == ')'))
     Error::doesntLike(to, procnameP);
 
-  if (stringToCmd.contains(procname))
-    Error::procDefined(procnameP);
+  Object *currentObject = kernel->currentObject.objectValue();
+  if (currentObject == kernel->logoObject) {
+      if (stringToCmd.contains(procname))
+        Error::procDefined(procnameP);
+    } else {
+      if (currentObject->hasProc(procname))
+        Error::procDefined(procnameP);
+    }
 
   DatumP textP(new List);
   DatumP sourceText = lastReadListSource();

@@ -157,6 +157,20 @@ List* Object::getParents()
 }
 
 
+void Object::setProc(const QString name, DatumP body)
+{
+  procedures[name] = body;
+}
+
+
+DatumP Object::procForName(const QString procname)
+{
+  Q_ASSERT(procedures.contains(procname));
+
+  return procedures[procname];
+}
+
+
 List *Object::getProcNames()
 {
   List* retval = new List;

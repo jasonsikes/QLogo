@@ -681,6 +681,9 @@ public:
   /// tells object to create variable with 'name' and assign 'value'
   void havemake(const QString name, DatumP value);
 
+  /// tells object to create procedure with 'name' and assign 'body'
+  void setProc(const QString name, DatumP body);
+
   /// Check if variable name exists in this class. Optionally check parents.
   /// Returns pointer to Object that owns variable, or NULL.
   Object* hasVar(const QString varname, bool shouldSearchParents = false);
@@ -699,6 +702,11 @@ public:
   /// Check if procedure name exists in this class. Optionally check parents.
   /// Returns pointer to Object that owns procedure, or NULL.
   Object* hasProc(const QString procname, bool shouldSearchParents = false);
+
+  /// Get procedure for given name.
+  /// Calling program should check that name actually exists in this (not
+  /// parents) instance.
+  DatumP procForName(const QString procname);
 
   /// Return a list of procedure names from this (not parents) object.
   List *getProcNames();
