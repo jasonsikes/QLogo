@@ -1182,10 +1182,11 @@ DatumP Parser::astnodeFromCommand(DatumP cmdP, int &minParams,
       Object *o = kernel->currentObject.objectValue()->hasProc(cmdString, true);
       if (o != NULL) {
           procBody = o->procForName(cmdString);
-        } else {
-          if (procedures.contains(cmdString))
-            procBody = procedures[cmdString];
         }
+    }
+  if ( procBody.isNothing()) {
+      if (procedures.contains(cmdString))
+        procBody = procedures[cmdString];
     }
   if ( ! procBody.isNothing()) {
     if (procBody.procedureValue()->isMacro)

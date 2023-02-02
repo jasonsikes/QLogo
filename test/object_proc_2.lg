@@ -1,0 +1,9 @@
+make "a something
+to bonjour x
+print se "Bonjour, :x
+end
+ask :a [to bonjour x y]
+print (se "Bonjour :x "and :y)
+end
+bonjour "User
+ask :a [bonjour "UserA "UserB]
