@@ -572,6 +572,11 @@ SignalsEnum_t Kernel::interruptCheck()
 DatumP Kernel::runList(DatumP listP, const QString startTag) {
   bool shouldSearchForTag = (startTag != "");
   DatumP retval;
+  QList<DatumP> objectParsedList;
+
+  QList<DatumP> *parsedListP = &objectParsedList;
+  if (currentObject.objectValue() == logoObject)
+    parsedListP = NULL;
 
   interruptCheck();
 
@@ -584,18 +589,18 @@ DatumP Kernel::runList(DatumP listP, const QString startTag) {
 
   bool tagHasBeenFound = !shouldSearchForTag;
 
-  QList<DatumP> *parsedList = parser->astFromList(listP.listValue());
-  for (int i = 0; i < parsedList->size(); ++i) {
+  parsedListP = parser->astFromList(listP.listValue(), parsedListP);
+  for (int i = 0; i < parsedListP->size(); ++i) {
     if (retval != nothing) {
       if (retval.isASTNode()) {
         return retval;
       }
       Error::dontSay(retval);
     }
-    DatumP statement = (*parsedList)[i];
+    DatumP statement = (*parsedListP)[i];
     KernelMethod method = statement.astnodeValue()->kernel;
     if (tagHasBeenFound) {
-        if (isRunningMacroResult && (method == &Kernel::executeMacro) && (i == parsedList->size()-1)) {
+        if (isRunningMacroResult && (method == &Kernel::executeMacro) && (i == parsedListP->size()-1)) {
             return statement;
         }
       retval = (this->*method)(statement);

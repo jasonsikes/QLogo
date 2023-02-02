@@ -897,28 +897,38 @@ DatumP Parser::runparse(DatumP src) {
   return DatumP(runparseRetval);
 }
 
-QList<DatumP> *Parser::astFromList(List *aList) {
-  if (aList->astParseTimeStamp <= lastProcedureCreatedTimestamp) {
-    aList->astParseTimeStamp = QDateTime::currentMSecsSinceEpoch();
+QList<DatumP> *Parser::astFromList(List *aList, QList<DatumP> *aDest) {
 
+  // If aDest is NULL then we want to put the result in aList
+  bool shouldParse = true;
+  if (aDest == NULL) {
+      shouldParse = false;
+      aDest = &(aList->astList);
+      if (aList->astParseTimeStamp <= lastProcedureCreatedTimestamp) {
+          shouldParse = true;
+          aList->astParseTimeStamp = QDateTime::currentMSecsSinceEpoch();
+        }
+    }
+
+  if (shouldParse) {
     DatumP runParsedList = runparse(aList);
 
     listIter = runParsedList.listValue()->newIterator();
-    aList->astList.clear();
+    aDest->clear();
     advanceToken();
 
     try {
         while (currentToken != nothing) {
-            aList->astList.push_back(parseExp());
+            aDest->push_back(parseExp());
         }
     } catch (Error *e) {
         // If there was a syntax error, then delete the parsed list
-        aList->astList.clear();
+        aDest->clear();
         aList->astParseTimeStamp = 0;
         throw e;
     }
   }
-  return &aList->astList;
+  return aDest;
 }
 
 // Below methods parse into ASTs
@@ -1165,9 +1175,19 @@ DatumP Parser::astnodeFromCommand(DatumP cmdP, int &minParams,
   QString cmdString = cmdP.wordValue()->keyValue();
 
   Cmd_t command;
+  DatumP procBody;
   DatumP node = DatumP(new ASTNode(cmdP));
-  if (procedures.contains(cmdString)) {
-    DatumP procBody = procedures[cmdString];
+  if (kernel->currentObject.objectValue() != kernel->logoObject) {
+      // TODO: save our search for USUAL.foo
+      Object *o = kernel->currentObject.objectValue()->hasProc(cmdString, true);
+      if (o != NULL) {
+          procBody = o->procForName(cmdString);
+        } else {
+          if (procedures.contains(cmdString))
+            procBody = procedures[cmdString];
+        }
+    }
+  if ( ! procBody.isNothing()) {
     if (procBody.procedureValue()->isMacro)
       node.astnodeValue()->kernel = &Kernel::executeMacro;
     else

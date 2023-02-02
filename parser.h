@@ -88,7 +88,7 @@ public:
   DatumP readlistWithPrompt(const QString &prompt, bool shouldRemoveComments,
                             QTextStream *readStream);
   DatumP runparse(DatumP src);
-  QList<DatumP> *astFromList(List *aList);
+  QList<DatumP> *astFromList(List *aList, QList<DatumP> *aDest);
 
   DatumP createProcedure(DatumP cmd, DatumP text, DatumP sourceText);
   void defineProcedure(DatumP cmd, DatumP procnameP, DatumP text,
