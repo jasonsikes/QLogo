@@ -24,7 +24,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-//#include "error.h"
+#include "error.h"
 #include "kernel.h"
 //#include "parser.h"
 
@@ -160,6 +160,18 @@ DatumP Kernel::excMynamep(DatumP node) {
   QString key = h.wordAtIndex(0).wordValue()->keyValue();
   Object *hasVar = currentObject.objectValue()->hasVar(key);
   DatumP retval(hasVar != NULL);
+  return h.ret(retval);
+}
+
+
+DatumP Kernel::excWhosename(DatumP node) {
+  ProcedureHelper h(this, node);
+  DatumP keyP = h.wordAtIndex(0);
+  QString key = keyP.wordValue()->keyValue();
+  Object *hasVar = currentObject.objectValue()->hasVar(key, true);
+  if (hasVar == NULL)
+    Error::noValue(keyP);
+  DatumP retval(hasVar);
   return h.ret(retval);
 }
 

@@ -150,6 +150,7 @@ public:
   DatumP excArray(DatumP node);
   DatumP excListtoarray(DatumP node);
   DatumP excArraytolist(DatumP node);
+  DatumP excWhosename(DatumP node);
 
   // SELECTORS
   // ---------
