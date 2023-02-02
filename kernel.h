@@ -150,7 +150,6 @@ public:
   DatumP excArray(DatumP node);
   DatumP excListtoarray(DatumP node);
   DatumP excArraytolist(DatumP node);
-  DatumP excWhosename(DatumP node);
 
   // SELECTORS
   // ---------
@@ -458,6 +457,10 @@ public:
   DatumP excHavemake(DatumP node);
   DatumP excMynames(DatumP node);
   DatumP excMynamep(DatumP node);
+  DatumP excWhosename(DatumP node);
+  DatumP excMyprocs(DatumP node);
+  DatumP excMyprocp(DatumP node);
+  DatumP excWhoseproc(DatumP node);
 
   // TEMPLATE-BASED ITERATION
 

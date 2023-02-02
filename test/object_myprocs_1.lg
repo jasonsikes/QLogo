@@ -1,0 +1,11 @@
+make "a something
+make "b kindof :a
+ask :a [to jump]
+print Jumping!
+end
+ask :a [show myprocs]
+make "c ask :b [whoseproc "jump]
+show :c = :a
+show :c = :b
+ask :a [show myprocp "jump]
+ask :b [show myprocp "jump]

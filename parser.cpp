@@ -1839,6 +1839,10 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["MYNAMEP"] = {&Kernel::excMynamep, 1, 1, 1};
   stringToCmd["MYNAME?"] = {&Kernel::excMynamep, 1, 1, 1};
   stringToCmd["WHOSENAME"] = {&Kernel::excWhosename, 1, 1, 1};
+  stringToCmd["MYPROCS"] = {&Kernel::excMyprocs, 0, 0, 0};
+  stringToCmd["MYPROCP"] = {&Kernel::excMyprocp, 1, 1, 1};
+  stringToCmd["MYPROC?"] = {&Kernel::excMyprocp, 1, 1, 1};
+  stringToCmd["WHOSEPROC"] = {&Kernel::excWhoseproc, 1, 1, 1};
 
 
   // Depricated

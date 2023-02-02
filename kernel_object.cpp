@@ -176,3 +176,34 @@ DatumP Kernel::excWhosename(DatumP node) {
 }
 
 
+
+
+DatumP Kernel::excMyprocs(DatumP node) {
+  ProcedureHelper h(this, node);
+  List *names = currentObject.objectValue()->getProcNames();
+  DatumP retval(names);
+  return h.ret(retval);
+}
+
+
+DatumP Kernel::excMyprocp(DatumP node) {
+  ProcedureHelper h(this, node);
+  QString key = h.wordAtIndex(0).wordValue()->keyValue();
+  Object *hasProc = currentObject.objectValue()->hasProc(key);
+  DatumP retval(hasProc != NULL);
+  return h.ret(retval);
+}
+
+
+DatumP Kernel::excWhoseproc(DatumP node) {
+  ProcedureHelper h(this, node);
+  DatumP keyP = h.wordAtIndex(0);
+  QString key = keyP.wordValue()->keyValue();
+  Object *hasProc = currentObject.objectValue()->hasProc(key, true);
+  if (hasProc == NULL)
+    Error::noValue(keyP);
+  DatumP retval(hasProc);
+  return h.ret(retval);
+}
+
+
