@@ -57,10 +57,12 @@ DatumP Vars::datumForName(const QString &name) {
 }
 
 void Vars::setVarAsLocal(const QString &name) {
-  levels.first().insert(name, nothing);
+  if ( ! levels.first().contains(name))
+    levels.first().insert(name, nothing);
 }
 
 void Vars::setVarAsGlobal(const QString &name) {
+  if ( ! levels.last().contains(name))
   levels.last().insert(name, nothing);
 }
 

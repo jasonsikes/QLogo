@@ -199,7 +199,7 @@ DatumP Kernel::registerError(DatumP anError, bool allowErract,
       e->procedure = currentProcedure;
       e->instructionLine = currentLine;
     }
-    DatumP erractP = variables.datumForName(erract);
+    DatumP erractP = datumForName(erract);
     bool shouldPause = (currentProcedure != nothing) &&
         (erractP != nothing) && (erractP.datumValue()->size() > 0);
 
@@ -548,7 +548,7 @@ DatumP Kernel::executeLiteral(DatumP node) {
 DatumP Kernel::executeValueOf(DatumP node) {
   DatumP varnameP = node.astnodeValue()->childAtIndex(0);
   QString varName = varnameP.wordValue()->keyValue();
-  DatumP retval = variables.datumForName(varName);
+  DatumP retval = datumForName(varName);
   if (retval == nothing)
     return (Error::noValueRecoverable(varnameP));
   return retval;

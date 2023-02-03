@@ -119,6 +119,9 @@ class Kernel {
   /// Check for interrupts and handle them accordingly.
   SignalsEnum_t interruptCheck();
 
+  DatumP datumForName(const QString &name);
+  void setDatumForName(DatumP &aDatum, const QString &name);
+
 public:
   Kernel();
   ~Kernel();

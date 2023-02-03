@@ -30,6 +30,33 @@
 
 #include "logocontroller.h"
 
+DatumP Kernel::datumForName(const QString &name)
+{
+  Object *o = currentObject.objectValue();
+  if (o != logoObject) {
+      o = o->hasVar(name, true);
+      if (o != NULL) {
+          return o->valueForName(name);
+        }
+    }
+  return variables.datumForName(name);
+}
+
+
+void Kernel::setDatumForName(DatumP &aDatum, const QString &name)
+{
+  Object *o = currentObject.objectValue();
+  if (o != logoObject) {
+      o = o->hasVar(name, true);
+      if (o != NULL) {
+          o->havemake(name, aDatum);
+          return;
+        }
+    }
+  variables.setDatumForName(aDatum, name);
+}
+
+
 QString Kernel::executeText(const QString &text) {
   QString inText = text;
   QString outText;
@@ -363,7 +390,7 @@ DatumP Kernel::excMake(DatumP node) {
   QString lvalue = h.wordAtIndex(0).wordValue()->keyValue();
   DatumP rvalue = h.datumAtIndex(1);
 
-  variables.setDatumForName(rvalue, lvalue);
+  setDatumForName(rvalue, lvalue);
 
   if (variables.isTraced(lvalue.toUpper())) {
     QString line = QString("Make \"%1 %2\n")
@@ -384,11 +411,17 @@ DatumP Kernel::excSetfoo(DatumP node) {
   QString lvalue = foo.right(foo.size() - 3);
   DatumP rvalue = h.datumAtIndex(0);
 
-  if (!variables.doesExist(lvalue)) {
+  Object *o = currentObject.objectValue();
+  if (o != logoObject) {
+      o = o->hasVar(lvalue, true);
+    } else {
+      o = NULL;
+    }
+  if ((o == NULL) && ( ! variables.doesExist(lvalue))) {
     Error::noHow(nodeName);
   }
 
-  variables.setDatumForName(rvalue, lvalue);
+  setDatumForName(rvalue, lvalue);
 
   if (variables.isTraced(lvalue.toUpper())) {
     QString line =
@@ -405,7 +438,7 @@ DatumP Kernel::excFoo(DatumP node) {
   DatumP fooP = node.astnodeValue()->nodeName;
   QString foo = fooP.wordValue()->keyValue();
 
-  DatumP retval = variables.datumForName(foo);
+  DatumP retval = datumForName(foo);
   if (retval == nothing)
     return Error::noHowRecoverable(fooP);
   return retval;
@@ -442,7 +475,7 @@ DatumP Kernel::excLocal(DatumP node) {
 DatumP Kernel::excThing(DatumP node) {
   ProcedureHelper h(this, node);
   QString varName = h.wordAtIndex(0).wordValue()->keyValue();
-  DatumP retval = h.ret(variables.datumForName(varName));
+  DatumP retval = h.ret(datumForName(varName));
   if (retval == nothing)
     return h.ret(Error::noValueRecoverable(h.datumAtIndex(0)));
   return retval;

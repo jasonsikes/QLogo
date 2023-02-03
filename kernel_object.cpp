@@ -127,8 +127,13 @@ DatumP Kernel::excHave(DatumP node) {
   QString key = h.wordAtIndex(0).wordValue()->keyValue();
   // Only add the key if it doesn't already exist
   // (We don't want to replace an existing value with 'nothing'.)
+
+  if (currentObject.objectValue() == logoObject) {
+      variables.setVarAsGlobal(key);
+    } else {
   if (currentObject.objectValue()->hasVar(key) == NULL)
     currentObject.objectValue()->havemake(key, nothing);
+    }
   return nothing;
 }
 
@@ -139,10 +144,16 @@ DatumP Kernel::excHavemake(DatumP node) {
   DatumP value;
   if ((key == "NAME") || (key == "LICENSEPLATE")) {
       value = h.wordAtIndex(1);
+      currentObject.objectValue()->havemake(key, value);
     } else {
       value = h.datumAtIndex(1);
+      if (currentObject.objectValue() == logoObject) {
+          variables.setVarAsGlobal(key);
+        } else {
+      if (currentObject.objectValue()->hasVar(key) == NULL)
+        currentObject.objectValue()->havemake(key, nothing);
+        }
     }
-  currentObject.objectValue()->havemake(key, value);
   return nothing;
 }
 
