@@ -169,8 +169,14 @@ DatumP Kernel::excMynames(DatumP node) {
 DatumP Kernel::excMynamep(DatumP node) {
   ProcedureHelper h(this, node);
   QString key = h.wordAtIndex(0).wordValue()->keyValue();
-  Object *hasVar = currentObject.objectValue()->hasVar(key);
-  DatumP retval(hasVar != NULL);
+  Object *obj = currentObject.objectValue();
+  Object *hasVar = obj->hasVar(key);
+  bool retval = (hasVar != NULL);
+  if ( ! retval) {
+      if (obj->isLogoObject() && variables.doesExist(key)) {
+          retval = true;
+        }
+    }
   return h.ret(retval);
 }
 
@@ -179,11 +185,14 @@ DatumP Kernel::excWhosename(DatumP node) {
   ProcedureHelper h(this, node);
   DatumP keyP = h.wordAtIndex(0);
   QString key = keyP.wordValue()->keyValue();
-  Object *hasVar = currentObject.objectValue()->hasVar(key, true);
-  if (hasVar == NULL)
-    Error::noValue(keyP);
-  DatumP retval(hasVar);
-  return h.ret(retval);
+  Object *obj = currentObject.objectValue();
+  Object *hasVar = obj->hasVar(key, true);
+  if (hasVar != NULL)
+    return DatumP(hasVar);
+  if ( variables.isVarGlobal(key))
+    return DatumP(logoObject);
+  Error::noValue(keyP);
+  return nothing;
 }
 
 

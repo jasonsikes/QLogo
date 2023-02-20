@@ -51,6 +51,7 @@ public:
   bool isTested();
   bool isTrue();
   bool isFalse();
+  bool isVarGlobal(const QString &name);
 
   DatumP allVariables(showContents_t showWhat);
 };

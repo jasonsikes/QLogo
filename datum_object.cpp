@@ -34,8 +34,9 @@ int Object::counter = 0;
 Object::Object()
 {
   parents.reserve(0);
+  amILogoObject = true;
 
-  initLicenseplate();
+  init();
 }
 
 Object::Object(DatumP aParent)
@@ -45,7 +46,7 @@ Object::Object(DatumP aParent)
   parents.reserve(1);
   parents.push_back(aParent);
 
-  initLicenseplate();
+  init();
 }
 
 
@@ -60,15 +61,32 @@ Object::Object(List *aParents)
       parents.push_back(element);
     }
 
-  initLicenseplate();
+  init();
 }
 
 
-void Object::initLicenseplate()
+void Object::init()
 {
   havemake("LICENSEPLATE", DatumP(new Word(QString("G%1").arg(++counter))));
+
+  // Create the flat list of parents to search,
+  // starting with myself.
+  ancestors.append(DatumP(this));
+
+  // Then add my parents and grandparents
+  addParentsToAncestors(&ancestors);
 }
 
+
+void Object::addParentsToAncestors(QList<DatumP> *aAncestorAry)
+{
+  for (auto &obj : parents) {
+      if ( ! obj.objectValue()->isLogoObject()) {
+          aAncestorAry->push_back(obj);
+          obj.objectValue()->addParentsToAncestors(aAncestorAry);
+        }
+    }
+}
 
 Datum::DatumType Object::isa()
 {

@@ -653,9 +653,12 @@ protected:
   QHash<QString, DatumP> variables;
   QHash<QString, DatumP> procedures;
   QList<DatumP> parents;
+  QList<DatumP> ancestors; // flat list of parents and granparents, etc.
 
-  void initLicenseplate();
+  void init();             // Perform the common initialization tasks
   const QString licenseplate();
+
+  bool amILogoObject = false;
 
 public:
 
@@ -667,6 +670,12 @@ public:
 
   /// Creates an object whose parents are aParents
   Object(List *aParents);
+
+  /// Add parents (and grandparents, etc) to flat array for easier searching.
+  void addParentsToAncestors(QList<DatumP> *aAncestorAry);
+
+  /// Return true iff this object is the root Logo object
+  bool isLogoObject() { return amILogoObject; }
 
   DatumType isa();
   QString name();

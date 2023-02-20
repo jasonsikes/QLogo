@@ -66,6 +66,11 @@ void Vars::setVarAsGlobal(const QString &name) {
   levels.last().insert(name, nothing);
 }
 
+bool Vars::isVarGlobal(const QString &name)
+{
+  return levels.last().contains(name);
+}
+
 void Vars::upScope() {
   QHash<QString, DatumP> a;
   levels.push_front(a);
