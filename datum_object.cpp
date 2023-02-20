@@ -144,8 +144,8 @@ Object* Object::hasVar(const QString varname, bool shouldSearchParents)
   if (variables.contains(varname)) return this;
 
   if (shouldSearchParents) {
-      for (auto &item : parents) {
-          Object *candidate = item.objectValue()->hasVar(varname, true);
+      for (auto &item : ancestors) {
+          Object *candidate = item.objectValue()->hasVar(varname);
           if (candidate != NULL) return candidate;
         }
     }
@@ -206,8 +206,8 @@ Object* Object::hasProc(const QString procname, bool shouldSearchParents)
   if (procedures.contains(procname)) return this;
 
   if (shouldSearchParents) {
-      for (auto &item : parents) {
-          Object *candidate = item.objectValue()->hasProc(procname, true);
+      for (auto &item : ancestors) {
+          Object *candidate = item.objectValue()->hasProc(procname);
           if (candidate != NULL) return candidate;
         }
     }
