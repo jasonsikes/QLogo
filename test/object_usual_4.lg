@@ -1,0 +1,10 @@
+make "a something
+
+ask :a [to print x y]
+show (se "A :x :y)
+usual.print :x
+usual.print :y
+show (se "_A :x :y)
+end
+
+ask :a [print "foo "bar]

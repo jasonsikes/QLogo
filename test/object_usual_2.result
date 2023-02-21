@@ -1,0 +1,4 @@
+? ? ? > > > > print defined
+? ? [A foo]
+foo
+[_A foo]

@@ -1,0 +1,16 @@
+make "a something
+make "b kindof :a
+
+ask :a [to foo]
+print "A
+print "_A
+end
+
+ask :b [to foo]
+print "B
+usual.foo
+print "_B
+end
+
+ask :b [foo]
+ask :a [foo]

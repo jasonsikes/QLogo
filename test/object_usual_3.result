@@ -1,0 +1,7 @@
+? ? ? ? > > > > print defined
+? ? > > > > print defined
+? ? [B foo]
+[A foo]
+foo
+[_A foo]
+[_B foo]

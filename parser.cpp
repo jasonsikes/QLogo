@@ -71,7 +71,8 @@ void Parser::defineProcedure(DatumP cmd, DatumP procnameP, DatumP text,
   if ((firstChar == '"') || (firstChar == ':'))
     Error::doesntLike(cmd, procnameP);
 
-  if (stringToCmd.contains(procname))
+  if (kernel->currentObject.objectValue()->isLogoObject()
+      && stringToCmd.contains(procname))
     Error::isPrimative(procnameP);
 
   DatumP procBody = createProcedure(cmd, text, sourceText);
@@ -1183,12 +1184,12 @@ DatumP Parser::astnodeFromCommand(DatumP cmdP, int &minParams,
       if (o == NULL) {
           if (cmdString.startsWith("USUAL.")) {
               ASTNode *callerNode = kernel->currentProcedure.astnodeValue();
-              QString usualCmdString = cmdString.right(cmdString.length() - 6);
-              Q_ASSERT(usualCmdString.length() > 0);
-              Q_ASSERT(usualCmdString == callerNode->nodeName.wordValue()->keyValue());
+              cmdString = cmdString.right(cmdString.length() - 6);
+              Q_ASSERT(cmdString.length() > 0);
+              //Q_ASSERT(cmdString == callerNode->nodeName.wordValue()->keyValue());
               Object *callerObj = callerNode->objectContext.objectValue();
-              o = obj->nextUsualProc(usualCmdString, callerObj);
-              Q_ASSERT(o != NULL);
+              o = obj->nextUsualProc(cmdString, callerObj);
+              //Q_ASSERT(o != NULL);
             }
         }
       if (o != NULL) {
@@ -1244,9 +1245,9 @@ DatumP Parser::parseCommand(bool isVararg) {
   if (cmdString == ")")
     Error::unexpectedCloseParen();
 
-  int defaultParams;
-  int minParams;
-  int maxParams;
+  int defaultParams = 0;
+  int minParams = 0;
+  int maxParams = 0;
 
   DatumP node = astnodeFromCommand(cmdP, minParams, defaultParams, maxParams);
 

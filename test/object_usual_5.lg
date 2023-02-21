@@ -1,0 +1,18 @@
+make "a something
+make "b kindof :a
+
+ask :a [to print x y]
+show (se "A :x :y)
+usual.print :x
+usual.print :y
+show (se "_A :x :y)
+end
+
+ask :b [to print x y]
+show (se "B :x :y)
+usual.print :x :y
+usual.print :y :x
+show (se "_B :x :y)
+end
+
+ask :b [print "foo "bar]

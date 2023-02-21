@@ -70,10 +70,6 @@ void Object::init()
   havemake("LICENSEPLATE", DatumP(new Word(QString("G%1").arg(++counter))));
 
   // Create the flat list of parents to search,
-  // starting with myself.
-  ancestors.append(DatumP(this));
-
-  // Then add my parents and grandparents
   addParentsToAncestors(&ancestors);
 }
 
@@ -81,8 +77,8 @@ void Object::init()
 void Object::addParentsToAncestors(QList<DatumP> *aAncestorAry)
 {
   for (auto &obj : parents) {
+      aAncestorAry->push_back(obj);
       if ( ! obj.objectValue()->isLogoObject()) {
-          aAncestorAry->push_back(obj);
           obj.objectValue()->addParentsToAncestors(aAncestorAry);
         }
     }
@@ -220,17 +216,21 @@ Object* Object::nextUsualProc(const QString procname, Object *startObject)
 {
   QList<DatumP>::iterator iter = ancestors.begin();
 
-  // Find the first occurrence of startObject.
-  while (iter->objectValue() != startObject) {
-      ++iter;
-      Q_ASSERT(iter != ancestors.end());
+  // Skip the loop if I am the first occurrence
+  if (this != startObject) {
+      // Find the first occurrence of startObject,
+      // and jump past that.
+      while ((iter++)->objectValue() != startObject) {
+          Q_ASSERT(iter != ancestors.end());
+        }
     }
 
-  // Now find the next object that has procname.
-  while ( ++iter != ancestors.end()) {
+  // Find the next object that has procname.
+  while ( iter != ancestors.end()) {
       Object *candidate = iter->objectValue();
       if (candidate->hasProc(procname))
         return candidate;
+      ++iter;
     }
 
   // Not found.
