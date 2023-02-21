@@ -1177,11 +1177,23 @@ DatumP Parser::astnodeFromCommand(DatumP cmdP, int &minParams,
   Cmd_t command;
   DatumP procBody;
   DatumP node = DatumP(new ASTNode(cmdP));
-  if (kernel->currentObject.objectValue() != kernel->logoObject) {
-      // TODO: save our search for USUAL.foo
-      Object *o = kernel->currentObject.objectValue()->hasProc(cmdString, true);
+  if ( ! kernel->currentObject.objectValue()->isLogoObject()) {
+      Object *obj = kernel->currentObject.objectValue();
+      Object *o = obj->hasProc(cmdString, true);
+      if (o == NULL) {
+          if (cmdString.startsWith("USUAL.")) {
+              ASTNode *callerNode = kernel->currentProcedure.astnodeValue();
+              QString usualCmdString = cmdString.right(cmdString.length() - 6);
+              Q_ASSERT(usualCmdString.length() > 0);
+              Q_ASSERT(usualCmdString == callerNode->nodeName.wordValue()->keyValue());
+              Object *callerObj = callerNode->objectContext.objectValue();
+              o = obj->nextUsualProc(usualCmdString, callerObj);
+              Q_ASSERT(o != NULL);
+            }
+        }
       if (o != NULL) {
           procBody = o->procForName(cmdString);
+          node.astnodeValue()->objectContext = DatumP(o);
         }
     }
   if ( procBody.isNothing()) {

@@ -336,6 +336,9 @@ public:
   /// A pointer to the kernel method that should be called when executing this node.
   KernelMethod kernel;
 
+  /// The object that this procedure is executing under.
+  DatumP objectContext;
+
   /// Add a child to the node.
   void addChild(DatumP aChild);
 
@@ -711,6 +714,11 @@ public:
   /// Check if procedure name exists in this class. Optionally check parents.
   /// Returns pointer to Object that owns procedure, or NULL.
   Object* hasProc(const QString procname, bool shouldSearchParents = false);
+
+  /// Search ancestor list for the NEXT occurrence of procname
+  /// AFTER given startObject.
+  /// Return NULL if not found.
+  Object* nextUsualProc(const QString procname, Object *startObject);
 
   /// Get procedure for given name.
   /// Calling program should check that name actually exists in this (not

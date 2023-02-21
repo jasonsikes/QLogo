@@ -216,6 +216,29 @@ Object* Object::hasProc(const QString procname, bool shouldSearchParents)
 }
 
 
+Object* Object::nextUsualProc(const QString procname, Object *startObject)
+{
+  QList<DatumP>::iterator iter = ancestors.begin();
+
+  // Find the first occurrence of startObject.
+  while (iter->objectValue() != startObject) {
+      ++iter;
+      Q_ASSERT(iter != ancestors.end());
+    }
+
+  // Now find the next object that has procname.
+  while ( ++iter != ancestors.end()) {
+      Object *candidate = iter->objectValue();
+      if (candidate->hasProc(procname))
+        return candidate;
+    }
+
+  // Not found.
+  return NULL;
+}
+
+
+
 List *Object::getVarnames()
 {
   List* retval = new List;

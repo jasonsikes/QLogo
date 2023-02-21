@@ -75,7 +75,6 @@ class Kernel {
   DatumP readWordWithPrompt(const QString prompt, QTextStream *stream);
 
   DatumP currentError;
-  DatumP currentProcedure;
   DatumP currentLine;
   DatumP callingProcedure;
   DatumP callingLine;
@@ -136,6 +135,7 @@ public:
   Turtle *turtle;
   Object *logoObject;
   DatumP currentObject;
+  DatumP currentProcedure;
 
   bool isInputRedirected();
   void initLibrary();

@@ -148,10 +148,10 @@ DatumP Kernel::excHavemake(DatumP node) {
     } else {
       value = h.datumAtIndex(1);
       if (currentObject.objectValue() == logoObject) {
-          variables.setVarAsGlobal(key);
+          variables.setDatumForName(value, key);
         } else {
       if (currentObject.objectValue()->hasVar(key) == NULL)
-        currentObject.objectValue()->havemake(key, nothing);
+        currentObject.objectValue()->havemake(key, value);
         }
     }
   return nothing;
@@ -194,8 +194,6 @@ DatumP Kernel::excWhosename(DatumP node) {
   Error::noValue(keyP);
   return nothing;
 }
-
-
 
 
 DatumP Kernel::excMyprocs(DatumP node) {
