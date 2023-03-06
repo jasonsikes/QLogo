@@ -224,4 +224,10 @@ DatumP Kernel::excWhoseproc(DatumP node) {
   return h.ret(retval);
 }
 
-
+//TODO: this is for debugging, could be dangerous if exposed publicly.
+DatumP Kernel::excAncestors(DatumP node)
+{
+  ProcedureHelper h(this, node);
+  DatumP retval = h.objectAtIndex(0).objectValue()->getAncestors();
+  return h.ret(retval);
+}

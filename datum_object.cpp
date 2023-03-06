@@ -30,11 +30,13 @@
 /// Object::counter is a generator for 'licenseplate' ids
 int Object::counter = 0;
 
+static Object *logoObject = NULL;
 
 Object::Object()
 {
+  Q_ASSERT(logoObject == NULL);
   parents.reserve(0);
-  amILogoObject = true;
+  logoObject = this;
 
   init();
 }
@@ -69,17 +71,26 @@ void Object::init()
 {
   havemake("LICENSEPLATE", DatumP(new Word(QString("G%1").arg(++counter))));
 
-  // Create the flat list of parents to search,
-  addParentsToAncestors(&ancestors);
+  // Create the flat list of parents to search
+  ancestors = DatumP(new List);
+  addMyParentsToAncestors(ancestors);
+
+  // Finally add the Logo object
+  ancestors.listValue()->append(DatumP(logoObject));
 }
 
 
-void Object::addParentsToAncestors(QList<DatumP> *aAncestorAry)
+bool Object::isLogoObject()
+{
+  return this == logoObject;
+}
+
+void Object::addMyParentsToAncestors(DatumP aAncestorAry)
 {
   for (auto &obj : parents) {
-      aAncestorAry->push_back(obj);
       if ( ! obj.objectValue()->isLogoObject()) {
-          obj.objectValue()->addParentsToAncestors(aAncestorAry);
+          aAncestorAry.listValue()->append(DatumP(obj));
+          obj.objectValue()->addMyParentsToAncestors(aAncestorAry);
         }
     }
 }
@@ -140,9 +151,12 @@ Object* Object::hasVar(const QString varname, bool shouldSearchParents)
   if (variables.contains(varname)) return this;
 
   if (shouldSearchParents) {
-      for (auto &item : ancestors) {
-          Object *candidate = item.objectValue()->hasVar(varname);
-          if (candidate != NULL) return candidate;
+      ListIterator iter = ancestors.listValue()->newIterator();
+      while(iter.elementExists()) {
+          DatumP candidateP = iter.element();
+          Object *candidate = candidateP.objectValue()->hasVar(varname);
+          if (candidate != NULL)
+            return candidate;
         }
     }
 
@@ -202,41 +216,17 @@ Object* Object::hasProc(const QString procname, bool shouldSearchParents)
   if (procedures.contains(procname)) return this;
 
   if (shouldSearchParents) {
-      for (auto &item : ancestors) {
-          Object *candidate = item.objectValue()->hasProc(procname);
-          if (candidate != NULL) return candidate;
+      ListIterator iter = ancestors.listValue()->newIterator();
+      while(iter.elementExists()) {
+          DatumP candidateP = iter.element();
+          Object *candidate = candidateP.objectValue()->hasProc(procname);
+          if (candidate != NULL)
+            return candidate;
         }
     }
 
   return NULL;
 }
-
-
-Object* Object::nextUsualProc(const QString procname, Object *startObject)
-{
-  QList<DatumP>::iterator iter = ancestors.begin();
-
-  // Skip the loop if I am the first occurrence
-  if (this != startObject) {
-      // Find the first occurrence of startObject,
-      // and jump past that.
-      while ((iter++)->objectValue() != startObject) {
-          Q_ASSERT(iter != ancestors.end());
-        }
-    }
-
-  // Find the next object that has procname.
-  while ( iter != ancestors.end()) {
-      Object *candidate = iter->objectValue();
-      if (candidate->hasProc(procname))
-        return candidate;
-      ++iter;
-    }
-
-  // Not found.
-  return NULL;
-}
-
 
 
 List *Object::getVarnames()

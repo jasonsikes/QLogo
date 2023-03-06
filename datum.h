@@ -339,6 +339,9 @@ public:
   /// The object that this procedure is executing under.
   DatumP objectContext;
 
+  /// Parent list iterator for USUAL.foo calls
+  DatumP ancestorList;
+
   /// Add a child to the node.
   void addChild(DatumP aChild);
 
@@ -525,6 +528,9 @@ public:
   /// Empty the List
   void clear();
 
+  /// Returns true if the list is empty
+  bool isEmpty();
+
   /// Add an element to the end of the list.
   /// DO NOT USE after the List has been modified by any other method.
   void append(DatumP element);
@@ -656,12 +662,10 @@ protected:
   QHash<QString, DatumP> variables;
   QHash<QString, DatumP> procedures;
   QList<DatumP> parents;
-  QList<DatumP> ancestors; // flat list of parents and granparents, etc.
+  DatumP ancestors; // flat list of parents and granparents, etc.
 
   void init();             // Perform the common initialization tasks
   const QString licenseplate();
-
-  bool amILogoObject = false;
 
 public:
 
@@ -674,11 +678,12 @@ public:
   /// Creates an object whose parents are aParents
   Object(List *aParents);
 
-  /// Add parents (and grandparents, etc) to flat array for easier searching.
-  void addParentsToAncestors(QList<DatumP> *aAncestorAry);
+  /// Add this object's parents (and grandparents, etc) to given flat array
+  /// for easier searching.
+  void addMyParentsToAncestors(DatumP aAncestorAry);
 
   /// Return true iff this object is the root Logo object
-  bool isLogoObject() { return amILogoObject; }
+  bool isLogoObject();
 
   DatumType isa();
   QString name();
@@ -708,17 +713,14 @@ public:
   /// Return the list of immediate parents
   List* getParents();
 
+  DatumP getAncestors() { return ancestors; }
+
   /// Return a list of variable names from this (not parents) object.
   List* getVarnames();
 
   /// Check if procedure name exists in this class. Optionally check parents.
   /// Returns pointer to Object that owns procedure, or NULL.
   Object* hasProc(const QString procname, bool shouldSearchParents = false);
-
-  /// Search ancestor list for the NEXT occurrence of procname
-  /// AFTER given startObject.
-  /// Return NULL if not found.
-  Object* nextUsualProc(const QString procname, Object *startObject);
 
   /// Get procedure for given name.
   /// Calling program should check that name actually exists in this (not

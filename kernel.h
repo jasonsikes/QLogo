@@ -464,6 +464,7 @@ public:
   DatumP excMyprocs(DatumP node);
   DatumP excMyprocp(DatumP node);
   DatumP excWhoseproc(DatumP node);
+  DatumP excAncestors(DatumP node);
 
   // TEMPLATE-BASED ITERATION
 

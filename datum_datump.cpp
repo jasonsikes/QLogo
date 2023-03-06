@@ -142,6 +142,8 @@ Array *DatumP::arrayValue() {
 }
 
 Object *DatumP::objectValue() {
+  if (d->isa() != Datum::objectType)
+    qDebug() <<"Not an object";
   Q_ASSERT(d->isa() == Datum::objectType);
   return (Object *)d;
 }

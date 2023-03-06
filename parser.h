@@ -75,6 +75,9 @@ class Parser : public Workspace {
   DatumP parseTermexp();
   DatumP parseCommand(bool isVararg);
   DatumP parseStopIfExists(DatumP command);
+
+  DatumP nextUsualProc(const QString procname, DatumP ancestorList);
+  DatumP procedureAndASTNodeForCurrentObject(DatumP nodeP, QString cmdString, bool isUsual);
   DatumP astnodeFromCommand(DatumP command, int &minParams, int &defaultParams,
                             int &maxParams);
 

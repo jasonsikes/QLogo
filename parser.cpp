@@ -1151,7 +1151,7 @@ DatumP Parser::parseStopIfExists(DatumP command)
 }
 
 DatumP Parser::astnodeWithLiterals(DatumP cmd, DatumP params) {
-  int minParams, maxParams, defaultParams;
+  int minParams = 0, maxParams = 0, defaultParams = 0;
   DatumP node = astnodeFromCommand(cmd, minParams, defaultParams, maxParams);
 
   int countOfChildren = params.listValue()->size();
@@ -1171,31 +1171,92 @@ DatumP Parser::astnodeWithLiterals(DatumP cmd, DatumP params) {
   return node;
 }
 
+DatumP Parser::nextUsualProc(const QString procname, DatumP ancestorList)
+{
+
+  while( ! ancestorList.listValue()->isEmpty()) {
+      Object *candidate = ancestorList.listValue()->first().objectValue();
+      if (candidate->hasProc(procname)) {
+          return ancestorList;
+        }
+      ancestorList = ancestorList.listValue()->butfirst();
+    }
+
+  // Not found.
+  return nothing;
+}
+
+
+DatumP Parser::procedureAndASTNodeForCurrentObject(DatumP nodeP, QString cmdString, bool isUsual)
+{
+  Object *sourceObject; // The caller object
+  bool isInProcedureContext;
+  DatumP retval;
+  ASTNode *node = nodeP.astnodeValue();
+
+
+  // Find the source object (default or caller)
+  if (kernel->currentProcedure.isASTNode()) {
+      DatumP objContext = kernel->currentProcedure.astnodeValue()->objectContext;
+      // If we ran out of ancestors, then we are in the Logo object context.
+      if (objContext.isNothing())
+        return nothing;
+      sourceObject = objContext.objectValue();
+      isInProcedureContext = true;
+    } else {
+      sourceObject = kernel->currentObject.objectValue();
+      isInProcedureContext = false;
+    }
+
+  // The callee object
+  Object *destinationObject;
+
+  // if USUAL.foo is called
+  if (isUsual) {
+      Q_ASSERT(isInProcedureContext);
+      // Get the ancestor list from source
+      DatumP currentProcedure = kernel->currentProcedure;
+      DatumP ancestors = kernel->currentProcedure.astnodeValue()->ancestorList;
+      Q_ASSERT( ! ancestors.isNothing());
+      // Find the next occurrence of this procedure in ancestor list
+      DatumP nextAncestorList = nextUsualProc(cmdString, ancestors);
+      if (nextAncestorList.isNothing())
+        return nothing;
+      // Ready callee object
+      destinationObject = nextAncestorList.listValue()->first().objectValue();
+      node->ancestorList = nextAncestorList.listValue()->butfirst();
+    } else {
+      destinationObject = sourceObject->hasProc(cmdString, true);
+      if (destinationObject == NULL)
+        return nothing;
+      node->ancestorList = sourceObject->getAncestors();
+    }
+
+  node->objectContext = DatumP(destinationObject);
+  retval = destinationObject->procForName(cmdString);
+  return retval;
+}
+
+
 DatumP Parser::astnodeFromCommand(DatumP cmdP, int &minParams,
                                   int &defaultParams, int &maxParams) {
   QString cmdString = cmdP.wordValue()->keyValue();
+  bool isUsual = false;
+  if (cmdString.startsWith("USUAL.")) {
+      isUsual = true;
+      cmdString = cmdString.right(cmdString.length() - 6);
+      Q_ASSERT(cmdString.length() > 0);
+      // TODO: cmdString should equal calling cmdString
+      // TODO: cmdString == foo or USUAL.foo
+    }
 
   Cmd_t command;
-  DatumP procBody;
   DatumP node = DatumP(new ASTNode(cmdP));
-  if ( ! kernel->currentObject.objectValue()->isLogoObject()) {
-      Object *obj = kernel->currentObject.objectValue();
-      Object *o = obj->hasProc(cmdString, true);
-      if (o == NULL) {
-          if (cmdString.startsWith("USUAL.")) {
-              ASTNode *callerNode = kernel->currentProcedure.astnodeValue();
-              cmdString = cmdString.right(cmdString.length() - 6);
-              Q_ASSERT(cmdString.length() > 0);
-              //Q_ASSERT(cmdString == callerNode->nodeName.wordValue()->keyValue());
-              Object *callerObj = callerNode->objectContext.objectValue();
-              o = obj->nextUsualProc(cmdString, callerObj);
-              //Q_ASSERT(o != NULL);
-            }
-        }
-      if (o != NULL) {
-          procBody = o->procForName(cmdString);
-          node.astnodeValue()->objectContext = DatumP(o);
-        }
+  DatumP procBody;
+  if (kernel->currentObject.objectValue()->isLogoObject()) {
+      Q_ASSERT( ! isUsual);
+    } else {
+      procBody = procedureAndASTNodeForCurrentObject(node, cmdString, isUsual);
     }
   if ( procBody.isNothing()) {
       if (procedures.contains(cmdString))
@@ -1877,6 +1938,7 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["MYPROCP"] = {&Kernel::excMyprocp, 1, 1, 1};
   stringToCmd["MYPROC?"] = {&Kernel::excMyprocp, 1, 1, 1};
   stringToCmd["WHOSEPROC"] = {&Kernel::excWhoseproc, 1, 1, 1};
+  stringToCmd["ANCESTORS"] = {&Kernel::excAncestors, 1, 1, 1};
 
 
   // Depricated
