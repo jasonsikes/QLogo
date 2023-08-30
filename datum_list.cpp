@@ -148,13 +148,7 @@ exit_false:
   return false;
 }
 
-bool List::isEmpty(){
-  return head.isNothing();
-}
-
 DatumP List::first() {
-  if (head == nothing)
-    qDebug() <<"head is nothing!";
   Q_ASSERT(head != nothing);
   return head.listNodeValue()->item;
 }

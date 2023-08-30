@@ -11,8 +11,7 @@
 # If FILENAME is not specified then this will go through all the .lg files
 # in current directory.
 
-filenames=( "$@" )
-argc="$#"
+filename="$1"
 
 logo_binary=qlogo
 logo_path="../$logo_binary"
@@ -21,14 +20,10 @@ failed_tests=()
 
 run_test() {
     f="$1"
-    if [[ $f == *.lg ]]
+    $logo_path < $f | diff "${f%.lg}.result" -
+    if [ $? -eq 1 ]
     then
-	echo $f
-	$logo_path < $f | diff "${f%.lg}.result" -
-	if [ $? -eq 1 ]
-	then
-	    failed_tests+=($f)
-	fi
+	failed_tests+=($f)
     fi
 }
 
@@ -39,14 +34,12 @@ then
     exit 0
 fi
 
-if (( $argc > 0 ))
+if [ -n "$filename" ]
 then
-    for filename in ${filenames[*]}
-    do
-	run_test $filename
-    done
+    run_test $filename
 else
     for a in *.lg; do
+	echo $a
 	run_test $a
     done
 fi

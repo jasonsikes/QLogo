@@ -1,6 +1,0 @@
-havemake "foo "bar
-make "a something
-ask :a [show logo = whosename "foo]
-ask :a [havemake "foo "baz]
-ask :a [show logo = whosename "foo]
-ask :a [show self = whosename "foo]

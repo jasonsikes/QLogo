@@ -1,9 +1,0 @@
-show parents
-make "a something
-ask :a [show parents]
-make "b kindof :a
-ask :b [show parents]
-make "c (kindof :a :b logo)
-ask :c [show parents]
-ask :c [show first parents]
-ask :c [show butfirst parents]

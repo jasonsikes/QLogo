@@ -41,7 +41,6 @@ class Array;
 class Error;
 class DatumP;
 class Procedure;
-class Object;
 
 class Iterator;
 class WordIterator;
@@ -85,11 +84,10 @@ public:
     noType,
     wordType,
     listType,
-    listNodeType,
+      listNodeType,
     arrayType,
     astnodeType,
     procedureType,
-    objectType,
     errorType
   };
 
@@ -250,9 +248,6 @@ public:
   /// Returns a pointer to the referred Datum as an Array.
   Array *arrayValue();
 
-  /// Returns a pointer to the referred Datum as an Object.
-  Object *objectValue();
-
   /// Returns a pointer to the referred Datum as an Error.
   Error *errorValue();
 
@@ -267,9 +262,6 @@ public:
 
   /// Returns true if the referred Datum is an Array, false otherwise.
   bool isArray();
-
-  /// Returns true if the referred Datum is an Object, false otherwise.
-  bool isObject();
 
   /// Returns true if the referred Datum is an Error, false otherwise.
   bool isError();
@@ -335,12 +327,6 @@ public:
   // (This got caught in the mass renaming.)
   /// A pointer to the kernel method that should be called when executing this node.
   KernelMethod kernel;
-
-  /// The object that this procedure is executing under.
-  DatumP objectContext;
-
-  /// Parent list iterator for USUAL.foo calls
-  DatumP ancestorList;
 
   /// Add a child to the node.
   void addChild(DatumP aChild);
@@ -528,9 +514,6 @@ public:
   /// Empty the List
   void clear();
 
-  /// Returns true if the list is empty
-  bool isEmpty();
-
   /// Add an element to the end of the list.
   /// DO NOT USE after the List has been modified by any other method.
   void append(DatumP element);
@@ -649,86 +632,6 @@ public:
   void append(DatumP value);
 
   ArrayIterator newIterator();
-};
-
-
-/// The Object data type.
-class Object : public Datum {
-
-protected:
-
-  static int counter;
-
-  QHash<QString, DatumP> variables;
-  QHash<QString, DatumP> procedures;
-  QList<DatumP> parents;
-  DatumP ancestors; // flat list of parents and granparents, etc.
-
-  void init();             // Perform the common initialization tasks
-  const QString licenseplate();
-
-public:
-
-  /// constructor for Logo Object. Should only be used once.
-  Object();
-
-  /// Creates an object whose parent is aParent
-  Object(DatumP aParent);
-
-  /// Creates an object whose parents are aParents
-  Object(List *aParents);
-
-  /// Add this object's parents (and grandparents, etc) to given flat array
-  /// for easier searching.
-  void addMyParentsToAncestors(DatumP aAncestorAry);
-
-  /// Return true iff this object is the root Logo object
-  bool isLogoObject();
-
-  DatumType isa();
-  QString name();
-  QString printValue(bool fullPrintp = false, int printDepthLimit = -1,
-                     int printWidthLimit = -1);
-  QString showValue(bool fullPrintp = false, int printDepthLimit = -1,
-                    int printWidthLimit = -1);
-
-  /// Returns true if this object is the same as 'other'
-  bool isEqual(DatumP other, bool ignoreCase);
-
-  /// tells object to create variable with 'name' and assign 'value'
-  void havemake(const QString name, DatumP value);
-
-  /// tells object to create procedure with 'name' and assign 'body'
-  void setProc(const QString name, DatumP body);
-
-  /// Check if variable name exists in this class. Optionally check parents.
-  /// Returns pointer to Object that owns variable, or NULL.
-  Object* hasVar(const QString varname, bool shouldSearchParents = false);
-
-  /// Get value for given name.
-  /// Calling program should check that name actually exists in this (not
-  /// parents) instance.
-  DatumP valueForName(const QString varname);
-
-  /// Return the list of immediate parents
-  List* getParents();
-
-  DatumP getAncestors() { return ancestors; }
-
-  /// Return a list of variable names from this (not parents) object.
-  List* getVarnames();
-
-  /// Check if procedure name exists in this class. Optionally check parents.
-  /// Returns pointer to Object that owns procedure, or NULL.
-  Object* hasProc(const QString procname, bool shouldSearchParents = false);
-
-  /// Get procedure for given name.
-  /// Calling program should check that name actually exists in this (not
-  /// parents) instance.
-  DatumP procForName(const QString procname);
-
-  /// Return a list of procedure names from this (not parents) object.
-  List *getProcNames();
 };
 
 /// A very simple iterator. Base class does nothing. Meant to be subclassed.

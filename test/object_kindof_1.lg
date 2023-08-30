@@ -1,4 +1,0 @@
-make "a something
-make "b kindof :a
-(show :a :b)
-(print :a :b)

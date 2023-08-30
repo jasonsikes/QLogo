@@ -1,9 +1,0 @@
-make "a something
-
-ask :a [to print x]
-show se "A :x
-usual.print :x
-show se "_A :x
-end
-
-ask :a [print "foo]
