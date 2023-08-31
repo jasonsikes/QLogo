@@ -1572,7 +1572,7 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["REPEAT"] = {&Kernel::excRepeat, 2, 2, 2};
   stringToCmd["SQRT"] = {&Kernel::excSqrt, 1, 1, 1};
   stringToCmd["RANDOM"] = {&Kernel::excRandom, 1, 1, 2};
-  stringToCmd["RERANDOM"] = {&Kernel::excRerandom, 0, 0, 1};
+  stringToCmd["RERANDOM"] = {&Kernel::excNoop, 0, 0, 1};
   stringToCmd["THING"] = {&Kernel::excThing, 1, 1, 1};
   stringToCmd["WAIT"] = {&Kernel::excWait, 1, 1, 1};
   stringToCmd["SETCURSOR"] = {ifGUI(&Kernel::excSetcursor), 1, 1, 1};

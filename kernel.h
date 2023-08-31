@@ -95,7 +95,7 @@ class Kernel {
   void inputProcedure(DatumP nodeP);
 
   bool colorFromDatumP(QColor &retval, DatumP colorP);
-  long randomFromRange(long start, long end);
+  uint32_t randomFromRange(uint32_t start, uint32_t end);
 
   QString filepathForFilename(DatumP filenameP);
   QTextStream *openFileStream(DatumP filenameP, QIODevice::OpenMode mode);
@@ -296,7 +296,6 @@ public:
   DatumP excForm(DatumP node);
 
   DatumP excRandom(DatumP node);
-  DatumP excRerandom(DatumP node);
 
   DatumP excMinus(DatumP node);
 

@@ -293,40 +293,33 @@ DatumP Kernel::excGreaterequalp(DatumP node) {
 
 DatumP Kernel::excRandom(DatumP node) {
   ProcedureHelper h(this, node);
-  int start, end;
+  long start, end;
+
+  // If this assert fails then I need to rethink this part.
+  Q_ASSERT(sizeof(long) > sizeof(uint32_t));
+  const long qlogo_maxint = 0xffffffff; // Maximum value of uint32_t
 
   if (node.astnodeValue()->countOfChildren() == 1) {
     start = 0;
     end = h.validatedIntegerAtIndex(0, [](long candidate) {
-      return (candidate >= 0) && (candidate < RAND_MAX);
+      return (candidate >= 0) && (candidate <= qlogo_maxint);
     });
-    end = end - 1;
+    if (end > 0)
+      end = end - 1;
   } else {
     start = h.validatedIntegerAtIndex(0, [](long candidate) {
-      return (candidate >= 0) && (candidate < RAND_MAX);
+      return (candidate >= 0) && (candidate <= qlogo_maxint);
     });
     end = h.validatedIntegerAtIndex(1, [=](long candidate) {
-      return (candidate >= 0) && (candidate < RAND_MAX) && (candidate > start);
+      return (candidate <= qlogo_maxint) && (candidate >= start);
     });
   }
 
-  double result = randomFromRange(start, end);
+  double result = (double) randomFromRange( (uint32_t) start, (uint32_t) end);
 
   return h.ret(new Word(result));
 }
 
-DatumP Kernel::excRerandom(DatumP node) {
-  ProcedureHelper h(this, node);
-  if (h.countOfChildren() == 1) {
-    long seed = h.validatedIntegerAtIndex(0, [](long candidate) {
-      return (candidate >= 0) && (candidate < RAND_MAX);
-    });
-    srand(seed);
-  } else {
-    srand(0);
-  }
-  return nothing;
-}
 
 // PRINT FORMATTING
 

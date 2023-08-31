@@ -30,6 +30,7 @@
 #include <QFont>
 #include <QImage>
 #include <QApplication> // quit()
+#include <stdlib.h> // arc4random_uniform()
 
 #include "error.h"
 #include "library.h"
@@ -296,23 +297,12 @@ Kernel::~Kernel() {
   delete turtle;
 }
 
-// https://stackoverflow.com/questions/2509679/how-to-generate-a-random-number-from-within-a-range
-long Kernel::randomFromRange(long start, long end) {
-  long max = end - start;
+uint32_t Kernel::randomFromRange(uint32_t start, uint32_t end) {
+  uint32_t range = end - start + 1;
 
-  max = (max < RAND_MAX) ? max : RAND_MAX;
+  uint32_t x = arc4random_uniform(range);
 
-  unsigned long num_bins = (unsigned long)max + 1;
-  unsigned long num_rand = (unsigned long)RAND_MAX + 1;
-  unsigned long bin_size = num_rand / num_bins;
-  unsigned long defect = num_rand % num_bins;
-
-  long x;
-  do {
-    x = rand();
-  } while (num_rand - defect <= (unsigned long)x);
-
-  return x / bin_size + start;
+  return x + start;
 }
 
 DatumP Kernel::readRawLineWithPrompt(const QString prompt,
