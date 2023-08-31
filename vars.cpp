@@ -26,30 +26,35 @@
 
 #include "vars.h"
 #include "QDebug"
-#include "QtCore/qstringliteral.h"
 #include <QSet>
 
-// UCBLogo allows "if" and "then" to be separate commands.
-// We store the test result in the var table with a special name
-// and I hope that nobody else ever creates a variable with this name.
-static const QString tf(QStringLiteral("*tf*"));
 
-Vars::Vars() { upScope(); }
+Vars::Vars()
+{
+  // Add one frame to the stack so that it is never empty
+  globalFrame = new VarFrame(this);
+}
+
+
+Vars::~Vars()
+{
+  delete globalFrame;
+}
 
 void Vars::setDatumForName(DatumP &aDatum, const QString &name) {
-  for (auto &variables : levels) {
-    if (variables.contains(name)) {
-      variables[name] = aDatum;
+  for (auto frame : frames) {
+    if (frame->variables.contains(name)) {
+      frame->variables[name] = aDatum;
       return;
     }
   }
-  levels.last().insert(name, aDatum);
+  frames.last()->variables.insert(name, aDatum);
 }
 
 DatumP Vars::datumForName(const QString &name) {
-  for (auto &variables : levels) {
-    auto result = variables.find(name);
-    if (result != variables.end()) {
+  for (auto frame : frames) {
+    auto result = frame->variables.find(name);
+    if (result != frame->variables.end()) {
       return *result;
     }
   }
@@ -57,27 +62,31 @@ DatumP Vars::datumForName(const QString &name) {
 }
 
 void Vars::setVarAsLocal(const QString &name) {
-  if ( ! levels.first().contains(name))
-    levels.first().insert(name, nothing);
+  if ( ! frames.first()->variables.contains(name))
+    frames.first()->variables.insert(name, nothing);
 }
 
 void Vars::setVarAsGlobal(const QString &name) {
-  if ( ! levels.last().contains(name))
-  levels.last().insert(name, nothing);
+  if ( ! frames.last()->variables.contains(name))
+  frames.last()->variables.insert(name, nothing);
 }
 
-void Vars::upScope() {
-  QHash<QString, DatumP> a;
-  levels.push_front(a);
+bool Vars::isVarGlobal(const QString &name)
+{
+  return frames.last()->variables.contains(name);
 }
 
-void Vars::downScope() { levels.pop_front(); }
+void Vars::upScope(VarFrame *aFrame) {
+  frames.push_front(aFrame);
+}
 
-int Vars::currentScope() { return levels.size(); }
+void Vars::downScope() { frames. pop_front(); }
+
+int Vars::size() { return frames.size(); }
 
 bool Vars::doesExist(const QString &name) {
-  for (auto &variables : levels) {
-    if (variables.contains(name))
+  for (auto frame : frames) {
+    if (frame->variables.contains(name))
       return true;
   }
   return false;
@@ -87,8 +96,9 @@ DatumP Vars::allVariables(showContents_t showWhat) {
   List *retval = new List;
   QSet<const QString> seenVars;
 
-  for (auto &levelIter : levels) {
-    for (auto &varname : levelIter.keys()) {
+  for (auto frame : frames) {
+      QStringList varnames = frame->variables.keys();
+    for (auto &varname : varnames) {
       if (!seenVars.contains(varname)) {
         seenVars.insert(varname);
 
@@ -102,45 +112,58 @@ DatumP Vars::allVariables(showContents_t showWhat) {
 }
 
 void Vars::eraseAll() {
-  for (auto &levelIter : levels) {
-    for (auto &varname : levelIter.keys()) {
+  for (auto frame : frames) {
+      QStringList varnames = frame->variables.keys();
+    for (auto &varname : varnames) {
       if (!isBuried(varname))
-        levelIter.remove(varname);
+        frame->variables.remove(varname);
     }
   }
 }
 
 void Vars::eraseVar(const QString &name) {
-  for (auto &variables : levels) {
-    if (variables.remove(name) > 0)
+  for (auto frame : frames) {
+    if (frame->variables.remove(name) > 0)
       return;
   }
 }
 
 void Vars::setTest(bool isTrue) {
-  DatumP t = new Word(isTrue ? 0 : 1);
-  levels.first().insert(tf, t);
+  frames.first()->isTested = true;
+  frames.first()->testState = isTrue;
 }
 
-bool Vars::isTested() { return datumForName(tf).isWord(); }
-
-bool Vars::isTrue() {
-  DatumP retval = datumForName(tf);
-  if (retval.isWord() && (retval.wordValue()->numberValue() == 0))
-    return true;
+bool Vars::isTested() {
+  for (auto frame : frames) {
+      if (frame->isTested)
+        return true;
+    }
   return false;
 }
 
-bool Vars::isFalse() {
-  DatumP retval = datumForName(tf);
-  if (retval.isWord() && (retval.wordValue()->numberValue() == 1))
-    return true;
-  return false;
+
+void Vars::setExplicitSlotList(DatumP aList)
+{
+  frames.last()->explicitSlotList = aList;
 }
 
-Scope::Scope(Vars *aVars) {
-  v = aVars;
-  v->upScope();
+
+DatumP Vars::explicitSlotList()
+{
+  return frames.last()->explicitSlotList;
 }
 
-Scope::~Scope() { v->downScope(); }
+bool Vars::testedState() {
+  for (auto frame : frames) {
+      if (frame->isTested)
+        return frame->testState;
+    }
+  Q_ASSERT(false);
+}
+
+VarFrame::VarFrame(Vars *aVars) {
+  vars = aVars;
+  vars->upScope(this);
+}
+
+VarFrame::~VarFrame() { vars->downScope(); }

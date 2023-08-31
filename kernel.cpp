@@ -334,7 +334,7 @@ DatumP Kernel::readWordWithPrompt(const QString prompt, QTextStream *stream) {
 }
 
 void Kernel::makeVarLocal(const QString &varname) {
-  if (variables.currentScope() <= 1)
+  if (variables.size() <= 1)
     return;
   if (variables.isStepped(varname)) {
     QString line = varname + " shadowed by local in procedure call";
@@ -461,7 +461,7 @@ DatumP Kernel::executeProcedureCore(DatumP node) {
 }
 
 DatumP Kernel::executeProcedure(DatumP node) {
-  Scope s(&variables);
+  VarFrame s(&variables);
 
   if (procedureIterationDepth > maxIterationDepth) {
       Error::stackOverflow();

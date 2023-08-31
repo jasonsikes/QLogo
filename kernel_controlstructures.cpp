@@ -28,8 +28,6 @@
 #include "kernel.h"
 #include "parser.h"
 
-static const QString inputlistStr (QStringLiteral("*inputlist*"));
-
 // CONTROL STRUCTURES
 
 DatumP Kernel::excRun(DatumP node) {
@@ -157,7 +155,7 @@ DatumP Kernel::excIftrue(DatumP node) {
   DatumP retval;
   if (!variables.isTested())
     return h.ret(Error::noTest(node.astnodeValue()->nodeName));
-  if (variables.isTrue()) {
+  if (variables.testedState()) {
     retval = runList(h.datumAtIndex(0));
   }
   return h.ret(retval);
@@ -168,7 +166,7 @@ DatumP Kernel::excIffalse(DatumP node) {
   DatumP retval;
   if (!variables.isTested())
     return h.ret(Error::noTest(node.astnodeValue()->nodeName));
-  if (variables.isFalse()) {
+  if ( ! variables.testedState()) {
     retval = runList(h.datumAtIndex(0));
   }
   return h.ret(retval);
@@ -385,14 +383,13 @@ DatumP Kernel::excApply(DatumP node) {
     return h.ret(retval);
   }
   case explicit_slot: {
-    Scope s(&variables);
-    variables.setVarAsLocal(inputlistStr);
-    variables.setDatumForName(params, inputlistStr);
+    VarFrame s(&variables);
+    variables.setExplicitSlotList(params);
     DatumP retval = runList(tmplate);
     return h.ret(retval);
   }
   case lambda: {
-    Scope s(&variables);
+    VarFrame s(&variables);
     DatumP varList = tmplate.listValue()->first();
     DatumP procedureList = tmplate.listValue()->butfirst();
     if (varList.listValue()->size() > params.listValue()->size())
@@ -447,7 +444,7 @@ DatumP Kernel::excApply(DatumP node) {
 // '?' operator
 DatumP Kernel::excNamedSlot(DatumP node) {
   ProcedureHelper h(this, node);
-  DatumP inputList = variables.datumForName(inputlistStr);
+  DatumP inputList = variables.explicitSlotList();
   if (!inputList.isList())
     return Error::noApply(node.astnodeValue()->nodeName);
   long index = 1;
