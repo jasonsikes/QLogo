@@ -16,6 +16,7 @@ argc="$#"
 
 logo_binary=qlogo
 logo_path="../$logo_binary"
+log_file=~/Documents/QLogo_test_runs.csv
 
 failed_tests=()
 
@@ -46,9 +47,16 @@ then
 	run_test $filename
     done
 else
+    log_date=`date "+%Y-%m-%d %H:%M:%S,"`
+    start_time=`date +%s`
+    test_count=0
     for a in *.lg; do
 	run_test $a
+	((++test_count))
     done
+    end_time=`date +%s`
+    trt=$((end_time-start_time))
+    echo ${log_date}${trt}, $test_count >> $log_file
 fi
 
 if (( ${#failed_tests[@]} )); then
