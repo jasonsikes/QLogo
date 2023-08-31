@@ -1129,7 +1129,7 @@ DatumP Parser::parseStopIfExists(DatumP command)
 }
 
 DatumP Parser::astnodeWithLiterals(DatumP cmd, DatumP params) {
-  int minParams, maxParams, defaultParams;
+  int minParams = 0, maxParams = 0, defaultParams = 0;
   DatumP node = astnodeFromCommand(cmd, minParams, defaultParams, maxParams);
 
   int countOfChildren = params.listValue()->size();
@@ -1200,9 +1200,9 @@ DatumP Parser::parseCommand(bool isVararg) {
   if (cmdString == ")")
     Error::unexpectedCloseParen();
 
-  int defaultParams;
-  int minParams;
-  int maxParams;
+  int defaultParams = 0;
+  int minParams = 0;
+  int maxParams = 0;
 
   DatumP node = astnodeFromCommand(cmdP, minParams, defaultParams, maxParams);
 
