@@ -65,8 +65,8 @@ void rawToChar(QString &src);
 /// currently in use. The second shows the maximum number of Datums in use at any one
 /// time since the last invocation of this function.
 ///
-/// Each Word, List, and Array is a node. So, for example, a list of two words is three
-/// nodes (1 List + 2 Words). Furthermore, if the list is "RUN" (e.g. "RUN [forward 100]")
+/// Each Word, List, and Array is a node. So, for example, an array of two words is three
+/// nodes (1 Array + 2 Words). Furthermore, if the list is "RUN" (e.g. "RUN [forward 100]")
 /// then ASTNodes will be created, adding to the number of nodes.
 DatumP nodes();
 
@@ -76,7 +76,7 @@ class Datum {
 
 protected:
   int retainCount;
-  bool isDestroyable = true; // trueWord, falseWord, and notADatum are internal constants and cannot be destroyed.
+  bool isDestroyable = true; // trueWord, falseWord, and notADatum are static constants and cannot be destroyed.
 
 public:
   /// Value returned by isa().
@@ -93,7 +93,7 @@ public:
 
   /// \brief Constructs a Datum
   ///
-  /// The Datum class is the superclass for all model objects.
+  /// The Datum class is the superclass for all data.
   /// The Datum superclass maintains retain counts (manipulated by the DatumP class).
   /// Datum may be instantiated, but it is only useful as a NULL value. To hold data,
   /// use one of the subclasses.
@@ -103,13 +103,13 @@ public:
   Datum &operator=(const Datum &);
 
   /// Increment the retain count.
-  void retain() { ++retainCount; }
+  inline void retain() { ++retainCount; }
 
   /// Decrement the retain count.
-  void release() { --retainCount; }
+  inline void release() { --retainCount; }
 
   /// Query to determine if all references to this object are destroyed and it is destructable.
-  bool shouldDelete() { return (retainCount <= 0) && isDestroyable; }
+  inline bool shouldDelete() { return (retainCount <= 0) && isDestroyable; }
 
   /// Return type of this object.
   virtual DatumType isa();
@@ -383,6 +383,8 @@ protected:
 
 public:
 
+  /// Set to true if the word was created with vertical bars as delimiters.
+  /// Words created this way will not be separated during parsing or runparsing.
   bool isForeverSpecial = false;
 
   /// Create a Word object with a string.

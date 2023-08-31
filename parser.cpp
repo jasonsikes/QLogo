@@ -292,9 +292,8 @@ DatumP Parser::procedureFulltext(DatumP procnameP, bool shouldValidate) {
   if (procedures.contains(procname)) {
     Procedure *body = procedures[procname].procedureValue();
 
-    List *retval = new List;
-
     if (body->sourceText == nothing) {
+      List *retval = new List;
       retval->append(DatumP(new Word(procedureTitle(procnameP))));
 
       ListIterator b = body->instructionList.listValue()->newIterator();
@@ -305,10 +304,10 @@ DatumP Parser::procedureFulltext(DatumP procnameP, bool shouldValidate) {
 
       DatumP end(new Word("end"));
       retval->append(end);
+      return DatumP(retval);
     } else {
       return body->sourceText;
     }
-    return DatumP(retval);
   } else if (shouldValidate) {
     Error::noHow(procnameP);
   }

@@ -31,7 +31,8 @@
 int countOfNodes = 0;
 int maxCountOfNodes = 0;
 
-DatumP nodes() {
+DatumP nodes()
+{
   int a = countOfNodes;
   int b = maxCountOfNodes;
 
@@ -44,14 +45,18 @@ DatumP nodes() {
 }
 
 
-Datum::Datum() {
+Datum::Datum()
+{
   retainCount = 0;
   ++countOfNodes;
   if (countOfNodes > maxCountOfNodes)
     maxCountOfNodes = countOfNodes;
 }
 
-Datum::~Datum() { --countOfNodes; }
+Datum::~Datum()
+{
+  --countOfNodes;
+}
 
 QString Datum::printValue(bool, int, int) { return name(); }
 
