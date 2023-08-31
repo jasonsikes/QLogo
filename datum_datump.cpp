@@ -111,6 +111,8 @@ bool DatumP::isWord() { return d->isa() == Datum::wordType; }
 
 bool DatumP::isError() { return d->isa() == Datum::errorType; }
 
+bool DatumP::isNothing() { return d == &notADatum; }
+
 Word *DatumP::wordValue() {
   Q_ASSERT(d->isa() == Datum::wordType);
   return (Word *)d;
