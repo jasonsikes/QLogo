@@ -29,7 +29,7 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLWidget>
 #include <QMatrix4x4>
-#include "constants.h"
+#include "sharedconstants.h"
 
 class QOpenGLShaderProgram;
 class QOpenGLBuffer;

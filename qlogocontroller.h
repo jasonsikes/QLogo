@@ -2,7 +2,7 @@
 #define QLOGOCONTROLLER_H
 
 #include "logocontroller.h"
-#include "constants.h"
+#include "sharedconstants.h"
 #include <QDataStream>
 #include <QFile>
 #include <QFont>

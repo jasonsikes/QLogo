@@ -31,7 +31,7 @@
 #include "procedurehelper.h"
 #include "propertylists.h"
 #include "vars.h"
-#include "constants.h"
+#include "sharedconstants.h"
 
 #include <QColor>
 #include <QFile>

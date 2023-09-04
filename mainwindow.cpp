@@ -28,7 +28,7 @@
 #include "mainwindow.h"
 #include "canvas.h"
 #include "ui_mainwindow.h"
-#include "constants.h"
+#include "sharedconstants.h"
 #include "editorwindow.h"
 #include <QDebug>
 #include <QKeyEvent>

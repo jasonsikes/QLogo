@@ -28,7 +28,7 @@
 
 #include <QColor>
 #include <QMatrix4x4>
-#include "constants.h"
+#include "sharedconstants.h"
 
 #include "datum.h"
 #include <math.h>

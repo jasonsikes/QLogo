@@ -25,7 +25,7 @@
 
 #define _USE_MATH_DEFINES
 
-#include "constants.h"
+#include "sharedconstants.h"
 #include "canvas.h"
 #include "math.h"
 

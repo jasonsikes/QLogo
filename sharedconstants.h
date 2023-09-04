@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-//===-- qlogo/constants.h - Shared constant values -------*- C++ -*-===//
+//===-- qlogo/sharedconstants.h - Shared constant values -------*- C++ -*-===//
 //
 // This file is part of QLogo.
 //

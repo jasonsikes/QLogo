@@ -28,7 +28,7 @@
 #ifndef LOGOCONTROLLER_H
 #define LOGOCONTROLLER_H
 
-#include "constants.h"
+#include "sharedconstants.h"
 #include "datum.h"
 #include <QColor>
 #include <QImage>

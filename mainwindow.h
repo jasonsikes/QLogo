@@ -31,7 +31,7 @@
 #include <QProcess>
 #include <QDataStream>
 #include <functional>
-#include "constants.h"
+#include "sharedconstants.h"
 
 class Canvas;
 class Console;
