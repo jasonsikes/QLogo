@@ -1,8 +1,7 @@
 #ifndef DATUM_H
 #define DATUM_H
 
-//===-- qlogo/datum.h - Datum class and subclasses definition -------*- C++
-//-*-===//
+//===-- qlogo/datum.h - Datum class definition -------*- C++ -*-===//
 //
 // This file is part of QLogo.
 //
@@ -22,9 +21,8 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the declaration of the Datum class and its subclasses,
-/// Word, List, and Array, which are the data units of QLogo. This file also
-/// contains the declaration of DatumP, a pointer to a Datum.
+/// This file contains the declaration of the Datum class, which is the base class
+/// for all the data classes used by QLogo.
 ///
 //===----------------------------------------------------------------------===//
 
