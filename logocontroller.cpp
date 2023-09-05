@@ -116,7 +116,7 @@ DatumP LogoController::readRawlineWithPrompt(const QString prompt) {
   QString inputText = stream->readLine();
   if (dribbleStream)
       *dribbleStream << inputText <<"\n";
-  DatumP retval = DatumP(new Word(inputText));
+  DatumP retval = DatumP(inputText);
 
   return retval;
 }
@@ -129,8 +129,9 @@ DatumP LogoController::readchar() {
   if (stream->atEnd())
     return nothing;
   *stream >> c;
-  DatumP retval = DatumP(new Word(c));
-  return retval;
+  QString retval = c;
+  DatumP retvalP = DatumP(retval);
+  return retvalP;
 }
 
 void LogoController::mwait(unsigned long msecs) {

@@ -41,9 +41,9 @@
 
 DatumP listFromColor(QColor c) {
   List *retval = new List;
-  retval->append(DatumP(new Word(round(c.redF() * 100))));
-  retval->append(DatumP(new Word(round(c.greenF() * 100))));
-  retval->append(DatumP(new Word(round(c.blueF() * 100))));
+  retval->append(DatumP(round(c.redF() * 100)));
+  retval->append(DatumP(round(c.greenF() * 100)));
+  retval->append(DatumP(round(c.blueF() * 100)));
   return DatumP(retval);
 }
 
@@ -213,10 +213,10 @@ DatumP Kernel::excPos(DatumP node) {
   mainTurtle()->getxyz(x, y, z);
 
   List *retval = new List;
-  retval->append(DatumP(new Word(x)));
-  retval->append(DatumP(new Word(y)));
+  retval->append(DatumP(x));
+  retval->append(DatumP(y));
   if (h.countOfChildren() > 0) {
-    retval->append(DatumP(new Word(z)));
+    retval->append(DatumP(z));
   }
   return h.ret(retval);
 }
@@ -272,8 +272,8 @@ DatumP Kernel::excTowards(DatumP node) {
 DatumP Kernel::excScrunch(DatumP node) {
   ProcedureHelper h(this, node);
   List *retval = new List;
-  retval->append(DatumP(new Word(1)));
-  retval->append(DatumP(new Word(1)));
+  retval->append(DatumP(1));
+  retval->append(DatumP(1));
   return h.ret(retval);
 }
 
@@ -494,7 +494,7 @@ DatumP Kernel::excMatrix(DatumP node) {
   for (int row = 0; row < 4; ++row) {
     List *r = new List;
     for (int col = 0; col < 4; ++col) {
-      r->append(DatumP(new Word(m(row, col))));
+      r->append(DatumP(m(row, col)));
     }
     retval->append(DatumP(r));
   }
@@ -656,8 +656,8 @@ DatumP Kernel::excMousepos(DatumP node) {
   ProcedureHelper h(this, node);
   List *retval = new List;
   QVector2D position = mainController()->mousePosition();
-  retval->append(DatumP(new Word(position.x())));
-  retval->append(DatumP(new Word(position.y())));
+  retval->append(DatumP(position.x()));
+  retval->append(DatumP(position.y()));
   return h.ret(retval);
 }
 
@@ -665,8 +665,8 @@ DatumP Kernel::excClickpos(DatumP node) {
   ProcedureHelper h(this, node);
   List *retval = new List;
   QVector2D position = mainController()->lastMouseclickPosition();
-  retval->append(DatumP(new Word(position.x())));
-  retval->append(DatumP(new Word(position.y())));
+  retval->append(DatumP(position.x()));
+  retval->append(DatumP(position.y()));
   return h.ret(retval);
 }
 

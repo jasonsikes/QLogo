@@ -143,7 +143,7 @@ void Kernel::close(const QString &filename) {
 
   delete stream;
   if (buffer != NULL) {
-    DatumP w = DatumP(new Word(*buffer));
+    DatumP w = DatumP(*buffer);
     variables.setDatumForName(w, filename);
     delete buffer;
   }
@@ -326,7 +326,7 @@ DatumP Kernel::excShell(DatumP node) {
         line.chop(1);
 #endif
       QString text(line);
-      DatumP rawline = DatumP(new Word(text));
+      DatumP rawline = DatumP(text);
       if (node.astnodeValue()->countOfChildren() == 2) {
         retval->append(rawline);
       } else {
@@ -421,7 +421,7 @@ DatumP Kernel::excAllopen(DatumP node) {
   List *retval = new List;
   DatumP retvalP = h.ret(retval);
   for (auto &filename : fileStreams.keys()) {
-    retval->append(DatumP(new Word(filename)));
+    retval->append(DatumP(filename));
   }
   return retvalP;
 }
@@ -582,8 +582,8 @@ DatumP Kernel::excCursor(DatumP node) {
   mainController()->getTextCursorPos(row, col);
   List *retval = new List;
   DatumP retvalP = h.ret(retval);
-  retval->append(DatumP(new Word(row)));
-  retval->append(DatumP(new Word(col)));
+  retval->append(DatumP(row));
+  retval->append(DatumP(col));
   return retvalP;
 }
 

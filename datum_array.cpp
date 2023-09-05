@@ -170,7 +170,7 @@ DatumP Array::datumAtIndex(int anIndex) {
   return array[index];
 }
 
-DatumP Array::first() { return DatumP(new Word(origin)); }
+DatumP Array::first() { return DatumP(origin); }
 
 DatumP Array::last() {
   Q_ASSERT(array.size() > 0);

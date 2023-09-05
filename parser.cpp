@@ -255,25 +255,25 @@ DatumP Parser::procedureText(DatumP procnameP) {
   List *inputs = new List;
 
   for (auto &i : body->requiredInputs) {
-    inputs->append(DatumP(new Word(i)));
+    inputs->append(DatumP(i));
   }
 
   QList<DatumP>::iterator d = body->optionalDefaults.begin();
   for (auto &i : body->optionalInputs) {
     List *optInput = new List(d->listValue());
-    optInput->prepend(DatumP(new Word(i)));
+    optInput->prepend(DatumP(i));
     ++d;
     inputs->append(DatumP(optInput));
   }
 
   if (body->restInput != "") {
     List *restInput = new List;
-    restInput->append(DatumP(new Word(body->restInput)));
+    restInput->append(DatumP(body->restInput));
     inputs->append(DatumP(restInput));
   }
 
   if (body->defaultNumber != body->requiredInputs.size()) {
-    inputs->append(DatumP(new Word(body->defaultNumber)));
+    inputs->append(DatumP(body->defaultNumber));
   }
 
   retval->append(DatumP(inputs));
@@ -297,7 +297,7 @@ DatumP Parser::procedureFulltext(DatumP procnameP, bool shouldValidate) {
 
     if (body->sourceText == nothing) {
       List *retval = new List;
-      retval->append(DatumP(new Word(procedureTitle(procnameP))));
+      retval->append(DatumP(procedureTitle(procnameP)));
 
       ListIterator b = body->instructionList.listValue()->newIterator();
 
@@ -316,7 +316,7 @@ DatumP Parser::procedureFulltext(DatumP procnameP, bool shouldValidate) {
   }
   List *retval = new List;
   retval->append(
-      DatumP(new Word(QString("to ") + procnameP.wordValue()->printValue())));
+      DatumP(QString("to ") + procnameP.wordValue()->printValue()));
   retval->append(DatumP(new Word("end")));
   return DatumP(retval);
 }
@@ -344,7 +344,7 @@ QString Parser::procedureTitle(DatumP procnameP) {
   for (auto &i : body->requiredInputs) {
     paramName = i;
     paramName.prepend(':');
-    firstLine->append(DatumP(new Word(paramName)));
+    firstLine->append(DatumP(paramName));
   }
 
   QList<DatumP>::iterator d = body->optionalDefaults.begin();
@@ -352,7 +352,7 @@ QString Parser::procedureTitle(DatumP procnameP) {
     paramName = i;
     paramName.push_front(':');
     List *optInput = new List(d->listValue());
-    optInput->prepend(DatumP(new Word(paramName)));
+    optInput->prepend(DatumP(paramName));
     firstLine->append(DatumP(optInput));
     ++d;
   }
@@ -361,12 +361,12 @@ QString Parser::procedureTitle(DatumP procnameP) {
   if (paramName != "") {
     paramName.push_front(':');
     List *restInput = new List;
-    restInput->append(DatumP(new Word(paramName)));
+    restInput->append(DatumP(paramName));
     firstLine->append(DatumP(restInput));
   }
 
   if (body->defaultNumber != body->requiredInputs.size()) {
-    firstLine->append(DatumP(new Word(body->defaultNumber)));
+    firstLine->append(DatumP(body->defaultNumber));
   }
 
   QString retval = unreadList(firstLine, false);
@@ -447,7 +447,7 @@ DatumP Parser::readrawlineWithPrompt(const QString &prompt,
     QString str = readStream->readLine();
     if (readStream->status() != QTextStream::Ok)
       Error::fileSystem();
-    retval = DatumP(new Word(str));
+    retval = DatumP(str);
   }
   listSourceText.listValue()->append(retval);
   return retval;
@@ -465,7 +465,7 @@ DatumP Parser::readwordWithPrompt(const QString &prompt,
 
   forever {
     if (line == nothing)
-      return DatumP(new Word(retval));
+      return DatumP(retval);
 
     const QString &t = line.wordValue()->rawValue();
     retval.reserve(retval.size() + t.size());
@@ -503,7 +503,7 @@ DatumP Parser::readwordWithPrompt(const QString &prompt,
       continue;
     }
 
-    return DatumP(new Word(retval));
+    return DatumP(retval);
   }; // forever
 }
 
@@ -735,8 +735,8 @@ void Parser::runparseMinus() {
   }
 
   // This is a minus function
-  runparseRetval->append(DatumP(new Word("0")));
-  runparseRetval->append(DatumP(new Word("--")));
+  runparseRetval->append(DatumP(QString("0")));
+  runparseRetval->append(DatumP(QString("--")));
   // discard the minus
   ++runparseCIter;
 }
@@ -820,7 +820,7 @@ DatumP Parser::runparseNumber() {
 numberSuccessful:
   double value = result.toDouble();
   runparseCIter = iter;
-  return DatumP(new Word(value));
+  return DatumP(value);
 }
 
 void Parser::runparseQuotedWord() {
@@ -1095,7 +1095,7 @@ DatumP Parser::parseTermexp() {
     } else {
       DatumP node(new ASTNode("ValueOf"));
       node.astnodeValue()->kernel = &Kernel::executeValueOf;
-      node.astnodeValue()->addChild(DatumP(new Word(name)));
+      node.astnodeValue()->addChild(DatumP(name));
       advanceToken();
       return node;
     }
@@ -1294,7 +1294,7 @@ DatumP Parser::allProcedureNames(showContents_t showWhat) {
   for (auto &name : procedures.keys()) {
 
     if (shouldInclude(showWhat, name))
-      retval->append(DatumP(new Word(name)));
+      retval->append(DatumP(name));
   }
   return DatumP(retval);
 }
@@ -1311,7 +1311,7 @@ DatumP Parser::allPrimitiveProcedureNames() {
   List *retval = new List;
 
   for (auto name : stringToCmd.keys()) {
-    retval->append(DatumP(new Word(name)));
+    retval->append(DatumP(name));
   }
   return DatumP(retval);
 }
@@ -1339,9 +1339,9 @@ DatumP Parser::arity(DatumP nameP) {
   }
 
   List *retval = new List;
-  retval->append(DatumP(new Word(minParams)));
-  retval->append(DatumP(new Word(defParams)));
-  retval->append(DatumP(new Word(maxParams)));
+  retval->append(DatumP(minParams));
+  retval->append(DatumP(defParams));
+  retval->append(DatumP(maxParams));
   return DatumP(retval);
 }
 

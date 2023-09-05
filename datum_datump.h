@@ -61,6 +61,17 @@ public:
     /// words depending on the value b.
     explicit DatumP(bool b);
 
+    /// Convenience constructor for numbers.
+    explicit DatumP(double n);
+
+    /// Convenience constructor for integers.
+    explicit DatumP(int n);
+
+    /// Convenience constructor for strings.
+    explicit DatumP(const QString n);
+
+
+
     /// \brief Destructor.
     ///
     /// Decreases the retain count of the referred object. If this is the last

@@ -287,7 +287,7 @@ DatumP QLogoController::readRawlineWithPrompt(const QString prompt)
   });
   waitForMessage(C_CONSOLE_RAWLINE_READ);
 
-  return DatumP(new Word(rawLine));
+  return DatumP(rawLine);
 }
 
 
@@ -299,7 +299,7 @@ DatumP QLogoController::readchar()
 
   waitForMessage(C_CONSOLE_CHAR_READ);
 
-  return DatumP(new Word(rawChar));
+  return DatumP(rawChar);
 }
 
 void QLogoController::setTurtlePos(const QMatrix4x4 &newTurtlePos)

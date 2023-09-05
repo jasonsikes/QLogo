@@ -322,7 +322,7 @@ DatumP Kernel::readChar() {
   QString line = readStream->read(1);
   if (readStream->status() != QTextStream::Ok)
     Error::fileSystem();
-  return DatumP(new Word(line));
+  return DatumP(line);
 }
 
 DatumP Kernel::readlistWithPrompt(const QString &prompt,

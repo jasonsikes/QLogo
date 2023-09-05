@@ -33,7 +33,7 @@ Kernel *mainKernel;
 
 Error::Error(int aNumber, const QString &aErrorText) {
   code = aNumber;
-  errorText = DatumP(new Word(aErrorText));
+  errorText = DatumP(aErrorText);
 }
 
 Error::Error(int aNumber, DatumP aErrorText) {

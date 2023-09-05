@@ -402,6 +402,6 @@ DatumP Turtle::print() {
     }
     retval += s;
   }
-  return DatumP(new Word(retval));
+  return DatumP(retval);
 }
 

@@ -64,7 +64,7 @@ DatumP PropertyLists::getPropertyList(const QString &plistname) {
     QList<DatumP> values = plists[plistname].values();
     QList<QString>::iterator kIter = keys.begin();
     for (auto &vIter : values) {
-      retval->append(DatumP(new Word(*kIter)));
+      retval->append(DatumP(*kIter));
       retval->append(vIter);
       ++kIter;
     }
@@ -84,7 +84,7 @@ DatumP PropertyLists::allPLists(showContents_t showWhat) {
   List *retval = new List;
   for (auto &name : plists.keys()) {
     if (shouldInclude(showWhat, name))
-      retval->append(DatumP(new Word(name)));
+      retval->append(DatumP(name));
   }
   return DatumP(retval);
 }

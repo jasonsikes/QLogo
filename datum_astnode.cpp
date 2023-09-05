@@ -40,7 +40,7 @@ ASTNode::ASTNode(DatumP aNodeName) {
 }
 
 ASTNode::ASTNode(const char *aNodeName) {
-  nodeName = DatumP(new Word(aNodeName));
+  nodeName = DatumP(aNodeName);
 }
 
 ASTNode::~ASTNode() {

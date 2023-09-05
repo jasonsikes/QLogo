@@ -26,7 +26,6 @@
 
 #include "vars.h"
 #include "datum_list.h"
-#include "datum_word.h"
 #include "QDebug"
 #include <QSet>
 
@@ -105,7 +104,7 @@ DatumP Vars::allVariables(showContents_t showWhat) {
         seenVars.insert(varname);
 
         if (shouldInclude(showWhat, varname))
-          retval->append(DatumP(new Word(varname)));
+          retval->append(DatumP(varname));
       }
     }
   }

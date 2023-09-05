@@ -30,10 +30,6 @@
 #include "datum_word.h"
 #include <qdebug.h>
 
-Word trueWord("true", false, false);
-Word falseWord("false", false, false);
-
-
 DatumP::DatumP() { d = &notADatum; }
 
 DatumP::DatumP(Datum *other) {
@@ -51,6 +47,27 @@ DatumP::DatumP(const DatumP &other) noexcept {
 }
 
 DatumP::DatumP(bool b) { d = b ? &trueWord : &falseWord; }
+
+
+DatumP::DatumP(double n)
+{
+  d = new Word(n);
+  d->retain();
+}
+
+
+DatumP::DatumP(int n)
+{
+  d = new Word(n);
+  d->retain();
+}
+
+
+DatumP::DatumP(const QString n)
+{
+  d = new Word(n);
+  d->retain();
+}
 
 void DatumP::destroy() {
   if (d != &notADatum) {

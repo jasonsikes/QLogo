@@ -27,7 +27,6 @@
 
 #include "datum_datump.h"
 #include "datum_list.h"
-#include "datum_word.h"
 #include <qdebug.h>
 
 int countOfNodes = 0;
@@ -41,8 +40,8 @@ DatumP nodes()
   maxCountOfNodes = countOfNodes;
 
   List *retval = new List;
-  retval->append(DatumP(new Word(a)));
-  retval->append(DatumP(new Word(b)));
+  retval->append(DatumP(a));
+  retval->append(DatumP(b));
   return DatumP(retval);
 }
 

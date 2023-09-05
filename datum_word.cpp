@@ -221,7 +221,7 @@ bool Word::isIndexInRange(int anIndex) {
 DatumP Word::datumAtIndex(int anIndex) {
   Q_ASSERT(isIndexInRange(anIndex));
   --anIndex;
-  return DatumP(new Word(rawString.mid(anIndex, 1)));
+  return DatumP(rawString.mid(anIndex, 1));
 }
 
 bool Word::containsDatum(DatumP aDatum, bool ignoreCase) {
@@ -245,19 +245,19 @@ DatumP Word::fromMember(DatumP aDatum, bool ignoreCase) {
   if (pos >= 0) {
     retval = rawString.right(rawString.size() - pos);
   }
-  return DatumP(new Word(retval));
+  return DatumP(retval);
 }
 
 DatumP Word::first() {
   rawValue();
   Q_ASSERT(rawString.size() > 0);
-  return DatumP(new Word(QString(rawString[0])));
+  return DatumP(QString(rawString[0]));
 }
 
 DatumP Word::last() {
   rawValue();
   Q_ASSERT(rawString.size() > 0);
-  return DatumP(new Word(QString(rawString[rawString.size() - 1])));
+  return DatumP(QString(rawString[rawString.size() - 1]));
 }
 
 DatumP Word::butlast() {
@@ -269,6 +269,9 @@ DatumP Word::butlast() {
 DatumP Word::butfirst() {
   rawValue();
   Q_ASSERT(rawString.size() > 0);
-  return DatumP(new Word(rawString.right(rawString.size() - 1)));
+  return DatumP(rawString.right(rawString.size() - 1));
 }
+
+Word trueWord("true", false, false);
+Word falseWord("false", false, false);
 

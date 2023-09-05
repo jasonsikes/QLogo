@@ -268,7 +268,7 @@ DatumP Kernel::excThrow(DatumP node) {
   if (h.countOfChildren() > 1) {
     value = h.datumAtIndex(1);
     if (!value.isWord())
-      value = DatumP(new Word(value.printValue()));
+      value = DatumP(value.printValue());
   }
 
   Error::throwError(tag, value);
@@ -312,7 +312,7 @@ DatumP Kernel::excContinue(DatumP node) {
   if (h.countOfChildren() > 0) {
     retval = h.datumAtIndex(0);
     if (!retval.isWord()) {
-      retval = DatumP(new Word(retval.printValue()));
+      retval = DatumP(retval.printValue());
     }
   }
 

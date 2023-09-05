@@ -99,7 +99,8 @@ WordIterator::WordIterator(Word *aWord) {
 
 DatumP WordIterator::element() {
   const QChar &c = *charIter++;
-  return DatumP(new Word(c));
+  QString retval = c;
+  return DatumP(retval);
 }
 
 bool WordIterator::elementExists() { return (charIter != end); }
