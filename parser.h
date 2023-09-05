@@ -26,7 +26,9 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_datump.h"
+#include "datum_list.h"
+#include "datum_iterator.h"
 #include "workspace.h"
 #include <QHash>
 

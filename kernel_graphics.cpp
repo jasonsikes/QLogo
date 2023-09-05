@@ -27,6 +27,9 @@
 #include "error.h"
 #include "kernel.h"
 #include "turtle.h"
+#include "datum_word.h"
+#include "datum_list.h"
+#include "datum_astnode.h"
 
 #include "logocontroller.h"
 

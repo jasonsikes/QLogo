@@ -25,7 +25,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_word.h"
+#include "datum_datump.h"
 #include <qdebug.h>
 
 QChar rawToChar(const QChar &src) {

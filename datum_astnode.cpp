@@ -25,7 +25,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_astnode.h"
+#include "datum_word.h"
 #include <qdebug.h>
 
 void ASTNode::addChild(DatumP aChild) { children.push_back(aChild); }

@@ -27,6 +27,8 @@
 #include "error.h"
 #include "kernel.h"
 #include "parser.h"
+#include "datum_word.h"
+#include "datum_astnode.h"
 
 // CONTROL STRUCTURES
 

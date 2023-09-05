@@ -26,6 +26,9 @@
 //===----------------------------------------------------------------------===//
 
 #include "propertylists.h"
+#include "datum_datump.h"
+#include "datum_list.h"
+#include "datum_word.h"
 
 PropertyLists::PropertyLists() {}
 

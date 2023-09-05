@@ -26,7 +26,9 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_list.h"
+#include "datum_array.h"
+#include "datum_iterator.h"
 #include <qdebug.h>
 
 QList<void *> listVisited;

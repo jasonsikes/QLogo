@@ -25,7 +25,10 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_iterator.h"
+#include "datum_list.h"
+#include "datum_word.h"
+
 #include <qdebug.h>
 
 /******************************************

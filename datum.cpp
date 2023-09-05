@@ -25,7 +25,9 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_datump.h"
+#include "datum_list.h"
+#include "datum_word.h"
 #include <qdebug.h>
 
 int countOfNodes = 0;

@@ -26,6 +26,7 @@
 
 #include "error.h"
 #include "kernel.h"
+#include "datum_word.h"
 #include <QDebug>
 
 Kernel *mainKernel;

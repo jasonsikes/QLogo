@@ -25,6 +25,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "vars.h"
+#include "datum_list.h"
+#include "datum_word.h"
 #include "QDebug"
 #include <QSet>
 

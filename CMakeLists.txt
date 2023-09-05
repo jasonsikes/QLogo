@@ -39,7 +39,8 @@ set(LOGO_SOURCES datum.cpp parser.cpp turtle.cpp vars.cpp kernel.cpp propertylis
     datum_list.cpp datum_array.cpp datum_datump.cpp datum_iterator.cpp logo_main.cpp qlogocontroller.cpp logocontroller.cpp
     inputqueue.cpp
     datum.h parser.h turtle.h vars.h kernel.h propertylists.h workspace.h procedurehelper.h error.h sharedconstants.h
-    qlogocontroller.h logocontroller.h library.h inputqueue.h)
+    qlogocontroller.h logocontroller.h library.h inputqueue.h datum_word.h datum_astnode.h
+    datum_list.h datum_array.h datum_datump.h datum_iterator.h)
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(qlogo

@@ -27,6 +27,8 @@
 #include "error.h"
 #include "kernel.h"
 #include "parser.h"
+#include "datum_word.h"
+#include "datum_astnode.h"
 
 #include "logocontroller.h"
 
@@ -59,7 +61,7 @@ void Kernel::editAndRunWorkspaceText() {
 }
 
 void Kernel::editAndRunFile() {
-  QString filepath = filepathForFilename(editFileName.wordValue());
+  QString filepath = filepathForFilename(editFileName);
   QFile file(filepath);
   if (!file.open(QIODevice::ReadWrite | QIODevice::Text)) {
     Error::cantOpen(editFileName);
