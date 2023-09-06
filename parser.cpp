@@ -1102,11 +1102,11 @@ DatumP Parser::parseTermexp() {
   }
 
   // See if it's a number
-  currentToken.wordValue()->numberValue();
+  double number = currentToken.wordValue()->numberValue();
   if (currentToken.wordValue()->didNumberConversionSucceed()) {
     DatumP node(new ASTNode("number"));
     node.astnodeValue()->kernel = &Kernel::executeLiteral;
-    node.astnodeValue()->addChild(currentToken);
+    node.astnodeValue()->addChild(DatumP(number));
     advanceToken();
     return node;
   }
