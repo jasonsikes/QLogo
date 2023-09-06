@@ -1,5 +1,4 @@
 #include "logocontroller.h"
-#include "datum_word.h"
 #include <QIODevice>
 #include "kernel.h"
 #include <QApplication>

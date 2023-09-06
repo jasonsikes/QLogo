@@ -116,11 +116,11 @@ double ProcedureHelper::validatedNumberAtIndex(int index, validatorD v,
   return 0;
 }
 
-long ProcedureHelper::validatedIntegerAtIndex(int index, validatorI v) {
+int ProcedureHelper::validatedIntegerAtIndex(int index, validatorI v) {
   DatumP retvalP = wordAtIndex(index);
   forever {
     double retvalD = retvalP.wordValue()->numberValue();
-    long retvalI = (long)retvalD;
+    int retvalI = (int)retvalD;
     if (retvalP.wordValue()->didNumberConversionSucceed() &&
         (floor(retvalD) == retvalD) && v(retvalI))
       return retvalI;
@@ -196,11 +196,11 @@ double ProcedureHelper::numberAtIndex(int index, bool canRunList) {
   return 0;
 }
 
-long ProcedureHelper::integerAtIndex(int index) {
+int ProcedureHelper::integerAtIndex(int index) {
   DatumP retvalP = datumAtIndex(index);
   forever {
     double retvalD = retvalP.wordValue()->numberValue();
-    long retval = (long)retvalD;
+    int retval = (int)retvalD;
     if (retvalP.wordValue()->didNumberConversionSucceed() &&
         (floor(retvalD) == retvalD))
       return retval;
@@ -232,6 +232,24 @@ DatumP ProcedureHelper::ret(DatumP aVal) {
 }
 
 DatumP ProcedureHelper::ret(bool aVal) {
+  returnValue = DatumP(aVal);
+  return returnValue;
+}
+
+
+DatumP ProcedureHelper::ret(int aVal) {
+  returnValue = DatumP(aVal);
+  return returnValue;
+}
+
+
+DatumP ProcedureHelper::ret(double aVal) {
+  returnValue = DatumP(aVal);
+  return returnValue;
+}
+
+
+DatumP ProcedureHelper::ret(QString aVal) {
   returnValue = DatumP(aVal);
   return returnValue;
 }

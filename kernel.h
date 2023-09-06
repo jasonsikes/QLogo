@@ -51,7 +51,7 @@ class Kernel {
   Parser *parser;
   Vars variables;
   DatumP filePrefix;
-  long repcount = -1;
+  int repcount = -1;
   int pauseLevel = 0;
   int procedureIterationDepth = 0;
   bool isRunningMacroResult = false;

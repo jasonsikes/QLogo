@@ -500,9 +500,7 @@ DatumP Kernel::excGprop(DatumP node) {
   ProcedureHelper h(this, node);
   QString plistname = h.wordAtIndex(0).wordValue()->keyValue();
   QString propname = h.wordAtIndex(1).wordValue()->keyValue();
-  DatumP retval = h.ret(plists.getProperty(plistname, propname));
-
-  return retval;
+  return h.ret(plists.getProperty(plistname, propname));
 }
 
 DatumP Kernel::excRemprop(DatumP node) {
@@ -517,9 +515,7 @@ DatumP Kernel::excRemprop(DatumP node) {
 DatumP Kernel::excPlist(DatumP node) {
   ProcedureHelper h(this, node);
   QString plistname = h.wordAtIndex(0).wordValue()->keyValue();
-  DatumP retval = plists.getPropertyList(plistname);
-
-  return retval;
+  return h.ret(plists.getPropertyList(plistname));
 }
 
 // PREDICATES

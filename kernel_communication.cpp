@@ -225,7 +225,7 @@ DatumP Kernel::excReadlist(DatumP node) {
   ProcedureHelper h(this, node);
   DatumP retval = readlistWithPrompt("", false, readStream);
   if (retval == nothing)
-    return h.ret(new Word(""));
+    return h.ret(QString(""));
   return h.ret(retval);
 }
 
@@ -256,7 +256,7 @@ DatumP Kernel::excReadchar(DatumP node) {
 DatumP Kernel::excReadchars(DatumP node) {
   ProcedureHelper h(this, node);
   int count = h.validatedIntegerAtIndex(
-      0, [](long candidate) { return candidate >= 0; });
+      0, [](int candidate) { return candidate >= 0; });
 
   QString retval;
   retval.reserve(count);
@@ -270,7 +270,7 @@ DatumP Kernel::excReadchars(DatumP node) {
 
   if (retval == "")
     return h.ret(new List);
-  return h.ret(new Word(retval));
+  return h.ret(retval);
 }
 
 DatumP Kernel::excShell(DatumP node) {
@@ -429,7 +429,7 @@ DatumP Kernel::excAllopen(DatumP node) {
 DatumP Kernel::excCloseall(DatumP node) {
   ProcedureHelper h(this, node);
   closeAll();
-  return h.ret();
+  return nothing;
 }
 
 DatumP Kernel::excErasefile(DatumP node) {
@@ -461,7 +461,7 @@ DatumP Kernel::excDribble(DatumP node) {
 DatumP Kernel::excNodribble(DatumP node) {
   ProcedureHelper h(this, node);
   mainController()->setDribble("");
-  return h.ret();
+  return nothing;
 }
 
 DatumP Kernel::excSetread(DatumP node) {
@@ -482,7 +482,7 @@ DatumP Kernel::excReader(DatumP node) {
     return h.ret(new List);
 
   const QString retval = fileStreams.key(readStream);
-  return h.ret(new Word(retval));
+  return h.ret(retval);
 }
 
 DatumP Kernel::excWriter(DatumP node) {
@@ -491,13 +491,13 @@ DatumP Kernel::excWriter(DatumP node) {
     return h.ret(new List);
 
   const QString retval = fileStreams.key(writeStream);
-  return h.ret(new Word(retval));
+  return h.ret(retval);
 }
 
 DatumP Kernel::excSetreadpos(DatumP node) {
   ProcedureHelper h(this, node);
-  long pos = h.validatedIntegerAtIndex(
-      0, [](long candidate) { return candidate >= 0; });
+  int pos = h.validatedIntegerAtIndex(
+      0, [](int candidate) { return candidate >= 0; });
   if (readStream != NULL) {
     readStream->seek(pos);
   }
@@ -506,8 +506,8 @@ DatumP Kernel::excSetreadpos(DatumP node) {
 
 DatumP Kernel::excSetwritepos(DatumP node) {
   ProcedureHelper h(this, node);
-  long pos = h.validatedIntegerAtIndex(
-      0, [](long candidate) { return candidate >= 0; });
+  int pos = h.validatedIntegerAtIndex(
+      0, [](int candidate) { return candidate >= 0; });
   if (writeStream != NULL) {
     writeStream->seek(pos);
   }
@@ -521,7 +521,7 @@ DatumP Kernel::excReadpos(DatumP node) {
   if (readStream != NULL) {
     retval = (double)readStream->pos();
   }
-  return h.ret(new Word(retval));
+  return h.ret(retval);
 }
 
 DatumP Kernel::excWritepos(DatumP node) {
@@ -533,7 +533,7 @@ DatumP Kernel::excWritepos(DatumP node) {
         ->flush(); // pos() won't return a valid value unless we flush first.
     retval = (double)writeStream->pos();
   }
-  return h.ret(new Word(retval));
+  return h.ret(retval);
 }
 
 DatumP Kernel::excEofp(DatumP node) {
@@ -581,10 +581,9 @@ DatumP Kernel::excCursor(DatumP node) {
   int row = 0, col = 0;
   mainController()->getTextCursorPos(row, col);
   List *retval = new List;
-  DatumP retvalP = h.ret(retval);
   retval->append(DatumP(row));
   retval->append(DatumP(col));
-  return retvalP;
+  return h.ret(retval);
 }
 
 DatumP Kernel::excSettextcolor(DatumP node) {
@@ -613,7 +612,7 @@ DatumP Kernel::excIncreasefont(DatumP node) {
   f += 2;
   // There doesn't appear to be a maximum font size.
   mainController()->setTextFontSize(f);
-  return h.ret();
+  return nothing;
 }
 
 DatumP Kernel::excDecreasefont(DatumP node) {
@@ -623,7 +622,7 @@ DatumP Kernel::excDecreasefont(DatumP node) {
   if (f < 2)
     f = 2;
   mainController()->setTextFontSize(f);
-  return h.ret();
+  return nothing;
 }
 
 DatumP Kernel::excSettextsize(DatumP node) {
@@ -637,7 +636,7 @@ DatumP Kernel::excSettextsize(DatumP node) {
 DatumP Kernel::excTextsize(DatumP node) {
   ProcedureHelper h(this, node);
   double size = mainController()->getTextFontSize();
-  return h.ret(new Word(size));
+  return h.ret(size);
 }
 
 DatumP Kernel::excSetfont(DatumP node) {
@@ -650,7 +649,7 @@ DatumP Kernel::excSetfont(DatumP node) {
 DatumP Kernel::excFont(DatumP node) {
   ProcedureHelper h(this, node);
   QString retval = mainController()->getTextFontName();
-  return h.ret(new Word(retval));
+  return h.ret(retval);
 }
 
 DatumP Kernel::excAllfonts(DatumP node) {
@@ -666,19 +665,18 @@ DatumP Kernel::excAllfonts(DatumP node) {
 DatumP Kernel::excCursorInsert(DatumP node) {
   ProcedureHelper h(this, node);
   mainController()->setCursorOverwriteMode(false);
-  return h.ret(nothing);
+  return nothing;
 }
 
 DatumP Kernel::excCursorOverwrite(DatumP node) {
   ProcedureHelper h(this, node);
   mainController()->setCursorOverwriteMode(true);
-  return h.ret(nothing);
+  return nothing;
 }
 
 DatumP Kernel::excCursorMode(DatumP node) {
   ProcedureHelper h(this, node);
   bool mode = mainController()->cursorOverwriteMode();
   QString retval = mode ? "OVERWRITE" : "INSERT";
-  DatumP retvalP(new Word(retval));
-  return h.ret(retvalP);
+  return h.ret(retval);
 }

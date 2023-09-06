@@ -49,7 +49,7 @@ DatumP Kernel::excRunresult(DatumP node) {
     return candidate.isWord() || candidate.isList();
   });
 
-  DatumP retval = h.ret(new List);
+  List* retval = new List;
   DatumP temp = runList(instructionList);
 
   if (temp.isASTNode()) {
@@ -57,10 +57,10 @@ DatumP Kernel::excRunresult(DatumP node) {
   }
 
   if (temp != nothing) {
-    retval.listValue()->append(temp);
+    retval->append(temp);
   }
 
-  return retval;
+  return h.ret(retval);
 }
 
 DatumP Kernel::excBye(DatumP node) {
@@ -68,17 +68,17 @@ DatumP Kernel::excBye(DatumP node) {
 
   Error::throwError(DatumP(new Word("SYSTEM")), nothing);
 
-  return h.ret();
+  return nothing;
 }
 
 DatumP Kernel::excRepeat(DatumP node) {
   ProcedureHelper h(this, node);
-  long countValue = h.validatedIntegerAtIndex(
-      0, [](long candidate) { return candidate >= 0; });
+  int countValue = h.validatedIntegerAtIndex(
+      0, [](int candidate) { return candidate >= 0; });
   DatumP commandList =
       h.listAtIndex(1); // TODO: this can execute a word, too, right?
 
-  long tempRepcount = repcount;
+  int tempRepcount = repcount;
   repcount = 1;
 
   DatumP retval;
@@ -101,7 +101,7 @@ DatumP Kernel::excForever(DatumP node) {
   ProcedureHelper h(this, node);
   DatumP commandList = h.listAtIndex(0);
 
-  long tempRepcount = repcount;
+  int tempRepcount = repcount;
   repcount = 1;
 
   DatumP retval;
@@ -121,7 +121,7 @@ DatumP Kernel::excForever(DatumP node) {
 DatumP Kernel::excRepcount(DatumP node) {
   ProcedureHelper h(this, node);
 
-  return h.ret(new Word(repcount));
+  return h.ret(repcount);
 }
 
 DatumP Kernel::excIf(DatumP node) {
@@ -316,7 +316,7 @@ DatumP Kernel::excContinue(DatumP node) {
     }
   }
 
-  Error::throwError(DatumP(new Word("PAUSE")), retval);
+  Error::throwError(DatumP(QString("PAUSE")), retval);
 
   return nothing;
 }
@@ -449,10 +449,10 @@ DatumP Kernel::excNamedSlot(DatumP node) {
   DatumP inputList = variables.explicitSlotList();
   if (!inputList.isList())
     return Error::noApply(node.astnodeValue()->nodeName);
-  long index = 1;
+  int index = 1;
   if (h.countOfChildren() > 0) {
     h.integerAtIndex(0);
-    index = h.validatedIntegerAtIndex(0, [&inputList](long candidate) {
+    index = h.validatedIntegerAtIndex(0, [&inputList](int candidate) {
       return (candidate >= 1) && (candidate <= inputList.listValue()->size());
     });
   }
