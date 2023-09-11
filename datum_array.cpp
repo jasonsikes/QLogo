@@ -31,6 +31,7 @@
 #include "datum_list.h"
 #include "datum_iterator.h"
 #include <qdebug.h>
+#include "stringconstants.h"
 
 QList<void *> aryVisited;
 QList<void *> otherAryVisited;
@@ -75,7 +76,7 @@ QString Array::printValue(bool fullPrintp, int printDepthLimit,
   int printWidth = printWidthLimit - 1;
   retval = iter->showValue(fullPrintp, printDepthLimit - 1, printWidthLimit);
   while (++iter != array.end()) {
-    retval.append(QString(" "));
+    retval.append(' ');
     if (printWidth == 0) {
       retval.append("...");
       break;
@@ -93,7 +94,7 @@ QString Array::showValue(bool fullPrintp, int printDepthLimit,
     aryVisited.push_back(this);
     QString retval = "{";
     retval.append(printValue(fullPrintp, printDepthLimit, printWidthLimit));
-    retval.append("}");
+    retval.append('}');
     aryVisited.removeOne(this);
     return retval;
   }

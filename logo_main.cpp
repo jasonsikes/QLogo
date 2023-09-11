@@ -11,7 +11,7 @@ void processOptions(QCoreApplication *a)
 {
   QCommandLineParser parser;
 
-  QCoreApplication::setApplicationName("logo");
+  QCoreApplication::setApplicationName("qlogo");
   QCoreApplication::setApplicationVersion(LOGOVERSION);
 
   parser.setApplicationDescription("UCBLOGO-compatable Logo language Interpreter.");

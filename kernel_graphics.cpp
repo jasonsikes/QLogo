@@ -30,7 +30,7 @@
 #include "datum_word.h"
 #include "datum_list.h"
 #include "datum_astnode.h"
-
+#include "stringconstants.h"
 #include "logocontroller.h"
 
 #include <math.h>
@@ -45,6 +45,18 @@ DatumP listFromColor(QColor c) {
   retval->append(DatumP(round(c.greenF() * 100)));
   retval->append(DatumP(round(c.blueF() * 100)));
   return DatumP(retval);
+}
+
+char axisFromDatump(DatumP candidate)
+{
+  if (!candidate.isWord())
+      return 0;
+  if (candidate.wordValue()->rawValue().size() != 1)
+      return 0;
+  char retval = candidate.wordValue()->keyValue()[0].toLatin1();
+  if ((retval != 'X') && (retval != 'Y') && (retval != 'Z'))
+      return 0;
+  return retval;
 }
 
 // TURTLE MOTION
@@ -162,13 +174,11 @@ DatumP Kernel::excSetheading(DatumP node) {
   char axis = 'Z';
   if (node.astnodeValue()->countOfChildren() == 2) {
     h.validatedDatumAtIndex(1, [&axis](DatumP candidate) {
-      if (!candidate.isWord())
-        return false;
-      QString aS = candidate.wordValue()->keyValue();
-      if ((aS != "X") && (aS != "Y") && (aS != "Z"))
-        return false;
-      axis = aS[0].toLatin1();
-      return true;
+        char cAxis = axisFromDatump(candidate);
+        if (cAxis == 0)
+            return false;
+        axis = cAxis;
+        return true;
     });
   }
   double oldHeading = mainTurtle()->getHeading(axis);
@@ -226,12 +236,10 @@ DatumP Kernel::excHeading(DatumP node) {
   char axis = 'Z';
   if (node.astnodeValue()->countOfChildren() == 2) {
     h.validatedDatumAtIndex(1, [&axis](DatumP candidate) {
-      if (!candidate.isWord())
+      char cAxis = axisFromDatump(candidate);
+      if (cAxis == 0)
         return false;
-      QString aS = candidate.wordValue()->keyValue();
-      if ((aS != "X") && (aS != "Y") && (aS != "Z"))
-        return false;
-      axis = aS[0].toLatin1();
+      axis = cAxis;
       return true;
     });
   }
@@ -446,13 +454,13 @@ DatumP Kernel::excScreenmode(DatumP node) {
   switch (mainController()->getScreenMode()) {
   case textScreenMode:
   case initScreenMode:
-    retval = "textscreen";
+    retval = k.textscreen();
     break;
   case fullScreenMode:
-    retval = "fullscreen";
+    retval = k.fullscreen();
     break;
   case splitScreenMode:
-    retval = "splitscreen";
+    retval = k.splitscreen();
     break;
   default:
     break;
@@ -465,13 +473,13 @@ DatumP Kernel::excTurtlemode(DatumP node) {
   QString retval;
   switch (mainTurtle()->getMode()) {
   case turtleWrap:
-    retval = "wrap";
+    retval = k.wrap();
     break;
   case turtleFence:
-    retval = "fence";
+    retval = k.fence();
     break;
   case turtleWindow:
-    retval = "window";
+    retval = k.window();
     break;
   default:
     qDebug() << "what mode is the turtle?";
@@ -593,13 +601,13 @@ DatumP Kernel::excPenmode(DatumP node) {
   QString retval;
   switch (pm) {
   case penModePaint:
-    retval = "paint";
+    retval = k.paint();
     break;
   case penModeReverse:
-    retval = "reverse";
+    retval = k.reverse();
     break;
   case penModeErase:
-    retval = "erase";
+    retval = k.erase();
     break;
   default:
     retval = "ERROR!!!";

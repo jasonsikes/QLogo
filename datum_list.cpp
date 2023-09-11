@@ -88,7 +88,7 @@ QString List::printValue(bool fullPrintp, int printDepthLimit,
   QString retval = iter.listNodeValue()->item.showValue(fullPrintp, printDepthLimit - 1, printWidthLimit);
   while (iter.listNodeValue()->next != nothing) {
       iter = iter.listNodeValue()->next;
-    retval.append(QString(" "));
+    retval.append(' ');
     if (printWidth == 0) {
       retval.append("...");
       break;
@@ -106,7 +106,7 @@ QString List::showValue(bool fullPrintp, int printDepthLimit,
     listVisited.push_back(this);
     QString retval = "[";
     retval.append(printValue(fullPrintp, printDepthLimit, printWidthLimit));
-    retval.append("]");
+    retval.append(']');
     listVisited.removeOne(this);
     return retval;
   }

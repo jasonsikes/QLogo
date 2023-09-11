@@ -39,6 +39,7 @@
 #include "turtle.h"
 
 #include "logocontroller.h"
+#include "stringconstants.h"
 
 // The maximum depth of procedure iterations before error is thrown.
 const int maxIterationDepth = 1000;
@@ -161,11 +162,11 @@ bool Kernel::getLineAndRunIt(bool shouldHandleError) {
   } catch (Error *e) {
     if (shouldHandleError) {
       if (e->tag.isWord()) {
-          if (e->tag.wordValue()->keyValue() == "TOPLEVEL") {
+          if (e->tag.wordValue()->keyValue() == k.toplevel()) {
               sysPrint("\n");
               return true;
           }
-          if (e->tag.wordValue()->keyValue() == "SYSTEM") {
+          if (e->tag.wordValue()->keyValue() == k.system()) {
               sysPrint("\n");
               mainController()->systemStop();
               return false;
@@ -190,7 +191,6 @@ bool Kernel::getLineAndRunIt(bool shouldHandleError) {
 
 DatumP Kernel::registerError(DatumP anError, bool allowErract,
                              bool allowRecovery) {
-  const QString erract = "ERRACT";
   currentError = anError;
   ProcedureHelper::setIsErroring(anError != nothing);
   if (anError != nothing) {
@@ -202,7 +202,7 @@ DatumP Kernel::registerError(DatumP anError, bool allowErract,
       e->procedure = currentProcedure;
       e->instructionLine = currentLine;
     }
-    DatumP erractP = variables.datumForName(erract);
+    DatumP erractP = variables.datumForName(k.erract());
     bool shouldPause = (currentProcedure != nothing) &&
         (erractP != nothing) && (erractP.datumValue()->size() > 0);
 
@@ -215,12 +215,12 @@ DatumP Kernel::registerError(DatumP anError, bool allowErract,
       DatumP retval = pause();
 
       if (retval == nothing)
-        Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
+        Error::throwError(DatumP(k.toplevel()), nothing);
       if (allowRecovery) {
         return retval;
       }
       sysPrint(
-          QString("You don't say what to do with %1").arg(retval.printValue()));
+          k.errNoSay().arg(retval.printValue()));
       return nothing;
     } else {
       throw anError.errorValue();
@@ -259,19 +259,16 @@ void Kernel::initLibrary() { executeText(libraryStr); }
 // TODO: System vars need standardization
 void Kernel::initVariables(void)
 {
-    const QString logoPlatform = "LOGOPLATFORM";
-    const QString logoVersion = "LOGOVERSION";
-    const QString allowGetSet = "ALLOWGETSET";
-
     DatumP platform(new Word(LOGOPLATFORM));
     DatumP version(new Word(LOGOVERSION));
-    DatumP trueDatumP(&trueWord);
-    variables.setDatumForName(platform, logoPlatform);
-    variables.setDatumForName(version, logoVersion);
-    variables.setDatumForName(trueDatumP, allowGetSet);
-    variables.bury(logoPlatform);
-    variables.bury(logoVersion);
-    variables.bury(allowGetSet);
+    DatumP trueDatumP(k.ktrue());
+
+    variables.setDatumForName(platform, k.logoPlatform());
+    variables.setDatumForName(version, k.logoVersion());
+    variables.setDatumForName(trueDatumP, k.allowGetSet());
+    variables.bury(k.logoPlatform());
+    variables.bury(k.logoVersion());
+    variables.bury(k.allowGetSet());
 }
 
 Kernel::Kernel() {
@@ -339,7 +336,7 @@ void Kernel::makeVarLocal(const QString &varname) {
   if (variables.size() <= 1)
     return;
   if (variables.isStepped(varname)) {
-    QString line = varname + " shadowed by local in procedure call";
+    QString line = varname + k.shadowed_by_local();
     if (currentProcedure != nothing) {
       line +=
           " in " +
@@ -549,12 +546,12 @@ SignalsEnum_t Kernel::interruptCheck()
     SignalsEnum_t latestSignal = mainController()->latestSignal();
     if (latestSignal == toplevelSignal) {
         if (currentProcedure != nothing)
-            Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
+            Error::throwError(DatumP(k.toplevel()), nothing);
     } else if (latestSignal == pauseSignal) {
         if (currentProcedure != nothing)
             pause();
     } else if (latestSignal == systemSignal) {
-        Error::throwError(DatumP(new Word("SYSTEM")), nothing);
+        Error::throwError(DatumP(k.system()), nothing);
     }
     return latestSignal;
 }
@@ -628,14 +625,14 @@ DatumP Kernel::excErrorNoGui(DatumP node) {
 
 DatumP Kernel::pause() {
     if (isPausing) {
-        sysPrint("Already Pausing");
+        sysPrint(k.already_pausing());
         return nothing;
     }
   ProcedureScope procScope(this, nothing);
   isPausing = true;
   StreamRedirect streamScope(this, NULL, NULL);
 
-  sysPrint("Pausing...\n");
+  sysPrint(k.pausing());
 
   forever {
     try {
@@ -644,14 +641,14 @@ DatumP Kernel::pause() {
         shouldContinue = getLineAndRunIt(false);
       }
     } catch (Error *e) {
-      if ((e->code == 14) && (e->tag.wordValue()->keyValue() == "PAUSE")) {
+      if ((e->code == 14) && (e->tag.wordValue()->keyValue() == k.pause())) {
         DatumP retval = e->output;
         registerError(nothing);
         isPausing = false;
         return retval;
       }
-      if ((e->code == 14) && ((e->tag.wordValue()->keyValue() == "TOPLEVEL")
-                              || (e->tag.wordValue()->keyValue() == "SYSTEM"))) {
+      if ((e->code == 14) && ((e->tag.wordValue()->keyValue() == k.toplevel())
+                              || (e->tag.wordValue()->keyValue() == k.system()))) {
           isPausing = false;
         throw e;
       }

@@ -31,6 +31,7 @@
 #include "datum_astnode.h"
 
 #include "logocontroller.h"
+#include "stringconstants.h"
 
 #include <QByteArray> // for SHELL
 #include <QDir>
@@ -187,7 +188,7 @@ DatumP Kernel::excPrint(DatumP node) {
     printString.append(value.printValue(varFULLPRINTP(), varPRINTDEPTHLIMIT(),
                                         varPRINTWIDTHLIMIT()));
   }
-  printString.append("\n");
+  printString.append('\n');
   stdPrint(printString);
   return nothing;
 }
@@ -214,7 +215,7 @@ DatumP Kernel::excShow(DatumP node) {
     printString.append(value.showValue(varFULLPRINTP(), varPRINTDEPTHLIMIT(),
                                        varPRINTWIDTHLIMIT()));
   }
-  printString.append("\n");
+  printString.append('\n');
   stdPrint(printString);
   return nothing;
 }
@@ -677,6 +678,6 @@ DatumP Kernel::excCursorOverwrite(DatumP node) {
 DatumP Kernel::excCursorMode(DatumP node) {
   ProcedureHelper h(this, node);
   bool mode = mainController()->cursorOverwriteMode();
-  QString retval = mode ? "OVERWRITE" : "INSERT";
+  QString retval = mode ? k.overwrite() : k.insert();
   return h.ret(retval);
 }

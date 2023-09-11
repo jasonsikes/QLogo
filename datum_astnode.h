@@ -62,6 +62,7 @@ public:
     int countOfChildren();
 
     ASTNode(DatumP aNodeName);
+    ASTNode(QString aNodeName);
     ASTNode(const char *aNodeName);
     ~ASTNode();
     DatumType isa();

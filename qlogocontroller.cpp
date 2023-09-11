@@ -6,7 +6,7 @@
 #include <QDataStream>
 #include <QApplication>
 #include <unistd.h>
-
+#include "stringconstants.h"
 #ifdef _WIN32
 // For setmode(..., O_BINARY)
 #include <fcntl.h>
@@ -98,14 +98,14 @@ message_t QLogoController::getMessage()
         break;
     }
     case S_SYSTEM:
-        Error::throwError(DatumP(new Word("SYSTEM")), nothing);
+        Error::throwError(DatumP(k.system()), nothing);
         break;
     case S_TOPLEVEL:
         qDebug() <<"TOPLEVEL triggered";
-        Error::throwError(DatumP(new Word("TOPLEVEL")), nothing);
+        Error::throwError(DatumP(k.toplevel()), nothing);
         break;
     case S_PAUSE:
-        Error::throwError(DatumP(new Word("PAUSE")), nothing);
+        Error::throwError(DatumP(k.pause()), nothing);
         break;
     case C_CONSOLE_RAWLINE_READ:
         bufferStream >> rawLine;

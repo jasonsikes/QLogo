@@ -28,7 +28,6 @@
 
 #include "turtle.h"
 #include "error.h"
-#include "datum_word.h"
 
 #include <QVector3D>
 #include <QVector4D>

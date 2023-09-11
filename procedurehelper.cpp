@@ -33,6 +33,7 @@
 #include "datum_word.h"
 #include <QDebug>
 #include <math.h>
+#include "stringconstants.h"
 
 Parser *parser;
 
@@ -84,11 +85,11 @@ ProcedureHelper::~ProcedureHelper() {
     if (!isErroring) {
       if (returnValue == nothing) {
         parent->sysPrint(indent() + node->nodeName.wordValue()->printValue() +
-                         " stops\n");
+                         k._stops());
       } else {
         parent->sysPrint(indent() + node->nodeName.wordValue()->printValue() +
-                         " outputs " + returnValue.datumValue()->printValue() +
-                         "\n");
+                         k._outputs_() + returnValue.datumValue()->printValue() +
+                         '\n');
       }
     }
   }
@@ -158,9 +159,9 @@ bool ProcedureHelper::boolAtIndex(int index, bool canRunlist) {
   DatumP retval = wordAtIndex(index, canRunlist);
   forever {
     QString word = retval.wordValue()->keyValue();
-    if (word == "TRUE")
+    if (word == k.kctrue())
       return true;
-    if (word == "FALSE")
+    if (word == k.kcfalse())
       return false;
     do {
       retval = reject(retval, true, true);

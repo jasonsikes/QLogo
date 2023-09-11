@@ -29,6 +29,7 @@
 #include "parser.h"
 #include "datum_word.h"
 #include "datum_astnode.h"
+#include "stringconstants.h"
 
 // CONTROL STRUCTURES
 
@@ -66,7 +67,7 @@ DatumP Kernel::excRunresult(DatumP node) {
 DatumP Kernel::excBye(DatumP node) {
   ProcedureHelper h(this, node);
 
-  Error::throwError(DatumP(new Word("SYSTEM")), nothing);
+  Error::throwError(DatumP(k.system()), nothing);
 
   return nothing;
 }
@@ -204,14 +205,13 @@ DatumP Kernel::excDotMaybeoutput(DatumP node) {
 
 DatumP Kernel::excCatch(DatumP node) {
   ProcedureHelper h(this, node);
-  QString erract("ERRACT");
   QString tag = h.wordAtIndex(0).wordValue()->keyValue();
   DatumP instructionlist = h.listAtIndex(1);
   DatumP retval;
-  DatumP tempErract = variables.datumForName(erract);
+  DatumP tempErract = variables.datumForName(k.erract());
 
-  if (variables.doesExist(erract)) {
-    variables.setDatumForName(nothing, erract);
+  if (variables.doesExist(k.erract())) {
+    variables.setDatumForName(nothing, k.erract());
   }
 
   try {
@@ -238,12 +238,12 @@ DatumP Kernel::excCatch(DatumP node) {
           }
       }
   } catch (Error *e) {
-    if (variables.doesExist(erract)) {
-      variables.setDatumForName(tempErract, erract);
+    if (variables.doesExist(k.erract())) {
+      variables.setDatumForName(tempErract, k.erract());
     }
 
-    if ((tag == "ERROR") &&
-        (((e->code == 14) && (e->tag.wordValue()->keyValue()) == "ERROR") ||
+    if ((tag == k.error()) &&
+        (((e->code == 14) && (e->tag.wordValue()->keyValue()) == k.error()) ||
          (e->code != 14))) {
       ProcedureHelper::setIsErroring(false);
       return nothing;
@@ -255,8 +255,8 @@ DatumP Kernel::excCatch(DatumP node) {
     throw e;
   }
 
-  if (variables.doesExist(erract)) {
-    variables.setDatumForName(tempErract, erract);
+  if (variables.doesExist(k.erract())) {
+    variables.setDatumForName(tempErract, k.erract());
   }
   return h.ret(retval);
 }
@@ -316,7 +316,7 @@ DatumP Kernel::excContinue(DatumP node) {
     }
   }
 
-  Error::throwError(DatumP(QString("PAUSE")), retval);
+  Error::throwError(DatumP(k.pause()), retval);
 
   return nothing;
 }
@@ -336,7 +336,7 @@ DatumP Kernel::excGoto(DatumP node) {
         .procedureValue()
         ->tagToLine.contains(tag);
   });
-  ASTNode *a = new ASTNode("GOTO");
+  ASTNode *a = new ASTNode(k.kgoto());
   a->kernel = &Kernel::excGotoToken;
   a->addChild(tagP);
   return DatumP(a);
@@ -429,7 +429,7 @@ DatumP Kernel::excApply(DatumP node) {
     ListIterator paramIter = params.listValue()->newIterator();
     while (paramIter.elementExists()) {
       DatumP p = paramIter.element();
-      DatumP a = DatumP(new ASTNode("literal"));
+      DatumP a = DatumP(new ASTNode(k.literal()));
       a.astnodeValue()->kernel = &Kernel::executeLiteral;
       a.astnodeValue()->addChild(p);
       procnode->addChild(a);

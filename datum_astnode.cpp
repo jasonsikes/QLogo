@@ -43,6 +43,10 @@ ASTNode::ASTNode(const char *aNodeName) {
   nodeName = DatumP(aNodeName);
 }
 
+ASTNode::ASTNode(QString aNodeName) {
+  nodeName = DatumP(aNodeName);
+}
+
 ASTNode::~ASTNode() {
 }
 

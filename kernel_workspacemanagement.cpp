@@ -29,7 +29,7 @@
 #include "parser.h"
 #include "datum_word.h"
 #include "datum_astnode.h"
-
+#include "stringconstants.h"
 #include "logocontroller.h"
 
 QString Kernel::executeText(const QString &text) {
@@ -200,7 +200,7 @@ QString Kernel::createPrintoutFromContentsList(DatumP contentslist,
     ListIterator j = procedureText.listValue()->newIterator();
     while (j.elementExists()) {
       QString line = j.element().wordValue()->printValue();
-      line.append("\n");
+      line.append('\n');
       retval += line;
     }
   }
@@ -213,9 +213,8 @@ QString Kernel::createPrintoutFromContentsList(DatumP contentslist,
     if ((value == nothing) && shouldValidate) {
       Error::noValue(varnameP);
     } else {
-      QString line = QString("Make \"%1 %2\n")
-                         .arg(varname,
-                         parser->printoutDatum(value));
+      QString line = k.make12().arg(varname,
+                                    parser->printoutDatum(value));
       retval += line;
     }
   }
@@ -229,10 +228,10 @@ QString Kernel::createPrintoutFromContentsList(DatumP contentslist,
     while (j.elementExists()) {
       DatumP nameP = j.element();
       DatumP valueP = j.element();
-      QString line = QString("Pprop %1 %2 %3\n")
+      QString line = k.pprop123()
                          .arg(parser->printoutDatum(listnameP),
-                         parser->printoutDatum(nameP),
-                         parser->printoutDatum(valueP));
+                              parser->printoutDatum(nameP),
+                              parser->printoutDatum(valueP));
       retval += line;
     }
   }
@@ -242,32 +241,32 @@ QString Kernel::createPrintoutFromContentsList(DatumP contentslist,
 // SPECIAL VARIABLES
 
 bool Kernel::varLOADNOISILY() {
-  DatumP retvalP = variables.datumForName("LOADNOISILY");
-  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QString("TRUE")))
+  DatumP retvalP = variables.datumForName(k.loadnoisily());
+  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == k.kctrue()))
     return true;
   return false;
 }
 
 bool Kernel::varALLOWGETSET() {
-  DatumP retvalP = variables.datumForName("ALLOWGETSET");
-  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QString("TRUE")))
+  DatumP retvalP = variables.datumForName(k.allowGetSet());
+  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == k.kctrue()))
     return true;
   return false;
 }
 
-DatumP Kernel::varBUTTONACT() { return variables.datumForName("BUTTONACT"); }
+DatumP Kernel::varBUTTONACT() { return variables.datumForName(k.buttonact()); }
 
-DatumP Kernel::varKEYACT() { return variables.datumForName("KEYACT"); }
+DatumP Kernel::varKEYACT() { return variables.datumForName(k.keyact()); }
 
 bool Kernel::varFULLPRINTP() {
-  DatumP retvalP = variables.datumForName("FULLPRINTP");
-  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QString("TRUE")))
+  DatumP retvalP = variables.datumForName(k.fullprintp());
+  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == k.kctrue()))
     return true;
   return false;
 }
 
 int Kernel::varPRINTDEPTHLIMIT() {
-  DatumP retvalP = variables.datumForName("PRINTDEPTHLIMIT");
+  DatumP retvalP = variables.datumForName(k.printdepthlimit());
   if (retvalP.isWord()) {
     double retval = retvalP.wordValue()->numberValue();
     if (retvalP.wordValue()->didNumberConversionSucceed()) {
@@ -278,7 +277,7 @@ int Kernel::varPRINTDEPTHLIMIT() {
 }
 
 int Kernel::varPRINTWIDTHLIMIT() {
-  DatumP retvalP = variables.datumForName("PRINTWIDTHLIMIT");
+  DatumP retvalP = variables.datumForName(k.printwidthlimit());
   if (retvalP.isWord()) {
     double retval = retvalP.wordValue()->numberValue();
     if (retvalP.wordValue()->didNumberConversionSucceed()) {
@@ -288,18 +287,18 @@ int Kernel::varPRINTWIDTHLIMIT() {
   return -1;
 }
 
-DatumP Kernel::varSTARTUP() { return variables.datumForName("STARTUP"); }
+DatumP Kernel::varSTARTUP() { return variables.datumForName(k.startup()); }
 
 bool Kernel::varUNBURYONEDIT() {
-  DatumP retvalP = variables.datumForName("UNBURYONEDIT");
-  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QString("TRUE")))
+  DatumP retvalP = variables.datumForName(k.unburyonedit());
+  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == k.kctrue()))
     return true;
   return false;
 }
 
 bool Kernel::varCASEIGNOREDP() {
-  DatumP retvalP = variables.datumForName("CASEIGNOREDP");
-  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QString("TRUE")))
+  DatumP retvalP = variables.datumForName(k.caseignoredp());
+  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == k.kctrue()))
     return true;
   return false;
 }
@@ -367,10 +366,10 @@ DatumP Kernel::excMake(DatumP node) {
 
   variables.setDatumForName(rvalue, lvalue);
 
-  if (variables.isTraced(lvalue.toUpper())) {
-    QString line = QString("Make \"%1 %2\n")
+  if (variables.isTraced(lvalue)) {
+    QString line = k.make12()
                        .arg(h.wordAtIndex(0).wordValue()->printValue(),
-                       parser->unreadDatum(rvalue));
+                            parser->unreadDatum(rvalue));
     sysPrint(line);
   }
 
@@ -487,10 +486,10 @@ DatumP Kernel::excPprop(DatumP node) {
   DatumP value = h.datumAtIndex(2);
   plists.addProperty(plistname, propname, value);
   if (plists.isTraced(plistname)) {
-    QString line = QString("Pprop %1 %2 %3\n")
+    QString line = k.pprop123()
                        .arg(parser->unreadDatum(h.datumAtIndex(0)),
-                        parser->unreadDatum(h.datumAtIndex(1)),
-                        parser->unreadDatum(value));
+                            parser->unreadDatum(h.datumAtIndex(1)),
+                            parser->unreadDatum(value));
     sysPrint(line);
   }
   return nothing;
@@ -641,8 +640,9 @@ DatumP Kernel::excPot(DatumP node) {
 
   ListIterator i = proceduresList->newIterator();
   while (i.elementExists()) {
-    QString procedureTitle = parser->procedureTitle(i.element()) + "\n";
+    QString procedureTitle = parser->procedureTitle(i.element());
     stdPrint(procedureTitle);
+    stdPrint("\n");
   }
 
   i = variablesList->newIterator();
@@ -652,8 +652,7 @@ DatumP Kernel::excPot(DatumP node) {
     DatumP value = variables.datumForName(varname);
     if (value == nothing)
       Error::noValue(varnameP);
-    QString line =
-        QString("Make \"%1 %2\n").arg(varname, parser->unreadDatum(value));
+    QString line = k.make12().arg(varname, parser->unreadDatum(value));
     stdPrint(line);
   }
 
@@ -663,9 +662,9 @@ DatumP Kernel::excPot(DatumP node) {
     QString listname = listnameP.wordValue()->keyValue();
     DatumP proplist = plists.getPropertyList(listname);
     if (proplist.listValue()->size() > 0) {
-      QString line = QString("Plist %1 = %2\n")
-                         .arg(parser->unreadDatum(listnameP)
-                         ,parser->unreadDatum(proplist, true));
+      QString line = k.plist12()
+                         .arg(parser->unreadDatum(listnameP),
+                              parser->unreadDatum(proplist, true));
       stdPrint(line);
     }
   }

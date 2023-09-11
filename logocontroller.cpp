@@ -114,7 +114,7 @@ DatumP LogoController::readRawlineWithPrompt(const QString prompt) {
   outStream->flush();
   QString inputText = stream->readLine();
   if (dribbleStream)
-      *dribbleStream << inputText <<"\n";
+      *dribbleStream << inputText <<'\n';
   DatumP retval = DatumP(inputText);
 
   return retval;
