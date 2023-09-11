@@ -26,7 +26,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum_astnode.h"
-#include "datum_word.h"
+#include "stringconstants.h"
 #include <qdebug.h>
 
 void ASTNode::addChild(DatumP aChild) { children.push_back(aChild); }
@@ -53,8 +53,7 @@ ASTNode::~ASTNode() {
 Datum::DatumType ASTNode::isa() { return astnodeType; }
 
 QString ASTNode::name(void) {
-  static const QString retval("ASTNode");
-  return retval;
+  return k.astnode();
 }
 
 QString ASTNode::printValue(bool, int, int) {

@@ -27,6 +27,7 @@
 
 #include "datum_datump.h"
 #include "datum_list.h"
+#include "stringconstants.h"
 #include <qdebug.h>
 
 int countOfNodes = 0;
@@ -62,8 +63,7 @@ Datum::~Datum()
 QString Datum::printValue(bool, int, int) { return name(); }
 
 QString Datum::name(void) {
-  static QString retval("nothing");
-  return retval;
+  return k.nothing();
 }
 
 QString Datum::showValue(bool, int, int) { return name(); }

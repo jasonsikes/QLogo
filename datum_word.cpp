@@ -27,6 +27,7 @@
 
 #include "datum_word.h"
 #include "datum_datump.h"
+#include "stringconstants.h"
 #include <qdebug.h>
 
 QChar rawToChar(const QChar &src) {
@@ -93,8 +94,7 @@ Word::Word(double other) {
 Datum::DatumType Word::isa() { return wordType; }
 
 QString Word::name() {
-  static QString retval("Word");
-  return retval;
+  return k.word();
 }
 
 Word::~Word() {}
@@ -272,6 +272,8 @@ DatumP Word::butfirst() {
   return DatumP(rawString.right(rawString.size() - 1));
 }
 
+
+// TODO: move these for translation
 Word trueWord("true", false, false);
 Word falseWord("false", false, false);
 

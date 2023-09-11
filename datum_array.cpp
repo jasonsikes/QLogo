@@ -59,8 +59,7 @@ Array::~Array() {}
 Datum::DatumType Array::isa() { return Datum::arrayType; }
 
 QString Array::name() {
-  static const QString retval("Array");
-  return retval;
+  return k.array();
 }
 
 QString Array::printValue(bool fullPrintp, int printDepthLimit,
