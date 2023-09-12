@@ -44,21 +44,24 @@ protected:
 
     friend class WordIterator;
 
-    // TODO: the nomenclature assumes words are mutable. They are not.
-    enum DatumWordDirtyFlag { noValue, stringIsDirty, numberIsDirty, allClean };
-    DatumWordDirtyFlag dirtyFlag;
-
     QString rawString;
     QString keyString;
     QString printableString;
+    void genRawString();
+    void genPrintString();
+    void genKeyString();
     double number;
-    bool numberConversionSucceeded;
+    bool numberIsValid;
+    bool rawStringIsValid;
+    bool keyStringIsValid;
+    bool printableStringIsValid;
+    bool sourceIsNumber;
 
 public:
 
     /// Set to true if the word was created with vertical bars as delimiters.
     /// Words created this way will not be separated during parsing or runparsing.
-    bool isForeverSpecial = false;
+    bool isForeverSpecial;
 
     /// Create a Word object with a string.
     ///
@@ -71,7 +74,7 @@ public:
     /// Create a Word object with a number.
     Word(double other);
 
-    /// Create a Word object with an empty string.
+    /// Create a Word object that is invalid and empty.
     Word();
     ~Word();
 
