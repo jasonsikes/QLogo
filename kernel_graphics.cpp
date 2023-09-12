@@ -361,8 +361,8 @@ DatumP Kernel::excBounds(DatumP node) {
   double y = mainController()->boundY();
 
   List *retval = new List;
-  retval->append(new Word(x));
-  retval->append(new Word(y));
+  retval->append(DatumP(x));
+  retval->append(DatumP(y));
   return h.ret(retval);
 }
 
@@ -685,5 +685,5 @@ DatumP Kernel::excButtonp(DatumP node) {
 
 DatumP Kernel::excButton(DatumP node) {
   ProcedureHelper h(this, node);
-  return h.ret(new Word(mainController()->getAndResetButtonID()));
+  return h.ret(mainController()->getAndResetButtonID());
 }

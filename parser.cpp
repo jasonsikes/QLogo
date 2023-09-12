@@ -302,7 +302,7 @@ DatumP Parser::procedureFulltext(DatumP procnameP, bool shouldValidate) {
       ListIterator b = body->instructionList.listValue()->newIterator();
 
       while (b.elementExists()) {
-        retval->append(new Word(unreadList(b.element().listValue(), false)));
+        retval->append(DatumP(unreadList(b.element().listValue(), false)));
       }
 
       DatumP end(k.end());
@@ -585,7 +585,7 @@ DatumP Parser::tokenizeListWithPrompt(const QString &prompt, int level,
           (c == '}')) {
         // This is a delimiter
         if (currentWord.size() > 0) {
-          retval->append(DatumP(new Word(currentWord, isCurrentWordVbarred)));
+          retval->append(DatumP(currentWord, isCurrentWordVbarred));
           currentWord = "";
           isCurrentWordVbarred = false;
         }
@@ -630,9 +630,8 @@ DatumP Parser::tokenizeListWithPrompt(const QString &prompt, int level,
     }
     // This is the end of the read. Add the last word to the list.
     if (currentWord.size() > 0) {
-      retval->append(DatumP(new Word(currentWord, isCurrentWordVbarred)));
+      retval->append(DatumP(currentWord, isCurrentWordVbarred));
       currentWord = "";
-      isCurrentWordVbarred = false;
     }
 
     // If this is the base-level list then we can just return
@@ -655,7 +654,7 @@ DatumP Parser::tokenizeListWithPrompt(const QString &prompt, int level,
       return DatumP(ary);
     }
     return retvalP;
-  }
+  } // /forever
 }
 
 DatumP Parser::readlistWithPrompt(const QString &prompt,
@@ -693,7 +692,7 @@ void Parser::runparseSpecialchars(void) {
       ++runparseCIter;
     }
   }
-  runparseRetval->append(new Word(retval));
+  runparseRetval->append(DatumP(retval));
 }
 
 void Parser::runparseString() {
@@ -704,10 +703,10 @@ void Parser::runparseString() {
     ++runparseCIter;
     DatumP number = runparseNumber();
     if (number != nothing) {
-      runparseRetval->append(new Word("("));
-      runparseRetval->append(new Word("?"));
+      runparseRetval->append(DatumP(QString("(")));
+      runparseRetval->append(DatumP(QString("?")));
       runparseRetval->append(number);
-      runparseRetval->append(new Word(")"));
+      runparseRetval->append(DatumP(QString(")")));
       return;
     }
   }
@@ -717,7 +716,7 @@ void Parser::runparseString() {
     retval += *runparseCIter;
     ++runparseCIter;
   }
-  runparseRetval->append(new Word(retval, isRunparseSourceSpecial));
+  runparseRetval->append(DatumP(retval, isRunparseSourceSpecial));
 }
 
 void Parser::runparseMinus() {
@@ -830,7 +829,7 @@ void Parser::runparseQuotedWord() {
     retval += *runparseCIter;
     ++runparseCIter;
   }
-  runparseRetval->append(new Word(retval, isRunparseSourceSpecial));
+  runparseRetval->append(DatumP(retval, isRunparseSourceSpecial));
 }
 
 /*
@@ -1089,7 +1088,7 @@ DatumP Parser::parseTermexp() {
       DatumP node(new ASTNode(k.quotedname()));
       node.astnodeValue()->kernel = &Kernel::executeLiteral;
       node.astnodeValue()->addChild(
-          DatumP(new Word(name, currentToken.wordValue()->isForeverSpecial)));
+          DatumP(DatumP(name, currentToken.wordValue()->isForeverSpecial)));
       advanceToken();
       return node;
     } else {

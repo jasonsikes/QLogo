@@ -68,7 +68,7 @@ public:
     explicit DatumP(int n);
 
     /// Convenience constructor for strings.
-    explicit DatumP(const QString n);
+    explicit DatumP(const QString n, bool isVBarred = false);
 
 
 

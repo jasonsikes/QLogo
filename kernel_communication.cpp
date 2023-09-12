@@ -657,8 +657,8 @@ DatumP Kernel::excAllfonts(DatumP node) {
   ProcedureHelper h(this, node);
   List *retval = new List;
   QStringList fonts = mainController()->getAllFontNames();
-  for (auto &i : fonts) {
-    retval->append(new Word(i));
+  for (const QString &i : fonts) {
+    retval->append(DatumP(i));
   }
   return h.ret(retval);
 }

@@ -282,7 +282,7 @@ DatumP Kernel::excError(DatumP node) {
   List *retval = new List;
   if (currentError != nothing) {
     Error *e = currentError.errorValue();
-    retval->append(new Word(e->code));
+    retval->append(DatumP(e->code));
     retval->append(e->errorText);
     if (e->procedure != nothing)
       retval->append(e->procedure.astnodeValue()->nodeName);

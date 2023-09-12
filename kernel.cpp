@@ -259,8 +259,8 @@ void Kernel::initLibrary() { executeText(libraryStr); }
 // TODO: System vars need standardization
 void Kernel::initVariables(void)
 {
-    DatumP platform(new Word(LOGOPLATFORM));
-    DatumP version(new Word(LOGOVERSION));
+    DatumP platform(LOGOPLATFORM);
+    DatumP version(LOGOVERSION);
     DatumP trueDatumP(k.ktrue());
 
     variables.setDatumForName(platform, k.logoPlatform());

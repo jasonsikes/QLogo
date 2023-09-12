@@ -63,9 +63,9 @@ DatumP::DatumP(int n)
 }
 
 
-DatumP::DatumP(const QString n)
+DatumP::DatumP(const QString n, bool isVBarred)
 {
-  d = new Word(n);
+  d = new Word(n, isVBarred);
   d->retain();
 }
 
