@@ -105,12 +105,7 @@ void Word::genPrintString()
   if ( ! printableStringIsValid) {
     genRawString();
     printableString = rawString;
-    for (int i = 0; i < printableString.size(); ++i) {
-      QChar s = printableString[i];
-      QChar d = rawToChar(s);
-      if (s != d)
-          printableString[i] = d;
-    }
+    rawToChar(printableString);
     printableStringIsValid = true;
   }
 }
@@ -224,8 +219,8 @@ QString Word::showValue(bool fullPrintp, int printDepthLimit,
 }
 
 int Word::size() {
-  genRawString();
-  return rawString.size();
+  genPrintString();
+  return printableString.size();
 }
 
 bool Word::isEqual(DatumP other, bool ignoreCase) {
@@ -241,29 +236,30 @@ bool Word::isEqual(DatumP other, bool ignoreCase) {
       return false;
     return answer;
   }
+  genPrintString();
   Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive : Qt::CaseSensitive;
-  return rawValue().compare(other.wordValue()->rawValue(), cs) == 0;
+  return printableString.compare(other.wordValue()->printValue(), cs) == 0;
 }
 
 bool Word::isIndexInRange(int anIndex) {
   --anIndex;
-  genRawString();
-  return ((anIndex >= 0) && (anIndex < rawString.size()));
+  genPrintString();
+  return ((anIndex >= 0) && (anIndex < printableString.size()));
 }
 
 DatumP Word::datumAtIndex(int anIndex) {
-  genRawString();
+  genPrintString();
   --anIndex;
-  Q_ASSERT((anIndex >= 0) && (anIndex < rawString.size()));
-  return DatumP(rawString.mid(anIndex, 1));
+  Q_ASSERT((anIndex >= 0) && (anIndex < printableString.size()));
+  return DatumP(printableString.mid(anIndex, 1));
 }
 
 bool Word::containsDatum(DatumP aDatum, bool ignoreCase) {
   if (!aDatum.isWord())
     return false;
-  genRawString();
+  genPrintString();
   Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive : Qt::CaseSensitive;
-  return rawString.contains(aDatum.wordValue()->rawValue(), cs);
+  return printableString.contains(aDatum.wordValue()->printValue(), cs);
 }
 
 bool Word::isMember(DatumP aDatum, bool ignoreCase) {
@@ -271,39 +267,38 @@ bool Word::isMember(DatumP aDatum, bool ignoreCase) {
 }
 
 DatumP Word::fromMember(DatumP aDatum, bool ignoreCase) {
-  genRawString();
+  genPrintString();
   Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive : Qt::CaseSensitive;
-  const QString &searchString = aDatum.wordValue()->rawValue();
-  int pos = rawString.indexOf(searchString, 0, cs);
+  const QString &searchString = aDatum.wordValue()->printValue();
+  int pos = printableString.indexOf(searchString, 0, cs);
   QString retval;
   if (pos >= 0) {
-    retval = rawString.right(rawString.size() - pos);
+    retval = printableString.right(rawString.size() - pos);
   }
   return DatumP(retval);
 }
 
 DatumP Word::first() {
-  genRawString();
-  Q_ASSERT(rawString.size() > 0);
-  return DatumP(QString(rawString[0]));
+  genPrintString();
+  Q_ASSERT(printableString.size() > 0);
+  return DatumP(QString(printableString[0]));
 }
 
 DatumP Word::last() {
-  genRawString();
-  Q_ASSERT(rawString.size() > 0);
-  return DatumP(QString(rawString[rawString.size() - 1]));
+  genPrintString();
+  Q_ASSERT(printableString.size() > 0);
+  return DatumP(QString(printableString[printableString.size() - 1]));
 }
 
 DatumP Word::butlast() {
-  const QString &w = rawValue();
-  Word *retval = new Word(w.left(w.size() - 1));
-  return DatumP(retval);
+  genPrintString();
+  return DatumP(printableString.left(printableString.size() - 1));
 }
 
 DatumP Word::butfirst() {
-  genRawString();
-  Q_ASSERT(rawString.size() > 0);
-  return DatumP(rawString.right(rawString.size() - 1));
+  genPrintString();
+  Q_ASSERT(printableString.size() > 0);
+  return DatumP(printableString.right(printableString.size() - 1));
 }
 
 
