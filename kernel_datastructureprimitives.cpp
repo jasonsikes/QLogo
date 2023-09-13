@@ -47,7 +47,7 @@ DatumP Kernel::excWord(DatumP node) {
 
 DatumP Kernel::excList(DatumP node) {
   ProcedureHelper h(this, node);
-  List *retval = new List;
+  List *retval = emptyList();
   for (int i = 0; i < h.countOfChildren(); ++i) {
     DatumP value = h.datumAtIndex(i);
     retval->append(value);
@@ -57,7 +57,7 @@ DatumP Kernel::excList(DatumP node) {
 
 DatumP Kernel::excSentence(DatumP node) {
   ProcedureHelper h(this, node);
-  List *retval = new List;
+  List *retval = emptyList();
   for (int i = 0; i < node.astnodeValue()->countOfChildren(); ++i) {
     DatumP value = h.datumAtIndex(i);
     if (value.isList()) {
@@ -98,7 +98,7 @@ DatumP Kernel::excLput(DatumP node) {
     return candidate.isList();
   });
   if (list.isList()) {
-    List *retval = new List;
+    List *retval = emptyList();
     ListIterator iter = list.listValue()->newIterator();
     while (iter.elementExists()) {
       retval->append(iter.element());
@@ -148,7 +148,7 @@ DatumP Kernel::excFirst(DatumP node) {
 
 DatumP Kernel::excFirsts(DatumP node) {
   ProcedureHelper h(this, node);
-  List *retval = new List;
+  List *retval = emptyList();
   h.validatedListAtIndex(0, [retval](DatumP candidate) {
     ListIterator iter = candidate.listValue()->newIterator();
     while (iter.elementExists()) {
@@ -178,7 +178,7 @@ DatumP Kernel::excButfirst(DatumP node) {
 
 DatumP Kernel::excButfirsts(DatumP node) {
   ProcedureHelper h(this, node);
-  List *retval = new List;
+  List *retval = emptyList();
   h.validatedListAtIndex(0, [retval](DatumP candidate) {
     ListIterator iter = candidate.listValue()->newIterator();
     while (iter.elementExists()) {

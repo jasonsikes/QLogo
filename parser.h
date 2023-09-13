@@ -141,7 +141,7 @@ public:
   DatumType isa() { return Datum::procedureType; }
 
   Procedure() {
-    instructionList = DatumP(new List);
+    instructionList = emptyListP();
     countOfMaxParams = -1;
     countOfMinParams = 0;
   }

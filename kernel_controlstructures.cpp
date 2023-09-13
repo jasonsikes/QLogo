@@ -50,7 +50,7 @@ DatumP Kernel::excRunresult(DatumP node) {
     return candidate.isWord() || candidate.isList();
   });
 
-  List* retval = new List;
+  List* retval = emptyList();
   DatumP temp = runList(instructionList);
 
   if (temp.isASTNode()) {
@@ -279,7 +279,7 @@ DatumP Kernel::excThrow(DatumP node) {
 DatumP Kernel::excError(DatumP node) {
   ProcedureHelper h(this, node);
 
-  List *retval = new List;
+  List *retval = emptyList();
   if (currentError != nothing) {
     Error *e = currentError.errorValue();
     retval->append(DatumP(e->code));
@@ -287,11 +287,11 @@ DatumP Kernel::excError(DatumP node) {
     if (e->procedure != nothing)
       retval->append(e->procedure.astnodeValue()->nodeName);
     else
-      retval->append(DatumP(new List));
+      retval->append(emptyListP());
     if (e->instructionLine != nothing)
       retval->append(e->instructionLine);
     else
-      retval->append(DatumP(new List));
+      retval->append(emptyListP());
     currentError = nothing;
   }
   return h.ret(retval);

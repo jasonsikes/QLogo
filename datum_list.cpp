@@ -41,6 +41,19 @@ List::List() {
     listSize = 0;
 }
 
+
+List *emptyList()
+{
+    return new List;
+}
+
+
+DatumP emptyListP()
+{
+    return DatumP(emptyList());
+}
+
+
 List::List(Array *source) {
   astParseTimeStamp = 0;
   listSize = source->size();
@@ -206,7 +219,7 @@ bool List::isMember(DatumP aDatum, bool ignoreCase) {
 }
 
 DatumP List::fromMember(DatumP aDatum, bool ignoreCase) {
-  List *retval = new List;
+  List *retval = emptyList();
   DatumP ptr = head;
   while (ptr != nothing) {
       DatumP e = ptr.listNodeValue()->item;
@@ -233,7 +246,7 @@ DatumP List::datumAtIndex(int anIndex) {
 
 DatumP List::butfirst() {
     Q_ASSERT(head != nothing);
-  List *retval = new List;
+  List *retval = emptyList();
     retval->head = head.listNodeValue()->next;
     retval->listSize = listSize - 1;
     retval->lastNode = lastNode;
@@ -269,7 +282,7 @@ DatumP List::last() {
 }
 
 DatumP List::butlast() {
-  List *retval = new List;
+  List *retval = emptyList();
   retval->listSize = listSize - 1;
   if (head.listNodeValue()->next != nothing) {
       DatumP src = head;
@@ -301,7 +314,7 @@ void List::prepend(DatumP element) {
 DatumP List::fput(DatumP item)
 {
     ListNode *newnode = new ListNode;
-    List *retval = new List;
+    List *retval = emptyList();
     newnode->item = item;
     newnode->next = head;
     retval->head = newnode;

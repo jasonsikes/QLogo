@@ -28,6 +28,7 @@
 
 #include "datum_datump.h"
 #include "datum_word.h"
+#include "datum_list.h"
 #include <qdebug.h>
 
 DatumP::DatumP() { d = &notADatum; }

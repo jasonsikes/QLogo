@@ -71,7 +71,6 @@ public:
     explicit DatumP(const QString n, bool isVBarred = false);
 
 
-
     /// \brief Destructor.
     ///
     /// Decreases the retain count of the referred object. If this is the last

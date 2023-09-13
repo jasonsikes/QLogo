@@ -40,7 +40,7 @@ Array::Array(int aOrigin, int aSize) {
   origin = aOrigin;
   array.reserve(aSize);
   for (int i = 0; i < aSize; ++i) {
-    array.append(DatumP(new List));
+    array.append(emptyListP());
   }
 }
 

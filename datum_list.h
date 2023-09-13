@@ -132,6 +132,12 @@ public:
 };
 
 
+/// Convenience constructor for an empty list.
+List * emptyList();
+
+/// Convenience constructor for an empty list.
+DatumP emptyListP();
+
 
 
 #endif // DATUM_LIST_H
