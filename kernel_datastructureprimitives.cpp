@@ -134,7 +134,8 @@ DatumP Kernel::excListtoarray(DatumP node) {
 DatumP Kernel::excArraytolist(DatumP node) {
   ProcedureHelper h(this, node);
   DatumP source = h.arrayAtIndex(0);
-  return h.ret(new List(source.arrayValue()));
+  List *retval = List::listFromArray(source.arrayValue());
+  return h.ret(retval);
 }
 
 // SELECTORS

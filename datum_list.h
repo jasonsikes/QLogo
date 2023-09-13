@@ -60,11 +60,11 @@ public:
     /// Create an empty List
     List();
 
-    /// Create a new List using the elements of the source List.
-    List(List *source);
+    /// Create a new list populated with elements of Array.
+    static List * listFromArray(Array *source);
 
-    /// Create a new List using the elements of the source Array.
-    List(Array *source);
+    /// Create a new list populated with elements of another List.
+    static List * listFromList(List *source);
 
     ~List();
     DatumType isa();

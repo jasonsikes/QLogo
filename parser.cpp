@@ -260,7 +260,7 @@ DatumP Parser::procedureText(DatumP procnameP) {
 
   QList<DatumP>::iterator d = body->optionalDefaults.begin();
   for (auto &i : body->optionalInputs) {
-    List *optInput = new List(d->listValue());
+    List *optInput = List::listFromList(d->listValue());
     optInput->prepend(DatumP(i));
     ++d;
     inputs->append(DatumP(optInput));
@@ -351,7 +351,7 @@ QString Parser::procedureTitle(DatumP procnameP) {
   for (auto &i : body->optionalInputs) {
     paramName = i;
     paramName.push_front(':');
-    List *optInput = new List(d->listValue());
+    List *optInput = List::listFromList(d->listValue());
     optInput->prepend(DatumP(paramName));
     firstLine->append(DatumP(optInput));
     ++d;

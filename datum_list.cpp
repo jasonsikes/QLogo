@@ -54,32 +54,26 @@ DatumP emptyListP()
 }
 
 
-List::List(Array *source) {
-  astParseTimeStamp = 0;
-  listSize = source->size();
-  auto aryIter = source->newIterator();
-  DatumP prev;
-  if (aryIter.elementExists()) {
-      head = new ListNode;
-      lastNode = head;
-      head.listNodeValue()->item = aryIter.element();
-      prev = head;
-  }
-  while (aryIter.elementExists()) {
-      lastNode = new ListNode;
-      prev.listNodeValue()->next = lastNode;
-      lastNode.listNodeValue()->item = aryIter.element();
-      prev = lastNode;
-  }
+List * List::listFromArray(Array *source)
+{
+    List *retval = emptyList();
+    auto aryIter = source->newIterator();
+    while (aryIter.elementExists()) {
+        retval->append(aryIter.element());
+    }
+    return retval;
 }
 
 List::~List() {}
 
-List::List(List *source) {
-  astParseTimeStamp = 0;
-  head = source->head;
-  lastNode = source->lastNode;
-  listSize = source->size();
+
+List * List::listFromList(List *source) {
+    List *retval = emptyList();
+    retval->astParseTimeStamp = 0;
+    retval->head = source->head;
+    retval->lastNode = source->lastNode;
+    retval->listSize = source->size();
+    return retval;
 }
 
 Datum::DatumType List::isa() { return listType; }
