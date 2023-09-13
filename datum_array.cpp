@@ -44,14 +44,22 @@ Array::Array(int aOrigin, int aSize) {
   }
 }
 
-Array::Array(int aOrigin, List *source) {
-  origin = aOrigin;
-  array.reserve(source->size());
+
+Array * Array::arrayWithSize(int aOrigin, int aSize)
+{
+  Array * retval = new Array(aOrigin, aSize);
+  return retval;
+}
+
+Array * Array::arrayFromList(int aOrigin, List *source)
+{
+  Array * retval = new Array(aOrigin, source->size());
   auto iter = source->newIterator();
 
   while (iter.elementExists()) {
-      array.push_back(iter.element());
+    retval->append(iter.element());
   }
+  return retval;
 }
 
 Array::~Array() {}

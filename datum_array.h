@@ -44,7 +44,11 @@ public:
     Array(int aOrigin, int aSize);
 
     /// Create an Array containing items copied from source with index starting at aOrigin.
-    Array(int aOrigin, List *source);
+    static Array * arrayFromList(int aOrigin, List *source);
+
+    static Array * arrayWithSize(int aOrigin, int aSize);
+
+
     ~Array();
     DatumType isa();
     QString name();

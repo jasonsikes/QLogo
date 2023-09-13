@@ -614,7 +614,7 @@ DatumP Parser::tokenizeListWithPrompt(const QString &prompt, int level,
             }
             origin = originStr.toInt();
           }
-          Array *ary = new Array(origin, retval);
+          Array *ary = Array::arrayFromList(origin, retval);
           return DatumP(ary);
         }
         case '{':
@@ -650,7 +650,7 @@ DatumP Parser::tokenizeListWithPrompt(const QString &prompt, int level,
     }
     // We have exhausted our source. Return what we have.
     if (makeArray) {
-      Array *ary = new Array(1, retval);
+      Array *ary = Array::arrayFromList(1, retval);
       return DatumP(ary);
     }
     return retvalP;

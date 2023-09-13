@@ -118,7 +118,7 @@ DatumP Kernel::excArray(DatumP node) {
   if (h.countOfChildren() > 1) {
     origin = h.integerAtIndex(1);
   }
-  return h.ret(new Array(origin, size));
+  return h.ret(Array::arrayWithSize(origin, size));
 }
 
 DatumP Kernel::excListtoarray(DatumP node) {
@@ -128,7 +128,7 @@ DatumP Kernel::excListtoarray(DatumP node) {
   if (h.countOfChildren() > 1) {
     origin = h.integerAtIndex(1);
   }
-  return h.ret(new Array(origin, source.listValue()));
+  return h.ret(Array::arrayFromList(origin, source.listValue()));
 }
 
 DatumP Kernel::excArraytolist(DatumP node) {
