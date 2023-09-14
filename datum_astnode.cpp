@@ -26,7 +26,6 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum_astnode.h"
-#include "stringconstants.h"
 #include <qdebug.h>
 
 void ASTNode::addChild(DatumP aChild) { children.push_back(aChild); }
@@ -39,9 +38,6 @@ ASTNode::ASTNode(DatumP aNodeName) {
   nodeName = aNodeName;
 }
 
-ASTNode::ASTNode(const char *aNodeName) {
-  nodeName = DatumP(aNodeName);
-}
 
 ASTNode::ASTNode(QString aNodeName) {
   nodeName = DatumP(aNodeName);
@@ -52,9 +48,6 @@ ASTNode::~ASTNode() {
 
 Datum::DatumType ASTNode::isa() { return astnodeType; }
 
-QString ASTNode::name(void) {
-  return k.astnode();
-}
 
 QString ASTNode::printValue(bool, int, int) {
   QString retval = QString("( %1").arg(nodeName.showValue());
@@ -67,5 +60,4 @@ QString ASTNode::printValue(bool, int, int) {
 
 QString ASTNode::showValue(bool, int, int) { return printValue(); }
 
-DatumP ASTNode::first() { return nothing; }
 

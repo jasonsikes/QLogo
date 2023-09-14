@@ -63,12 +63,9 @@ public:
 
     ASTNode(DatumP aNodeName);
     ASTNode(QString aNodeName);
-    ASTNode(const char *aNodeName);
+
     ~ASTNode();
     DatumType isa();
-
-    /// For debugging. To be used when printing out the AST.
-    QString name();
 
     /// For debugging. To be used when printing out the AST.
     QString printValue(bool fullPrintp = false, int printDepthLimit = -1,
@@ -78,8 +75,6 @@ public:
     QString showValue(bool fullPrintp = false, int printDepthLimit = -1,
                       int printWidthLimit = -1);
 
-    /// Not used. Returns nothing.
-    DatumP first(void);
 };
 
 
