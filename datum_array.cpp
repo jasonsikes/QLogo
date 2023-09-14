@@ -53,7 +53,9 @@ Array * Array::arrayWithSize(int aOrigin, int aSize)
 
 Array * Array::arrayFromList(int aOrigin, List *source)
 {
-  Array * retval = new Array(aOrigin, source->size());
+  Array * retval = new Array(aOrigin, 0);
+  retval->array.reserve(source->size());
+
   auto iter = source->newIterator();
 
   while (iter.elementExists()) {
