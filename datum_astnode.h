@@ -77,5 +77,10 @@ public:
 
 };
 
+ASTNode * astNodeWithName(const QString aName);
+
+ASTNode * astNodeWithName(DatumP aName);
+
+
 
 #endif // DATUM_ASTNODE_H

@@ -61,3 +61,13 @@ QString ASTNode::printValue(bool, int, int) {
 QString ASTNode::showValue(bool, int, int) { return printValue(); }
 
 
+ASTNode * astNodeWithName(const QString aName)
+{
+  return new ASTNode(aName);
+}
+
+ASTNode * astNodeWithName(DatumP aName)
+{
+  return new ASTNode(aName);
+}
+
