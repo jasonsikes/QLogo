@@ -55,6 +55,8 @@ protected:
     qint64 astParseTimeStamp;
     void setListSize();
 
+    void addToPool();
+
 public:
 
     /// Create an empty List
@@ -65,6 +67,9 @@ public:
 
     /// Create a new list populated with elements of another List.
     static List * listFromList(List *source);
+
+    /// Create an empty List
+    static List * emptyList();
 
     ~List();
     DatumType isa();
@@ -132,11 +137,16 @@ public:
 };
 
 
-/// Convenience constructor for an empty list.
-List * emptyList();
+class ListPool : public DatumPool
+{
+    void createNewDatums(QVector<Datum*> &box);
+};
 
 /// Convenience constructor for an empty list.
 DatumP emptyListP();
+
+/// Convenience constructor for an empty list.
+List *emptyList();
 
 
 

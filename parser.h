@@ -125,7 +125,10 @@ public:
 
 class Procedure : public Datum {
 
+  void addToPool();
+
 public:
+  Procedure() {}
   QStringList requiredInputs;
   QStringList optionalInputs;
   QList<DatumP> optionalDefaults;
@@ -140,11 +143,24 @@ public:
   DatumP instructionList;
   DatumType isa() { return Datum::procedureType; }
 
-  Procedure() {
+  void init() {
     instructionList = emptyListP();
     countOfMaxParams = -1;
     countOfMinParams = 0;
+    requiredInputs.clear();
+    optionalInputs.clear();
+    optionalDefaults.clear();
+    restInput = "";
+    defaultNumber = 0;
+    tagToLine.clear();
+    isMacro = false;
+    sourceText = nothing;
   }
+};
+
+class ProcedurePool : public DatumPool
+{
+  void createNewDatums(QVector<Datum*> &box);
 };
 
 

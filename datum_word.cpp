@@ -30,6 +30,8 @@
 #include "stringconstants.h"
 #include <qdebug.h>
 
+static WordPool pool;
+
 QChar rawToChar(const QChar &src) {
   const ushort rawToAsciiMap[] = {
       2,  58, 3,  32, 4,  9,  5,  10, 6,  40,  11, 63,  14, 43, 15, 126,
@@ -70,22 +72,37 @@ QChar charToRaw(const QChar &src) {
 }
 
 Word::Word() {
+  qDebug() <<"new Word";
   numberIsValid = false;
   rawStringIsValid = false;
   keyStringIsValid = false;
   printableStringIsValid = false;
 }
 
-Word::Word(const QString other, bool aIsForeverSpecial, bool canBeDestroyed) {
-  numberIsValid = false;
-  rawStringIsValid = true;
-  keyStringIsValid = false;
-  printableStringIsValid = false;
-  sourceIsNumber = false;
-  isForeverSpecial = aIsForeverSpecial;
-  isDestroyable = canBeDestroyed;
+Word * Word::init(const QString other, bool aIsForeverSpecial) {
+  Word * retval = (Word *) pool.alloc();
+  qDebug() <<retval << " Allocating QString: " <<other;
+  retval->numberIsValid = false;
+  retval->rawStringIsValid = true;
+  retval->keyStringIsValid = false;
+  retval->printableStringIsValid = false;
+  retval->sourceIsNumber = false;
+  retval->isForeverSpecial = aIsForeverSpecial;
 
-  rawString = other;
+  retval->rawString = other;
+  return retval;
+}
+
+Word * Word::init(double other) {
+  qDebug() << "Allocating double";
+  Word * retval = (Word *) pool.alloc();
+  retval->number = other;
+  retval->numberIsValid = true;
+  retval->rawStringIsValid = false;
+  retval->keyStringIsValid = false;
+  retval->printableStringIsValid = false;
+  retval->sourceIsNumber = true;
+  return retval;
 }
 
 
@@ -126,22 +143,24 @@ void Word::genKeyString()
   }
 }
 
-Word::Word(double other) {
-  number = other;
-  numberIsValid = true;
-  rawStringIsValid = false;
-  keyStringIsValid = false;
-  printableStringIsValid = false;
-  sourceIsNumber = true;
-}
-
 Datum::DatumType Word::isa() { return wordType; }
 
 QString Word::name() {
   return k.word();
 }
 
-Word::~Word() {}
+Word::~Word() {
+  qDebug() << "deleting Word";
+}
+
+void Word::addToPool()
+{
+  if (rawStringIsValid)
+    qDebug() <<this <<" deallocating QString: " <<rawString;
+  else
+    qDebug() <<this <<" deallocating double";
+  pool.dealloc(this);
+}
 
 QString Word::keyValue() {
   genKeyString();
@@ -302,7 +321,21 @@ DatumP Word::butfirst() {
 }
 
 
-// TODO: move these for translation
-Word trueWord("true", false, false);
-Word falseWord("false", false, false);
+void WordPool::createNewDatums(QVector<Datum*> &box)
+{
+  int s = (int)sizeof(Word);
+  int count = getPageSize() / s;
+
+  qDebug() <<"Creating new Words";
+  dv(count);
+  debugMessage();
+  // This block is never deleted. If unreferenced, it can be reused.
+  QVector<Word> *block = new QVector<Word>(count);
+
+  box.reserve(count);
+  for (auto &i : *block) {
+    box.push_back(&i);
+  }
+}
+
 

@@ -57,25 +57,29 @@ protected:
     bool printableStringIsValid;
     bool sourceIsNumber;
 
+    void addToPool();
+
 public:
 
     /// Set to true if the word was created with vertical bars as delimiters.
     /// Words created this way will not be separated during parsing or runparsing.
     bool isForeverSpecial;
 
+    /// Create a Word object that is invalid. Don't use this.
+    /// To get a new word, use init().
+    Word();
+
     /// Create a Word object with a string.
     ///
     /// \param other the string value of this word
     /// \param aIsForeverSpecial characters defined with vertical bars will retain their special use.
     /// \param canBeDestroyed Allow this object to be destroyed if its retain count falls below 1.
-    Word(const QString other, bool aIsForeverSpecial = false,
-         bool canBeDestroyed = true);
+    static Word * init(const QString other, bool aIsForeverSpecial = false);
 
     /// Create a Word object with a number.
-    Word(double other);
+    static Word * init(double other);
 
-    /// Create a Word object that is invalid and empty.
-    Word();
+    /// Destroy a Word object.
     ~Word();
 
     /// returns the number representation of the Word. Use didNumberConversionSucceed() to check.
@@ -135,12 +139,15 @@ public:
     /// Returns a substring starting at the first occurrence of aDatum to the end of the string.
     DatumP fromMember(DatumP aDatum, bool ignoreCase);
 
-    Iterator newIterator(void);
+    Iterator newIterator(void); // TODO: see if worditerator is used. delete if not.
 };
 
 
-extern Word trueWord;
-extern Word falseWord;
+class WordPool : public DatumPool
+{
+    void createNewDatums(QVector<Datum*> &box);
+};
+
 
 
 #endif // DATUM_WORD_H

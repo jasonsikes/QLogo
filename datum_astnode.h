@@ -42,7 +42,12 @@ class ASTNode : public Datum {
 protected:
     QVector<DatumP> children;
 
+    void addToPool();
+
 public:
+
+    /// Initialize a node.
+    void init(DatumP aName);
 
     /// A human-readable string. Usually the command name.
     DatumP nodeName;
@@ -61,7 +66,14 @@ public:
     /// Returns the number of children that this node owns.
     int countOfChildren();
 
+
+    /// Create an ASTNode with no name.
+    ASTNode() {}
+
+    /// Create an ASTNode with the node's name.
     ASTNode(DatumP aNodeName);
+
+    /// Create an ASTNode with the node's name.
     ASTNode(QString aNodeName);
 
     ~ASTNode();
@@ -80,6 +92,11 @@ public:
 ASTNode * astNodeWithName(const QString aName);
 
 ASTNode * astNodeWithName(DatumP aName);
+
+class ASTNodePool : public DatumPool
+{
+    void createNewDatums(QVector<Datum*> &box);
+};
 
 
 

@@ -33,6 +33,8 @@
 #include <qdebug.h>
 #include "stringconstants.h"
 
+static ArrayPool pool;
+
 QList<void *> aryVisited;
 QList<void *> otherAryVisited;
 
@@ -44,6 +46,12 @@ Array::Array(int aOrigin, int aSize) {
   }
 }
 
+
+void Array::clear()
+{
+  origin = 1;
+  array.clear();
+}
 
 Array * Array::arrayWithSize(int aOrigin, int aSize)
 {
@@ -65,6 +73,11 @@ Array * Array::arrayFromList(int aOrigin, List *source)
 }
 
 Array::~Array() {}
+
+void Array::addToPool()
+{
+  pool.dealloc(this);
+}
 
 Datum::DatumType Array::isa() { return Datum::arrayType; }
 
@@ -200,3 +213,20 @@ DatumP Array::butlast() {
 }
 
 ArrayIterator Array::newIterator() { return ArrayIterator(&array); }
+
+
+void ArrayPool::createNewDatums(QVector<Datum*> &box)
+{
+  int s = (int)sizeof(Array);
+  int count = getPageSize() / s;
+
+  // This block is never deleted. If unreferenced, it can be reused.
+  QVector<Array> *block = new QVector<Array>(count);
+
+  box.reserve(count);
+  for (auto &i : *block) {
+    box.push_back(&i);
+  }
+}
+
+

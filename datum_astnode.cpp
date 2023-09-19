@@ -28,11 +28,15 @@
 #include "datum_astnode.h"
 #include <qdebug.h>
 
+
+static ASTNodePool pool;
+
 void ASTNode::addChild(DatumP aChild) { children.push_back(aChild); }
 
 int ASTNode::countOfChildren() { return (int)children.size(); }
 
 DatumP ASTNode::childAtIndex(unsigned index) { return children.at(index); }
+
 
 ASTNode::ASTNode(DatumP aNodeName) {
   nodeName = aNodeName;
@@ -44,6 +48,18 @@ ASTNode::ASTNode(QString aNodeName) {
 }
 
 ASTNode::~ASTNode() {
+}
+
+void ASTNode::init(DatumP aName)
+{
+  children.clear();
+  nodeName = aName;
+  kernel = NULL;
+}
+
+void ASTNode::addToPool()
+{
+  pool.dealloc(this);
 }
 
 Datum::DatumType ASTNode::isa() { return astnodeType; }
@@ -63,11 +79,29 @@ QString ASTNode::showValue(bool, int, int) { return printValue(); }
 
 ASTNode * astNodeWithName(const QString aName)
 {
-  return new ASTNode(aName);
+  return astNodeWithName(DatumP(aName));
 }
 
 ASTNode * astNodeWithName(DatumP aName)
 {
-  return new ASTNode(aName);
+  ASTNode *retval = (ASTNode *)pool.alloc();
+  retval->init(aName);
+  return retval;
 }
+
+
+void ASTNodePool::createNewDatums(QVector<Datum*> &box)
+{
+  int s = (int)sizeof(ASTNode);
+  int count = getPageSize() / s;
+
+  // This block is never deleted. If unreferenced, it can be reused.
+  QVector<ASTNode> *block = new QVector<ASTNode>(count);
+
+  box.reserve(count);
+  for (auto &i : *block) {
+    box.push_back(&i);
+  }
+}
+
 

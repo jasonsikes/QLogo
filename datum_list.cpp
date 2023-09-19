@@ -36,21 +36,22 @@ QList<void *> listVisited;
 QList<void *> otherListVisited;
 
 
+static ListPool pool;
+
+
 List::List() {
     astParseTimeStamp = 0;
     listSize = 0;
 }
 
 
-List *emptyList()
+List * List::emptyList()
 {
-    return new List;
-}
-
-
-DatumP emptyListP()
-{
-    return DatumP(emptyList());
+    List * retval = (List *) pool.alloc();
+    retval->clear();
+    retval->astParseTimeStamp = 0;
+    retval->listSize = 0;
+    return retval;
 }
 
 
@@ -65,6 +66,12 @@ List * List::listFromArray(Array *source)
 }
 
 List::~List() {}
+
+
+void List::addToPool()
+{
+    pool.dealloc(this);
+}
 
 
 List * List::listFromList(List *source) {
@@ -327,3 +334,35 @@ void List::setListSize()
 }
 
 ListIterator List::newIterator() { return ListIterator(head); }
+
+
+void ListPool::createNewDatums(QVector<Datum*> &box)
+{
+    int s = (int)sizeof(List);
+    int count = getPageSize() / s;
+
+    // This block is never deleted. If unreferenced, it can be reused.
+    QVector<List> *block = new QVector<List>(count);
+
+    box.reserve(count);
+    for (auto &i : *block) {
+        box.push_back(&i);
+    }
+}
+
+
+
+
+
+DatumP emptyListP()
+{
+    return DatumP(List::emptyList());
+}
+
+
+List * emptyList()
+{
+    return List::emptyList();
+}
+
+

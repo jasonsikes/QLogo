@@ -68,11 +68,16 @@ enum ErrorCode : int {
 
 class Error : public Datum {
 protected:
-  Error(int aNumber, const QString &aErrorText);
+    static Error * createError(int aNumber, const QString &aErrorText);
 
-  Error(int aNumber, DatumP aErrorText);
+    static Error * createError(int aNumber, DatumP aErrorText);
+
+  void addToPool();
 
 public:
+
+  Error();
+
   int code;
   DatumP tag;
   DatumP errorText;
@@ -121,5 +126,13 @@ public:
   static void stackOverflow();
   static void noGraphics();
 };
+
+
+class ErrorPool : public DatumPool
+{
+  void createNewDatums(QVector<Datum*> &box);
+};
+
+
 
 #endif // ERROR_H

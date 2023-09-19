@@ -115,9 +115,8 @@ DatumP LogoController::readRawlineWithPrompt(const QString prompt) {
   QString inputText = stream->readLine();
   if (dribbleStream)
       *dribbleStream << inputText <<'\n';
-  DatumP retval = DatumP(inputText);
 
-  return retval;
+  return DatumP(inputText);
 }
 
 // This is READCHAR
@@ -169,7 +168,7 @@ SignalsEnum_t LogoController::latestSignal()
 
 
 int LogoController::run(void) {
-  kernel->initLibrary();
+  // kernel->initLibrary();
   initialize();
 
   initSignals();

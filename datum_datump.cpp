@@ -29,6 +29,7 @@
 #include "datum_datump.h"
 #include "datum_word.h"
 #include "datum_list.h"
+#include "stringconstants.h"
 #include <qdebug.h>
 
 DatumP::DatumP() { d = &notADatum; }
@@ -36,46 +37,46 @@ DatumP::DatumP() { d = &notADatum; }
 DatumP::DatumP(Datum *other) {
   d = other;
   if (d) {
-    d->retain();
+    d->retain(this);
   }
 }
 
 DatumP::DatumP(const DatumP &other) noexcept {
   d = other.d;
   if (d) {
-    d->retain();
+    d->retain(this);
   }
 }
 
-DatumP::DatumP(bool b) { d = b ? &trueWord : &falseWord; }
+DatumP::DatumP(bool b) {
+  d = Word::init(b ? k.ktrue() : k.kfalse());
+  d -> retain(this);
+}
 
 
 DatumP::DatumP(double n)
 {
-  d = new Word(n);
-  d->retain();
+  d = Word::init(n);
+  d->retain(this);
 }
 
 
 DatumP::DatumP(int n)
 {
-  d = new Word(n);
-  d->retain();
+  d = Word::init((double)n);
+  d->retain(this);
 }
 
 
 DatumP::DatumP(const QString n, bool isVBarred)
 {
-  d = new Word(n, isVBarred);
-  d->retain();
+  d = Word::init(n, isVBarred);
+  d->retain(this);
 }
 
 void DatumP::destroy() {
   if (d != &notADatum) {
-    d->release();
-    if (d->shouldDelete()) {
-      delete d;
-    }
+    d->release(this);
   }
 }
 
@@ -86,7 +87,7 @@ DatumP &DatumP::operator=(const DatumP &other) noexcept {
     destroy();
     d = other.d;
     if (d) {
-      d->retain();
+      d->retain(this);
     }
   }
   return *this;
@@ -96,7 +97,7 @@ DatumP &DatumP::operator=(DatumP *other) noexcept {
   if (other != this) {
     destroy();
     d = other->d;
-    d->retain();
+    d->retain(this);
   }
   return *this;
 }

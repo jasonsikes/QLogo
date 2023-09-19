@@ -27,6 +27,11 @@
 //===----------------------------------------------------------------------===//
 
 #include <QChar>
+#include "QDebug"
+
+#ifndef dv
+#define dv(x) qDebug()<<#x<<'='<<x
+#endif
 
 class ASTNode;
 class Word;
@@ -68,10 +73,14 @@ DatumP nodes();
 /// The unit of data for QLogo. The base class for Word, List, Array, ASTNode, etc.
 class Datum {
   friend class Iterator;
+    friend class DatumPool;
 
 protected:
   int retainCount;
-  bool isDestroyable = true; // trueWord, falseWord, and notADatum are static constants and cannot be destroyed.
+    Datum *nextInPool;
+  QList<DatumP *> retainers;
+
+  virtual void addToPool();
 
 public:
   /// Value returned by isa().
@@ -98,13 +107,22 @@ public:
   Datum &operator=(const Datum &);
 
   /// Increment the retain count.
-  inline void retain() { ++retainCount; }
+  inline void retain(DatumP *src)
+  {
+      ++retainCount;
+      qDebug() << "Retaining "<<this << " number " << retainCount <<" by " <<src;
+      retainers.push_back(src);
+  }
 
   /// Decrement the retain count.
-  inline void release() { --retainCount; }
-
-  /// Query to determine if all references to this object are destroyed and it is destructable.
-  inline bool shouldDelete() { return (retainCount <= 0) && isDestroyable; }
+  inline void release(DatumP *src) {
+      --retainCount;
+      qDebug() << "Releasing "<<this << " number " << retainCount <<" by " <<src;
+      retainers.removeOne(src);
+      if (retainCount <= 0) {
+          addToPool();
+      }
+  }
 
   /// Return type of this object.
   virtual DatumType isa();
@@ -184,6 +202,43 @@ public:
   virtual DatumP fromMember(DatumP aDatum, bool ignoreCase);
 };
 
+
+class DatumPool
+{
+  protected:
+  Datum *top;
+
+  // For debugging
+  int allocCount = 0; // Count of objects in the pool
+  int poolCount = 0; // Count of objecs allocated that are outside the pool
+
+  /// Acquire a new block of objects to be allocated.
+  void fillPool();
+
+  // Needs to be implemented by subclasses.
+  // /param box is a vector of pointers, initially empty.
+  // Subclass needs to create a block of Datums, and then
+  // fill the box with pointers to each Datum.
+  virtual void createNewDatums(QVector<Datum*> &box);
+
+  // Return the size of a memory page in bytes.
+  int getPageSize();
+
+  public:
+
+  /// acquire a Datum from its pool.
+  Datum * alloc();
+
+  /// place a datum into its pool.
+  void dealloc(Datum *);
+
+  /// For debugging: show the status of pool
+  void debugMessage()
+  {
+      dv(allocCount);
+      dv(poolCount);
+  }
+};
 
 
 /// A datum that has no value.

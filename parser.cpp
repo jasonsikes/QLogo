@@ -36,6 +36,8 @@
 #include <qdebug.h>
 #include "stringconstants.h"
 
+static ProcedurePool pool;
+
 const QString specialChars(QStringLiteral ("+-()*%/<>="));
 
 char lastNonSpaceChar(const QString &line) {
@@ -87,7 +89,8 @@ void Parser::defineProcedure(DatumP cmd, DatumP procnameP, DatumP text,
 }
 
 DatumP Parser::createProcedure(DatumP cmd, DatumP text, DatumP sourceText) {
-  Procedure *body = new Procedure;
+  Procedure *body = (Procedure *) pool.alloc();
+  body->init();
   DatumP bodyP(body);
 
   QString cmdString = cmd.wordValue()->keyValue();
@@ -331,7 +334,9 @@ QString Parser::procedureTitle(DatumP procnameP) {
 
   Procedure *body = procedures[procname].procedureValue();
 
-  List *firstLine = emptyList();
+  DatumP firstlineP = emptyListP();
+
+  List *firstLine = firstlineP.listValue();
 
   if (body->isMacro)
     firstLine->append(DatumP(k.dMacro()));
@@ -370,7 +375,6 @@ QString Parser::procedureTitle(DatumP procnameP) {
   }
 
   QString retval = unreadList(firstLine, false);
-  delete firstLine;
   return retval;
 }
 
@@ -1832,3 +1836,25 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["<>"] = {&Kernel::excNotequal, 2, 2, 2};
 
 }
+
+
+void Procedure::addToPool()
+{
+  pool.dealloc(this);
+}
+
+void ProcedurePool::createNewDatums(QVector<Datum*> &box)
+{
+  int s = (int)sizeof(Procedure);
+  int count = getPageSize() / s;
+
+  // This block is never deleted. If unreferenced, it can be reused.
+  QVector<Procedure> *block = new QVector<Procedure>(count);
+
+  box.reserve(count);
+  for (auto &i : *block) {
+    box.push_back(&i);
+  }
+}
+
+

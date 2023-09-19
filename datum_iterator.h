@@ -76,22 +76,5 @@ public:
     bool elementExists();
 };
 
-/// Iterator for a Word. Each element is a character in the Word.
-class WordIterator : public Iterator {
-    QString::iterator charIter;
-    QString::iterator end;
-
-public:
-    WordIterator();
-
-    /// Create a new Iterator pointing to the first char of a Word.
-    WordIterator(Word *aWord);
-
-    /// Returns the character at the current index as a Word. Advances the index.
-    DatumP element();
-
-    /// Returns true if there is a character at the curent index.
-    bool elementExists();
-};
 
 #endif // DATUM_ITERATOR_H

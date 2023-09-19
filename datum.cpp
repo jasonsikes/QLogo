@@ -29,6 +29,7 @@
 #include "datum_list.h"
 #include "stringconstants.h"
 #include <qdebug.h>
+#include <unistd.h>
 
 int countOfNodes = 0;
 int maxCountOfNodes = 0;
@@ -58,6 +59,12 @@ Datum::Datum()
 Datum::~Datum()
 {
   --countOfNodes;
+}
+
+
+void Datum::addToPool()
+{
+  // Base class does nothing. Subclasses should add themselves to their pools.
 }
 
 QString Datum::printValue(bool, int, int) { return name(); }
@@ -135,6 +142,61 @@ int Datum::size() {
   return 0;
 }
 
+
+
+
+
+
+Datum * DatumPool::alloc()
+{
+  if (top == NULL) {
+    fillPool();
+  }
+  Datum * item = top;
+  top = item->nextInPool;
+  --allocCount;
+  ++poolCount;
+  return item;
+}
+
+
+void DatumPool::dealloc(Datum *item)
+{
+  item->nextInPool = top;
+  top = item;
+  ++allocCount;
+  --poolCount;
+}
+
+
+void DatumPool::fillPool()
+{
+  QVector<Datum*> box;
+
+  // Ask subclass to create block of new objects.
+  createNewDatums(box);
+
+  poolCount += box.size();
+
+  // Set the list pointers for each item in box
+  for (int i = box.size() - 1; i > 0; --i) {
+    box[i]->nextInPool = box[i - 1];
+  }
+  box[0]->nextInPool = NULL;
+  top = box[box.size() - 1];
+}
+
+
+int DatumPool::getPageSize()
+{
+  return getpagesize();
+}
+
+
+void DatumPool::createNewDatums(QVector<Datum*> &)
+{
+  Q_ASSERT(false);
+}
 
 
 // Values to represent no data (NULL)
