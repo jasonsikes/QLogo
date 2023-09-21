@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env zsh
 
 # Run this while in the test directory.
 # ./test.sh [FILENAME]
@@ -61,15 +61,15 @@ fi
 
 if (( ${#failed_tests[@]} )); then
     echo
-    echo ============================
-    echo ==== FAILED TESTS:
-    echo ====
+    echo "============================"
+    echo "====" FAILED TESTS:
+    echo "===="
     for f in ${failed_tests[@]}
     do
-	echo ==== $f
-	echo ====
+	echo "====" $f
+	echo "===="
     done
-    echo ============================
+    echo "============================"
     exit 1
 fi
 
