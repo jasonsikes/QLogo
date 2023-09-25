@@ -72,16 +72,14 @@ QChar charToRaw(const QChar &src) {
 }
 
 Word::Word() {
-  qDebug() <<"new Word";
   numberIsValid = false;
   rawStringIsValid = false;
   keyStringIsValid = false;
   printableStringIsValid = false;
 }
 
-Word * Word::init(const QString other, bool aIsForeverSpecial) {
+Word * Word::alloc(const QString other, bool aIsForeverSpecial) {
   Word * retval = (Word *) pool.alloc();
-  qDebug() <<retval << " Allocating QString: " <<other;
   retval->numberIsValid = false;
   retval->rawStringIsValid = true;
   retval->keyStringIsValid = false;
@@ -93,8 +91,7 @@ Word * Word::init(const QString other, bool aIsForeverSpecial) {
   return retval;
 }
 
-Word * Word::init(double other) {
-  qDebug() << "Allocating double";
+Word * Word::alloc(double other) {
   Word * retval = (Word *) pool.alloc();
   retval->number = other;
   retval->numberIsValid = true;
@@ -149,16 +146,8 @@ QString Word::name() {
   return k.word();
 }
 
-Word::~Word() {
-  qDebug() << "deleting Word";
-}
-
 void Word::addToPool()
 {
-  if (rawStringIsValid)
-    qDebug() <<this <<" deallocating QString: " <<rawString;
-  else
-    qDebug() <<this <<" deallocating double";
   pool.dealloc(this);
 }
 
@@ -326,9 +315,6 @@ void WordPool::createNewDatums(QVector<Datum*> &box)
   int s = (int)sizeof(Word);
   int count = getPageSize() / s;
 
-  qDebug() <<"Creating new Words";
-  dv(count);
-  debugMessage();
   // This block is never deleted. If unreferenced, it can be reused.
   QVector<Word> *block = new QVector<Word>(count);
 

@@ -31,6 +31,7 @@
 #include <qdebug.h>
 #include <unistd.h>
 
+// TODO: is this necessary?
 int countOfNodes = 0;
 int maxCountOfNodes = 0;
 

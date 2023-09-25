@@ -66,7 +66,7 @@ public:
     bool isForeverSpecial;
 
     /// Create a Word object that is invalid. Don't use this.
-    /// To get a new word, use init().
+    /// To get a new word, use alloc().
     Word();
 
     /// Create a Word object with a string.
@@ -74,13 +74,10 @@ public:
     /// \param other the string value of this word
     /// \param aIsForeverSpecial characters defined with vertical bars will retain their special use.
     /// \param canBeDestroyed Allow this object to be destroyed if its retain count falls below 1.
-    static Word * init(const QString other, bool aIsForeverSpecial = false);
+    static Word * alloc(const QString other, bool aIsForeverSpecial = false);
 
     /// Create a Word object with a number.
-    static Word * init(double other);
-
-    /// Destroy a Word object.
-    ~Word();
+    static Word * alloc(double other);
 
     /// returns the number representation of the Word. Use didNumberConversionSucceed() to check.
     double numberValue(void);

@@ -99,26 +99,25 @@ public:
   ///
   /// The Datum class is the superclass for all data.
   /// The Datum superclass maintains retain counts (manipulated by the DatumP class).
-  /// Datum may be instantiated, but it is only useful as a NULL value. To hold data,
-  /// use one of the subclasses.
+  ///
+  /// To hold data:
+  /// 1. use one of the subclasses, NOT Datum, and
+  /// 2. use alloc(), NOT the default constructor.
   Datum();
-  virtual ~Datum();
+
+  ~Datum();
 
   Datum &operator=(const Datum &);
 
   /// Increment the retain count.
-  inline void retain(DatumP *src)
+  inline void retain(void)
   {
       ++retainCount;
-      qDebug() << "Retaining "<<this << " number " << retainCount <<" by " <<src;
-      retainers.push_back(src);
   }
 
   /// Decrement the retain count.
-  inline void release(DatumP *src) {
+  inline void release(void) {
       --retainCount;
-      qDebug() << "Releasing "<<this << " number " << retainCount <<" by " <<src;
-      retainers.removeOne(src);
       if (retainCount <= 0) {
           addToPool();
       }
