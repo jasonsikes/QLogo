@@ -118,7 +118,11 @@ DatumP Kernel::excArray(DatumP node) {
   if (h.countOfChildren() > 1) {
     origin = h.integerAtIndex(1);
   }
-  return h.ret(Array::arrayWithSize(origin, size));
+  Array *retval = Array::alloc(origin, size);
+  for (int i = 0; i < size; ++i) {
+    retval->append(DatumP(List::alloc()));
+  }
+  return h.ret(DatumP(retval));
 }
 
 DatumP Kernel::excListtoarray(DatumP node) {
@@ -128,13 +132,13 @@ DatumP Kernel::excListtoarray(DatumP node) {
   if (h.countOfChildren() > 1) {
     origin = h.integerAtIndex(1);
   }
-  return h.ret(Array::arrayFromList(origin, source.listValue()));
+  return h.ret(Array::alloc(origin, source.listValue()));
 }
 
 DatumP Kernel::excArraytolist(DatumP node) {
   ProcedureHelper h(this, node);
   DatumP source = h.arrayAtIndex(0);
-  List *retval = List::listFromArray(source.arrayValue());
+  List *retval = List::alloc(source.arrayValue());
   return h.ret(retval);
 }
 

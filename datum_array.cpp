@@ -53,16 +53,17 @@ void Array::clear()
   array.clear();
 }
 
-Array * Array::arrayWithSize(int aOrigin, int aSize)
+Array * Array::alloc(int aOrigin, int aSize)
 {
-  Array * retval = new Array(aOrigin, aSize);
+  Array * retval = (Array *) pool.alloc();
+  retval->array.reserve(aSize);
+  retval->origin = aOrigin;
   return retval;
 }
 
-Array * Array::arrayFromList(int aOrigin, List *source)
+Array * Array::alloc(int aOrigin, List *source)
 {
-  Array * retval = new Array(aOrigin, 0);
-  retval->array.reserve(source->size());
+  Array * retval = alloc(aOrigin, source->size());
 
   auto iter = source->newIterator();
 

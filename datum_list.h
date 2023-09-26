@@ -59,17 +59,18 @@ protected:
 
 public:
 
-    /// Create an empty List
+    /// Create an empty List. Don't use this. It is slow.
+    /// Use alloc() instead.
     List();
 
     /// Create a new list populated with elements of Array.
-    static List * listFromArray(Array *source);
+    static List * alloc(Array *source);
 
     /// Create a new list populated with elements of another List.
-    static List * listFromList(List *source);
+    static List * alloc(List *source);
 
-    /// Create an empty List
-    static List * emptyList();
+    /// Allocate an empty List.
+    static List * alloc();
 
     ~List();
     DatumType isa();

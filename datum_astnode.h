@@ -46,8 +46,11 @@ protected:
 
 public:
 
-    /// Initialize a node.
-    void init(DatumP aName);
+    /// Allocate an ASTNode with the node's name as a Word.
+    static ASTNode * alloc(DatumP aNodeName);
+
+    /// Allocate an ASTNode with the node's name as a QString.
+    static ASTNode * alloc(QString aNodeName);
 
     /// A human-readable string. Usually the command name.
     DatumP nodeName;
@@ -68,13 +71,8 @@ public:
 
 
     /// Create an ASTNode with no name.
+    /// Don't use this! Use alloc() instead.
     ASTNode() {}
-
-    /// Create an ASTNode with the node's name.
-    ASTNode(DatumP aNodeName);
-
-    /// Create an ASTNode with the node's name.
-    ASTNode(QString aNodeName);
 
     ~ASTNode();
     DatumType isa();
@@ -88,10 +86,6 @@ public:
                       int printWidthLimit = -1);
 
 };
-
-ASTNode * astNodeWithName(const QString aName);
-
-ASTNode * astNodeWithName(DatumP aName);
 
 class ASTNodePool : public DatumPool
 {

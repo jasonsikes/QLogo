@@ -46,9 +46,9 @@ public:
     Array(int aOrigin = 1, int aSize = 0);
 
     /// Create an Array containing items copied from source with index starting at aOrigin.
-    static Array * arrayFromList(int aOrigin, List *source);
+    static Array * alloc(int aOrigin, List *source);
 
-    static Array * arrayWithSize(int aOrigin, int aSize);
+    static Array * alloc(int aOrigin, int aSize);
 
 
     ~Array();

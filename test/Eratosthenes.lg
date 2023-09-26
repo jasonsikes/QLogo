@@ -1,0 +1,24 @@
+to seq :m :n
+    if :m > :n [output []]
+    output se :m seq 1 + :m :n
+end
+
+to remove.multiples :n :L
+    if empty? :L [output []]
+    if 0 = modulo first :L :n [output remove.multiples :n butfirst :L]
+    output se first :L remove.multiples :n butfirst :L
+end
+
+to walk.multiples :f :L
+    if empty? :L [output []]
+    if :f < first :L [output :L]
+    output se first :L walk.multiples :f remove.multiples first :L butfirst :L
+end
+
+to Eratosthenes :n
+    output se 1 walk.multiples sqrt :n seq 2 :n
+end
+
+
+; Example usage:
+show Eratosthenes 500

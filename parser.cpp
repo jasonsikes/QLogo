@@ -25,7 +25,6 @@
 //===----------------------------------------------------------------------===//
 
 #include "parser.h"
-#include "QtCore/qstringliteral.h"
 #include "logocontroller.h"
 #include "error.h"
 #include "kernel.h"
@@ -38,7 +37,7 @@
 
 static ProcedurePool pool;
 
-const QString specialChars(QStringLiteral ("+-()*%/<>="));
+const QString specialChars("+-()*%/<>=");
 
 char lastNonSpaceChar(const QString &line) {
   char retval = ' ';
@@ -263,7 +262,7 @@ DatumP Parser::procedureText(DatumP procnameP) {
 
   QList<DatumP>::iterator d = body->optionalDefaults.begin();
   for (auto &i : body->optionalInputs) {
-    List *optInput = List::listFromList(d->listValue());
+    List *optInput = List::alloc(d->listValue());
     optInput->prepend(DatumP(i));
     ++d;
     inputs->append(DatumP(optInput));
@@ -356,7 +355,7 @@ QString Parser::procedureTitle(DatumP procnameP) {
   for (auto &i : body->optionalInputs) {
     paramName = i;
     paramName.push_front(':');
-    List *optInput = List::listFromList(d->listValue());
+    List *optInput = List::alloc(d->listValue());
     optInput->prepend(DatumP(paramName));
     firstLine->append(DatumP(optInput));
     ++d;
@@ -618,7 +617,7 @@ DatumP Parser::tokenizeListWithPrompt(const QString &prompt, int level,
             }
             origin = originStr.toInt();
           }
-          Array *ary = Array::arrayFromList(origin, retval);
+          Array *ary = Array::alloc(origin, retval);
           return DatumP(ary);
         }
         case '{':
@@ -654,7 +653,7 @@ DatumP Parser::tokenizeListWithPrompt(const QString &prompt, int level,
     }
     // We have exhausted our source. Return what we have.
     if (makeArray) {
-      Array *ary = Array::arrayFromList(1, retval);
+      Array *ary = Array::alloc(1, retval);
       return DatumP(ary);
     }
     return retvalP;
@@ -930,7 +929,7 @@ DatumP Parser::parseExp() {
     advanceToken();
     DatumP right = parseSumexp();
 
-    DatumP node = DatumP(astNodeWithName(op));
+    DatumP node = DatumP(ASTNode::alloc(op));
     if (right == nothing)
       Error::notEnough(op);
 
@@ -963,7 +962,7 @@ DatumP Parser::parseSumexp() {
     advanceToken();
     DatumP right = parseMulexp();
 
-    DatumP node = DatumP(astNodeWithName(op));
+    DatumP node = DatumP(ASTNode::alloc(op));
     if (right == nothing)
       Error::notEnough(op);
 
@@ -989,7 +988,7 @@ DatumP Parser::parseMulexp() {
     advanceToken();
     DatumP right = parseminusexp();
 
-    DatumP node = DatumP(astNodeWithName(op));
+    DatumP node = DatumP(ASTNode::alloc(op));
     if (right == nothing)
       Error::notEnough(op);
 
@@ -1015,7 +1014,7 @@ DatumP Parser::parseminusexp() {
     advanceToken();
     DatumP right = parseTermexp();
 
-    DatumP node = DatumP(astNodeWithName(op));
+    DatumP node = DatumP(ASTNode::alloc(op));
     if (right == nothing)
       Error::notEnough(op);
 
@@ -1032,7 +1031,7 @@ DatumP Parser::parseTermexp() {
     return nothing;
 
   if (currentToken.isa() == Datum::listType) {
-    DatumP node(astNodeWithName(k.word()));
+    DatumP node(ASTNode::alloc(k.word()));
     node.astnodeValue()->kernel = &Kernel::executeLiteral;
     node.astnodeValue()->addChild(currentToken);
     advanceToken();
@@ -1040,7 +1039,7 @@ DatumP Parser::parseTermexp() {
   }
 
   if (currentToken.isa() == Datum::arrayType) {
-    DatumP node(astNodeWithName(k.array()));
+    DatumP node(ASTNode::alloc(k.array()));
     node.astnodeValue()->kernel = &Kernel::executeLiteral;
     node.astnodeValue()->addChild(currentToken);
     advanceToken();
@@ -1089,14 +1088,14 @@ DatumP Parser::parseTermexp() {
       rawToChar(name);
     }
     if (firstChar == '"') {
-      DatumP node(astNodeWithName(k.quotedname()));
+      DatumP node(ASTNode::alloc(k.quotedname()));
       node.astnodeValue()->kernel = &Kernel::executeLiteral;
       node.astnodeValue()->addChild(
           DatumP(DatumP(name, currentToken.wordValue()->isForeverSpecial)));
       advanceToken();
       return node;
     } else {
-      DatumP node(astNodeWithName(k.valueof()));
+      DatumP node(ASTNode::alloc(k.valueof()));
       node.astnodeValue()->kernel = &Kernel::executeValueOf;
       node.astnodeValue()->addChild(DatumP(name));
       advanceToken();
@@ -1107,7 +1106,7 @@ DatumP Parser::parseTermexp() {
   // See if it's a number
   double number = currentToken.wordValue()->numberValue();
   if (currentToken.wordValue()->didNumberConversionSucceed()) {
-    DatumP node(astNodeWithName(k.number()));
+    DatumP node(ASTNode::alloc(k.number()));
     node.astnodeValue()->kernel = &Kernel::executeLiteral;
     node.astnodeValue()->addChild(DatumP(number));
     advanceToken();
@@ -1146,7 +1145,7 @@ DatumP Parser::astnodeWithLiterals(DatumP cmd, DatumP params) {
   ListIterator iter = params.listValue()->newIterator();
   while (iter.elementExists()) {
     DatumP p = iter.element();
-    DatumP a = DatumP(astNodeWithName(k.literal()));
+    DatumP a = DatumP(ASTNode::alloc(k.literal()));
     a.astnodeValue()->kernel = &Kernel::executeLiteral;
     a.astnodeValue()->addChild(p);
     node.astnodeValue()->addChild(a);
@@ -1159,7 +1158,7 @@ DatumP Parser::astnodeFromCommand(DatumP cmdP, int &minParams,
   QString cmdString = cmdP.wordValue()->keyValue();
 
   Cmd_t command;
-  DatumP node = DatumP(astNodeWithName(cmdP));
+  DatumP node = DatumP(ASTNode::alloc(cmdP));
   if (procedures.contains(cmdString)) {
     DatumP procBody = procedures[cmdString];
     if (procBody.procedureValue()->isMacro)

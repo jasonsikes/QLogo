@@ -45,7 +45,7 @@ List::List() {
 }
 
 
-List * List::emptyList()
+List * List::alloc()
 {
     List * retval = (List *) pool.alloc();
     retval->clear();
@@ -55,9 +55,9 @@ List * List::emptyList()
 }
 
 
-List * List::listFromArray(Array *source)
+List * List::alloc(Array *source)
 {
-    List *retval = emptyList();
+    List *retval = alloc();
     auto aryIter = source->newIterator();
     while (aryIter.elementExists()) {
         retval->append(aryIter.element());
@@ -70,12 +70,13 @@ List::~List() {}
 
 void List::addToPool()
 {
+    clear();
     pool.dealloc(this);
 }
 
 
-List * List::listFromList(List *source) {
-    List *retval = emptyList();
+List * List::alloc(List *source) {
+    List *retval = alloc();
     retval->astParseTimeStamp = 0;
     retval->head = source->head;
     retval->lastNode = source->lastNode;
@@ -353,16 +354,17 @@ void ListPool::createNewDatums(QVector<Datum*> &box)
 
 
 
-
+// TODO: rename because 'P' suffix in Logo means '?'.
+// (I wonder if we should rename all those "DatumP" objects.)
 DatumP emptyListP()
 {
-    return DatumP(List::emptyList());
+    return DatumP(List::alloc());
 }
 
 
 List * emptyList()
 {
-    return List::emptyList();
+    return List::alloc();
 }
 
 

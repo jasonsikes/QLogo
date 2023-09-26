@@ -38,27 +38,25 @@ int ASTNode::countOfChildren() { return (int)children.size(); }
 DatumP ASTNode::childAtIndex(unsigned index) { return children.at(index); }
 
 
-ASTNode::ASTNode(DatumP aNodeName) {
-  nodeName = aNodeName;
+ASTNode * ASTNode::alloc(DatumP aNodeName) {
+    ASTNode *retval = (ASTNode *)pool.alloc();
+    retval->children.clear();
+    retval->nodeName = aNodeName;
+    retval->kernel = NULL;
+    return retval;
 }
 
 
-ASTNode::ASTNode(QString aNodeName) {
-  nodeName = DatumP(aNodeName);
+ASTNode * ASTNode::alloc(QString aNodeName) {
+    return alloc(DatumP(aNodeName));
 }
 
 ASTNode::~ASTNode() {
 }
 
-void ASTNode::init(DatumP aName)
-{
-  children.clear();
-  nodeName = aName;
-  kernel = NULL;
-}
-
 void ASTNode::addToPool()
 {
+  children.clear();
   pool.dealloc(this);
 }
 
@@ -76,18 +74,6 @@ QString ASTNode::printValue(bool, int, int) {
 
 QString ASTNode::showValue(bool, int, int) { return printValue(); }
 
-
-ASTNode * astNodeWithName(const QString aName)
-{
-  return astNodeWithName(DatumP(aName));
-}
-
-ASTNode * astNodeWithName(DatumP aName)
-{
-  ASTNode *retval = (ASTNode *)pool.alloc();
-  retval->init(aName);
-  return retval;
-}
 
 
 void ASTNodePool::createNewDatums(QVector<Datum*> &box)
