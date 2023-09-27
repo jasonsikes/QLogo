@@ -143,12 +143,6 @@ class ListPool : public DatumPool
     void createNewDatums(QVector<Datum*> &box);
 };
 
-/// Convenience constructor for an empty list.
-DatumP emptyListP();
-
-/// Convenience constructor for an empty list.
-List *emptyList();
-
 
 
 #endif // DATUM_LIST_H

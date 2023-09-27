@@ -252,9 +252,9 @@ DatumP Parser::procedureText(DatumP procnameP) {
     Error::noHow(procnameP);
   Procedure *body = procedures[procname].procedureValue();
 
-  List *retval = emptyList();
+  List *retval = List::alloc();
 
-  List *inputs = emptyList();
+  List *inputs = List::alloc();
 
   for (auto &i : body->requiredInputs) {
     inputs->append(DatumP(i));
@@ -269,7 +269,7 @@ DatumP Parser::procedureText(DatumP procnameP) {
   }
 
   if (body->restInput != "") {
-    List *restInput = emptyList();
+    List *restInput = List::alloc();
     restInput->append(DatumP(body->restInput));
     inputs->append(DatumP(restInput));
   }
@@ -298,7 +298,7 @@ DatumP Parser::procedureFulltext(DatumP procnameP, bool shouldValidate) {
     Procedure *body = procedures[procname].procedureValue();
 
     if (body->sourceText == nothing) {
-      List *retval = emptyList();
+      List *retval = List::alloc();
       retval->append(DatumP(procedureTitle(procnameP)));
 
       ListIterator b = body->instructionList.listValue()->newIterator();
@@ -316,7 +316,7 @@ DatumP Parser::procedureFulltext(DatumP procnameP, bool shouldValidate) {
   } else if (shouldValidate) {
     Error::noHow(procnameP);
   }
-  List *retval = emptyList();
+  List *retval = List::alloc();
   retval->append(
       DatumP(k.to_() + procnameP.wordValue()->printValue()));
   retval->append(DatumP(k.end()));
@@ -333,7 +333,7 @@ QString Parser::procedureTitle(DatumP procnameP) {
 
   Procedure *body = procedures[procname].procedureValue();
 
-  DatumP firstlineP = emptyListP();
+  DatumP firstlineP = DatumP(List::alloc());
 
   List *firstLine = firstlineP.listValue();
 
@@ -364,7 +364,7 @@ QString Parser::procedureTitle(DatumP procnameP) {
   paramName = body->restInput;
   if (paramName != "") {
     paramName.push_front(':');
-    List *restInput = emptyList();
+    List *restInput = List::alloc();
     restInput->append(DatumP(paramName));
     firstLine->append(DatumP(restInput));
   }
@@ -402,9 +402,9 @@ void Parser::inputProcedure(DatumP nodeP, QTextStream *readStream) {
   if (stringToCmd.contains(procname))
     Error::procDefined(procnameP);
 
-  DatumP textP = emptyListP();
+  DatumP textP = DatumP(List::alloc());
   DatumP sourceText = lastReadListSource();
-  DatumP firstLine = emptyListP();
+  DatumP firstLine = DatumP(List::alloc());
   for (int i = 1; i < node->countOfChildren(); ++i) {
     firstLine.listValue()->append(node->childAtIndex(i));
   }
@@ -525,7 +525,7 @@ DatumP Parser::tokenizeListWithPrompt(const QString &prompt, int level,
     src = lineP.wordValue()->rawValue();
     iter = src.begin();
   }
-  List *retval = emptyList();
+  List *retval = List::alloc();
   DatumP retvalP(retval);
   QString currentWord = "";
 
@@ -679,7 +679,7 @@ DatumP Parser::readlistWithPrompt(const QString &prompt,
 
 DatumP Parser::lastReadListSource() {
   DatumP retval = listSourceText;
-  listSourceText = emptyList();
+  listSourceText = List::alloc();
   return retval;
 }
 
@@ -849,7 +849,7 @@ DatumP Parser::runparse(DatumP src) {
     QTextStream srcStream(&text, QIODevice::ReadOnly);
     src = readlistWithPrompt("", false, &srcStream);
   }
-  runparseRetval = emptyList();
+  runparseRetval = List::alloc();
   ListIterator iter = src.listValue()->newIterator();
 
   while (iter.elementExists()) {
@@ -1291,7 +1291,7 @@ bool Parser::isDefined(QString procname) {
 }
 
 DatumP Parser::allProcedureNames(showContents_t showWhat) {
-  List *retval = emptyList();
+  List *retval = List::alloc();
 
   for (auto &name : procedures.keys()) {
 
@@ -1310,7 +1310,7 @@ void Parser::eraseAllProcedures() {
 }
 
 DatumP Parser::allPrimitiveProcedureNames() {
-  List *retval = emptyList();
+  List *retval = List::alloc();
 
   for (auto name : stringToCmd.keys()) {
     retval->append(DatumP(name));
@@ -1340,7 +1340,7 @@ DatumP Parser::arity(DatumP nameP) {
     return nothing;
   }
 
-  List *retval = emptyList();
+  List *retval = List::alloc();
   retval->append(DatumP(minParams));
   retval->append(DatumP(defParams));
   retval->append(DatumP(maxParams));
@@ -1449,7 +1449,7 @@ QString Parser::printoutDatum(DatumP aDatum) {
 Parser::Parser(Kernel *aKernel) {
   lastProcedureCreatedTimestamp = QDateTime::currentMSecsSinceEpoch();
   kernel = aKernel;
-  listSourceText = emptyList();
+  listSourceText = List::alloc();
   if (stringToCmd.size() > 0)
     return;
 

@@ -221,7 +221,7 @@ bool List::isMember(DatumP aDatum, bool ignoreCase) {
 }
 
 DatumP List::fromMember(DatumP aDatum, bool ignoreCase) {
-  List *retval = emptyList();
+  List *retval = List::alloc();
   DatumP ptr = head;
   while (ptr != nothing) {
       DatumP e = ptr.listNodeValue()->item;
@@ -248,7 +248,7 @@ DatumP List::datumAtIndex(int anIndex) {
 
 DatumP List::butfirst() {
     Q_ASSERT(head != nothing);
-  List *retval = emptyList();
+  List *retval = List::alloc();
     retval->head = head.listNodeValue()->next;
     retval->listSize = listSize - 1;
     retval->lastNode = lastNode;
@@ -284,7 +284,7 @@ DatumP List::last() {
 }
 
 DatumP List::butlast() {
-  List *retval = emptyList();
+  List *retval = List::alloc();
   retval->listSize = listSize - 1;
   if (head.listNodeValue()->next != nothing) {
       DatumP src = head;
@@ -316,7 +316,7 @@ void List::prepend(DatumP element) {
 DatumP List::fput(DatumP item)
 {
     ListNode *newnode = new ListNode;
-    List *retval = emptyList();
+    List *retval = List::alloc();
     newnode->item = item;
     newnode->next = head;
     retval->head = newnode;
@@ -351,20 +351,5 @@ void ListPool::createNewDatums(QVector<Datum*> &box)
     }
 }
 
-
-
-
-// TODO: rename because 'P' suffix in Logo means '?'.
-// (I wonder if we should rename all those "DatumP" objects.)
-DatumP emptyListP()
-{
-    return DatumP(List::alloc());
-}
-
-
-List * emptyList()
-{
-    return List::alloc();
-}
 
 

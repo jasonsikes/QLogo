@@ -144,7 +144,7 @@ public:
   DatumType isa() { return Datum::procedureType; }
 
   void init() {
-    instructionList = emptyListP();
+    instructionList = DatumP(List::alloc());
     countOfMaxParams = -1;
     countOfMinParams = 0;
     requiredInputs.clear();

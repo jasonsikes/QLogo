@@ -42,7 +42,7 @@ Array::Array(int aOrigin, int aSize) {
   origin = aOrigin;
   array.reserve(aSize);
   for (int i = 0; i < aSize; ++i) {
-    array.append(emptyListP());
+    array.append(DatumP(List::alloc()));
   }
 }
 

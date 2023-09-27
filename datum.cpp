@@ -42,7 +42,7 @@ DatumP nodes()
 
   maxCountOfNodes = countOfNodes;
 
-  List *retval = emptyList();
+  List *retval = List::alloc();
   retval->append(DatumP(a));
   retval->append(DatumP(b));
   return DatumP(retval);
