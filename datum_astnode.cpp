@@ -78,15 +78,14 @@ QString ASTNode::showValue(bool, int, int) { return printValue(); }
 
 void ASTNodePool::createNewDatums(QVector<Datum*> &box)
 {
-  int s = (int)sizeof(ASTNode);
-  int count = getPageSize() / s;
+  const int count = 40;
 
-  // This block is never deleted. If unreferenced, it can be reused.
-  QVector<ASTNode> *block = new QVector<ASTNode>(count);
+  // This block is never deleted.
+  ASTNode *block = new ASTNode[count];
 
   box.reserve(count);
-  for (auto &i : *block) {
-    box.push_back(&i);
+  for (int i = 0; i < count; ++i) {
+    box.push_back(&block[i]);
   }
 }
 

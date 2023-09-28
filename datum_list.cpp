@@ -339,15 +339,14 @@ ListIterator List::newIterator() { return ListIterator(head); }
 
 void ListPool::createNewDatums(QVector<Datum*> &box)
 {
-    int s = (int)sizeof(List);
-    int count = getPageSize() / s;
+    const int count = 20;
 
-    // This block is never deleted. If unreferenced, it can be reused.
-    QVector<List> *block = new QVector<List>(count);
+    // This block is never deleted.
+    List *block = new List[count];
 
     box.reserve(count);
-    for (auto &i : *block) {
-        box.push_back(&i);
+    for (int i = 0; i < count; ++i) {
+        box.push_back(&block[i]);
     }
 }
 

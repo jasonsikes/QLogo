@@ -73,7 +73,6 @@ public:
     ///
     /// \param other the string value of this word
     /// \param aIsForeverSpecial characters defined with vertical bars will retain their special use.
-    /// \param canBeDestroyed Allow this object to be destroyed if its retain count falls below 1.
     static Word * alloc(const QString other, bool aIsForeverSpecial = false);
 
     /// Create a Word object with a number.
@@ -135,8 +134,6 @@ public:
 
     /// Returns a substring starting at the first occurrence of aDatum to the end of the string.
     DatumP fromMember(DatumP aDatum, bool ignoreCase);
-
-    Iterator newIterator(void); // TODO: see if worditerator is used. delete if not.
 };
 
 

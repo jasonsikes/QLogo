@@ -150,23 +150,18 @@ int Datum::size() {
 
 Datum * DatumPool::alloc()
 {
-  if (top == NULL) {
+  if (stack.isEmpty()) {
     fillPool();
   }
-  Datum * item = top;
-  top = item->nextInPool;
-  --allocCount;
-  ++poolCount;
-  return item;
+  ++wildCount;
+  return stack.pop();
 }
 
 
 void DatumPool::dealloc(Datum *item)
 {
-  item->nextInPool = top;
-  top = item;
-  ++allocCount;
-  --poolCount;
+  stack.push(item);
+  --wildCount;
 }
 
 
@@ -177,14 +172,10 @@ void DatumPool::fillPool()
   // Ask subclass to create block of new objects.
   createNewDatums(box);
 
-  poolCount += box.size();
-
-  // Set the list pointers for each item in box
-  for (int i = box.size() - 1; i > 0; --i) {
-    box[i]->nextInPool = box[i - 1];
+  // Add the new Datums to our stack.
+  for (auto i : box) {
+    stack.push(i);
   }
-  box[0]->nextInPool = NULL;
-  top = box[box.size() - 1];
 }
 
 

@@ -27,6 +27,7 @@
 //===----------------------------------------------------------------------===//
 
 #include <QChar>
+#include <QStack>
 #include "QDebug"
 
 #ifndef dv
@@ -77,8 +78,6 @@ class Datum {
 
 protected:
   int retainCount;
-    Datum *nextInPool;
-  QList<DatumP *> retainers;
 
   virtual void addToPool();
 
@@ -205,11 +204,10 @@ public:
 class DatumPool
 {
   protected:
-  Datum *top;
+  QStack<Datum *>stack;
 
   // For debugging
-  int allocCount = 0; // Count of objects in the pool
-  int poolCount = 0; // Count of objecs allocated that are outside the pool
+  int wildCount = 0; // Count of objecs allocated that are outside the pool
 
   /// Acquire a new block of objects to be allocated.
   void fillPool();
@@ -231,12 +229,6 @@ class DatumPool
   /// place a datum into its pool.
   void dealloc(Datum *);
 
-  /// For debugging: show the status of pool
-  void debugMessage()
-  {
-      dv(allocCount);
-      dv(poolCount);
-  }
 };
 
 

@@ -218,15 +218,14 @@ ArrayIterator Array::newIterator() { return ArrayIterator(&array); }
 
 void ArrayPool::createNewDatums(QVector<Datum*> &box)
 {
-  int s = (int)sizeof(Array);
-  int count = getPageSize() / s;
+  const int count = 5;
 
-  // This block is never deleted. If unreferenced, it can be reused.
-  QVector<Array> *block = new QVector<Array>(count);
+  // This block is never deleted.
+  Array *block = new Array[count];
 
   box.reserve(count);
-  for (auto &i : *block) {
-    box.push_back(&i);
+  for (int i = 0; i < count; ++i) {
+    box.push_back(&block[i]);
   }
 }
 

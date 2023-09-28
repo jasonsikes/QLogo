@@ -240,15 +240,14 @@ void Error::addToPool()
 
 void ErrorPool::createNewDatums(QVector<Datum*> &box)
 {
-  int s = (int)sizeof(Error);
-  int count = getPageSize() / s;
+  const int count = 3;
 
-  // This block is never deleted. If unreferenced, it can be reused.
-  QVector<Error> *block = new QVector<Error>(count);
+  // This block is never deleted.
+  Error *block = new Error[count];
 
   box.reserve(count);
-  for (auto &i : *block) {
-    box.push_back(&i);
+  for (int i = 0; i < count; ++i) {
+    box.push_back(&block[i]);
   }
 }
 
