@@ -113,9 +113,5 @@ public:
     ArrayIterator newIterator();
 };
 
-class ArrayPool : public DatumPool
-{
-    void createNewDatums(QVector<Datum*> &box);
-};
 
 #endif // DATUM_ARRAY_H

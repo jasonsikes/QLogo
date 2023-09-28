@@ -33,7 +33,7 @@
 #include <qdebug.h>
 #include "stringconstants.h"
 
-static ArrayPool pool;
+static DatumPool<Array> pool(5);
 
 QList<void *> aryVisited;
 QList<void *> otherAryVisited;
@@ -77,6 +77,7 @@ Array::~Array() {}
 
 void Array::addToPool()
 {
+  clear();
   pool.dealloc(this);
 }
 
@@ -214,19 +215,4 @@ DatumP Array::butlast() {
 }
 
 ArrayIterator Array::newIterator() { return ArrayIterator(&array); }
-
-
-void ArrayPool::createNewDatums(QVector<Datum*> &box)
-{
-  const int count = 5;
-
-  // This block is never deleted.
-  Array *block = new Array[count];
-
-  box.reserve(count);
-  for (int i = 0; i < count; ++i) {
-    box.push_back(&block[i]);
-  }
-}
-
 

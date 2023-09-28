@@ -29,7 +29,7 @@
 #include <qdebug.h>
 
 
-static ASTNodePool pool;
+static DatumPool<ASTNode> pool(40);
 
 void ASTNode::addChild(DatumP aChild) { children.push_back(aChild); }
 
@@ -56,8 +56,9 @@ ASTNode::~ASTNode() {
 
 void ASTNode::addToPool()
 {
-  children.clear();
-  pool.dealloc(this);
+    nodeName = nothing;
+    children.clear();
+    pool.dealloc(this);
 }
 
 Datum::DatumType ASTNode::isa() { return astnodeType; }
@@ -74,19 +75,5 @@ QString ASTNode::printValue(bool, int, int) {
 
 QString ASTNode::showValue(bool, int, int) { return printValue(); }
 
-
-
-void ASTNodePool::createNewDatums(QVector<Datum*> &box)
-{
-  const int count = 40;
-
-  // This block is never deleted.
-  ASTNode *block = new ASTNode[count];
-
-  box.reserve(count);
-  for (int i = 0; i < count; ++i) {
-    box.push_back(&block[i]);
-  }
-}
 
 

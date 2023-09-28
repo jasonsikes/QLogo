@@ -35,7 +35,7 @@
 #include <qdebug.h>
 #include "stringconstants.h"
 
-static ProcedurePool pool;
+static DatumPool<Procedure> pool(20);
 
 const QString specialChars("+-()*%/<>=");
 
@@ -1839,20 +1839,11 @@ Parser::Parser(Kernel *aKernel) {
 
 void Procedure::addToPool()
 {
+  instructionList = nothing;
+  requiredInputs.clear();
+  optionalInputs.clear();
+  optionalDefaults.clear();
+  tagToLine.clear();
+  sourceText = nothing;
   pool.dealloc(this);
 }
-
-void ProcedurePool::createNewDatums(QVector<Datum*> &box)
-{
-  const int count = 20;
-
-  // This block is never deleted.
-  Procedure *block = new Procedure[count];
-
-  box.reserve(count);
-  for (int i = 0; i < count; ++i) {
-    box.push_back(&block[i]);
-  }
-}
-
-

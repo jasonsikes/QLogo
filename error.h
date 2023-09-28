@@ -128,11 +128,5 @@ public:
 };
 
 
-class ErrorPool : public DatumPool
-{
-  void createNewDatums(QVector<Datum*> &box);
-};
-
-
 
 #endif // ERROR_H

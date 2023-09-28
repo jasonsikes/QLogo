@@ -74,7 +74,6 @@ DatumP nodes();
 /// The unit of data for QLogo. The base class for Word, List, Array, ASTNode, etc.
 class Datum {
   friend class Iterator;
-    friend class DatumPool;
 
 protected:
   int retainCount;
@@ -201,33 +200,50 @@ public:
 };
 
 
-class DatumPool
+
+template <class T> class DatumPool
 {
-  protected:
-  QStack<Datum *>stack;
+  QStack<T *>stack;
+
+  // Every block allocated should contain this many elements.
+  int blockSize;
 
   // For debugging
-  int wildCount = 0; // Count of objecs allocated that are outside the pool
+  int wildCount = 0; // Count of objects allocated that are outside the pool
 
-  /// Acquire a new block of objects to be allocated.
-  void fillPool();
-
-  // Needs to be implemented by subclasses.
-  // /param box is a vector of pointers, initially empty.
-  // Subclass needs to create a block of Datums, and then
-  // fill the box with pointers to each Datum.
-  virtual void createNewDatums(QVector<Datum*> &box);
-
-  // Return the size of a memory page in bytes.
-  int getPageSize();
+  // Create a new block of objects.
+  void addToPool()
+  {
+      T *block = new T[blockSize];
+      Q_ASSERT(block != NULL);
+      for (int i = 0; i < blockSize; ++i) {
+          stack.push(&block[i]);
+      }
+  }
 
   public:
 
+  /// Constructor.
+  /// /param aBlockSize: the count of objects that should be allocated in each block
+      DatumPool(int aBlockSize)
+      {
+      blockSize = aBlockSize;
+      addToPool();
+      }
+
   /// acquire a Datum from its pool.
-  Datum * alloc();
+      T* alloc()
+      {
+      if (stack.isEmpty())
+          addToPool();
+      return stack.pop();
+      }
 
   /// place a datum into its pool.
-  void dealloc(Datum *);
+      void dealloc(T *obj)
+      {
+      stack.push(obj);
+      }
 
 };
 

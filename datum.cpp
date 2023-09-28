@@ -66,6 +66,7 @@ Datum::~Datum()
 void Datum::addToPool()
 {
   // Base class does nothing. Subclasses should add themselves to their pools.
+  Q_ASSERT(false);
 }
 
 QString Datum::printValue(bool, int, int) { return name(); }
@@ -141,53 +142,6 @@ Datum::DatumType Datum::isa() { return noType; }
 int Datum::size() {
   Q_ASSERT(false);
   return 0;
-}
-
-
-
-
-
-
-Datum * DatumPool::alloc()
-{
-  if (stack.isEmpty()) {
-    fillPool();
-  }
-  ++wildCount;
-  return stack.pop();
-}
-
-
-void DatumPool::dealloc(Datum *item)
-{
-  stack.push(item);
-  --wildCount;
-}
-
-
-void DatumPool::fillPool()
-{
-  QVector<Datum*> box;
-
-  // Ask subclass to create block of new objects.
-  createNewDatums(box);
-
-  // Add the new Datums to our stack.
-  for (auto i : box) {
-    stack.push(i);
-  }
-}
-
-
-int DatumPool::getPageSize()
-{
-  return getpagesize();
-}
-
-
-void DatumPool::createNewDatums(QVector<Datum*> &)
-{
-  Q_ASSERT(false);
 }
 
 

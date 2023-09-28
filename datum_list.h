@@ -32,6 +32,8 @@
 
 /// An element of a List.
 class ListNode : public Datum {
+    void addToPool();
+
 public:
     DatumType isa() { return listNodeType; }
 
@@ -40,6 +42,8 @@ public:
 
     /// A pointer to the next ListNode.
     DatumP next;
+
+    static ListNode * alloc();
 };
 
 /// The container for data. The QLogo List is implemented as a linked list.
@@ -136,13 +140,6 @@ public:
 
     ListIterator newIterator(void);
 };
-
-
-class ListPool : public DatumPool
-{
-    void createNewDatums(QVector<Datum*> &box);
-};
-
 
 
 #endif // DATUM_LIST_H

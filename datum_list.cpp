@@ -36,7 +36,9 @@ QList<void *> listVisited;
 QList<void *> otherListVisited;
 
 
-static ListPool pool;
+static DatumPool<List> listPool(40);
+
+static DatumPool<ListNode> nodePool(60);
 
 
 List::List() {
@@ -47,7 +49,7 @@ List::List() {
 
 List * List::alloc()
 {
-    List * retval = (List *) pool.alloc();
+    List * retval = (List *) listPool.alloc();
     retval->clear();
     retval->astParseTimeStamp = 0;
     retval->listSize = 0;
@@ -71,7 +73,7 @@ List::~List() {}
 void List::addToPool()
 {
     clear();
-    pool.dealloc(this);
+    listPool.dealloc(this);
 }
 
 
@@ -265,7 +267,7 @@ void List::clear() {
 
 // This should NOT be used in cases where a list may be shared
 void List::append(DatumP element) {
-    ListNode *newNode = new ListNode;
+  ListNode *newNode = ListNode::alloc();
     ++listSize;
     newNode->item = element;
     if (head == nothing) {
@@ -305,7 +307,7 @@ DatumP List::butlast() {
 }
 
 void List::prepend(DatumP element) {
-    ListNode *newnode = new ListNode;
+    ListNode *newnode = ListNode::alloc();
     newnode->item = element;
     newnode->next = head;
     head = newnode;
@@ -315,7 +317,7 @@ void List::prepend(DatumP element) {
 
 DatumP List::fput(DatumP item)
 {
-    ListNode *newnode = new ListNode;
+    ListNode *newnode = ListNode::alloc();
     List *retval = List::alloc();
     newnode->item = item;
     newnode->next = head;
@@ -336,19 +338,17 @@ void List::setListSize()
 
 ListIterator List::newIterator() { return ListIterator(head); }
 
-
-void ListPool::createNewDatums(QVector<Datum*> &box)
+ListNode * ListNode::alloc()
 {
-    const int count = 20;
-
-    // This block is never deleted.
-    List *block = new List[count];
-
-    box.reserve(count);
-    for (int i = 0; i < count; ++i) {
-        box.push_back(&block[i]);
-    }
+    ListNode * retval = nodePool.alloc();
+    return retval;
 }
 
 
+void ListNode::addToPool()
+{
+    item = nothing;
+    next = nothing;
+    nodePool.dealloc(this);
+}
 

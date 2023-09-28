@@ -32,7 +32,7 @@
 
 Kernel *mainKernel;
 
-static ErrorPool pool;
+static DatumPool<Error> pool(3);
 
 
 Error::Error()
@@ -235,19 +235,11 @@ void Error::throwError(DatumP aTag, DatumP aOutput) {
 
 void Error::addToPool()
 {
+  tag = nothing;
+  errorText = nothing;
+  output = nothing;
+  procedure = nothing;
+  instructionLine = nothing;
   pool.dealloc(this);
-}
-
-void ErrorPool::createNewDatums(QVector<Datum*> &box)
-{
-  const int count = 3;
-
-  // This block is never deleted.
-  Error *block = new Error[count];
-
-  box.reserve(count);
-  for (int i = 0; i < count; ++i) {
-    box.push_back(&block[i]);
-  }
 }
 

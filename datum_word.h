@@ -137,11 +137,4 @@ public:
 };
 
 
-class WordPool : public DatumPool
-{
-    void createNewDatums(QVector<Datum*> &box);
-};
-
-
-
 #endif // DATUM_WORD_H

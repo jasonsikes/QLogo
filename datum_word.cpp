@@ -30,7 +30,7 @@
 #include "stringconstants.h"
 #include <qdebug.h>
 
-static WordPool pool;
+static DatumPool<Word> pool(50);
 
 QChar rawToChar(const QChar &src) {
   const ushort rawToAsciiMap[] = {
@@ -308,19 +308,4 @@ DatumP Word::butfirst() {
   Q_ASSERT(printableString.size() > 0);
   return DatumP(printableString.right(printableString.size() - 1));
 }
-
-
-void WordPool::createNewDatums(QVector<Datum*> &box)
-{
-  const int count = 50;
-
-  // This block is never deleted.
-  Word *block = new Word[count];
-
-  box.reserve(count);
-  for (int i = 0; i < count; ++i) {
-    box.push_back(&block[i]);
-  }
-}
-
 

@@ -87,11 +87,5 @@ public:
 
 };
 
-class ASTNodePool : public DatumPool
-{
-    void createNewDatums(QVector<Datum*> &box);
-};
-
-
 
 #endif // DATUM_ASTNODE_H

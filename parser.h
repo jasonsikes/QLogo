@@ -144,7 +144,7 @@ public:
   DatumType isa() { return Datum::procedureType; }
 
   void init() {
-    instructionList = DatumP(List::alloc());
+    instructionList = nothing;
     countOfMaxParams = -1;
     countOfMinParams = 0;
     requiredInputs.clear();
@@ -156,11 +156,6 @@ public:
     isMacro = false;
     sourceText = nothing;
   }
-};
-
-class ProcedurePool : public DatumPool
-{
-  void createNewDatums(QVector<Datum*> &box);
 };
 
 
