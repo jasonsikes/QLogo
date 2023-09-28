@@ -25,7 +25,6 @@
 //===----------------------------------------------------------------------===//
 
 #include "parser.h"
-#include "QtCore/qstringliteral.h"
 #include "logocontroller.h"
 #include "error.h"
 #include "kernel.h"
@@ -36,7 +35,9 @@
 #include <qdebug.h>
 #include "stringconstants.h"
 
-const QString specialChars(QStringLiteral ("+-()*%/<>="));
+static DatumPool<Procedure> pool(20);
+
+const QString specialChars("+-()*%/<>=");
 
 char lastNonSpaceChar(const QString &line) {
   char retval = ' ';
@@ -87,7 +88,8 @@ void Parser::defineProcedure(DatumP cmd, DatumP procnameP, DatumP text,
 }
 
 DatumP Parser::createProcedure(DatumP cmd, DatumP text, DatumP sourceText) {
-  Procedure *body = new Procedure;
+  Procedure *body = (Procedure *) pool.alloc();
+  body->init();
   DatumP bodyP(body);
 
   QString cmdString = cmd.wordValue()->keyValue();
@@ -250,9 +252,9 @@ DatumP Parser::procedureText(DatumP procnameP) {
     Error::noHow(procnameP);
   Procedure *body = procedures[procname].procedureValue();
 
-  List *retval = emptyList();
+  List *retval = List::alloc();
 
-  List *inputs = emptyList();
+  List *inputs = List::alloc();
 
   for (auto &i : body->requiredInputs) {
     inputs->append(DatumP(i));
@@ -260,14 +262,14 @@ DatumP Parser::procedureText(DatumP procnameP) {
 
   QList<DatumP>::iterator d = body->optionalDefaults.begin();
   for (auto &i : body->optionalInputs) {
-    List *optInput = List::listFromList(d->listValue());
+    List *optInput = List::alloc(d->listValue());
     optInput->prepend(DatumP(i));
     ++d;
     inputs->append(DatumP(optInput));
   }
 
   if (body->restInput != "") {
-    List *restInput = emptyList();
+    List *restInput = List::alloc();
     restInput->append(DatumP(body->restInput));
     inputs->append(DatumP(restInput));
   }
@@ -296,7 +298,7 @@ DatumP Parser::procedureFulltext(DatumP procnameP, bool shouldValidate) {
     Procedure *body = procedures[procname].procedureValue();
 
     if (body->sourceText == nothing) {
-      List *retval = emptyList();
+      List *retval = List::alloc();
       retval->append(DatumP(procedureTitle(procnameP)));
 
       ListIterator b = body->instructionList.listValue()->newIterator();
@@ -314,7 +316,7 @@ DatumP Parser::procedureFulltext(DatumP procnameP, bool shouldValidate) {
   } else if (shouldValidate) {
     Error::noHow(procnameP);
   }
-  List *retval = emptyList();
+  List *retval = List::alloc();
   retval->append(
       DatumP(k.to_() + procnameP.wordValue()->printValue()));
   retval->append(DatumP(k.end()));
@@ -331,7 +333,9 @@ QString Parser::procedureTitle(DatumP procnameP) {
 
   Procedure *body = procedures[procname].procedureValue();
 
-  List *firstLine = emptyList();
+  DatumP firstlineP = DatumP(List::alloc());
+
+  List *firstLine = firstlineP.listValue();
 
   if (body->isMacro)
     firstLine->append(DatumP(k.dMacro()));
@@ -351,7 +355,7 @@ QString Parser::procedureTitle(DatumP procnameP) {
   for (auto &i : body->optionalInputs) {
     paramName = i;
     paramName.push_front(':');
-    List *optInput = List::listFromList(d->listValue());
+    List *optInput = List::alloc(d->listValue());
     optInput->prepend(DatumP(paramName));
     firstLine->append(DatumP(optInput));
     ++d;
@@ -360,7 +364,7 @@ QString Parser::procedureTitle(DatumP procnameP) {
   paramName = body->restInput;
   if (paramName != "") {
     paramName.push_front(':');
-    List *restInput = emptyList();
+    List *restInput = List::alloc();
     restInput->append(DatumP(paramName));
     firstLine->append(DatumP(restInput));
   }
@@ -370,7 +374,6 @@ QString Parser::procedureTitle(DatumP procnameP) {
   }
 
   QString retval = unreadList(firstLine, false);
-  delete firstLine;
   return retval;
 }
 
@@ -399,9 +402,9 @@ void Parser::inputProcedure(DatumP nodeP, QTextStream *readStream) {
   if (stringToCmd.contains(procname))
     Error::procDefined(procnameP);
 
-  DatumP textP = emptyListP();
+  DatumP textP = DatumP(List::alloc());
   DatumP sourceText = lastReadListSource();
-  DatumP firstLine = emptyListP();
+  DatumP firstLine = DatumP(List::alloc());
   for (int i = 1; i < node->countOfChildren(); ++i) {
     firstLine.listValue()->append(node->childAtIndex(i));
   }
@@ -522,7 +525,7 @@ DatumP Parser::tokenizeListWithPrompt(const QString &prompt, int level,
     src = lineP.wordValue()->rawValue();
     iter = src.begin();
   }
-  List *retval = emptyList();
+  List *retval = List::alloc();
   DatumP retvalP(retval);
   QString currentWord = "";
 
@@ -614,7 +617,7 @@ DatumP Parser::tokenizeListWithPrompt(const QString &prompt, int level,
             }
             origin = originStr.toInt();
           }
-          Array *ary = Array::arrayFromList(origin, retval);
+          Array *ary = Array::alloc(origin, retval);
           return DatumP(ary);
         }
         case '{':
@@ -650,7 +653,7 @@ DatumP Parser::tokenizeListWithPrompt(const QString &prompt, int level,
     }
     // We have exhausted our source. Return what we have.
     if (makeArray) {
-      Array *ary = Array::arrayFromList(1, retval);
+      Array *ary = Array::alloc(1, retval);
       return DatumP(ary);
     }
     return retvalP;
@@ -676,7 +679,7 @@ DatumP Parser::readlistWithPrompt(const QString &prompt,
 
 DatumP Parser::lastReadListSource() {
   DatumP retval = listSourceText;
-  listSourceText = emptyList();
+  listSourceText = List::alloc();
   return retval;
 }
 
@@ -846,7 +849,7 @@ DatumP Parser::runparse(DatumP src) {
     QTextStream srcStream(&text, QIODevice::ReadOnly);
     src = readlistWithPrompt("", false, &srcStream);
   }
-  runparseRetval = emptyList();
+  runparseRetval = List::alloc();
   ListIterator iter = src.listValue()->newIterator();
 
   while (iter.elementExists()) {
@@ -926,7 +929,7 @@ DatumP Parser::parseExp() {
     advanceToken();
     DatumP right = parseSumexp();
 
-    DatumP node = DatumP(astNodeWithName(op));
+    DatumP node = DatumP(ASTNode::alloc(op));
     if (right == nothing)
       Error::notEnough(op);
 
@@ -959,7 +962,7 @@ DatumP Parser::parseSumexp() {
     advanceToken();
     DatumP right = parseMulexp();
 
-    DatumP node = DatumP(astNodeWithName(op));
+    DatumP node = DatumP(ASTNode::alloc(op));
     if (right == nothing)
       Error::notEnough(op);
 
@@ -985,7 +988,7 @@ DatumP Parser::parseMulexp() {
     advanceToken();
     DatumP right = parseminusexp();
 
-    DatumP node = DatumP(astNodeWithName(op));
+    DatumP node = DatumP(ASTNode::alloc(op));
     if (right == nothing)
       Error::notEnough(op);
 
@@ -1011,7 +1014,7 @@ DatumP Parser::parseminusexp() {
     advanceToken();
     DatumP right = parseTermexp();
 
-    DatumP node = DatumP(astNodeWithName(op));
+    DatumP node = DatumP(ASTNode::alloc(op));
     if (right == nothing)
       Error::notEnough(op);
 
@@ -1028,7 +1031,7 @@ DatumP Parser::parseTermexp() {
     return nothing;
 
   if (currentToken.isa() == Datum::listType) {
-    DatumP node(astNodeWithName(k.word()));
+    DatumP node(ASTNode::alloc(k.word()));
     node.astnodeValue()->kernel = &Kernel::executeLiteral;
     node.astnodeValue()->addChild(currentToken);
     advanceToken();
@@ -1036,7 +1039,7 @@ DatumP Parser::parseTermexp() {
   }
 
   if (currentToken.isa() == Datum::arrayType) {
-    DatumP node(astNodeWithName(k.array()));
+    DatumP node(ASTNode::alloc(k.array()));
     node.astnodeValue()->kernel = &Kernel::executeLiteral;
     node.astnodeValue()->addChild(currentToken);
     advanceToken();
@@ -1085,14 +1088,14 @@ DatumP Parser::parseTermexp() {
       rawToChar(name);
     }
     if (firstChar == '"') {
-      DatumP node(astNodeWithName(k.quotedname()));
+      DatumP node(ASTNode::alloc(k.quotedname()));
       node.astnodeValue()->kernel = &Kernel::executeLiteral;
       node.astnodeValue()->addChild(
           DatumP(DatumP(name, currentToken.wordValue()->isForeverSpecial)));
       advanceToken();
       return node;
     } else {
-      DatumP node(astNodeWithName(k.valueof()));
+      DatumP node(ASTNode::alloc(k.valueof()));
       node.astnodeValue()->kernel = &Kernel::executeValueOf;
       node.astnodeValue()->addChild(DatumP(name));
       advanceToken();
@@ -1103,7 +1106,7 @@ DatumP Parser::parseTermexp() {
   // See if it's a number
   double number = currentToken.wordValue()->numberValue();
   if (currentToken.wordValue()->didNumberConversionSucceed()) {
-    DatumP node(astNodeWithName(k.number()));
+    DatumP node(ASTNode::alloc(k.number()));
     node.astnodeValue()->kernel = &Kernel::executeLiteral;
     node.astnodeValue()->addChild(DatumP(number));
     advanceToken();
@@ -1142,7 +1145,7 @@ DatumP Parser::astnodeWithLiterals(DatumP cmd, DatumP params) {
   ListIterator iter = params.listValue()->newIterator();
   while (iter.elementExists()) {
     DatumP p = iter.element();
-    DatumP a = DatumP(astNodeWithName(k.literal()));
+    DatumP a = DatumP(ASTNode::alloc(k.literal()));
     a.astnodeValue()->kernel = &Kernel::executeLiteral;
     a.astnodeValue()->addChild(p);
     node.astnodeValue()->addChild(a);
@@ -1155,7 +1158,7 @@ DatumP Parser::astnodeFromCommand(DatumP cmdP, int &minParams,
   QString cmdString = cmdP.wordValue()->keyValue();
 
   Cmd_t command;
-  DatumP node = DatumP(astNodeWithName(cmdP));
+  DatumP node = DatumP(ASTNode::alloc(cmdP));
   if (procedures.contains(cmdString)) {
     DatumP procBody = procedures[cmdString];
     if (procBody.procedureValue()->isMacro)
@@ -1288,7 +1291,7 @@ bool Parser::isDefined(QString procname) {
 }
 
 DatumP Parser::allProcedureNames(showContents_t showWhat) {
-  List *retval = emptyList();
+  List *retval = List::alloc();
 
   for (auto &name : procedures.keys()) {
 
@@ -1307,7 +1310,7 @@ void Parser::eraseAllProcedures() {
 }
 
 DatumP Parser::allPrimitiveProcedureNames() {
-  List *retval = emptyList();
+  List *retval = List::alloc();
 
   for (auto name : stringToCmd.keys()) {
     retval->append(DatumP(name));
@@ -1337,7 +1340,7 @@ DatumP Parser::arity(DatumP nameP) {
     return nothing;
   }
 
-  List *retval = emptyList();
+  List *retval = List::alloc();
   retval->append(DatumP(minParams));
   retval->append(DatumP(defParams));
   retval->append(DatumP(maxParams));
@@ -1446,7 +1449,7 @@ QString Parser::printoutDatum(DatumP aDatum) {
 Parser::Parser(Kernel *aKernel) {
   lastProcedureCreatedTimestamp = QDateTime::currentMSecsSinceEpoch();
   kernel = aKernel;
-  listSourceText = emptyList();
+  listSourceText = List::alloc();
   if (stringToCmd.size() > 0)
     return;
 
@@ -1831,4 +1834,16 @@ Parser::Parser(Kernel *aKernel) {
   stringToCmd["<="] = {&Kernel::excLessequalp, 2, 2, 2};
   stringToCmd["<>"] = {&Kernel::excNotequal, 2, 2, 2};
 
+}
+
+
+void Procedure::addToPool()
+{
+  instructionList = nothing;
+  requiredInputs.clear();
+  optionalInputs.clear();
+  optionalDefaults.clear();
+  tagToLine.clear();
+  sourceText = nothing;
+  pool.dealloc(this);
 }

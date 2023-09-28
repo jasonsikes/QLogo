@@ -29,7 +29,9 @@
 #include "datum_list.h"
 #include "stringconstants.h"
 #include <qdebug.h>
+#include <unistd.h>
 
+// TODO: is this necessary?
 int countOfNodes = 0;
 int maxCountOfNodes = 0;
 
@@ -40,7 +42,7 @@ DatumP nodes()
 
   maxCountOfNodes = countOfNodes;
 
-  List *retval = emptyList();
+  List *retval = List::alloc();
   retval->append(DatumP(a));
   retval->append(DatumP(b));
   return DatumP(retval);
@@ -58,6 +60,13 @@ Datum::Datum()
 Datum::~Datum()
 {
   --countOfNodes;
+}
+
+
+void Datum::addToPool()
+{
+  // Base class does nothing. Subclasses should add themselves to their pools.
+  Q_ASSERT(false);
 }
 
 QString Datum::printValue(bool, int, int) { return name(); }
@@ -134,7 +143,6 @@ int Datum::size() {
   Q_ASSERT(false);
   return 0;
 }
-
 
 
 // Values to represent no data (NULL)

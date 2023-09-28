@@ -83,24 +83,3 @@ ArrayIterator::ArrayIterator(QVector<DatumP> *aArray) {
 DatumP ArrayIterator::element() { return *arrayIter++; }
 
 bool ArrayIterator::elementExists() { return (arrayIter != end); }
-
-/******************************************
- *
- * WordIterator
- *
- ******************************************/
-
-WordIterator::WordIterator() {}
-
-WordIterator::WordIterator(Word *aWord) {
-  charIter = aWord->rawString.begin();
-  end = aWord->rawString.end();
-}
-
-DatumP WordIterator::element() {
-  const QChar &c = *charIter++;
-  QString retval = c;
-  return DatumP(retval);
-}
-
-bool WordIterator::elementExists() { return (charIter != end); }

@@ -75,8 +75,7 @@ public:
     ///
     /// Decreases the retain count of the referred object. If this is the last
     /// pointer to the referred object (if its retain count reaches zero) the
-    /// object is destroyed, if possible. Static objects (notADatum, trueWord, and
-    /// falseWord) are not destroyed.
+    /// object is deallocated, if possible.
     ~DatumP();
 
     /// Returns a pointer to the referred Datum or any of Datum's subclasses.

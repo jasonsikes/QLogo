@@ -29,6 +29,7 @@
 #include "datum_datump.h"
 #include "datum_word.h"
 #include "datum_list.h"
+#include "stringconstants.h"
 #include <qdebug.h>
 
 DatumP::DatumP() { d = &notADatum; }
@@ -47,35 +48,35 @@ DatumP::DatumP(const DatumP &other) noexcept {
   }
 }
 
-DatumP::DatumP(bool b) { d = b ? &trueWord : &falseWord; }
+DatumP::DatumP(bool b) {
+  d = Word::alloc(b ? k.ktrue() : k.kfalse());
+  d -> retain();
+}
 
 
 DatumP::DatumP(double n)
 {
-  d = new Word(n);
+  d = Word::alloc(n);
   d->retain();
 }
 
 
 DatumP::DatumP(int n)
 {
-  d = new Word(n);
+  d = Word::alloc((double)n);
   d->retain();
 }
 
 
 DatumP::DatumP(const QString n, bool isVBarred)
 {
-  d = new Word(n, isVBarred);
+  d = Word::alloc(n, isVBarred);
   d->retain();
 }
 
 void DatumP::destroy() {
   if (d != &notADatum) {
     d->release();
-    if (d->shouldDelete()) {
-      delete d;
-    }
   }
 }
 

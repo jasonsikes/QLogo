@@ -32,6 +32,8 @@
 
 /// An element of a List.
 class ListNode : public Datum {
+    void addToPool();
+
 public:
     DatumType isa() { return listNodeType; }
 
@@ -40,6 +42,8 @@ public:
 
     /// A pointer to the next ListNode.
     DatumP next;
+
+    static ListNode * alloc();
 };
 
 /// The container for data. The QLogo List is implemented as a linked list.
@@ -55,16 +59,22 @@ protected:
     qint64 astParseTimeStamp;
     void setListSize();
 
+    void addToPool();
+
 public:
 
-    /// Create an empty List
+    /// Create an empty List. Don't use this. It is slow.
+    /// Use alloc() instead.
     List();
 
     /// Create a new list populated with elements of Array.
-    static List * listFromArray(Array *source);
+    static List * alloc(Array *source);
 
     /// Create a new list populated with elements of another List.
-    static List * listFromList(List *source);
+    static List * alloc(List *source);
+
+    /// Allocate an empty List.
+    static List * alloc();
 
     ~List();
     DatumType isa();
@@ -130,14 +140,6 @@ public:
 
     ListIterator newIterator(void);
 };
-
-
-/// Convenience constructor for an empty list.
-List * emptyList();
-
-/// Convenience constructor for an empty list.
-DatumP emptyListP();
-
 
 
 #endif // DATUM_LIST_H

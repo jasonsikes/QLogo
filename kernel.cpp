@@ -315,7 +315,7 @@ DatumP Kernel::readChar() {
   }
 
   if (readStream->atEnd())
-    return emptyListP();
+    return DatumP(List::alloc());
   QString line = readStream->read(1);
   if (readStream->status() != QTextStream::Ok)
     Error::fileSystem();
@@ -385,7 +385,7 @@ DatumP Kernel::executeProcedureCore(DatumP node) {
   // Finally, take in the remainder (if any) as a list.
   if (proc.procedureValue()->restInput != "") {
     const QString &name = proc.procedureValue()->restInput;
-    DatumP remainderList = emptyListP();
+    DatumP remainderList = DatumP(List::alloc());
     while (childIndex < h.countOfChildren()) {
       DatumP value = h.datumAtIndex(childIndex);
       remainderList.listValue()->append(value);

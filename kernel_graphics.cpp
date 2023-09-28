@@ -40,7 +40,7 @@
 #endif
 
 DatumP listFromColor(QColor c) {
-  List *retval = emptyList();
+  List *retval = List::alloc();
   retval->append(DatumP(round(c.redF() * 100)));
   retval->append(DatumP(round(c.greenF() * 100)));
   retval->append(DatumP(round(c.blueF() * 100)));
@@ -222,7 +222,7 @@ DatumP Kernel::excPos(DatumP node) {
   double x, y, z;
   mainTurtle()->getxyz(x, y, z);
 
-  List *retval = emptyList();
+  List *retval = List::alloc();
   retval->append(DatumP(x));
   retval->append(DatumP(y));
   if (h.countOfChildren() > 0) {
@@ -279,7 +279,7 @@ DatumP Kernel::excTowards(DatumP node) {
 
 DatumP Kernel::excScrunch(DatumP node) {
   ProcedureHelper h(this, node);
-  List *retval = emptyList();
+  List *retval = List::alloc();
   retval->append(DatumP(1));
   retval->append(DatumP(1));
   return h.ret(retval);
@@ -360,7 +360,7 @@ DatumP Kernel::excBounds(DatumP node) {
   double x = mainController()->boundX();
   double y = mainController()->boundY();
 
-  List *retval = emptyList();
+  List *retval = List::alloc();
   retval->append(DatumP(x));
   retval->append(DatumP(y));
   return h.ret(retval);
@@ -497,10 +497,10 @@ DatumP Kernel::excLabelheight(DatumP node) {
 
 DatumP Kernel::excMatrix(DatumP node) {
   ProcedureHelper h(this, node);
-  List *retval = emptyList();
+  List *retval = List::alloc();
   const QMatrix4x4 &m = mainTurtle()->getMatrix();
   for (int row = 0; row < 4; ++row) {
-    List *r = emptyList();
+    List *r = List::alloc();
     for (int col = 0; col < 4; ++col) {
       r->append(DatumP(m(row, col)));
     }
@@ -662,7 +662,7 @@ DatumP Kernel::excSavepict(DatumP node) {
 
 DatumP Kernel::excMousepos(DatumP node) {
   ProcedureHelper h(this, node);
-  List *retval = emptyList();
+  List *retval = List::alloc();
   QVector2D position = mainController()->mousePosition();
   retval->append(DatumP(position.x()));
   retval->append(DatumP(position.y()));
@@ -671,7 +671,7 @@ DatumP Kernel::excMousepos(DatumP node) {
 
 DatumP Kernel::excClickpos(DatumP node) {
   ProcedureHelper h(this, node);
-  List *retval = emptyList();
+  List *retval = List::alloc();
   QVector2D position = mainController()->lastMouseclickPosition();
   retval->append(DatumP(position.x()));
   retval->append(DatumP(position.y()));

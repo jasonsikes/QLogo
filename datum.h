@@ -27,6 +27,12 @@
 //===----------------------------------------------------------------------===//
 
 #include <QChar>
+#include <QStack>
+#include "QDebug"
+
+#ifndef dv
+#define dv(x) qDebug()<<#x<<'='<<x
+#endif
 
 class ASTNode;
 class Word;
@@ -71,7 +77,8 @@ class Datum {
 
 protected:
   int retainCount;
-  bool isDestroyable = true; // trueWord, falseWord, and notADatum are static constants and cannot be destroyed.
+
+  virtual void addToPool();
 
 public:
   /// Value returned by isa().
@@ -90,21 +97,29 @@ public:
   ///
   /// The Datum class is the superclass for all data.
   /// The Datum superclass maintains retain counts (manipulated by the DatumP class).
-  /// Datum may be instantiated, but it is only useful as a NULL value. To hold data,
-  /// use one of the subclasses.
+  ///
+  /// To hold data:
+  /// 1. use one of the subclasses, NOT Datum, and
+  /// 2. use alloc(), NOT the default constructor.
   Datum();
-  virtual ~Datum();
+
+  ~Datum();
 
   Datum &operator=(const Datum &);
 
   /// Increment the retain count.
-  inline void retain() { ++retainCount; }
+  inline void retain(void)
+  {
+      ++retainCount;
+  }
 
   /// Decrement the retain count.
-  inline void release() { --retainCount; }
-
-  /// Query to determine if all references to this object are destroyed and it is destructable.
-  inline bool shouldDelete() { return (retainCount <= 0) && isDestroyable; }
+  inline void release(void) {
+      --retainCount;
+      if (retainCount <= 0) {
+          addToPool();
+      }
+  }
 
   /// Return type of this object.
   virtual DatumType isa();
@@ -184,6 +199,53 @@ public:
   virtual DatumP fromMember(DatumP aDatum, bool ignoreCase);
 };
 
+
+
+template <class T> class DatumPool
+{
+  QStack<T *>stack;
+
+  // Every block allocated should contain this many elements.
+  int blockSize;
+
+  // For debugging
+  int wildCount = 0; // Count of objects allocated that are outside the pool
+
+  // Create a new block of objects.
+  void addToPool()
+  {
+      T *block = new T[blockSize];
+      Q_ASSERT(block != NULL);
+      for (int i = 0; i < blockSize; ++i) {
+          stack.push(&block[i]);
+      }
+  }
+
+  public:
+
+  /// Constructor.
+  /// /param aBlockSize: the count of objects that should be allocated in each block
+      DatumPool(int aBlockSize)
+      {
+      blockSize = aBlockSize;
+      addToPool();
+      }
+
+  /// acquire a Datum from its pool.
+      T* alloc()
+      {
+      if (stack.isEmpty())
+          addToPool();
+      return stack.pop();
+      }
+
+  /// place a datum into its pool.
+      void dealloc(T *obj)
+      {
+      stack.push(obj);
+      }
+
+};
 
 
 /// A datum that has no value.

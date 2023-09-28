@@ -36,27 +36,30 @@ QList<void *> listVisited;
 QList<void *> otherListVisited;
 
 
+static DatumPool<List> listPool(40);
+
+static DatumPool<ListNode> nodePool(60);
+
+
 List::List() {
     astParseTimeStamp = 0;
     listSize = 0;
 }
 
 
-List *emptyList()
+List * List::alloc()
 {
-    return new List;
+    List * retval = (List *) listPool.alloc();
+    retval->clear();
+    retval->astParseTimeStamp = 0;
+    retval->listSize = 0;
+    return retval;
 }
 
 
-DatumP emptyListP()
+List * List::alloc(Array *source)
 {
-    return DatumP(emptyList());
-}
-
-
-List * List::listFromArray(Array *source)
-{
-    List *retval = emptyList();
+    List *retval = alloc();
     auto aryIter = source->newIterator();
     while (aryIter.elementExists()) {
         retval->append(aryIter.element());
@@ -67,8 +70,15 @@ List * List::listFromArray(Array *source)
 List::~List() {}
 
 
-List * List::listFromList(List *source) {
-    List *retval = emptyList();
+void List::addToPool()
+{
+    clear();
+    listPool.dealloc(this);
+}
+
+
+List * List::alloc(List *source) {
+    List *retval = alloc();
     retval->astParseTimeStamp = 0;
     retval->head = source->head;
     retval->lastNode = source->lastNode;
@@ -213,7 +223,7 @@ bool List::isMember(DatumP aDatum, bool ignoreCase) {
 }
 
 DatumP List::fromMember(DatumP aDatum, bool ignoreCase) {
-  List *retval = emptyList();
+  List *retval = List::alloc();
   DatumP ptr = head;
   while (ptr != nothing) {
       DatumP e = ptr.listNodeValue()->item;
@@ -240,7 +250,7 @@ DatumP List::datumAtIndex(int anIndex) {
 
 DatumP List::butfirst() {
     Q_ASSERT(head != nothing);
-  List *retval = emptyList();
+  List *retval = List::alloc();
     retval->head = head.listNodeValue()->next;
     retval->listSize = listSize - 1;
     retval->lastNode = lastNode;
@@ -257,7 +267,7 @@ void List::clear() {
 
 // This should NOT be used in cases where a list may be shared
 void List::append(DatumP element) {
-    ListNode *newNode = new ListNode;
+  ListNode *newNode = ListNode::alloc();
     ++listSize;
     newNode->item = element;
     if (head == nothing) {
@@ -276,7 +286,7 @@ DatumP List::last() {
 }
 
 DatumP List::butlast() {
-  List *retval = emptyList();
+  List *retval = List::alloc();
   retval->listSize = listSize - 1;
   if (head.listNodeValue()->next != nothing) {
       DatumP src = head;
@@ -297,7 +307,7 @@ DatumP List::butlast() {
 }
 
 void List::prepend(DatumP element) {
-    ListNode *newnode = new ListNode;
+    ListNode *newnode = ListNode::alloc();
     newnode->item = element;
     newnode->next = head;
     head = newnode;
@@ -307,8 +317,8 @@ void List::prepend(DatumP element) {
 
 DatumP List::fput(DatumP item)
 {
-    ListNode *newnode = new ListNode;
-    List *retval = emptyList();
+    ListNode *newnode = ListNode::alloc();
+    List *retval = List::alloc();
     newnode->item = item;
     newnode->next = head;
     retval->head = newnode;
@@ -327,3 +337,18 @@ void List::setListSize()
 }
 
 ListIterator List::newIterator() { return ListIterator(head); }
+
+ListNode * ListNode::alloc()
+{
+    ListNode * retval = nodePool.alloc();
+    return retval;
+}
+
+
+void ListNode::addToPool()
+{
+    item = nothing;
+    next = nothing;
+    nodePool.dealloc(this);
+}
+

@@ -33,6 +33,8 @@
 #include <qdebug.h>
 #include "stringconstants.h"
 
+static DatumPool<Array> pool(5);
+
 QList<void *> aryVisited;
 QList<void *> otherAryVisited;
 
@@ -40,21 +42,28 @@ Array::Array(int aOrigin, int aSize) {
   origin = aOrigin;
   array.reserve(aSize);
   for (int i = 0; i < aSize; ++i) {
-    array.append(emptyListP());
+    array.append(DatumP(List::alloc()));
   }
 }
 
 
-Array * Array::arrayWithSize(int aOrigin, int aSize)
+void Array::clear()
 {
-  Array * retval = new Array(aOrigin, aSize);
+  origin = 1;
+  array.clear();
+}
+
+Array * Array::alloc(int aOrigin, int aSize)
+{
+  Array * retval = (Array *) pool.alloc();
+  retval->array.reserve(aSize);
+  retval->origin = aOrigin;
   return retval;
 }
 
-Array * Array::arrayFromList(int aOrigin, List *source)
+Array * Array::alloc(int aOrigin, List *source)
 {
-  Array * retval = new Array(aOrigin, 0);
-  retval->array.reserve(source->size());
+  Array * retval = alloc(aOrigin, source->size());
 
   auto iter = source->newIterator();
 
@@ -65,6 +74,12 @@ Array * Array::arrayFromList(int aOrigin, List *source)
 }
 
 Array::~Array() {}
+
+void Array::addToPool()
+{
+  clear();
+  pool.dealloc(this);
+}
 
 Datum::DatumType Array::isa() { return Datum::arrayType; }
 
@@ -200,3 +215,4 @@ DatumP Array::butlast() {
 }
 
 ArrayIterator Array::newIterator() { return ArrayIterator(&array); }
+
