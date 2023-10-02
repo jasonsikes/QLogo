@@ -392,7 +392,7 @@ void Turtle::endFill() {
   }
 }
 
-DatumP Turtle::print() {
+DatumPtr Turtle::print() {
   QString retval = "";
   for (int row = 0; row < 4; ++row) {
     QString s = "%1 %2 %3 %4\n";
@@ -401,6 +401,6 @@ DatumP Turtle::print() {
     }
     retval += s;
   }
-  return DatumP(retval);
+  return DatumPtr(retval);
 }
 

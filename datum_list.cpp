@@ -36,9 +36,9 @@ QList<void *> listVisited;
 QList<void *> otherListVisited;
 
 
-static DatumPool<List> listPool(40);
+static DatumPtrool<List> listPool(40);
 
-static DatumPool<ListNode> nodePool(60);
+static DatumPtrool<ListNode> nodePool(60);
 
 
 List::List() {
@@ -94,7 +94,7 @@ QString List::name() {
 
 QString List::printValue(bool fullPrintp, int printDepthLimit,
                          int printWidthLimit) {
-  DatumP iter = head;
+  DatumPtr iter = head;
   if (iter == nothing) {
     return "";
   }
@@ -130,7 +130,7 @@ QString List::showValue(bool fullPrintp, int printDepthLimit,
   return "...";
 }
 
-bool List::isEqual(DatumP other, bool ignoreCase) {
+bool List::isEqual(DatumPtr other, bool ignoreCase) {
   ListIterator iter;
   ListIterator otherIter;
   List *o = other.listValue();
@@ -151,8 +151,8 @@ bool List::isEqual(DatumP other, bool ignoreCase) {
   otherListVisited.push_back(o);
 
   while (iter.elementExists()) {
-    DatumP value = iter.element();
-    DatumP otherValue = otherIter.element();
+    DatumPtr value = iter.element();
+    DatumPtr otherValue = otherIter.element();
     if (!value.isEqual(otherValue, ignoreCase))
       goto exit_false;
   }
@@ -167,7 +167,7 @@ exit_false:
   return false;
 }
 
-DatumP List::first() {
+DatumPtr List::first() {
   Q_ASSERT(head != nothing);
   return head.listNodeValue()->item;
 }
@@ -176,8 +176,8 @@ bool List::isIndexInRange(int anIndex) {
     return (anIndex >= 1) && (anIndex <= listSize);
 }
 
-void List::setItem(int anIndex, DatumP aValue) {
-    DatumP ptr = head;
+void List::setItem(int anIndex, DatumPtr aValue) {
+    DatumPtr ptr = head;
     while (anIndex > 1) {
         --anIndex;
         ptr = ptr.listNodeValue()->next;
@@ -186,7 +186,7 @@ void List::setItem(int anIndex, DatumP aValue) {
   astParseTimeStamp = 0;
 }
 
-void List::setButfirstItem(DatumP aValue) {
+void List::setButfirstItem(DatumPtr aValue) {
   Q_ASSERT(head != nothing);
   Q_ASSERT(aValue.isList());
     head.listNodeValue()->next = aValue.listValue()->head;
@@ -194,17 +194,17 @@ void List::setButfirstItem(DatumP aValue) {
     listSize = aValue.listValue()->size() + 1;
 }
 
-void List::setFirstItem(DatumP aValue) {
+void List::setFirstItem(DatumPtr aValue) {
     Q_ASSERT(head != nothing);
     head.listNodeValue()->item = aValue;
   astParseTimeStamp = 0;
 }
 
 // TODO: Check for cyclic list structures.
-bool List::containsDatum(DatumP aDatum, bool ignoreCase) {
+bool List::containsDatum(DatumPtr aDatum, bool ignoreCase) {
     ListIterator iter = newIterator();
     while (iter.elementExists()) {
-        DatumP e = iter.element();
+        DatumPtr e = iter.element();
         if (e == aDatum)
             return true;
         if (e.datumValue()->containsDatum(aDatum, ignoreCase))
@@ -213,7 +213,7 @@ bool List::containsDatum(DatumP aDatum, bool ignoreCase) {
   return false;
 }
 
-bool List::isMember(DatumP aDatum, bool ignoreCase) {
+bool List::isMember(DatumPtr aDatum, bool ignoreCase) {
     ListIterator iter = newIterator();
     while (iter.elementExists()) {
         if (aDatum.isEqual(iter.element(), ignoreCase))
@@ -222,11 +222,11 @@ bool List::isMember(DatumP aDatum, bool ignoreCase) {
   return false;
 }
 
-DatumP List::fromMember(DatumP aDatum, bool ignoreCase) {
+DatumPtr List::fromMember(DatumPtr aDatum, bool ignoreCase) {
   List *retval = List::alloc();
-  DatumP ptr = head;
+  DatumPtr ptr = head;
   while (ptr != nothing) {
-      DatumP e = ptr.listNodeValue()->item;
+      DatumPtr e = ptr.listNodeValue()->item;
       if (e.isEqual(aDatum, ignoreCase)) {
           retval->head = ptr;
           retval->lastNode = lastNode;
@@ -235,12 +235,12 @@ DatumP List::fromMember(DatumP aDatum, bool ignoreCase) {
       ptr = ptr.listNodeValue()->next;
   }
   retval->setListSize();
-  return DatumP(retval);
+  return DatumPtr(retval);
 }
 
-DatumP List::datumAtIndex(int anIndex) {
+DatumPtr List::datumAtIndex(int anIndex) {
   Q_ASSERT(isIndexInRange(anIndex));
-    DatumP ptr = head;
+    DatumPtr ptr = head;
     while (anIndex > 1) {
         --anIndex;
         ptr = ptr.listNodeValue()->next;
@@ -248,13 +248,13 @@ DatumP List::datumAtIndex(int anIndex) {
   return ptr.listNodeValue()->item;
 }
 
-DatumP List::butfirst() {
+DatumPtr List::butfirst() {
     Q_ASSERT(head != nothing);
   List *retval = List::alloc();
     retval->head = head.listNodeValue()->next;
     retval->listSize = listSize - 1;
     retval->lastNode = lastNode;
-  return DatumP(retval);
+  return DatumPtr(retval);
 }
 
 void List::clear() {
@@ -266,7 +266,7 @@ void List::clear() {
 }
 
 // This should NOT be used in cases where a list may be shared
-void List::append(DatumP element) {
+void List::append(DatumPtr element) {
   ListNode *newNode = ListNode::alloc();
     ++listSize;
     newNode->item = element;
@@ -280,16 +280,16 @@ void List::append(DatumP element) {
   astParseTimeStamp = 0;
 }
 
-DatumP List::last() {
+DatumPtr List::last() {
     Q_ASSERT(lastNode != nothing);
     return lastNode.listNodeValue()->item;
 }
 
-DatumP List::butlast() {
+DatumPtr List::butlast() {
   List *retval = List::alloc();
   retval->listSize = listSize - 1;
   if (head.listNodeValue()->next != nothing) {
-      DatumP src = head;
+      DatumPtr src = head;
       while (src.listNodeValue()->next != nothing) {
           ListNode *newnode = new ListNode;
           newnode->item = src.listNodeValue()->item;
@@ -303,10 +303,10 @@ DatumP List::butlast() {
           src = src.listNodeValue()->next;
       }
   }
-  return DatumP(retval);
+  return DatumPtr(retval);
 }
 
-void List::prepend(DatumP element) {
+void List::prepend(DatumPtr element) {
     ListNode *newnode = ListNode::alloc();
     newnode->item = element;
     newnode->next = head;
@@ -315,7 +315,7 @@ void List::prepend(DatumP element) {
   astParseTimeStamp = 0;
 }
 
-DatumP List::fput(DatumP item)
+DatumPtr List::fput(DatumPtr item)
 {
     ListNode *newnode = ListNode::alloc();
     List *retval = List::alloc();
@@ -329,7 +329,7 @@ DatumP List::fput(DatumP item)
 void List::setListSize()
 {
     listSize = 0;
-    DatumP ptr = head;
+    DatumPtr ptr = head;
     while (ptr != nothing) {
         ++listSize;
         ptr = ptr.listNodeValue()->next;

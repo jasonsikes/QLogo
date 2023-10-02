@@ -44,7 +44,7 @@
 // The maximum depth of procedure iterations before error is thrown.
 const int maxIterationDepth = 1000;
 
-ProcedureScope::ProcedureScope(Kernel *exec, DatumP procname) {
+ProcedureScope::ProcedureScope(Kernel *exec, DatumPtr procname) {
   ++(exec->procedureIterationDepth);
   procedureHistory = exec->callingProcedure;
   exec->callingProcedure = exec->currentProcedure;
@@ -86,19 +86,19 @@ StreamRedirect::~StreamRedirect() {
 
 // This doesn't do anything or get called. It's just a token that gets passed
 // when GOTO is used
-DatumP Kernel::excGotoToken(DatumP) { return nothing; }
+DatumPtr Kernel::excGotoToken(DatumPtr) { return nothing; }
 
 
 bool Kernel::isInputRedirected() { return readStream != NULL; }
 
-bool Kernel::numbersFromList(QVector<double> &retval, DatumP l) {
+bool Kernel::numbersFromList(QVector<double> &retval, DatumPtr l) {
     if ( ! l.isList())
         return false;
   ListIterator iter = l.listValue()->newIterator();
 
   retval.clear();
   while (iter.elementExists()) {
-    DatumP n = iter.element();
+    DatumPtr n = iter.element();
     if (!n.isWord())
       return false;
     double v = n.wordValue()->numberValue();
@@ -109,7 +109,7 @@ bool Kernel::numbersFromList(QVector<double> &retval, DatumP l) {
   return true;
 }
 
-bool Kernel::colorFromDatumP(QColor &retval, DatumP colorP) {
+bool Kernel::colorFromDatumPtr(QColor &retval, DatumPtr colorP) {
   if (colorP.isWord()) {
     double colorNum = colorP.wordValue()->numberValue();
     if (colorP.wordValue()->didNumberConversionSucceed()) {
@@ -150,13 +150,13 @@ bool Kernel::getLineAndRunIt(bool shouldHandleError) {
   ProcedureScope ps(this, nothing);
 
   try {
-    DatumP line = readlistWithPrompt(prompt, true, systemReadStream);
+    DatumPtr line = readlistWithPrompt(prompt, true, systemReadStream);
     if (line == nothing)
       return false; // EOF
     if (line.listValue()->size() == 0)
       return true;
 
-    DatumP result = runList(line);
+    DatumPtr result = runList(line);
     if (result != nothing)
       Error::dontSay(result);
   } catch (Error *e) {
@@ -189,7 +189,7 @@ bool Kernel::getLineAndRunIt(bool shouldHandleError) {
   return true;
 }
 
-DatumP Kernel::registerError(DatumP anError, bool allowErract,
+DatumPtr Kernel::registerError(DatumPtr anError, bool allowErract,
                              bool allowRecovery) {
   currentError = anError;
   ProcedureHelper::setIsErroring(anError != nothing);
@@ -202,7 +202,7 @@ DatumP Kernel::registerError(DatumP anError, bool allowErract,
       e->procedure = currentProcedure;
       e->instructionLine = currentLine;
     }
-    DatumP erractP = variables.datumForName(k.erract());
+    DatumPtr erractP = variables.datumForName(k.erract());
     bool shouldPause = (currentProcedure != nothing) &&
         (erractP != nothing) && (erractP.datumValue()->size() > 0);
 
@@ -212,10 +212,10 @@ DatumP Kernel::registerError(DatumP anError, bool allowErract,
       ProcedureHelper::setIsErroring(false);
       currentError = nothing;
 
-      DatumP retval = pause();
+      DatumPtr retval = pause();
 
       if (retval == nothing)
-        Error::throwError(DatumP(k.toplevel()), nothing);
+        Error::throwError(DatumPtr(k.toplevel()), nothing);
       if (allowRecovery) {
         return retval;
       }
@@ -259,13 +259,13 @@ void Kernel::initLibrary() { executeText(libraryStr); }
 // TODO: System vars need standardization
 void Kernel::initVariables(void)
 {
-    DatumP platform(LOGOPLATFORM);
-    DatumP version(LOGOVERSION);
-    DatumP trueDatumP(k.ktrue());
+    DatumPtr platform(LOGOPLATFORM);
+    DatumPtr version(LOGOVERSION);
+    DatumPtr trueDatumPtr(k.ktrue());
 
     variables.setDatumForName(platform, k.logoPlatform());
     variables.setDatumForName(version, k.logoVersion());
-    variables.setDatumForName(trueDatumP, k.allowGetSet());
+    variables.setDatumForName(trueDatumPtr, k.allowGetSet());
     variables.bury(k.logoPlatform());
     variables.bury(k.logoVersion());
     variables.bury(k.allowGetSet());
@@ -304,31 +304,31 @@ uint32_t Kernel::randomFromRange(uint32_t start, uint32_t end) {
   return x + start;
 }
 
-DatumP Kernel::readRawLineWithPrompt(const QString prompt,
+DatumPtr Kernel::readRawLineWithPrompt(const QString prompt,
                                      QTextStream *stream) {
     return parser->readrawlineWithPrompt(prompt, stream);
 }
 
-DatumP Kernel::readChar() {
+DatumPtr Kernel::readChar() {
   if (readStream == NULL) {
       return mainController()->readchar();
   }
 
   if (readStream->atEnd())
-    return DatumP(List::alloc());
+    return DatumPtr(List::alloc());
   QString line = readStream->read(1);
   if (readStream->status() != QTextStream::Ok)
     Error::fileSystem();
-  return DatumP(line);
+  return DatumPtr(line);
 }
 
-DatumP Kernel::readlistWithPrompt(const QString &prompt,
+DatumPtr Kernel::readlistWithPrompt(const QString &prompt,
                                   bool shouldRemoveComments,
                                   QTextStream *stream) {
     return parser->readlistWithPrompt(prompt, shouldRemoveComments, stream);
 }
 
-DatumP Kernel::readWordWithPrompt(const QString prompt, QTextStream *stream) {
+DatumPtr Kernel::readWordWithPrompt(const QString prompt, QTextStream *stream) {
     return parser->readwordWithPrompt(prompt, stream);
 }
 
@@ -347,10 +347,10 @@ void Kernel::makeVarLocal(const QString &varname) {
   variables.setVarAsLocal(varname);
 }
 
-DatumP Kernel::executeProcedureCore(DatumP node) {
+DatumPtr Kernel::executeProcedureCore(DatumPtr node) {
   ProcedureHelper h(this, node);
   // The first child is the body of the procedure
-  DatumP proc = h.datumAtIndex(0);
+  DatumPtr proc = h.datumAtIndex(0);
 
   // The remaining children are the parameters
   int childIndex = 1;
@@ -358,7 +358,7 @@ DatumP Kernel::executeProcedureCore(DatumP node) {
   // first assign the REQUIRED params
   QList<QString> &requiredInputs = proc.procedureValue()->requiredInputs;
   for (auto &name : requiredInputs) {
-    DatumP value = h.datumAtIndex(childIndex);
+    DatumPtr value = h.datumAtIndex(childIndex);
     ++childIndex;
     makeVarLocal(name);
     variables.setDatumForName(value, name);
@@ -366,11 +366,11 @@ DatumP Kernel::executeProcedureCore(DatumP node) {
 
   // then assign the OPTIONAL params
   QList<QString> &optionalInputs = proc.procedureValue()->optionalInputs;
-  QList<DatumP> &optionalDefaults = proc.procedureValue()->optionalDefaults;
+  QList<DatumPtr> &optionalDefaults = proc.procedureValue()->optionalDefaults;
 
   auto defaultIter = optionalDefaults.begin();
   for (auto &name : optionalInputs) {
-    DatumP value;
+    DatumPtr value;
     if (childIndex < h.countOfChildren()) {
       value = h.datumAtIndex(childIndex);
       ++childIndex;
@@ -385,9 +385,9 @@ DatumP Kernel::executeProcedureCore(DatumP node) {
   // Finally, take in the remainder (if any) as a list.
   if (proc.procedureValue()->restInput != "") {
     const QString &name = proc.procedureValue()->restInput;
-    DatumP remainderList = DatumP(List::alloc());
+    DatumPtr remainderList = DatumPtr(List::alloc());
     while (childIndex < h.countOfChildren()) {
-      DatumP value = h.datumAtIndex(childIndex);
+      DatumPtr value = h.datumAtIndex(childIndex);
       remainderList.listValue()->append(value);
       ++childIndex;
     }
@@ -397,7 +397,7 @@ DatumP Kernel::executeProcedureCore(DatumP node) {
 
   // Execute the commands in the procedure.
 
-  DatumP retval;
+  DatumPtr retval;
   {
     ProcedureScope ps(this, node);
     ListIterator iter =
@@ -416,7 +416,7 @@ DatumP Kernel::executeProcedureCore(DatumP node) {
         ASTNode *a = retval.astnodeValue();
         if (a->kernel == &Kernel::excGotoToken) {
           QString tag = a->childAtIndex(0).wordValue()->keyValue();
-          DatumP startingLine = proc.procedureValue()->tagToLine[tag];
+          DatumPtr startingLine = proc.procedureValue()->tagToLine[tag];
           iter =
               proc.procedureValue()->instructionList.listValue()->newIterator();
           while (iter.elementExists() && (currentLine != startingLine)) {
@@ -443,9 +443,9 @@ DatumP Kernel::executeProcedureCore(DatumP node) {
             retval = nothing;
         }
       } else if (method == &Kernel::excOutput) {
-        DatumP p = retval.astnodeValue()->childAtIndex(0);
+        DatumPtr p = retval.astnodeValue()->childAtIndex(0);
         KernelMethod temp_method = p.astnodeValue()->kernel;
-        DatumP temp_retval = (this->*temp_method)(p);
+        DatumPtr temp_retval = (this->*temp_method)(p);
         if (temp_retval == nothing)
           Error::didntOutput(p.astnodeValue()->nodeName,
                              retval.astnodeValue()->nodeName);
@@ -459,13 +459,13 @@ DatumP Kernel::executeProcedureCore(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::executeProcedure(DatumP node) {
+DatumPtr Kernel::executeProcedure(DatumPtr node) {
   VarFrame s(&variables);
 
   if (procedureIterationDepth > maxIterationDepth) {
       Error::stackOverflow();
     }
-  DatumP retval = executeProcedureCore(node);
+  DatumPtr retval = executeProcedureCore(node);
   ASTNode *lastOutputCmd = NULL;
 
   while (retval.isASTNode()) {
@@ -501,7 +501,7 @@ DatumP Kernel::executeProcedure(DatumP node) {
   return retval;
 }
 
-DatumP Kernel::executeMacro(DatumP node) {
+DatumPtr Kernel::executeMacro(DatumPtr node) {
     bool wasExecutingMacro = isRunningMacroResult;
     isRunningMacroResult = true;
     try {
@@ -522,20 +522,20 @@ DatumP Kernel::executeMacro(DatumP node) {
     return node;
 }
 
-ASTNode *Kernel::astnodeValue(DatumP caller, DatumP value) {
+ASTNode *Kernel::astnodeValue(DatumPtr caller, DatumPtr value) {
   if (!value.isASTNode())
     Error::doesntLike(caller.astnodeValue()->nodeName, value);
   return value.astnodeValue();
 }
 
-DatumP Kernel::executeLiteral(DatumP node) {
+DatumPtr Kernel::executeLiteral(DatumPtr node) {
   return node.astnodeValue()->childAtIndex(0);
 }
 
-DatumP Kernel::executeValueOf(DatumP node) {
-  DatumP varnameP = node.astnodeValue()->childAtIndex(0);
+DatumPtr Kernel::executeValueOf(DatumPtr node) {
+  DatumPtr varnameP = node.astnodeValue()->childAtIndex(0);
   QString varName = varnameP.wordValue()->keyValue();
-  DatumP retval = variables.datumForName(varName);
+  DatumPtr retval = variables.datumForName(varName);
   if (retval == nothing)
     return (Error::noValueRecoverable(varnameP));
   return retval;
@@ -546,19 +546,19 @@ SignalsEnum_t Kernel::interruptCheck()
     SignalsEnum_t latestSignal = mainController()->latestSignal();
     if (latestSignal == toplevelSignal) {
         if (currentProcedure != nothing)
-            Error::throwError(DatumP(k.toplevel()), nothing);
+            Error::throwError(DatumPtr(k.toplevel()), nothing);
     } else if (latestSignal == pauseSignal) {
         if (currentProcedure != nothing)
             pause();
     } else if (latestSignal == systemSignal) {
-        Error::throwError(DatumP(k.system()), nothing);
+        Error::throwError(DatumPtr(k.system()), nothing);
     }
     return latestSignal;
 }
 
-DatumP Kernel::runList(DatumP listP, const QString startTag) {
+DatumPtr Kernel::runList(DatumPtr listP, const QString startTag) {
   bool shouldSearchForTag = (startTag != "");
-  DatumP retval;
+  DatumPtr retval;
 
   interruptCheck();
 
@@ -571,7 +571,7 @@ DatumP Kernel::runList(DatumP listP, const QString startTag) {
 
   bool tagHasBeenFound = !shouldSearchForTag;
 
-  QList<DatumP> *parsedList = parser->astFromList(listP.listValue());
+  QList<DatumPtr> *parsedList = parser->astFromList(listP.listValue());
   for (int i = 0; i < parsedList->size(); ++i) {
     if (retval != nothing) {
       if (retval.isASTNode()) {
@@ -579,7 +579,7 @@ DatumP Kernel::runList(DatumP listP, const QString startTag) {
       }
       Error::dontSay(retval);
     }
-    DatumP statement = (*parsedList)[i];
+    DatumPtr statement = (*parsedList)[i];
     KernelMethod method = statement.astnodeValue()->kernel;
     if (tagHasBeenFound) {
         if (isRunningMacroResult && (method == &Kernel::executeMacro) && (i == parsedList->size()-1)) {
@@ -591,7 +591,7 @@ DatumP Kernel::runList(DatumP listP, const QString startTag) {
         ASTNode *child =
             statement.astnodeValue()->childAtIndex(0).astnodeValue();
         if (child->kernel == &Kernel::executeLiteral) {
-          DatumP v = child->childAtIndex(0);
+          DatumPtr v = child->childAtIndex(0);
           if (v.isWord()) {
             QString tag = v.wordValue()->keyValue();
             tagHasBeenFound = (startTag == tag);
@@ -604,7 +604,7 @@ DatumP Kernel::runList(DatumP listP, const QString startTag) {
   return retval;
 }
 
-DatumP Kernel::excWait(DatumP node) {
+DatumPtr Kernel::excWait(DatumPtr node) {
   ProcedureHelper h(this, node);
   double value = h.validatedNumberAtIndex(
       0, [](double candidate) { return candidate >= 0; });
@@ -612,18 +612,18 @@ DatumP Kernel::excWait(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excNoop(DatumP node) {
+DatumPtr Kernel::excNoop(DatumPtr node) {
   ProcedureHelper h(this, node);
   return h.ret();
 }
 
-DatumP Kernel::excErrorNoGui(DatumP node) {
+DatumPtr Kernel::excErrorNoGui(DatumPtr node) {
   ProcedureHelper h(this, node);
   Error::noGraphics();
   return h.ret();
 }
 
-DatumP Kernel::pause() {
+DatumPtr Kernel::pause() {
     if (isPausing) {
         sysPrint(k.already_pausing());
         return nothing;
@@ -642,7 +642,7 @@ DatumP Kernel::pause() {
       }
     } catch (Error *e) {
       if ((e->code == 14) && (e->tag.wordValue()->keyValue() == k.pause())) {
-        DatumP retval = e->output;
+        DatumPtr retval = e->output;
         registerError(nothing);
         isPausing = false;
         return retval;

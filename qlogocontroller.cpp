@@ -98,14 +98,14 @@ message_t QLogoController::getMessage()
         break;
     }
     case S_SYSTEM:
-        Error::throwError(DatumP(k.system()), nothing);
+        Error::throwError(DatumPtr(k.system()), nothing);
         break;
     case S_TOPLEVEL:
         qDebug() <<"TOPLEVEL triggered";
-        Error::throwError(DatumP(k.toplevel()), nothing);
+        Error::throwError(DatumPtr(k.toplevel()), nothing);
         break;
     case S_PAUSE:
-        Error::throwError(DatumP(k.pause()), nothing);
+        Error::throwError(DatumPtr(k.pause()), nothing);
         break;
     case C_CONSOLE_RAWLINE_READ:
         bufferStream >> rawLine;
@@ -276,7 +276,7 @@ const QString QLogoController::getTextFontName()
 }
 
 // TODO: I believe this is only called if the input readStream is NULL
-DatumP QLogoController::readRawlineWithPrompt(const QString prompt)
+DatumPtr QLogoController::readRawlineWithPrompt(const QString prompt)
 {
     if (dribbleStream)
       *dribbleStream << prompt;
@@ -287,11 +287,11 @@ DatumP QLogoController::readRawlineWithPrompt(const QString prompt)
   });
   waitForMessage(C_CONSOLE_RAWLINE_READ);
 
-  return DatumP(rawLine);
+  return DatumPtr(rawLine);
 }
 
 
-DatumP QLogoController::readchar()
+DatumPtr QLogoController::readchar()
 {
   sendMessage([&](QDataStream *out) {
     *out << (message_t)C_CONSOLE_REQUEST_CHAR;
@@ -299,7 +299,7 @@ DatumP QLogoController::readchar()
 
   waitForMessage(C_CONSOLE_CHAR_READ);
 
-  return DatumP(rawChar);
+  return DatumPtr(rawChar);
 }
 
 void QLogoController::setTurtlePos(const QMatrix4x4 &newTurtlePos)

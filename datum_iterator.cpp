@@ -37,9 +37,9 @@
  *
  ******************************************/
 
-DatumP Iterator::element() {
+DatumPtr Iterator::element() {
   Q_ASSERT(false);
-  return DatumP();
+  return DatumPtr();
 }
 
 bool Iterator::elementExists() {
@@ -55,12 +55,12 @@ bool Iterator::elementExists() {
 
 ListIterator::ListIterator() {}
 
-ListIterator::ListIterator(DatumP head) {
+ListIterator::ListIterator(DatumPtr head) {
     ptr = head;
 }
 
-DatumP ListIterator::element() {
-    DatumP retval = ptr.listNodeValue()->item;
+DatumPtr ListIterator::element() {
+    DatumPtr retval = ptr.listNodeValue()->item;
     ptr = ptr.listNodeValue()->next;
     return retval;
 }
@@ -75,11 +75,11 @@ bool ListIterator::elementExists() { return (ptr != nothing); }
 
 ArrayIterator::ArrayIterator() {}
 
-ArrayIterator::ArrayIterator(QVector<DatumP> *aArray) {
+ArrayIterator::ArrayIterator(QVector<DatumPtr> *aArray) {
   arrayIter = aArray->begin();
   end = aArray->end();
 }
 
-DatumP ArrayIterator::element() { return *arrayIter++; }
+DatumPtr ArrayIterator::element() { return *arrayIter++; }
 
 bool ArrayIterator::elementExists() { return (arrayIter != end); }

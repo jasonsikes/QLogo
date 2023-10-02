@@ -1,5 +1,5 @@
 
-//===-- qlogo/datum_datumP.cpp - DatumP class implementation -------*-
+//===-- qlogo/datum_DatumPtr.cpp - DatumPtr class implementation -------*-
 // C++ -*-===//
 //
 // This file is part of QLogo.
@@ -20,8 +20,8 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the DatumP class, which is simply
-/// a pointer to a Datum. The DatumP class automatically maintains retain counts
+/// This file contains the implementation of the DatumPtr class, which is simply
+/// a pointer to a Datum. The DatumPtr class automatically maintains retain counts
 /// to the referred Datum.
 ///
 //===----------------------------------------------------------------------===//
@@ -32,57 +32,57 @@
 #include "stringconstants.h"
 #include <qdebug.h>
 
-DatumP::DatumP() { d = &notADatum; }
+DatumPtr::DatumPtr() { d = &notADatum; }
 
-DatumP::DatumP(Datum *other) {
+DatumPtr::DatumPtr(Datum *other) {
   d = other;
   if (d) {
     d->retain();
   }
 }
 
-DatumP::DatumP(const DatumP &other) noexcept {
+DatumPtr::DatumPtr(const DatumPtr &other) noexcept {
   d = other.d;
   if (d) {
     d->retain();
   }
 }
 
-DatumP::DatumP(bool b) {
+DatumPtr::DatumPtr(bool b) {
   d = Word::alloc(b ? k.ktrue() : k.kfalse());
   d -> retain();
 }
 
 
-DatumP::DatumP(double n)
+DatumPtr::DatumPtr(double n)
 {
   d = Word::alloc(n);
   d->retain();
 }
 
 
-DatumP::DatumP(int n)
+DatumPtr::DatumPtr(int n)
 {
   d = Word::alloc((double)n);
   d->retain();
 }
 
 
-DatumP::DatumP(const QString n, bool isVBarred)
+DatumPtr::DatumPtr(const QString n, bool isVBarred)
 {
   d = Word::alloc(n, isVBarred);
   d->retain();
 }
 
-void DatumP::destroy() {
+void DatumPtr::destroy() {
   if (d != &notADatum) {
     d->release();
   }
 }
 
-DatumP::~DatumP() { destroy(); }
+DatumPtr::~DatumPtr() { destroy(); }
 
-DatumP &DatumP::operator=(const DatumP &other) noexcept {
+DatumPtr &DatumPtr::operator=(const DatumPtr &other) noexcept {
   if (&other != this) {
     destroy();
     d = other.d;
@@ -93,7 +93,7 @@ DatumP &DatumP::operator=(const DatumP &other) noexcept {
   return *this;
 }
 
-DatumP &DatumP::operator=(DatumP *other) noexcept {
+DatumPtr &DatumPtr::operator=(DatumPtr *other) noexcept {
   if (other != this) {
     destroy();
     d = other->d;
@@ -102,16 +102,16 @@ DatumP &DatumP::operator=(DatumP *other) noexcept {
   return *this;
 }
 
-bool DatumP::operator==(DatumP *other) { return d == other->d; }
+bool DatumPtr::operator==(DatumPtr *other) { return d == other->d; }
 
-bool DatumP::operator==(const DatumP &other) { return d == other.d; }
+bool DatumPtr::operator==(const DatumPtr &other) { return d == other.d; }
 
-bool DatumP::operator!=(DatumP *other) { return d != other->d; }
+bool DatumPtr::operator!=(DatumPtr *other) { return d != other->d; }
 
-bool DatumP::operator!=(const DatumP &other) { return d != other.d; }
+bool DatumPtr::operator!=(const DatumPtr &other) { return d != other.d; }
 
 // This is true IFF EQUALP is true
-bool DatumP::isEqual(DatumP other, bool ignoreCase) {
+bool DatumPtr::isEqual(DatumPtr other, bool ignoreCase) {
   if (d->isa() != other.isa())
     return false;
   if (d == other.d)
@@ -119,26 +119,26 @@ bool DatumP::isEqual(DatumP other, bool ignoreCase) {
   return d->isEqual(other, ignoreCase);
 }
 
-bool DatumP::isDotEqual(DatumP other) { return (d == other.d); }
+bool DatumPtr::isDotEqual(DatumPtr other) { return (d == other.d); }
 
-bool DatumP::isASTNode() { return d->isa() == Datum::astnodeType; }
+bool DatumPtr::isASTNode() { return d->isa() == Datum::astnodeType; }
 
-bool DatumP::isList() { return d->isa() == Datum::listType; }
+bool DatumPtr::isList() { return d->isa() == Datum::listType; }
 
-bool DatumP::isArray() { return d->isa() == Datum::arrayType; }
+bool DatumPtr::isArray() { return d->isa() == Datum::arrayType; }
 
-bool DatumP::isWord() { return d->isa() == Datum::wordType; }
+bool DatumPtr::isWord() { return d->isa() == Datum::wordType; }
 
-bool DatumP::isError() { return d->isa() == Datum::errorType; }
+bool DatumPtr::isError() { return d->isa() == Datum::errorType; }
 
-bool DatumP::isNothing() { return d == &notADatum; }
+bool DatumPtr::isNothing() { return d == &notADatum; }
 
-Word *DatumP::wordValue() {
+Word *DatumPtr::wordValue() {
   Q_ASSERT(d->isa() == Datum::wordType);
   return (Word *)d;
 }
 
-List *DatumP::listValue() {
+List *DatumPtr::listValue() {
   if (d->isa() != Datum::listType) {
     qDebug() << "Hello";
   }
@@ -146,7 +146,7 @@ List *DatumP::listValue() {
   return (List *)d;
 }
 
-ListNode *DatumP::listNodeValue() {
+ListNode *DatumPtr::listNodeValue() {
   if (d->isa() != Datum::listNodeType) {
     qDebug() << "Hello";
   }
@@ -154,12 +154,12 @@ ListNode *DatumP::listNodeValue() {
   return (ListNode *)d;
 }
 
-Array *DatumP::arrayValue() {
+Array *DatumPtr::arrayValue() {
   Q_ASSERT(d->isa() == Datum::arrayType);
   return (Array *)d;
 }
 
-Procedure *DatumP::procedureValue() {
+Procedure *DatumPtr::procedureValue() {
   if (d->isa() != Datum::procedureType) {
     qDebug() << "Hello";
   }
@@ -167,26 +167,26 @@ Procedure *DatumP::procedureValue() {
   return (Procedure *)d;
 }
 
-ASTNode *DatumP::astnodeValue() {
+ASTNode *DatumPtr::astnodeValue() {
   if (d->isa() != Datum::astnodeType) {
     qDebug() << "Error here";
   }
   return (ASTNode *)d;
 }
 
-Error *DatumP::errorValue() {
+Error *DatumPtr::errorValue() {
   Q_ASSERT(d->isa() == Datum::errorType);
   return (Error *)d;
 }
 
-Datum::DatumType DatumP::isa() { return d->isa(); }
+Datum::DatumType DatumPtr::isa() { return d->isa(); }
 
-QString DatumP::printValue(bool fullPrintp, int printDepthLimit,
+QString DatumPtr::printValue(bool fullPrintp, int printDepthLimit,
                            int printWidthLimit) {
   return d->printValue(fullPrintp, printDepthLimit, printWidthLimit);
 }
 
-QString DatumP::showValue(bool fullPrintp, int printDepthLimit,
+QString DatumPtr::showValue(bool fullPrintp, int printDepthLimit,
                           int printWidthLimit) {
   return d->showValue(fullPrintp, printDepthLimit, printWidthLimit);
 }

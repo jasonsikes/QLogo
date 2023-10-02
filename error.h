@@ -70,7 +70,7 @@ class Error : public Datum {
 protected:
     static Error * createError(int aNumber, const QString &aErrorText);
 
-    static Error * createError(int aNumber, DatumP aErrorText);
+    static Error * createError(int aNumber, DatumPtr aErrorText);
 
   void addToPool();
 
@@ -79,11 +79,11 @@ public:
   Error();
 
   int code;
-  DatumP tag;
-  DatumP errorText;
-  DatumP output;
-  DatumP procedure;
-  DatumP instructionLine; // The Word/List where the error occurred.
+  DatumPtr tag;
+  DatumPtr errorText;
+  DatumPtr output;
+  DatumPtr procedure;
+  DatumPtr instructionLine; // The Word/List where the error occurred.
 
   DatumType isa() { return errorType; }
 
@@ -91,38 +91,38 @@ public:
 
   // Throwers for all the error messages
   static void turtleOutOfBounds();
-  static DatumP doesntLike(DatumP who, DatumP what, bool allowErract = false,
+  static DatumPtr doesntLike(DatumPtr who, DatumPtr what, bool allowErract = false,
                            bool allowRecovery = false);
-  static void didntOutput(DatumP src, DatumP dest);
-  static void notEnough(DatumP dest);
-  static void tooMany(DatumP dest);
-  static void dontSay(DatumP datum);
+  static void didntOutput(DatumPtr src, DatumPtr dest);
+  static void notEnough(DatumPtr dest);
+  static void tooMany(DatumPtr dest);
+  static void dontSay(DatumPtr datum);
   static void parenNf();
   static void unexpectedCloseParen();
-  static DatumP noValueRecoverable(DatumP datum);
-  static void noValue(DatumP datum);
-  static void noHow(DatumP datum);
-  static DatumP noHowRecoverable(DatumP datum);
-  static void procDefined(DatumP procname);
-  static void toInProc(DatumP cmd);
-  static void toInPause(DatumP cmd);
+  static DatumPtr noValueRecoverable(DatumPtr datum);
+  static void noValue(DatumPtr datum);
+  static void noHow(DatumPtr datum);
+  static DatumPtr noHowRecoverable(DatumPtr datum);
+  static void procDefined(DatumPtr procname);
+  static void toInProc(DatumPtr cmd);
+  static void toInPause(DatumPtr cmd);
   static void unexpectedCloseSquare();
   static void unexpectedCloseBrace();
-  static void listHasMultExp(DatumP list);
-  static void alreadyOpen(DatumP what);
-  static void cantOpen(DatumP what);
-  static void notOpen(DatumP what);
+  static void listHasMultExp(DatumPtr list);
+  static void alreadyOpen(DatumPtr what);
+  static void cantOpen(DatumPtr what);
+  static void notOpen(DatumPtr what);
   static void alreadyDribbling();
   static void fileSystem();
-  static DatumP fileSystemRecoverable();
+  static DatumPtr fileSystemRecoverable();
   static void alreadyFilling();
-  static void isPrimative(DatumP what);
-  static DatumP noTest(DatumP what);
-  static void notInsideProcedure(DatumP what);
-  static void throwError(DatumP aTag, DatumP aOutput);
-  static DatumP macroReturned(DatumP aOutput);
-  static DatumP insideRunresult(DatumP cmdName);
-  static DatumP noApply(DatumP what);
+  static void isPrimative(DatumPtr what);
+  static DatumPtr noTest(DatumPtr what);
+  static void notInsideProcedure(DatumPtr what);
+  static void throwError(DatumPtr aTag, DatumPtr aOutput);
+  static DatumPtr macroReturned(DatumPtr aOutput);
+  static DatumPtr insideRunresult(DatumPtr cmdName);
+  static DatumPtr noApply(DatumPtr what);
   static void stackOverflow();
   static void noGraphics();
 };

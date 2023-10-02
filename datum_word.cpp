@@ -30,7 +30,7 @@
 #include "stringconstants.h"
 #include <qdebug.h>
 
-static DatumPool<Word> pool(50);
+static DatumPtrool<Word> pool(50);
 
 QChar rawToChar(const QChar &src) {
   const ushort rawToAsciiMap[] = {
@@ -231,7 +231,7 @@ int Word::size() {
   return printableString.size();
 }
 
-bool Word::isEqual(DatumP other, bool ignoreCase) {
+bool Word::isEqual(DatumPtr other, bool ignoreCase) {
   if (sourceIsNumber) {
     bool answer = (number == other.wordValue()->numberValue());
     if (!other.wordValue()->didNumberConversionSucceed())
@@ -255,14 +255,14 @@ bool Word::isIndexInRange(int anIndex) {
   return ((anIndex >= 0) && (anIndex < printableString.size()));
 }
 
-DatumP Word::datumAtIndex(int anIndex) {
+DatumPtr Word::datumAtIndex(int anIndex) {
   genPrintString();
   --anIndex;
   Q_ASSERT((anIndex >= 0) && (anIndex < printableString.size()));
-  return DatumP(printableString.mid(anIndex, 1));
+  return DatumPtr(printableString.mid(anIndex, 1));
 }
 
-bool Word::containsDatum(DatumP aDatum, bool ignoreCase) {
+bool Word::containsDatum(DatumPtr aDatum, bool ignoreCase) {
   if (!aDatum.isWord())
     return false;
   genPrintString();
@@ -270,11 +270,11 @@ bool Word::containsDatum(DatumP aDatum, bool ignoreCase) {
   return printableString.contains(aDatum.wordValue()->printValue(), cs);
 }
 
-bool Word::isMember(DatumP aDatum, bool ignoreCase) {
+bool Word::isMember(DatumPtr aDatum, bool ignoreCase) {
   return containsDatum(aDatum, ignoreCase);
 }
 
-DatumP Word::fromMember(DatumP aDatum, bool ignoreCase) {
+DatumPtr Word::fromMember(DatumPtr aDatum, bool ignoreCase) {
   genPrintString();
   Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive : Qt::CaseSensitive;
   const QString &searchString = aDatum.wordValue()->printValue();
@@ -283,29 +283,29 @@ DatumP Word::fromMember(DatumP aDatum, bool ignoreCase) {
   if (pos >= 0) {
     retval = printableString.right(rawString.size() - pos);
   }
-  return DatumP(retval);
+  return DatumPtr(retval);
 }
 
-DatumP Word::first() {
+DatumPtr Word::first() {
   genPrintString();
   Q_ASSERT(printableString.size() > 0);
-  return DatumP(QString(printableString[0]));
+  return DatumPtr(QString(printableString[0]));
 }
 
-DatumP Word::last() {
+DatumPtr Word::last() {
   genPrintString();
   Q_ASSERT(printableString.size() > 0);
-  return DatumP(QString(printableString[printableString.size() - 1]));
+  return DatumPtr(QString(printableString[printableString.size() - 1]));
 }
 
-DatumP Word::butlast() {
+DatumPtr Word::butlast() {
   genPrintString();
-  return DatumP(printableString.left(printableString.size() - 1));
+  return DatumPtr(printableString.left(printableString.size() - 1));
 }
 
-DatumP Word::butfirst() {
+DatumPtr Word::butfirst() {
   genPrintString();
   Q_ASSERT(printableString.size() > 0);
-  return DatumP(printableString.right(printableString.size() - 1));
+  return DatumPtr(printableString.right(printableString.size() - 1));
 }
 

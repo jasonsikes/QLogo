@@ -35,7 +35,7 @@
 int countOfNodes = 0;
 int maxCountOfNodes = 0;
 
-DatumP nodes()
+DatumPtr nodes()
 {
   int a = countOfNodes;
   int b = maxCountOfNodes;
@@ -43,9 +43,9 @@ DatumP nodes()
   maxCountOfNodes = countOfNodes;
 
   List *retval = List::alloc();
-  retval->append(DatumP(a));
-  retval->append(DatumP(b));
-  return DatumP(retval);
+  retval->append(DatumPtr(a));
+  retval->append(DatumPtr(b));
+  return DatumPtr(retval);
 }
 
 
@@ -77,52 +77,52 @@ QString Datum::name(void) {
 
 QString Datum::showValue(bool, int, int) { return name(); }
 
-bool Datum::isEqual(DatumP other, bool) {
+bool Datum::isEqual(DatumPtr other, bool) {
   return (other.isa() == Datum::noType);
 }
 
-DatumP Datum::first() {
+DatumPtr Datum::first() {
   Q_ASSERT(false);
   return nothing;
 }
 
-DatumP Datum::last() {
+DatumPtr Datum::last() {
   Q_ASSERT(false);
   return nothing;
 }
 
-DatumP Datum::butlast() {
+DatumPtr Datum::butlast() {
   Q_ASSERT(false);
   return nothing;
 }
 
-DatumP Datum::butfirst() {
+DatumPtr Datum::butfirst() {
   Q_ASSERT(false);
   return nothing;
 }
 
-void Datum::setItem(int, DatumP) { Q_ASSERT(false); }
+void Datum::setItem(int, DatumPtr) { Q_ASSERT(false); }
 
-void Datum::setButfirstItem(DatumP) { Q_ASSERT(false); }
+void Datum::setButfirstItem(DatumPtr) { Q_ASSERT(false); }
 
-void Datum::setFirstItem(DatumP) { Q_ASSERT(false); }
+void Datum::setFirstItem(DatumPtr) { Q_ASSERT(false); }
 
-bool Datum::containsDatum(DatumP, bool) {
+bool Datum::containsDatum(DatumPtr, bool) {
   Q_ASSERT(false);
   return false;
 }
 
-bool Datum::isMember(DatumP, bool) {
+bool Datum::isMember(DatumPtr, bool) {
   Q_ASSERT(false);
   return false;
 }
 
-DatumP Datum::fromMember(DatumP, bool) {
+DatumPtr Datum::fromMember(DatumPtr, bool) {
   Q_ASSERT(false);
   return nothing;
 }
 
-DatumP Datum::datumAtIndex(int) {
+DatumPtr Datum::datumAtIndex(int) {
   Q_ASSERT(false);
   return nothing;
 }
@@ -147,4 +147,4 @@ int Datum::size() {
 
 // Values to represent no data (NULL)
 Datum notADatum;
-DatumP nothing(&notADatum);
+DatumPtr nothing(&notADatum);

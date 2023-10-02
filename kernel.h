@@ -50,7 +50,7 @@ class Kernel {
   friend class StreamRedirect;
   Parser *parser;
   Vars variables;
-  DatumP filePrefix;
+  DatumPtr filePrefix;
   int repcount = -1;
   int pauseLevel = 0;
   int procedureIterationDepth = 0;
@@ -68,38 +68,38 @@ class Kernel {
   QTextStream *writeStream;
   QTextStream *systemWriteStream;
   void lprint(QTextStream *stream, const QString &text);
-  DatumP readRawLineWithPrompt(const QString prompt, QTextStream *stream);
-  DatumP readChar();
-  DatumP readlistWithPrompt(const QString &prompt, bool shouldRemoveComments,
+  DatumPtr readRawLineWithPrompt(const QString prompt, QTextStream *stream);
+  DatumPtr readChar();
+  DatumPtr readlistWithPrompt(const QString &prompt, bool shouldRemoveComments,
                             QTextStream *stream);
-  DatumP readWordWithPrompt(const QString prompt, QTextStream *stream);
+  DatumPtr readWordWithPrompt(const QString prompt, QTextStream *stream);
 
-  DatumP currentError;
-  DatumP currentProcedure;
-  DatumP currentLine;
-  DatumP callingProcedure;
-  DatumP callingLine;
-  DatumP editFileName;
+  DatumPtr currentError;
+  DatumPtr currentProcedure;
+  DatumPtr currentLine;
+  DatumPtr callingProcedure;
+  DatumPtr callingLine;
+  DatumPtr editFileName;
   QString workspaceText;
 
-  ASTNode *astnodeValue(DatumP caller, DatumP value);
-  bool numbersFromList(QVector<double> &retval, DatumP l);
-  DatumP contentslistFromDatumP(DatumP sourceNode);
+  ASTNode *astnodeValue(DatumPtr caller, DatumPtr value);
+  bool numbersFromList(QVector<double> &retval, DatumPtr l);
+  DatumPtr contentslistFromDatumPtr(DatumPtr sourceNode);
   void processContentsListWithMethod(
-      DatumP contentsList, void (Workspace::*method)(const QString &aName));
-  DatumP
-  queryContentsListWithMethod(DatumP contentslist,
+      DatumPtr contentsList, void (Workspace::*method)(const QString &aName));
+  DatumPtr
+  queryContentsListWithMethod(DatumPtr contentslist,
                               bool (Workspace::*method)(const QString &aName));
   void makeVarLocal(const QString &varname);
-  DatumP executeProcedureCore(DatumP node);
-  void inputProcedure(DatumP nodeP);
+  DatumPtr executeProcedureCore(DatumPtr node);
+  void inputProcedure(DatumPtr nodeP);
 
-  bool colorFromDatumP(QColor &retval, DatumP colorP);
+  bool colorFromDatumPtr(QColor &retval, DatumPtr colorP);
   uint32_t randomFromRange(uint32_t start, uint32_t end);
 
-  QString filepathForFilename(DatumP filenameP);
-  QTextStream *openFileStream(DatumP filenameP, QIODevice::OpenMode mode);
-  QTextStream *createStringStream(DatumP filenameP, QIODevice::OpenMode mode);
+  QString filepathForFilename(DatumPtr filenameP);
+  QTextStream *openFileStream(DatumPtr filenameP, QIODevice::OpenMode mode);
+  QTextStream *createStringStream(DatumPtr filenameP, QIODevice::OpenMode mode);
   QTextStream *getStream(ProcedureHelper &h);
   QTextStream *open(ProcedureHelper &h, QIODevice::OpenMode openFlags);
   void close(const QString &filename);
@@ -112,8 +112,8 @@ class Kernel {
   /// Initialize LOGO system variables
   void initVariables(void);
 
-  DatumP buildContentsList(showContents_t showWhat);
-  QString createPrintoutFromContentsList(DatumP contentslist,
+  DatumPtr buildContentsList(showContents_t showWhat);
+  QString createPrintoutFromContentsList(DatumPtr contentslist,
                                          bool shouldValidate = true);
 
   /// Check for interrupts and handle them accordingly.
@@ -126,9 +126,9 @@ public:
   QString executeText(const QString &text);
   void stdPrint(const QString &text);
   void sysPrint(const QString &text);
-  DatumP registerError(DatumP anError, bool allowErract = false,
+  DatumPtr registerError(DatumPtr anError, bool allowErract = false,
                        bool allowRecovery = false);
-  DatumP pause();
+  DatumPtr pause();
 
   Turtle *turtle;
   bool isInputRedirected();
@@ -139,342 +139,342 @@ public:
 
   // CONSTRUCTORS
   // ------------
-  DatumP excWord(DatumP node);
-  DatumP excList(DatumP node);
-  DatumP excSentence(DatumP node);
-  DatumP excFput(DatumP node);
-  DatumP excLput(DatumP node);
-  DatumP excArray(DatumP node);
-  DatumP excListtoarray(DatumP node);
-  DatumP excArraytolist(DatumP node);
+  DatumPtr excWord(DatumPtr node);
+  DatumPtr excList(DatumPtr node);
+  DatumPtr excSentence(DatumPtr node);
+  DatumPtr excFput(DatumPtr node);
+  DatumPtr excLput(DatumPtr node);
+  DatumPtr excArray(DatumPtr node);
+  DatumPtr excListtoarray(DatumPtr node);
+  DatumPtr excArraytolist(DatumPtr node);
 
   // SELECTORS
   // ---------
-  DatumP excFirst(DatumP node);
-  DatumP excButfirst(DatumP node);
-  DatumP excFirsts(DatumP node);
-  DatumP excButfirsts(DatumP node);
-  DatumP excLast(DatumP node);
-  DatumP excButlast(DatumP node);
-  DatumP excItem(DatumP node);
+  DatumPtr excFirst(DatumPtr node);
+  DatumPtr excButfirst(DatumPtr node);
+  DatumPtr excFirsts(DatumPtr node);
+  DatumPtr excButfirsts(DatumPtr node);
+  DatumPtr excLast(DatumPtr node);
+  DatumPtr excButlast(DatumPtr node);
+  DatumPtr excItem(DatumPtr node);
 
   // MUTATORS
   // --------
-  DatumP excSetitem(DatumP node);
-  DatumP excDotSetfirst(DatumP node);
-  DatumP excDotSetbf(DatumP node);
-  DatumP excDotSetitem(DatumP node);
+  DatumPtr excSetitem(DatumPtr node);
+  DatumPtr excDotSetfirst(DatumPtr node);
+  DatumPtr excDotSetbf(DatumPtr node);
+  DatumPtr excDotSetitem(DatumPtr node);
 
   // PREDICATES
   // ----------
-  DatumP excWordp(DatumP node);
-  DatumP excListp(DatumP node);
-  DatumP excArrayp(DatumP node);
-  DatumP excEmptyp(DatumP node);
-  DatumP excBeforep(DatumP node);
-  DatumP excDotEq(DatumP node);
-  DatumP excMemberp(DatumP node);
-  DatumP excSubstringp(DatumP node);
-  DatumP excNumberp(DatumP node);
-  DatumP excVbarredp(DatumP node);
+  DatumPtr excWordp(DatumPtr node);
+  DatumPtr excListp(DatumPtr node);
+  DatumPtr excArrayp(DatumPtr node);
+  DatumPtr excEmptyp(DatumPtr node);
+  DatumPtr excBeforep(DatumPtr node);
+  DatumPtr excDotEq(DatumPtr node);
+  DatumPtr excMemberp(DatumPtr node);
+  DatumPtr excSubstringp(DatumPtr node);
+  DatumPtr excNumberp(DatumPtr node);
+  DatumPtr excVbarredp(DatumPtr node);
 
   // QUERIES
   // -------
-  DatumP excCount(DatumP node);
-  DatumP excAscii(DatumP node);
-  DatumP excRawascii(DatumP node);
-  DatumP excChar(DatumP node);
-  DatumP excMember(DatumP node);
-  DatumP excLowercase(DatumP node);
-  DatumP excUppercase(DatumP node);
-  DatumP excStandout(DatumP node);
-  DatumP excParse(DatumP node);
-  DatumP excRunparse(DatumP node);
-  DatumP excReadlist(DatumP node);
-  DatumP excReadword(DatumP node);
-  DatumP excReadrawline(DatumP node);
-  DatumP excReadchar(DatumP node);
-  DatumP excReadchars(DatumP node);
-  DatumP excShell(DatumP node);
+  DatumPtr excCount(DatumPtr node);
+  DatumPtr excAscii(DatumPtr node);
+  DatumPtr excRawascii(DatumPtr node);
+  DatumPtr excChar(DatumPtr node);
+  DatumPtr excMember(DatumPtr node);
+  DatumPtr excLowercase(DatumPtr node);
+  DatumPtr excUppercase(DatumPtr node);
+  DatumPtr excStandout(DatumPtr node);
+  DatumPtr excParse(DatumPtr node);
+  DatumPtr excRunparse(DatumPtr node);
+  DatumPtr excReadlist(DatumPtr node);
+  DatumPtr excReadword(DatumPtr node);
+  DatumPtr excReadrawline(DatumPtr node);
+  DatumPtr excReadchar(DatumPtr node);
+  DatumPtr excReadchars(DatumPtr node);
+  DatumPtr excShell(DatumPtr node);
 
-  DatumP excSetprefix(DatumP node);
-  DatumP excPrefix(DatumP node);
-  DatumP excOpenread(DatumP node);
-  DatumP excOpenwrite(DatumP node);
-  DatumP excOpenappend(DatumP node);
-  DatumP excOpenupdate(DatumP node);
-  DatumP excAllopen(DatumP node);
-  DatumP excSetread(DatumP node);
-  DatumP excSetwrite(DatumP node);
-  DatumP excReader(DatumP node);
-  DatumP excWriter(DatumP node);
-  DatumP excReadpos(DatumP node);
-  DatumP excWritepos(DatumP node);
-  DatumP excSetreadpos(DatumP node);
-  DatumP excSetwritepos(DatumP node);
+  DatumPtr excSetprefix(DatumPtr node);
+  DatumPtr excPrefix(DatumPtr node);
+  DatumPtr excOpenread(DatumPtr node);
+  DatumPtr excOpenwrite(DatumPtr node);
+  DatumPtr excOpenappend(DatumPtr node);
+  DatumPtr excOpenupdate(DatumPtr node);
+  DatumPtr excAllopen(DatumPtr node);
+  DatumPtr excSetread(DatumPtr node);
+  DatumPtr excSetwrite(DatumPtr node);
+  DatumPtr excReader(DatumPtr node);
+  DatumPtr excWriter(DatumPtr node);
+  DatumPtr excReadpos(DatumPtr node);
+  DatumPtr excWritepos(DatumPtr node);
+  DatumPtr excSetreadpos(DatumPtr node);
+  DatumPtr excSetwritepos(DatumPtr node);
 
-  DatumP excTo(DatumP node);
+  DatumPtr excTo(DatumPtr node);
 
-  DatumP excEofp(DatumP node);
-  DatumP excKeyp(DatumP node);
-  DatumP excCleartext(DatumP node);
-  DatumP excCursorInsert(DatumP node);
-  DatumP excCursorOverwrite(DatumP node);
-  DatumP excCursorMode(DatumP node);
+  DatumPtr excEofp(DatumPtr node);
+  DatumPtr excKeyp(DatumPtr node);
+  DatumPtr excCleartext(DatumPtr node);
+  DatumPtr excCursorInsert(DatumPtr node);
+  DatumPtr excCursorOverwrite(DatumPtr node);
+  DatumPtr excCursorMode(DatumPtr node);
 
-  DatumP excClose(DatumP node);
-  DatumP excCloseall(DatumP node);
-  DatumP excErasefile(DatumP node);
-  DatumP excDribble(DatumP node);
-  DatumP excNodribble(DatumP node);
+  DatumPtr excClose(DatumPtr node);
+  DatumPtr excCloseall(DatumPtr node);
+  DatumPtr excErasefile(DatumPtr node);
+  DatumPtr excDribble(DatumPtr node);
+  DatumPtr excNodribble(DatumPtr node);
 
-  DatumP runList(DatumP listP, const QString startTag = "");
+  DatumPtr runList(DatumPtr listP, const QString startTag = "");
 
-  DatumP executeLiteral(DatumP node);
-  DatumP executeValueOf(DatumP node);
-  DatumP excMake(DatumP node);
-  DatumP excSetfoo(DatumP node);
-  DatumP excFoo(DatumP node);
-  DatumP excPrint(DatumP node);
-  DatumP excShow(DatumP node);
-  DatumP excType(DatumP node);
-  DatumP excRepeat(DatumP node);
-  DatumP excSetcursor(DatumP node);
-  DatumP excCursor(DatumP node);
-  DatumP excSettextcolor(DatumP node);
-  DatumP excIncreasefont(DatumP node);
-  DatumP excDecreasefont(DatumP node);
-  DatumP excSettextsize(DatumP node);
-  DatumP excTextsize(DatumP node);
-  DatumP excFont(DatumP node);
-  DatumP excSetfont(DatumP node);
-  DatumP excAllfonts(DatumP node);
+  DatumPtr executeLiteral(DatumPtr node);
+  DatumPtr executeValueOf(DatumPtr node);
+  DatumPtr excMake(DatumPtr node);
+  DatumPtr excSetfoo(DatumPtr node);
+  DatumPtr excFoo(DatumPtr node);
+  DatumPtr excPrint(DatumPtr node);
+  DatumPtr excShow(DatumPtr node);
+  DatumPtr excType(DatumPtr node);
+  DatumPtr excRepeat(DatumPtr node);
+  DatumPtr excSetcursor(DatumPtr node);
+  DatumPtr excCursor(DatumPtr node);
+  DatumPtr excSettextcolor(DatumPtr node);
+  DatumPtr excIncreasefont(DatumPtr node);
+  DatumPtr excDecreasefont(DatumPtr node);
+  DatumPtr excSettextsize(DatumPtr node);
+  DatumPtr excTextsize(DatumPtr node);
+  DatumPtr excFont(DatumPtr node);
+  DatumPtr excSetfont(DatumPtr node);
+  DatumPtr excAllfonts(DatumPtr node);
 
-  DatumP excEqualp(DatumP node);
-  DatumP excNotequal(DatumP node);
-  DatumP excLessp(DatumP node);
-  DatumP excGreaterp(DatumP node);
-  DatumP excGreaterequalp(DatumP node);
-  DatumP excLessequalp(DatumP node);
-  DatumP excSum(DatumP node);
-  DatumP excDifference(DatumP node);
-  DatumP excProduct(DatumP node);
-  DatumP excQuotient(DatumP node);
-  DatumP excRemainder(DatumP node);
-  DatumP excModulo(DatumP node);
-  DatumP excInt(DatumP node);
-  DatumP excRound(DatumP node);
-  DatumP excPower(DatumP node);
-  DatumP excBitand(DatumP node);
-  DatumP excBitor(DatumP node);
-  DatumP excBitxor(DatumP node);
-  DatumP excBitnot(DatumP node);
-  DatumP excAshift(DatumP node);
-  DatumP excLshift(DatumP node);
-  DatumP excAnd(DatumP node);
-  DatumP excOr(DatumP node);
-  DatumP excNot(DatumP node);
+  DatumPtr excEqualp(DatumPtr node);
+  DatumPtr excNotequal(DatumPtr node);
+  DatumPtr excLessp(DatumPtr node);
+  DatumPtr excGreaterp(DatumPtr node);
+  DatumPtr excGreaterequalp(DatumPtr node);
+  DatumPtr excLessequalp(DatumPtr node);
+  DatumPtr excSum(DatumPtr node);
+  DatumPtr excDifference(DatumPtr node);
+  DatumPtr excProduct(DatumPtr node);
+  DatumPtr excQuotient(DatumPtr node);
+  DatumPtr excRemainder(DatumPtr node);
+  DatumPtr excModulo(DatumPtr node);
+  DatumPtr excInt(DatumPtr node);
+  DatumPtr excRound(DatumPtr node);
+  DatumPtr excPower(DatumPtr node);
+  DatumPtr excBitand(DatumPtr node);
+  DatumPtr excBitor(DatumPtr node);
+  DatumPtr excBitxor(DatumPtr node);
+  DatumPtr excBitnot(DatumPtr node);
+  DatumPtr excAshift(DatumPtr node);
+  DatumPtr excLshift(DatumPtr node);
+  DatumPtr excAnd(DatumPtr node);
+  DatumPtr excOr(DatumPtr node);
+  DatumPtr excNot(DatumPtr node);
 
-  DatumP executeProcedure(DatumP node);
-  DatumP executeMacro(DatumP node);
-  DatumP excThing(DatumP node);
-  DatumP excGlobal(DatumP node);
+  DatumPtr executeProcedure(DatumPtr node);
+  DatumPtr executeMacro(DatumPtr node);
+  DatumPtr excThing(DatumPtr node);
+  DatumPtr excGlobal(DatumPtr node);
 
-  DatumP excWait(DatumP node);
+  DatumPtr excWait(DatumPtr node);
 
-  DatumP excSqrt(DatumP node);
-  DatumP excExp(DatumP node);
-  DatumP excLog10(DatumP node);
-  DatumP excLn(DatumP node);
-  DatumP excSin(DatumP node);
-  DatumP excRadsin(DatumP node);
-  DatumP excCos(DatumP node);
-  DatumP excRadcos(DatumP node);
-  DatumP excArctan(DatumP node);
-  DatumP excRadarctan(DatumP node);
+  DatumPtr excSqrt(DatumPtr node);
+  DatumPtr excExp(DatumPtr node);
+  DatumPtr excLog10(DatumPtr node);
+  DatumPtr excLn(DatumPtr node);
+  DatumPtr excSin(DatumPtr node);
+  DatumPtr excRadsin(DatumPtr node);
+  DatumPtr excCos(DatumPtr node);
+  DatumPtr excRadcos(DatumPtr node);
+  DatumPtr excArctan(DatumPtr node);
+  DatumPtr excRadarctan(DatumPtr node);
 
-  DatumP excForm(DatumP node);
+  DatumPtr excForm(DatumPtr node);
 
-  DatumP excRandom(DatumP node);
+  DatumPtr excRandom(DatumPtr node);
 
-  DatumP excMinus(DatumP node);
+  DatumPtr excMinus(DatumPtr node);
 
-  DatumP excForward(DatumP node);
-  DatumP excBack(DatumP node);
-  DatumP excRight(DatumP node);
-  DatumP excLeft(DatumP node);
-  DatumP excClearscreen(DatumP node);
-  DatumP excClean(DatumP node);
-  DatumP excPenup(DatumP node);
-  DatumP excPendown(DatumP node);
-  DatumP excPendownp(DatumP node);
-  DatumP excShowturtle(DatumP node);
-  DatumP excHideturtle(DatumP node);
-  DatumP excHome(DatumP node);
-  DatumP excSetXYZ(DatumP);
-  DatumP excSetXY(DatumP);
-  DatumP excSetpos(DatumP);
-  DatumP excPos(DatumP node);
-  DatumP excMatrix(DatumP node);
-  DatumP excSetX(DatumP);
-  DatumP excSetY(DatumP);
-  DatumP excSetZ(DatumP);
-  DatumP excHeading(DatumP node);
-  DatumP excSetheading(DatumP node);
-  DatumP excArc(DatumP node);
-  DatumP excTowards(DatumP node);
-  DatumP excScrunch(DatumP node);
-  DatumP excSetscrunch(DatumP node);
-  DatumP excLabel(DatumP node);
-  DatumP excLabelheight(DatumP node);
-  DatumP excSetlabelheight(DatumP node);
-  DatumP excShownp(DatumP node);
-  DatumP excSetpencolor(DatumP node);
-  DatumP excPencolor(DatumP node);
-  DatumP excSetpalette(DatumP node);
-  DatumP excPalette(DatumP node);
-  DatumP excBackground(DatumP node);
-  DatumP excSetbackground(DatumP node);
-  DatumP excSavepict(DatumP node);
+  DatumPtr excForward(DatumPtr node);
+  DatumPtr excBack(DatumPtr node);
+  DatumPtr excRight(DatumPtr node);
+  DatumPtr excLeft(DatumPtr node);
+  DatumPtr excClearscreen(DatumPtr node);
+  DatumPtr excClean(DatumPtr node);
+  DatumPtr excPenup(DatumPtr node);
+  DatumPtr excPendown(DatumPtr node);
+  DatumPtr excPendownp(DatumPtr node);
+  DatumPtr excShowturtle(DatumPtr node);
+  DatumPtr excHideturtle(DatumPtr node);
+  DatumPtr excHome(DatumPtr node);
+  DatumPtr excSetXYZ(DatumPtr);
+  DatumPtr excSetXY(DatumPtr);
+  DatumPtr excSetpos(DatumPtr);
+  DatumPtr excPos(DatumPtr node);
+  DatumPtr excMatrix(DatumPtr node);
+  DatumPtr excSetX(DatumPtr);
+  DatumPtr excSetY(DatumPtr);
+  DatumPtr excSetZ(DatumPtr);
+  DatumPtr excHeading(DatumPtr node);
+  DatumPtr excSetheading(DatumPtr node);
+  DatumPtr excArc(DatumPtr node);
+  DatumPtr excTowards(DatumPtr node);
+  DatumPtr excScrunch(DatumPtr node);
+  DatumPtr excSetscrunch(DatumPtr node);
+  DatumPtr excLabel(DatumPtr node);
+  DatumPtr excLabelheight(DatumPtr node);
+  DatumPtr excSetlabelheight(DatumPtr node);
+  DatumPtr excShownp(DatumPtr node);
+  DatumPtr excSetpencolor(DatumPtr node);
+  DatumPtr excPencolor(DatumPtr node);
+  DatumPtr excSetpalette(DatumPtr node);
+  DatumPtr excPalette(DatumPtr node);
+  DatumPtr excBackground(DatumPtr node);
+  DatumPtr excSetbackground(DatumPtr node);
+  DatumPtr excSavepict(DatumPtr node);
 
-  DatumP excMousepos(DatumP node);
-  DatumP excClickpos(DatumP node);
+  DatumPtr excMousepos(DatumPtr node);
+  DatumPtr excClickpos(DatumPtr node);
 
-  DatumP excBounds(DatumP node);
-  DatumP excSetbounds(DatumP node);
+  DatumPtr excBounds(DatumPtr node);
+  DatumPtr excSetbounds(DatumPtr node);
 
-  DatumP excPenpaint(DatumP node);
-  DatumP excPenreverse(DatumP node);
-  DatumP excPenerase(DatumP node);
-  DatumP excPenmode(DatumP node);
-  DatumP excSetpensize(DatumP node);
-  DatumP excPensize(DatumP node);
+  DatumPtr excPenpaint(DatumPtr node);
+  DatumPtr excPenreverse(DatumPtr node);
+  DatumPtr excPenerase(DatumPtr node);
+  DatumPtr excPenmode(DatumPtr node);
+  DatumPtr excSetpensize(DatumPtr node);
+  DatumPtr excPensize(DatumPtr node);
 
-  DatumP excWrap(DatumP node);
-  DatumP excFence(DatumP node);
-  DatumP excWindow(DatumP node);
-  DatumP excTurtlemode(DatumP node);
+  DatumPtr excWrap(DatumPtr node);
+  DatumPtr excFence(DatumPtr node);
+  DatumPtr excWindow(DatumPtr node);
+  DatumPtr excTurtlemode(DatumPtr node);
 
-  DatumP excTextscreen(DatumP node);
-  DatumP excFullscreen(DatumP node);
-  DatumP excSplitscreen(DatumP node);
-  DatumP excScreenmode(DatumP node);
+  DatumPtr excTextscreen(DatumPtr node);
+  DatumPtr excFullscreen(DatumPtr node);
+  DatumPtr excSplitscreen(DatumPtr node);
+  DatumPtr excScreenmode(DatumPtr node);
 
-  DatumP excFilled(DatumP node);
+  DatumPtr excFilled(DatumPtr node);
 
-  DatumP excButtonp(DatumP node);
-  DatumP excButton(DatumP node);
+  DatumPtr excButtonp(DatumPtr node);
+  DatumPtr excButton(DatumPtr node);
 
-  DatumP excDefine(DatumP node);
-  DatumP excText(DatumP node);
-  DatumP excFulltext(DatumP node);
-  DatumP excCopydef(DatumP node);
+  DatumPtr excDefine(DatumPtr node);
+  DatumPtr excText(DatumPtr node);
+  DatumPtr excFulltext(DatumPtr node);
+  DatumPtr excCopydef(DatumPtr node);
 
-  DatumP excLocal(DatumP node);
+  DatumPtr excLocal(DatumPtr node);
 
-  DatumP excPprop(DatumP node);
-  DatumP excGprop(DatumP node);
-  DatumP excRemprop(DatumP node);
-  DatumP excPlist(DatumP node);
+  DatumPtr excPprop(DatumPtr node);
+  DatumPtr excGprop(DatumPtr node);
+  DatumPtr excRemprop(DatumPtr node);
+  DatumPtr excPlist(DatumPtr node);
 
-  DatumP excProcedurep(DatumP node);
-  DatumP excPrimitivep(DatumP node);
-  DatumP excDefinedp(DatumP node);
-  DatumP excNamep(DatumP node);
-  DatumP excPlistp(DatumP node);
+  DatumPtr excProcedurep(DatumPtr node);
+  DatumPtr excPrimitivep(DatumPtr node);
+  DatumPtr excDefinedp(DatumPtr node);
+  DatumPtr excNamep(DatumPtr node);
+  DatumPtr excPlistp(DatumPtr node);
 
-  DatumP excContents(DatumP node);
-  DatumP excBuried(DatumP node);
-  DatumP excTraced(DatumP node);
-  DatumP excStepped(DatumP node);
-  DatumP excProcedures(DatumP node);
-  DatumP excPrimitives(DatumP node);
-  DatumP excNames(DatumP node);
-  DatumP excPlists(DatumP node);
-  DatumP excArity(DatumP node);
-  DatumP excNodes(DatumP node);
+  DatumPtr excContents(DatumPtr node);
+  DatumPtr excBuried(DatumPtr node);
+  DatumPtr excTraced(DatumPtr node);
+  DatumPtr excStepped(DatumPtr node);
+  DatumPtr excProcedures(DatumPtr node);
+  DatumPtr excPrimitives(DatumPtr node);
+  DatumPtr excNames(DatumPtr node);
+  DatumPtr excPlists(DatumPtr node);
+  DatumPtr excArity(DatumPtr node);
+  DatumPtr excNodes(DatumPtr node);
 
-  DatumP excPrintout(DatumP node);
-  DatumP excPot(DatumP node);
+  DatumPtr excPrintout(DatumPtr node);
+  DatumPtr excPot(DatumPtr node);
 
-  DatumP excErase(DatumP node);
-  DatumP excErall(DatumP node);
-  DatumP excErps(DatumP node);
-  DatumP excErns(DatumP node);
-  DatumP excErpls(DatumP node);
-  DatumP excBury(DatumP node);
-  DatumP excUnbury(DatumP node);
-  DatumP excBuriedp(DatumP node);
-  DatumP excTrace(DatumP node);
-  DatumP excUntrace(DatumP node);
-  DatumP excTracedp(DatumP node);
-  DatumP excStep(DatumP node);
-  DatumP excUnstep(DatumP node);
-  DatumP excSteppedp(DatumP node);
-  DatumP excEdit(DatumP node);
-  DatumP excEditfile(DatumP node);
-  DatumP excSave(DatumP node);
-  DatumP excLoad(DatumP node);
-  DatumP excHelp(DatumP node);
+  DatumPtr excErase(DatumPtr node);
+  DatumPtr excErall(DatumPtr node);
+  DatumPtr excErps(DatumPtr node);
+  DatumPtr excErns(DatumPtr node);
+  DatumPtr excErpls(DatumPtr node);
+  DatumPtr excBury(DatumPtr node);
+  DatumPtr excUnbury(DatumPtr node);
+  DatumPtr excBuriedp(DatumPtr node);
+  DatumPtr excTrace(DatumPtr node);
+  DatumPtr excUntrace(DatumPtr node);
+  DatumPtr excTracedp(DatumPtr node);
+  DatumPtr excStep(DatumPtr node);
+  DatumPtr excUnstep(DatumPtr node);
+  DatumPtr excSteppedp(DatumPtr node);
+  DatumPtr excEdit(DatumPtr node);
+  DatumPtr excEditfile(DatumPtr node);
+  DatumPtr excSave(DatumPtr node);
+  DatumPtr excLoad(DatumPtr node);
+  DatumPtr excHelp(DatumPtr node);
 
   // CONTROL STRUCTURES
 
-  DatumP excRun(DatumP node);
-  DatumP excRunresult(DatumP node);
-  DatumP excForever(DatumP node);
-  DatumP excRepcount(DatumP node);
-  DatumP excIf(DatumP node);
-  DatumP excIfelse(DatumP node);
-  DatumP excTest(DatumP node);
-  DatumP excIftrue(DatumP node);
-  DatumP excIffalse(DatumP node);
-  DatumP excStop(DatumP node);
-  DatumP excOutput(DatumP node);
-  DatumP excCatch(DatumP node);
-  DatumP excThrow(DatumP node);
-  DatumP excError(DatumP node);
-  DatumP excPause(DatumP node);
-  DatumP excContinue(DatumP node);
-  DatumP excBye(DatumP node);
-  DatumP excDotMaybeoutput(DatumP node);
-  DatumP excTag(DatumP);
-  DatumP excGoto(DatumP node);
-  DatumP excGotoToken(DatumP);
+  DatumPtr excRun(DatumPtr node);
+  DatumPtr excRunresult(DatumPtr node);
+  DatumPtr excForever(DatumPtr node);
+  DatumPtr excRepcount(DatumPtr node);
+  DatumPtr excIf(DatumPtr node);
+  DatumPtr excIfelse(DatumPtr node);
+  DatumPtr excTest(DatumPtr node);
+  DatumPtr excIftrue(DatumPtr node);
+  DatumPtr excIffalse(DatumPtr node);
+  DatumPtr excStop(DatumPtr node);
+  DatumPtr excOutput(DatumPtr node);
+  DatumPtr excCatch(DatumPtr node);
+  DatumPtr excThrow(DatumPtr node);
+  DatumPtr excError(DatumPtr node);
+  DatumPtr excPause(DatumPtr node);
+  DatumPtr excContinue(DatumPtr node);
+  DatumPtr excBye(DatumPtr node);
+  DatumPtr excDotMaybeoutput(DatumPtr node);
+  DatumPtr excTag(DatumPtr);
+  DatumPtr excGoto(DatumPtr node);
+  DatumPtr excGotoToken(DatumPtr);
 
   // TEMPLATE-BASED ITERATION
 
-  DatumP excApply(DatumP node);
-  DatumP excNamedSlot(DatumP node); // '?'
+  DatumPtr excApply(DatumPtr node);
+  DatumPtr excNamedSlot(DatumPtr node); // '?'
 
   // MACROS
 
-  DatumP excMacro(DatumP node);
-  DatumP excMacrop(DatumP node);
+  DatumPtr excMacro(DatumPtr node);
+  DatumPtr excMacrop(DatumPtr node);
 
-  DatumP excNoop(DatumP node); // Some LOGO commands have no action in QLogo
-  DatumP excErrorNoGui(DatumP node); // Some LOGO commands require a GUI which might not exist
+  DatumPtr excNoop(DatumPtr node); // Some LOGO commands have no action in QLogo
+  DatumPtr excErrorNoGui(DatumPtr node); // Some LOGO commands require a GUI which might not exist
 
   // SPECIAL VARIABLES
 
   bool varLOADNOISILY();
   bool varALLOWGETSET();
-  DatumP varBUTTONACT();
-  DatumP varKEYACT();
+  DatumPtr varBUTTONACT();
+  DatumPtr varKEYACT();
   bool varFULLPRINTP();
   int varPRINTDEPTHLIMIT();
   int varPRINTWIDTHLIMIT();
-  DatumP varSTARTUP();
+  DatumPtr varSTARTUP();
   bool varUNBURYONEDIT();
   bool varCASEIGNOREDP();
 };
 
 class ProcedureScope {
   Kernel *kernel;
-  DatumP procedureHistory;
-  DatumP lineHistory;
+  DatumPtr procedureHistory;
+  DatumPtr lineHistory;
 
 public:
-  ProcedureScope(Kernel *exec, DatumP procname);
+  ProcedureScope(Kernel *exec, DatumPtr procname);
   ~ProcedureScope();
 };
 

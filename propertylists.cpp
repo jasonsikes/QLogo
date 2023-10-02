@@ -33,19 +33,19 @@
 PropertyLists::PropertyLists() {}
 
 void PropertyLists::addProperty(const QString &plistname,
-                                const QString &propname, DatumP value) {
+                                const QString &propname, DatumPtr value) {
   if (!plists.contains(plistname)) {
-    plists.insert(plistname, QHash<QString, DatumP>());
+    plists.insert(plistname, QHash<QString, DatumPtr>());
   }
 
   plists[plistname][propname] = value;
 }
 
-DatumP PropertyLists::getProperty(const QString &plistname,
+DatumPtr PropertyLists::getProperty(const QString &plistname,
                                   const QString &propname) {
   if (plists.contains(plistname) && plists[plistname].contains(propname))
     return plists[plistname][propname];
-  return DatumP(List::alloc());
+  return DatumPtr(List::alloc());
 }
 
 void PropertyLists::removeProperty(const QString &plistname,
@@ -57,19 +57,19 @@ void PropertyLists::removeProperty(const QString &plistname,
   }
 }
 
-DatumP PropertyLists::getPropertyList(const QString &plistname) {
+DatumPtr PropertyLists::getPropertyList(const QString &plistname) {
   List *retval = List::alloc();
   if (plists.contains(plistname)) {
     QList<QString> keys = plists[plistname].keys();
-    QList<DatumP> values = plists[plistname].values();
+    QList<DatumPtr> values = plists[plistname].values();
     QList<QString>::iterator kIter = keys.begin();
     for (auto &vIter : values) {
-      retval->append(DatumP(*kIter));
+      retval->append(DatumPtr(*kIter));
       retval->append(vIter);
       ++kIter;
     }
   }
-  return DatumP(retval);
+  return DatumPtr(retval);
 }
 
 void PropertyLists::erasePropertyList(const QString &plistname) {
@@ -80,13 +80,13 @@ bool PropertyLists::isPropertyList(const QString &plistname) {
   return plists.contains(plistname);
 }
 
-DatumP PropertyLists::allPLists(showContents_t showWhat) {
+DatumPtr PropertyLists::allPLists(showContents_t showWhat) {
   List *retval = List::alloc();
   for (auto &name : plists.keys()) {
     if (shouldInclude(showWhat, name))
-      retval->append(DatumP(name));
+      retval->append(DatumPtr(name));
   }
-  return DatumP(retval);
+  return DatumPtr(retval);
 }
 
 void PropertyLists::eraseAll() {

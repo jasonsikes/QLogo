@@ -35,35 +35,35 @@
 
 // CONSTRUCTORS
 
-DatumP Kernel::excWord(DatumP node) {
+DatumPtr Kernel::excWord(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString retval = "";
   for (int i = 0; i < h.countOfChildren(); ++i) {
-    DatumP value = h.wordAtIndex(i);
+    DatumPtr value = h.wordAtIndex(i);
     retval.append(value.wordValue()->rawValue());
   }
   return h.ret(retval);
 }
 
-DatumP Kernel::excList(DatumP node) {
+DatumPtr Kernel::excList(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = List::alloc();
   for (int i = 0; i < h.countOfChildren(); ++i) {
-    DatumP value = h.datumAtIndex(i);
+    DatumPtr value = h.datumAtIndex(i);
     retval->append(value);
   }
   return h.ret(retval);
 }
 
-DatumP Kernel::excSentence(DatumP node) {
+DatumPtr Kernel::excSentence(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = List::alloc();
   for (int i = 0; i < node.astnodeValue()->countOfChildren(); ++i) {
-    DatumP value = h.datumAtIndex(i);
+    DatumPtr value = h.datumAtIndex(i);
     if (value.isList()) {
       ListIterator iter = value.listValue()->newIterator();
       while (iter.elementExists()) {
-        DatumP element = iter.element();
+        DatumPtr element = iter.element();
         retval->append(element);
       }
     } else {
@@ -73,15 +73,15 @@ DatumP Kernel::excSentence(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excFput(DatumP node) {
+DatumPtr Kernel::excFput(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP thing = h.datumAtIndex(0);
-  DatumP list = h.validatedDatumAtIndex(1, [&thing](DatumP candidate) {
+  DatumPtr thing = h.datumAtIndex(0);
+  DatumPtr list = h.validatedDatumAtIndex(1, [&thing](DatumPtr candidate) {
           if (candidate.isWord()) return thing.isWord();
     return candidate.isList() || candidate.isWord();
   });
   if (list.isList()) {
-    DatumP retval = list.listValue()->fput(thing);
+    DatumPtr retval = list.listValue()->fput(thing);
     return h.ret(retval);
   }
   QString retval = thing.wordValue()->rawValue();
@@ -89,10 +89,10 @@ DatumP Kernel::excFput(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excLput(DatumP node) {
+DatumPtr Kernel::excLput(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP thing = h.datumAtIndex(0);
-  DatumP list = h.validatedDatumAtIndex(1, [&thing](DatumP candidate) {
+  DatumPtr thing = h.datumAtIndex(0);
+  DatumPtr list = h.validatedDatumAtIndex(1, [&thing](DatumPtr candidate) {
     if (candidate.isWord())
       return thing.isWord();
     return candidate.isList();
@@ -111,7 +111,7 @@ DatumP Kernel::excLput(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excArray(DatumP node) {
+DatumPtr Kernel::excArray(DatumPtr node) {
   ProcedureHelper h(this, node);
   int origin = 1;
   int size = h.integerAtIndex(0);
@@ -120,44 +120,44 @@ DatumP Kernel::excArray(DatumP node) {
   }
   Array *retval = Array::alloc(origin, size);
   for (int i = 0; i < size; ++i) {
-    retval->append(DatumP(List::alloc()));
+    retval->append(DatumPtr(List::alloc()));
   }
-  return h.ret(DatumP(retval));
+  return h.ret(DatumPtr(retval));
 }
 
-DatumP Kernel::excListtoarray(DatumP node) {
+DatumPtr Kernel::excListtoarray(DatumPtr node) {
   ProcedureHelper h(this, node);
   int origin = 1;
-  DatumP source = h.listAtIndex(0);
+  DatumPtr source = h.listAtIndex(0);
   if (h.countOfChildren() > 1) {
     origin = h.integerAtIndex(1);
   }
   return h.ret(Array::alloc(origin, source.listValue()));
 }
 
-DatumP Kernel::excArraytolist(DatumP node) {
+DatumPtr Kernel::excArraytolist(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP source = h.arrayAtIndex(0);
+  DatumPtr source = h.arrayAtIndex(0);
   List *retval = List::alloc(source.arrayValue());
   return h.ret(retval);
 }
 
 // SELECTORS
 
-DatumP Kernel::excFirst(DatumP node) {
+DatumPtr Kernel::excFirst(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP value = h.validatedDatumAtIndex(
-      0, [](DatumP candidate) { return candidate.datumValue()->size() >= 1; });
+  DatumPtr value = h.validatedDatumAtIndex(
+      0, [](DatumPtr candidate) { return candidate.datumValue()->size() >= 1; });
   return h.ret(value.datumValue()->first());
 }
 
-DatumP Kernel::excFirsts(DatumP node) {
+DatumPtr Kernel::excFirsts(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = List::alloc();
-  h.validatedListAtIndex(0, [retval](DatumP candidate) {
+  h.validatedListAtIndex(0, [retval](DatumPtr candidate) {
     ListIterator iter = candidate.listValue()->newIterator();
     while (iter.elementExists()) {
-      DatumP item = iter.element();
+      DatumPtr item = iter.element();
       if (item.datumValue()->size() < 1)
         return false;
       retval->append(item.datumValue()->first());
@@ -167,27 +167,27 @@ DatumP Kernel::excFirsts(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excLast(DatumP node) {
+DatumPtr Kernel::excLast(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP value = h.validatedDatumAtIndex(
-      0, [](DatumP candidate) { return candidate.datumValue()->size() > 0; });
+  DatumPtr value = h.validatedDatumAtIndex(
+      0, [](DatumPtr candidate) { return candidate.datumValue()->size() > 0; });
   return h.ret(value.datumValue()->last());
 }
 
-DatumP Kernel::excButfirst(DatumP node) {
+DatumPtr Kernel::excButfirst(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP value = h.validatedDatumAtIndex(
-      0, [](DatumP candidate) { return candidate.datumValue()->size() > 0; });
+  DatumPtr value = h.validatedDatumAtIndex(
+      0, [](DatumPtr candidate) { return candidate.datumValue()->size() > 0; });
   return h.ret(value.datumValue()->butfirst());
 }
 
-DatumP Kernel::excButfirsts(DatumP node) {
+DatumPtr Kernel::excButfirsts(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = List::alloc();
-  h.validatedListAtIndex(0, [retval](DatumP candidate) {
+  h.validatedListAtIndex(0, [retval](DatumPtr candidate) {
     ListIterator iter = candidate.listValue()->newIterator();
     while (iter.elementExists()) {
-      DatumP item = iter.element();
+      DatumPtr item = iter.element();
       if (item.datumValue()->size() < 1)
         return false;
       retval->append(item.datumValue()->butfirst());
@@ -197,16 +197,16 @@ DatumP Kernel::excButfirsts(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excButlast(DatumP node) {
+DatumPtr Kernel::excButlast(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP value = h.validatedDatumAtIndex(
-      0, [](DatumP candidate) { return candidate.datumValue()->size() > 0; });
+  DatumPtr value = h.validatedDatumAtIndex(
+      0, [](DatumPtr candidate) { return candidate.datumValue()->size() > 0; });
   return h.ret(value.datumValue()->butlast());
 }
 
-DatumP Kernel::excItem(DatumP node) {
+DatumPtr Kernel::excItem(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP thing = h.datumAtIndex(1);
+  DatumPtr thing = h.datumAtIndex(1);
   int index = h.validatedIntegerAtIndex(0, [&thing](int candidate) {
     return thing.datumValue()->isIndexInRange((int)candidate);
   });
@@ -216,15 +216,15 @@ DatumP Kernel::excItem(DatumP node) {
 
 // MUTATORS
 
-DatumP Kernel::excSetitem(DatumP node) {
+DatumPtr Kernel::excSetitem(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP array = h.validatedDatumAtIndex(1, [](DatumP candidate) {
+  DatumPtr array = h.validatedDatumAtIndex(1, [](DatumPtr candidate) {
     return candidate.isList() || candidate.isArray();
   });
   int index = h.validatedIntegerAtIndex(0, [&array](int candidate) {
     return array.datumValue()->isIndexInRange(candidate);
   });
-  DatumP thing = h.validatedDatumAtIndex(2, [&array, this](DatumP candidate) {
+  DatumPtr thing = h.validatedDatumAtIndex(2, [&array, this](DatumPtr candidate) {
     if (candidate.isArray() || candidate.isList()) {
       if (candidate == array)
         return false;
@@ -236,22 +236,22 @@ DatumP Kernel::excSetitem(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excDotSetfirst(DatumP node) {
+DatumPtr Kernel::excDotSetfirst(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP array = h.validatedDatumAtIndex(0, [](DatumP candidate) {
+  DatumPtr array = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     if (!candidate.isList() && !candidate.isArray())
       return false;
     return candidate.datumValue()->size() > 0;
   });
-  DatumP thing = h.datumAtIndex(1);
+  DatumPtr thing = h.datumAtIndex(1);
   array.datumValue()->setFirstItem(thing);
   return nothing;
 }
 
-DatumP Kernel::excDotSetbf(DatumP node) {
+DatumPtr Kernel::excDotSetbf(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP thing = h.datumAtIndex(1);
-  DatumP array = h.validatedDatumAtIndex(0, [&thing](DatumP candidate) {
+  DatumPtr thing = h.datumAtIndex(1);
+  DatumPtr array = h.validatedDatumAtIndex(0, [&thing](DatumPtr candidate) {
     if (!candidate.isList() && !candidate.isArray())
       return false;
     if (candidate.datumValue()->size() == 0)
@@ -262,80 +262,80 @@ DatumP Kernel::excDotSetbf(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excDotSetitem(DatumP node) {
+DatumPtr Kernel::excDotSetitem(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP array = h.validatedDatumAtIndex(1, [](DatumP candidate) {
+  DatumPtr array = h.validatedDatumAtIndex(1, [](DatumPtr candidate) {
     return candidate.isList() || candidate.isArray();
   });
   int index = (int)h.validatedIntegerAtIndex(0, [&array](int candidate) {
     return array.datumValue()->isIndexInRange(candidate);
   });
-  DatumP thing = h.datumAtIndex(2);
+  DatumPtr thing = h.datumAtIndex(2);
   array.datumValue()->setItem(index, thing);
   return nothing;
 }
 
 // PREDICATES
 
-DatumP Kernel::excWordp(DatumP node) {
+DatumPtr Kernel::excWordp(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP src = h.datumAtIndex(0);
+  DatumPtr src = h.datumAtIndex(0);
   return h.ret(src.isWord());
 }
 
-DatumP Kernel::excListp(DatumP node) {
+DatumPtr Kernel::excListp(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP src = h.datumAtIndex(0);
+  DatumPtr src = h.datumAtIndex(0);
   return h.ret(src.isList());
 }
 
-DatumP Kernel::excArrayp(DatumP node) {
+DatumPtr Kernel::excArrayp(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP src = h.datumAtIndex(0);
+  DatumPtr src = h.datumAtIndex(0);
   return h.ret(src.isArray());
 }
 
-DatumP Kernel::excEmptyp(DatumP node) {
+DatumPtr Kernel::excEmptyp(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP src = h.datumAtIndex(0);
+  DatumPtr src = h.datumAtIndex(0);
   return h.ret(src.datumValue()->size() == 0);
 }
 
-DatumP Kernel::excEqualp(DatumP node) {
+DatumPtr Kernel::excEqualp(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP a = h.datumAtIndex(0);
-  DatumP b = h.datumAtIndex(1);
+  DatumPtr a = h.datumAtIndex(0);
+  DatumPtr b = h.datumAtIndex(1);
   return h.ret(a.isEqual(b, varCASEIGNOREDP()));
 }
 
-DatumP Kernel::excNotequal(DatumP node) {
+DatumPtr Kernel::excNotequal(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP a = h.datumAtIndex(0);
-  DatumP b = h.datumAtIndex(1);
+  DatumPtr a = h.datumAtIndex(0);
+  DatumPtr b = h.datumAtIndex(1);
   return h.ret(!a.isEqual(b, varCASEIGNOREDP()));
 }
 
 // TODO case-sensitivity
-DatumP Kernel::excBeforep(DatumP node) {
+DatumPtr Kernel::excBeforep(DatumPtr node) {
   ProcedureHelper h(this, node);
   const QString &a = h.wordAtIndex(0).wordValue()->printValue();
   const QString &b = h.wordAtIndex(1).wordValue()->printValue();
   return h.ret(a < b);
 }
 
-DatumP Kernel::excDotEq(DatumP node) {
+DatumPtr Kernel::excDotEq(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP a = h.datumAtIndex(0);
-  DatumP b = h.datumAtIndex(1);
+  DatumPtr a = h.datumAtIndex(0);
+  DatumPtr b = h.datumAtIndex(1);
   return h.ret(a.isDotEqual(b));
 }
 
-DatumP Kernel::excMemberp(DatumP node) {
+DatumPtr Kernel::excMemberp(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP container = h.validatedDatumAtIndex(1, [](DatumP candidate) {
+  DatumPtr container = h.validatedDatumAtIndex(1, [](DatumPtr candidate) {
     return candidate.isList() || candidate.isWord();
   });
-  DatumP thing = h.validatedDatumAtIndex(0, [&container](DatumP candidate) {
+  DatumPtr thing = h.validatedDatumAtIndex(0, [&container](DatumPtr candidate) {
     if (container.isWord())
       return candidate.isWord();
     return true;
@@ -345,27 +345,27 @@ DatumP Kernel::excMemberp(DatumP node) {
   return h.ret(container.datumValue()->isMember(thing, varCASEIGNOREDP()));
 }
 
-DatumP Kernel::excSubstringp(DatumP node) {
+DatumPtr Kernel::excSubstringp(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP thing = h.datumAtIndex(0);
-  DatumP container = h.datumAtIndex(1);
+  DatumPtr thing = h.datumAtIndex(0);
+  DatumPtr container = h.datumAtIndex(1);
   if (!container.isWord() || !thing.isWord())
     return h.ret(false);
   return h.ret(container.datumValue()->isMember(thing, varCASEIGNOREDP()));
 }
 
-DatumP Kernel::excNumberp(DatumP node) {
+DatumPtr Kernel::excNumberp(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP thing = h.datumAtIndex(0);
+  DatumPtr thing = h.datumAtIndex(0);
   if (!thing.isWord())
     return h.ret(false);
   thing.wordValue()->numberValue();
   return h.ret(thing.wordValue()->didNumberConversionSucceed());
 }
 
-DatumP Kernel::excVbarredp(DatumP node) {
+DatumPtr Kernel::excVbarredp(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP thing = h.validatedDatumAtIndex(0, [](DatumP candidate) {
+  DatumPtr thing = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     if (!candidate.isWord())
       return false;
     return candidate.wordValue()->size() == 1;
@@ -376,16 +376,16 @@ DatumP Kernel::excVbarredp(DatumP node) {
 
 // QUERIES
 
-DatumP Kernel::excCount(DatumP node) {
+DatumPtr Kernel::excCount(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP thing = h.datumAtIndex(0);
+  DatumPtr thing = h.datumAtIndex(0);
   int count = thing.datumValue()->size();
   return h.ret(count);
 }
 
-DatumP Kernel::excAscii(DatumP node) {
+DatumPtr Kernel::excAscii(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP chr = h.validatedDatumAtIndex(0, [](DatumP candidate) {
+  DatumPtr chr = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     return candidate.isWord() && candidate.wordValue()->size() == 1;
   });
   QChar c = chr.printValue()[0];
@@ -393,9 +393,9 @@ DatumP Kernel::excAscii(DatumP node) {
   return h.ret(asc);
 }
 
-DatumP Kernel::excRawascii(DatumP node) {
+DatumPtr Kernel::excRawascii(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP chr = h.validatedDatumAtIndex(0, [](DatumP candidate) {
+  DatumPtr chr = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     return candidate.isWord() && candidate.wordValue()->size() == 1;
   });
   QChar c = chr.wordValue()->rawValue()[0];
@@ -403,7 +403,7 @@ DatumP Kernel::excRawascii(DatumP node) {
   return h.ret(asc);
 }
 
-DatumP Kernel::excChar(DatumP node) {
+DatumPtr Kernel::excChar(DatumPtr node) {
   ProcedureHelper h(this, node);
   int n = h.validatedIntegerAtIndex(0, [](int candidate) {
     return (candidate >= 0) && (candidate <= USHRT_MAX);
@@ -411,51 +411,51 @@ DatumP Kernel::excChar(DatumP node) {
   return h.ret(QString(QChar((ushort)n)));
 }
 
-DatumP Kernel::excMember(DatumP node) {
+DatumPtr Kernel::excMember(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP container = h.datumAtIndex(1);
-  DatumP thing = h.validatedDatumAtIndex(0, [&container](DatumP candidate) {
+  DatumPtr container = h.datumAtIndex(1);
+  DatumPtr thing = h.validatedDatumAtIndex(0, [&container](DatumPtr candidate) {
     return container.isArray() || container.isList() || candidate.isWord();
   });
   return h.ret(container.datumValue()->fromMember(thing, varCASEIGNOREDP()));
 }
 
-DatumP Kernel::excLowercase(DatumP node) {
+DatumPtr Kernel::excLowercase(DatumPtr node) {
   ProcedureHelper h(this, node);
   const QString &phrase = h.wordAtIndex(0).wordValue()->printValue();
   QString retval = phrase.toLower();
   return h.ret(retval);
 }
 
-DatumP Kernel::excUppercase(DatumP node) {
+DatumPtr Kernel::excUppercase(DatumPtr node) {
   ProcedureHelper h(this, node);
   const QString &phrase = h.wordAtIndex(0).wordValue()->printValue();
   QString retval = phrase.toUpper();
   return h.ret(retval);
 }
 
-DatumP Kernel::excStandout(DatumP node) {
+DatumPtr Kernel::excStandout(DatumPtr node) {
   ProcedureHelper h(this, node);
   const QString &phrase = h.wordAtIndex(0).wordValue()->printValue();
   QString t = mainController()->addStandoutToString(phrase);
   return h.ret(t);
 }
 
-DatumP Kernel::excParse(DatumP node) {
+DatumPtr Kernel::excParse(DatumPtr node) {
   ProcedureHelper h(this, node);
   Parser p(this);
-  DatumP word = h.validatedDatumAtIndex(
-      0, [](DatumP candidate) { return candidate.isWord(); });
+  DatumPtr word = h.validatedDatumAtIndex(
+      0, [](DatumPtr candidate) { return candidate.isWord(); });
   QString text = word.wordValue()->rawValue();
   QTextStream src(&text, QIODevice::ReadOnly);
 
   return h.ret(p.readlistWithPrompt("", false, &src));
 }
 
-DatumP Kernel::excRunparse(DatumP node) {
+DatumPtr Kernel::excRunparse(DatumPtr node) {
   ProcedureHelper h(this, node);
   Parser p(this);
-  DatumP wordOrList = h.validatedDatumAtIndex(0, [](DatumP candidate) {
+  DatumPtr wordOrList = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     return candidate.isWord() || candidate.isList();
   });
   return h.ret(p.runparse(wordOrList));

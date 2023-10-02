@@ -1,7 +1,7 @@
-#ifndef DATUM_DATUMP_H
-#define DATUM_DATUMP_H
+#ifndef DATUM_DatumPtr_H
+#define DATUM_DatumPtr_H
 
-//===-- qlogo/datum_datump.h - Datump class definition -------*- C++ -*-===//
+//===-- qlogo/datum_datump.h - DatumPtr class definition -------*- C++ -*-===//
 //
 // This file is part of QLogo.
 //
@@ -21,7 +21,7 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the declaration of the Datump class, a reference-counting
+/// This file contains the declaration of the DatumPtr class, a reference-counting
 /// pointer to a Datum.
 ///
 //===----------------------------------------------------------------------===//
@@ -32,7 +32,7 @@
 
 
 /// A pointer to a Datum. Incorporates convenience methods, reference-counting, and automatic destruction.
-class DatumP {
+class DatumPtr {
 protected:
 
     Datum *d;
@@ -42,33 +42,33 @@ protected:
 public:
 
     /// Copy constructor. Increases retain count of the referred object.
-    DatumP(const DatumP &other) noexcept;
+    DatumPtr(const DatumPtr &other) noexcept;
 
     /// Default constructor. Points to notADatum (like NULL)
-    DatumP();
+    DatumPtr();
 
     /// \brief Creates a pointer to a Datum object. Begins reference counting.
     ///
     /// Creates a pointer to the referenced object and increases its retain count.
     /// The referred object will be destroyed when the last object referring to it
     /// is destroyed.
-    DatumP(Datum *);
+    DatumPtr(Datum *);
 
     /// \brief Convenience constructor for "true" and "false".
     ///
     /// For efficiency of boolean operations, the Word objects "true" and "false"
     /// are static. This constructor simply creates a pointer to one of the two
     /// words depending on the value b.
-    explicit DatumP(bool b);
+    explicit DatumPtr(bool b);
 
     /// Convenience constructor for numbers.
-    explicit DatumP(double n);
+    explicit DatumPtr(double n);
 
     /// Convenience constructor for integers.
-    explicit DatumP(int n);
+    explicit DatumPtr(int n);
 
     /// Convenience constructor for strings.
-    explicit DatumP(const QString n, bool isVBarred = false);
+    explicit DatumPtr(const QString n, bool isVBarred = false);
 
 
     /// \brief Destructor.
@@ -76,7 +76,7 @@ public:
     /// Decreases the retain count of the referred object. If this is the last
     /// pointer to the referred object (if its retain count reaches zero) the
     /// object is deallocated, if possible.
-    ~DatumP();
+    ~DatumPtr();
 
     /// Returns a pointer to the referred Datum or any of Datum's subclasses.
     Datum *datumValue() { return d; }
@@ -121,28 +121,28 @@ public:
     bool isNothing();
 
     /// Reassign the pointer to refer to the other object.
-    DatumP &operator=(const DatumP &other) noexcept;
+    DatumPtr &operator=(const DatumPtr &other) noexcept;
 
     /// Reassign the pointer to refer to the other object.
-    DatumP &operator=(DatumP *other) noexcept;
+    DatumPtr &operator=(DatumPtr *other) noexcept;
 
     /// Return true if and only if other points to the same object as this.
-    bool operator==(DatumP *other);
+    bool operator==(DatumPtr *other);
 
     /// Return true if and only if other points to the same object as this.
-    bool operator==(const DatumP &other);
+    bool operator==(const DatumPtr &other);
 
     /// Return true if and only if other does not point to the same object as this.
-    bool operator!=(DatumP *other);
+    bool operator!=(DatumPtr *other);
 
     /// Return true if and only if other does not point to the same object as this.
-    bool operator!=(const DatumP &other);
+    bool operator!=(const DatumPtr &other);
 
     /// Return true if and only if the other object is equal to this in the manner suitable for EQUALP.
-    bool isEqual(DatumP other, bool ignoreCase);
+    bool isEqual(DatumPtr other, bool ignoreCase);
 
     /// Return true if and only if the other object is equal to this in the manner suitable for .EQ.
-    bool isDotEqual(DatumP other);
+    bool isDotEqual(DatumPtr other);
 
     /// Return a string suitable for the PRINT command
     QString printValue(bool fullPrintp = false, int printDepthLimit = -1,
@@ -158,11 +158,11 @@ public:
 
 // If/when List is implemented using QList, this will increase efficiency.
 // Since we're using linked lists, this is a noop for now.
-Q_DECLARE_TYPEINFO(DatumP, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(DatumPtr, Q_MOVABLE_TYPE);
 
 
 /// A pointer to notADatum, like NULL.
-extern DatumP nothing;
+extern DatumPtr nothing;
 
 
-#endif // DATUM_DATUMP_H
+#endif // DATUM_DatumPtr_H

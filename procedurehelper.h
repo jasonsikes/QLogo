@@ -34,7 +34,7 @@
 class Kernel;
 class Parser;
 
-typedef std::function<bool(DatumP)> validatorP;
+typedef std::function<bool(DatumPtr)> validatorP;
 typedef std::function<bool(double)> validatorD;
 typedef std::function<bool(int)> validatorI;
 typedef std::function<bool(List *)> validatorL;
@@ -42,42 +42,42 @@ typedef std::function<bool(List *)> validatorL;
 class ProcedureHelper {
   ASTNode *node;
   Kernel *parent;
-  QVector<DatumP> parameters;
-  DatumP returnValue;
+  QVector<DatumPtr> parameters;
+  DatumPtr returnValue;
 
 public:
   QString indent();
   bool isTraced;
   static void setParser(Parser *aParser);
   ProcedureHelper() { exit(1); }
-  ProcedureHelper(Kernel *aParent, DatumP sourceNode);
+  ProcedureHelper(Kernel *aParent, DatumPtr sourceNode);
   ~ProcedureHelper();
 
   int countOfChildren() { return parameters.size(); }
 
-  DatumP validatedDatumAtIndex(int index, validatorP v);
-  DatumP datumAtIndex(int index, bool canRunlist = false);
-  DatumP wordAtIndex(int index, bool canRunlist = false);
-  DatumP listAtIndex(int index);
-  DatumP validatedListAtIndex(int index, validatorL v);
-  DatumP arrayAtIndex(int index);
+  DatumPtr validatedDatumAtIndex(int index, validatorP v);
+  DatumPtr datumAtIndex(int index, bool canRunlist = false);
+  DatumPtr wordAtIndex(int index, bool canRunlist = false);
+  DatumPtr listAtIndex(int index);
+  DatumPtr validatedListAtIndex(int index, validatorL v);
+  DatumPtr arrayAtIndex(int index);
   double numberAtIndex(int index, bool canRunList = false);
   double validatedNumberAtIndex(int index, validatorD v,
                                 bool canRunList = false);
   int integerAtIndex(int index);
   int validatedIntegerAtIndex(int index, validatorI v);
   bool boolAtIndex(int index, bool canRunlist = false);
-  DatumP reject(int index, bool allowErract = false,
+  DatumPtr reject(int index, bool allowErract = false,
                 bool allowRecovery = false);
-  DatumP reject(DatumP value, bool allowErract = false,
+  DatumPtr reject(DatumPtr value, bool allowErract = false,
                 bool allowRecovery = false);
-  DatumP ret(int aVal);
-  DatumP ret(double aVal);
-  DatumP ret(QString aVal);
-  DatumP ret(Datum *aVal);
-  DatumP ret(DatumP aVal);
-  DatumP ret(bool aVal);
-  DatumP ret(void);
+  DatumPtr ret(int aVal);
+  DatumPtr ret(double aVal);
+  DatumPtr ret(QString aVal);
+  DatumPtr ret(Datum *aVal);
+  DatumPtr ret(DatumPtr aVal);
+  DatumPtr ret(bool aVal);
+  DatumPtr ret(void);
   static void setIsErroring(bool aIsErroring);
 };
 

@@ -38,10 +38,10 @@ public:
     DatumType isa() { return listNodeType; }
 
     /// The item at this position in the list.
-    DatumP item;
+    DatumPtr item;
 
     /// A pointer to the next ListNode.
-    DatumP next;
+    DatumPtr next;
 
     static ListNode * alloc();
 };
@@ -52,10 +52,10 @@ class List : public Datum {
     friend class Parser; // Parser needs access to astList and astParseTimeStamp
 
 protected:
-    DatumP head;
-    DatumP lastNode;
+    DatumPtr head;
+    DatumPtr lastNode;
     int listSize;
-    QList<DatumP> astList;
+    QList<DatumPtr> astList;
     qint64 astParseTimeStamp;
     void setListSize();
 
@@ -83,60 +83,60 @@ public:
                        int printWidthLimit = -1);
     QString showValue(bool fullPrintp = false, int printDepthLimit = -1,
                       int printWidthLimit = -1);
-    bool isEqual(DatumP other, bool ignoreCase);
+    bool isEqual(DatumPtr other, bool ignoreCase);
 
     /// Return the first item of the List.
-    DatumP first(void);
+    DatumPtr first(void);
 
     /// Return a new List starting with the second item of the List.
-    DatumP butfirst(void);
+    DatumPtr butfirst(void);
 
     /// Empty the List
     void clear();
 
     /// Add an element to the end of the list.
     /// DO NOT USE after the List has been modified by any other method.
-    void append(DatumP element);
+    void append(DatumPtr element);
 
     /// Returns the count of elements in the List.
     int size() { return listSize; }
 
     /// Returns the last elements of the List.
-    DatumP last();
+    DatumPtr last();
 
     /// Creates a new List using all but the last element of this List.
-    DatumP butlast(void);
+    DatumPtr butlast(void);
 
     /// Adds an element to the head of this List.
-    void prepend(DatumP element);
+    void prepend(DatumPtr element);
 
     /// Creates a new List by adding an element to the head of this List.
-    DatumP fput(DatumP item);
+    DatumPtr fput(DatumPtr item);
 
     /// Returns the element pointed to by anIndex.
-    DatumP datumAtIndex(int anIndex);
+    DatumPtr datumAtIndex(int anIndex);
 
     /// Returns true if anIndex is between 1 and the count of elements in the List.
     bool isIndexInRange(int anIndex);
 
     /// Replaces the item pointed to by anIndex with aValue.
-    void setItem(int anIndex, DatumP aValue);
+    void setItem(int anIndex, DatumPtr aValue);
 
     /// Replaces the first item in the List with aValue.
-    void setFirstItem(DatumP aValue);
+    void setFirstItem(DatumPtr aValue);
 
     /// Replaces everything but the first item in the List with aValue.
-    void setButfirstItem(DatumP aValue);
+    void setButfirstItem(DatumPtr aValue);
 
     /// Recursively searches List for aDatum. Returns true if found.
-    bool containsDatum(DatumP aDatum, bool ignoreCase);
+    bool containsDatum(DatumPtr aDatum, bool ignoreCase);
 
     /// Returns true if aDatum is a member of this List.
-    bool isMember(DatumP aDatum, bool ignoreCase);
+    bool isMember(DatumPtr aDatum, bool ignoreCase);
 
     /// Non-recursively searches this List for aDatum. Returns a new List starting
     /// from where aDaum was found to the end of this List.
-    DatumP fromMember(DatumP aDatum, bool ignoreCase);
+    DatumPtr fromMember(DatumPtr aDatum, bool ignoreCase);
 
     ListIterator newIterator(void);
 };

@@ -41,8 +41,8 @@ class VarFrame
 
   bool isTested = false;
   bool testState;
-  DatumP explicitSlotList;
-  QHash<QString, DatumP> variables;
+  DatumPtr explicitSlotList;
+  QHash<QString, DatumPtr> variables;
   Vars *vars;
 public:
   VarFrame(Vars *aVars);
@@ -67,12 +67,12 @@ public:
 
   /// Search downward through the variable stack for the first occurrence of
   /// 'name'. Returns the stored value associated with 'name'.
-  DatumP datumForName(const QString &name);
+  DatumPtr datumForName(const QString &name);
 
   /// Search downward through the variable stack for the first occurrence of
   /// 'name'. Replace the stored value with aDatum. If 'name' is not found,
   /// store value at the bottom of the stack.
-  void setDatumForName(DatumP &aDatum, const QString &name);
+  void setDatumForName(DatumPtr &aDatum, const QString &name);
 
   /// Insert an entry for 'name' at the top of the variable stack. Store
   /// 'nothing' for the entry if name wasn't already present.
@@ -116,16 +116,16 @@ public:
 
   /// Return a list of all variables defined and buried/unburied (determined by
   /// 'showWhat'.)
-  DatumP allVariables(showContents_t showWhat);
+  DatumPtr allVariables(showContents_t showWhat);
 
 
   /// In "explicit slot" APPLY command, sets the list of values of the explicit
   /// slot variables ("?1", "?2", etc.)
-  void setExplicitSlotList(DatumP aList);
+  void setExplicitSlotList(DatumPtr aList);
 
   /// In "explicit slot" APPLY command, retrieves the list of values of the
   /// explicit slot variables ("?1", "?2", etc.)
-  DatumP explicitSlotList();
+  DatumPtr explicitSlotList();
 };
 
 #endif // VARS_H

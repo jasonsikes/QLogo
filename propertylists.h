@@ -31,22 +31,22 @@
 #include <datum.h>
 
 class PropertyLists : public Workspace {
-  QHash<QString, QHash<QString, DatumP>> plists;
+  QHash<QString, QHash<QString, DatumPtr>> plists;
 
 public:
   PropertyLists();
 
   void addProperty(const QString &plistname, const QString &propname,
-                   DatumP value);
-  DatumP getProperty(const QString &plistname, const QString &propname);
+                   DatumPtr value);
+  DatumPtr getProperty(const QString &plistname, const QString &propname);
   void removeProperty(const QString &plistname, const QString &propname);
-  DatumP getPropertyList(const QString &plistname);
+  DatumPtr getPropertyList(const QString &plistname);
   void erasePropertyList(const QString &plistname);
   void eraseAll();
 
   bool isPropertyList(const QString &plistname);
 
-  DatumP allPLists(showContents_t showWhat);
+  DatumPtr allPLists(showContents_t showWhat);
 };
 
 #endif // PROPERTYLISTS_H

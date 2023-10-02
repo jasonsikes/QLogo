@@ -42,7 +42,7 @@ Vars::~Vars()
   delete globalFrame;
 }
 
-void Vars::setDatumForName(DatumP &aDatum, const QString &name) {
+void Vars::setDatumForName(DatumPtr &aDatum, const QString &name) {
   for (auto frame : frames) {
     if (frame->variables.contains(name)) {
       frame->variables[name] = aDatum;
@@ -52,7 +52,7 @@ void Vars::setDatumForName(DatumP &aDatum, const QString &name) {
   frames.last()->variables.insert(name, aDatum);
 }
 
-DatumP Vars::datumForName(const QString &name) {
+DatumPtr Vars::datumForName(const QString &name) {
   for (auto frame : frames) {
     auto result = frame->variables.find(name);
     if (result != frame->variables.end()) {
@@ -93,7 +93,7 @@ bool Vars::doesExist(const QString &name) {
   return false;
 }
 
-DatumP Vars::allVariables(showContents_t showWhat) {
+DatumPtr Vars::allVariables(showContents_t showWhat) {
   List *retval = List::alloc();
   QSet<const QString> seenVars;
 
@@ -104,12 +104,12 @@ DatumP Vars::allVariables(showContents_t showWhat) {
         seenVars.insert(varname);
 
         if (shouldInclude(showWhat, varname))
-          retval->append(DatumP(varname));
+          retval->append(DatumPtr(varname));
       }
     }
   }
 
-  return DatumP(retval);
+  return DatumPtr(retval);
 }
 
 void Vars::eraseAll() {
@@ -143,13 +143,13 @@ bool Vars::isTested() {
 }
 
 
-void Vars::setExplicitSlotList(DatumP aList)
+void Vars::setExplicitSlotList(DatumPtr aList)
 {
   frames.last()->explicitSlotList = aList;
 }
 
 
-DatumP Vars::explicitSlotList()
+DatumPtr Vars::explicitSlotList()
 {
   return frames.last()->explicitSlotList;
 }

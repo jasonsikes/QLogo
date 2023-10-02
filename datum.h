@@ -40,7 +40,7 @@ class List;
 class ListNode;
 class Array;
 class Error;
-class DatumP;
+class DatumPtr;
 class Procedure;
 
 class Iterator;
@@ -49,7 +49,7 @@ class ListIterator;
 class ArrayIterator;
 
 class Kernel;
-typedef DatumP (Kernel::*KernelMethod)(DatumP);
+typedef DatumPtr (Kernel::*KernelMethod)(DatumPtr);
 
 /// Convert "raw" encoding to Char encoding.
 QChar rawToChar(const QChar &src);
@@ -69,7 +69,7 @@ void rawToChar(QString &src);
 /// Each Word, List, and Array is a node. So, for example, an array of two words is three
 /// nodes (1 Array + 2 Words). Furthermore, if the list is "RUN" (e.g. "RUN [forward 100]")
 /// then ASTNodes will be created, adding to the number of nodes.
-DatumP nodes();
+DatumPtr nodes();
 
 /// The unit of data for QLogo. The base class for Word, List, Array, ASTNode, etc.
 class Datum {
@@ -96,7 +96,7 @@ public:
   /// \brief Constructs a Datum
   ///
   /// The Datum class is the superclass for all data.
-  /// The Datum superclass maintains retain counts (manipulated by the DatumP class).
+  /// The Datum superclass maintains retain counts (manipulated by the DatumPtr class).
   ///
   /// To hold data:
   /// 1. use one of the subclasses, NOT Datum, and
@@ -154,19 +154,19 @@ public:
       int printWidthLimit = -1);
 
   /// Return the first element.
-  virtual DatumP first(void);
+  virtual DatumPtr first(void);
 
   /// Return everything but the first element.
-  virtual DatumP butfirst(void);
+  virtual DatumPtr butfirst(void);
 
   /// Return the last element.
-  virtual DatumP last(void);
+  virtual DatumPtr last(void);
 
   /// Return everything but the last element.
-  virtual DatumP butlast(void);
+  virtual DatumPtr butlast(void);
 
   /// Determine if the object pointed to by other is equal to this object.
-  virtual bool isEqual(DatumP other, bool);
+  virtual bool isEqual(DatumPtr other, bool);
 
   /// return the number of elements in the object.
   virtual int size();
@@ -175,33 +175,33 @@ public:
   Iterator newIterator(void);
 
   /// returns the element at the index given.
-  virtual DatumP datumAtIndex(int);
+  virtual DatumPtr datumAtIndex(int);
 
   /// returns true if the index given is valid for this object.
   virtual bool isIndexInRange(int);
 
   /// replaces the item at the index of this object with aValue.
-  virtual void setItem(int anIndex, DatumP aValue);
+  virtual void setItem(int anIndex, DatumPtr aValue);
 
   /// replaces the first element of this object with aValue.
-  virtual void setFirstItem(DatumP aValue);
+  virtual void setFirstItem(DatumPtr aValue);
 
   /// replaces everything but the first element of this object with aValue.
-  virtual void setButfirstItem(DatumP aValue);
+  virtual void setButfirstItem(DatumPtr aValue);
 
   /// recursively search this object for an instance of a Datum.
-  virtual bool containsDatum(DatumP, bool);
+  virtual bool containsDatum(DatumPtr, bool);
 
   /// nonrecursively search this object for an instance of a Datum.
-  virtual bool isMember(DatumP aDatum, bool);
+  virtual bool isMember(DatumPtr aDatum, bool);
 
   /// return a new Datum beginning with the first occurrence of aDatum.
-  virtual DatumP fromMember(DatumP aDatum, bool ignoreCase);
+  virtual DatumPtr fromMember(DatumPtr aDatum, bool ignoreCase);
 };
 
 
 
-template <class T> class DatumPool
+template <class T> class DatumPtrool
 {
   QStack<T *>stack;
 
@@ -225,7 +225,7 @@ template <class T> class DatumPool
 
   /// Constructor.
   /// /param aBlockSize: the count of objects that should be allocated in each block
-      DatumPool(int aBlockSize)
+      DatumPtrool(int aBlockSize)
       {
       blockSize = aBlockSize;
       addToPool();

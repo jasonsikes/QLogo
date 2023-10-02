@@ -33,25 +33,25 @@
 
 // CONTROL STRUCTURES
 
-DatumP Kernel::excRun(DatumP node) {
+DatumPtr Kernel::excRun(DatumPtr node) {
   ProcedureHelper h(this, node);
 
-  DatumP instructionList = h.validatedDatumAtIndex(0, [](DatumP candidate) {
+  DatumPtr instructionList = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     return candidate.isWord() || candidate.isList();
   });
 
   return h.ret(runList(instructionList));
 }
 
-DatumP Kernel::excRunresult(DatumP node) {
+DatumPtr Kernel::excRunresult(DatumPtr node) {
   ProcedureHelper h(this, node);
 
-  DatumP instructionList = h.validatedDatumAtIndex(0, [](DatumP candidate) {
+  DatumPtr instructionList = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     return candidate.isWord() || candidate.isList();
   });
 
   List* retval = List::alloc();
-  DatumP temp = runList(instructionList);
+  DatumPtr temp = runList(instructionList);
 
   if (temp.isASTNode()) {
     temp = Error::insideRunresult(temp.astnodeValue()->nodeName);
@@ -64,25 +64,25 @@ DatumP Kernel::excRunresult(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excBye(DatumP node) {
+DatumPtr Kernel::excBye(DatumPtr node) {
   ProcedureHelper h(this, node);
 
-  Error::throwError(DatumP(k.system()), nothing);
+  Error::throwError(DatumPtr(k.system()), nothing);
 
   return nothing;
 }
 
-DatumP Kernel::excRepeat(DatumP node) {
+DatumPtr Kernel::excRepeat(DatumPtr node) {
   ProcedureHelper h(this, node);
   int countValue = h.validatedIntegerAtIndex(
       0, [](int candidate) { return candidate >= 0; });
-  DatumP commandList =
+  DatumPtr commandList =
       h.listAtIndex(1); // TODO: this can execute a word, too, right?
 
   int tempRepcount = repcount;
   repcount = 1;
 
-  DatumP retval;
+  DatumPtr retval;
   try {
     while ((countValue > 0) && (retval == nothing)) {
       retval = runList(commandList);
@@ -98,14 +98,14 @@ DatumP Kernel::excRepeat(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excForever(DatumP node) {
+DatumPtr Kernel::excForever(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP commandList = h.listAtIndex(0);
+  DatumPtr commandList = h.listAtIndex(0);
 
   int tempRepcount = repcount;
   repcount = 1;
 
-  DatumP retval;
+  DatumPtr retval;
   try {
     while (retval == nothing) {
       retval = runList(commandList);
@@ -119,24 +119,24 @@ DatumP Kernel::excForever(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excRepcount(DatumP node) {
+DatumPtr Kernel::excRepcount(DatumPtr node) {
   ProcedureHelper h(this, node);
 
   return h.ret(repcount);
 }
 
-DatumP Kernel::excIf(DatumP node) {
+DatumPtr Kernel::excIf(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP retval;
+  DatumPtr retval;
   if (h.boolAtIndex(0, true)) {
     retval = runList(h.datumAtIndex(1));
   }
   return h.ret(retval);
 }
 
-DatumP Kernel::excIfelse(DatumP node) {
+DatumPtr Kernel::excIfelse(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP retval;
+  DatumPtr retval;
   if (h.boolAtIndex(0, true)) {
     retval = runList(h.datumAtIndex(1));
   } else {
@@ -145,7 +145,7 @@ DatumP Kernel::excIfelse(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excTest(DatumP node) {
+DatumPtr Kernel::excTest(DatumPtr node) {
   ProcedureHelper h(this, node);
 
   bool testVal = h.boolAtIndex(0, true);
@@ -153,9 +153,9 @@ DatumP Kernel::excTest(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excIftrue(DatumP node) {
+DatumPtr Kernel::excIftrue(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP retval;
+  DatumPtr retval;
   if (!variables.isTested())
     return h.ret(Error::noTest(node.astnodeValue()->nodeName));
   if (variables.testedState()) {
@@ -164,9 +164,9 @@ DatumP Kernel::excIftrue(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excIffalse(DatumP node) {
+DatumPtr Kernel::excIffalse(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP retval;
+  DatumPtr retval;
   if (!variables.isTested())
     return h.ret(Error::noTest(node.astnodeValue()->nodeName));
   if ( ! variables.testedState()) {
@@ -181,14 +181,14 @@ DatumP Kernel::excIffalse(DatumP node) {
 // The caller is responsible for dissecting the node and acting appropriately.
 //
 
-DatumP Kernel:: excStop(DatumP node) {
+DatumPtr Kernel:: excStop(DatumPtr node) {
   if (currentProcedure == nothing) {
     Error::notInsideProcedure(node.astnodeValue()->nodeName);
   }
   return node;
 }
 
-DatumP Kernel::excOutput(DatumP node) {
+DatumPtr Kernel::excOutput(DatumPtr node) {
   if (currentProcedure == nothing) {
     Error::notInsideProcedure(node.astnodeValue()->nodeName);
   }
@@ -196,19 +196,19 @@ DatumP Kernel::excOutput(DatumP node) {
   return node;
 }
 
-DatumP Kernel::excDotMaybeoutput(DatumP node) {
+DatumPtr Kernel::excDotMaybeoutput(DatumPtr node) {
   if (currentProcedure == nothing) {
     Error::notInsideProcedure(node.astnodeValue()->nodeName);
   }
   return node;
 }
 
-DatumP Kernel::excCatch(DatumP node) {
+DatumPtr Kernel::excCatch(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString tag = h.wordAtIndex(0).wordValue()->keyValue();
-  DatumP instructionlist = h.listAtIndex(1);
-  DatumP retval;
-  DatumP tempErract = variables.datumForName(k.erract());
+  DatumPtr instructionlist = h.listAtIndex(1);
+  DatumPtr retval;
+  DatumPtr tempErract = variables.datumForName(k.erract());
 
   if (variables.doesExist(k.erract())) {
     variables.setDatumForName(nothing, k.erract());
@@ -222,9 +222,9 @@ DatumP Kernel::excCatch(DatumP node) {
             retval = nothing;
           } else if ((method == &Kernel::excOutput) || (method == &Kernel::excDotMaybeoutput) ||
                      ((method == &Kernel::excStop) && (retval.astnodeValue()->countOfChildren() > 0))) {
-            DatumP p = retval.astnodeValue()->childAtIndex(0);
+            DatumPtr p = retval.astnodeValue()->childAtIndex(0);
             KernelMethod temp_method = p.astnodeValue()->kernel;
-            DatumP temp_retval = (this->*temp_method)(p);
+            DatumPtr temp_retval = (this->*temp_method)(p);
             if ((temp_retval == nothing) && (method == &Kernel::excOutput)) {
                 Error::didntOutput(p.astnodeValue()->nodeName,
                                    retval.astnodeValue()->nodeName);
@@ -248,7 +248,7 @@ DatumP Kernel::excCatch(DatumP node) {
       ProcedureHelper::setIsErroring(false);
       return nothing;
     } else if ((e->code == 14) && (tag == e->tag.wordValue()->keyValue())) {
-      DatumP retval = e->output;
+      DatumPtr retval = e->output;
       registerError(nothing);
       return h.ret(retval);
     }
@@ -261,14 +261,14 @@ DatumP Kernel::excCatch(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excThrow(DatumP node) {
+DatumPtr Kernel::excThrow(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP tag = h.wordAtIndex(0);
-  DatumP value;
+  DatumPtr tag = h.wordAtIndex(0);
+  DatumPtr value;
   if (h.countOfChildren() > 1) {
     value = h.datumAtIndex(1);
     if (!value.isWord())
-      value = DatumP(value.printValue());
+      value = DatumPtr(value.printValue());
   }
 
   Error::throwError(tag, value);
@@ -276,28 +276,28 @@ DatumP Kernel::excThrow(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excError(DatumP node) {
+DatumPtr Kernel::excError(DatumPtr node) {
   ProcedureHelper h(this, node);
 
   List *retval = List::alloc();
   if (currentError != nothing) {
     Error *e = currentError.errorValue();
-    retval->append(DatumP(e->code));
+    retval->append(DatumPtr(e->code));
     retval->append(e->errorText);
     if (e->procedure != nothing)
       retval->append(e->procedure.astnodeValue()->nodeName);
     else
-      retval->append(DatumP(List::alloc()));
+      retval->append(DatumPtr(List::alloc()));
     if (e->instructionLine != nothing)
       retval->append(e->instructionLine);
     else
-      retval->append(DatumP(List::alloc()));
+      retval->append(DatumPtr(List::alloc()));
     currentError = nothing;
   }
   return h.ret(retval);
 }
 
-DatumP Kernel::excPause(DatumP node) {
+DatumPtr Kernel::excPause(DatumPtr node) {
   ProcedureHelper h(this, node);
   if (currentProcedure == nothing) {
       Error::notInsideProcedure(node.astnodeValue()->nodeName);
@@ -305,29 +305,29 @@ DatumP Kernel::excPause(DatumP node) {
   return h.ret(pause());
 }
 
-DatumP Kernel::excContinue(DatumP node) {
+DatumPtr Kernel::excContinue(DatumPtr node) {
   ProcedureHelper h(this, node);
 
-  DatumP retval;
+  DatumPtr retval;
   if (h.countOfChildren() > 0) {
     retval = h.datumAtIndex(0);
     if (!retval.isWord()) {
-      retval = DatumP(retval.printValue());
+      retval = DatumPtr(retval.printValue());
     }
   }
 
-  Error::throwError(DatumP(k.pause()), retval);
+  Error::throwError(DatumPtr(k.pause()), retval);
 
   return nothing;
 }
 
-DatumP Kernel::excTag(DatumP) { return nothing; }
+DatumPtr Kernel::excTag(DatumPtr) { return nothing; }
 
-DatumP Kernel::excGoto(DatumP node) {
+DatumPtr Kernel::excGoto(DatumPtr node) {
   ProcedureHelper h(this, node);
   if (currentProcedure == nothing)
     Error::notInsideProcedure(node.astnodeValue()->nodeName);
-  DatumP tagP = h.validatedDatumAtIndex(0, [this](DatumP candidate) {
+  DatumPtr tagP = h.validatedDatumAtIndex(0, [this](DatumPtr candidate) {
     if (!candidate.isWord())
       return false;
     QString tag = candidate.wordValue()->keyValue();
@@ -339,24 +339,24 @@ DatumP Kernel::excGoto(DatumP node) {
   ASTNode *a = ASTNode::alloc(k.kgoto());
   a->kernel = &Kernel::excGotoToken;
   a->addChild(tagP);
-  return DatumP(a);
+  return DatumPtr(a);
 }
 
 // TEMPLATE-BASED ITERATION
 
-DatumP Kernel::excApply(DatumP node) {
+DatumPtr Kernel::excApply(DatumPtr node) {
   ProcedureHelper h(this, node);
   enum Form { explicit_slot, named_procedure, lambda, procedure };
   Form f;
 
-  DatumP tmplate = h.validatedDatumAtIndex(0, [&f](DatumP candidate) {
+  DatumPtr tmplate = h.validatedDatumAtIndex(0, [&f](DatumPtr candidate) {
     if (candidate.isWord()) {
       f = Form::named_procedure;
       return true;
     }
     if (!candidate.isList() || candidate.listValue()->size() == 0)
       return false;
-    DatumP first = candidate.listValue()->first();
+    DatumPtr first = candidate.listValue()->first();
 
     if (first.isWord()) {
       f = Form::explicit_slot;
@@ -364,7 +364,7 @@ DatumP Kernel::excApply(DatumP node) {
     }
     if (!first.isList() || (candidate.listValue()->size() < 2))
       return false;
-    DatumP procedureFirst = candidate.datumValue()->datumAtIndex(2);
+    DatumPtr procedureFirst = candidate.datumValue()->datumAtIndex(2);
     if (procedureFirst.isWord()) {
       f = Form::lambda;
       return true;
@@ -375,25 +375,25 @@ DatumP Kernel::excApply(DatumP node) {
     }
     return false;
   });
-  DatumP params = h.listAtIndex(1);
+  DatumPtr params = h.listAtIndex(1);
 
   switch (f) {
   case named_procedure: {
-    DatumP a = parser->astnodeWithLiterals(tmplate, params);
+    DatumPtr a = parser->astnodeWithLiterals(tmplate, params);
     KernelMethod method = a.astnodeValue()->kernel;
-    DatumP retval = (this->*method)(a);
+    DatumPtr retval = (this->*method)(a);
     return h.ret(retval);
   }
   case explicit_slot: {
     VarFrame s(&variables);
     variables.setExplicitSlotList(params);
-    DatumP retval = runList(tmplate);
+    DatumPtr retval = runList(tmplate);
     return h.ret(retval);
   }
   case lambda: {
     VarFrame s(&variables);
-    DatumP varList = tmplate.listValue()->first();
-    DatumP procedureList = tmplate.listValue()->butfirst();
+    DatumPtr varList = tmplate.listValue()->first();
+    DatumPtr procedureList = tmplate.listValue()->butfirst();
     if (varList.listValue()->size() > params.listValue()->size())
       Error::notEnough(tmplate);
     if (varList.listValue()->size() < params.listValue()->size())
@@ -402,22 +402,22 @@ DatumP Kernel::excApply(DatumP node) {
     ListIterator nameIter = varList.listValue()->newIterator();
     ListIterator parmIter = params.listValue()->newIterator();
     while (nameIter.elementExists()) {
-      DatumP nameP = nameIter.element();
+      DatumPtr nameP = nameIter.element();
       if (!nameP.isWord())
         Error::doesntLike(node.astnodeValue()->nodeName, nameP);
-      DatumP param = parmIter.element();
+      DatumPtr param = parmIter.element();
       QString name = nameP.wordValue()->keyValue();
       variables.setVarAsLocal(name);
       variables.setDatumForName(param, name);
     }
-    DatumP retval = runList(procedureList);
+    DatumPtr retval = runList(procedureList);
     return h.ret(retval);
   }
   case procedure: {
-    DatumP anonyProcedure = parser->createProcedure(
+    DatumPtr anonyProcedure = parser->createProcedure(
         node.astnodeValue()->nodeName, tmplate, nothing);
     ASTNode *procnode = ASTNode::alloc(node.astnodeValue()->nodeName);
-    DatumP procnodeP(procnode);
+    DatumPtr procnodeP(procnode);
     procnode->addChild(anonyProcedure);
     if (params.listValue()->size() >
         anonyProcedure.procedureValue()->countOfMaxParams)
@@ -428,14 +428,14 @@ DatumP Kernel::excApply(DatumP node) {
 
     ListIterator paramIter = params.listValue()->newIterator();
     while (paramIter.elementExists()) {
-      DatumP p = paramIter.element();
-      DatumP a = DatumP(ASTNode::alloc(k.literal()));
+      DatumPtr p = paramIter.element();
+      DatumPtr a = DatumPtr(ASTNode::alloc(k.literal()));
       a.astnodeValue()->kernel = &Kernel::executeLiteral;
       a.astnodeValue()->addChild(p);
       procnode->addChild(a);
     }
 
-    DatumP retval = executeProcedure(procnodeP);
+    DatumPtr retval = executeProcedure(procnodeP);
 
     return h.ret(retval);
   }
@@ -444,9 +444,9 @@ DatumP Kernel::excApply(DatumP node) {
 }
 
 // '?' operator
-DatumP Kernel::excNamedSlot(DatumP node) {
+DatumPtr Kernel::excNamedSlot(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP inputList = variables.explicitSlotList();
+  DatumPtr inputList = variables.explicitSlotList();
   if (!inputList.isList())
     return Error::noApply(node.astnodeValue()->nodeName);
   int index = 1;
@@ -459,7 +459,7 @@ DatumP Kernel::excNamedSlot(DatumP node) {
   return h.ret(inputList.listValue()->datumAtIndex((int)index));
 }
 
-DatumP Kernel::excMacrop(DatumP node) {
+DatumPtr Kernel::excMacrop(DatumPtr node) {
   ProcedureHelper h(this, node);
   bool retval = parser->isMacro(h.wordAtIndex(0).wordValue()->keyValue());
   return h.ret(retval);

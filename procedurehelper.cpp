@@ -43,7 +43,7 @@ const int dIndent = 1;
 
 void ProcedureHelper::setParser(Parser *aParser) { parser = aParser; }
 
-ProcedureHelper::ProcedureHelper(Kernel *aParent, DatumP sourceNode) {
+ProcedureHelper::ProcedureHelper(Kernel *aParent, DatumPtr sourceNode) {
   parent = aParent;
   node = sourceNode.astnodeValue();
   parameters.reserve(node->countOfChildren());
@@ -55,7 +55,7 @@ ProcedureHelper::ProcedureHelper(Kernel *aParent, DatumP sourceNode) {
     } else {
       ASTNode *child = node->childAtIndex(i).astnodeValue();
       KernelMethod method = child->kernel;
-      DatumP param = (parent->*method)(child);
+      DatumPtr param = (parent->*method)(child);
       if (param == nothing) {
         Error::didntOutput(child->nodeName, node->nodeName);
       }
@@ -70,7 +70,7 @@ ProcedureHelper::ProcedureHelper(Kernel *aParent, DatumP sourceNode) {
     QString line = indent() + "( %1 ";
     line = line.arg(node->nodeName.wordValue()->printValue());
     for (int i = 0; i < parameters.size(); ++i) {
-      DatumP param = parameters[i];
+      DatumPtr param = parameters[i];
       if (param.isa() != Datum::procedureType)
         line += parser->unreadDatum(parameters[i]) + " ";
     }
@@ -95,8 +95,8 @@ ProcedureHelper::~ProcedureHelper() {
   }
 }
 
-DatumP ProcedureHelper::validatedDatumAtIndex(int index, validatorP v) {
-  DatumP retval = parameters.at(index);
+DatumPtr ProcedureHelper::validatedDatumAtIndex(int index, validatorP v) {
+  DatumPtr retval = parameters.at(index);
   while (!v(retval)) {
     retval = reject(retval, true, true);
   }
@@ -105,7 +105,7 @@ DatumP ProcedureHelper::validatedDatumAtIndex(int index, validatorP v) {
 
 double ProcedureHelper::validatedNumberAtIndex(int index, validatorD v,
                                                bool canRunList) {
-  DatumP retvalP = wordAtIndex(index, canRunList);
+  DatumPtr retvalP = wordAtIndex(index, canRunList);
   forever {
     double retval = retvalP.wordValue()->numberValue();
     if (retvalP.wordValue()->didNumberConversionSucceed() && v(retval))
@@ -118,7 +118,7 @@ double ProcedureHelper::validatedNumberAtIndex(int index, validatorD v,
 }
 
 int ProcedureHelper::validatedIntegerAtIndex(int index, validatorI v) {
-  DatumP retvalP = wordAtIndex(index);
+  DatumPtr retvalP = wordAtIndex(index);
   forever {
     double retvalD = retvalP.wordValue()->numberValue();
     int retvalI = (int)retvalD;
@@ -132,31 +132,31 @@ int ProcedureHelper::validatedIntegerAtIndex(int index, validatorI v) {
   return 0;
 }
 
-DatumP ProcedureHelper::validatedListAtIndex(int index, validatorL v) {
-  DatumP retvalP = listAtIndex(index);
+DatumPtr ProcedureHelper::validatedListAtIndex(int index, validatorL v) {
+  DatumPtr retvalP = listAtIndex(index);
   while (!retvalP.isList() || !v(retvalP.listValue())) {
     retvalP = reject(index, true, true);
   }
   return retvalP;
 }
 
-DatumP ProcedureHelper::datumAtIndex(int index, bool canRunlist) {
-  DatumP retval = parameters.at(index);
+DatumPtr ProcedureHelper::datumAtIndex(int index, bool canRunlist) {
+  DatumPtr retval = parameters.at(index);
   if (canRunlist && retval.isList()) {
     retval = parent->runList(retval);
   }
   return retval;
 }
 
-DatumP ProcedureHelper::wordAtIndex(int index, bool canRunlist) {
-  DatumP retval = datumAtIndex(index, canRunlist);
+DatumPtr ProcedureHelper::wordAtIndex(int index, bool canRunlist) {
+  DatumPtr retval = datumAtIndex(index, canRunlist);
   while (!retval.isWord())
     retval = reject(retval, true, true);
   return retval;
 }
 
 bool ProcedureHelper::boolAtIndex(int index, bool canRunlist) {
-  DatumP retval = wordAtIndex(index, canRunlist);
+  DatumPtr retval = wordAtIndex(index, canRunlist);
   forever {
     QString word = retval.wordValue()->keyValue();
     if (word == k.kctrue())
@@ -170,22 +170,22 @@ bool ProcedureHelper::boolAtIndex(int index, bool canRunlist) {
   return false;
 }
 
-DatumP ProcedureHelper::listAtIndex(int index) {
-  DatumP retval = datumAtIndex(index);
+DatumPtr ProcedureHelper::listAtIndex(int index) {
+  DatumPtr retval = datumAtIndex(index);
   while (!retval.isList())
     retval = reject(retval, true, true);
   return retval;
 }
 
-DatumP ProcedureHelper::arrayAtIndex(int index) {
-  DatumP retval = datumAtIndex(index);
+DatumPtr ProcedureHelper::arrayAtIndex(int index) {
+  DatumPtr retval = datumAtIndex(index);
   while (!retval.isArray())
     retval = reject(retval, true, true);
   return retval;
 }
 
 double ProcedureHelper::numberAtIndex(int index, bool canRunList) {
-  DatumP retvalP = wordAtIndex(index, canRunList);
+  DatumPtr retvalP = wordAtIndex(index, canRunList);
   forever {
     double retval = retvalP.wordValue()->numberValue();
     if (retvalP.wordValue()->didNumberConversionSucceed())
@@ -198,7 +198,7 @@ double ProcedureHelper::numberAtIndex(int index, bool canRunList) {
 }
 
 int ProcedureHelper::integerAtIndex(int index) {
-  DatumP retvalP = datumAtIndex(index);
+  DatumPtr retvalP = datumAtIndex(index);
   forever {
     double retvalD = retvalP.wordValue()->numberValue();
     int retval = (int)retvalD;
@@ -212,50 +212,50 @@ int ProcedureHelper::integerAtIndex(int index) {
   return 0;
 }
 
-DatumP ProcedureHelper::reject(DatumP value, bool allowErract,
+DatumPtr ProcedureHelper::reject(DatumPtr value, bool allowErract,
                                bool allowRecovery) {
   return Error::doesntLike(node->nodeName, value, allowErract, allowRecovery);
 }
 
-DatumP ProcedureHelper::reject(int index, bool allowErract,
+DatumPtr ProcedureHelper::reject(int index, bool allowErract,
                                bool allowRecovery) {
   return reject(parameters[index], allowErract, allowRecovery);
 }
 
-DatumP ProcedureHelper::ret(Datum *aVal) {
-  returnValue = DatumP(aVal);
+DatumPtr ProcedureHelper::ret(Datum *aVal) {
+  returnValue = DatumPtr(aVal);
   return returnValue;
 }
 
-DatumP ProcedureHelper::ret(DatumP aVal) {
+DatumPtr ProcedureHelper::ret(DatumPtr aVal) {
   returnValue = aVal;
   return returnValue;
 }
 
-DatumP ProcedureHelper::ret(bool aVal) {
-  returnValue = DatumP(aVal);
+DatumPtr ProcedureHelper::ret(bool aVal) {
+  returnValue = DatumPtr(aVal);
   return returnValue;
 }
 
 
-DatumP ProcedureHelper::ret(int aVal) {
-  returnValue = DatumP(aVal);
+DatumPtr ProcedureHelper::ret(int aVal) {
+  returnValue = DatumPtr(aVal);
   return returnValue;
 }
 
 
-DatumP ProcedureHelper::ret(double aVal) {
-  returnValue = DatumP(aVal);
+DatumPtr ProcedureHelper::ret(double aVal) {
+  returnValue = DatumPtr(aVal);
   return returnValue;
 }
 
 
-DatumP ProcedureHelper::ret(QString aVal) {
-  returnValue = DatumP(aVal);
+DatumPtr ProcedureHelper::ret(QString aVal) {
+  returnValue = DatumPtr(aVal);
   return returnValue;
 }
 
-DatumP ProcedureHelper::ret(void) {
+DatumPtr ProcedureHelper::ret(void) {
   returnValue = nothing;
   return nothing;
 }

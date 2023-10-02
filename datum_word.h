@@ -100,19 +100,19 @@ public:
     /// Returns true if the value pointed to by other is equal to this Word's value.
     /// \param other the value to be tested against.
     /// \param ignoreCase if true use case-insensitive compare.
-    bool isEqual(DatumP other, bool ignoreCase);
+    bool isEqual(DatumPtr other, bool ignoreCase);
 
     /// Returns the first character of the string value.
-    DatumP first(void);
+    DatumPtr first(void);
 
     /// Returns all but the first character of the string value
-    DatumP butfirst(void);
+    DatumPtr butfirst(void);
 
     /// Returns the last character of the string value
-    DatumP last(void);
+    DatumPtr last(void);
 
     /// Returns all but the last character of the string value
-    DatumP butlast(void);
+    DatumPtr butlast(void);
 
     /// Returns true if the last call to numberValue() returned a valid number.
     bool didNumberConversionSucceed();
@@ -121,19 +121,19 @@ public:
     int size();
 
     /// Returns the character at position indicated by anIndex.
-    DatumP datumAtIndex(int anIndex);
+    DatumPtr datumAtIndex(int anIndex);
 
     /// Retruns true if anIndex is between 1 and the length of the string.
     bool isIndexInRange(int anIndex);
 
     /// Returns true if aDatum is a substring.
-    bool containsDatum(DatumP aDatum, bool ignoreCase);
+    bool containsDatum(DatumPtr aDatum, bool ignoreCase);
 
     /// Returns true if aDatum is a substring.
-    bool isMember(DatumP aDatum, bool ignoreCase);
+    bool isMember(DatumPtr aDatum, bool ignoreCase);
 
     /// Returns a substring starting at the first occurrence of aDatum to the end of the string.
-    DatumP fromMember(DatumP aDatum, bool ignoreCase);
+    DatumPtr fromMember(DatumPtr aDatum, bool ignoreCase);
 };
 
 

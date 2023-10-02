@@ -32,7 +32,7 @@
 
 Kernel *mainKernel;
 
-static DatumPool<Error> pool(3);
+static DatumPtrool<Error> pool(3);
 
 
 Error::Error()
@@ -40,10 +40,10 @@ Error::Error()
 }
 
 Error * Error::createError(int aNumber, const QString &aErrorText) {
-    return Error::createError(aNumber, DatumP(aErrorText));
+    return Error::createError(aNumber, DatumPtr(aErrorText));
 }
 
-Error * Error::createError(int aNumber, DatumP aErrorText) {
+Error * Error::createError(int aNumber, DatumPtr aErrorText) {
   Error * retval = (Error *) pool.alloc();
   retval->code = aNumber;
   retval->errorText = aErrorText;
@@ -60,29 +60,29 @@ void Error::turtleOutOfBounds() {
   mainKernel->registerError(createError(ERR_TURTLE_BOUNDS, k.eOutBounds()), true);
 }
 
-DatumP Error::doesntLike(DatumP who, DatumP what, bool allowErract,
+DatumPtr Error::doesntLike(DatumPtr who, DatumPtr what, bool allowErract,
                          bool allowRecovery) {
   QString message = k.eDontlike().arg(who.showValue(),what.showValue());
   return mainKernel->registerError(createError(ERR_DOESNT_LIKE, message), allowErract,
                                    allowRecovery);
 }
 
-void Error::didntOutput(DatumP src, DatumP dest) {
+void Error::didntOutput(DatumPtr src, DatumPtr dest) {
   QString message = k.eDidntOutput().arg(src.showValue(),dest.showValue());
   mainKernel->registerError(createError(ERR_DIDNT_OUTPUT, message), true);
 }
 
-void Error::notEnough(DatumP dest) {
+void Error::notEnough(DatumPtr dest) {
   QString message = k.eNotEnoughInputs().arg(dest.showValue());
   mainKernel->registerError(createError(ERR_NOT_ENOUGH_INPUTS, message));
 }
 
-void Error::tooMany(DatumP dest) {
+void Error::tooMany(DatumPtr dest) {
   QString message = k.eTooManyInputs().arg(dest.showValue());
   mainKernel->registerError(createError(ERR_TOO_MANY_INPUTS, message));
 }
 
-void Error::dontSay(DatumP datum) {
+void Error::dontSay(DatumPtr datum) {
   QString message = k.eNoSay().arg(datum.showValue());
   mainKernel->registerError(createError(ERR_DONT_SAY, message));
 }
@@ -91,42 +91,42 @@ void Error::parenNf() {
   mainKernel->registerError(createError(ERR_PAREN_NF, k.eCParenNotFound()));
 }
 
-DatumP Error::noValueRecoverable(DatumP datum) {
+DatumPtr Error::noValueRecoverable(DatumPtr datum) {
   QString message = k.eNoValue().arg(datum.showValue());
   return mainKernel->registerError(createError(ERR_NO_VALUE, message), true, true);
 }
 
-void Error::noValue(DatumP datum) {
+void Error::noValue(DatumPtr datum) {
   QString message = k.eNoValue().arg(datum.showValue());
   mainKernel->registerError(createError(ERR_NO_VALUE, message));
 }
 
-void Error::noHow(DatumP dest) {
+void Error::noHow(DatumPtr dest) {
   QString message = k.eNoHow().arg(dest.showValue());
   mainKernel->registerError(createError(ERR_NO_HOW, message));
 }
 
-DatumP Error::noHowRecoverable(DatumP dest) {
+DatumPtr Error::noHowRecoverable(DatumPtr dest) {
   QString message = k.eNoHow().arg(dest.showValue());
   return mainKernel->registerError(createError(ERR_NO_HOW, message), true, true);
 }
 
-void Error::procDefined(DatumP procname) {
+void Error::procDefined(DatumPtr procname) {
   QString message = k.eAlreadyDefined().arg(procname.showValue());
   mainKernel->registerError(createError(ERR_ALREADY_DEFINED, message));
 }
 
-void Error::isPrimative(DatumP procname) {
+void Error::isPrimative(DatumPtr procname) {
   QString message = k.eIsPrimitive().arg(procname.showValue());
   mainKernel->registerError(createError(ERR_IS_PRIMATIVE, message));
 }
 
-void Error::toInProc(DatumP cmd) {
+void Error::toInProc(DatumPtr cmd) {
   QString message = k.eCantInProcedure().arg(cmd.showValue());
   mainKernel->registerError(createError(ERR_TO_IN_PROC, message));
 }
 
-void Error::toInPause(DatumP cmd) {
+void Error::toInPause(DatumPtr cmd) {
   QString message = k.eCantInPause().arg(cmd.showValue());
   mainKernel->registerError(createError(ERR_TO_IN_PAUSE, message));
 }
@@ -151,26 +151,26 @@ void Error::fileSystem() {
   mainKernel->registerError(createError(ERR_FILESYSTEM, k.eFileError()));
 }
 
-DatumP Error::fileSystemRecoverable() {
+DatumPtr Error::fileSystemRecoverable() {
   return mainKernel->registerError(createError(ERR_FILESYSTEM, k.eFileError()), true, true);
 }
 
-void Error::listHasMultExp(DatumP list) {
+void Error::listHasMultExp(DatumPtr list) {
   QString message = k.eRunlistMultExpressions().arg(list.showValue());
   mainKernel->registerError(createError(ERR_LIST_HAS_MULTIPLE_EXPRESSIONS, message));
 }
 
-void Error::alreadyOpen(DatumP what) {
+void Error::alreadyOpen(DatumPtr what) {
   QString message = k.eAlreadyOpen().arg(what.showValue());
   mainKernel->registerError(createError(ERR_ALREADY_OPEN, message), true);
 }
 
-void Error::cantOpen(DatumP what) {
+void Error::cantOpen(DatumPtr what) {
   QString message = k.eCantOpen().arg(what.showValue());
   mainKernel->registerError(createError(ERR_CANT_OPEN, message), true);
 }
 
-void Error::notOpen(DatumP what) {
+void Error::notOpen(DatumPtr what) {
   QString message = k.eNotOpen().arg(what.showValue());
   mainKernel->registerError(createError(ERR_NOT_OPEN, message), true);
 }
@@ -183,27 +183,27 @@ void Error::noGraphics() {
   mainKernel->registerError(createError(ERR_NO_GRAPHICS, k.eNoGraphics()), true);
 }
 
-DatumP Error::noTest(DatumP what) {
+DatumPtr Error::noTest(DatumPtr what) {
   QString message = k.eNoTest().arg(what.showValue());
   return mainKernel->registerError(createError(ERR_NO_TEST, message), true, true);
 }
 
-void Error::notInsideProcedure(DatumP what) {
+void Error::notInsideProcedure(DatumPtr what) {
   QString message = k.eNotInProcedure().arg(what.showValue());
   mainKernel->registerError(createError(ERR_NOT_INSIDE_PROCEDURE, message));
 }
 
-DatumP Error::macroReturned(DatumP aOutput) {
+DatumPtr Error::macroReturned(DatumPtr aOutput) {
   QString message = k.eNotList().arg(aOutput.showValue());
   return mainKernel->registerError(createError(ERR_MACRO_RETURNED_NOT_LIST, message), true, true);
 }
 
-DatumP Error::insideRunresult(DatumP cmdName) {
+DatumPtr Error::insideRunresult(DatumPtr cmdName) {
   QString message = k.eCantInsideRunresult().arg(cmdName.showValue());
   return mainKernel->registerError(createError(ERR_INSIDE_RUNRESULT, message), true, true);
 }
 
-DatumP Error::noApply(DatumP what) {
+DatumPtr Error::noApply(DatumPtr what) {
   QString message = k.eCantNoApply().arg(what.showValue());
   return mainKernel->registerError(createError(ERR_NO_APPLY, message), true, true);
 }
@@ -213,7 +213,7 @@ void Error::stackOverflow()
   mainKernel->registerError(createError(ERR_STACK_OVERFLOW, k.eStackOverflow()));
 }
 
-void Error::throwError(DatumP aTag, DatumP aOutput) {
+void Error::throwError(DatumPtr aTag, DatumPtr aOutput) {
   Error *e;
   if (aTag.wordValue()->keyValue() == k.error()) {
     if (aOutput == nothing) {

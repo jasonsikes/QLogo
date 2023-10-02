@@ -38,7 +38,7 @@
 
 // NUMERIC OPERATIONS
 
-DatumP Kernel::excSum(DatumP node) {
+DatumPtr Kernel::excSum(DatumPtr node) {
   ProcedureHelper h(this, node);
   double result = 0;
 
@@ -49,7 +49,7 @@ DatumP Kernel::excSum(DatumP node) {
   return h.ret(result);
 }
 
-DatumP Kernel::excDifference(DatumP node) {
+DatumPtr Kernel::excDifference(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
 
@@ -60,14 +60,14 @@ DatumP Kernel::excDifference(DatumP node) {
   return h.ret(c);
 }
 
-DatumP Kernel::excMinus(DatumP node) {
+DatumPtr Kernel::excMinus(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
 
   return h.ret(-a);
 }
 
-DatumP Kernel::excProduct(DatumP node) {
+DatumPtr Kernel::excProduct(DatumPtr node) {
   ProcedureHelper h(this, node);
   double result = 1;
 
@@ -78,7 +78,7 @@ DatumP Kernel::excProduct(DatumP node) {
   return h.ret(result);
 }
 
-DatumP Kernel::excQuotient(DatumP node) {
+DatumPtr Kernel::excQuotient(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a, c;
 
@@ -97,7 +97,7 @@ DatumP Kernel::excQuotient(DatumP node) {
   return h.ret(c);
 }
 
-DatumP Kernel::excRemainder(DatumP node) {
+DatumPtr Kernel::excRemainder(DatumPtr node) {
   ProcedureHelper h(this, node);
   int a = h.integerAtIndex(0);
 
@@ -109,7 +109,7 @@ DatumP Kernel::excRemainder(DatumP node) {
   return h.ret(c);
 }
 
-DatumP Kernel::excModulo(DatumP node) {
+DatumPtr Kernel::excModulo(DatumPtr node) {
   ProcedureHelper h(this, node);
   int a = h.integerAtIndex(0);
 
@@ -122,7 +122,7 @@ DatumP Kernel::excModulo(DatumP node) {
   return h.ret(c);
 }
 
-DatumP Kernel::excInt(DatumP node) {
+DatumPtr Kernel::excInt(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
 
@@ -131,7 +131,7 @@ DatumP Kernel::excInt(DatumP node) {
   return h.ret(b);
 }
 
-DatumP Kernel::excRound(DatumP node) {
+DatumPtr Kernel::excRound(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
 
@@ -140,7 +140,7 @@ DatumP Kernel::excRound(DatumP node) {
   return h.ret(b);
 }
 
-DatumP Kernel::excSqrt(DatumP node) {
+DatumPtr Kernel::excSqrt(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.validatedNumberAtIndex(
       0, [](double candidate) { return candidate >= 0; });
@@ -150,7 +150,7 @@ DatumP Kernel::excSqrt(DatumP node) {
   return h.ret(c);
 }
 
-DatumP Kernel::excPower(DatumP node) {
+DatumPtr Kernel::excPower(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
   double b;
@@ -166,7 +166,7 @@ DatumP Kernel::excPower(DatumP node) {
   return h.ret(c);
 }
 
-DatumP Kernel::excExp(DatumP node) {
+DatumPtr Kernel::excExp(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
 
@@ -175,7 +175,7 @@ DatumP Kernel::excExp(DatumP node) {
   return h.ret(c);
 }
 
-DatumP Kernel::excLog10(DatumP node) {
+DatumPtr Kernel::excLog10(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.validatedNumberAtIndex(
       0, [](double candidate) { return candidate >= 0; });
@@ -185,7 +185,7 @@ DatumP Kernel::excLog10(DatumP node) {
   return h.ret(c);
 }
 
-DatumP Kernel::excLn(DatumP node) {
+DatumPtr Kernel::excLn(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.validatedNumberAtIndex(
       0, [](double candidate) { return candidate >= 0; });
@@ -195,7 +195,7 @@ DatumP Kernel::excLn(DatumP node) {
   return h.ret(c);
 }
 
-DatumP Kernel::excSin(DatumP node) {
+DatumPtr Kernel::excSin(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
 
@@ -204,7 +204,7 @@ DatumP Kernel::excSin(DatumP node) {
   return h.ret(c);
 }
 
-DatumP Kernel::excRadsin(DatumP node) {
+DatumPtr Kernel::excRadsin(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
 
@@ -213,7 +213,7 @@ DatumP Kernel::excRadsin(DatumP node) {
   return h.ret(c);
 }
 
-DatumP Kernel::excCos(DatumP node) {
+DatumPtr Kernel::excCos(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
 
@@ -222,7 +222,7 @@ DatumP Kernel::excCos(DatumP node) {
   return h.ret(c);
 }
 
-DatumP Kernel::excRadcos(DatumP node) {
+DatumPtr Kernel::excRadcos(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
 
@@ -231,7 +231,7 @@ DatumP Kernel::excRadcos(DatumP node) {
   return h.ret(c);
 }
 
-DatumP Kernel::excArctan(DatumP node) {
+DatumPtr Kernel::excArctan(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
   if (node.astnodeValue()->countOfChildren() == 1) {
@@ -246,7 +246,7 @@ DatumP Kernel::excArctan(DatumP node) {
   return h.ret(c);
 }
 
-DatumP Kernel::excRadarctan(DatumP node) {
+DatumPtr Kernel::excRadarctan(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
   if (node.astnodeValue()->countOfChildren() == 1) {
@@ -263,28 +263,28 @@ DatumP Kernel::excRadarctan(DatumP node) {
 
 // PREDICATES
 
-DatumP Kernel::excLessp(DatumP node) {
+DatumPtr Kernel::excLessp(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
   double b = h.numberAtIndex(1);
   return h.ret(a < b);
 }
 
-DatumP Kernel::excGreaterp(DatumP node) {
+DatumPtr Kernel::excGreaterp(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
   double b = h.numberAtIndex(1);
   return h.ret(a > b);
 }
 
-DatumP Kernel::excLessequalp(DatumP node) {
+DatumPtr Kernel::excLessequalp(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
   double b = h.numberAtIndex(1);
   return h.ret(a <= b);
 }
 
-DatumP Kernel::excGreaterequalp(DatumP node) {
+DatumPtr Kernel::excGreaterequalp(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
   double b = h.numberAtIndex(1);
@@ -293,7 +293,7 @@ DatumP Kernel::excGreaterequalp(DatumP node) {
 
 // RANDOM NUMBERS
 
-DatumP Kernel::excRandom(DatumP node) {
+DatumPtr Kernel::excRandom(DatumPtr node) {
   ProcedureHelper h(this, node);
   int start, end;
 
@@ -325,7 +325,7 @@ DatumP Kernel::excRandom(DatumP node) {
 
 // PRINT FORMATTING
 
-DatumP Kernel::excForm(DatumP node) {
+DatumPtr Kernel::excForm(DatumPtr node) {
   ProcedureHelper h(this, node);
   double num = h.numberAtIndex(0);
   double width = h.integerAtIndex(1);
@@ -339,7 +339,7 @@ DatumP Kernel::excForm(DatumP node) {
 
 // BITWISE OPERATORS
 
-DatumP Kernel::excBitand(DatumP node) {
+DatumPtr Kernel::excBitand(DatumPtr node) {
   ProcedureHelper h(this, node);
   int retval = -1;
 
@@ -351,7 +351,7 @@ DatumP Kernel::excBitand(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excBitor(DatumP node) {
+DatumPtr Kernel::excBitor(DatumPtr node) {
   ProcedureHelper h(this, node);
   int retval = 0;
 
@@ -363,7 +363,7 @@ DatumP Kernel::excBitor(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excBitxor(DatumP node) {
+DatumPtr Kernel::excBitxor(DatumPtr node) {
   ProcedureHelper h(this, node);
   int retval = 0;
 
@@ -375,14 +375,14 @@ DatumP Kernel::excBitxor(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excBitnot(DatumP node) {
+DatumPtr Kernel::excBitnot(DatumPtr node) {
   ProcedureHelper h(this, node);
   int a = h.integerAtIndex(0);
   int retval = ~a;
   return h.ret(retval);
 }
 
-DatumP Kernel::excAshift(DatumP node) {
+DatumPtr Kernel::excAshift(DatumPtr node) {
   ProcedureHelper h(this, node);
   int a = h.integerAtIndex(0);
   int e = h.integerAtIndex(1);
@@ -390,7 +390,7 @@ DatumP Kernel::excAshift(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excLshift(DatumP node) {
+DatumPtr Kernel::excLshift(DatumPtr node) {
   ProcedureHelper h(this, node);
   unsigned int a = h.integerAtIndex(0);
   int e = h.integerAtIndex(1);
@@ -400,7 +400,7 @@ DatumP Kernel::excLshift(DatumP node) {
 
 // LOGICAL OPERATIONS
 
-DatumP Kernel::excAnd(DatumP node) {
+DatumPtr Kernel::excAnd(DatumPtr node) {
   ProcedureHelper h(this, node);
   for (int i = 0; i < h.countOfChildren(); ++i) {
     bool a = h.boolAtIndex(i, true);
@@ -411,7 +411,7 @@ DatumP Kernel::excAnd(DatumP node) {
   return h.ret(true);
 }
 
-DatumP Kernel::excOr(DatumP node) {
+DatumPtr Kernel::excOr(DatumPtr node) {
   ProcedureHelper h(this, node);
   for (int i = 0; i < h.countOfChildren(); ++i) {
     bool a = h.boolAtIndex(i, true);
@@ -422,7 +422,7 @@ DatumP Kernel::excOr(DatumP node) {
   return h.ret(false);
 }
 
-DatumP Kernel::excNot(DatumP node) {
+DatumPtr Kernel::excNot(DatumPtr node) {
   ProcedureHelper h(this, node);
   bool a = h.boolAtIndex(0, true);
 

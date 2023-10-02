@@ -43,17 +43,17 @@ struct Cmd_t {
   int countOfMaxParams;
 };
 
-typedef DatumP (Parser::*ParserMethod)(void);
+typedef DatumPtr (Parser::*ParserMethod)(void);
 
 class Parser : public Workspace {
   qint64 lastProcedureCreatedTimestamp;
-  DatumP tokenizeListWithPrompt(const QString &prompt, int level, bool isArray,
+  DatumPtr tokenizeListWithPrompt(const QString &prompt, int level, bool isArray,
                                 bool shouldRemoveComments,
                                 QTextStream *readStream);
   bool isReadingList = false;
-  DatumP listSourceText;
-  DatumP lastReadListSource();
-  DatumP currentToken;
+  DatumPtr listSourceText;
+  DatumPtr lastReadListSource();
+  DatumPtr currentToken;
   Kernel *kernel;
 
   // For runparse and it's supporting methods:
@@ -63,64 +63,64 @@ class Parser : public Workspace {
   bool isRunparseSourceSpecial;
   void runparseSpecialchars(void);
   void runparseMinus(void);
-  DatumP runparseNumber(void); // returns a number if successful
+  DatumPtr runparseNumber(void); // returns a number if successful
   void runparseQuotedWord();
   void runparseString();
 
   void advanceToken();
   ListIterator listIter;
 
-  DatumP parseExp();
-  DatumP parseSumexp();
-  DatumP parseMulexp();
-  DatumP parseminusexp();
-  DatumP parseTermexp();
-  DatumP parseCommand(bool isVararg);
-  DatumP parseStopIfExists(DatumP command);
-  DatumP astnodeFromCommand(DatumP command, int &minParams, int &defaultParams,
+  DatumPtr parseExp();
+  DatumPtr parseSumexp();
+  DatumPtr parseMulexp();
+  DatumPtr parseminusexp();
+  DatumPtr parseTermexp();
+  DatumPtr parseCommand(bool isVararg);
+  DatumPtr parseStopIfExists(DatumPtr command);
+  DatumPtr astnodeFromCommand(DatumPtr command, int &minParams, int &defaultParams,
                             int &maxParams);
 
-  QHash<QString, DatumP> procedures;
+  QHash<QString, DatumPtr> procedures;
   QHash<QString, Cmd_t> primitiveAlternateNames;
 
 public:
-  DatumP readrawlineWithPrompt(const QString &prompt, QTextStream *readStream);
-  DatumP readwordWithPrompt(const QString &prompt, QTextStream *readStream);
+  DatumPtr readrawlineWithPrompt(const QString &prompt, QTextStream *readStream);
+  DatumPtr readwordWithPrompt(const QString &prompt, QTextStream *readStream);
   Parser(Kernel *aKernel);
-  DatumP readlistWithPrompt(const QString &prompt, bool shouldRemoveComments,
+  DatumPtr readlistWithPrompt(const QString &prompt, bool shouldRemoveComments,
                             QTextStream *readStream);
-  DatumP runparse(DatumP src);
-  QList<DatumP> *astFromList(List *aList);
+  DatumPtr runparse(DatumPtr src);
+  QList<DatumPtr> *astFromList(List *aList);
 
-  DatumP createProcedure(DatumP cmd, DatumP text, DatumP sourceText);
-  void defineProcedure(DatumP cmd, DatumP procnameP, DatumP text,
-                       DatumP sourceText);
-  void inputProcedure(DatumP nodeP, QTextStream *readStream);
-  void copyProcedure(DatumP newnameP, DatumP oldnameP);
-  void eraseProcedure(DatumP procnameP);
+  DatumPtr createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourceText);
+  void defineProcedure(DatumPtr cmd, DatumPtr procnameP, DatumPtr text,
+                       DatumPtr sourceText);
+  void inputProcedure(DatumPtr nodeP, QTextStream *readStream);
+  void copyProcedure(DatumPtr newnameP, DatumPtr oldnameP);
+  void eraseProcedure(DatumPtr procnameP);
   void eraseAllProcedures();
 
-  DatumP procedureText(DatumP procnameP);
-  DatumP procedureFulltext(DatumP procnameP, bool shouldValidate = true);
-  QString procedureTitle(DatumP procnameP);
+  DatumPtr procedureText(DatumPtr procnameP);
+  DatumPtr procedureFulltext(DatumPtr procnameP, bool shouldValidate = true);
+  QString procedureTitle(DatumPtr procnameP);
 
   bool isProcedure(QString procname);
   bool isMacro(QString procname);
   bool isPrimitive(QString procname);
   bool isDefined(QString procname);
 
-  DatumP allProcedureNames(showContents_t showWhat);
-  DatumP allPrimitiveProcedureNames();
-  DatumP arity(DatumP nameP);
+  DatumPtr allProcedureNames(showContents_t showWhat);
+  DatumPtr allPrimitiveProcedureNames();
+  DatumPtr arity(DatumPtr nameP);
 
-  DatumP astnodeWithLiterals(DatumP cmd, DatumP params);
+  DatumPtr astnodeWithLiterals(DatumPtr cmd, DatumPtr params);
 
-  QString unreadDatum(DatumP aDatum, bool isInList = false);
+  QString unreadDatum(DatumPtr aDatum, bool isInList = false);
   QString unreadList(List *aList, bool isInList = false);
   QString unreadWord(Word *aWord, bool isInList = false);
   QString unreadArray(Array *anArray);
 
-  QString printoutDatum(DatumP aDatum);
+  QString printoutDatum(DatumPtr aDatum);
 };
 
 class Procedure : public Datum {
@@ -131,16 +131,16 @@ public:
   Procedure() {}
   QStringList requiredInputs;
   QStringList optionalInputs;
-  QList<DatumP> optionalDefaults;
+  QList<DatumPtr> optionalDefaults;
   QString restInput;
   int defaultNumber;
   int countOfMinParams;
   int countOfMaxParams;
-  QHash<const QString, DatumP> tagToLine;
+  QHash<const QString, DatumPtr> tagToLine;
   bool isMacro;
-  DatumP sourceText;
+  DatumPtr sourceText;
 
-  DatumP instructionList;
+  DatumPtr instructionList;
   DatumType isa() { return Datum::procedureType; }
 
   void init() {

@@ -25,7 +25,6 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum_word.h"
 #include "datum_array.h"
 #include "datum_datump.h"
 #include "datum_list.h"
@@ -33,7 +32,7 @@
 #include <qdebug.h>
 #include "stringconstants.h"
 
-static DatumPool<Array> pool(5);
+static DatumPtrool<Array> pool(5);
 
 QList<void *> aryVisited;
 QList<void *> otherAryVisited;
@@ -42,7 +41,7 @@ Array::Array(int aOrigin, int aSize) {
   origin = aOrigin;
   array.reserve(aSize);
   for (int i = 0; i < aSize; ++i) {
-    array.append(DatumP(List::alloc()));
+    array.append(DatumPtr(List::alloc()));
   }
 }
 
@@ -125,26 +124,26 @@ QString Array::showValue(bool fullPrintp, int printDepthLimit,
   return "...";
 }
 
-bool Array::isEqual(DatumP other, bool) {
+bool Array::isEqual(DatumPtr other, bool) {
   Array *o = other.arrayValue();
   return this == o;
 }
 
 int Array::size() { return array.size(); }
 
-void Array::append(DatumP value) { array.append(value); }
+void Array::append(DatumPtr value) { array.append(value); }
 
 bool Array::isIndexInRange(int anIndex) {
   int index = anIndex - origin;
   return ((index >= 0) && (index < array.size()));
 }
 
-void Array::setItem(int anIndex, DatumP aValue) {
+void Array::setItem(int anIndex, DatumPtr aValue) {
   int index = anIndex - origin;
   array[index] = aValue;
 }
 
-void Array::setButfirstItem(DatumP aValue) {
+void Array::setButfirstItem(DatumPtr aValue) {
   Q_ASSERT(array.size() > 0);
   auto estart = array.begin();
   ++estart;
@@ -153,11 +152,11 @@ void Array::setButfirstItem(DatumP aValue) {
   array.append(aValue.arrayValue()->array);
 }
 
-void Array::setFirstItem(DatumP aValue) { array[0] = aValue; }
+void Array::setFirstItem(DatumPtr aValue) { array[0] = aValue; }
 
-bool Array::containsDatum(DatumP aDatum, bool ignoreCase) {
+bool Array::containsDatum(DatumPtr aDatum, bool ignoreCase) {
   for (int i = 0; i < array.size(); ++i) {
-    DatumP e = array[i];
+    DatumPtr e = array[i];
     if (e == aDatum)
       return true;
     if (e.datumValue()->containsDatum(aDatum, ignoreCase))
@@ -166,7 +165,7 @@ bool Array::containsDatum(DatumP aDatum, bool ignoreCase) {
   return false;
 }
 
-bool Array::isMember(DatumP aDatum, bool ignoreCase) {
+bool Array::isMember(DatumPtr aDatum, bool ignoreCase) {
   for (int i = 0; i < array.size(); ++i) {
     if (array[i].isEqual(aDatum, ignoreCase))
       return true;
@@ -174,7 +173,7 @@ bool Array::isMember(DatumP aDatum, bool ignoreCase) {
   return false;
 }
 
-DatumP Array::fromMember(DatumP aDatum, bool ignoreCase) {
+DatumPtr Array::fromMember(DatumPtr aDatum, bool ignoreCase) {
   for (int i = 0; i < array.size(); ++i) {
     if (array[i].isEqual(aDatum, ignoreCase)) {
       Array *retval = new Array(origin, 0);
@@ -183,35 +182,35 @@ DatumP Array::fromMember(DatumP aDatum, bool ignoreCase) {
         retval->append(array[i]);
         ++i;
       }
-      return DatumP(retval);
+      return DatumPtr(retval);
     }
   }
-  return DatumP(new Array(origin, 0));
+  return DatumPtr(new Array(origin, 0));
 }
 
-DatumP Array::datumAtIndex(int anIndex) {
+DatumPtr Array::datumAtIndex(int anIndex) {
   int index = anIndex - origin;
   Q_ASSERT((index >= 0) && (index < array.size()));
   return array[index];
 }
 
-DatumP Array::first() { return DatumP(origin); }
+DatumPtr Array::first() { return DatumPtr(origin); }
 
-DatumP Array::last() {
+DatumPtr Array::last() {
   Q_ASSERT(array.size() > 0);
   return array[array.size() - 1];
 }
 
-DatumP Array::butfirst() {
+DatumPtr Array::butfirst() {
   Array *retval = new Array(origin, 0);
   retval->array = array.mid(1, array.size() - 1);
-  return DatumP(retval);
+  return DatumPtr(retval);
 }
 
-DatumP Array::butlast() {
+DatumPtr Array::butlast() {
   Array *retval = new Array(origin, 0);
   retval->array = array.mid(0, array.size() - 1);
-  return DatumP(retval);
+  return DatumPtr(retval);
 }
 
 ArrayIterator Array::newIterator() { return ArrayIterator(&array); }

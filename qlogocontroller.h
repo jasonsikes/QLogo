@@ -61,8 +61,8 @@ public:
     void initialize();
 
     void printToConsole(const QString &s);
-    DatumP readRawlineWithPrompt(const QString prompt);
-    DatumP readchar();
+    DatumPtr readRawlineWithPrompt(const QString prompt);
+    DatumPtr readchar();
     const QString editText(const QString startText);
 
     void setTurtlePos(const QMatrix4x4 &newTurtlePos);

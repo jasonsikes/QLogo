@@ -55,8 +55,8 @@ public:
   SignalsEnum_t latestSignal();
 
   virtual void initialize() {}
-  virtual DatumP readRawlineWithPrompt(const QString);
-  virtual DatumP readchar();
+  virtual DatumPtr readRawlineWithPrompt(const QString);
+  virtual DatumPtr readchar();
   virtual bool atEnd();
   virtual void printToConsole(const QString &);
   int run(void);

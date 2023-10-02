@@ -39,7 +39,7 @@
 #include <QProcess> // for SHELL
 #include <QTextStream>
 
-QString Kernel::filepathForFilename(DatumP filenameP) {
+QString Kernel::filepathForFilename(DatumPtr filenameP) {
   const QString &filename = filenameP.wordValue()->printValue();
 
   QString prefix;
@@ -53,7 +53,7 @@ QString Kernel::filepathForFilename(DatumP filenameP) {
   return retval;
 }
 
-QTextStream *Kernel::openFileStream(DatumP filenameP,
+QTextStream *Kernel::openFileStream(DatumPtr filenameP,
                                     QIODevice::OpenMode mode) {
   QString filepath = filepathForFilename(filenameP.wordValue());
   QString filename = filenameP.wordValue()->keyValue();
@@ -72,7 +72,7 @@ QTextStream *Kernel::openFileStream(DatumP filenameP,
   return stream;
 }
 
-QTextStream *Kernel::createStringStream(DatumP filenameP,
+QTextStream *Kernel::createStringStream(DatumPtr filenameP,
                                         QIODevice::OpenMode mode) {
   QString filename = filenameP.datumValue()->first().wordValue()->keyValue();
   if (fileStreams.contains(filename)) {
@@ -80,7 +80,7 @@ QTextStream *Kernel::createStringStream(DatumP filenameP,
   }
 
   QString *buffer = NULL;
-  DatumP value = variables.datumForName(filename);
+  DatumPtr value = variables.datumForName(filename);
   if (value.isWord()) {
     // buffer will be deleted when stream is closed
     buffer = new QString(value.wordValue()->printValue());
@@ -94,7 +94,7 @@ QTextStream *Kernel::createStringStream(DatumP filenameP,
 }
 
 QTextStream *Kernel::open(ProcedureHelper &h, QIODevice::OpenMode openFlags) {
-  DatumP filenameP = h.validatedDatumAtIndex(0, [](DatumP candidate) {
+  DatumPtr filenameP = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     if (candidate.isWord())
       return true;
     if (!candidate.isList() || (candidate.listValue()->size() == 0))
@@ -111,7 +111,7 @@ QTextStream *Kernel::open(ProcedureHelper &h, QIODevice::OpenMode openFlags) {
 }
 
 QTextStream *Kernel::getStream(ProcedureHelper &h) {
-  DatumP filenameP = h.validatedDatumAtIndex(0, [](DatumP candidate) {
+  DatumPtr filenameP = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     if (candidate.isList() && (candidate.listValue()->size() != 0))
       return false;
     return candidate.isWord() || candidate.isList();
@@ -144,7 +144,7 @@ void Kernel::close(const QString &filename) {
 
   delete stream;
   if (buffer != NULL) {
-    DatumP w = DatumP(*buffer);
+    DatumPtr w = DatumPtr(*buffer);
     variables.setDatumForName(w, filename);
     delete buffer;
   }
@@ -178,11 +178,11 @@ void Kernel::sysPrint(const QString &text) { lprint(systemWriteStream, text); }
 
 // TRANSMITTERS
 
-DatumP Kernel::excPrint(DatumP node) {
+DatumPtr Kernel::excPrint(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString printString = "";
   for (int i = 0; i < h.countOfChildren(); ++i) {
-    DatumP value = h.datumAtIndex(i);
+    DatumPtr value = h.datumAtIndex(i);
     if (i > 0)
       printString.append(' ');
     printString.append(value.printValue(varFULLPRINTP(), varPRINTDEPTHLIMIT(),
@@ -193,11 +193,11 @@ DatumP Kernel::excPrint(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excType(DatumP node) {
+DatumPtr Kernel::excType(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString printString = "";
   for (int i = 0; i < h.countOfChildren(); ++i) {
-    DatumP value = h.datumAtIndex(i);
+    DatumPtr value = h.datumAtIndex(i);
     printString.append(value.showValue(varFULLPRINTP(), varPRINTDEPTHLIMIT(),
                                        varPRINTWIDTHLIMIT()));
   }
@@ -205,11 +205,11 @@ DatumP Kernel::excType(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excShow(DatumP node) {
+DatumPtr Kernel::excShow(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString printString = "";
   for (int i = 0; i < h.countOfChildren(); ++i) {
-    DatumP value = h.datumAtIndex(i);
+    DatumPtr value = h.datumAtIndex(i);
     if (i > 0)
       printString.append(' ');
     printString.append(value.showValue(varFULLPRINTP(), varPRINTDEPTHLIMIT(),
@@ -222,39 +222,39 @@ DatumP Kernel::excShow(DatumP node) {
 
 // RECEIVERS
 
-DatumP Kernel::excReadlist(DatumP node) {
+DatumPtr Kernel::excReadlist(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP retval = readlistWithPrompt("", false, readStream);
+  DatumPtr retval = readlistWithPrompt("", false, readStream);
   if (retval == nothing)
     return h.ret(QString(""));
   return h.ret(retval);
 }
 
-DatumP Kernel::excReadword(DatumP node) {
+DatumPtr Kernel::excReadword(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP retval = readWordWithPrompt("", readStream);
+  DatumPtr retval = readWordWithPrompt("", readStream);
   if (retval == nothing)
     return h.ret(List::alloc());
   return h.ret(retval);
 }
 
-DatumP Kernel::excReadrawline(DatumP node) {
+DatumPtr Kernel::excReadrawline(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP retval = readRawLineWithPrompt("", readStream);
+  DatumPtr retval = readRawLineWithPrompt("", readStream);
   if (retval == nothing)
     return h.ret(List::alloc());
   return h.ret(retval);
 }
 
-DatumP Kernel::excReadchar(DatumP node) {
+DatumPtr Kernel::excReadchar(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP retval = readChar();
+  DatumPtr retval = readChar();
   if (retval == nothing)
     return h.ret(List::alloc());
   return h.ret(retval);
 }
 
-DatumP Kernel::excReadchars(DatumP node) {
+DatumPtr Kernel::excReadchars(DatumPtr node) {
   ProcedureHelper h(this, node);
   int count = h.validatedIntegerAtIndex(
       0, [](int candidate) { return candidate >= 0; });
@@ -262,7 +262,7 @@ DatumP Kernel::excReadchars(DatumP node) {
   QString retval;
   retval.reserve(count);
   while (count > 0) {
-    DatumP c = readChar();
+    DatumPtr c = readChar();
     if (c == nothing)
       break;
     retval += c.wordValue()->rawValue();
@@ -274,9 +274,9 @@ DatumP Kernel::excReadchars(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excShell(DatumP node) {
+DatumPtr Kernel::excShell(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP commandP = h.validatedDatumAtIndex(0, [](DatumP candidate) {
+  DatumPtr commandP = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     if (candidate.isWord())
       return true;
     if (!candidate.isList() || (candidate.listValue()->size() == 0))
@@ -327,7 +327,7 @@ DatumP Kernel::excShell(DatumP node) {
         line.chop(1);
 #endif
       QString text(line);
-      DatumP rawline = DatumP(text);
+      DatumPtr rawline = DatumPtr(text);
       if (node.astnodeValue()->countOfChildren() == 2) {
         retval->append(rawline);
       } else {
@@ -341,9 +341,9 @@ DatumP Kernel::excShell(DatumP node) {
 
 // FILE ACCESS
 
-DatumP Kernel::excSetprefix(DatumP node) {
+DatumPtr Kernel::excSetprefix(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP newPrefix = h.validatedDatumAtIndex(0, [](DatumP candidate) {
+  DatumPtr newPrefix = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     if (candidate.isList() && (candidate.listValue()->size() == 0))
       return true;
     return candidate.isWord();
@@ -357,7 +357,7 @@ DatumP Kernel::excSetprefix(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excPrefix(DatumP node) {
+DatumPtr Kernel::excPrefix(DatumPtr node) {
   ProcedureHelper h(this, node);
   if (filePrefix == nothing) {
     return h.ret(List::alloc());
@@ -365,7 +365,7 @@ DatumP Kernel::excPrefix(DatumP node) {
   return h.ret(filePrefix);
 }
 
-DatumP Kernel::excOpenread(DatumP node) {
+DatumPtr Kernel::excOpenread(DatumPtr node) {
   ProcedureHelper h(this, node);
   QIODevice::OpenMode openFlags = QIODevice::ReadOnly | QIODevice::Text;
   QTextStream *stream = open(h, openFlags);
@@ -374,7 +374,7 @@ DatumP Kernel::excOpenread(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excOpenwrite(DatumP node) {
+DatumPtr Kernel::excOpenwrite(DatumPtr node) {
   ProcedureHelper h(this, node);
   QIODevice::OpenMode openFlags =
       QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text;
@@ -384,7 +384,7 @@ DatumP Kernel::excOpenwrite(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excOpenappend(DatumP node) {
+DatumPtr Kernel::excOpenappend(DatumPtr node) {
   ProcedureHelper h(this, node);
   QIODevice::OpenMode openFlags =
       QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text;
@@ -394,7 +394,7 @@ DatumP Kernel::excOpenappend(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excOpenupdate(DatumP node) {
+DatumPtr Kernel::excOpenupdate(DatumPtr node) {
   ProcedureHelper h(this, node);
   QIODevice::OpenMode openFlags = QIODevice::ReadWrite | QIODevice::Text;
   QTextStream *stream = open(h, openFlags);
@@ -404,9 +404,9 @@ DatumP Kernel::excOpenupdate(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excClose(DatumP node) {
+DatumPtr Kernel::excClose(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP filenameP = h.wordAtIndex(0);
+  DatumPtr filenameP = h.wordAtIndex(0);
   QString filename = filenameP.wordValue()->keyValue();
 
   if (!fileStreams.contains(filename)) {
@@ -417,25 +417,25 @@ DatumP Kernel::excClose(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excAllopen(DatumP node) {
+DatumPtr Kernel::excAllopen(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = List::alloc();
-  DatumP retvalP = h.ret(retval);
+  DatumPtr retvalP = h.ret(retval);
   for (auto &filename : fileStreams.keys()) {
-    retval->append(DatumP(filename));
+    retval->append(DatumPtr(filename));
   }
   return retvalP;
 }
 
-DatumP Kernel::excCloseall(DatumP node) {
+DatumPtr Kernel::excCloseall(DatumPtr node) {
   ProcedureHelper h(this, node);
   closeAll();
   return nothing;
 }
 
-DatumP Kernel::excErasefile(DatumP node) {
+DatumPtr Kernel::excErasefile(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP filenameP = h.wordAtIndex(0);
+  DatumPtr filenameP = h.wordAtIndex(0);
 
   const QString filepath = filepathForFilename(filenameP);
   QFile file(filepath);
@@ -444,9 +444,9 @@ DatumP Kernel::excErasefile(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excDribble(DatumP node) {
+DatumPtr Kernel::excDribble(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumP filenameP = h.wordAtIndex(0);
+  DatumPtr filenameP = h.wordAtIndex(0);
 
   const QString filepath = filepathForFilename(filenameP);
 
@@ -459,25 +459,25 @@ DatumP Kernel::excDribble(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excNodribble(DatumP node) {
+DatumPtr Kernel::excNodribble(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainController()->setDribble("");
   return nothing;
 }
 
-DatumP Kernel::excSetread(DatumP node) {
+DatumPtr Kernel::excSetread(DatumPtr node) {
   ProcedureHelper h(this, node);
   readStream = getStream(h);
   return nothing;
 }
 
-DatumP Kernel::excSetwrite(DatumP node) {
+DatumPtr Kernel::excSetwrite(DatumPtr node) {
   ProcedureHelper h(this, node);
   writeStream = getStream(h);
   return nothing;
 }
 
-DatumP Kernel::excReader(DatumP node) {
+DatumPtr Kernel::excReader(DatumPtr node) {
   ProcedureHelper h(this, node);
   if (readStream == NULL)
     return h.ret(List::alloc());
@@ -486,7 +486,7 @@ DatumP Kernel::excReader(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excWriter(DatumP node) {
+DatumPtr Kernel::excWriter(DatumPtr node) {
   ProcedureHelper h(this, node);
   if (writeStream == NULL)
     return h.ret(List::alloc());
@@ -495,7 +495,7 @@ DatumP Kernel::excWriter(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excSetreadpos(DatumP node) {
+DatumPtr Kernel::excSetreadpos(DatumPtr node) {
   ProcedureHelper h(this, node);
   int pos = h.validatedIntegerAtIndex(
       0, [](int candidate) { return candidate >= 0; });
@@ -505,7 +505,7 @@ DatumP Kernel::excSetreadpos(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excSetwritepos(DatumP node) {
+DatumPtr Kernel::excSetwritepos(DatumPtr node) {
   ProcedureHelper h(this, node);
   int pos = h.validatedIntegerAtIndex(
       0, [](int candidate) { return candidate >= 0; });
@@ -515,7 +515,7 @@ DatumP Kernel::excSetwritepos(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excReadpos(DatumP node) {
+DatumPtr Kernel::excReadpos(DatumPtr node) {
   ProcedureHelper h(this, node);
   double retval = 0;
 
@@ -525,7 +525,7 @@ DatumP Kernel::excReadpos(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excWritepos(DatumP node) {
+DatumPtr Kernel::excWritepos(DatumPtr node) {
   ProcedureHelper h(this, node);
   double retval = 0;
 
@@ -537,7 +537,7 @@ DatumP Kernel::excWritepos(DatumP node) {
   return h.ret(retval);
 }
 
-DatumP Kernel::excEofp(DatumP node) {
+DatumPtr Kernel::excEofp(DatumPtr node) {
   ProcedureHelper h(this, node);
   bool retval =
       (readStream != NULL) ? readStream->atEnd() : mainController()->atEnd();
@@ -546,23 +546,23 @@ DatumP Kernel::excEofp(DatumP node) {
 
 // TERMINAL ACCESS
 
-DatumP Kernel::excKeyp(DatumP node) {
+DatumPtr Kernel::excKeyp(DatumPtr node) {
   ProcedureHelper h(this, node);
   bool retval = (readStream != NULL) ? !readStream->atEnd()
                                      : mainController()->keyQueueHasChars();
   return h.ret(retval);
 }
 
-DatumP Kernel::excCleartext(DatumP node) {
+DatumPtr Kernel::excCleartext(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainController()->clearScreenText();
   return nothing;
 }
 
-DatumP Kernel::excSetcursor(DatumP node) {
+DatumPtr Kernel::excSetcursor(DatumPtr node) {
   ProcedureHelper h(this, node);
   QVector<double> v;
-  h.validatedDatumAtIndex(0, [&v, this](DatumP candidate) {
+  h.validatedDatumAtIndex(0, [&v, this](DatumPtr candidate) {
     if (!numbersFromList(v, candidate))
       return false;
     if (v.size() != 2)
@@ -577,29 +577,29 @@ DatumP Kernel::excSetcursor(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excCursor(DatumP node) {
+DatumPtr Kernel::excCursor(DatumPtr node) {
   ProcedureHelper h(this, node);
   int row = 0, col = 0;
   mainController()->getTextCursorPos(row, col);
   List *retval = List::alloc();
-  retval->append(DatumP(row));
-  retval->append(DatumP(col));
+  retval->append(DatumPtr(row));
+  retval->append(DatumPtr(col));
   return h.ret(retval);
 }
 
-DatumP Kernel::excSettextcolor(DatumP node) {
+DatumPtr Kernel::excSettextcolor(DatumPtr node) {
   ProcedureHelper h(this, node);
   QColor foreground;
   QColor background;
-  DatumP foregroundP =
-      h.validatedDatumAtIndex(0, [&foreground, this](DatumP candidate) {
-        return colorFromDatumP(foreground, candidate);
+  DatumPtr foregroundP =
+      h.validatedDatumAtIndex(0, [&foreground, this](DatumPtr candidate) {
+        return colorFromDatumPtr(foreground, candidate);
       });
 
   if (h.countOfChildren() > 1) {
-    DatumP backgroundP =
-        h.validatedDatumAtIndex(1, [&background, this](DatumP candidate) {
-          return colorFromDatumP(background, candidate);
+    DatumPtr backgroundP =
+        h.validatedDatumAtIndex(1, [&background, this](DatumPtr candidate) {
+          return colorFromDatumPtr(background, candidate);
         });
   }
 
@@ -607,7 +607,7 @@ DatumP Kernel::excSettextcolor(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excIncreasefont(DatumP node) {
+DatumPtr Kernel::excIncreasefont(DatumPtr node) {
   ProcedureHelper h(this, node);
   double f = mainController()->getTextFontSize();
   f += 2;
@@ -616,7 +616,7 @@ DatumP Kernel::excIncreasefont(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excDecreasefont(DatumP node) {
+DatumPtr Kernel::excDecreasefont(DatumPtr node) {
   ProcedureHelper h(this, node);
   double f = mainController()->getTextFontSize();
   f -= 2;
@@ -626,7 +626,7 @@ DatumP Kernel::excDecreasefont(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excSettextsize(DatumP node) {
+DatumPtr Kernel::excSettextsize(DatumPtr node) {
   ProcedureHelper h(this, node);
   double newSize = h.validatedNumberAtIndex(
       0, [](double candidate) { return candidate >= 1; });
@@ -634,48 +634,48 @@ DatumP Kernel::excSettextsize(DatumP node) {
   return nothing;
 }
 
-DatumP Kernel::excTextsize(DatumP node) {
+DatumPtr Kernel::excTextsize(DatumPtr node) {
   ProcedureHelper h(this, node);
   double size = mainController()->getTextFontSize();
   return h.ret(size);
 }
 
-DatumP Kernel::excSetfont(DatumP node) {
+DatumPtr Kernel::excSetfont(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString fontName = h.wordAtIndex(0).wordValue()->printValue();
   mainController()->setTextFontName(fontName);
   return nothing;
 }
 
-DatumP Kernel::excFont(DatumP node) {
+DatumPtr Kernel::excFont(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString retval = mainController()->getTextFontName();
   return h.ret(retval);
 }
 
-DatumP Kernel::excAllfonts(DatumP node) {
+DatumPtr Kernel::excAllfonts(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = List::alloc();
   QStringList fonts = mainController()->getAllFontNames();
   for (const QString &i : fonts) {
-    retval->append(DatumP(i));
+    retval->append(DatumPtr(i));
   }
   return h.ret(retval);
 }
 
-DatumP Kernel::excCursorInsert(DatumP node) {
+DatumPtr Kernel::excCursorInsert(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainController()->setCursorOverwriteMode(false);
   return nothing;
 }
 
-DatumP Kernel::excCursorOverwrite(DatumP node) {
+DatumPtr Kernel::excCursorOverwrite(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainController()->setCursorOverwriteMode(true);
   return nothing;
 }
 
-DatumP Kernel::excCursorMode(DatumP node) {
+DatumPtr Kernel::excCursorMode(DatumPtr node) {
   ProcedureHelper h(this, node);
   bool mode = mainController()->cursorOverwriteMode();
   QString retval = mode ? k.overwrite() : k.insert();

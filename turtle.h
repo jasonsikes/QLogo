@@ -84,7 +84,7 @@ public:
   double getPenSize();
   const QColor &getPenColor();
   void home(bool canDraw = true);
-  DatumP print();
+  DatumPtr print();
   void drawArc(qreal angle, qreal radius);
 
   void beginFillWithColor(const QColor &aFillColor);

@@ -40,20 +40,20 @@
 /// and an array of zero or more children.
 class ASTNode : public Datum {
 protected:
-    QVector<DatumP> children;
+    QVector<DatumPtr> children;
 
     void addToPool();
 
 public:
 
     /// Allocate an ASTNode with the node's name as a Word.
-    static ASTNode * alloc(DatumP aNodeName);
+    static ASTNode * alloc(DatumPtr aNodeName);
 
     /// Allocate an ASTNode with the node's name as a QString.
     static ASTNode * alloc(QString aNodeName);
 
     /// A human-readable string. Usually the command name.
-    DatumP nodeName;
+    DatumPtr nodeName;
 
     // TODO: This is badly misnamed! Should be called "method".
     // (This got caught in the mass renaming.)
@@ -61,10 +61,10 @@ public:
     KernelMethod kernel;
 
     /// Add a child to the node.
-    void addChild(DatumP aChild);
+    void addChild(DatumPtr aChild);
 
     /// Returns the child at the specified index.
-    DatumP childAtIndex(unsigned index);
+    DatumPtr childAtIndex(unsigned index);
 
     /// Returns the number of children that this node owns.
     int countOfChildren();

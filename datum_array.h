@@ -36,7 +36,7 @@ class Array : public Datum {
     friend class ArrayIterator;
 
 protected:
-    QVector<DatumP> array;
+    QVector<DatumPtr> array;
 
     void addToPool();
 
@@ -60,7 +60,7 @@ public:
                       int printWidthLimit = -1);
 
     /// Returns true if items in other Array are equal to this Array's items.
-    bool isEqual(DatumP other, bool ignoreCase);
+    bool isEqual(DatumPtr other, bool ignoreCase);
 
     /// The starting index of this Array.
     int origin = 1;
@@ -72,43 +72,43 @@ public:
     void clear();
 
     /// Returns the item pointed to by anIndex.
-    DatumP datumAtIndex(int anIndex);
+    DatumPtr datumAtIndex(int anIndex);
 
     /// Returns true if anIndex can point to a valid element in the Array.
     bool isIndexInRange(int anIndex);
 
     /// Replace item at anIndex with aValue.
-    void setItem(int anIndex, DatumP aValue);
+    void setItem(int anIndex, DatumPtr aValue);
 
     /// Replace the first item in the Array with aValue.
-    void setFirstItem(DatumP aValue);
+    void setFirstItem(DatumPtr aValue);
 
     /// Replace all but the first item in the Array with elements from aValue Array.
-    void setButfirstItem(DatumP aValue);
+    void setButfirstItem(DatumPtr aValue);
 
     /// Recursively searches Array for aDatum. Returns true if found.
-    bool containsDatum(DatumP aDatum, bool ignoreCase);
+    bool containsDatum(DatumPtr aDatum, bool ignoreCase);
 
     /// Returns true if aDatum is a member of Array.
-    bool isMember(DatumP aDatum, bool ignoreCase);
+    bool isMember(DatumPtr aDatum, bool ignoreCase);
 
     /// Returns a new Array beginning with the first occurrence of aDatum to the end of the Array.
-    DatumP fromMember(DatumP aDatum, bool ignoreCase);
+    DatumPtr fromMember(DatumPtr aDatum, bool ignoreCase);
 
     /// Returns the first element of the Array.
-    DatumP first();
+    DatumPtr first();
 
     /// Returns a new Array which is everything but the first element of this Array.
-    DatumP butfirst();
+    DatumPtr butfirst();
 
     /// Returns the last element of the Array.
-    DatumP last(void);
+    DatumPtr last(void);
 
     /// Returns a new Array which is everything but the last element of this Array.
-    DatumP butlast(void);
+    DatumPtr butlast(void);
 
     /// Add an element to the end of this Array.
-    void append(DatumP value);
+    void append(DatumPtr value);
 
     ArrayIterator newIterator();
 };
