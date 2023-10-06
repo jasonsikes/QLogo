@@ -61,7 +61,7 @@ public:
     void initialize();
 
     void printToConsole(const QString &s);
-    DatumPtr readRawlineWithPrompt(const QString prompt);
+    QString inputRawlineWithPrompt(const QString prompt);
     DatumPtr readchar();
     const QString editText(const QString startText);
 

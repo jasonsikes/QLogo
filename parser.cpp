@@ -440,9 +440,11 @@ void Parser::inputProcedure(DatumPtr nodeP, QTextStream *readStream) {
 
 DatumPtr Parser::readrawlineWithPrompt(const QString &prompt,
                                      QTextStream *readStream) {
-  DatumPtr retval;
+  DatumPtr retvalP;
   if (readStream == NULL) {
-    retval = mainController()->readRawlineWithPrompt(prompt);
+    QString retval = mainController()->inputRawlineWithPrompt(prompt);
+    if ( ! retval.isNull())
+      retvalP = DatumPtr(retval);
   } else {
     if (readStream->atEnd()) {
       return nothing;
@@ -450,10 +452,10 @@ DatumPtr Parser::readrawlineWithPrompt(const QString &prompt,
     QString str = readStream->readLine();
     if (readStream->status() != QTextStream::Ok)
       Error::fileSystem();
-    retval = DatumPtr(str);
+    retvalP = DatumPtr(str);
   }
-  listSourceText.listValue()->append(retval);
-  return retval;
+  listSourceText.listValue()->append(retvalP);
+  return retvalP;
 }
 
 DatumPtr Parser::readwordWithPrompt(const QString &prompt,

@@ -106,17 +106,18 @@ bool LogoController::atEnd() { return inStream->atEnd(); }
 bool LogoController::keyQueueHasChars() { return !inStream->atEnd(); }
 
 // This is READRAWLINE
-DatumPtr LogoController::readRawlineWithPrompt(const QString prompt) {
+QString LogoController::inputRawlineWithPrompt(const QString prompt) {
+  QString retval;
   QTextStream *stream = (readStream == NULL) ? inStream : readStream;
-  if (stream->atEnd())
-    return nothing;
-  printToConsole(prompt);
-  outStream->flush();
-  QString inputText = stream->readLine();
-  if (dribbleStream)
-      *dribbleStream << inputText <<'\n';
-
-  return DatumPtr(inputText);
+  if ( ! stream->atEnd())
+  {
+    printToConsole(prompt);
+    outStream->flush();
+    retval = stream->readLine();
+    if (dribbleStream)
+      *dribbleStream << retval <<'\n';
+  }
+  return retval;
 }
 
 // This is READCHAR
