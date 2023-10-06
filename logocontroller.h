@@ -29,7 +29,6 @@
 #define LOGOCONTROLLER_H
 
 #include "sharedconstants.h"
-#include "datum.h"
 #include <QColor>
 #include <QImage>
 #include <QObject>
@@ -55,7 +54,7 @@ public:
   SignalsEnum_t latestSignal();
 
   virtual void initialize() {}
-  virtual DatumPtr readRawlineWithPrompt(const QString);
+  virtual QString inputRawlineWithPrompt(const QString);
   virtual DatumPtr readchar();
   virtual bool atEnd();
   virtual void printToConsole(const QString &);

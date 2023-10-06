@@ -276,7 +276,7 @@ const QString QLogoController::getTextFontName()
 }
 
 // TODO: I believe this is only called if the input readStream is NULL
-DatumPtr QLogoController::readRawlineWithPrompt(const QString prompt)
+QString QLogoController::inputRawlineWithPrompt(const QString prompt)
 {
     if (dribbleStream)
       *dribbleStream << prompt;
@@ -287,7 +287,7 @@ DatumPtr QLogoController::readRawlineWithPrompt(const QString prompt)
   });
   waitForMessage(C_CONSOLE_RAWLINE_READ);
 
-  return DatumPtr(rawLine);
+  return rawLine;
 }
 
 

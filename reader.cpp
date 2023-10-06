@@ -49,7 +49,7 @@ Reader::Reader(QTextStream *aReadStream)
 }
 
 
-DatumPtr Reader::readrawlineWithPrompt(const QString &prompt)
+QString Reader::readrawlineWithPrompt(const QString &prompt)
 {
   DatumPtr retval;
   if (readStream == NULL) {
