@@ -24,11 +24,12 @@
 ///
 //===----------------------------------------------------------------------===//
 
+#include "datum_iterator.h"
 #include "error.h"
 #include "kernel.h"
-#include "parser.h"
 #include "datum_word.h"
 #include "datum_astnode.h"
+#include "datum_list.h"
 
 #include "logocontroller.h"
 #include "stringconstants.h"
@@ -37,7 +38,7 @@
 #include <QDir>
 #include <QFile>
 #include <QProcess> // for SHELL
-#include <QTextStream>
+#include "textstream.h"
 
 QString Kernel::filepathForFilename(DatumPtr filenameP) {
   const QString &filename = filenameP.wordValue()->printValue();
@@ -53,7 +54,7 @@ QString Kernel::filepathForFilename(DatumPtr filenameP) {
   return retval;
 }
 
-QTextStream *Kernel::openFileStream(DatumPtr filenameP,
+TextStream *Kernel::openFileStream(DatumPtr filenameP,
                                     QIODevice::OpenMode mode) {
   QString filepath = filepathForFilename(filenameP.wordValue());
   QString filename = filenameP.wordValue()->keyValue();
@@ -66,13 +67,13 @@ QTextStream *Kernel::openFileStream(DatumPtr filenameP,
     Error::cantOpen(filenameP);
   }
 
-  QTextStream *stream = new QTextStream(file);
+  TextStream *stream = new TextStream(new QTextStream(file));
   fileStreams[filename] = stream;
 
   return stream;
 }
 
-QTextStream *Kernel::createStringStream(DatumPtr filenameP,
+TextStream* Kernel::createStringStream(DatumPtr filenameP,
                                         QIODevice::OpenMode mode) {
   QString filename = filenameP.datumValue()->first().wordValue()->keyValue();
   if (fileStreams.contains(filename)) {
@@ -87,13 +88,14 @@ QTextStream *Kernel::createStringStream(DatumPtr filenameP,
   }
   if (buffer == NULL)
     buffer = new QString;
-  QTextStream *stream = new QTextStream(buffer, mode);
+
+  TextStream *stream = new TextStream(new QTextStream(buffer, mode));
   fileStreams[filename] = stream;
 
   return stream;
 }
 
-QTextStream *Kernel::open(ProcedureHelper &h, QIODevice::OpenMode openFlags) {
+TextStream* Kernel::open(ProcedureHelper &h, QIODevice::OpenMode openFlags) {
   DatumPtr filenameP = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     if (candidate.isWord())
       return true;
@@ -101,7 +103,7 @@ QTextStream *Kernel::open(ProcedureHelper &h, QIODevice::OpenMode openFlags) {
       return false;
     return candidate.listValue()->first().isWord();
   });
-  QTextStream *stream;
+  TextStream *stream;
   if (filenameP.isWord()) {
     stream = openFileStream(filenameP, openFlags);
   } else {
@@ -110,18 +112,18 @@ QTextStream *Kernel::open(ProcedureHelper &h, QIODevice::OpenMode openFlags) {
   return stream;
 }
 
-QTextStream *Kernel::getStream(ProcedureHelper &h) {
+TextStream* Kernel::getStream(ProcedureHelper &h) {
   DatumPtr filenameP = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     if (candidate.isList() && (candidate.listValue()->size() != 0))
       return false;
     return candidate.isWord() || candidate.isList();
   });
   if (filenameP.isList() && (filenameP.listValue()->size() == 0)) {
-    return NULL;
+    return stdioStream;
   }
 
   if (!filenameP.isWord()) {
-    return NULL;
+    return stdioStream;
   }
   QString filename = filenameP.wordValue()->keyValue();
 
@@ -133,11 +135,11 @@ QTextStream *Kernel::getStream(ProcedureHelper &h) {
 }
 
 void Kernel::close(const QString &filename) {
-  QTextStream *stream = fileStreams[filename];
+  TextStream *stream = fileStreams[filename];
   if (readStream == stream)
-    readStream = NULL;
+    readStream = stdioStream;
   if (writeStream == stream)
-    writeStream = NULL;
+    writeStream = stdioStream;
 
   QIODevice *device = stream->device();
   QString *buffer = stream->string();
@@ -162,19 +164,10 @@ void Kernel::closeAll() {
   }
 }
 
-void Kernel::lprint(QTextStream *stream, const QString &text) {
-  if (stream == NULL) {
-    mainController()->printToConsole(text);
-  } else {
-    *stream << text;
-    if (stream->status() != QTextStream::Ok)
-      Error::fileSystem();
-  }
-}
 
-void Kernel::stdPrint(const QString &text) { lprint(writeStream, text); }
+void Kernel::stdPrint(const QString &text) { writeStream->lprint(text); }
 
-void Kernel::sysPrint(const QString &text) { lprint(systemWriteStream, text); }
+void Kernel::sysPrint(const QString &text) { systemWriteStream->lprint(text); }
 
 // TRANSMITTERS
 
@@ -224,7 +217,7 @@ DatumPtr Kernel::excShow(DatumPtr node) {
 
 DatumPtr Kernel::excReadlist(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumPtr retval = readlistWithPrompt("", false, readStream);
+  DatumPtr retval = readStream->readlistWithPrompt("", false);
   if (retval == nothing)
     return h.ret(QString(""));
   return h.ret(retval);
@@ -232,7 +225,7 @@ DatumPtr Kernel::excReadlist(DatumPtr node) {
 
 DatumPtr Kernel::excReadword(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumPtr retval = readWordWithPrompt("", readStream);
+  DatumPtr retval = readStream->readwordWithPrompt("");
   if (retval == nothing)
     return h.ret(List::alloc());
   return h.ret(retval);
@@ -240,7 +233,7 @@ DatumPtr Kernel::excReadword(DatumPtr node) {
 
 DatumPtr Kernel::excReadrawline(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumPtr retval = readRawLineWithPrompt("", readStream);
+  DatumPtr retval = readStream->readrawlineWithPrompt("");
   if (retval == nothing)
     return h.ret(List::alloc());
   return h.ret(retval);
@@ -248,7 +241,7 @@ DatumPtr Kernel::excReadrawline(DatumPtr node) {
 
 DatumPtr Kernel::excReadchar(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumPtr retval = readChar();
+  DatumPtr retval = readStream->readChar();
   if (retval == nothing)
     return h.ret(List::alloc());
   return h.ret(retval);
@@ -262,7 +255,7 @@ DatumPtr Kernel::excReadchars(DatumPtr node) {
   QString retval;
   retval.reserve(count);
   while (count > 0) {
-    DatumPtr c = readChar();
+    DatumPtr c = readStream->readChar();
     if (c == nothing)
       break;
     retval += c.wordValue()->rawValue();
@@ -332,7 +325,8 @@ DatumPtr Kernel::excShell(DatumPtr node) {
         retval->append(rawline);
       } else {
         QTextStream stream(&text, QIODevice::ReadOnly);
-        retval->append(parser->readlistWithPrompt("", false, &stream));
+        TextStream streamParser(&stream);
+        retval->append(streamParser.readlistWithPrompt("", false));
       }
     }
   }
@@ -368,7 +362,7 @@ DatumPtr Kernel::excPrefix(DatumPtr node) {
 DatumPtr Kernel::excOpenread(DatumPtr node) {
   ProcedureHelper h(this, node);
   QIODevice::OpenMode openFlags = QIODevice::ReadOnly | QIODevice::Text;
-  QTextStream *stream = open(h, openFlags);
+  TextStream *stream = open(h, openFlags);
 
   readableStreams.insert(stream);
   return nothing;
@@ -378,7 +372,7 @@ DatumPtr Kernel::excOpenwrite(DatumPtr node) {
   ProcedureHelper h(this, node);
   QIODevice::OpenMode openFlags =
       QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text;
-  QTextStream *stream = open(h, openFlags);
+  TextStream *stream = open(h, openFlags);
 
   writableStreams.insert(stream);
   return nothing;
@@ -388,7 +382,7 @@ DatumPtr Kernel::excOpenappend(DatumPtr node) {
   ProcedureHelper h(this, node);
   QIODevice::OpenMode openFlags =
       QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text;
-  QTextStream *stream = open(h, openFlags);
+  TextStream *stream = open(h, openFlags);
 
   writableStreams.insert(stream);
   return nothing;
@@ -397,7 +391,7 @@ DatumPtr Kernel::excOpenappend(DatumPtr node) {
 DatumPtr Kernel::excOpenupdate(DatumPtr node) {
   ProcedureHelper h(this, node);
   QIODevice::OpenMode openFlags = QIODevice::ReadWrite | QIODevice::Text;
-  QTextStream *stream = open(h, openFlags);
+  TextStream *stream = open(h, openFlags);
 
   readableStreams.insert(stream);
   writableStreams.insert(stream);
@@ -479,7 +473,7 @@ DatumPtr Kernel::excSetwrite(DatumPtr node) {
 
 DatumPtr Kernel::excReader(DatumPtr node) {
   ProcedureHelper h(this, node);
-  if (readStream == NULL)
+  if (readStream == stdioStream)
     return h.ret(List::alloc());
 
   const QString retval = fileStreams.key(readStream);
@@ -488,7 +482,7 @@ DatumPtr Kernel::excReader(DatumPtr node) {
 
 DatumPtr Kernel::excWriter(DatumPtr node) {
   ProcedureHelper h(this, node);
-  if (writeStream == NULL)
+  if (writeStream == stdioStream)
     return h.ret(List::alloc());
 
   const QString retval = fileStreams.key(writeStream);
@@ -499,7 +493,7 @@ DatumPtr Kernel::excSetreadpos(DatumPtr node) {
   ProcedureHelper h(this, node);
   int pos = h.validatedIntegerAtIndex(
       0, [](int candidate) { return candidate >= 0; });
-  if (readStream != NULL) {
+  if (readStream != stdioStream) {
     readStream->seek(pos);
   }
   return nothing;
@@ -509,7 +503,7 @@ DatumPtr Kernel::excSetwritepos(DatumPtr node) {
   ProcedureHelper h(this, node);
   int pos = h.validatedIntegerAtIndex(
       0, [](int candidate) { return candidate >= 0; });
-  if (writeStream != NULL) {
+  if (writeStream != stdioStream) {
     writeStream->seek(pos);
   }
   return nothing;
@@ -519,7 +513,7 @@ DatumPtr Kernel::excReadpos(DatumPtr node) {
   ProcedureHelper h(this, node);
   double retval = 0;
 
-  if (readStream != NULL) {
+  if (readStream != stdioStream) {
     retval = (double)readStream->pos();
   }
   return h.ret(retval);
@@ -529,7 +523,7 @@ DatumPtr Kernel::excWritepos(DatumPtr node) {
   ProcedureHelper h(this, node);
   double retval = 0;
 
-  if (writeStream != NULL) {
+  if (writeStream != stdioStream) {
     writeStream
         ->flush(); // pos() won't return a valid value unless we flush first.
     retval = (double)writeStream->pos();
@@ -540,7 +534,7 @@ DatumPtr Kernel::excWritepos(DatumPtr node) {
 DatumPtr Kernel::excEofp(DatumPtr node) {
   ProcedureHelper h(this, node);
   bool retval =
-      (readStream != NULL) ? readStream->atEnd() : mainController()->atEnd();
+      (readStream != stdioStream) ? readStream->atEnd() : mainController()->atEnd();
   return h.ret(retval);
 }
 
@@ -548,8 +542,8 @@ DatumPtr Kernel::excEofp(DatumPtr node) {
 
 DatumPtr Kernel::excKeyp(DatumPtr node) {
   ProcedureHelper h(this, node);
-  bool retval = (readStream != NULL) ? !readStream->atEnd()
-                                     : mainController()->keyQueueHasChars();
+  bool retval = (readStream != stdioStream) ? !readStream->atEnd()
+                                            : mainController()->keyQueueHasChars();
   return h.ret(retval);
 }
 

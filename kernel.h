@@ -32,6 +32,7 @@
 #include "propertylists.h"
 #include "vars.h"
 #include "sharedconstants.h"
+#include "textstream.h"
 
 #include <QColor>
 #include <QFile>
@@ -40,7 +41,6 @@
 #include <QVector>
 
 class Parser;
-class QTextStream;
 
 class Turtle;
 class ProcedureScope;
@@ -60,19 +60,14 @@ class Kernel {
   QVector<QColor> palette;
   PropertyLists plists;
 
-  QHash<QString, QTextStream *> fileStreams;
-  QSet<QTextStream *> writableStreams;
-  QSet<QTextStream *> readableStreams;
-  QTextStream *readStream;
-  QTextStream *systemReadStream;
-  QTextStream *writeStream;
-  QTextStream *systemWriteStream;
-  void lprint(QTextStream *stream, const QString &text);
-  DatumPtr readRawLineWithPrompt(const QString prompt, QTextStream *stream);
-  DatumPtr readChar();
-  DatumPtr readlistWithPrompt(const QString &prompt, bool shouldRemoveComments,
-                            QTextStream *stream);
-  DatumPtr readWordWithPrompt(const QString prompt, QTextStream *stream);
+  QHash<QString, TextStream *> fileStreams;
+  QSet<TextStream *> writableStreams;
+  QSet<TextStream *> readableStreams;
+  TextStream *readStream;
+  TextStream *systemReadStream;
+  TextStream *writeStream;
+  TextStream *systemWriteStream;
+  TextStream *stdioStream;
 
   DatumPtr currentError;
   DatumPtr currentProcedure;
@@ -98,10 +93,10 @@ class Kernel {
   uint32_t randomFromRange(uint32_t start, uint32_t end);
 
   QString filepathForFilename(DatumPtr filenameP);
-  QTextStream *openFileStream(DatumPtr filenameP, QIODevice::OpenMode mode);
-  QTextStream *createStringStream(DatumPtr filenameP, QIODevice::OpenMode mode);
-  QTextStream *getStream(ProcedureHelper &h);
-  QTextStream *open(ProcedureHelper &h, QIODevice::OpenMode openFlags);
+  TextStream *openFileStream(DatumPtr filenameP, QIODevice::OpenMode mode);
+  TextStream *createStringStream(DatumPtr filenameP, QIODevice::OpenMode mode);
+  TextStream *getStream(ProcedureHelper &h);
+  TextStream *open(ProcedureHelper &h, QIODevice::OpenMode openFlags);
   void close(const QString &filename);
   void closeAll();
   void editAndRunFile();
@@ -479,15 +474,15 @@ public:
 };
 
 class StreamRedirect {
-  QTextStream *originalWriteStream;
-  QTextStream *originalSystemWriteStream;
-  QTextStream *originalReadStream;
-  QTextStream *originalSystemReadStream;
+  TextStream *originalWriteStream;
+  TextStream *originalSystemWriteStream;
+  TextStream *originalReadStream;
+  TextStream *originalSystemReadStream;
   Kernel *exec;
 
 public:
-  StreamRedirect(Kernel *srcExec, QTextStream *newReadStreamc,
-                 QTextStream *newWriteStream);
+  StreamRedirect(Kernel *srcExec, TextStream *newReadStreamc,
+                 TextStream *newWriteStream);
   ~StreamRedirect();
 };
 

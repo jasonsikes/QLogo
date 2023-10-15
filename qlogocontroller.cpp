@@ -16,7 +16,7 @@
 void sendMessage(std::function<void (QDataStream*)> func)
 {
     qint64 datawritten;
-    QByteArray buffer;
+    QByteArray buffer; // TODO: Can this be static?
     QDataStream bufferStream(&buffer, QIODevice::WriteOnly);
     func(&bufferStream);
     qint64 datalen = buffer.size();
@@ -161,16 +161,12 @@ void QLogoController::waitForMessage(message_t expectedType)
 
 void QLogoController::printToConsole(const QString &s)
 {
-    if (writeStream == NULL) {
-        sendMessage([&](QDataStream *out) {
-          *out << (message_t)C_CONSOLE_PRINT_STRING << s;
-        });
+    sendMessage([&](QDataStream *out) {
+        *out << (message_t)C_CONSOLE_PRINT_STRING << s;
+    });
 
-      if (dribbleStream)
+    if (dribbleStream)
         *dribbleStream << s;
-    } else {
-      *writeStream << s;
-    }
 }
 
 
@@ -275,7 +271,7 @@ const QString QLogoController::getTextFontName()
     return textFontName;
 }
 
-// TODO: I believe this is only called if the input readStream is NULL
+
 QString QLogoController::inputRawlineWithPrompt(const QString prompt)
 {
     if (dribbleStream)

@@ -30,6 +30,7 @@
 #include "datum_astnode.h"
 #include "datum_array.h"
 #include <QTextStream>
+#include "textstream.h"
 
 #include "logocontroller.h"
 
@@ -448,8 +449,10 @@ DatumPtr Kernel::excParse(DatumPtr node) {
       0, [](DatumPtr candidate) { return candidate.isWord(); });
   QString text = word.wordValue()->rawValue();
   QTextStream src(&text, QIODevice::ReadOnly);
+  TextStream srcStream(&src);
 
-  return h.ret(p.readlistWithPrompt("", false, &src));
+  // TODO: what happens if the source has multiple lines?
+  return h.ret(srcStream.readlistWithPrompt("", false));
 }
 
 DatumPtr Kernel::excRunparse(DatumPtr node) {

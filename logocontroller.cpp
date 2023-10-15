@@ -69,8 +69,6 @@ LogoController *mainController() {
 LogoController::LogoController(QObject *parent)
 {
     Q_ASSERT(_maincontroller == NULL);
-    readStream = NULL;
-    writeStream = NULL;
     dribbleStream = NULL;
     _maincontroller = this;
     kernel = new Kernel;
@@ -92,13 +90,9 @@ LogoController::~LogoController()
 
 
 void LogoController::printToConsole(const QString &s) {
-  if (writeStream == NULL) {
     *outStream << s;
     if (dribbleStream)
-      *dribbleStream << s;
-  } else {
-    *writeStream << s;
-  }
+        *dribbleStream << s;
 }
 
 bool LogoController::atEnd() { return inStream->atEnd(); }
@@ -108,12 +102,11 @@ bool LogoController::keyQueueHasChars() { return !inStream->atEnd(); }
 // This is READRAWLINE
 QString LogoController::inputRawlineWithPrompt(const QString prompt) {
   QString retval;
-  QTextStream *stream = (readStream == NULL) ? inStream : readStream;
-  if ( ! stream->atEnd())
+  if ( ! inStream->atEnd())
   {
     printToConsole(prompt);
     outStream->flush();
-    retval = stream->readLine();
+    retval = inStream->readLine();
     if (dribbleStream)
       *dribbleStream << retval <<'\n';
   }
@@ -124,10 +117,9 @@ QString LogoController::inputRawlineWithPrompt(const QString prompt) {
 DatumPtr LogoController::readchar() {
   QChar c;
   outStream->flush();
-  QTextStream *stream = (readStream == NULL) ? inStream : readStream;
-  if (stream->atEnd())
+  if (inStream->atEnd())
     return nothing;
-  *stream >> c;
+  *inStream >> c;
   QString retval = c;
   DatumPtr retvalP = DatumPtr(retval);
   return retvalP;

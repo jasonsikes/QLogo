@@ -123,13 +123,10 @@ protected:
   int lastButtonpressID = 0;
   bool isMouseButtonDown = false;
 
-  QTextStream *readStream;
-  QTextStream *writeStream;
-
   QTextStream *dribbleStream;
 
-    QTextStream *inStream;
-    QTextStream *outStream;
+  QTextStream *inStream;
+  QTextStream *outStream;
 
 };
 

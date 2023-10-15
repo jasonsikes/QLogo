@@ -32,7 +32,7 @@
 #include <qdebug.h>
 #include "stringconstants.h"
 
-static DatumPtrool<Array> pool(5);
+static DatumPool<Array> pool(5);
 
 QList<void *> aryVisited;
 QList<void *> otherAryVisited;

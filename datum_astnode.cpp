@@ -29,7 +29,7 @@
 #include <qdebug.h>
 
 
-static DatumPtrool<ASTNode> pool(40);
+static DatumPool<ASTNode> pool(40);
 
 void ASTNode::addChild(DatumPtr aChild) { children.push_back(aChild); }
 

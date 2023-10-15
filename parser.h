@@ -34,7 +34,7 @@
 
 class Parser;
 class Kernel;
-class QTextStream;
+class TextStream;
 
 struct Cmd_t {
   KernelMethod method;
@@ -47,12 +47,6 @@ typedef DatumPtr (Parser::*ParserMethod)(void);
 
 class Parser : public Workspace {
   qint64 lastProcedureCreatedTimestamp;
-  DatumPtr tokenizeListWithPrompt(const QString &prompt, int level, bool isArray,
-                                bool shouldRemoveComments,
-                                QTextStream *readStream);
-  bool isReadingList = false;
-  DatumPtr listSourceText;
-  DatumPtr lastReadListSource();
   DatumPtr currentToken;
   Kernel *kernel;
 
@@ -84,18 +78,14 @@ class Parser : public Workspace {
   QHash<QString, Cmd_t> primitiveAlternateNames;
 
 public:
-  DatumPtr readrawlineWithPrompt(const QString &prompt, QTextStream *readStream);
-  DatumPtr readwordWithPrompt(const QString &prompt, QTextStream *readStream);
   Parser(Kernel *aKernel);
-  DatumPtr readlistWithPrompt(const QString &prompt, bool shouldRemoveComments,
-                            QTextStream *readStream);
   DatumPtr runparse(DatumPtr src);
   QList<DatumPtr> *astFromList(List *aList);
 
   DatumPtr createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourceText);
   void defineProcedure(DatumPtr cmd, DatumPtr procnameP, DatumPtr text,
                        DatumPtr sourceText);
-  void inputProcedure(DatumPtr nodeP, QTextStream *readStream);
+  void inputProcedure(DatumPtr nodeP, TextStream *readStream);
   void copyProcedure(DatumPtr newnameP, DatumPtr oldnameP);
   void eraseProcedure(DatumPtr procnameP);
   void eraseAllProcedures();

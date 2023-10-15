@@ -35,19 +35,11 @@
 #include <qdebug.h>
 #include "stringconstants.h"
 
-static DatumPtrool<Procedure> pool(20);
+static DatumPool<Procedure> pool(20);
 
+// TODO: we could implement this into something a little faster.
 const QString specialChars("+-()*%/<>=");
 
-char lastNonSpaceChar(const QString &line) {
-  char retval = ' ';
-  for (int i = line.length() - 1; i >= 0; --i) {
-    retval = line[i].toLatin1();
-    if (retval != ' ')
-      break;
-  }
-  return retval;
-}
 
 // return the method pointer if a GUI is available,
 // else return a pointer to the excErrorNoGUI method
@@ -378,7 +370,7 @@ QString Parser::procedureTitle(DatumPtr procnameP) {
 }
 
 // firstline is ASTNode
-void Parser::inputProcedure(DatumPtr nodeP, QTextStream *readStream) {
+void Parser::inputProcedure(DatumPtr nodeP, TextStream *readStream) {
   ASTNode *node = nodeP.astnodeValue();
 
   DatumPtr to = node->nodeName;
@@ -403,7 +395,6 @@ void Parser::inputProcedure(DatumPtr nodeP, QTextStream *readStream) {
     Error::procDefined(procnameP);
 
   DatumPtr textP = DatumPtr(List::alloc());
-  DatumPtr sourceText = lastReadListSource();
   DatumPtr firstLine = DatumPtr(List::alloc());
   for (int i = 1; i < node->countOfChildren(); ++i) {
     firstLine.listValue()->append(node->childAtIndex(i));
@@ -412,14 +403,9 @@ void Parser::inputProcedure(DatumPtr nodeP, QTextStream *readStream) {
 
   // Now read in the body
   forever {
-    DatumPtr line = readlistWithPrompt("> ", true, readStream);
+    DatumPtr line = readStream->readlistWithPrompt("> ", true, true);
     if ( ! line.isList()) // this must be the end of the input
         break;
-    DatumPtr lineSource = lastReadListSource();
-    ListIterator lineSourceIter = lineSource.listValue()->newIterator();
-    while (lineSourceIter.elementExists()) {
-      sourceText.listValue()->append(lineSourceIter.element());
-    }
     if (line.listValue()->size() == 0)
       continue;
     DatumPtr first = line.listValue()->first();
@@ -431,6 +417,7 @@ void Parser::inputProcedure(DatumPtr nodeP, QTextStream *readStream) {
     textP.listValue()->append(line);
   }
 
+  DatumPtr sourceText = readStream->recentHistory();
   defineProcedure(to, procnameP, textP, sourceText);
 
   kernel->sysPrint(procnameP.wordValue()->printValue());
@@ -438,178 +425,6 @@ void Parser::inputProcedure(DatumPtr nodeP, QTextStream *readStream) {
   lastProcedureCreatedTimestamp = QDateTime::currentMSecsSinceEpoch();
 }
 
-DatumPtr Parser::tokenizeListWithPrompt(const QString &prompt, int level,
-                                      bool makeArray, bool shouldRemoveComments,
-                                      QTextStream *readStream) {
-  DatumPtr lineP;
-  static QString src;
-  static QString::iterator iter;
-
-  if (level == 0) {
-    lineP = readwordWithPrompt(prompt, readStream);
-
-    if (lineP == nothing) return nothing;
-
-    src = lineP.wordValue()->rawValue();
-    iter = src.begin();
-  }
-  List *retval = List::alloc();
-  DatumPtr retvalP(retval);
-  QString currentWord = "";
-
-  forever {
-    bool isVbarred = false;
-    bool isCurrentWordVbarred = false;
-
-    while (iter != src.end()) {
-      ushort c = iter->unicode();
-      ++iter;
-
-      if (isVbarred) {
-        if (c == '|') {
-          isVbarred = false;
-          continue;
-        }
-        currentWord.push_back(charToRaw(c));
-        continue;
-      }
-      if (c == '|') {
-        isVbarred = true;
-        isCurrentWordVbarred = true;
-        continue;
-      }
-
-      if (c == '~') {
-        // If this is the last character of the line then jump to the beginning
-        // of the next line
-        QString::iterator lookAhead = iter;
-        while (*lookAhead == ' ')
-          ++lookAhead;
-        if (*lookAhead == '\n') {
-          ++lookAhead;
-          iter = lookAhead;
-          continue;
-        }
-      }
-      if (((c == ';') ||
-           ((c == '#') && (iter != src.end()) && (iter->unicode() == '!'))) &&
-          shouldRemoveComments) {
-        // This is a comment
-        while ((iter != src.end()) && (*iter != '\n'))
-          ++iter;
-        // Consume the eol
-        if (iter != src.end())
-          ++iter;
-        continue;
-      }
-      if ((c == '#') && (iter != src.end()) && (iter->unicode() == '!') &&
-          shouldRemoveComments) {
-        // This is a comment
-        while ((iter != src.end()) && (*iter != '\n'))
-          ++iter;
-        // Consume the eol
-        if (iter != src.end())
-          ++iter;
-        continue;
-      }
-      if ((c == ' ') || (c == '\t') || (c == '[') || (c == ']') || (c == '{') ||
-          (c == '}')) {
-        // This is a delimiter
-        if (currentWord.size() > 0) {
-          retval->append(DatumPtr(currentWord, isCurrentWordVbarred));
-          currentWord = "";
-          isCurrentWordVbarred = false;
-        }
-        switch (c) {
-        case '[':
-          retval->append(tokenizeListWithPrompt(
-              "", level + 1, false, shouldRemoveComments, readStream));
-          break;
-        case ']':
-          if ((level == 0) || makeArray) {
-            Error::unexpectedCloseSquare();
-          }
-          return retvalP;
-        case '}': {
-          if ((level == 0) || !makeArray) {
-            Error::unexpectedCloseBrace();
-          }
-          int origin = 1;
-          // See if array has a custom origin
-          if (*iter == '@') {
-            QString originStr = "";
-            ++iter;
-            while ((*iter >= '0') && (*iter <= '9')) {
-              originStr += *iter;
-              ++iter;
-            }
-            origin = originStr.toInt();
-          }
-          Array *ary = Array::alloc(origin, retval);
-          return DatumPtr(ary);
-        }
-        case '{':
-          retval->append(tokenizeListWithPrompt(
-              "", level + 1, true, shouldRemoveComments, readStream));
-          break;
-        default:
-          break;
-        }
-      } else {
-        currentWord.push_back(c);
-      }
-    }
-    // This is the end of the read. Add the last word to the list.
-    if (currentWord.size() > 0) {
-      retval->append(DatumPtr(currentWord, isCurrentWordVbarred));
-      currentWord = "";
-    }
-
-    // If this is the base-level list then we can just return
-    if (level == 0)
-      return DatumPtr(retval);
-
-    // Get some more source material if we can
-    if (makeArray)
-      lineP = readwordWithPrompt("{ ", readStream);
-    else
-      lineP = readwordWithPrompt("[ ", readStream);
-    if (lineP != nothing) {
-      src = lineP.wordValue()->rawValue();
-      iter = src.begin();
-      continue;
-    }
-    // We have exhausted our source. Return what we have.
-    if (makeArray) {
-      Array *ary = Array::alloc(1, retval);
-      return DatumPtr(ary);
-    }
-    return retvalP;
-  } // /forever
-}
-
-DatumPtr Parser::readlistWithPrompt(const QString &prompt,
-                                  bool shouldRemoveComments,
-                                  QTextStream *readStream) {
-  listSourceText.listValue()->clear();
-  isReadingList = true;
-  DatumPtr retval;
-  try {
-    retval = tokenizeListWithPrompt(prompt, 0, false, shouldRemoveComments,
-                                    readStream);
-  } catch (Error *e) {
-    isReadingList = false;
-    throw e;
-  }
-  isReadingList = false;
-  return retval;
-}
-
-DatumPtr Parser::lastReadListSource() {
-  DatumPtr retval = listSourceText;
-  listSourceText = List::alloc();
-  return retval;
-}
 
 void Parser::runparseSpecialchars(void) {
   QString retval = *runparseCIter;
@@ -775,7 +590,8 @@ DatumPtr Parser::runparse(DatumPtr src) {
   if (src.isWord()) {
     QString text = src.wordValue()->rawValue();
     QTextStream srcStream(&text, QIODevice::ReadOnly);
-    src = readlistWithPrompt("", false, &srcStream);
+    TextStream stream(&srcStream);
+    src = stream.readlistWithPrompt("", false);
   }
   runparseRetval = List::alloc();
   ListIterator iter = src.listValue()->newIterator();
@@ -1377,7 +1193,6 @@ QString Parser::printoutDatum(DatumPtr aDatum) {
 Parser::Parser(Kernel *aKernel) {
   lastProcedureCreatedTimestamp = QDateTime::currentMSecsSinceEpoch();
   kernel = aKernel;
-  listSourceText = List::alloc();
   if (stringToCmd.size() > 0)
     return;
 

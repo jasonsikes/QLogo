@@ -36,8 +36,11 @@ QString Kernel::executeText(const QString &text) {
   QString inText = text;
   QString outText;
 
-  QTextStream inStream(&inText, QIODevice::ReadOnly);
-  QTextStream outStream(&outText, QIODevice::WriteOnly);
+  QTextStream inQStream(&inText, QIODevice::ReadOnly);
+  QTextStream outQStream(&outText, QIODevice::WriteOnly);
+
+  TextStream inStream(&inQStream);
+  TextStream outStream(&outQStream);
 
   StreamRedirect sr(this, &inStream, &outStream);
 

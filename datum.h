@@ -201,7 +201,7 @@ public:
 
 
 
-template <class T> class DatumPtrool
+template <class T> class DatumPool
 {
   QStack<T *>stack;
 
@@ -225,7 +225,7 @@ template <class T> class DatumPtrool
 
   /// Constructor.
   /// /param aBlockSize: the count of objects that should be allocated in each block
-      DatumPtrool(int aBlockSize)
+      DatumPool(int aBlockSize)
       {
       blockSize = aBlockSize;
       addToPool();

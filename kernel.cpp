@@ -62,8 +62,8 @@ ProcedureScope::~ProcedureScope() {
   kernel->callingLine = lineHistory;
 }
 
-StreamRedirect::StreamRedirect(Kernel *srcExec, QTextStream *newReadStream,
-                               QTextStream *newWriteStream) {
+StreamRedirect::StreamRedirect(Kernel *srcExec, TextStream *newReadStream,
+                               TextStream *newWriteStream) {
   exec = srcExec;
   originalWriteStream = srcExec->writeStream;
   originalSystemWriteStream = srcExec->systemWriteStream;
@@ -89,7 +89,7 @@ StreamRedirect::~StreamRedirect() {
 DatumPtr Kernel::excGotoToken(DatumPtr) { return nothing; }
 
 
-bool Kernel::isInputRedirected() { return readStream != NULL; }
+bool Kernel::isInputRedirected() { return readStream != stdioStream; }
 
 bool Kernel::numbersFromList(QVector<double> &retval, DatumPtr l) {
     if ( ! l.isList())
@@ -150,7 +150,7 @@ bool Kernel::getLineAndRunIt(bool shouldHandleError) {
   ProcedureScope ps(this, nothing);
 
   try {
-    DatumPtr line = readlistWithPrompt(prompt, true, systemReadStream);
+    DatumPtr line = systemReadStream->readlistWithPrompt(prompt, true);
     if (line == nothing)
       return false; // EOF
     if (line.listValue()->size() == 0)
@@ -272,10 +272,11 @@ void Kernel::initVariables(void)
 }
 
 Kernel::Kernel() {
-  readStream = NULL;
-  systemReadStream = NULL;
-  writeStream = NULL;
-  systemWriteStream = NULL;
+    stdioStream = new TextStream(NULL);
+  readStream = stdioStream;
+  systemReadStream = stdioStream;
+  writeStream = stdioStream;
+  systemWriteStream = stdioStream;
 
   turtle = new Turtle;
   parser = new Parser(this);
@@ -302,34 +303,6 @@ uint32_t Kernel::randomFromRange(uint32_t start, uint32_t end) {
   uint32_t x = arc4random_uniform(range);
 
   return x + start;
-}
-
-DatumPtr Kernel::readRawLineWithPrompt(const QString prompt,
-                                     QTextStream *stream) {
-    return parser->readrawlineWithPrompt(prompt, stream);
-}
-
-DatumPtr Kernel::readChar() {
-  if (readStream == NULL) {
-      return mainController()->readchar();
-  }
-
-  if (readStream->atEnd())
-    return DatumPtr(List::alloc());
-  QString line = readStream->read(1);
-  if (readStream->status() != QTextStream::Ok)
-    Error::fileSystem();
-  return DatumPtr(line);
-}
-
-DatumPtr Kernel::readlistWithPrompt(const QString &prompt,
-                                  bool shouldRemoveComments,
-                                  QTextStream *stream) {
-    return parser->readlistWithPrompt(prompt, shouldRemoveComments, stream);
-}
-
-DatumPtr Kernel::readWordWithPrompt(const QString prompt, QTextStream *stream) {
-    return parser->readwordWithPrompt(prompt, stream);
 }
 
 void Kernel::makeVarLocal(const QString &varname) {
@@ -409,7 +382,7 @@ DatumPtr Kernel::executeProcedureCore(DatumPtr node) {
       if (isStepped) {
         QString line = h.indent() + parser->unreadDatum(currentLine, true);
         sysPrint(line);
-        readRawLineWithPrompt(" >>>", systemReadStream);
+        systemReadStream->readrawlineWithPrompt(" >>>");
       }
       retval = runList(currentLine);
       if (retval.isASTNode()) {
@@ -630,7 +603,7 @@ DatumPtr Kernel::pause() {
     }
   ProcedureScope procScope(this, nothing);
   isPausing = true;
-  StreamRedirect streamScope(this, NULL, NULL);
+  StreamRedirect streamScope(this, stdioStream, stdioStream);
 
   sysPrint(k.pausing());
 

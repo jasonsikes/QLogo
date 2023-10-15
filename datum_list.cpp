@@ -36,9 +36,9 @@ QList<void *> listVisited;
 QList<void *> otherListVisited;
 
 
-static DatumPtrool<List> listPool(40);
+static DatumPool<List> listPool(40);
 
-static DatumPtrool<ListNode> nodePool(60);
+static DatumPool<ListNode> nodePool(60);
 
 
 List::List() {

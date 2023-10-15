@@ -30,7 +30,7 @@
 #include "stringconstants.h"
 #include <qdebug.h>
 
-static DatumPtrool<Word> pool(50);
+static DatumPool<Word> pool(50);
 
 QChar rawToChar(const QChar &src) {
   const ushort rawToAsciiMap[] = {

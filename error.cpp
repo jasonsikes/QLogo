@@ -32,7 +32,7 @@
 
 Kernel *mainKernel;
 
-static DatumPtrool<Error> pool(3);
+static DatumPool<Error> pool(3);
 
 
 Error::Error()
