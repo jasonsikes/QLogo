@@ -74,6 +74,12 @@ DatumPtr::DatumPtr(const QString n, bool isVBarred)
   d->retain();
 }
 
+DatumPtr::DatumPtr(const char* n)
+{
+  d = Word::alloc(QString(n));
+  d->retain();
+}
+
 void DatumPtr::destroy() {
   if (d != &notADatum) {
     d->release();

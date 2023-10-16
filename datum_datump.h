@@ -70,6 +70,9 @@ public:
     /// Convenience constructor for strings.
     explicit DatumPtr(const QString n, bool isVBarred = false);
 
+    /// Convenience constructor for const char strings
+    explicit DatumPtr(const char* n);
+
 
     /// \brief Destructor.
     ///
