@@ -1,0 +1,1300 @@
+
+//===-- qlogo/kernel.cpp - Kernel class implementation -------*- C++ -*-===//
+//
+// This file is part of QLogo.
+//
+// QLogo is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// QLogo is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with QLogo.  If not, see <http://www.gnu.org/licenses/>.
+//
+//===----------------------------------------------------------------------===//
+///
+/// \file
+/// This file contains the implementation of the Kernel class, which is the
+/// executor proper of the QLogo language.
+///
+//===----------------------------------------------------------------------===//
+
+#include "error.h"
+#include "kernel.h"
+#include "turtle.h"
+#include "datum_word.h"
+#include "datum_list.h"
+#include "datum_astnode.h"
+#include "stringconstants.h"
+#include "logocontroller.h"
+
+#include <math.h>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+DatumPtr listFromColor(QColor c) {
+  List *retval = List::alloc();
+  retval->append(DatumPtr(round(c.redF() * 100)));
+  retval->append(DatumPtr(round(c.greenF() * 100)));
+  retval->append(DatumPtr(round(c.blueF() * 100)));
+  return DatumPtr(retval);
+}
+
+char axisFromDatumPtr(DatumPtr candidate)
+{
+  if (!candidate.isWord())
+      return 0;
+  if (candidate.wordValue()->rawValue().size() != 1)
+      return 0;
+  char retval = candidate.wordValue()->keyValue()[0].toLatin1();
+  if ((retval != 'X') && (retval != 'Y') && (retval != 'Z'))
+      return 0;
+  return retval;
+}
+
+// TURTLE MOTION
+
+
+/***DOC FORWARD FD
+FORWARD dist
+FD dist
+
+    moves the turtle forward, in the direction that it's facing, by
+    the specified distance (measured in turtle steps).
+
+COD***/
+
+DatumPtr Kernel::excForward(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  double value = h.numberAtIndex(0);
+
+  mainTurtle()->move(0, value, 0);
+
+  return nothing;
+}
+
+
+/***DOC BACK BK
+BACK dist
+BK dist
+
+    moves the turtle backward, i.e., exactly opposite to the direction
+    that it's facing, by the specified distance.  (The heading of the
+    turtle does not change.)
+
+COD***/
+
+DatumPtr Kernel::excBack(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  double value = h.numberAtIndex(0);
+
+  mainTurtle()->move(0, -value, 0);
+
+  return nothing;
+}
+
+
+/***DOC LEFT LT
+LEFT degrees
+LT degrees
+
+    turns the turtle counterclockwise by the specified angle, measured
+    in degrees (1/360 of a circle).
+
+COD***/
+
+DatumPtr Kernel::excLeft(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  double value = h.numberAtIndex(0);
+
+  mainTurtle()->rotate(value, 'Z');
+
+  return nothing;
+}
+
+
+/***DOC RIGHT RT
+RIGHT degrees
+RT degrees
+
+    turns the turtle clockwise by the specified angle, measured in
+    degrees (1/360 of a circle).
+
+COD***/
+
+DatumPtr Kernel::excRight(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  double value = h.numberAtIndex(0);
+
+  mainTurtle()->rotate(-value, 'Z');
+
+  return nothing;
+}
+
+
+/***DOC SETPOS
+SETPOS pos
+
+    moves the turtle to an absolute position in the graphics window.  The
+    input is a list of two numbers, the X and Y coordinates.
+
+COD***/
+
+DatumPtr Kernel::excSetpos(DatumPtr node) {
+  ProcedureHelper h(this, node);
+
+  QVector<double> v;
+  h.validatedDatumAtIndex(0, [&v, this](DatumPtr candidate) {
+    if (!candidate.isList())
+      return false;
+    if (!numbersFromList(v, candidate))
+      return false;
+    if ((v.size() != 2) && (v.size() != 3))
+      return false;
+    return true;
+  });
+
+  if (v.size() == 3) {
+    mainTurtle()->setxyz(v[0], v[1], v[2]);
+  } else {
+    mainTurtle()->setxy(v[0], v[1]);
+  }
+
+  return nothing;
+}
+
+
+/***DOC SETXY
+SETXY xcor ycor
+
+    moves the turtle to an absolute position in the graphics window.  The
+    two inputs are numbers, the X and Y coordinates.
+
+COD***/
+
+DatumPtr Kernel::excSetXY(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  double x = h.numberAtIndex(0);
+  double y = h.numberAtIndex(1);
+
+  mainTurtle()->setxy(x, y);
+
+  return nothing;
+}
+
+DatumPtr Kernel::excSetXYZ(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  double x = h.numberAtIndex(0);
+  double y = h.numberAtIndex(1);
+  double z = h.numberAtIndex(2);
+
+  mainTurtle()->setxyz(x, y, z);
+
+  return nothing;
+}
+
+
+/***DOC SETX
+SETX xcor
+
+    moves the turtle horizontally from its old position to a new
+    absolute horizontal coordinate.  The input is the new X
+    coordinate.
+
+COD***/
+
+DatumPtr Kernel::excSetX(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  double x = h.numberAtIndex(0);
+
+  mainTurtle()->setx(x);
+
+  return nothing;
+}
+
+
+/***DOC SETY
+SETY ycor
+
+    moves the turtle vertically from its old position to a new
+    absolute vertical coordinate.  The input is the new Y
+    coordinate.
+
+COD***/
+
+DatumPtr Kernel::excSetY(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  double y = h.numberAtIndex(0);
+
+  mainTurtle()->sety(y);
+
+  return nothing;
+}
+
+DatumPtr Kernel::excSetZ(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  double z = h.numberAtIndex(0);
+
+  mainTurtle()->setz(z);
+
+  return nothing;
+}
+
+
+/***DOC SETHEADING SETH
+SETHEADING degrees
+SETH degrees
+
+    turns the turtle to a new absolute heading.  The input is
+    a number, the heading in degrees clockwise from the positive
+    Y axis.
+
+COD***/
+
+DatumPtr Kernel::excSetheading(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  double newHeading = h.numberAtIndex(0);
+  char axis = 'Z';
+  if (node.astnodeValue()->countOfChildren() == 2) {
+    h.validatedDatumAtIndex(1, [&axis](DatumPtr candidate) {
+        char cAxis = axisFromDatumPtr(candidate);
+        if (cAxis == 0)
+            return false;
+        axis = cAxis;
+        return true;
+    });
+  }
+  double oldHeading = mainTurtle()->getHeading(axis);
+
+  // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
+  newHeading = 360 - newHeading;
+
+  double adjustment = newHeading - oldHeading;
+  mainTurtle()->rotate(adjustment, axis);
+  return nothing;
+}
+
+
+/***DOC HOME
+HOME
+
+    moves the turtle to the center of the screen.  Equivalent to
+    SETPOS [0 0] SETHEADING 0.
+
+COD***/
+
+DatumPtr Kernel::excHome(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  mainTurtle()->home();
+
+  return nothing;
+}
+
+
+/***DOC ARC
+ARC angle radius
+
+    draws an arc of a circle, with the turtle at the center, with the
+    specified radius, starting at the turtle's heading and extending
+    clockwise through the specified angle.  The turtle does not move.
+
+COD***/
+
+DatumPtr Kernel::excArc(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  double angle = h.numberAtIndex(0);
+  double radius = h.numberAtIndex(1);
+
+  // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
+  angle = 0 - angle;
+
+  if ((angle < -360) || (angle > 360))
+    angle = 360;
+
+  if ((angle != 0) && (radius != 0))
+    mainTurtle()->drawArc(angle, radius);
+
+  return nothing;
+}
+
+// TURTLE MOTION QUERIES
+
+
+/***DOC POS
+POS
+
+    outputs the turtle's current position, as a list of two
+    numbers, the X and Y coordinates.
+
+COD***/
+
+DatumPtr Kernel::excPos(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  double x, y, z;
+  mainTurtle()->getxyz(x, y, z);
+
+  List *retval = List::alloc();
+  retval->append(DatumPtr(x));
+  retval->append(DatumPtr(y));
+  if (h.countOfChildren() > 0) {
+    retval->append(DatumPtr(z));
+  }
+  return h.ret(retval);
+}
+
+
+/***DOC HEADING
+HEADING
+
+    outputs a number, the turtle's heading in degrees.
+
+COD***/
+
+DatumPtr Kernel::excHeading(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  char axis = 'Z';
+  if (node.astnodeValue()->countOfChildren() == 2) {
+    h.validatedDatumAtIndex(1, [&axis](DatumPtr candidate) {
+      char cAxis = axisFromDatumPtr(candidate);
+      if (cAxis == 0)
+        return false;
+      axis = cAxis;
+      return true;
+    });
+  }
+  double retval = mainTurtle()->getHeading(axis);
+
+  // Heading is positive in the counter-clockwise direction.
+  if (retval > 0)
+      retval = 360 - retval;
+
+  return h.ret(retval);
+}
+
+
+/***DOC TOWARDS
+TOWARDS pos
+
+    outputs a number, the heading at which the turtle should be
+    facing so that it would point from its current position to
+    the position given as the input.
+
+COD***/
+
+DatumPtr Kernel::excTowards(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  QVector<double> v;
+  double x, y, z;
+  h.validatedDatumAtIndex(0, [&v, this](DatumPtr candidate) {
+    if (!candidate.isList())
+      return false;
+    if (!numbersFromList(v, candidate))
+      return false;
+    if (v.size() != 2)
+      return false;
+    return true;
+  });
+  mainTurtle()->getxyz(x, y, z);
+  double retval = atan2(x - v[0], v[1] - y) * (180 / M_PI);
+  if (retval < 0)
+    retval += 360;
+
+  // Heading is positive in the counter-clockwise direction.
+  if (retval > 0)
+      retval = 360 - retval;
+
+  return h.ret(retval);
+}
+
+
+/***DOC SCRUNCH
+SCRUNCH
+
+    outputs a list containing two numbers, the X and Y scrunch
+    factors, as used by SETSCRUNCH.  (But note that SETSCRUNCH
+    takes two numbers as inputs, not one list of numbers.)
+
+
+COD***/
+
+DatumPtr Kernel::excScrunch(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  List *retval = List::alloc();
+  retval->append(DatumPtr(1));
+  retval->append(DatumPtr(1));
+  return h.ret(retval);
+}
+
+// TURTLE AND WINDOW CONTROL
+
+
+/***DOC SHOWTURTLE ST
+SHOWTURTLE
+ST
+
+    makes the turtle visible.
+
+COD***/
+
+DatumPtr Kernel::excShowturtle(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  mainTurtle()->setIsTurtleVisible(true);
+  mainController()->setTurtleIsVisible(true);
+
+  return nothing;
+}
+
+
+/***DOC HIDETURTLE HT
+HIDETURTLE
+HT
+
+    makes the turtle invisible.  It's a good idea to do this while
+    you're in the middle of a complicated drawing, because hiding
+    the turtle speeds up the drawing substantially.
+
+COD***/
+
+DatumPtr Kernel::excHideturtle(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  mainTurtle()->setIsTurtleVisible(false);
+  mainController()->setTurtleIsVisible(false);
+
+  return nothing;
+}
+
+
+/***DOC CLEAN
+CLEAN
+
+    erases all lines that the turtle has drawn on the graphics window.
+    The turtle's state (position, heading, pen mode, etc.) is not
+    changed.
+
+COD***/
+
+// TODO: CLEAN and CLEARSCREEN might be mixed up.
+DatumPtr Kernel::excClean(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  mainTurtle()->home(false);
+  mainController()->clearScreen();
+  return nothing;
+}
+
+
+/***DOC CLEARSCREEN CS
+CLEARSCREEN
+CS
+
+    erases the graphics window and sends the turtle to its initial
+    position and heading.  Like HOME and CLEAN together.
+
+COD***/
+
+DatumPtr Kernel::excClearscreen(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  mainController()->clearScreen();
+
+  return nothing;
+}
+
+
+/***DOC WRAP
+WRAP
+
+    tells the turtle to enter wrap mode:  From now on, if the turtle
+    is asked to move past the boundary of the graphics window, it
+    will "wrap around" and reappear at the opposite edge of the
+    window.  The top edge wraps to the bottom edge, while the left
+    edge wraps to the right edge.  (So the window is topologically
+    equivalent to a torus.)  This is the turtle's initial mode.
+    Compare WINDOW and FENCE.
+
+COD***/
+
+DatumPtr Kernel::excWrap(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  TurtleModeEnum newMode = turtleWrap;
+  if (mainTurtle()->getMode() != newMode) {
+    mainTurtle()->setMode(newMode);
+    if (mainController()->isCanvasBounded() == false) {
+        mainController()->setIsCanvasBounded(true);
+        mainTurtle()->home(false);
+        mainController()->clearScreen();
+    }
+  }
+  return nothing;
+}
+
+
+/***DOC WINDOW
+WINDOW
+
+    tells the turtle to enter window mode:  From now on, if the turtle
+    is asked to move past the boundary of the graphics window, it
+    will move offscreen.  The visible graphics window is considered
+    as just part of an infinite graphics plane; the turtle can be
+    anywhere on the plane.  (If you lose the turtle, HOME will bring
+    it back to the center of the window.)  Compare WRAP and FENCE.
+
+COD***/
+
+DatumPtr Kernel::excWindow(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  TurtleModeEnum newMode = turtleWindow;
+  if (mainTurtle()->getMode() != newMode) {
+    mainTurtle()->setMode(newMode);
+    mainController()->setIsCanvasBounded(false);
+  }
+  return nothing;
+}
+
+
+/***DOC FENCE
+FENCE
+
+    tells the turtle to enter fence mode:  From now on, if the turtle
+    is asked to move past the boundary of the graphics window, it
+    will move as far as it can and then stop at the edge with an
+    "out of bounds" error message.  Compare WRAP and WINDOW.
+
+COD***/
+
+DatumPtr Kernel::excFence(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  TurtleModeEnum newMode = turtleFence;
+  if (mainTurtle()->getMode() != newMode) {
+    mainTurtle()->setMode(newMode);
+    if (mainController()->isCanvasBounded() == false) {
+        mainController()->setIsCanvasBounded(true);
+        mainTurtle()->home(false);
+        mainController()->clearScreen();
+    }
+  }
+  return nothing;
+}
+
+// TODO: help for bounds and setbounds
+DatumPtr Kernel::excBounds(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  double x = mainController()->boundX();
+  double y = mainController()->boundY();
+
+  List *retval = List::alloc();
+  retval->append(DatumPtr(x));
+  retval->append(DatumPtr(y));
+  return h.ret(retval);
+}
+
+DatumPtr Kernel::excSetbounds(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  auto v = [](double candidate) { return candidate > 0; };
+
+  double x = h.validatedNumberAtIndex(0, v);
+  double y = h.validatedNumberAtIndex(1, v);
+
+  mainController()->setBounds(x, y);
+
+  return nothing;
+}
+
+
+/***DOC FILLED
+FILLED color instructions
+
+    runs the instructions, remembering all points visited by turtle
+    motion commands, starting *and ending* with the turtle's initial
+    position.  Then draws (ignoring penmode) the resulting polygon,
+    in the current pen color, filling the polygon with the given color,
+    which can be a color number or an RGB list.  The instruction list
+    cannot include another FILLED invocation.
+
+COD***/
+
+DatumPtr Kernel::excFilled(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  QColor c;
+  h.validatedDatumAtIndex(0, [&c, this](DatumPtr candidate) {
+    return colorFromDatumPtr(c, candidate);
+  });
+
+  DatumPtr commandList = h.datumAtIndex(1);
+
+  mainTurtle()->beginFillWithColor(c);
+  DatumPtr retval;
+  try {
+    retval = runList(commandList);
+  } catch (Error *e) {
+    mainTurtle()->endFill();
+    throw e;
+  }
+  mainTurtle()->endFill();
+  return h.ret(retval);
+}
+
+
+/***DOC LABEL
+LABEL text
+
+    takes a word or list as input, and prints the input on the
+    graphics window, starting at the turtle's position.
+
+COD***/
+
+DatumPtr Kernel::excLabel(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  QString text = h.wordAtIndex(0).wordValue()->printValue();
+  double x = 0, y = 0, z = 0;
+  mainTurtle()->getxyz(x, y, z);
+  QVector3D pos(x, y, z);
+  mainController()->drawLabel(text, pos, mainTurtle()->getPenColor());
+  return nothing;
+}
+
+
+/***DOC SETLABELHEIGHT
+SETLABELHEIGHT height
+
+    command (wxWidgets only).  Takes a positive integer argument and tries
+    to set the font size so that the character height (including
+    descenders) is that many turtle steps.  This will be different from
+    the number of screen pixels if SETSCRUNCH has been used.  Also, note
+    that SETSCRUNCH changes the font size to try to preserve this height
+    in turtle steps.  Note that the query operation corresponding to this
+    command is LABELSIZE, not LABELHEIGHT, because it tells you the width
+    as well as the height of characters in the current font.
+
+COD***/
+
+DatumPtr Kernel::excSetlabelheight(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  double height = h.validatedNumberAtIndex(
+      0, [](double candidate) { return candidate > 0; });
+  mainController()->setLabelFontSize(height);
+  return nothing;
+}
+
+
+/***DOC TEXTSCREEN TS
+TEXTSCREEN
+TS
+
+    rearranges the size and position of windows to maximize the
+    space available in the text window (the window used for
+    interaction with Logo).  The details differ among machines.
+    Compare SPLITSCREEN and FULLSCREEN.
+
+COD***/
+
+DatumPtr Kernel::excTextscreen(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  mainController()->setScreenMode(textScreenMode);
+  return nothing;
+}
+
+
+/***DOC FULLSCREEN FS
+FULLSCREEN
+FS
+
+    rearranges the size and position of windows to maximize the space
+    available in the graphics window.  The details differ among machines.
+    Compare SPLITSCREEN and TEXTSCREEN.
+
+    Since there must be a text window to allow printing (including the
+    printing of the Logo prompt), Logo automatically switches from
+    fullscreen to splitscreen whenever anything is printed.
+
+    In the DOS version, switching from fullscreen to splitscreen loses the
+    part of the picture that's hidden by the text window.  [This design
+    decision follows from the scarcity of memory, so that the extra memory
+    to remember an invisible part of a drawing seems too expensive.]
+
+COD***/
+
+DatumPtr Kernel::excFullscreen(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  mainController()->setScreenMode(fullScreenMode);
+  return nothing;
+}
+
+
+/***DOC SPLITSCREEN SS
+SPLITSCREEN
+SS
+
+    rearranges the size and position of windows to allow some room for
+    text interaction while also keeping most of the graphics window
+    visible.  The details differ among machines.  Compare TEXTSCREEN
+    and FULLSCREEN.
+
+COD***/
+
+DatumPtr Kernel::excSplitscreen(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  mainController()->setScreenMode(splitScreenMode);
+  return nothing;
+}
+
+
+/***DOC SETSCRUNCH
+SETSCRUNCH xscale yscale
+
+    adjusts the aspect ratio and scaling of the graphics display.
+    After this command is used, all further turtle motion will be
+    adjusted by multiplying the horizontal and vertical extent of
+    the motion by the two numbers given as inputs.  For example,
+    after the instruction "SETSCRUNCH 2 1" motion at a heading of
+    45 degrees will move twice as far horizontally as vertically.
+    If your squares don't come out square, try this.  (Alternatively,
+    you can deliberately misadjust the aspect ratio to draw an ellipse.)
+
+    In wxWidgets only, SETSCRUNCH also changes the size of the text font
+    used for the LABEL command to try to keep the height of characters
+    scaled with the vertical turtle step size.
+
+    For all modern computers For DOS machines, the scale factors are
+    initially set according to what the hardware claims the aspect ratio
+    is, but the hardware sometimes lies.  For DOS, the values set by
+    SETSCRUNCH are remembered in a file (called SCRUNCH.DAT) and are
+    automatically put into effect when a Logo session begins.
+
+COD***/
+
+DatumPtr Kernel::excSetscrunch(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  return nothing;
+}
+
+// TURTLE AND WINDOW QUERIES
+
+
+/***DOC SHOWNP SHOWN?
+SHOWNP
+SHOWN?
+
+    outputs TRUE if the turtle is shown (visible), FALSE if the
+    turtle is hidden.  See SHOWTURTLE and HIDETURTLE.
+
+COD***/
+
+DatumPtr Kernel::excShownp(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  bool retval = mainTurtle()->isTurtleVisible();
+  return h.ret(retval);
+}
+
+
+/***DOC SCREENMODE
+SCREENMODE
+
+    outputs the word TEXTSCREEN, SPLITSCREEN, or FULLSCREEN depending
+    on the current screen mode.
+
+COD***/
+
+DatumPtr Kernel::excScreenmode(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  QString retval;
+  switch (mainController()->getScreenMode()) {
+  case textScreenMode:
+  case initScreenMode:
+    retval = k.textscreen();
+    break;
+  case fullScreenMode:
+    retval = k.fullscreen();
+    break;
+  case splitScreenMode:
+    retval = k.splitscreen();
+    break;
+  default:
+    break;
+  }
+  return h.ret(retval);
+}
+
+
+/***DOC TURTLEMODE
+TURTLEMODE
+
+    outputs the word WRAP, FENCE, or WINDOW depending on the current
+    turtle mode.
+
+COD***/
+
+DatumPtr Kernel::excTurtlemode(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  QString retval;
+  switch (mainTurtle()->getMode()) {
+  case turtleWrap:
+    retval = k.wrap();
+    break;
+  case turtleFence:
+    retval = k.fence();
+    break;
+  case turtleWindow:
+    retval = k.window();
+    break;
+  default:
+    qDebug() << "what mode is the turtle?";
+    Q_ASSERT(false);
+    break;
+  }
+  return h.ret(retval);
+}
+
+
+/***DOC LABELSIZE
+LABELSIZE
+
+    (wxWidgets only) outputs a list of two positive integers, the width
+    and height of characters displayed by LABEL measured in turtle steps
+    (which will be different from screen pixels if SETSCRUNCH has been
+    used).  There is no SETLABELSIZE because the width and height of a
+    font are not separately controllable, so the inverse of this operation
+    is SETLABELHEIGHT, which takes just one number for the desired height.
+
+
+COD***/
+
+// TODO: Why "excLabelheight" and not excLabelsize?
+// hint: There is no "excLabelwidth".
+DatumPtr Kernel::excLabelheight(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  double retval = mainController()->getLabelFontSize();
+  return h.ret(retval);
+}
+
+// TODO: TURTLEMATRIX, and maybe .SETTURTLEMATRIX
+// TODO: This should be an array of arrays.
+DatumPtr Kernel::excMatrix(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  List *retval = List::alloc();
+  const QMatrix4x4 &m = mainTurtle()->getMatrix();
+  for (int row = 0; row < 4; ++row) {
+    List *r = List::alloc();
+    for (int col = 0; col < 4; ++col) {
+      r->append(DatumPtr(m(row, col)));
+    }
+    retval->append(DatumPtr(r));
+  }
+  return h.ret(retval);
+}
+
+// PEN AND BACKGROUND CONTROL
+
+
+/***DOC PENDOWN PD
+PENDOWN
+PD
+
+    sets the pen's position to DOWN, without changing its mode.
+
+COD***/
+
+DatumPtr Kernel::excPendown(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  mainTurtle()->setPenIsDown(true);
+
+  return nothing;
+}
+
+
+/***DOC PENUP PU
+PENUP
+PU
+
+    sets the pen's position to UP, without changing its mode.
+
+COD***/
+
+DatumPtr Kernel::excPenup(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  mainTurtle()->setPenIsDown(false);
+
+  return nothing;
+}
+
+
+/***DOC PENPAINT PPT
+PENPAINT
+PPT
+
+    sets the pen's position to DOWN and mode to PAINT.
+
+COD***/
+
+DatumPtr Kernel::excPenpaint(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  mainTurtle()->setPenIsDown(true);
+  mainTurtle()->setPenMode(penModePaint);
+  return nothing;
+}
+
+
+/***DOC PENERASE PE
+PENERASE
+PE
+
+    sets the pen's position to DOWN and mode to ERASE.
+
+COD***/
+
+DatumPtr Kernel::excPenerase(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  mainTurtle()->setPenIsDown(true);
+  mainTurtle()->setPenMode(penModeErase);
+  return nothing;
+}
+
+
+/***DOC PENREVERSE PX
+PENREVERSE
+PX
+
+    sets the pen's position to DOWN and mode to REVERSE.
+    (This may interact in system-dependent ways with use of color.)
+
+COD***/
+
+DatumPtr Kernel::excPenreverse(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  mainTurtle()->setPenIsDown(true);
+  mainTurtle()->setPenMode(penModeReverse);
+  return nothing;
+}
+
+
+/***DOC SETPENCOLOR SETPC
+SETPENCOLOR colornumber.or.rgblist
+SETPC colornumber.or.rgblist
+
+    sets the pen color to the given number, which must be a nonnegative
+    integer.  There are initial assignments for the first 16 colors:
+
+     0  black	 1  blue	 2  green	 3  cyan
+     4  red		 5  magenta	 6  yellow	 7 white
+     8  brown	 9  tan		10  forest	11  aqua
+    12  salmon	13  purple	14  orange	15  grey
+
+    but other colors can be assigned to numbers by the PALETTE command.
+    Alternatively, sets the pen color to the given RGB values (a list of
+    three nonnegative numbers less than 100 specifying the percent
+    saturation of red, green, and blue in the desired color).
+
+COD***/
+
+DatumPtr Kernel::excSetpencolor(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  QColor c;
+  h.validatedDatumAtIndex(0, [&c, this](DatumPtr candidate) {
+    return colorFromDatumPtr(c, candidate);
+  });
+  mainTurtle()->setPenColor(c);
+  return nothing;
+}
+
+
+/***DOC SETPALETTE
+SETPALETTE colornumber rgblist
+
+    sets the actual color corresponding to a given number, if allowed by
+    the hardware and operating system.  Colornumber must be an integer
+    greater than or equal to 8.  (Logo tries to keep the first 8 colors
+    constant.)  The second input is a list of three nonnegative numbers
+    less than 100 specifying the percent saturation of red, green, and
+    blue in the desired color.
+
+COD***/
+
+DatumPtr Kernel::excSetpalette(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  int colornumber = h.validatedIntegerAtIndex(0, [this](int candidate) {
+    return (candidate >= 8) && (candidate < palette.size());
+  });
+  QColor c;
+  h.validatedDatumAtIndex(1, [&c, this](DatumPtr candidate) {
+    return colorFromDatumPtr(c, candidate);
+  });
+  palette[colornumber] = c;
+  return nothing;
+}
+
+
+/***DOC SETPENSIZE
+SETPENSIZE size
+
+    sets the thickness of the pen.  The input is either a single positive
+    integer or a list of two positive integers (for horizontal and
+    vertical thickness).  Some versions pay no attention to the second
+    number, but always have a square pen.
+
+COD***/
+
+DatumPtr Kernel::excSetpensize(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  double newSize = h.validatedNumberAtIndex(0, [](double candidate) {
+    return mainTurtle()->isPenSizeValid(candidate);
+  });
+  mainTurtle()->setPenSize(newSize);
+  return nothing;
+}
+
+
+/***DOC SETBACKGROUND SETBG
+SETBACKGROUND colornumber.or.rgblist
+SETBG colornumber.or.rgblist
+
+    set the screen background color by slot number or RGB values.
+    See SETPENCOLOR for details.
+
+
+COD***/
+
+DatumPtr Kernel::excSetbackground(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  QColor c;
+  h.validatedDatumAtIndex(0, [&c, this](DatumPtr candidate) {
+    return colorFromDatumPtr(c, candidate);
+  });
+  mainController()->setCanvasBackgroundColor(c);
+  return nothing;
+}
+
+// PEN QUERIES
+
+
+/***DOC PENDOWNP PENDOWN?
+PENDOWNP
+PENDOWN?
+
+    outputs TRUE if the pen is down, FALSE if it's up.
+
+COD***/
+
+DatumPtr Kernel::excPendownp(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  return h.ret(mainTurtle()->isPenDown());
+}
+
+
+/***DOC PENMODE
+PENMODE
+
+    outputs one of the words PAINT, ERASE, or REVERSE according to
+    the current pen mode.
+
+COD***/
+
+DatumPtr Kernel::excPenmode(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  PenModeEnum pm = mainTurtle()->getPenMode();
+  QString retval;
+  switch (pm) {
+  case penModePaint:
+    retval = k.paint();
+    break;
+  case penModeReverse:
+    retval = k.reverse();
+    break;
+  case penModeErase:
+    retval = k.erase();
+    break;
+  default:
+    retval = "ERROR!!!";
+    break;
+  }
+  return h.ret(retval);
+}
+
+
+/***DOC PENCOLOR PC
+PENCOLOR
+PC
+
+    outputs a color number, a nonnegative integer that is associated with
+    a particular color, or a list of RGB values if such a list was used as
+    the most recent input to SETPENCOLOR.  There are initial assignments
+    for the first 16 colors:
+
+     0  black	 1  blue	 2  green	 3  cyan
+     4  red		 5  magenta	 6  yellow	 7 white
+     8  brown	 9  tan		10  forest	11  aqua
+    12  salmon	13  purple	14  orange	15  grey
+
+    but other colors can be assigned to numbers by the PALETTE command.
+
+COD***/
+
+DatumPtr Kernel::excPencolor(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  const QColor &c = mainTurtle()->getPenColor();
+  return h.ret(listFromColor(c));
+}
+
+
+/***DOC PALETTE
+PALETTE colornumber
+
+    outputs a list of three nonnegative numbers less than 100 specifying
+    the percent saturation of red, green, and blue in the color associated
+    with the given number.
+
+COD***/
+
+DatumPtr Kernel::excPalette(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  int colornumber = h.validatedIntegerAtIndex(0, [this](int candidate) {
+    return (candidate >= 0) && (candidate < palette.size());
+  });
+  return h.ret(listFromColor(palette[colornumber]));
+}
+
+
+/***DOC PENSIZE
+PENSIZE
+
+
+    outputs a list of two positive integers, specifying the horizontal
+    and vertical thickness of the turtle pen.  (In some implementations,
+    including wxWidgets, the two numbers are always equal.)
+
+COD***/
+
+DatumPtr Kernel::excPensize(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  double retval = mainTurtle()->getPenSize();
+  return h.ret(retval);
+}
+
+
+/***DOC BACKGROUND BG
+BACKGROUND
+BG
+
+    outputs the graphics background color, either as a slot number or
+    as an RGB list, whichever way it was set.  (See PENCOLOR.)
+
+
+COD***/
+
+DatumPtr Kernel::excBackground(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  QColor c = mainController()->getCanvasBackgroundColor();
+
+  return h.ret(listFromColor(c));
+}
+
+// SAVING AND LOADING PICTURES
+
+
+/***DOC SAVEPICT
+SAVEPICT filename
+
+    command.  Writes a file with the specified name containing the
+    state of the graphics window, including any nonstandard color
+    palette settings, in Logo's internal format.  This picture can
+    be restored to the screen using LOADPICT.  The format is not
+    portable between platforms, nor is it readable by other programs.
+    See EPSPICT to export Logo graphics for other programs.
+
+COD***/
+
+DatumPtr Kernel::excSavepict(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  DatumPtr filenameP = h.wordAtIndex(0);
+
+  const QString filepath = filepathForFilename(filenameP);
+  QImage image = mainController()->getCanvasImage();
+  bool isSuccessful = image.save(filepath);
+  if (!isSuccessful) {
+    return h.ret(Error::fileSystemRecoverable());
+  }
+  return nothing;
+}
+
+// MOUSE QUERIES
+
+
+/***DOC MOUSEPOS
+MOUSEPOS
+
+    outputs the coordinates of the mouse, provided that it's within the
+    graphics window, in turtle coordinates.  If the mouse is outside the
+    graphics window, then the last position within the window is returned.
+    Exception:  If a mouse button is pressed within the graphics window
+    and held while the mouse is dragged outside the window, the mouse's
+    position is returned as if the window were big enough to include it.
+
+COD***/
+
+DatumPtr Kernel::excMousepos(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  List *retval = List::alloc();
+  QVector2D position = mainController()->mousePosition();
+  retval->append(DatumPtr(position.x()));
+  retval->append(DatumPtr(position.y()));
+  return h.ret(retval);
+}
+
+
+/***DOC CLICKPOS
+CLICKPOS
+
+    outputs the coordinates that the mouse was at when a mouse button
+    was most recently pushed, provided that that position was within the
+    graphics window, in turtle coordinates.  (wxWidgets only)
+
+COD***/
+
+DatumPtr Kernel::excClickpos(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  List *retval = List::alloc();
+  QVector2D position = mainController()->lastMouseclickPosition();
+  retval->append(DatumPtr(position.x()));
+  retval->append(DatumPtr(position.y()));
+  return h.ret(retval);
+}
+
+
+/***DOC BUTTONP BUTTON?
+BUTTONP
+BUTTON?
+
+    outputs TRUE if a mouse button is down and the mouse is over the
+    graphics window.  Once the button is down, BUTTONP remains true until
+    the button is released, even if the mouse is dragged out of the
+    graphics window.
+
+COD***/
+
+DatumPtr Kernel::excButtonp(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  return h.ret(mainController()->getIsMouseButtonDown());
+}
+
+
+/***DOC BUTTON
+BUTTON
+
+    outputs 0 if no mouse button has been pushed inside the Logo window
+    since the last call to BUTTON.  Otherwise, it outputs an integer
+    between 1 and 3 indicating which button was most recently pressed.
+    Ordinarily 1 means left, 2 means right, and 3 means center, but
+    operating systems may reconfigure these.
+
+
+
+COD***/
+
+DatumPtr Kernel::excButton(DatumPtr node) {
+  ProcedureHelper h(this, node);
+  return h.ret(mainController()->getAndResetButtonID());
+}

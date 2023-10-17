@@ -31,8 +31,6 @@
 *.exe
 *.out
 *.app
-QLogo
-logo
 
 # Emacs temp files
 *~

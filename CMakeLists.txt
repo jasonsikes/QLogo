@@ -18,5 +18,11 @@ add_subdirectory(src/QLogo-GUI)
 
 add_subdirectory(src/qlogo)
 
+include(GNUInstallDirs)
 
-install(TARGETS QLogo-GUI qlogo RUNTIME DESTINATION . BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+install(TARGETS QLogo-GUI qlogo
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
