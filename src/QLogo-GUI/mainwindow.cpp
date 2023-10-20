@@ -82,12 +82,7 @@ MainWindow::~MainWindow()
 
 int MainWindow::startLogo()
 {
-// Macos Apps are in a bundle with the binary buried a few directories deep.
-#ifdef __APPLE__
-  QString command = QCoreApplication::applicationDirPath().append("/../../../qlogo");
-#else
   QString command = QCoreApplication::applicationDirPath().append("/qlogo");
-#endif
 
   QStringList arguments;
   arguments << "--QLogoGUI";
