@@ -33,6 +33,7 @@
 #include "vars.h"
 #include "sharedconstants.h"
 #include "textstream.h"
+#include "help.h"
 
 #include <QColor>
 #include <QFile>
@@ -59,6 +60,8 @@ class Kernel {
 
   QVector<QColor> palette;
   PropertyLists plists;
+
+  Help help;
 
   QHash<QString, TextStream *> fileStreams;
   QSet<TextStream *> writableStreams;

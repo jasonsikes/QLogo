@@ -19,6 +19,7 @@ set(QLOGO_SOURCES
   executor/kernel_graphics.cpp
   executor/kernel_workspacemanagement.cpp
   logo_main.cpp
+  misc/help.cpp
   misc/library.cpp
   misc/procedurehelper.cpp
   misc/stringconstants.cpp
@@ -41,6 +42,7 @@ set(QLOGO_SOURCES
   ../include/datum_list.h
   ../include/datum_word.h
   ../include/error.h
+  ../include/help.h
   ../include/kernel.h
   ../include/library.h
   ../include/procedurehelper.h
@@ -52,12 +54,13 @@ set(QLOGO_SOURCES
   ../include/workspace.h
 )
 
-qt_add_executable(qlogo
-  MANUAL_FINALIZATION
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)
+
+qt_add_executable("${QLOGO_BIN}"
   ${QLOGO_SOURCES}
 )
 
-target_include_directories(qlogo PUBLIC
+target_include_directories("${QLOGO_BIN}" PUBLIC
   "${CMAKE_SOURCE_DIR}/src/include"
 )
 
@@ -71,11 +74,14 @@ else()
   add_definitions(-DLOGOPLATFORM="UNIX")
 endif()
 
-target_link_libraries(qlogo PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries("${QLOGO_BIN}" PRIVATE
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Sql
+)
 
-set_target_properties(qlogo PROPERTIES
+set_target_properties("${QLOGO_BIN}" PROPERTIES
   WIN32_EXECUTABLE TRUE
 )
 
-qt_finalize_executable(qlogo)
 

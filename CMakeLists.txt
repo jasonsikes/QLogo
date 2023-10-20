@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.5)
 
 project(QLogo VERSION 0.931 LANGUAGES CXX)
 
+set(QLOGO_BIN qlogo)
+set(QLOGO_GUI QLogo-GUI)
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_AUTOMOC ON)
@@ -14,15 +17,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets OpenGLWidgets)
 
-add_subdirectory(src/QLogo-GUI)
+add_subdirectory("src/${QLOGO_BIN}")
 
-add_subdirectory(src/qlogo)
+add_subdirectory("src/${QLOGO_GUI}")
 
 include(GNUInstallDirs)
 
-
-install(TARGETS QLogo-GUI qlogo
+install(TARGETS "${QLOGO_GUI}" "${QLOGO_BIN}"
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+

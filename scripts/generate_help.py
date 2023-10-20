@@ -4,19 +4,17 @@
 # by Jason Sikes
 
 # To use:
-# 1. cd into the project root directory (e.g. /home/user/Projects/QLogo)
-# 2. run: "util/generate_help.py"
+# generate_help.py <source_dir> <dest_db>
+#
+# $ cd Projects/QLogo
+# $ scripts/generate_help.py src/qlogo/executor share/qlogo_help.db
 
-import os, errno, sqlite3
+import os, errno, sqlite3, sys, re
 
-relative_path_to_sources = 'src/qlogo/executor'
+source_prefix = sys.argv[1]
+dest_path = sys.argv[2]
 
-SOURCES = [ 'kernel.cpp', 'kernel_communication.cpp',
-            'kernel_datastructureprimitives.cpp', 'kernel_workspacemanagement.cpp',
-            'kernel_arithmetic.cpp', 'kernel_controlstructures.cpp',
-            'kernel_graphics.cpp' ]
-
-DEST_PATH = 'lib/help.db'
+SOURCES = [f for f in os.listdir(source_prefix) if re.match(r'.*\.cpp', f)]
 
 
 # Find the next header line.
@@ -66,11 +64,12 @@ def insert(conn,header,description):
         
 # Delete the database if it already exists
 try:
-    os.remove(DEST_PATH)
+    os.remove(dest_path)
+    os.mkdir(os.path.dirname(dest_path))
 except OSError:
     pass
 
-conn = sqlite3.connect(DEST_PATH)
+conn = sqlite3.connect(dest_path)
 
 # Some commands have more than one name and share a help text.
 # We create at least one alias for every command name.
@@ -88,7 +87,7 @@ conn.execute('''CREATE TABLE HELPTEXT
 
 
 for source in SOURCES:
-    path = "%s/%s" % (relative_path_to_sources, source)
+    path = "%s/%s" % (source_prefix, source)
     print("Reading '%s'." % (path))
     file = open(path, 'r')
 

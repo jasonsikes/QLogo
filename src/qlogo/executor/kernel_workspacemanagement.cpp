@@ -1809,9 +1809,14 @@ COD***/
 DatumPtr Kernel::excHelp(DatumPtr node) {
   ProcedureHelper h(this, node);
 
-  sysPrint("Sorry, help is not available in this version of QLogo.\n"
-	   "The UCBLogo manual, from which QLogo is based, is available\n"
-	   "at https://people.eecs.berkeley.edu/~bh/usermanual\n");
-
+  if (h.countOfChildren() == 0) {
+    QStringList cmds = help.allCommands();
+    stdPrint(cmds.join(" ") + "\n");
+  } else {
+    DatumPtr cmdP = h.wordAtIndex(0);
+    QString text = help.helpText(cmdP.wordValue()->keyValue());
+    if (text.size() < 1) Error::noHow(cmdP);
+    stdPrint(text);
+  }
   return nothing;
 }
