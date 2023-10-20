@@ -38,7 +38,8 @@ class Help
     QSqlDatabase db;
     bool connectionIsValid;
 
-    void getConnection(QString path);
+    QString findHelpDB();
+    void getConnection();
 public:
     Help();
     ~Help();

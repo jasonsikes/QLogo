@@ -3,6 +3,8 @@
 #include <QSqlError>
 #include <QDebug>
 #include <QSqlQuery>
+#include <QCoreApplication>
+#include <QFileInfo>
 
 //===-- qlogo/help.cpp - Help class implementation -------*- C++ -*-===//
 //
@@ -29,6 +31,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
+// If the help location was given as a command line parameter,
+// This is where it would be.
 extern QString helpdb;
 
 Help::Help()
@@ -44,10 +48,36 @@ Help::~Help()
 }
 
 
+QString Help::findHelpDB()
+{
+    // If the helpDB location was passed as a parameter, use that.
+    if ( ! helpdb.isNull()) {
+        return helpdb;
+    }
 
-void Help::getConnection(QString path)
+    // else, build a list of candidate locations to try.
+    QStringList candidates;
+
+    // The share directory relative to wherever the app binary is.
+    candidates << QCoreApplication::applicationDirPath() + "/../share/qlogo_help.db";
+    // The Resources directory relative to wherever the app binary is.
+    candidates << QCoreApplication::applicationDirPath() + "/../Resources/qlogo_help.db";
+
+    for (auto &c : candidates) {
+        qDebug() << "Checking: " << c;
+        if (QFileInfo::exists(c))
+            return c;
+    }
+
+    // TODO: How do we handle this gracefully?
+    return helpdb;
+}
+
+
+void Help::getConnection()
 {
     if ( ! connectionIsValid) {
+        QString path = findHelpDB();
         db.setDatabaseName(path);
         if (db.open())
         {
@@ -67,7 +97,7 @@ void Help::getConnection(QString path)
 
 QStringList Help::allCommands()
 {
-    getConnection(helpdb);
+    getConnection();
     QStringList retval;
     if (connectionIsValid) {
         QSqlQuery query("SELECT ALIAS FROM ALIASES", db);
@@ -86,7 +116,7 @@ QString Help::helpText(QString alias)
     QString retval;
     QString cmdName;
 
-    getConnection(helpdb);
+    getConnection();
 
     if (connectionIsValid) {
         // Every command has an alias
