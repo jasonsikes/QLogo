@@ -18,6 +18,7 @@
 
 #include <QApplication>
 #include "mainwindow.h"
+#include <QSqlDatabase>
 
 int main(int argc, char *argv[]) {
   QApplication a(argc, argv);
@@ -25,4 +26,13 @@ int main(int argc, char *argv[]) {
   w.show();
 
   return a.exec();
+}
+
+
+// This code isn't actually executed. It's to compel the CMake linker to link the
+// SQL stuff for the qlogo binary and include it into the MacOS bundle.
+void ignoreMe(void)
+{
+  QSqlDatabase *driver = new QSqlDatabase();
+  delete driver;
 }

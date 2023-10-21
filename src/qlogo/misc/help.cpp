@@ -5,6 +5,7 @@
 #include <QSqlQuery>
 #include <QCoreApplication>
 #include <QFileInfo>
+#include <QDir>
 
 //===-- qlogo/help.cpp - Help class implementation -------*- C++ -*-===//
 //
@@ -59,12 +60,18 @@ QString Help::findHelpDB()
     QStringList candidates;
 
     // The share directory relative to wherever the app binary is.
-    candidates << QCoreApplication::applicationDirPath() + "/../share/qlogo_help.db";
+    candidates << QCoreApplication::applicationDirPath()
+                      + QDir::separator() + ".."
+                      + QDir::separator() + "share"
+                      + QDir::separator() + "qlogo_help.db";
     // The Resources directory relative to wherever the app binary is.
-    candidates << QCoreApplication::applicationDirPath() + "/../Resources/qlogo_help.db";
+    candidates << QCoreApplication::applicationDirPath()
+                      + QDir::separator() + ".."
+                      + QDir::separator() + "Resources"
+                      + QDir::separator() + "qlogo_help.db";
 
     for (auto &c : candidates) {
-        qDebug() << "Checking: " << c;
+        // qDebug() << "Checking: " << c;
         if (QFileInfo::exists(c))
             return c;
     }
@@ -86,7 +93,7 @@ void Help::getConnection()
                 && tables.contains("HELPTEXT", Qt::CaseSensitive)) {
                 connectionIsValid = true;
              } else {
-                qDebug() << "db format is wrong";
+                qDebug() << "help db format is wrong";
              }
         } else {
             qDebug() <<"DB Error: " << db.lastError().text();

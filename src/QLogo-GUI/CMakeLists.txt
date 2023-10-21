@@ -21,6 +21,8 @@ set(GUI_SOURCES
   "${RESOURCE_FILES}"
 )
 
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)
+
 qt_add_executable("${QLOGO_GUI}"
   ${GUI_SOURCES}
 )
@@ -30,7 +32,11 @@ target_include_directories("${QLOGO_GUI}" PUBLIC
 )
 
 
-target_link_libraries("${QLOGO_GUI}" PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::OpenGLWidgets)
+target_link_libraries("${QLOGO_GUI}" PRIVATE
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::OpenGLWidgets
+    Qt${QT_VERSION_MAJOR}::Sql
+)
 
 set_target_properties("${QLOGO_GUI}" PROPERTIES
   MACOSX_BUNDLE_GUI_IDENTIFIER jason.qlogo.org
