@@ -40,6 +40,7 @@
 #include <QFont>
 #include <QSet>
 #include <QVector>
+#include <QRandomGenerator>
 
 class Parser;
 
@@ -60,6 +61,7 @@ class Kernel {
 
   QVector<QColor> palette;
   PropertyLists plists;
+  QRandomGenerator randomGenerator;
 
   Help help;
 
@@ -292,6 +294,7 @@ public:
 
   DatumPtr excForm(DatumPtr node);
 
+  DatumPtr excRerandom(DatumPtr node);
   DatumPtr excRandom(DatumPtr node);
 
   DatumPtr excMinus(DatumPtr node);

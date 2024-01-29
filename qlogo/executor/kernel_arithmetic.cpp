@@ -27,7 +27,6 @@
 #include "kernel.h"
 #include "datum_word.h"
 #include "datum_astnode.h"
-#include <QRandomGenerator>
 
 #include <functional>
 #include <math.h>
@@ -548,27 +547,55 @@ COD***/
 
 DatumPtr Kernel::excRandom(DatumPtr node) {
   ProcedureHelper h(this, node);
-  int start, end;
-  double result;
+  int start, end, result;
 
   if (node.astnodeValue()->countOfChildren() == 1) {
     // Generate a number between 0 (inclusive) and end (exclusive)
     end = h.validatedIntegerAtIndex(0, [](int candidate) {
-      return (candidate >= 0);
+      return (candidate > 0);
     });
-    result = (double) QRandomGenerator::global()->bounded(end);
+    result = randomGenerator.bounded(end);
   } else {
     // Generate a number between start and end (both inclusive)
     start = h.validatedIntegerAtIndex(0, [](int candidate) {
         return (candidate < INT_MAX);
     });
     end = 1 + h.validatedIntegerAtIndex(1, [=](int candidate) {
-      return (candidate < INT_MAX) && (candidate >= start);
+        return (candidate < INT_MAX) && (candidate > start);
     });
-    result = (double) QRandomGenerator::global()->bounded(start, end);
+    result = randomGenerator.bounded(start, end);
   }
 
   return h.ret(result);
+}
+
+
+/***DOC RERANDOM
+RERANDOM
+(RERANDOM seed)
+
+    command.  Makes the results of RANDOM reproducible.  Ordinarily
+    the sequence of random numbers is different each time Logo is
+    used.  If you need the same sequence of pseudo-random numbers
+    repeatedly, e.g. to debug a program, say RERANDOM before the
+    first invocation of RANDOM.  If you need more than one repeatable
+    sequence, you can give RERANDOM an integer input; each possible
+    input selects a unique sequence of numbers.
+
+COD***/
+
+DatumPtr Kernel::excRerandom(DatumPtr node) {
+    ProcedureHelper h(this, node);
+    int seedVal;
+
+    if (node.astnodeValue()->countOfChildren() == 1) {
+        seedVal = h.integerAtIndex(0);
+    } else {
+        seedVal = (int)QRandomGenerator::global()->generate();
+    }
+
+    randomGenerator.seed(seedVal);
+    return nothing;
 }
 
 
