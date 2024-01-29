@@ -1,8 +1,10 @@
 # This is README for QLogo.
 
-## Downloading
+**At this time QLogo is going through some rearchitecting. When it
+reaches a point where I think it is stable again, I'll make a note
+here.**
 
-At this time the most recent commit is, I believe, the most stable.
+## Downloading
 
 I am not providing compiled versions of QLogo at this time. Windows
 and Macos systems require me to sign the binaries. (This is a

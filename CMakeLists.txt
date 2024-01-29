@@ -4,6 +4,7 @@ project(QLogo VERSION 0.931 LANGUAGES CXX)
 
 set(QLOGO_BIN qlogo)
 set(QLOGO_GUI QLogo-GUI)
+set(GEN_HELP_BIN gen_help)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -27,9 +28,19 @@ add_subdirectory("src/${QLOGO_BIN}")
 
 add_subdirectory("src/${QLOGO_GUI}")
 
+add_subdirectory("util")
+
+file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/share")
+
+set(QLOGO_HELP_DB "${PROJECT_BINARY_DIR}/share/qlogo_help.db")
+
+add_custom_target(QLOGO_BUILD_HELP ALL
+    COMMAND "${GEN_HELP_BIN}" "${QLOGO_HELP_DB}" "${CMAKE_SOURCE_DIR}/src/qlogo/executor"
+    DEPENDS "${QLOGO_GUI}" "${QLOGO_BIN}" "${GEN_HELP_BIN}"
+)
 include(GNUInstallDirs)
 
-install(TARGETS "${QLOGO_GUI}" "${QLOGO_BIN}"
+install(TARGETS "${QLOGO_GUI}" "${QLOGO_BIN}" "${GEN_HELP_BIN}"
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -39,9 +50,9 @@ install(TARGETS "${QLOGO_GUI}" "${QLOGO_BIN}"
 if (APPLE)
     set(QLOGO_BIN_LOC ${CMAKE_BINARY_DIR}/src/${QLOGO_BIN}/${QLOGO_BIN})
     set(QLOGO_BUNDLE_EXE_DIR ${CMAKE_BINARY_DIR}/src/${QLOGO_GUI}/${QLOGO_GUI}.app/Contents/MacOS)
-    add_custom_target(QLogo ALL
+    add_custom_target(QLogoBundleCp ALL
                       COMMAND cp ${QLOGO_BIN_LOC} ${QLOGO_BUNDLE_EXE_DIR}
-                      DEPENDS "${QLOGO_GUI}" "${QLOGO_BIN}"
+                      DEPENDS "${QLOGO_GUI}" "${QLOGO_BIN}" QLOGO_BUILD_HELP
                   )
 endif()
 
