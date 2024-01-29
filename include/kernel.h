@@ -93,7 +93,6 @@ class Kernel {
   void inputProcedure(DatumPtr nodeP);
 
   bool colorFromDatumPtr(QColor &retval, DatumPtr colorP);
-  uint32_t randomFromRange(uint32_t start, uint32_t end);
 
   QString filepathForFilename(DatumPtr filenameP);
   TextStream *openFileStream(DatumPtr filenameP, QIODevice::OpenMode mode);

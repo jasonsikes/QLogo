@@ -297,14 +297,6 @@ Kernel::~Kernel() {
   delete turtle;
 }
 
-uint32_t Kernel::randomFromRange(uint32_t start, uint32_t end) {
-  uint32_t range = end - start + 1;
-
-  uint32_t x = arc4random_uniform(range);
-
-  return x + start;
-}
-
 void Kernel::makeVarLocal(const QString &varname) {
   if (variables.size() <= 1)
     return;

@@ -27,7 +27,7 @@
 #include "kernel.h"
 #include "datum_word.h"
 #include "datum_astnode.h"
-
+#include <QRandomGenerator>
 
 #include <functional>
 #include <math.h>
@@ -549,28 +549,24 @@ COD***/
 DatumPtr Kernel::excRandom(DatumPtr node) {
   ProcedureHelper h(this, node);
   int start, end;
-
-  // If this assert fails then I need to rethink this part.
-  Q_ASSERT(sizeof(int) > sizeof(uint32_t));
-  const int qlogo_maxint = 0xffffffff; // Maximum value of uint32_t
+  double result;
 
   if (node.astnodeValue()->countOfChildren() == 1) {
-    start = 0;
+    // Generate a number between 0 (inclusive) and end (exclusive)
     end = h.validatedIntegerAtIndex(0, [](int candidate) {
-      return (candidate >= 0) && (candidate <= qlogo_maxint);
+      return (candidate >= 0);
     });
-    if (end > 0)
-      end = end - 1;
+    result = (double) QRandomGenerator::global()->bounded(end);
   } else {
+    // Generate a number between start and end (both inclusive)
     start = h.validatedIntegerAtIndex(0, [](int candidate) {
-      return (candidate >= 0) && (candidate <= qlogo_maxint);
+        return (candidate < INT_MAX);
     });
-    end = h.validatedIntegerAtIndex(1, [=](int candidate) {
-      return (candidate <= qlogo_maxint) && (candidate >= start);
+    end = 1 + h.validatedIntegerAtIndex(1, [=](int candidate) {
+      return (candidate < INT_MAX) && (candidate >= start);
     });
+    result = (double) QRandomGenerator::global()->bounded(start, end);
   }
-
-  double result = (double) randomFromRange( (uint32_t) start, (uint32_t) end);
 
   return h.ret(result);
 }
