@@ -691,7 +691,7 @@ void Canvas::mousePressEvent(QMouseEvent *event) {
   if (button & Qt::LeftButton)
     buttonID = 1;
   QVector2D clickPos = screenToWorld(event->position());
-  if ( ! canvasIsBounded || (fabsf(clickPos.x()) <= boundsX) && (fabsf(clickPos.y()) <= boundsY)) {
+  if ( ! canvasIsBounded || ((fabsf(clickPos.x()) <= boundsX) && (fabsf(clickPos.y()) <= boundsY))) {
     mouseButtonPressed = true;
     emit sendMouseclickedSignal(clickPos, buttonID);
   }
@@ -701,7 +701,7 @@ void Canvas::mouseMoveEvent(QMouseEvent *event) {
     QVector2D mousePos = screenToWorld(event->position());
     if (mouseButtonPressed ||
             ! canvasIsBounded ||
-            (fabsf(mousePos.x()) <= boundsX) && (fabsf(mousePos.y()) <= boundsY))
+	((fabsf(mousePos.x()) <= boundsX) && (fabsf(mousePos.y()) <= boundsY)))
         emit sendMousemovedSignal(mousePos);
 
 }
