@@ -27,7 +27,7 @@ qt_add_executable("${QLOGO_GUI}"
 )
 
 target_include_directories("${QLOGO_GUI}" PUBLIC
-  "${CMAKE_SOURCE_DIR}/src/include"
+  "${CMAKE_SOURCE_DIR}/include"
 )
 
 

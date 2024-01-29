@@ -61,7 +61,7 @@ qt_add_executable("${QLOGO_BIN}"
 )
 
 target_include_directories("${QLOGO_BIN}" PUBLIC
-  "${CMAKE_SOURCE_DIR}/src/include"
+  "${CMAKE_SOURCE_DIR}/include"
 )
 
 add_definitions(-DLOGOVERSION="${PROJECT_VERSION}")
