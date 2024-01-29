@@ -28,6 +28,7 @@
 
 #include <QChar>
 #include <QStack>
+#include <QVector>
 #include "QDebug"
 
 #ifndef dv
@@ -214,10 +215,10 @@ template <class T> class DatumPool
   // Create a new block of objects.
   void addToPool()
   {
-      T *block = new T[blockSize];
+    QVector<T> *block = new QVector<T>(blockSize);
       Q_ASSERT(block != NULL);
-      for (int i = 0; i < blockSize; ++i) {
-          stack.push(&block[i]);
+      for (auto &i : *block) {
+          stack.push(&i);
       }
   }
 
