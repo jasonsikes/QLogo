@@ -36,6 +36,9 @@
 // This is where it would be.
 extern QString helpdb;
 
+// TODO: This should be set in the CMake file
+const char* helpDbFilename = "qlogo_help.db";
+
 Help::Help()
 {
     connectionIsValid = false;
@@ -62,13 +65,17 @@ QString Help::findHelpDB()
     // The share directory relative to wherever the app binary is.
     candidates << QCoreApplication::applicationDirPath()
                       + QDir::separator() + ".."
+                      + QDir::separator() + ".."
                       + QDir::separator() + "share"
-                      + QDir::separator() + "qlogo_help.db";
+                      + QDir::separator() + helpDbFilename;
     // The Resources directory relative to wherever the app binary is.
     candidates << QCoreApplication::applicationDirPath()
                       + QDir::separator() + ".."
                       + QDir::separator() + "Resources"
-                      + QDir::separator() + "qlogo_help.db";
+                      + QDir::separator() + helpDbFilename;
+    // The same directory as the app binary.
+    candidates << QCoreApplication::applicationDirPath()
+                      + QDir::separator() + helpDbFilename;
 
     for (auto &c : candidates) {
         // qDebug() << "Checking: " << c;

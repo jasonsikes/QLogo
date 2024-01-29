@@ -46,12 +46,12 @@ install(TARGETS "${QLOGO_GUI}" "${QLOGO_BIN}" "${GEN_HELP_BIN}"
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-# On MacOS copy the qlogo binary into the GUI bundle
+# On MacOS copy the qlogo binary and help database into the GUI bundle
 if (APPLE)
     set(QLOGO_BIN_LOC ${CMAKE_BINARY_DIR}/src/${QLOGO_BIN}/${QLOGO_BIN})
     set(QLOGO_BUNDLE_EXE_DIR ${CMAKE_BINARY_DIR}/src/${QLOGO_GUI}/${QLOGO_GUI}.app/Contents/MacOS)
     add_custom_target(QLogoBundleCp ALL
-                      COMMAND cp ${QLOGO_BIN_LOC} ${QLOGO_BUNDLE_EXE_DIR}
+                      COMMAND cp ${QLOGO_BIN_LOC} "${QLOGO_HELP_DB}" ${QLOGO_BUNDLE_EXE_DIR}
                       DEPENDS "${QLOGO_GUI}" "${QLOGO_BIN}" QLOGO_BUILD_HELP
                   )
 endif()

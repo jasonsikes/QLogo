@@ -160,6 +160,7 @@ bool Vars::testedState() {
         return frame->testState;
     }
   Q_ASSERT(false);
+  return false;
 }
 
 VarFrame::VarFrame(Vars *aVars) {

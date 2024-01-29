@@ -90,7 +90,7 @@ QString readText(QTextStream &stream)
         if (line.isNull() || line.contains(u"COD***/")) {
             break;
         }
-        retval += line;
+        retval += line + "\n";
     }
 
     return retval;
