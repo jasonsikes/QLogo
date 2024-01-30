@@ -50,8 +50,11 @@ install(TARGETS "${QLOGO_GUI}" "${QLOGO_BIN}" "${GEN_HELP_BIN}"
 if (APPLE)
     set(QLOGO_BIN_LOC ${CMAKE_BINARY_DIR}/${QLOGO_BIN}/${QLOGO_BIN})
     set(QLOGO_BUNDLE_EXE_DIR ${CMAKE_BINARY_DIR}/${QLOGO_GUI}/${QLOGO_GUI}.app/Contents/MacOS)
+    set(QLOGO_BUNDLE_RESOURCES_DIR ${CMAKE_BINARY_DIR}/${QLOGO_GUI}/${QLOGO_GUI}.app/Contents/Resources)
     add_custom_target(QLogoBundleCp ALL
-                      COMMAND cp ${QLOGO_BIN_LOC} "${QLOGO_HELP_DB}" ${QLOGO_BUNDLE_EXE_DIR}
+                      COMMAND cp "${QLOGO_BIN_LOC}" "${QLOGO_BUNDLE_EXE_DIR}"
+                      COMMAND mkdir "${QLOGO_BUNDLE_RESOURCES_DIR}"
+                      COMMAND cp "${QLOGO_HELP_DB}" "${QLOGO_BUNDLE_RESOURCES_DIR}"
                       DEPENDS "${QLOGO_GUI}" "${QLOGO_BIN}" QLOGO_BUILD_HELP
                   )
 endif()
