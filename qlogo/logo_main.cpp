@@ -1,4 +1,4 @@
-#include "qlogocontroller.h"
+#include "logocontrollergui.h"
 #include <QCoreApplication>
 #include <QCommandLineParser>
 

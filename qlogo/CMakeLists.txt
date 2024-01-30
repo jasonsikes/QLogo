@@ -1,7 +1,7 @@
 set(QLOGO_SOURCES
   controller/inputqueue.cpp
   controller/logocontroller.cpp
-  controller/qlogocontroller.cpp
+  controller/logocontrollergui.cpp
   controller/textstream.cpp
   datum/datum.cpp
   datum/datum_array.cpp
@@ -32,7 +32,7 @@ set(QLOGO_SOURCES
   ../include/sharedconstants.h
   ../include/inputqueue.h
   ../include/logocontroller.h
-  ../include/qlogocontroller.h
+  ../include/logocontrollergui.h
   ../include/textstream.h
   ../include/datum.h
   ../include/datum_array.h

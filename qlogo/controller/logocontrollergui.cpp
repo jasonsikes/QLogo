@@ -1,4 +1,4 @@
-#include "qlogocontroller.h"
+#include "logocontrollergui.h"
 #include "datum_word.h"
 #include <QMatrix4x4>
 #include <QMessageBox>
