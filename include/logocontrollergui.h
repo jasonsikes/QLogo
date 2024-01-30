@@ -1,5 +1,5 @@
-#ifndef QLOGOCONTROLLER_H
-#define QLOGOCONTROLLER_H
+#ifndef LOGOCONTROLLERGUI_H
+#define LOGOCONTROLLERGUI_H
 
 #include "logocontroller.h"
 #include "sharedconstants.h"
@@ -9,7 +9,7 @@
 #include "inputqueue.h"
 #include "datum.h"
 
-class QLogoController : public LogoController
+class LogoControllerGUI : public LogoController
 {
     InputQueue messageQueue;
     message_t getMessage();
@@ -54,8 +54,8 @@ class QLogoController : public LogoController
     void processInputMessageQueue();
 
 public:
-    QLogoController(QObject *parent = 0);
-    ~QLogoController();
+    LogoControllerGUI(QObject *parent = 0);
+    ~LogoControllerGUI();
     void systemStop();
 
     void initialize();
@@ -110,4 +110,4 @@ public:
     void clearScreenText();
 };
 
-#endif // QLOGOCONTROLLER_H
+#endif // LOGOCONTROLLERGUI_H

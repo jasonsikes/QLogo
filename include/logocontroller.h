@@ -21,7 +21,7 @@
 ///
 /// \file
 /// This file contains the declaration of the LogoController class, which is the
-/// superclass for QLogoController.
+/// superclass for LogoControllerGUI.
 ///
 //===----------------------------------------------------------------------===//
 

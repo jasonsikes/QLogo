@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 
   LogoController *mainController;
   if (hasGUI) {
-      mainController = new QLogoController;
+      mainController = new LogoControllerGUI;
   } else {
       mainController = new LogoController;
   }
