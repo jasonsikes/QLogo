@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 
 project(QLogo VERSION 0.931 LANGUAGES CXX)
 
+include(GNUInstallDirs)
+
 set(QLOGO_BIN qlogo)
 set(QLOGO_GUI QLogo-GUI)
 set(GEN_HELP_BIN gen_help)
@@ -30,21 +32,40 @@ add_subdirectory("${QLOGO_GUI}")
 
 add_subdirectory("util")
 
-file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/share")
+set(QLOGO_DB_DIR "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_DATADIR}/${QLOGO_BIN}")
+set(QLOGO_HELP_DB "${QLOGO_DB_DIR}/qlogo_help.db")
+set(QLOGO_HELP_SRC "${CMAKE_SOURCE_DIR}/${QLOGO_BIN}/executor")
 
-set(QLOGO_HELP_DB "${PROJECT_BINARY_DIR}/share/qlogo_help.db")
+file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_DATADIR}/${QLOGO_BIN}")
 
-add_custom_target(QLOGO_BUILD_HELP ALL
-    COMMAND "${GEN_HELP_BIN}" "${QLOGO_HELP_DB}" "${CMAKE_SOURCE_DIR}/qlogo/executor"
-    DEPENDS "${QLOGO_GUI}" "${QLOGO_BIN}" "${GEN_HELP_BIN}"
+add_custom_target(QLOGO_BUILD_HELP
+    COMMENT "BUILDING HELP, sources: ${QLOGO_HELP_SRC}  dest: ${QLOGO_HELP_DB}"
+    COMMAND "${GEN_HELP_BIN}" "${QLOGO_HELP_DB}" "${QLOGO_HELP_SRC}"
+    DEPENDS "${GEN_HELP_BIN}"
 )
-include(GNUInstallDirs)
 
-install(TARGETS "${QLOGO_GUI}" "${QLOGO_BIN}" "${GEN_HELP_BIN}"
+install(TARGETS "${QLOGO_GUI}" "${QLOGO_BIN}"
     BUNDLE DESTINATION .
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+install(DIRECTORY "${QLOGO_DB_DIR}"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}"
+)
+
+install(FILES "${QLOGO_GUI}.desktop"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
+)
+
+install(FILES "${QLOGO_GUI}.png"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/pixmaps"
+)
+
+install(FILES "${QLOGO_GUI}.appdata.xml"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/appdata"
+)
+
+add_dependencies("${QLOGO_BIN}" QLOGO_BUILD_HELP)
 
 # On MacOS copy the qlogo binary and help database into the GUI bundle
 if (APPLE)
@@ -52,11 +73,11 @@ if (APPLE)
     set(QLOGO_BUNDLE_EXE_DIR ${CMAKE_BINARY_DIR}/${QLOGO_GUI}/${QLOGO_GUI}.app/Contents/MacOS)
     set(QLOGO_BUNDLE_RESOURCES_DIR ${CMAKE_BINARY_DIR}/${QLOGO_GUI}/${QLOGO_GUI}.app/Contents/Resources)
     add_custom_target(QLogoBundleCp ALL
-                      COMMAND cp "${QLOGO_BIN_LOC}" "${QLOGO_BUNDLE_EXE_DIR}"
-                      COMMAND mkdir "${QLOGO_BUNDLE_RESOURCES_DIR}"
-                      COMMAND cp "${QLOGO_HELP_DB}" "${QLOGO_BUNDLE_RESOURCES_DIR}"
-                      DEPENDS "${QLOGO_GUI}" "${QLOGO_BIN}" QLOGO_BUILD_HELP
-                  )
+        COMMAND cp "${QLOGO_BIN_LOC}" "${QLOGO_BUNDLE_EXE_DIR}"
+        COMMAND mkdir -p "${QLOGO_BUNDLE_RESOURCES_DIR}"
+        COMMAND cp "${QLOGO_HELP_DB}" "${QLOGO_BUNDLE_RESOURCES_DIR}"
+        DEPENDS "${QLOGO_GUI}" "${QLOGO_BIN}" QLOGO_BUILD_HELP
+    )
 endif()
 
 # TODO: rm -rf ~/temp/qlogo

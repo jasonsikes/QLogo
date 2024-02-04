@@ -66,6 +66,7 @@ QString Help::findHelpDB()
     candidates << QCoreApplication::applicationDirPath()
                       + QDir::separator() + ".."
                       + QDir::separator() + "share"
+                      + QDir::separator() + "qlogo"
                       + QDir::separator() + helpDbFilename;
     // The Resources directory relative to wherever the app binary is.
     candidates << QCoreApplication::applicationDirPath()
