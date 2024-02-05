@@ -57,9 +57,9 @@ install(FILES "${QLOGO_GUI}.desktop"
     DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
 )
 
-install(FILES "${QLOGO_GUI}.png"
-    DESTINATION "${CMAKE_INSTALL_DATADIR}/pixmaps"
-)
+#install(FILES "${QLOGO_GUI}.png"
+#    DESTINATION "${CMAKE_INSTALL_DATADIR}/pixmaps"
+#)
 
 install(FILES "${QLOGO_GUI}.appdata.xml"
     DESTINATION "${CMAKE_INSTALL_DATADIR}/appdata"
