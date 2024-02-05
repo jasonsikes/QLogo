@@ -57,12 +57,12 @@ install(FILES "${QLOGO_GUI}.desktop"
     DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
 )
 
-#install(FILES "${QLOGO_GUI}.png"
-#    DESTINATION "${CMAKE_INSTALL_DATADIR}/pixmaps"
-#)
+install(DIRECTORY "icons/hicolor"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/icons"
+)
 
 install(FILES "${QLOGO_GUI}.appdata.xml"
-    DESTINATION "${CMAKE_INSTALL_DATADIR}/appdata"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/metainfo"
 )
 
 add_dependencies("${QLOGO_BIN}" QLOGO_BUILD_HELP)

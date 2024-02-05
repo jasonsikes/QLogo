@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component type="desktop">
+<component type="desktop-application">
   <id>QLogo-GUI.desktop</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0+</project_license>
@@ -8,11 +8,15 @@
   
   <summary>A UCBLogo-compatible interpreter using Qt and OpenGL</summary>
   <description>
-    <p>A UCBLogo-compatible interpreter with hardware-accelerated graphics and Unicode text.</p>
+    <p>A UCBLogo-compatible interpreter with hardware-accelerated graphics and Unicode text. It almost identically mimics
+    the UCBLogo interpreter developed by Brian Harvey at U.C. Berkeley.</p>
+    <p>The UCBLogo User manual can be found here: https://people.eecs.berkeley.edu/~bh/usermanual</p>
   </description>
 
+  <launchable type="desktop-id">emacs</launchable>
+
   <url type="homepage">https://www.qlogo.org</url>
-  
+  <update_contact>sikes_AT_qlogo.org</update_contact>
   <translation/>
   <languages>
     <lang>en</lang>
