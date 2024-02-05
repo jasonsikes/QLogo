@@ -52,6 +52,7 @@ class MainWindow : public QMainWindow {
 
 protected:
     void closeEvent ( QCloseEvent * event );
+    QString findQlogoExe();
 
 public:
   explicit MainWindow(QWidget *parent = 0);

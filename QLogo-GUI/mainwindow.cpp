@@ -79,10 +79,34 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+QString MainWindow::findQlogoExe()
+{
+    // else, build a list of candidate locations to try.
+    QStringList candidates;
+
+    // The qlogo directory relative to wherever the app binary is.
+    candidates << QCoreApplication::applicationDirPath()
+                      + QDir::separator() + ".."
+                      + QDir::separator() + "qlogo"
+                      + QDir::separator() + "qlogo";
+    // The same directory as the app binary.
+    candidates << QCoreApplication::applicationDirPath()
+                      + QDir::separator() + "qlogo";
+
+    for (auto &c : candidates) {
+        // qDebug() << "Checking: " << c;
+        if (QFileInfo::exists(c))
+            return c;
+    }
+
+    // TODO: How do we handle this gracefully?
+    return QString();
+}
+
 
 int MainWindow::startLogo()
 {
-  QString command = QCoreApplication::applicationDirPath().append("/qlogo");
+  QString command = findQlogoExe();
 
   QStringList arguments;
   arguments << "--QLogoGUI";
