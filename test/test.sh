@@ -15,7 +15,7 @@ filenames=( "$@" )
 argc="$#"
 
 logo_binary=qlogo
-logo_path="../$logo_binary"
+logo_path="../qlogo/$logo_binary"
 log_file=~/Documents/QLogo_test_runs.csv
 
 failed_tests=()
