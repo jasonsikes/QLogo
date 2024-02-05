@@ -67,14 +67,14 @@ install(FILES "${QLOGO_GUI}.appdata.xml"
 
 add_dependencies("${QLOGO_BIN}" QLOGO_BUILD_HELP)
 
-# On MacOS copy the qlogo binary and help database into the GUI bundle
 if (APPLE)
+    set(MACOSX_BUNDLE_ICON_FILE QLogo-GUI.icns)
+    # Copy the qlogo binary and help database into the GUI bundle
     set(QLOGO_BIN_LOC ${CMAKE_BINARY_DIR}/${QLOGO_BIN}/${QLOGO_BIN})
     set(QLOGO_BUNDLE_EXE_DIR ${CMAKE_BINARY_DIR}/${QLOGO_GUI}/${QLOGO_GUI}.app/Contents/MacOS)
     set(QLOGO_BUNDLE_RESOURCES_DIR ${CMAKE_BINARY_DIR}/${QLOGO_GUI}/${QLOGO_GUI}.app/Contents/Resources)
     add_custom_target(QLogoBundleCp ALL
         COMMAND cp "${QLOGO_BIN_LOC}" "${QLOGO_BUNDLE_EXE_DIR}"
-        COMMAND mkdir -p "${QLOGO_BUNDLE_RESOURCES_DIR}"
         COMMAND cp "${QLOGO_HELP_DB}" "${QLOGO_BUNDLE_RESOURCES_DIR}"
         DEPENDS "${QLOGO_GUI}" "${QLOGO_BIN}" QLOGO_BUILD_HELP
     )

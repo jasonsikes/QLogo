@@ -22,8 +22,16 @@ set(GUI_SOURCES
 
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)
 
-qt_add_executable("${QLOGO_GUI}"
+set(MACOSX_BUNDLE_ICON_FILE "${QLOGO_GUI}.icns")
+
+set(app_icon_macos "${CMAKE_SOURCE_DIR}/icons/${QLOGO_GUI}.icns")
+
+set_source_files_properties(${app_icon_macos} PROPERTIES
+    MACOSX_PACKAGE_LOCATION "Resources")
+
+qt_add_executable("${QLOGO_GUI}" MACOSX_BUNDLE
   ${GUI_SOURCES}
+  ${app_icon_macos}
 )
 
 target_include_directories("${QLOGO_GUI}" PUBLIC
