@@ -1,8 +1,5 @@
 # This is README for QLogo.
 
-**At this time QLogo is going through some rearchitecting. When it
-reaches a point where I think it is stable again, I'll make a note
-here.**
 
 ## Downloading
 
@@ -60,37 +57,62 @@ The differences between QLogo and UCBLogo are described in the
 
 QLogo requires Qt6 and cmake.
 
-### To build:
+### To build in Linux:
+
+First, create a build directory somewhere outside of the QLogo source directory.
+
+**In my case, since I keep my projects in a "Projects" directory under my home,
+my QLogo directory can be found at "~/Projects/QLogo". Thus, one place to create
+my "build" would be adjacent to my QLogo directory, "~/Projects/build".**
+
+Then have CMake create the build structure. The command is:
+
+**cmake -S <source_directory> -B <build_directory>**
 
 ```
-$ cmake CMakeLists.txt
+
+$ mkdir build
+
+$ cmake -S QLogo -B build
+
+```
+
+Then enter into your build directory and issue **make**, and if all goes well, you may run **make install**
+
+```
+
+$ cd build
 
 $ make
+
+$ sudo make install
 ```
 
 This will give you two executables:
 
-1. "qlogo": this is the Logo interpreter that can be run from the command line.
+1. "qlogo": this is the Logo interpreter that can be run from a script or command line.
 
-2. "QLogo-GUI": this is the graphical user interface that runs qlogo and gives
-you the turtle.
-
-There is no "make install" step yet.
+2. "QLogo-GUI": this is the graphical user interface that will run qlogo and provides
+the turtle.
 
 ***
 
+
+### To build in MacOS:
+
+I simply open the CMakeLists.txt file in QtCreator and build within there. 
 
 ## There are a few nuances:
 
 
 * Colors can be specified in one of three ways:
 
-   * as a palette index (0 to 100), same as UCBLogo
+   1. as a palette index (0 to 100), same as UCBLogo
 
-   * as a list of 3 percentages, one for each of red, green, blue `[0 0 0]` is
-   black, `[100 100 100]` is white
+   2. as a list of 3 percentages, one for each of red, green, blue `[0 0 0]` is
+   black, `[100 100 100]` is white, also same as UCBLogo
 
-   * as a named color from the X Color Database, e.g. `white` or `lemonchiffon`.
+   3. as a named color from the X Color Database, e.g. `white` or `lemonchiffon`.
    The X Color database can be found here:
    https://en.wikipedia.org/wiki/X11_color_names
 
@@ -126,10 +148,6 @@ There is no "make install" step yet.
   PNG, PPM, XBM, and XPM
 
 
-* `HELP` is not functional. I am moving the help text to the file system so
-  that it can be loaded as needed.
-
-
 * There is no facility yet for translation/internationalization. Yet.
 
 
@@ -147,7 +165,7 @@ can move the window to a different position.
 
 `FILL`:
 
-Two reasons: One of the user interface principles is that
+Two reasons: One of the user interface principles for QLogo is that
 the canvas should be device resolution-independent. That
 means when the QLogo window is resized or the separator
 between the text and the graphics is moved the graphics
@@ -155,7 +173,8 @@ will be redrawn with the new dimensions. The Flood Fill
 algorithm depends on specific pixels which means that the
 display can change dramatically depending on the size of
 the canvas. The other reason is that the Flood Fill
-algorithm can slow down window resizing. Use FILLED instead.
+algorithm can slow down window resizing. FILLED is still
+available.
 
 `LOADPICT`:
 
@@ -184,7 +203,7 @@ The QLogo library is stored internally.
 
 `SETHELPLOC`:
 
-Not implemented yet.
+Not implemented. QLogo uses a SQLite database to store help text.
 
 `SETTEMPLOC`:
 
