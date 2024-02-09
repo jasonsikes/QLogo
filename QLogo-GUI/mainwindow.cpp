@@ -81,17 +81,24 @@ MainWindow::~MainWindow()
 
 QString MainWindow::findQlogoExe()
 {
-    // else, build a list of candidate locations to try.
+    // Windows executables have 'exe' extension.
+#ifdef WIN32
+    QString filename("qlogo.exe");
+#else
+    QString filename("qlogo");
+#endif
+
+    // Build a list of candidate locations to try.
     QStringList candidates;
 
     // The qlogo directory relative to wherever the app binary is.
     candidates << QCoreApplication::applicationDirPath()
                       + QDir::separator() + ".."
                       + QDir::separator() + "qlogo"
-                      + QDir::separator() + "qlogo";
+                      + QDir::separator() + filename;
     // The same directory as the app binary.
     candidates << QCoreApplication::applicationDirPath()
-                      + QDir::separator() + "qlogo";
+                      + QDir::separator() + filename;
 
     for (auto &c : candidates) {
         // qDebug() << "Checking: " << c;
