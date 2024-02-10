@@ -1,11 +1,13 @@
 set(GEN_HELP_SOURCES
-  gen_help.cpp
+    gen_help.cpp
 )
 
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)
 
+set(GEN_HELP_BIN gen_help)
+
 qt_add_executable("${GEN_HELP_BIN}"
-  ${GEN_HELP_SOURCES}
+    ${GEN_HELP_SOURCES}
 )
 
 target_link_libraries("${GEN_HELP_BIN}" PRIVATE
@@ -14,7 +16,7 @@ target_link_libraries("${GEN_HELP_BIN}" PRIVATE
 )
 
 set_target_properties("${GEN_HELP_BIN}" PROPERTIES
-  WIN32_EXECUTABLE TRUE
+    WIN32_EXECUTABLE TRUE
 )
 
 
