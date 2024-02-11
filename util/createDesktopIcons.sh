@@ -16,8 +16,7 @@ source=qlogo_icon_1024.png
 
 # Create the icon for GitHub
 
-convert $source -resize 384x384   -depth 32 "../qlogo_icon384rgba.png"
-
+convert $source -resize 192x192   -depth 32 "../qlogo_logo.png"
 
 # Creating icons for MacOS:
 
