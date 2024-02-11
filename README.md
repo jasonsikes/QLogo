@@ -1,5 +1,7 @@
 # This is README for QLogo.
 
+![QLogo Icon](qlogo_logo.png)
+
 
 ## Downloading
 
@@ -8,8 +10,6 @@ and Macos systems require me to sign the binaries. This is a
 good thing. I still have yet to learn how to do that.
 
 ***
-
-![QLogo Icon](qlogo_logo.png)
 
 QLogo is an interpreter for the Logo language written in C++ using
 Qt and OpenGL. It mimics (as much as I find reasonable) the UCBLogo
