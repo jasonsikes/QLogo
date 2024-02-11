@@ -4,13 +4,8 @@
 ## Downloading
 
 I am not providing compiled versions of QLogo at this time. Windows
-and Macos systems require me to sign the binaries. (This is a
-good thing.) I still have yet to learn how to do that.
-
-Please note that there are now TWO executables: logo and QLogo. The
-*logo* executable works as a standalone command-line program. The
-*QLogo* executable is a sort of GUI terminal that also provides a
-turtle.
+and Macos systems require me to sign the binaries. This is a
+good thing. I still have yet to learn how to do that.
 
 ***
 
@@ -20,7 +15,7 @@ QLogo is an interpreter for the Logo language written in C++ using
 Qt and OpenGL. It mimics (as much as I find reasonable) the UCBLogo
 interpreter developed by Brian Harvey at U.C. Berkeley.
 
-Copyright (C) 2017-2023 Jason Sikes
+Copyright (C) 2017-2024 Jason Sikes
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -48,28 +43,37 @@ You can find the UCBLogo Manual here:
 http://people.eecs.berkeley.edu/~bh/usermanual
 
 The differences between QLogo and UCBLogo are described in the
-**nuances** section below.
+**nuances** section below. There aren't many.
 
 ***
 
 
 ## Compiling
 
-QLogo requires Qt6 and cmake.
+Building QLogo requires Qt6 and CMake.
+
+### To build in MacOS and Windows:
+
+Simply open the CMakeLists.txt file in QtCreator and build within there. 
 
 ### To build in Linux:
 
-First, create a build directory somewhere outside of the QLogo source directory.
+If you have qtcreator, you can use qtcreator in Linux in the same mannor as
+in Windows and MacOS described above.
 
-**In my case, since I keep my projects in a "Projects" directory under my home,
-my QLogo directory can be found at "~/Projects/QLogo". Thus, one place to create
-my "build" would be adjacent to my QLogo directory, "~/Projects/build".**
+Otherwise, you can follow the standard CMake build procedure. First, create a
+build directory somewhere outside of the QLogo source directory.
 
-Then have CMake create the build structure. The command is:
+*In my case, since I keep my projects in a "Projects" directory under my home,
+my QLogo directory can be found at "\~/Projects/QLogo". Thus, one place to create
+my "build" would be adjacent to my QLogo directory, "\~/Projects/build".*
 
-**cmake -S <source_directory> -B <build_directory>**
+Then have CMake create the build structure.
+
 
 ```
+
+$ cd ~/Projects
 
 $ mkdir build
 
@@ -77,7 +81,8 @@ $ cmake -S QLogo -B build
 
 ```
 
-Then enter into your build directory and issue **make**, and if all goes well, you may run **make install**
+Then enter into your build directory and issue ```make```, and if all goes well,
+you can run ```make install```
 
 ```
 
@@ -97,12 +102,7 @@ the turtle.
 
 ***
 
-
-### To build in MacOS:
-
-I simply open the CMakeLists.txt file in QtCreator and build within there. 
-
-## There are a few nuances:
+## Here are the nuances (they're mostly insignificant, I think):
 
 
 * Colors can be specified in one of three ways:

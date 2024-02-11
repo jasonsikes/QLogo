@@ -1,7 +1,8 @@
 #! /bin/zsh -v
 
 # This script is intended to run on MacOS, but will probably work in Linux.
-# It will generate the set of icons for MacOS, Windows, and common Linux desktops.
+# It will generate the set of icons for GitHub README, MacOS,
+# Windows, and common Linux desktops.
 
 # Get the directory containing this script. We will base everything else relative to it.
 exePath=${0:a:h}
@@ -11,6 +12,11 @@ cd $exePath/../icons
 
 # The icon source file:
 source=qlogo_icon_1024.png
+
+
+# Create the icon for GitHub
+
+convert $source -resize 384x384   -depth 32 "../qlogo_icon384rgba.png"
 
 
 # Creating icons for MacOS:
