@@ -9,7 +9,7 @@ good thing. I still have yet to learn how to do that.
 
 ***
 
-![QLogo Icon](qlogo_icon384rgba.png)
+![QLogo Icon](qlogo_logo.png)
 
 QLogo is an interpreter for the Logo language written in C++ using
 Qt and OpenGL. It mimics (as much as I find reasonable) the UCBLogo
