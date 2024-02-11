@@ -29,10 +29,23 @@ set(app_icon_macos "${CMAKE_SOURCE_DIR}/icons/${QLOGO_GUI}.icns")
 set_source_files_properties(${app_icon_macos} PROPERTIES
     MACOSX_PACKAGE_LOCATION "Resources")
 
-qt_add_executable("${QLOGO_GUI}" MACOSX_BUNDLE
-  ${GUI_SOURCES}
-  ${app_icon_macos}
-)
+
+if (WIN32)
+    file(COPY "${CMAKE_SOURCE_DIR}/icons/${QLOGO_GUI}.ico"
+    DESTINATION  "${CMAKE_SOURCE_DIR}/resources")
+    set(app_icon_resource_windows "${CMAKE_SOURCE_DIR}/resources/${QLOGO_GUI}.rc")
+    qt_add_executable("${QLOGO_GUI}"
+      ${GUI_SOURCES}
+      ${app_icon_resource_windows}
+    )
+else()
+    qt_add_executable("${QLOGO_GUI}" MACOSX_BUNDLE
+      ${GUI_SOURCES}
+      ${app_icon_macos}
+    )
+endif()
+
+
 
 target_include_directories("${QLOGO_GUI}" PUBLIC
   "${CMAKE_SOURCE_DIR}/include"

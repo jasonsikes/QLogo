@@ -65,7 +65,7 @@ install(FILES "${QLOGO_GUI}.appdata.xml"
 )
 
 if (APPLE)
-    set(MACOSX_BUNDLE_ICON_FILE QLogo-GUI.icns)
+    set(MACOSX_BUNDLE_ICON_FILE ${QLOGO_GUI}.icns)
     # Copy the qlogo binary and help database into the GUI bundle
     set(QLOGO_BIN_LOC ${CMAKE_BINARY_DIR}/${QLOGO_BIN}/${QLOGO_BIN})
     set(QLOGO_BUNDLE_EXE_DIR ${CMAKE_BINARY_DIR}/${QLOGO_GUI}/${QLOGO_GUI}.app/Contents/MacOS)
