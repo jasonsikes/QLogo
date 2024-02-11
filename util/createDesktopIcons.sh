@@ -1,21 +1,52 @@
-#! /bin/zsh
+#! /bin/zsh -v
 
 # This script is intended to run on MacOS, but will probably work in Linux.
-# It will generate the set of icons for common Linux desktops.
+# It will generate the set of icons for MacOS, Windows, and common Linux desktops.
 
-# In order to prevent accidentally cobbering something, the path to the
-# icons directory needs to be specified.
-argn=$#
+# Get the directory containing this script. We will base everything else relative to it.
+exePath=${0:a:h}
 
-if [ $argn -ne 1 ] || ! [ -d "$1" ]; then
-    echo Usage: $0 DIRECTORY
-    exit 1
-fi
+# Our work will be in the icons directory.
+cd $exePath/../icons
 
-cd "$1"
-
-# It is assumed that the source file is:
+# The icon source file:
 source=qlogo_icon_1024.png
+
+
+# Creating icons for MacOS:
+
+destdir="QLogo-GUI.iconset"
+
+mkdir "$destdir"
+sips -z 16 16     "$source" --out "$destdir/icon_16x16.png"
+sips -z 32 32     "$source" --out "$destdir/icon_16x16@2x.png"
+sips -z 32 32     "$source" --out "$destdir/icon_32x32.png"
+sips -z 64 64     "$source" --out "$destdir/icon_32x32@2x.png"
+sips -z 128 128   "$source" --out "$destdir/icon_128x128.png"
+sips -z 256 256   "$source" --out "$destdir/icon_128x128@2x.png"
+sips -z 256 256   "$source" --out "$destdir/icon_256x256.png"
+sips -z 512 512   "$source" --out "$destdir/icon_256x256@2x.png"
+sips -z 512 512   "$source" --out "$destdir/icon_512x512.png"
+cp "$source" "$destdir/icon_512x512@2x.png"
+iconutil -c icns "$destdir"
+rm -rf "$destdir"
+
+
+# Creating icons for Windows:
+
+dest="QLogo-GUI.ico"
+
+convert $source -resize 16x16   -depth 32 q16-32.png
+convert $source -resize 32x32   -depth 32 q32-32.png
+convert $source -resize 48x48   -depth 32 q48-32.png
+convert $source -resize 256x256 -depth 32 q256-32.png
+
+convert q16-32.png q32-32.png q48-32.png q256-32.png $dest
+rm q16-32.png q32-32.png q48-32.png q256-32.png
+
+
+
+# Creating icons for Linux:
 
 dest="hicolor"
 
@@ -29,7 +60,6 @@ for w in 128 16 24 32 48; do
     dims="${w}x${w}"
     dir="$dest/$dims/apps"
     p="$dir/$name"
-    echo writing "$p"
     mkdir -p "$dir"
     convert "$source" -resize $dims -depth 32 "$p"
 done
