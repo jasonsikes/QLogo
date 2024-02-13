@@ -420,6 +420,7 @@ public:
   // CONTROL STRUCTURES
 
   DatumPtr excRun(DatumPtr node);
+  DatumPtr excTime(DatumPtr node);
   DatumPtr excRunresult(DatumPtr node);
   DatumPtr excForever(DatumPtr node);
   DatumPtr excRepcount(DatumPtr node);

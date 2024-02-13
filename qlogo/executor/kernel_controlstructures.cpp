@@ -24,6 +24,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
+#include "QtCore/qdatetime.h"
 #include "error.h"
 #include "kernel.h"
 #include "parser.h"
@@ -50,6 +51,33 @@ DatumPtr Kernel::excRun(DatumPtr node) {
   });
 
   return h.ret(runList(instructionList));
+}
+
+
+
+/***DOC TIME
+TIME instructionlist
+
+    runs the instructions in the input; prints the amount of time
+    (in seconds) the command or operation takes to complete; outputs
+    if the list contains an expression that outputs.
+
+COD***/
+
+DatumPtr Kernel::excTime(DatumPtr node) {
+    ProcedureHelper h(this, node);
+
+    DatumPtr instructionList = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
+        return candidate.isWord() || candidate.isList();
+    });
+
+    qint64 startTime = QDateTime::currentMSecsSinceEpoch();
+    DatumPtr retval = runList(instructionList);
+    qint64 endTime = QDateTime::currentMSecsSinceEpoch();
+    double timeInSeconds = ((double) (endTime - startTime)) / 1000.0;
+    QString report = "Time: %1 seconds\n";
+    stdPrint(report.arg(timeInSeconds));
+    return h.ret(retval);
 }
 
 

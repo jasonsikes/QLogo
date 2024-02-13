@@ -1527,6 +1527,7 @@ Parser::Parser(Kernel *aKernel) {
   // CONTROL STRUCTURES
 
   stringToCmd[k.run()] = {&Kernel::excRun, 1, 1, 1};
+  stringToCmd[k.time()] = {&Kernel::excTime, 1, 1, 1};
   stringToCmd[k.runresult()] = {&Kernel::excRunresult, 1, 1, 1};
   stringToCmd[k.kforever()] = {&Kernel::excForever, 1, 1, 1};
   stringToCmd[k.repcount()] = {&Kernel::excRepcount, 0, 0, 0};
