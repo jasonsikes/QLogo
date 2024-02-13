@@ -286,7 +286,7 @@ Kernel::Kernel() {
   initVariables();
   initPalette();
 
-  filePrefix = nothing;
+  filePrefix = List::alloc();
 
   initVariables();
 }

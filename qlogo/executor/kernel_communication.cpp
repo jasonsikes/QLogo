@@ -41,17 +41,18 @@
 #include "textstream.h"
 
 QString Kernel::filepathForFilename(DatumPtr filenameP) {
-  const QString &filename = filenameP.wordValue()->printValue();
+  QString filename = filenameP.wordValue()->printValue();
 
   QString prefix;
   if (filePrefix.isWord()) {
     prefix = filePrefix.wordValue()->printValue();
   } else {
-    prefix = QDir::homePath();
+    return filename;
   }
 
-  QString retval = QString("%1/%2").arg(prefix, filename);
-  return retval;
+  return prefix
+         + QDir::separator()
+         + filename;
 }
 
 TextStream *Kernel::openFileStream(DatumPtr filenameP,
@@ -527,7 +528,7 @@ DatumPtr Kernel::excSetprefix(DatumPtr node) {
   if (newPrefix.isWord())
     filePrefix = newPrefix;
   else
-    filePrefix = nothing;
+    filePrefix = List::alloc();
 
   return nothing;
 }
@@ -543,9 +544,6 @@ COD***/
 
 DatumPtr Kernel::excPrefix(DatumPtr node) {
   ProcedureHelper h(this, node);
-  if (filePrefix == nothing) {
-    return h.ret(List::alloc());
-  }
   return h.ret(filePrefix);
 }
 
