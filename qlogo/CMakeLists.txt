@@ -47,6 +47,7 @@ set(QLOGO_SOURCES
   ../include/library.h
   ../include/procedurehelper.h
   ../include/stringconstants.h
+  ../include/stringblock.h
   ../include/turtle.h
   ../include/parser.h
   ../include/propertylists.h
