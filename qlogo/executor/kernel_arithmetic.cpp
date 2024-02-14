@@ -612,17 +612,6 @@ FORM num width precision
     the decimal point.  (If "precision" is 0 then there will be no
     decimal point in the output.)
 
-    As a debugging feature, (FORM num -1 format) will print the
-    floating point "num" according to the C printf "format", to allow
-
-        to hex :num
-        op form :num -1 "|%08X %08X|
-        end
-
-    to allow finding out the exact result of floating point operations.
-    The precise format needed may be machine-dependent.
-
-
 COD***/
 
 DatumPtr Kernel::excForm(DatumPtr node) {

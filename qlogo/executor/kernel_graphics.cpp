@@ -417,9 +417,10 @@ DatumPtr Kernel::excTowards(DatumPtr node) {
 /***DOC SCRUNCH
 SCRUNCH
 
-    outputs a list containing two numbers, the X and Y scrunch
-    factors, as used by SETSCRUNCH.  (But note that SETSCRUNCH
-    takes two numbers as inputs, not one list of numbers.)
+    outputs a list containing two numbers, both '1'.  This primitive is
+    maintained for backward compatibility. QLogo does not use SCRUNCH.
+    SCRUNCH was used by UCBLogo because older monitors had pixels with
+    varying width/height proportions.
 
 
 COD***/
@@ -480,10 +481,8 @@ CLEAN
 
 COD***/
 
-// TODO: CLEAN and CLEARSCREEN might be mixed up.
 DatumPtr Kernel::excClean(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainTurtle()->home(false);
   mainController()->clearScreen();
   return nothing;
 }
@@ -500,6 +499,7 @@ COD***/
 
 DatumPtr Kernel::excClearscreen(DatumPtr node) {
   ProcedureHelper h(this, node);
+  mainTurtle()->home(false);
   mainController()->clearScreen();
 
   return nothing;
@@ -581,7 +581,22 @@ DatumPtr Kernel::excFence(DatumPtr node) {
   return nothing;
 }
 
-// TODO: help for bounds and setbounds
+
+/***DOC BOUNDS
+BOUNDS x y
+
+    sets the bounds for the canvas:  The canvas will show everything within
+    the bounds. In WINDOW mode the GUI may also show the canvas beyond the
+    bounds. The origin (position 0 0) will always be in the center. The
+    horizontal range will be [-x, x] while the horizontal range will be
+    [-y, y].
+
+    In WINDOW mode the entire view will show the canvas's background color.
+    In FENCE and WRAP modes only the drawable canvas area will show the
+    background color.
+
+COD***/
+
 DatumPtr Kernel::excBounds(DatumPtr node) {
   ProcedureHelper h(this, node);
   double x = mainController()->boundX();
@@ -616,6 +631,13 @@ FILLED color instructions
     which can be a color number or an RGB list.  The instruction list
     cannot include another FILLED invocation.
 
+    Since QLogo uses OpenGL for drawing commands, the polygon is drawn
+    as a "triangle fan". The first vertex will be common for all triangles.
+    For example, if the polygon has four points, then two trangles will be
+    drawn: one using indices [1, 2, 3] the other using indices [1, 3, 4].
+    A five-point polygon will be drawn from three triangles: [1, 2, 3],
+    [1, 3, 4], and [1, 4, 5]. And so on...
+
 COD***/
 
 DatumPtr Kernel::excFilled(DatumPtr node) {
@@ -643,11 +665,12 @@ DatumPtr Kernel::excFilled(DatumPtr node) {
 /***DOC LABEL
 LABEL text
 
-    takes a word or list as input, and prints the input on the
-    graphics window, starting at the turtle's position.
+    takes a word as input, and prints the input on the graphics window,
+    starting at the turtle's position.
 
 COD***/
 
+// TODO: should also accept list as input.
 DatumPtr Kernel::excLabel(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString text = h.wordAtIndex(0).wordValue()->printValue();
@@ -662,14 +685,7 @@ DatumPtr Kernel::excLabel(DatumPtr node) {
 /***DOC SETLABELHEIGHT
 SETLABELHEIGHT height
 
-    command (wxWidgets only).  Takes a positive integer argument and tries
-    to set the font size so that the character height (including
-    descenders) is that many turtle steps.  This will be different from
-    the number of screen pixels if SETSCRUNCH has been used.  Also, note
-    that SETSCRUNCH changes the font size to try to preserve this height
-    in turtle steps.  Note that the query operation corresponding to this
-    command is LABELSIZE, not LABELHEIGHT, because it tells you the width
-    as well as the height of characters in the current font.
+    command. Takes a positive integer argument and sets the label font size.
 
 COD***/
 
@@ -688,8 +704,7 @@ TS
 
     rearranges the size and position of windows to maximize the
     space available in the text window (the window used for
-    interaction with Logo).  The details differ among machines.
-    Compare SPLITSCREEN and FULLSCREEN.
+    interaction with Logo).  Compare SPLITSCREEN and FULLSCREEN.
 
 COD***/
 
@@ -709,13 +724,8 @@ FS
     Compare SPLITSCREEN and TEXTSCREEN.
 
     Since there must be a text window to allow printing (including the
-    printing of the Logo prompt), Logo automatically switches from
-    fullscreen to splitscreen whenever anything is printed.
-
-    In the DOS version, switching from fullscreen to splitscreen loses the
-    part of the picture that's hidden by the text window.  [This design
-    decision follows from the scarcity of memory, so that the extra memory
-    to remember an invisible part of a drawing seems too expensive.]
+    printing of the Logo prompt), the proportions are 75% turtle canvas and
+    25% text console. This is identical to SPLITSCREEN.
 
 COD***/
 
@@ -732,8 +742,8 @@ SS
 
     rearranges the size and position of windows to allow some room for
     text interaction while also keeping most of the graphics window
-    visible.  The details differ among machines.  Compare TEXTSCREEN
-    and FULLSCREEN.
+    visible.  The proportions are 75% turtle canvas and 25% text console.
+    Compare TEXTSCREEN and FULLSCREEN.
 
 COD***/
 
@@ -747,24 +757,7 @@ DatumPtr Kernel::excSplitscreen(DatumPtr node) {
 /***DOC SETSCRUNCH
 SETSCRUNCH xscale yscale
 
-    adjusts the aspect ratio and scaling of the graphics display.
-    After this command is used, all further turtle motion will be
-    adjusted by multiplying the horizontal and vertical extent of
-    the motion by the two numbers given as inputs.  For example,
-    after the instruction "SETSCRUNCH 2 1" motion at a heading of
-    45 degrees will move twice as far horizontally as vertically.
-    If your squares don't come out square, try this.  (Alternatively,
-    you can deliberately misadjust the aspect ratio to draw an ellipse.)
-
-    In wxWidgets only, SETSCRUNCH also changes the size of the text font
-    used for the LABEL command to try to keep the height of characters
-    scaled with the vertical turtle step size.
-
-    For all modern computers For DOS machines, the scale factors are
-    initially set according to what the hardware claims the aspect ratio
-    is, but the hardware sometimes lies.  For DOS, the values set by
-    SETSCRUNCH are remembered in a file (called SCRUNCH.DAT) and are
-    automatically put into effect when a Logo session begins.
+    In QLogo this does nothing. It should be removed. See SCRUNCH.
 
 COD***/
 
@@ -796,7 +789,11 @@ DatumPtr Kernel::excShownp(DatumPtr node) {
 SCREENMODE
 
     outputs the word TEXTSCREEN, SPLITSCREEN, or FULLSCREEN depending
-    on the current screen mode.
+    on the last requested screen mode.
+
+    In QLogo, since the user is freely able to adjust the split between
+    the canvas and console, this will only return the mode set by the
+    last used mode command.
 
 COD***/
 
@@ -854,23 +851,28 @@ DatumPtr Kernel::excTurtlemode(DatumPtr node) {
 /***DOC LABELSIZE
 LABELSIZE
 
-    (wxWidgets only) outputs a list of two positive integers, the width
-    and height of characters displayed by LABEL measured in turtle steps
-    (which will be different from screen pixels if SETSCRUNCH has been
-    used).  There is no SETLABELSIZE because the width and height of a
-    font are not separately controllable, so the inverse of this operation
-    is SETLABELHEIGHT, which takes just one number for the desired height.
-
+    outputs the height of the label font as a number. Note that QLogo only
+    reports the font height as a single number, as opposed to UCBLogo which
+    returned a list of two numbers. The reason is that most fonts in QLogo
+    are variable-width, and therefore the width is difficult to calculate.
 
 COD***/
 
-// TODO: Why "excLabelheight" and not excLabelsize?
-// hint: There is no "excLabelwidth".
 DatumPtr Kernel::excLabelheight(DatumPtr node) {
   ProcedureHelper h(this, node);
   double retval = mainController()->getLabelFontSize();
   return h.ret(retval);
 }
+
+/***DOC MATRIX
+MATRIX
+
+    outputs a 4-by-4 transformation matrix in the form of a list of four lists,
+    each list contains four numbers. This represents the state of the turtle in
+    3D space, and is only present for debugging purposes. It may be removed or
+    replaced in the future and should be considered DEPRICATED.
+
+COD***/
 
 // TODO: TURTLEMATRIX, and maybe .SETTURTLEMATRIX
 // TODO: This should be an array of arrays.
@@ -960,7 +962,7 @@ PENREVERSE
 PX
 
     sets the pen's position to DOWN and mode to REVERSE.
-    (This may interact in system-dependent ways with use of color.)
+    The pen color value is ignored while in penreverse mode.
 
 COD***/
 
@@ -973,11 +975,13 @@ DatumPtr Kernel::excPenreverse(DatumPtr node) {
 
 
 /***DOC SETPENCOLOR SETPC
-SETPENCOLOR colornumber.or.rgblist
-SETPC colornumber.or.rgblist
+SETPENCOLOR color
+SETPC color
 
-    sets the pen color to the given number, which must be a nonnegative
-    integer.  There are initial assignments for the first 16 colors:
+    sets the pen color to the given color, which must be one of the following:
+
+    Option 1: a nonnegative integer.  There are initial assignments for the
+    first 16 colors:
 
      0  black	 1  blue	 2  green	 3  cyan
      4  red		 5  magenta	 6  yellow	 7 white
@@ -985,9 +989,14 @@ SETPC colornumber.or.rgblist
     12  salmon	13  purple	14  orange	15  grey
 
     but other colors can be assigned to numbers by the PALETTE command.
-    Alternatively, sets the pen color to the given RGB values (a list of
-    three nonnegative numbers less than 100 specifying the percent
-    saturation of red, green, and blue in the desired color).
+
+    Option 2: RGB values (a list of three nonnegative numbers less than 100
+    specifying the percent saturation of red, green, and blue in the desired
+    color).
+
+    Option 3: a named color from the X Color Database, e.g. 'white' or
+    'lemonchiffon'. The X Color database can be found here:
+    https://en.wikipedia.org/wiki/X11_color_names
 
 COD***/
 
@@ -1003,14 +1012,13 @@ DatumPtr Kernel::excSetpencolor(DatumPtr node) {
 
 
 /***DOC SETPALETTE
-SETPALETTE colornumber rgblist
+SETPALETTE colornumber color
 
     sets the actual color corresponding to a given number, if allowed by
     the hardware and operating system.  Colornumber must be an integer
     greater than or equal to 8.  (Logo tries to keep the first 8 colors
-    constant.)  The second input is a list of three nonnegative numbers
-    less than 100 specifying the percent saturation of red, green, and
-    blue in the desired color.
+    constant.)  The second input is a color. See SETPENCOLOR for different
+    methods of specifying a color.
 
 COD***/
 
@@ -1031,10 +1039,10 @@ DatumPtr Kernel::excSetpalette(DatumPtr node) {
 /***DOC SETPENSIZE
 SETPENSIZE size
 
-    sets the thickness of the pen.  The input is either a single positive
-    integer or a list of two positive integers (for horizontal and
-    vertical thickness).  Some versions pay no attention to the second
-    number, but always have a square pen.
+    sets the thickness of the pen.  The input is a single positive
+    integer. Note that since QLogo uses OpenGL for drawing, the pen may either
+    be vertical or horizontal depending on the direction of the line being
+    drawn.
 
 COD***/
 
@@ -1049,11 +1057,10 @@ DatumPtr Kernel::excSetpensize(DatumPtr node) {
 
 
 /***DOC SETBACKGROUND SETBG
-SETBACKGROUND colornumber.or.rgblist
-SETBG colornumber.or.rgblist
+SETBACKGROUND color
+SETBG color
 
-    set the screen background color by slot number or RGB values.
-    See SETPENCOLOR for details.
+    set the screen background color. See SETPENCOLOR for color details.
 
 
 COD***/
@@ -1119,17 +1126,9 @@ DatumPtr Kernel::excPenmode(DatumPtr node) {
 PENCOLOR
 PC
 
-    outputs a color number, a nonnegative integer that is associated with
-    a particular color, or a list of RGB values if such a list was used as
-    the most recent input to SETPENCOLOR.  There are initial assignments
-    for the first 16 colors:
-
-     0  black	 1  blue	 2  green	 3  cyan
-     4  red		 5  magenta	 6  yellow	 7 white
-     8  brown	 9  tan		10  forest	11  aqua
-    12  salmon	13  purple	14  orange	15  grey
-
-    but other colors can be assigned to numbers by the PALETTE command.
+    outputs a list of three nonnegative numbers less than 100 specifying
+    the percent saturation of red, green, and blue in the color associated
+    with the current pen color.
 
 COD***/
 
@@ -1162,9 +1161,7 @@ DatumPtr Kernel::excPalette(DatumPtr node) {
 PENSIZE
 
 
-    outputs a list of two positive integers, specifying the horizontal
-    and vertical thickness of the turtle pen.  (In some implementations,
-    including wxWidgets, the two numbers are always equal.)
+    outputs a positive integer, specifying the thickness of the turtle pen.
 
 COD***/
 
@@ -1179,8 +1176,9 @@ DatumPtr Kernel::excPensize(DatumPtr node) {
 BACKGROUND
 BG
 
-    outputs the graphics background color, either as a slot number or
-    as an RGB list, whichever way it was set.  (See PENCOLOR.)
+    outputs a list of three nonnegative numbers less than 100 specifying
+    the percent saturation of red, green, and blue in the color associated
+    with the current background color.
 
 
 COD***/
@@ -1198,12 +1196,12 @@ DatumPtr Kernel::excBackground(DatumPtr node) {
 /***DOC SAVEPICT
 SAVEPICT filename
 
-    command.  Writes a file with the specified name containing the
-    state of the graphics window, including any nonstandard color
-    palette settings, in Logo's internal format.  This picture can
-    be restored to the screen using LOADPICT.  The format is not
-    portable between platforms, nor is it readable by other programs.
-    See EPSPICT to export Logo graphics for other programs.
+    command.  Writes an empty file with the specified filename.
+
+    [ This used to write an image file with the specified name containing the
+    contents of the graphics window in the format specified by the filename's
+    extension, but the current version of Qt prohibits reading the canvas
+    directly for security reasons. ]
 
 COD***/
 
@@ -1250,7 +1248,7 @@ CLICKPOS
 
     outputs the coordinates that the mouse was at when a mouse button
     was most recently pushed, provided that that position was within the
-    graphics window, in turtle coordinates.  (wxWidgets only)
+    graphics window, in turtle coordinates.
 
 COD***/
 
@@ -1286,9 +1284,8 @@ BUTTON
 
     outputs 0 if no mouse button has been pushed inside the Logo window
     since the last call to BUTTON.  Otherwise, it outputs an integer
-    between 1 and 3 indicating which button was most recently pressed.
-    Ordinarily 1 means left, 2 means right, and 3 means center, but
-    operating systems may reconfigure these.
+    indicating which button was most recently pressed.
+    1 means left, 2 means right.
 
 
 

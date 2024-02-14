@@ -643,8 +643,7 @@ COPYDEF newname oldname
     command.  Makes "newname" a procedure identical to "oldname".
     The latter may be a primitive.  If "newname" was already defined,
     its previous definition is lost.  If "newname" was already a
-    primitive, the redefinition is not permitted unless the variable
-    REDEFP has the value TRUE.
+    primitive, the redefinition is not permitted.
 
     Note: dialects of Logo differ as to the order of inputs to COPYDEF.
     This dialect uses "MAKE order," not "NAME order."
@@ -747,6 +746,7 @@ LOCAL varnamelist
 
 COD***/
 
+// TODO: [varname:varnamelist:etc] procedure is duplicated in excGlobal().
 DatumPtr Kernel::excLocal(DatumPtr node) {
   ProcedureHelper h(this, node);
   for (int i = 0; i < h.countOfChildren(); ++i) {
@@ -1165,15 +1165,8 @@ NODES
     nodes of memory currently in use.  The second shows the maximum
     number of nodes that have been in use at any time since the last
     invocation of NODES.  (A node is a small block of computer memory
-    as used by Logo.  Each number uses one node.  Each non-numeric
-    word uses one node, plus some non-node memory for the characters
-    in the word.  Each array takes one node, plus some non-node
-    memory, as well as the memory required by its elements.  Each
-    list requires one node per element, as well as the memory within
-    the elements.)  If you want to track the memory use of an
-    algorithm, it is best if you invoke GC at the beginning of each
-    iteration, since otherwise the maximum will include storage that
-    is unused but not yet collected.
+    as used by Logo.  Each word (string or number) uses one node. Each list
+    or array uses one node plus more nodes for the elements.
 
 
 COD***/
@@ -1615,13 +1608,8 @@ ED contentslist
 (ED)
 
     command.  If invoked with an input, EDIT writes the definitions
-    of the named items into a temporary file and edits that file, using
-    an editor that depends on the platform you're using.  In wxWidgets,
-    and in the MacOS Classic version, there is an editor built into Logo.
-    In the non-wxWidgets versions for Unix, MacOS X, Windows, and DOS,
-    Logo uses your favorite editor as determined by the EDITOR environment
-    variable.  If you don't have an EDITOR variable, edits the
-    definitions using jove.  If invoked without an input, EDIT edits
+    of the named items into a temporary document and edits that document,
+    using QLogo's build-in editor.  If invoked without an input, EDIT edits
     the same file left over from a previous EDIT or EDITFILE instruction.
     When you leave the editor, Logo reads the revised definitions and
     modifies the workspace accordingly.  It is not an error if the
@@ -1632,10 +1620,6 @@ ED contentslist
     defined" (where PROCNAME is the name of the procedure being defined);
     if LOADNOISILY is FALSE or undefined, TO commands in the file are
     carried out silently.
-
-    If there is an environment variable called TEMP, then Logo uses
-    its value as the directory in which to write the temporary file
-    used for editing.
 
     Exceptionally, the EDIT command can be used without its default
     input and without parentheses provided that nothing follows it on
@@ -1671,7 +1655,7 @@ DatumPtr Kernel::excEdit(DatumPtr node) {
 EDITFILE filename
 
     command.  Starts the Logo editor, like EDIT, but instead of editing
-    a temporary file it edits the file specified by the input.  When you
+    a temporary document it edits the file specified by the input.  When you
     leave the editor, Logo reads the revised file, as for EDIT.
     EDITFILE also remembers the filename, so that a subsequent EDIT
     command with no input will re-edit the same file.
@@ -1791,20 +1775,19 @@ HELP name
     command.  Prints information from the reference manual about
     the primitive procedure named by the input.  With no input,
     lists all the primitives about which help is available.
-    If there is an environment variable LOGOHELP, then its value
-    is taken as the directory in which to look for help files,
-    instead of the default help directory.
-
-    If HELP is called with the name of a defined procedure for which there
-    is no help file, it will print the title line of the procedure
-    followed by lines from the procedure body that start with semicolon,
-    stopping when a non-semicolon line is seen.
 
     Exceptionally, the HELP command can be used without its default
     input and without parentheses provided that nothing follows it on
     the instruction line.
 
 COD***/
+
+/* TODO:
+    If HELP is called with the name of a defined procedure for which there
+    is no help file, it will print the title line of the procedure
+    followed by lines from the procedure body that start with semicolon,
+    stopping when a non-semicolon line is seen.
+*/
 
 DatumPtr Kernel::excHelp(DatumPtr node) {
   ProcedureHelper h(this, node);

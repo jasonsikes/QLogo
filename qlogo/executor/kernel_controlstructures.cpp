@@ -121,7 +121,7 @@ DatumPtr Kernel::excRunresult(DatumPtr node) {
 /***DOC BYE
 BYE
 
-    command.  Exits from Logo; returns to the operating system.
+    command.  Exits from Logo.
 
 COD***/
 
@@ -200,6 +200,7 @@ DatumPtr Kernel::excForever(DatumPtr node) {
 
 /***DOC REPCOUNT #
 REPCOUNT
+#
 
     outputs the repetition count of the innermost current REPEAT or
     FOREVER, starting from 1.  If no REPEAT or FOREVER is active,
@@ -586,15 +587,9 @@ PAUSE
     Local variables of that procedure are available during the pause.
     PAUSE outputs if the pause is ended by a CONTINUE with an input.
 
-    If the variable ERRACT exists, and an error condition occurs, the
-    contents of that variable are run as an instructionlist.  Typically
-    ERRACT is given the value [PAUSE] so that an interactive pause will
-    be entered in the event of an error.  This allows the user to check
+    If the variable ERRACT exists, and an error condition occurs,
+    an interactive pause will be entered.  This allows the user to check
     values of local variables at the time of the error.
-
-    Typing the system quit character (alt-S for wxWidgets; otherwise
-    normally control-\ for Unix, control-W for DOS, or command-comma for
-    Mac) will also enter a pause.
 
 COD***/
 

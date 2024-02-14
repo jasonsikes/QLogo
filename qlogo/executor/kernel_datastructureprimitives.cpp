@@ -780,11 +780,15 @@ DatumPtr Kernel::excCount(DatumPtr node) {
 /***DOC ASCII
 ASCII char
 
-    outputs the integer (between 0 and 255) that represents the input
-    character in the ASCII code.  Interprets control characters as
+    outputs the integer (between 0 and 65535) that represents the input
+    character in Unicode.  Interprets control characters as
     representing vbarred punctuation, and returns the character code
     for the corresponding punctuation character without vertical bars.
     (Compare RAWASCII.)
+
+    Even though QLogo uses Unicode instead of ASCII, the primitives ASCII,
+    RAWASCII, and CHAR are maintained for compatibility with UCBLogo and
+    because ASCII is a proper subset of Unicode.
 
 COD***/
 
@@ -802,10 +806,12 @@ DatumPtr Kernel::excAscii(DatumPtr node) {
 /***DOC RAWASCII
 RAWASCII char
 
-    outputs the integer (between 0 and 255) that represents the input
-    character in the ASCII code.  Interprets control characters as
-    representing themselves.  To find out the ASCII code of an arbitrary
+    outputs the integer (between 0 and 65535) that represents the input
+    character in Unicode.  Interprets control characters as
+    representing themselves.  To find out the Unicode value of an arbitrary
     keystroke, use RAWASCII RC.
+
+    See ASCII for discussion of Unicode characters.
 
 COD***/
 
@@ -823,8 +829,10 @@ DatumPtr Kernel::excRawascii(DatumPtr node) {
 /***DOC CHAR
 CHAR int
 
-    outputs the character represented in the ASCII code by the input,
-    which must be an integer between 0 and 255.
+    outputs the character represented in Unicode by the input,
+    which must be an integer between 0 and 65535.
+
+    See ASCII for discussion of Unicode characters.
 
 COD***/
 
@@ -894,14 +902,11 @@ DatumPtr Kernel::excUppercase(DatumPtr node) {
 STANDOUT thing
 
     outputs a word that, when printed, will appear like the input but
-    displayed in standout mode (boldface, reverse video, or whatever your
-    version does for standout).  The word contains machine-specific
+    displayed in standout mode (reverse video).  The word contains
     magic characters at the beginning and end; in between is the printed
     form (as if displayed using TYPE) of the input.  The output is always
     a word, even if the input is of some other type, but it may include
-    spaces and other formatting characters.  Note: a word output by
-    STANDOUT while Logo is running on one machine will probably not have
-    the desired effect if printed on another type of machine.
+    spaces and other formatting characters.
 
 COD***/
 

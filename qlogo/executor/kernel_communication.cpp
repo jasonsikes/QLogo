@@ -1001,11 +1001,10 @@ DatumPtr Kernel::excCleartext(DatumPtr node) {
 /***DOC SETCURSOR
 SETCURSOR vector
 
-    command.  The input is a list of two numbers, the x and y
-    coordinates of a text window position (origin in the upper left
-    corner, positive direction is southeast).  The text cursor
-    is moved to the requested position.  This command also forces
-    the immediate printing of any buffered characters.
+    command.  The input is a list of two numbers, the row and column
+    coordinates of the text cursor position in the text console portion of the
+    GUI terminal.  The text cursor is moved to the requested position. The
+    text console may scroll to reveal the requested position.
 
 COD***/
 
@@ -1031,12 +1030,8 @@ DatumPtr Kernel::excSetcursor(DatumPtr node) {
 /***DOC CURSOR
 CURSOR
 
-    (wxWidgets only).
-    outputs a list containing the current x and y coordinates of
-    the text cursor.  Logo may get confused about the current
-    cursor position if, e.g., you type in a long line that wraps
-    around or your program prints escape codes that affect the
-    screen strangely.
+    outputs a list containing the current row and column coordinates of
+    the text cursor.
 
 COD***/
 
@@ -1055,11 +1050,9 @@ DatumPtr Kernel::excCursor(DatumPtr node) {
 SETTEXTCOLOR foreground background
 SETTC foreground background
 
-    command (wxWidgets only).  The inputs are color numbers, as for
-    turtle graphics.  Future printing to the text window will use the
-    specified colors for foreground (the characters printed) and
-    background (the space under those characters).  Using
-    STANDOUT will revert to the default text window colors.
+    The inputs are color numbers, as for turtle graphics.  Future printing
+    to the text window will use the specified colors for foreground (the
+    characters printed) and background (the space under those characters).
 
 COD***/
 
@@ -1097,9 +1090,8 @@ DatumPtr Kernel::excIncreasefont(DatumPtr node) {
 INCREASEFONT
 DECREASEFONT
 
-    command (wxWidgets only).  Increase or decrease the size of the font
-    used in the text and edit windows to the next larger or smaller
-    available size.
+    Increase or decrease the size of the font  used in the text and edit
+    windows to the next larger or smaller available size.
 
 COD***/
 
@@ -1117,14 +1109,9 @@ DatumPtr Kernel::excDecreasefont(DatumPtr node) {
 /***DOC SETTEXTSIZE
 SETTEXTSIZE height
 
-    command (wxWidgets only).  Set the "point size" of the font used in
-    the text and edit windows to the given integer input.  The desired
-    size may not be available, in which case the nearest available size
-    will be used.  Note: There is only a slight correlation between these
-    integers and pixel sizes.  Our rough estimate is that the number of
-    pixels of height is about 1.5 times the point size, but it varies for
-    different fonts.  See SETLABELHEIGHT for a different approach used for
-    the graphics window.
+    Set the "point size" of the font used in the text and edit windows
+    to the given integer input.  See SETLABELHEIGHT for a different approach
+    used for the graphics window.
 
 COD***/
 
@@ -1140,9 +1127,9 @@ DatumPtr Kernel::excSettextsize(DatumPtr node) {
 /***DOC TEXTSIZE
 TEXTSIZE
 
-    (wxWidgets only) outputs the "point size" of the font used in the text
-    and edit windows.  See SETTEXTSIZE for a discussion of font sizing.
-    See LABELSIZE for a different approach used for the graphics window.
+    outputs the "point size" of the font used in the text and edit windows.
+    See SETTEXTSIZE for a discussion of font sizing.  See LABELSIZE for a
+    different approach used for the graphics window.
 
 COD***/
 
@@ -1152,6 +1139,14 @@ DatumPtr Kernel::excTextsize(DatumPtr node) {
   return h.ret(size);
 }
 
+/***DOC SETFONT
+SETFONT fontname
+
+    Set the "font family name" of the font used in the text and edit windows.
+    See ALLFONTS for a list of all fonts available on your system.
+
+COD***/
+
 DatumPtr Kernel::excSetfont(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString fontName = h.wordAtIndex(0).wordValue()->printValue();
@@ -1159,11 +1154,31 @@ DatumPtr Kernel::excSetfont(DatumPtr node) {
   return nothing;
 }
 
+/***DOC FONTNAME
+FONTNAME
+
+    outputs the "font family name" of the font used in the text and edit
+    windows.
+
+COD***/
+
 DatumPtr Kernel::excFont(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString retval = mainController()->getTextFontName();
   return h.ret(retval);
 }
+
+/***DOC ALLFONTS
+ALLFONTS
+
+    outputs a list of all the font names available on your system. Note that
+    simply printing the list may not be the best representation since font
+    names usually contain spaces. You may instead wish to print each font
+    name on a separate line:
+
+        foreach allfonts [print ?]
+
+COD***/
 
 DatumPtr Kernel::excAllfonts(DatumPtr node) {
   ProcedureHelper h(this, node);
@@ -1175,17 +1190,41 @@ DatumPtr Kernel::excAllfonts(DatumPtr node) {
   return h.ret(retval);
 }
 
+/***DOC CURSORINSERT
+CURSORINSERT
+
+    Sets the cursor mode to "insert". Future output to the text window will
+    cause any text that was already positioned after the cursor to be pushed
+    forward to make room for the inserted text.
+
+COD***/
+
 DatumPtr Kernel::excCursorInsert(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainController()->setCursorOverwriteMode(false);
   return nothing;
 }
 
+/***DOC CURSOROVERWRITE
+CURSOROVERWRITE
+
+    Sets the cursor mode to "overwrite". Future output to the text window will
+    overwrite any text that was already positioned after the cursor.
+
+COD***/
+
 DatumPtr Kernel::excCursorOverwrite(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainController()->setCursorOverwriteMode(true);
   return nothing;
 }
+
+/***DOC CURSORMODE
+CURSORMODE
+
+    Outputs the current cursor mode, either "OVERWRITE" or "INSERT".
+
+COD***/
 
 DatumPtr Kernel::excCursorMode(DatumPtr node) {
   ProcedureHelper h(this, node);
