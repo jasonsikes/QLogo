@@ -570,8 +570,7 @@ DEFINE procname text
     or rest inputs.  The remaining sublists of the text input make
     up the body of the procedure, with one sublist for each instruction
     line of the body.  (There is no END line in the text input.)
-    It is an error to redefine a primitive procedure unless the variable
-    REDEFP has the value TRUE.
+    It is an error to redefine a primitive procedure.
 
 COD***/
 
@@ -1269,7 +1268,7 @@ ER contentslist
 
     command.  Erases from the workspace the procedures, variables,
     and property lists named in the input.  Primitive procedures may
-    not be erased unless the variable REDEFP has the value TRUE.
+    not be erased.
 
 COD***/
 
