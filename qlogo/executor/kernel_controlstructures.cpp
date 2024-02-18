@@ -725,7 +725,7 @@ DatumPtr Kernel::excApply(DatumPtr node) {
 
   switch (f) {
   case named_procedure: {
-    DatumPtr a = parser->astnodeWithLiterals(tmplate, params);
+    DatumPtr a = procedures->astnodeWithLiterals(tmplate, params);
     KernelMethod method = a.astnodeValue()->kernel;
     DatumPtr retval = (this->*method)(a);
     return h.ret(retval);
@@ -760,7 +760,7 @@ DatumPtr Kernel::excApply(DatumPtr node) {
     return h.ret(retval);
   }
   case procedure: {
-    DatumPtr anonyProcedure = parser->createProcedure(
+    DatumPtr anonyProcedure = procedures->createProcedure(
         node.astnodeValue()->nodeName, tmplate, nothing);
     ASTNode *procnode = ASTNode::alloc(node.astnodeValue()->nodeName);
     DatumPtr procnodeP(procnode);
@@ -816,6 +816,6 @@ COD***/
 
 DatumPtr Kernel::excMacrop(DatumPtr node) {
   ProcedureHelper h(this, node);
-  bool retval = parser->isMacro(h.wordAtIndex(0).wordValue()->keyValue());
+  bool retval = procedures->isMacro(h.wordAtIndex(0).wordValue()->keyValue());
   return h.ret(retval);
 }

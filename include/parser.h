@@ -32,23 +32,14 @@
 #include "workspace.h"
 #include <QHash>
 
-class Parser;
+class Procedures;
 class Kernel;
 class TextStream;
 
-struct Cmd_t {
-  KernelMethod method;
-  int countOfMinParams;
-  int countOfDefaultParams;
-  int countOfMaxParams;
-};
-
-typedef DatumPtr (Parser::*ParserMethod)(void);
-
-class Parser : public Workspace {
-  qint64 lastProcedureCreatedTimestamp;
+class Parser {
   DatumPtr currentToken;
   Kernel *kernel;
+  Procedures *procedures;
 
   // For runparse and it's supporting methods:
   List *runparseRetval;
@@ -74,78 +65,12 @@ class Parser : public Workspace {
   DatumPtr astnodeFromCommand(DatumPtr command, int &minParams, int &defaultParams,
                             int &maxParams);
 
-  QHash<QString, DatumPtr> procedures;
-  QHash<QString, Cmd_t> primitiveAlternateNames;
-
 public:
-  Parser(Kernel *aKernel);
+  Parser(Kernel *aKernel, Procedures *aProcedures);
   DatumPtr runparse(DatumPtr src);
   QList<DatumPtr> *astFromList(List *aList);
 
-  DatumPtr createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourceText);
-  void defineProcedure(DatumPtr cmd, DatumPtr procnameP, DatumPtr text,
-                       DatumPtr sourceText);
   void inputProcedure(DatumPtr nodeP, TextStream *readStream);
-  void copyProcedure(DatumPtr newnameP, DatumPtr oldnameP);
-  void eraseProcedure(DatumPtr procnameP);
-  void eraseAllProcedures();
-
-  DatumPtr procedureText(DatumPtr procnameP);
-  DatumPtr procedureFulltext(DatumPtr procnameP, bool shouldValidate = true);
-  QString procedureTitle(DatumPtr procnameP);
-
-  bool isProcedure(QString procname);
-  bool isMacro(QString procname);
-  bool isPrimitive(QString procname);
-  bool isDefined(QString procname);
-
-  DatumPtr allProcedureNames(showContents_t showWhat);
-  DatumPtr allPrimitiveProcedureNames();
-  DatumPtr arity(DatumPtr nameP);
-
-  DatumPtr astnodeWithLiterals(DatumPtr cmd, DatumPtr params);
-
-  QString unreadDatum(DatumPtr aDatum, bool isInList = false);
-  QString unreadList(List *aList, bool isInList = false);
-  QString unreadWord(Word *aWord, bool isInList = false);
-  QString unreadArray(Array *anArray);
-
-  QString printoutDatum(DatumPtr aDatum);
-};
-
-class Procedure : public Datum {
-
-  void addToPool();
-
-public:
-  Procedure() {}
-  QStringList requiredInputs;
-  QStringList optionalInputs;
-  QList<DatumPtr> optionalDefaults;
-  QString restInput;
-  int defaultNumber;
-  int countOfMinParams;
-  int countOfMaxParams;
-  QHash<const QString, DatumPtr> tagToLine;
-  bool isMacro;
-  DatumPtr sourceText;
-
-  DatumPtr instructionList;
-  DatumType isa() { return Datum::procedureType; }
-
-  void init() {
-    instructionList = nothing;
-    countOfMaxParams = -1;
-    countOfMinParams = 0;
-    requiredInputs.clear();
-    optionalInputs.clear();
-    optionalDefaults.clear();
-    restInput = "";
-    defaultNumber = 0;
-    tagToLine.clear();
-    isMacro = false;
-    sourceText = nothing;
-  }
 };
 
 

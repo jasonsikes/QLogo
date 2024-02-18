@@ -178,7 +178,7 @@ bool Kernel::getLineAndRunIt(bool shouldHandleError) {
                  e->procedure.astnodeValue()->nodeName.printValue());
       sysPrint("\n");
       if (e->instructionLine != nothing) {
-        sysPrint(parser->unreadDatum(e->instructionLine, true));
+        sysPrint(procedures->unreadDatum(e->instructionLine, true));
         sysPrint("\n");
       }
       registerError(nothing);
@@ -272,28 +272,29 @@ void Kernel::initVariables(void)
 }
 
 Kernel::Kernel() {
-    stdioStream = new TextStream(NULL);
+  stdioStream = new TextStream(NULL);
   readStream = stdioStream;
   systemReadStream = stdioStream;
   writeStream = stdioStream;
   systemWriteStream = stdioStream;
 
   turtle = new Turtle;
-  parser = new Parser(this);
+  procedures = new Procedures(this);
+  parser = new Parser(this, procedures);
   ProcedureHelper::setParser(parser);
+  ProcedureHelper::setProcedures(procedures);
   Error::setKernel(this);
 
   initVariables();
   initPalette();
 
   filePrefix = List::alloc();
-
-  initVariables();
 }
 
 Kernel::~Kernel() {
   closeAll();
   delete parser;
+  delete procedures;
   delete turtle;
 }
 
@@ -367,12 +368,12 @@ DatumPtr Kernel::executeProcedureCore(DatumPtr node) {
     ProcedureScope ps(this, node);
     ListIterator iter =
         proc.procedureValue()->instructionList.listValue()->newIterator();
-    bool isStepped = parser->isStepped(
+    bool isStepped = procedures->isStepped(
         node.astnodeValue()->nodeName.wordValue()->keyValue());
     while (iter.elementExists() && (retval == nothing)) {
       currentLine = iter.element();
       if (isStepped) {
-        QString line = h.indent() + parser->unreadDatum(currentLine, true);
+        QString line = h.indent() + procedures->unreadDatum(currentLine, true);
         sysPrint(line);
         systemReadStream->readrawlineWithPrompt(" >>>");
       }

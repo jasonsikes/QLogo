@@ -88,7 +88,7 @@ void Kernel::editAndRunFile() {
 
 DatumPtr Kernel::buildContentsList(showContents_t showWhat) {
   List *retval = List::alloc();
-  retval->append(parser->allProcedureNames(showWhat));
+  retval->append(procedures->allProcedureNames(showWhat));
   retval->append(variables.allVariables(showWhat));
   retval->append(plists.allPLists(showWhat));
   return retval;
@@ -146,7 +146,7 @@ void Kernel::processContentsListWithMethod(
   ListIterator i = proceduresList->newIterator();
   while (i.elementExists()) {
     QString procname = i.element().wordValue()->keyValue();
-    (parser->*method)(procname);
+    (procedures->*method)(procname);
   }
 
   i = variablesList->newIterator();
@@ -169,7 +169,7 @@ DatumPtr Kernel::queryContentsListWithMethod(
 
   if (proceduresList->size() > 0) {
     QString procname = proceduresList->first().wordValue()->keyValue();
-    return DatumPtr((parser->*method)(procname));
+    return DatumPtr((procedures->*method)(procname));
   }
 
   List *variablesList = contentslist.listValue()->datumAtIndex(2).listValue();
@@ -199,7 +199,7 @@ QString Kernel::createPrintoutFromContentsList(DatumPtr contentslist,
   ListIterator i = proceduresList->newIterator();
   while (i.elementExists()) {
     DatumPtr procedureText =
-        parser->procedureFulltext(i.element(), shouldValidate);
+        procedures->procedureFulltext(i.element(), shouldValidate);
     ListIterator j = procedureText.listValue()->newIterator();
     while (j.elementExists()) {
       QString line = j.element().wordValue()->printValue();
@@ -217,7 +217,7 @@ QString Kernel::createPrintoutFromContentsList(DatumPtr contentslist,
       Error::noValue(varnameP);
     } else {
       QString line = k.make12().arg(varname,
-                                    parser->printoutDatum(value));
+                                    procedures->printoutDatum(value));
       retval += line;
     }
   }
@@ -232,9 +232,9 @@ QString Kernel::createPrintoutFromContentsList(DatumPtr contentslist,
       DatumPtr nameP = j.element();
       DatumPtr valueP = j.element();
       QString line = k.pprop123()
-                         .arg(parser->printoutDatum(listnameP),
-                              parser->printoutDatum(nameP),
-                              parser->printoutDatum(valueP));
+                         .arg(procedures->printoutDatum(listnameP),
+                              procedures->printoutDatum(nameP),
+                              procedures->printoutDatum(valueP));
       retval += line;
     }
   }
@@ -589,7 +589,7 @@ DatumPtr Kernel::excDefine(DatumPtr node) {
   DatumPtr cmd = node.astnodeValue()->nodeName;
   DatumPtr procnameP = h.wordAtIndex(0);
 
-  parser->defineProcedure(cmd, procnameP, text, nothing);
+  procedures->defineProcedure(cmd, procnameP, text, nothing);
 
   return nothing;
 }
@@ -610,7 +610,7 @@ COD***/
 DatumPtr Kernel::excText(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr procnameP = h.wordAtIndex(0);
-  return h.ret(parser->procedureText(procnameP));
+  return h.ret(procedures->procedureText(procnameP));
 }
 
 
@@ -633,7 +633,7 @@ COD***/
 DatumPtr Kernel::excFulltext(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr procnameP = h.wordAtIndex(0);
-  return h.ret(parser->procedureFulltext(procnameP));
+  return h.ret(procedures->procedureFulltext(procnameP));
 }
 
 
@@ -656,7 +656,7 @@ DatumPtr Kernel::excCopydef(DatumPtr node) {
   DatumPtr newname = h.wordAtIndex(0);
   DatumPtr oldname = h.wordAtIndex(1);
 
-  parser->copyProcedure(newname, oldname);
+  procedures->copyProcedure(newname, oldname);
 
   return nothing;
 }
@@ -685,7 +685,7 @@ DatumPtr Kernel::excMake(DatumPtr node) {
   if (variables.isTraced(lvalue)) {
     QString line = k.make12()
                        .arg(h.wordAtIndex(0).wordValue()->printValue(),
-                            parser->unreadDatum(rvalue));
+                            procedures->unreadDatum(rvalue));
     sysPrint(line);
   }
 
@@ -711,7 +711,7 @@ DatumPtr Kernel::excSetfoo(DatumPtr node) {
     QString line =
         QString("%1 %2\n")
             .arg(node.astnodeValue()->nodeName.wordValue()->printValue(),
-            parser->unreadDatum(rvalue));
+            procedures->unreadDatum(rvalue));
     sysPrint(line);
   }
 
@@ -865,9 +865,9 @@ DatumPtr Kernel::excPprop(DatumPtr node) {
   plists.addProperty(plistname, propname, value);
   if (plists.isTraced(plistname)) {
     QString line = k.pprop123()
-                       .arg(parser->unreadDatum(h.datumAtIndex(0)),
-                            parser->unreadDatum(h.datumAtIndex(1)),
-                            parser->unreadDatum(value));
+                       .arg(procedures->unreadDatum(h.datumAtIndex(0)),
+                            procedures->unreadDatum(h.datumAtIndex(1)),
+                            procedures->unreadDatum(value));
     sysPrint(line);
   }
   return nothing;
@@ -939,7 +939,7 @@ COD***/
 
 DatumPtr Kernel::excProcedurep(DatumPtr node) {
   ProcedureHelper h(this, node);
-  bool retval = parser->isProcedure(h.wordAtIndex(0).wordValue()->keyValue());
+  bool retval = procedures->isProcedure(h.wordAtIndex(0).wordValue()->keyValue());
   return h.ret(retval);
 }
 
@@ -956,7 +956,7 @@ COD***/
 
 DatumPtr Kernel::excPrimitivep(DatumPtr node) {
   ProcedureHelper h(this, node);
-  bool retval = parser->isPrimitive(h.wordAtIndex(0).wordValue()->keyValue());
+  bool retval = procedures->isPrimitive(h.wordAtIndex(0).wordValue()->keyValue());
   return h.ret(retval);
 }
 
@@ -972,7 +972,7 @@ COD***/
 
 DatumPtr Kernel::excDefinedp(DatumPtr node) {
   ProcedureHelper h(this, node);
-  bool retval = parser->isDefined(h.wordAtIndex(0).wordValue()->keyValue());
+  bool retval = procedures->isDefined(h.wordAtIndex(0).wordValue()->keyValue());
   return h.ret(retval);
 }
 
@@ -1085,7 +1085,7 @@ COD***/
 
 DatumPtr Kernel::excProcedures(DatumPtr node) {
   ProcedureHelper h(this, node);
-  return h.ret(parser->allProcedureNames(showUnburied));
+  return h.ret(procedures->allProcedureNames(showUnburied));
 }
 
 
@@ -1101,7 +1101,7 @@ COD***/
 
 DatumPtr Kernel::excPrimitives(DatumPtr node) {
   ProcedureHelper h(this, node);
-  return h.ret(parser->allPrimitiveProcedureNames());
+  return h.ret(procedures->allPrimitiveProcedureNames());
 }
 
 
@@ -1154,7 +1154,7 @@ COD***/
 
 DatumPtr Kernel::excArity(DatumPtr node) {
   ProcedureHelper h(this, node);
-  return h.ret(parser->arity(h.wordAtIndex(0)));
+  return h.ret(procedures->arity(h.wordAtIndex(0)));
 }
 
 
@@ -1228,7 +1228,7 @@ DatumPtr Kernel::excPot(DatumPtr node) {
 
   ListIterator i = proceduresList->newIterator();
   while (i.elementExists()) {
-    QString procedureTitle = parser->procedureTitle(i.element());
+    QString procedureTitle = procedures->procedureTitle(i.element());
     stdPrint(procedureTitle);
     stdPrint("\n");
   }
@@ -1240,7 +1240,7 @@ DatumPtr Kernel::excPot(DatumPtr node) {
     DatumPtr value = variables.datumForName(varname);
     if (value == nothing)
       Error::noValue(varnameP);
-    QString line = k.make12().arg(varname, parser->unreadDatum(value));
+    QString line = k.make12().arg(varname, procedures->unreadDatum(value));
     stdPrint(line);
   }
 
@@ -1251,8 +1251,8 @@ DatumPtr Kernel::excPot(DatumPtr node) {
     DatumPtr proplist = plists.getPropertyList(listname);
     if (proplist.listValue()->size() > 0) {
       QString line = k.plist12()
-                         .arg(parser->unreadDatum(listnameP),
-                              parser->unreadDatum(proplist, true));
+                         .arg(procedures->unreadDatum(listnameP),
+                              procedures->unreadDatum(proplist, true));
       stdPrint(line);
     }
   }
@@ -1288,7 +1288,7 @@ DatumPtr Kernel::excErase(DatumPtr node) {
   ListIterator i = proceduresList->newIterator();
   while (i.elementExists()) {
     DatumPtr nameP = i.element();
-    parser->eraseProcedure(nameP);
+    procedures->eraseProcedure(nameP);
   }
 
   i = variablesList->newIterator();
@@ -1318,7 +1318,7 @@ COD***/
 
 DatumPtr Kernel::excErall(DatumPtr node) {
   ProcedureHelper h(this, node);
-  parser->eraseAllProcedures();
+  procedures->eraseAllProcedures();
   variables.eraseAll();
   plists.eraseAll();
 
@@ -1336,7 +1336,7 @@ COD***/
 
 DatumPtr Kernel::excErps(DatumPtr node) {
   ProcedureHelper h(this, node);
-  parser->eraseAllProcedures();
+  procedures->eraseAllProcedures();
 
   return nothing;
 }

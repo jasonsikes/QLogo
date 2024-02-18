@@ -34,6 +34,7 @@
 #include "sharedconstants.h"
 #include "textstream.h"
 #include "help.h"
+#include "procedures.h"
 
 #include <QColor>
 #include <QFile>
@@ -51,6 +52,7 @@ class Kernel {
   friend class ProcedureScope;
   friend class StreamRedirect;
   Parser *parser;
+  Procedures *procedures;
   Vars variables;
   DatumPtr filePrefix;
   int repcount = -1;
@@ -130,6 +132,7 @@ public:
   DatumPtr pause();
 
   Turtle *turtle;
+  Procedures* procs() { return procedures; }
   bool isInputRedirected();
   void initLibrary();
 

@@ -929,7 +929,7 @@ COD***/
 
 DatumPtr Kernel::excParse(DatumPtr node) {
   ProcedureHelper h(this, node);
-  Parser p(this);
+  Parser p(this, procedures);
   DatumPtr word = h.validatedDatumAtIndex(
       0, [](DatumPtr candidate) { return candidate.isWord(); });
   QString text = word.wordValue()->rawValue();
@@ -954,7 +954,7 @@ COD***/
 
 DatumPtr Kernel::excRunparse(DatumPtr node) {
   ProcedureHelper h(this, node);
-  Parser p(this);
+  Parser p(this, procedures);
   DatumPtr wordOrList = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     return candidate.isWord() || candidate.isList();
   });

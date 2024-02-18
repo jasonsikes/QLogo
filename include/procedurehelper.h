@@ -33,6 +33,7 @@
 
 class Kernel;
 class Parser;
+class Procedures;
 
 typedef std::function<bool(DatumPtr)> validatorP;
 typedef std::function<bool(double)> validatorD;
@@ -49,6 +50,7 @@ public:
   QString indent();
   bool isTraced;
   static void setParser(Parser *aParser);
+  static void setProcedures(Procedures *aProcedures);
   ProcedureHelper() { exit(1); }
   ProcedureHelper(Kernel *aParent, DatumPtr sourceNode);
   ~ProcedureHelper();
