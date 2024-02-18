@@ -44,43 +44,48 @@
 // The maximum depth of procedure iterations before error is thrown.
 const int maxIterationDepth = 1000;
 
-ProcedureScope::ProcedureScope(Kernel *exec, DatumPtr procname) {
-  ++(exec->procedureIterationDepth);
-  procedureHistory = exec->callingProcedure;
-  exec->callingProcedure = exec->currentProcedure;
-  exec->currentProcedure = procname;
-  lineHistory = exec->callingLine;
-  exec->callingLine = exec->currentLine;
-  kernel = exec;
+Kernel* _mainKernel = NULL;
+
+Kernel* mainKernel() {
+  Q_ASSERT(_mainKernel != NULL);
+  return _mainKernel;
+}
+
+ProcedureScope::ProcedureScope(DatumPtr procname) {
+  ++(_mainKernel->procedureIterationDepth);
+  procedureHistory = _mainKernel->callingProcedure;
+  _mainKernel->callingProcedure = _mainKernel->currentProcedure;
+  _mainKernel->currentProcedure = procname;
+  lineHistory = _mainKernel->callingLine;
+  _mainKernel->callingLine = _mainKernel->currentLine;
 }
 
 ProcedureScope::~ProcedureScope() {
-  --(kernel->procedureIterationDepth);
-  kernel->currentProcedure = kernel->callingProcedure;
-  kernel->callingProcedure = procedureHistory;
-  kernel->currentLine = kernel->callingLine;
-  kernel->callingLine = lineHistory;
+  --(_mainKernel->procedureIterationDepth);
+  _mainKernel->currentProcedure = _mainKernel->callingProcedure;
+  _mainKernel->callingProcedure = procedureHistory;
+  _mainKernel->currentLine = _mainKernel->callingLine;
+  _mainKernel->callingLine = lineHistory;
 }
 
-StreamRedirect::StreamRedirect(Kernel *srcExec, TextStream *newReadStream,
+StreamRedirect::StreamRedirect(TextStream *newReadStream,
                                TextStream *newWriteStream) {
-  exec = srcExec;
-  originalWriteStream = srcExec->writeStream;
-  originalSystemWriteStream = srcExec->systemWriteStream;
-  originalReadStream = srcExec->readStream;
-  originalSystemReadStream = srcExec->systemReadStream;
+  originalWriteStream = _mainKernel->writeStream;
+  originalSystemWriteStream = _mainKernel->systemWriteStream;
+  originalReadStream = _mainKernel->readStream;
+  originalSystemReadStream = _mainKernel->systemReadStream;
 
-  exec->writeStream = newWriteStream;
-  exec->systemWriteStream = newWriteStream;
-  exec->readStream = newReadStream;
-  exec->systemReadStream = newReadStream;
+  _mainKernel->writeStream = newWriteStream;
+  _mainKernel->systemWriteStream = newWriteStream;
+  _mainKernel->readStream = newReadStream;
+  _mainKernel->systemReadStream = newReadStream;
 }
 
 StreamRedirect::~StreamRedirect() {
-  exec->writeStream = originalWriteStream;
-  exec->readStream = originalReadStream;
-  exec->systemWriteStream = originalSystemWriteStream;
-  exec->systemReadStream = originalSystemReadStream;
+  _mainKernel->writeStream = originalWriteStream;
+  _mainKernel->readStream = originalReadStream;
+  _mainKernel->systemWriteStream = originalSystemWriteStream;
+  _mainKernel->systemReadStream = originalSystemReadStream;
 }
 
 
@@ -147,7 +152,7 @@ bool Kernel::getLineAndRunIt(bool shouldHandleError) {
         currentProcedure.astnodeValue()->nodeName.wordValue()->printValue();
   }
   prompt += "? ";
-  ProcedureScope ps(this, nothing);
+  ProcedureScope ps(nothing);
 
   try {
     DatumPtr line = systemReadStream->readlistWithPrompt(prompt, true);
@@ -250,7 +255,7 @@ void Kernel::initPalette() {
   palette.push_back(QColor(QStringLiteral("orange")));      // 14
   palette.push_back(QColor(QStringLiteral("grey")));        // 15
   palette.resize(paletteSize);
-  turtle->setPenColor(palette[7]);
+  mainTurtle()->setPenColor(palette[7]);
 }
 
 void Kernel::initLibrary() { executeText(libraryStr); }
@@ -272,6 +277,8 @@ void Kernel::initVariables(void)
 }
 
 Kernel::Kernel() {
+  Q_ASSERT(_mainKernel == NULL);
+  _mainKernel = this;
   stdioStream = new TextStream(NULL);
   readStream = stdioStream;
   systemReadStream = stdioStream;
@@ -279,11 +286,8 @@ Kernel::Kernel() {
   systemWriteStream = stdioStream;
 
   turtle = new Turtle;
-  procedures = new Procedures(this);
-  parser = new Parser(this, procedures);
-  ProcedureHelper::setParser(parser);
-  ProcedureHelper::setProcedures(procedures);
-  Error::setKernel(this);
+  procedures = new Procedures;
+  parser = new Parser;
 
   initVariables();
   initPalette();
@@ -296,6 +300,7 @@ Kernel::~Kernel() {
   delete parser;
   delete procedures;
   delete turtle;
+
 }
 
 void Kernel::makeVarLocal(const QString &varname) {
@@ -365,7 +370,7 @@ DatumPtr Kernel::executeProcedureCore(DatumPtr node) {
 
   DatumPtr retval;
   {
-    ProcedureScope ps(this, node);
+    ProcedureScope ps(node);
     ListIterator iter =
         proc.procedureValue()->instructionList.listValue()->newIterator();
     bool isStepped = procedures->isStepped(
@@ -605,9 +610,9 @@ DatumPtr Kernel::pause() {
         sysPrint(k.already_pausing());
         return nothing;
     }
-  ProcedureScope procScope(this, nothing);
+  ProcedureScope procScope(nothing);
   isPausing = true;
-  StreamRedirect streamScope(this, stdioStream, stdioStream);
+  StreamRedirect streamScope(stdioStream, stdioStream);
 
   sysPrint(k.pausing());
 

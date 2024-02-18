@@ -32,8 +32,6 @@
 #include "workspace.h"
 #include <QHash>
 
-class Kernel;
-
 struct Cmd_t {
   KernelMethod method;
   int countOfMinParams;
@@ -46,10 +44,9 @@ class Procedures : public Workspace {
 
   QHash<QString, DatumPtr> procedures;
   qint64 lastProcedureCreatedTimestamp;
-  Kernel *kernel;
 
 public:
-  Procedures(Kernel *aKernel);
+  Procedures();
 
   qint64 timeOfLastProcedureCreation() { return lastProcedureCreatedTimestamp; }
 
@@ -125,6 +122,7 @@ public:
   }
 };
 
+Procedures* mainProcedures();
 
 
 #endif // PROCEDURES_H

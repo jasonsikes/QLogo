@@ -62,7 +62,7 @@ void Parser::inputProcedure(DatumPtr nodeP, TextStream *readStream) {
       (firstChar == ')'))
     Error::doesntLike(to, procnameP);
 
-  if (procedures->isProcedure(procname))
+  if (mainProcedures()->isProcedure(procname))
     Error::procDefined(procnameP);
 
   DatumPtr textP = DatumPtr(List::alloc());
@@ -89,10 +89,10 @@ void Parser::inputProcedure(DatumPtr nodeP, TextStream *readStream) {
   }
 
   DatumPtr sourceText = readStream->recentHistory();
-  procedures->defineProcedure(to, procnameP, textP, sourceText);
+  mainProcedures()->defineProcedure(to, procnameP, textP, sourceText);
 
-  kernel->sysPrint(procnameP.wordValue()->printValue());
-  kernel->sysPrint(k._defined());
+  mainKernel()->sysPrint(procnameP.wordValue()->printValue());
+  mainKernel()->sysPrint(k._defined());
 }
 
 
@@ -305,7 +305,7 @@ DatumPtr Parser::runparse(DatumPtr src) {
 }
 
 QList<DatumPtr> *Parser::astFromList(List *aList) {
-    if (aList->astParseTimeStamp <= kernel->procs()->timeOfLastProcedureCreation()) {
+    if (aList->astParseTimeStamp <= mainProcedures()->timeOfLastProcedureCreation()) {
     aList->astParseTimeStamp = QDateTime::currentMSecsSinceEpoch();
 
     DatumPtr runParsedList = runparse(aList);
@@ -559,7 +559,7 @@ DatumPtr Parser::parseCommand(bool isVararg) {
   int minParams = 0;
   int maxParams = 0;
 
-  DatumPtr node = procedures->astnodeFromCommand(cmdP, minParams, defaultParams, maxParams);
+  DatumPtr node = mainProcedures()->astnodeFromCommand(cmdP, minParams, defaultParams, maxParams);
 
   advanceToken();
 
@@ -617,9 +617,4 @@ void Parser::advanceToken() {
   } else {
     currentToken = nothing;
   }
-}
-
-Parser::Parser(Kernel *aKernel, Procedures *aProcedures) {
-  kernel = aKernel;
-    procedures = aProcedures;
 }

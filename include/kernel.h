@@ -61,6 +61,8 @@ class Kernel {
   bool isRunningMacroResult = false;
   bool isPausing = false;
 
+  Turtle *turtle;
+
   QVector<QColor> palette;
   PropertyLists plists;
   QRandomGenerator randomGenerator;
@@ -131,8 +133,6 @@ public:
                        bool allowRecovery = false);
   DatumPtr pause();
 
-  Turtle *turtle;
-  Procedures* procs() { return procedures; }
   bool isInputRedirected();
   void initLibrary();
 
@@ -473,12 +473,11 @@ public:
 };
 
 class ProcedureScope {
-  Kernel *kernel;
   DatumPtr procedureHistory;
   DatumPtr lineHistory;
 
 public:
-  ProcedureScope(Kernel *exec, DatumPtr procname);
+  ProcedureScope(DatumPtr procname);
   ~ProcedureScope();
 };
 
@@ -487,12 +486,13 @@ class StreamRedirect {
   TextStream *originalSystemWriteStream;
   TextStream *originalReadStream;
   TextStream *originalSystemReadStream;
-  Kernel *exec;
 
 public:
-  StreamRedirect(Kernel *srcExec, TextStream *newReadStreamc,
+  StreamRedirect(TextStream *newReadStreamc,
                  TextStream *newWriteStream);
   ~StreamRedirect();
 };
+
+Kernel* mainKernel();
 
 #endif // EXECUTOR_H

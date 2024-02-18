@@ -35,21 +35,16 @@
 #include <math.h>
 #include "stringconstants.h"
 
-Parser *parser;
-Procedures *procedures;
 
 bool isErroring = false;
 int traceIndent = 0;
 const int dIndent = 1;
 
-void ProcedureHelper::setParser(Parser *aParser) { parser = aParser; }
-void ProcedureHelper::setProcedures(Procedures *aProcedures) {procedures = aProcedures; }
-
 ProcedureHelper::ProcedureHelper(Kernel *aParent, DatumPtr sourceNode) {
   parent = aParent;
   node = sourceNode.astnodeValue();
   parameters.reserve(node->countOfChildren());
-  isTraced = procedures->isTraced(node->nodeName.wordValue()->keyValue());
+  isTraced = mainProcedures()->isTraced(node->nodeName.wordValue()->keyValue());
 
   for (int i = 0; i < node->countOfChildren(); ++i) {
     if (node->childAtIndex(i).isa() == Datum::procedureType) {
@@ -74,7 +69,7 @@ ProcedureHelper::ProcedureHelper(Kernel *aParent, DatumPtr sourceNode) {
     for (int i = 0; i < parameters.size(); ++i) {
       DatumPtr param = parameters[i];
       if (param.isa() != Datum::procedureType)
-        line += procedures->unreadDatum(parameters[i]) + " ";
+        line += mainProcedures()->unreadDatum(parameters[i]) + " ";
     }
     parent->sysPrint(line + ")\n");
     traceIndent += dIndent;

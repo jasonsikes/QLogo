@@ -5,8 +5,6 @@
 #include <signal.h>
 
 LogoController *_maincontroller = NULL;
-qreal initialBoundXY = 150;
-
 
 SignalsEnum_t lastSignal = noSignal;
 

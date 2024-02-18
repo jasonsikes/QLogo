@@ -42,7 +42,7 @@ QString Kernel::executeText(const QString &text) {
   TextStream inStream(&inQStream);
   TextStream outStream(&outQStream);
 
-  StreamRedirect sr(this, &inStream, &outStream);
+  StreamRedirect sr(&inStream, &outStream);
 
   bool shouldContinue = true;
   while (shouldContinue) {

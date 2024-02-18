@@ -46,9 +46,18 @@ KernelMethod ifGUI(KernelMethod method) {
     return &Kernel::excErrorNoGui;
 }
 
+Procedures *theMainProcedures = NULL;
 
-Procedures::Procedures(Kernel *aKernel) {
-    kernel = aKernel;
+Procedures* mainProcedures()
+{
+  Q_ASSERT(theMainProcedures != NULL);
+  return theMainProcedures;
+}
+
+
+Procedures::Procedures() {
+    Q_ASSERT(theMainProcedures == NULL);
+    theMainProcedures = this;
 
     // DATA STRUCTURE PRIMITIVES (MIN, default, MAX)
     // (MIN = -1)     = All parameters are read as Words, e.g. "TO PROC :p1"
@@ -466,7 +475,7 @@ void Procedures::defineProcedure(DatumPtr cmd, DatumPtr procnameP, DatumPtr text
 
     procedures[procname] = procBody;
 
-    if (kernel->isInputRedirected() && kernel->varUNBURYONEDIT()) {
+    if (mainKernel()->isInputRedirected() && mainKernel()->varUNBURYONEDIT()) {
         unbury(procname);
     }
 }
@@ -781,12 +790,12 @@ DatumPtr Procedures::astnodeFromCommand(DatumPtr cmdP, int &minParams,
         maxParams = command.countOfMaxParams;
         node.astnodeValue()->kernel = command.method;
     } else if (cmdString.startsWith(k.set()) && (cmdString.size() > 3) &&
-               kernel->varALLOWGETSET()) {
+               mainKernel()->varALLOWGETSET()) {
         node.astnodeValue()->kernel = &Kernel::excSetfoo;
         defaultParams = 1;
         minParams = 1;
         maxParams = 1;
-    } else if (kernel->varALLOWGETSET()) {
+    } else if (mainKernel()->varALLOWGETSET()) {
         node.astnodeValue()->kernel = &Kernel::excFoo;
         defaultParams = 0;
         minParams = 0;

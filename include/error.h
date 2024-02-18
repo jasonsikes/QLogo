@@ -87,8 +87,6 @@ public:
 
   DatumType isa() { return errorType; }
 
-  static void setKernel(Kernel *aKernel);
-
   // Throwers for all the error messages
   static void turtleOutOfBounds();
   static DatumPtr doesntLike(DatumPtr who, DatumPtr what, bool allowErract = false,

@@ -38,8 +38,6 @@ class TextStream;
 
 class Parser {
   DatumPtr currentToken;
-  Kernel *kernel;
-  Procedures *procedures;
 
   // For runparse and it's supporting methods:
   List *runparseRetval;
@@ -66,7 +64,6 @@ class Parser {
                             int &maxParams);
 
 public:
-  Parser(Kernel *aKernel, Procedures *aProcedures);
   DatumPtr runparse(DatumPtr src);
   QList<DatumPtr> *astFromList(List *aList);
 

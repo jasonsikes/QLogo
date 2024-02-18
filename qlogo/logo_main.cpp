@@ -10,16 +10,16 @@ QString helpdb;
 
 void processOptions(QCoreApplication *a)
 {
-  QCommandLineParser parser;
+  QCommandLineParser commandlineParser;
 
   QCoreApplication::setApplicationName("qlogo");
   QCoreApplication::setApplicationVersion(LOGOVERSION);
 
-  parser.setApplicationDescription("UCBLOGO-compatable Logo language Interpreter.");
-  parser.addHelpOption();
-  parser.addVersionOption();
+  commandlineParser.setApplicationDescription("UCBLOGO-compatable Logo language Interpreter.");
+  commandlineParser.addHelpOption();
+  commandlineParser.addVersionOption();
 
-  parser.addOptions({
+  commandlineParser.addOptions({
       {"QLogoGUI",
        QCoreApplication::translate("main",
                                    "DO NOT USE! Set the input and output to the format used by "
@@ -29,14 +29,14 @@ void processOptions(QCoreApplication *a)
        QCoreApplication::translate("main", "help_database")},
                      });
 
-  parser.process(*a);
+  commandlineParser.process(*a);
 
-  if (parser.isSet("QLogoGUI")) {
+  if (commandlineParser.isSet("QLogoGUI")) {
       hasGUI = true;
     }
 
-  if (parser.isSet("helpdb")) {
-      helpdb = parser.value("helpdb");
+  if (commandlineParser.isSet("helpdb")) {
+      helpdb = commandlineParser.value("helpdb");
   }
 }
 
