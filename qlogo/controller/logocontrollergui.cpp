@@ -307,8 +307,6 @@ void LogoControllerGUI::setTurtlePos(const QMatrix4x4 &newTurtlePos)
 
 void LogoControllerGUI::setPenmode(PenModeEnum aMode)
 {
-    if (aMode == currentPenmode)
-        return;
     sendMessage([&](QDataStream *out) {
       *out << (message_t)C_CANVAS_SET_PENMODE << aMode;
     });

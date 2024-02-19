@@ -33,7 +33,6 @@ class LogoControllerGUI : public LogoController
     double minPensize;
     double maxPensize;
     double penSize;
-    PenModeEnum currentPenmode = penModePaint;
 
     double xbound;
     double ybound;
