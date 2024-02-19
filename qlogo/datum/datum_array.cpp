@@ -88,40 +88,38 @@ QString Array::name() {
 
 QString Array::printValue(bool fullPrintp, int printDepthLimit,
                           int printWidthLimit) {
-  QString retval = "";
-  auto iter = array.begin();
-  if (iter == array.end()) {
-    return retval;
-  }
-  if ((printDepthLimit == 0) || (printWidthLimit == 0)) {
-    return "...";
-  }
-  int printWidth = printWidthLimit - 1;
-  retval = iter->showValue(fullPrintp, printDepthLimit - 1, printWidthLimit);
-  while (++iter != array.end()) {
-    retval.append(' ');
-    if (printWidth == 0) {
-      retval.append("...");
-      break;
-    }
-    retval.append(
+    if (!aryVisited.contains(this)) {
+        aryVisited.push_back(this);
+        auto iter = array.begin();
+        if (iter == array.end()) {
+            return "{}";
+        }
+        if ((printDepthLimit == 0) || (printWidthLimit == 0)) {
+            return "{...}";
+        }
+        int printWidth = printWidthLimit;
+        QString retval = "{";
+        do {
+            if (iter != array.begin())
+                retval.append(' ');
+            if (printWidth == 0) {
+                retval.append("...");
+                break;
+            }
+            retval.append(
         iter->showValue(fullPrintp, printDepthLimit - 1, printWidthLimit));
-    --printWidth;
-  }
-  return retval;
+            --printWidth;
+        }while (++iter != array.end());
+        retval += "}";
+        aryVisited.removeOne(this);
+        return retval;
+    }
+    return "...";
 }
 
 QString Array::showValue(bool fullPrintp, int printDepthLimit,
                          int printWidthLimit) {
-  if (!aryVisited.contains(this)) {
-    aryVisited.push_back(this);
-    QString retval = "{";
-    retval.append(printValue(fullPrintp, printDepthLimit, printWidthLimit));
-    retval.append('}');
-    aryVisited.removeOne(this);
-    return retval;
-  }
-  return "...";
+    return printValue(fullPrintp, printDepthLimit, printWidthLimit);
 }
 
 bool Array::isEqual(DatumPtr other, bool) {
