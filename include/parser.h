@@ -29,7 +29,6 @@
 #include "datum_datump.h"
 #include "datum_list.h"
 #include "datum_iterator.h"
-#include "workspace.h"
 #include <QHash>
 
 class Procedures;
@@ -38,17 +37,6 @@ class TextStream;
 
 class Parser {
   DatumPtr currentToken;
-
-  // For runparse and it's supporting methods:
-  List *runparseRetval;
-  QString::iterator runparseCIter;
-  QString::iterator runparseCEnd;
-  bool isRunparseSourceSpecial;
-  void runparseSpecialchars(void);
-  void runparseMinus(void);
-  DatumPtr runparseNumber(void); // returns a number if successful
-  void runparseQuotedWord();
-  void runparseString();
 
   void advanceToken();
   ListIterator listIter;
@@ -64,7 +52,6 @@ class Parser {
                             int &maxParams);
 
 public:
-  DatumPtr runparse(DatumPtr src);
   QList<DatumPtr> *astFromList(List *aList);
 
   void inputProcedure(DatumPtr nodeP, TextStream *readStream);

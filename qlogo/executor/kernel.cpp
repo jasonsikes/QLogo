@@ -36,6 +36,7 @@
 
 #include "error.h"
 #include "library.h"
+#include "runparser.h"
 #include "turtle.h"
 
 #include "logocontroller.h"
@@ -534,7 +535,7 @@ DatumPtr Kernel::runList(DatumPtr listP, const QString startTag) {
   interruptCheck();
 
   if (listP.isWord())
-    listP = parser->runparse(listP);
+    listP = runparse(listP);
 
   if (!listP.isList()) {
     Error::noHow(listP);

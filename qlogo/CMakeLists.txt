@@ -25,6 +25,7 @@ set(QLOGO_SOURCES
   misc/stringconstants.cpp
   misc/turtle.cpp
   workspace/parser.cpp
+  workspace/runparser.cpp
   workspace/procedures.cpp
   workspace/propertylists.cpp
   workspace/vars.cpp
@@ -51,6 +52,7 @@ set(QLOGO_SOURCES
   ../include/stringblock.h
   ../include/turtle.h
   ../include/parser.h
+  ../include/runparser.h
   ../include/procedures.h
   ../include/propertylists.h
   ../include/vars.h

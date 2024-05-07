@@ -30,6 +30,7 @@
 #include "datum_astnode.h"
 #include "datum_array.h"
 #include <QTextStream>
+#include "runparser.h"
 #include "textstream.h"
 
 #include "logocontroller.h"
@@ -954,9 +955,8 @@ COD***/
 
 DatumPtr Kernel::excRunparse(DatumPtr node) {
   ProcedureHelper h(this, node);
-  Parser p;
   DatumPtr wordOrList = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     return candidate.isWord() || candidate.isList();
   });
-  return h.ret(p.runparse(wordOrList));
+  return h.ret(runparse(wordOrList));
 }
