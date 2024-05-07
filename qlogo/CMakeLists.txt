@@ -24,8 +24,8 @@ set(QLOGO_SOURCES
   misc/procedurehelper.cpp
   misc/stringconstants.cpp
   misc/turtle.cpp
-  workspace/parser.cpp
-  workspace/runparser.cpp
+  parser/parser.cpp
+  parser/runparser.cpp
   workspace/procedures.cpp
   workspace/propertylists.cpp
   workspace/vars.cpp
