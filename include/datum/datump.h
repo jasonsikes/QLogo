@@ -1,7 +1,7 @@
 #ifndef DATUM_DatumPtr_H
 #define DATUM_DatumPtr_H
 
-//===-- qlogo/datum_datump.h - DatumPtr class definition -------*- C++ -*-===//
+//===-- qlogo/datum/datump.h - DatumPtr class definition -------*- C++ -*-===//
 //
 // This file is part of QLogo.
 //
@@ -28,7 +28,7 @@
 
 
 
-#include "datum.h"
+#include "datum/datum.h"
 
 
 /// A pointer to a Datum. Incorporates convenience methods, reference-counting, and automatic destruction.

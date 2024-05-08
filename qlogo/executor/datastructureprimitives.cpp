@@ -26,9 +26,9 @@
 
 #include "kernel.h"
 #include "parser.h"
-#include "datum_word.h"
-#include "datum_astnode.h"
-#include "datum_array.h"
+#include "datum/word.h"
+#include "datum/astnode.h"
+#include "datum/array.h"
 #include <QTextStream>
 #include "runparser.h"
 #include "textstream.h"

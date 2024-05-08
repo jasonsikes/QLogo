@@ -29,9 +29,9 @@
 #include "logocontroller.h"
 #include "error.h"
 #include "kernel.h"
-#include "datum_word.h"
-#include "datum_astnode.h"
-//#include "datum_array.h"
+#include "datum/word.h"
+#include "datum/astnode.h"
+//#include "datum/array.h"
 #include <qdatetime.h>
 #include <qdebug.h>
 #include "stringconstants.h"

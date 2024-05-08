@@ -1,7 +1,7 @@
 #ifndef DATUM_ITERATOR_H
 #define DATUM_ITERATOR_H
 
-//===-- qlogo/datum_iterator.h - Iterator class definition ------*- C++ -*-===//
+//===-- qlogo/datum/iterator.h - Iterator class definition ------*- C++ -*-===//
 //
 // This file is part of QLogo.
 //
@@ -29,7 +29,7 @@
 
 
 
-#include "datum_datump.h"
+#include "datum/datump.h"
 #include <QVector>
 
 

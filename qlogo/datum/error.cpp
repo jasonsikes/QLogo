@@ -26,7 +26,7 @@
 
 #include "error.h"
 #include "kernel.h"
-#include "datum_word.h"
+#include "datum/word.h"
 #include <QDebug>
 #include "stringconstants.h"
 

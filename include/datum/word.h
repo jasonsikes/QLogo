@@ -1,7 +1,7 @@
 #ifndef DATUM_WORD_H
 #define DATUM_WORD_H
 
-//===-- qlogo/datum_word.h - Word class definition -------*- C++ -*-===//
+//===-- qlogo/datum/word.h - Word class definition -------*- C++ -*-===//
 //
 // This file is part of QLogo.
 //
@@ -27,7 +27,7 @@
 //===----------------------------------------------------------------------===//
 
 
-#include "datum.h"
+#include "datum/datum.h"
 #include <QString>
 
 /// \brief The basic unit of data in QLogo. A Word is a string or number.

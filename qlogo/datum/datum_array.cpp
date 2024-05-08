@@ -25,10 +25,10 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum_array.h"
-#include "datum_datump.h"
-#include "datum_list.h"
-#include "datum_iterator.h"
+#include "datum/array.h"
+#include "datum/datump.h"
+#include "datum/list.h"
+#include "datum/iterator.h"
 #include <qdebug.h>
 #include "stringconstants.h"
 

@@ -28,10 +28,10 @@
 #include "procedures.h"
 #include "kernel.h"
 #include "stringconstants.h"
-#include "datum_word.h"
-#include "datum_array.h"
+#include "datum/word.h"
+#include "datum/array.h"
 #include "error.h"
-#include "datum_astnode.h"
+#include "datum/astnode.h"
 #include <QDateTime>
 
 static DatumPool<Procedure> pool(20);

@@ -26,9 +26,9 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum_list.h"
-#include "datum_array.h"
-#include "datum_iterator.h"
+#include "datum/list.h"
+#include "datum/array.h"
+#include "datum/iterator.h"
 #include "stringconstants.h"
 #include <qdebug.h>
 

@@ -2,7 +2,7 @@
 #define DATUM_ASTNODE_H
 
 
-//===-- qlogo/datum_astnode.h - ASTNode class definition -------*- C++ -*-===//
+//===-- qlogo/datum/astnode.h - ASTNode class definition -------*- C++ -*-===//
 //
 // This file is part of QLogo.
 //
@@ -29,7 +29,7 @@
 
 
 
-#include "datum_datump.h"
+#include "datum/datump.h"
 #include <QVector>
 
 

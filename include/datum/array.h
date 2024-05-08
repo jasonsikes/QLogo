@@ -1,7 +1,7 @@
 #ifndef DATUM_ARRAY_H
 #define DATUM_ARRAY_H
 
-//===-- qlogo/datum_array.h - Array class definition -------*- C++ -*-===//
+//===-- qlogo/datum/array.h - Array class definition -------*- C++ -*-===//
 //
 // This file is part of QLogo.
 //
@@ -28,7 +28,7 @@
 
 
 
-#include "datum.h"
+#include "datum/datum.h"
 #include <QVector>
 
 /// The container that allows efficient read and write access to its elements.

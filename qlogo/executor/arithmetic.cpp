@@ -25,8 +25,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "kernel.h"
-#include "datum_word.h"
-#include "datum_astnode.h"
+#include "datum/word.h"
+#include "datum/astnode.h"
 
 #include <functional>
 #include <math.h>

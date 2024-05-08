@@ -26,7 +26,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum_datump.h"
+#include "datum/datump.h"
 
 class Kernel;
 

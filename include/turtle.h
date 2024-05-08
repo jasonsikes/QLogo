@@ -30,7 +30,7 @@
 #include <QMatrix4x4>
 #include "sharedconstants.h"
 
-#include "datum.h"
+#include "datum/datum.h"
 #include <math.h>
 
 class Turtle {

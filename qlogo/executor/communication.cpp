@@ -24,12 +24,12 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum_iterator.h"
+#include "datum/iterator.h"
 #include "error.h"
 #include "kernel.h"
-#include "datum_word.h"
-#include "datum_astnode.h"
-#include "datum_list.h"
+#include "datum/word.h"
+#include "datum/astnode.h"
+#include "datum/list.h"
 
 #include "logocontroller.h"
 #include "stringconstants.h"

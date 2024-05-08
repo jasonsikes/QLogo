@@ -28,8 +28,8 @@
 #include "error.h"
 #include "kernel.h"
 #include "parser.h"
-#include "datum_word.h"
-#include "datum_astnode.h"
+#include "datum/word.h"
+#include "datum/astnode.h"
 #include "stringconstants.h"
 
 // CONTROL STRUCTURES

@@ -25,8 +25,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum_datump.h"
-#include "datum_list.h"
+#include "datum/datump.h"
+#include "datum/list.h"
 #include "stringconstants.h"
 #include <qdebug.h>
 #include <unistd.h>

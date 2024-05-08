@@ -1,7 +1,7 @@
 #ifndef DATUM_LIST_H
 #define DATUM_LIST_H
 
-//===-- qlogo/datum_list.h - List class definition -------*- C++ -*-===//
+//===-- qlogo/datum/list.h - List class definition -------*- C++ -*-===//
 //
 // This file is part of QLogo.
 //
@@ -27,7 +27,7 @@
 //===----------------------------------------------------------------------===//
 
 
-#include "datum_datump.h"
+#include "datum/datump.h"
 #include <QList>
 
 /// An element of a List.

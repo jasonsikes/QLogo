@@ -12,12 +12,12 @@ set(QLOGO_SOURCES
   datum/datum_word.cpp
   datum/error.cpp
   executor/kernel.cpp
-  executor/kernel_arithmetic.cpp
-  executor/kernel_communication.cpp
-  executor/kernel_controlstructures.cpp
-  executor/kernel_datastructureprimitives.cpp
-  executor/kernel_graphics.cpp
-  executor/kernel_workspacemanagement.cpp
+  executor/arithmetic.cpp
+  executor/communication.cpp
+  executor/controlstructures.cpp
+  executor/datastructureprimitives.cpp
+  executor/graphics.cpp
+  executor/workspacemanagement.cpp
   logo_main.cpp
   misc/help.cpp
   misc/library.cpp
@@ -36,13 +36,13 @@ set(QLOGO_SOURCES
   ../include/logocontroller.h
   ../include/logocontrollergui.h
   ../include/textstream.h
-  ../include/datum.h
-  ../include/datum_array.h
-  ../include/datum_astnode.h
-  ../include/datum_datump.h
-  ../include/datum_iterator.h
-  ../include/datum_list.h
-  ../include/datum_word.h
+  ../include/datum/datum.h
+  ../include/datum/array.h
+  ../include/datum/astnode.h
+  ../include/datum/datump.h
+  ../include/datum/iterator.h
+  ../include/datum/list.h
+  ../include/datum/word.h
   ../include/error.h
   ../include/help.h
   ../include/kernel.h
