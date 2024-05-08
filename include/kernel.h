@@ -29,12 +29,12 @@
 #include "datum/datump.h"
 
 #include "procedurehelper.h"
-#include "propertylists.h"
-#include "vars.h"
+#include "workspace/propertylists.h"
+#include "workspace/vars.h"
 #include "sharedconstants.h"
 #include "controller/textstream.h"
 #include "help.h"
-#include "procedures.h"
+#include "workspace/procedures.h"
 
 #include <QColor>
 #include <QFile>

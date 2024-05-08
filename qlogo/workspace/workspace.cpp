@@ -26,7 +26,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "workspace.h"
+#include "workspace/workspace.h"
 
 Workspace::Workspace() {}
 

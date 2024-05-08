@@ -25,7 +25,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "procedures.h"
+#include "workspace/procedures.h"
 #include "kernel.h"
 #include "stringconstants.h"
 #include "datum/word.h"

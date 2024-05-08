@@ -53,10 +53,10 @@ set(QLOGO_SOURCES
   ../include/turtle.h
   ../include/parser.h
   ../include/runparser.h
-  ../include/procedures.h
-  ../include/propertylists.h
-  ../include/vars.h
-  ../include/workspace.h
+  ../include/workspace/procedures.h
+  ../include/workspace/propertylists.h
+  ../include/workspace/vars.h
+  ../include/workspace/workspace.h
 )
 
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)

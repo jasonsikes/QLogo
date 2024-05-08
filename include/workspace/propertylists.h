@@ -27,7 +27,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "workspace.h"
+#include "workspace/workspace.h"
 #include "datum/datum.h"
 
 class PropertyLists : public Workspace {
