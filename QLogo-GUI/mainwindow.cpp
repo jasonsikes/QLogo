@@ -25,11 +25,11 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "mainwindow.h"
-#include "canvas.h"
+#include "gui/mainwindow.h"
+#include "gui/canvas.h"
 #include "ui_mainwindow.h"
 #include "sharedconstants.h"
-#include "editorwindow.h"
+#include "gui/editorwindow.h"
 #include <QDebug>
 #include <QKeyEvent>
 #include <QScrollBar>

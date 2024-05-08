@@ -1,7 +1,7 @@
 #ifndef CANVAS_H
 #define CANVAS_H
 
-//===-- qlogo/canvas.h - Canvas class definition -------*- C++ -*-===//
+//===-- qlogo/gui/canvas.h - Canvas class definition -------*- C++ -*-===//
 //
 // This file is part of QLogo.
 //

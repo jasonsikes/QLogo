@@ -26,7 +26,7 @@
 
 #define _USE_MATH_DEFINES
 
-#include "console.h"
+#include "gui/console.h"
 #include "sharedconstants.h"
 #include <QDebug>
 #include <QKeyEvent>

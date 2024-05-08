@@ -26,7 +26,7 @@
 #define _USE_MATH_DEFINES
 
 #include "sharedconstants.h"
-#include "canvas.h"
+#include "gui/canvas.h"
 #include "math.h"
 
 #include <QPainter>

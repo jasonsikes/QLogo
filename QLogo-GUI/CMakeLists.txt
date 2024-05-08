@@ -10,10 +10,10 @@ set(GUI_SOURCES
   mainwindow.cpp
   qlogo_main.cpp
 
-  ../include/canvas.h
-  ../include/console.h
-  ../include/editorwindow.h
-  ../include/mainwindow.h
+  ../include/gui/canvas.h
+  ../include/gui/console.h
+  ../include/gui/editorwindow.h
+  ../include/gui/mainwindow.h
   ../include/sharedconstants.h
 
   editorwindow.ui

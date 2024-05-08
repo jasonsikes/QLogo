@@ -17,7 +17,7 @@
 //
 
 #include <QApplication>
-#include "mainwindow.h"
+#include "gui/mainwindow.h"
 #include <QSqlDatabase>
 
 int main(int argc, char *argv[]) {

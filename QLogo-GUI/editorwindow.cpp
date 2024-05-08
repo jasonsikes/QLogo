@@ -25,7 +25,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "editorwindow.h"
+#include "gui/editorwindow.h"
 #include "QDebug"
 #include "ui_editorwindow.h"
 #include <QTimer>
