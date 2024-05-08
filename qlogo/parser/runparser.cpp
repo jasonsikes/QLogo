@@ -26,9 +26,9 @@
 
 #include "runparser.h"
 #include "QtCore/qiodevice.h"
-#include "logocontroller.h"
+#include "controller/logocontroller.h"
 #include "datum/word.h"
-#include "textstream.h"
+#include "controller/textstream.h"
 #include <qdatetime.h>
 #include <qdebug.h>
 

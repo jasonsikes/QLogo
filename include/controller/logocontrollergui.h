@@ -1,12 +1,12 @@
 #ifndef LOGOCONTROLLERGUI_H
 #define LOGOCONTROLLERGUI_H
 
-#include "logocontroller.h"
+#include "controller/logocontroller.h"
 #include "sharedconstants.h"
 #include <QDataStream>
 #include <QFile>
 #include <QFont>
-#include "inputqueue.h"
+#include "controller/inputqueue.h"
 #include "datum/datum.h"
 
 class LogoControllerGUI : public LogoController

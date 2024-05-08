@@ -32,10 +32,10 @@ set(QLOGO_SOURCES
   workspace/workspace.cpp
   
   ../include/sharedconstants.h
-  ../include/inputqueue.h
-  ../include/logocontroller.h
-  ../include/logocontrollergui.h
-  ../include/textstream.h
+  ../include/controller/inputqueue.h
+  ../include/controller/logocontroller.h
+  ../include/controller/logocontrollergui.h
+  ../include/controller/textstream.h
   ../include/datum/datum.h
   ../include/datum/array.h
   ../include/datum/astnode.h

@@ -31,9 +31,9 @@
 #include "datum/array.h"
 #include <QTextStream>
 #include "runparser.h"
-#include "textstream.h"
+#include "controller/textstream.h"
 
-#include "logocontroller.h"
+#include "controller/logocontroller.h"
 
 // CONSTRUCTORS
 

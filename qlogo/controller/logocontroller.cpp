@@ -1,4 +1,4 @@
-#include "logocontroller.h"
+#include "controller/logocontroller.h"
 #include <QIODevice>
 #include "kernel.h"
 #include <QApplication>

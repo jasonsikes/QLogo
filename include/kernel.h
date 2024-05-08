@@ -32,7 +32,7 @@
 #include "propertylists.h"
 #include "vars.h"
 #include "sharedconstants.h"
-#include "textstream.h"
+#include "controller/textstream.h"
 #include "help.h"
 #include "procedures.h"
 

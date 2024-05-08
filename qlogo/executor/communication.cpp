@@ -31,14 +31,14 @@
 #include "datum/astnode.h"
 #include "datum/list.h"
 
-#include "logocontroller.h"
+#include "controller/logocontroller.h"
 #include "stringconstants.h"
 
 #include <QByteArray> // for SHELL
 #include <QDir>
 #include <QFile>
 #include <QProcess> // for SHELL
-#include "textstream.h"
+#include "controller/textstream.h"
 
 QString Kernel::filepathForFilename(DatumPtr filenameP) {
   QString filename = filenameP.wordValue()->printValue();

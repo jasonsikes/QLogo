@@ -1,4 +1,4 @@
-#include "inputqueue.h"
+#include "controller/inputqueue.h"
 #include <unistd.h>
 #include <QDebug>
 #include <QQueue>

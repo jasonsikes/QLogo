@@ -39,7 +39,7 @@
 #include "runparser.h"
 #include "turtle.h"
 
-#include "logocontroller.h"
+#include "controller/logocontroller.h"
 #include "stringconstants.h"
 
 // The maximum depth of procedure iterations before error is thrown.

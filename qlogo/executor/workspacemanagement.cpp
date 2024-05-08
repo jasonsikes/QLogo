@@ -30,7 +30,7 @@
 #include "datum/word.h"
 #include "datum/astnode.h"
 #include "stringconstants.h"
-#include "logocontroller.h"
+#include "controller/logocontroller.h"
 
 QString Kernel::executeText(const QString &text) {
   QString inText = text;

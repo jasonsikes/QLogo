@@ -26,7 +26,7 @@
 
 #include "parser.h"
 #include "runparser.h"
-#include "logocontroller.h"
+#include "controller/logocontroller.h"
 #include "error.h"
 #include "kernel.h"
 #include "datum/word.h"

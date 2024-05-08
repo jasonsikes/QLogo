@@ -31,7 +31,7 @@
 #include "datum/list.h"
 #include "datum/astnode.h"
 #include "stringconstants.h"
-#include "logocontroller.h"
+#include "controller/logocontroller.h"
 
 #include <math.h>
 
