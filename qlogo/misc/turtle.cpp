@@ -258,25 +258,7 @@ void Turtle::moveTurtle(const QTransform &newPosition) {
 }
 
 void Turtle::drawArc(qreal angle, qreal radius) {
-  // if (penIsDown) {
-  //   // 4 degrees between segments is my limit of perception
-  //   qreal countOfSegments = fabs(round(angle / 4));
-  //   angle *= M_PI / 180;
-  //   if (countOfSegments < 2)
-  //     countOfSegments = 2;
-
-  //   for (qreal segment = 1; segment <= countOfSegments; ++segment) {
-  //     qreal a1 = (segment - 1) / countOfSegments * angle;
-  //     qreal a2 = segment / countOfSegments * angle;
-  //     qreal p1x = -sin(a1) * radius;
-  //     qreal p1y = cos(a1) * radius;
-  //     qreal p2x = -sin(a2) * radius;
-  //     qreal p2y = cos(a2) * radius;
-  //     QVector3D v1 = (matrix * QVector4D(p1x, p1y, 0, 1)).toVector3DAffine();
-  //     QVector3D v2 = (matrix * QVector4D(p2x, p2y, 0, 1)).toVector3DAffine();
-  //     mainController()->drawLine(v1, v2, penColor, penColor);
-  //   }
-  // }
+    mainController()->drawArc(angle, radius);
 }
 
 void Turtle::forward(qreal steps) {

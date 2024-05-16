@@ -31,6 +31,14 @@
 #include <QColor>
 #include <QMouseEvent>
 
+Arc::Arc(QPointF center, qreal a, qreal span, qreal radius)
+{
+    rectangle = QRectF(center.x() - radius,center.y() - radius,
+                       radius * 2,radius * 2);
+    startAngle = (a - 90) * 16;
+    spanAngle = span * -16;
+}
+
 Canvas::Canvas(QWidget *parent) : QWidget(parent) {
     boundsX = initialBoundX;
     boundsY = initialBoundY;
@@ -216,6 +224,27 @@ void Canvas::addLabel(QString aText)
     update();
 }
 
+void Canvas::addArc(qreal angle, qreal radius)
+{
+    if ( ! penIsDown) return;
+
+    qreal s = turtleMatrix.m21();
+    qreal c = turtleMatrix.m11();
+
+    qreal a = atan2(s, c) * 180 / M_PI;
+
+    if (radius < 0) {
+        radius *= -1;
+        a = 180 - a;
+    }
+
+    Arc arc(pointFromTurtle(),a, angle,radius);
+    pushLineGroup();
+    drawingElementList.push_back( { arcTypeID, deVariant(arc) } );
+    update();
+}
+
+
 
 void Canvas::setTurtleIsVisible(bool isVisible)
 {
@@ -315,6 +344,9 @@ void Canvas::drawCanvas()
         case polygonTypeID:
             elDrawPolygon(std::get<Polygon>(drawCommand.element));
             break;
+        case arcTypeID:
+            elDrawArc(std::get<Arc>(drawCommand.element));
+            break;
         default:
             Q_ASSERT(false);
         }
@@ -370,6 +402,10 @@ void Canvas::elDrawPolygon(const Polygon &p)
 }
 
 
+void Canvas::elDrawArc(const Arc &a)
+{
+    painter->drawArc(a.rectangle, a.startAngle, a.spanAngle);
+}
 
 
 void Canvas::elDrawTurtle()

@@ -69,6 +69,7 @@ public:
   virtual void endPolygon() { Error::noGraphics(); }
   virtual void clearCanvas(void) { Error::noGraphics(); }
   virtual void drawLabel(QString) { Error::noGraphics(); }
+  virtual void drawArc(qreal angle, qreal radius) { Error::noGraphics(); }
   virtual void setLabelFontName(QString) { Error::noGraphics(); }
   virtual QString addStandoutToString(QString src) { return src; };
   virtual bool keyQueueHasChars();

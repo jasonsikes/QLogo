@@ -61,7 +61,17 @@ struct TurtleWriteInfo {
 };
 
 
-using deVariant = std::variant<Label, Polygon, TurtleWriteInfo, QPolygonF>;
+/// Contains information that describes how to draw an arc.
+struct Arc {
+    QRectF rectangle;
+    int startAngle;
+    int spanAngle;
+    Arc(QPointF center, qreal a, qreal span, qreal radius);
+};
+
+
+using deVariant = std::variant<Label, Polygon, TurtleWriteInfo, QPolygonF,
+                               Arc>;
 
 
 
@@ -76,6 +86,7 @@ enum ElementID {
     polygonTypeID,
     turtleWriteInfoID,
     polylineTypeID,
+    arcTypeID
 };
 
 
@@ -139,6 +150,7 @@ class Canvas : public QWidget {
   void elDrawPolyline(const QPolygonF &);
   void elDrawPolygon(const Polygon &p);
   void elDrawLabel(const Label &);
+  void elDrawArc(const Arc &a);
 
   // Return the appropriate color for the current penMode.
   const QColor& colorForPenmode();
@@ -182,7 +194,10 @@ public:
   /// paintElements list.
   void endPolygon();
 
-  /// Add a label at the current mouse location.
+  /// Add an arc using the specified angle and radius.
+  void addArc(qreal angle, qreal radius);
+
+  /// Add a label at the current turtle location.
   void addLabel(QString aText);
 
   /// Set the font size for all future text labels.

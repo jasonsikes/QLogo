@@ -461,6 +461,17 @@ void MainWindow::readStandardOutput()
             introduceCanvas();
             break;
         }
+        case C_CANVAS_DRAW_ARC:
+        {
+            qreal angle;
+            qreal radius;
+            *dataStream
+                >> angle
+                >> radius;
+            ui->mainCanvas->addArc(angle,radius);
+            introduceCanvas();
+            break;
+        }
         case C_CANVAS_SET_PENSIZE:
         {
             double newSize;

@@ -67,6 +67,7 @@ enum messageCategory : message_t {
     C_CANVAS_END_POLYGON,             // End drawing a polygon
     C_CANVAS_SET_TURTLE_IS_VISIBLE,   // Show/hide the turtle
     C_CANVAS_DRAW_LABEL,              // Draw a label on the canvas at turtle's position
+    C_CANVAS_DRAW_ARC,                // Draw an arc
     C_CANVAS_CLEAR_SCREEN,            // Clear the graphics screen
     C_CANVAS_SETBOUNDS,               // Set the X and Y bounds of the drawing surface area
     C_CANVAS_SET_IS_BOUNDED,          // Determine whether canvas draws in a box or whole widget

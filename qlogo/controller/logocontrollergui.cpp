@@ -381,6 +381,15 @@ void LogoControllerGUI::drawLabel(QString aString)
     });
 }
 
+void LogoControllerGUI::drawArc(qreal angle, qreal radius)
+{
+    sendMessage([&](QDataStream *out) {
+        *out << (message_t)C_CANVAS_DRAW_ARC
+             << angle
+             << radius;
+    });
+}
+
 void LogoControllerGUI::setLabelFontName(QString aName)
 {
     if (aName == labelFontName)

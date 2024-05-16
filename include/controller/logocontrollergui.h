@@ -80,6 +80,7 @@ public:
     void endPolygon();
     void clearCanvas();
     void drawLabel(QString);
+    void drawArc(qreal angle, qreal radius);
     bool getIsMouseButtonDown();
     int getAndResetButtonID();
     QVector2D lastMouseclickPosition();
