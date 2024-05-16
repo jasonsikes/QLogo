@@ -92,6 +92,8 @@ class Canvas : public QWidget {
 
   bool canvasIsBounded = true;
   bool mouseButtonPressed = false;
+  QTransform drawingMatrix; // For mapping cartesian to widget.
+  QTransform inverseDrawingMatrix; // For mapping mouse to cartesian.
 
   // Visible vertices on the X axis range from -boundsX to +boundsX
   qreal boundsX;
@@ -152,6 +154,7 @@ class Canvas : public QWidget {
   void mousePressEvent(QMouseEvent *event) override;
   void mouseMoveEvent(QMouseEvent *event) override;
   void mouseReleaseEvent(QMouseEvent *event) override;
+  void resizeEvent(QResizeEvent *event) override;
 
 public:
   /// Construct a Canvas

@@ -288,21 +288,7 @@ void Canvas::paintEvent(QPaintEvent *event)
     if ( ! canvasIsBounded)
         elDrawUnboundedBackground();
 
-    // Set coordinate system so that background box fits in widget and fills
-    // without stretching.
-    qreal widgetHWRatio = (qreal)height() / (qreal)width();
-    qreal boundsHWRatio = boundsY / boundsX;
-    qreal hwRatio;
-    if (widgetHWRatio > boundsHWRatio) {
-        // the bounds are hugging the left and right edges
-        hwRatio = width() / boundsX / 2;
-    } else {
-        // the bounds are hugging the top and bottom edges
-        hwRatio = height() / boundsY / 2;
-    }
-
-    painter->translate(width() / 2.0, height() / 2.0);
-    painter->scale(hwRatio, -hwRatio);
+    painter->setWorldTransform(drawingMatrix);
 
     if (canvasIsBounded)
         elDrawBoundedBackground();
@@ -447,6 +433,26 @@ void Canvas::endPolygon()
     isConstructingPolygon = false;
 }
 
+void Canvas::resizeEvent(QResizeEvent *event)
+{
+    // Set coordinate system so that background box fits in widget and fills
+    // without stretching.
+    qreal widgetHWRatio = (qreal)height() / (qreal)width();
+    qreal boundsHWRatio = boundsY / boundsX;
+    qreal hwRatio;
+    if (widgetHWRatio > boundsHWRatio) {
+        // the bounds are hugging the left and right edges
+        hwRatio = width() / boundsX / 2;
+    } else {
+        // the bounds are hugging the top and bottom edges
+        hwRatio = height() / boundsY / 2;
+    }
+
+    drawingMatrix.reset();
+    drawingMatrix.translate(width() / 2.0, height() / 2.0);
+    drawingMatrix.scale(hwRatio, -hwRatio);
+
+}
 
 
 
