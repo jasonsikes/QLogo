@@ -339,6 +339,7 @@ public:
   DatumPtr excBackground(DatumPtr node);
   DatumPtr excSetbackground(DatumPtr node);
   DatumPtr excSavepict(DatumPtr node);
+  DatumPtr excLoadpict(DatumPtr node);
 
   DatumPtr excMousepos(DatumPtr node);
   DatumPtr excClickpos(DatumPtr node);

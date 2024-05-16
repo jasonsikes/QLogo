@@ -247,6 +247,7 @@ Procedures::Procedures() {
     stringToCmd[k.setbackground()] = {ifGUI(&Kernel::excSetbackground), 1, 1, 1};
     stringToCmd[k.setbg()] = {ifGUI(&Kernel::excSetbackground), 1, 1, 1};
     stringToCmd[k.savepict()] = {ifGUI(&Kernel::excSavepict), 1, 1, 1};
+    stringToCmd[k.loadpict()] = {ifGUI(&Kernel::excLoadpict), 1, 1, 1};
 
     stringToCmd[k.penpaint()] = {ifGUI(&Kernel::excPenpaint), 0, 0, 0};
     stringToCmd[k.ppt()] = {ifGUI(&Kernel::excPenpaint), 0, 0, 0};

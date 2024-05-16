@@ -114,24 +114,6 @@ void Turtle::moveTurtleWrap(const QTransform &newPosition) {
               continue;
           }
       }
-      // if (lineEnd.x() < -boundX) {
-    //   float cy = lineStart.y() +
-    //              (-boundX - lineStart.x()) * (lineEnd.y() - lineStart.y()) /
-    //                  (lineEnd.x() - lineStart.x());
-    //   if ((cy >= -boundY) && (cy <= boundY)) {
-    //     QVector3D e = QVector3D(-boundX, cy, 0);
-    //     if (penIsDown)
-    //       mainController()->drawLine(lineStart, e, penColor, penColor);
-    //     lineStart = QVector3D(boundX, cy, lineEnd.z());
-    //     lineEnd =
-    //         QVector3D(lineEnd.x() + 2 * boundX, lineEnd.y(), lineEnd.z());
-    //     qreal w = matrix(3, 3);
-    //     matrix(0, 3) = lineEnd.x() * w;
-    //     matrix(1, 3) = lineEnd.y() * w;
-    //     matrix(2, 3) = lineEnd.z() * w;
-    //     continue;
-    //   }
-    // }
 
       if (lineEndY > boundY) {
           qreal cX = lineStartX +
@@ -152,24 +134,6 @@ void Turtle::moveTurtleWrap(const QTransform &newPosition) {
               continue;
           }
       }
-      // if (lineEnd.y() > boundY) {
-    //   float cx = lineStart.x() +
-    //              (boundY - lineStart.y()) * (lineEnd.x() - lineStart.x()) /
-    //                  (lineEnd.y() - lineStart.y());
-    //   if ((cx >= -boundX) && (cx <= boundX)) {
-    //     QVector3D e = QVector3D(cx, boundY, 0);
-    //     if (penIsDown)
-    //       mainController()->drawLine(lineStart, e, penColor, penColor);
-    //     lineStart = QVector3D(cx, -boundY, lineEnd.z());
-    //     lineEnd =
-    //         QVector3D(lineEnd.x(), lineEnd.y() - 2 * boundY, lineEnd.z());
-    //     qreal w = matrix(3, 3);
-    //     matrix(0, 3) = lineEnd.x() * w;
-    //     matrix(1, 3) = lineEnd.y() * w;
-    //     matrix(2, 3) = lineEnd.z() * w;
-    //     continue;
-    //   }
-    // }
 
       if (lineEndY < -boundY) {
           qreal cX = lineStartX +
@@ -190,36 +154,11 @@ void Turtle::moveTurtleWrap(const QTransform &newPosition) {
               continue;
           }
       }
-      // if (lineEnd.y() < -boundY) {
-    //   float cx = lineStart.x() +
-    //              (-boundY - lineStart.y()) * (lineEnd.x() - lineStart.x()) /
-    //                  (lineEnd.y() - lineStart.y());
-    //   if ((cx >= -boundX) && (cx <= boundX)) {
-    //     QVector3D e = QVector3D(cx, -boundY, 0);
-    //     if (penIsDown)
-    //       mainController()->drawLine(lineStart, e, penColor, penColor);
-    //     lineStart = QVector3D(cx, boundY, lineEnd.z());
-    //     lineEnd =
-    //         QVector3D(lineEnd.x(), lineEnd.y() + 2 * boundY, lineEnd.z());
-    //     qreal w = matrix(3, 3);
-    //     matrix(0, 3) = lineEnd.x() * w;
-    //     matrix(1, 3) = lineEnd.y() * w;
-    //     matrix(2, 3) = lineEnd.z() * w;
-    //     continue;
-    //   }
-    // }
   }
 
   turtlePosition = matrixWithNewXY(newPosition, lineEndX, lineEndY);
   mainController()->setTurtlePos(turtlePosition);
   mainController()->emitVertex();
-
-  // if (isFilling) {
-  //   fillVertices.push_back(lineEnd);
-  //   fillVertexColors.push_back(fillColor);
-  // } else if (penIsDown) {
-  //   mainController()->drawLine(lineStart, lineEnd, penColor, penColor);
-  // }
 }
 
 void Turtle::moveTurtleFence(const QTransform &newPosition) {

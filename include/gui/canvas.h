@@ -146,6 +146,7 @@ class Canvas : public QWidget {
   void elSetWriteInfo(const TurtleWriteInfo &info);
   void elDrawBoundedBackground();
   void elDrawUnboundedBackground();
+  void elDrawBackgroundImage();
   void elDrawTurtle();
   void elDrawPolyline(const QPolygonF &);
   void elDrawPolygon(const Polygon &p);

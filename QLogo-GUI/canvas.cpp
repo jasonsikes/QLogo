@@ -224,6 +224,7 @@ void Canvas::addLabel(QString aText)
     update();
 }
 
+
 void Canvas::addArc(qreal angle, qreal radius)
 {
     if ( ! penIsDown) return;
@@ -243,7 +244,6 @@ void Canvas::addArc(qreal angle, qreal radius)
     drawingElementList.push_back( { arcTypeID, deVariant(arc) } );
     update();
 }
-
 
 
 void Canvas::setTurtleIsVisible(bool isVisible)
@@ -330,6 +330,8 @@ void Canvas::drawCanvas()
 {
     painter->setRenderHint(QPainter::Antialiasing);
 
+    elDrawBackgroundImage();
+
     for (auto &drawCommand : drawingElementList) {
         switch(drawCommand.eID) {
         case labelTypeID:
@@ -372,11 +374,22 @@ void Canvas::elDrawBoundedBackground()
 }
 
 
+void Canvas::elDrawBackgroundImage()
+{
+    if (backgroundImage.isNull()) return;
+
+    QRectF rect(-boundsX, -boundsY, 2*boundsX, 2*boundsY);
+
+    painter->scale(1, -1);
+    painter->drawImage(rect, backgroundImage);
+    painter->scale(1, -1);
+}
+
+
 void Canvas::elDrawLabel(const Label &label)
 {
     painter->setFont(label.font);
-    // Because we flipped the coordinate system around to get Cartesian,
-    // we have to flip back to draw text properly
+
     painter->scale(1, -1);
     painter->drawStaticText(label.position, label.text);
     painter->scale(1, -1);

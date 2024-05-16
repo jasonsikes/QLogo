@@ -47,18 +47,6 @@ DatumPtr listFromColor(QColor c) {
   return DatumPtr(retval);
 }
 
-char axisFromDatumPtr(DatumPtr candidate)
-{
-  if (!candidate.isWord())
-      return 0;
-  if (candidate.wordValue()->rawValue().size() != 1)
-      return 0;
-  char retval = candidate.wordValue()->keyValue()[0].toLatin1();
-  if ((retval != 'X') && (retval != 'Y') && (retval != 'Z'))
-      return 0;
-  return retval;
-}
-
 // TURTLE MOTION
 
 
@@ -1140,12 +1128,10 @@ DatumPtr Kernel::excBackground(DatumPtr node) {
 /***DOC SAVEPICT
 SAVEPICT filename
 
-    command.  Writes an empty file with the specified filename.
-
-    [ This used to write an image file with the specified name containing the
-    contents of the graphics window in the format specified by the filename's
-    extension, but the current version of Qt prohibits reading the canvas
-    directly for security reasons. ]
+    command.  Writes a file with the specified name containing the
+    contents of the graphics window, in the format determined by the filename's
+    extension. The dimensions of the image are determined by the canvas bounds.
+    See EPSPICT to export Logo graphics for other programs.
 
 COD***/
 
@@ -1160,6 +1146,39 @@ DatumPtr Kernel::excSavepict(DatumPtr node) {
     return h.ret(Error::fileSystemRecoverable());
   }
   return nothing;
+}
+
+/***DOC LOADPICT
+LOADPICT filename
+
+    command.  Reads the image file with the specified filename and sets the image
+    as the canvas background. The image will be stretched, if necessary, to fit
+    the bounds of the canvas.
+
+    The filename may also be an empty list, in which case any image previously
+    set as the background will be cleared.
+
+COD***/
+
+DatumPtr Kernel::excLoadpict(DatumPtr node) {
+    ProcedureHelper h(this, node);
+    DatumPtr filenameP = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
+        if (candidate.isList() && (candidate.listValue()->size() == 0))
+            return true;
+        return candidate.isWord();
+    });
+    if (filenameP.isWord()) {
+        QString filepath = filepathForFilename(filenameP);
+        QImage image = QImage(filepath);
+        if (image.isNull()) {
+            return h.ret(Error::fileSystemRecoverable());
+        }
+
+        mainController()->setCanvasBackgroundImage(image);
+    } else {
+        mainController()->setCanvasBackgroundImage(QImage());
+    }
+    return nothing;
 }
 
 // MOUSE QUERIES
