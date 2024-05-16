@@ -452,6 +452,7 @@ void Canvas::resizeEvent(QResizeEvent *event)
     drawingMatrix.translate(width() / 2.0, height() / 2.0);
     drawingMatrix.scale(hwRatio, -hwRatio);
 
+    inverseDrawingMatrix = drawingMatrix.inverted();
 }
 
 
@@ -465,7 +466,7 @@ void Canvas::mousePressEvent(QMouseEvent *event) {
         buttonID = 2;
     if (button & Qt::LeftButton)
         buttonID = 1;
-    QPointF mousePos = event->position();
+    QPointF mousePos = inverseDrawingMatrix.map(event->position());
     if (  ! canvasIsBounded
         || ((mousePos.x() <= boundsX)
             && (mousePos.y() <= boundsY)
@@ -477,7 +478,7 @@ void Canvas::mousePressEvent(QMouseEvent *event) {
 }
 
 void Canvas::mouseMoveEvent(QMouseEvent *event) {
-    QPointF mousePos = event->position();
+    QPointF mousePos = inverseDrawingMatrix.map(event->position());
     if (mouseButtonPressed
         || ! canvasIsBounded
         || ((mousePos.x() <= boundsX)
@@ -489,6 +490,8 @@ void Canvas::mouseMoveEvent(QMouseEvent *event) {
 }
 
 void Canvas::mouseReleaseEvent(QMouseEvent *) {
-    mouseButtonPressed = false;
-    emit sendMouseReleasedSignal();
+    if (mouseButtonPressed) {
+        mouseButtonPressed = false;
+        emit sendMouseReleasedSignal();
+    }
 }
