@@ -1,6 +1,7 @@
 #include "controller/logocontrollergui.h"
 #include <QCoreApplication>
 #include <QCommandLineParser>
+#include <unistd.h>
 
 
 // Some global options.

@@ -187,7 +187,6 @@ void MainWindow::initialize()
     ui->mainConsole->setTextFontName(defaultFont.family());
     ui->mainCanvas->setLabelFontSize(defaultFont.pointSizeF());
     ui->mainCanvas->setLabelFontName(defaultFont.family());
-    ui->mainCanvas->setBackgroundColor(QColor(startingColor));
     setSplitterforMode(initScreenMode);
 
     sendMessage([&](QDataStream *out) {
@@ -195,13 +194,7 @@ void MainWindow::initialize()
         << (message_t)W_INITIALIZE
         << QFontDatabase::families()
         << defaultFont.family()
-        << (double)defaultFont.pointSizeF()
-        << ui->mainCanvas->minimumPenSize()
-        << ui->mainCanvas->maximumPenSize()
-        << ui->mainCanvas->xbound()
-        << ui->mainCanvas->ybound()
-        << QColor(startingColor)
-           ;
+        << (qreal)defaultFont.pointSizeF();
     });
 
 }
@@ -365,12 +358,12 @@ void MainWindow::readStandardOutput()
             ui->mainConsole->setTextFontColor(foreground,background);
             break;
         }
-        case C_CANVAS_CLEAR_SCREEN_TEXT:
+        case C_CONSOLE_CLEAR_SCREEN_TEXT:
             ui->mainConsole->setPlainText("");
             break;
         case C_CANVAS_UPDATE_TURTLE_POS:
             {
-              QMatrix4x4 matrix;
+              QTransform matrix;
               *dataStream >> matrix;
               ui->mainCanvas->setTurtleMatrix(matrix);
               introduceCanvas();
@@ -384,27 +377,46 @@ void MainWindow::readStandardOutput()
               introduceCanvas();
               break;
             }
-          case C_CANVAS_DRAW_LINE:
+          case C_CANVAS_EMIT_VERTEX:
             {
-              QVector3D a, b;
-              QColor color;
-              *dataStream
-                  >> a
-                  >> b
-                  >> color;
-              ui->mainCanvas->addLine(a, b, color);
+              ui->mainCanvas->emitVertex();
               introduceCanvas();
               break;
             }
-        case C_CANVAS_DRAW_POLYGON:
+        case C_CANVAS_SET_FOREGROUND_COLOR:
         {
-            QList<QVector3D> points;
-            QList<QColor> colors;
-            *dataStream
-                    >> points
-                    >> colors;
-            ui->mainCanvas->addPolygon(points, colors);
+            QColor color;
+            *dataStream >> color;
+            ui->mainCanvas->setForegroundColor(color);
             introduceCanvas();
+            break;
+        }
+        case C_CANVAS_SET_BACKGROUND_COLOR:
+        {
+            QColor color;
+            *dataStream >> color;
+            ui->mainCanvas->setBackgroundColor(color);
+            introduceCanvas();
+            break;
+        }
+        case C_CANVAS_SET_BACKGROUND_IMAGE:
+        {
+            QImage image;
+            *dataStream >> image;
+            ui->mainCanvas->setBackgroundImage(image);
+            introduceCanvas();
+            break;
+        }
+        case C_CANVAS_BEGIN_POLYGON:
+        {
+            QColor color;
+            *dataStream >> color;
+            ui->mainCanvas->beginPolygon(color);
+            break;
+        }
+        case C_CANVAS_END_POLYGON:
+        {
+            ui->mainCanvas->endPolygon();
             break;
         }
         case C_CANVAS_CLEAR_SCREEN:
@@ -444,22 +456,8 @@ void MainWindow::readStandardOutput()
         case C_CANVAS_DRAW_LABEL:
         {
             QString aString;
-            QVector3D aPosition;
-            QColor aColor;
-            *dataStream
-                    >> aString
-                    >> aPosition
-                    >> aColor;
-            ui->mainCanvas->addLabel(aString, aPosition, aColor);
-            introduceCanvas();
-            break;
-        }
-        case C_CANVAS_SET_BACKGROUND_COLOR:
-        {
-            QColor aColor;
-            *dataStream
-                    >> aColor;
-            ui->mainCanvas->setBackgroundColor(aColor);
+            *dataStream >> aString;
+            ui->mainCanvas->addLabel(aString);
             introduceCanvas();
             break;
         }
@@ -471,10 +469,19 @@ void MainWindow::readStandardOutput()
             break;
         }
         case C_CANVAS_SET_PENMODE:
+        {
             PenModeEnum newMode;
             *dataStream >> newMode;
             ui->mainCanvas->setPenmode(newMode);
             break;
+        }
+        case C_CANVAS_SET_PENUPDOWN:
+        {
+            bool penIsDown;
+            *dataStream >> penIsDown;
+            ui->mainCanvas->setPenIsDown(penIsDown);
+            break;
+        }
         case C_CANVAS_GET_IMAGE:
         {
             sendCanvasImage();
@@ -541,7 +548,7 @@ void MainWindow::beginReadChar()
 }
 
 
-void MainWindow::mouseclickedSlot(QVector2D position, int buttonID)
+void MainWindow::mouseclickedSlot(QPointF position, int buttonID)
 {
     sendMessage([&](QDataStream *out) {
         *out << (message_t)C_CANVAS_MOUSE_BUTTON_DOWN
@@ -551,7 +558,7 @@ void MainWindow::mouseclickedSlot(QVector2D position, int buttonID)
 }
 
 
-void MainWindow::mousemovedSlot(QVector2D position)
+void MainWindow::mousemovedSlot(QPointF position)
 {
     sendMessage([&](QDataStream *out) {
         *out << (message_t)C_CANVAS_MOUSE_MOVED
@@ -600,7 +607,7 @@ void MainWindow::sendConsoleCursorPosition()
 
 void MainWindow::sendCanvasImage()
 {
-    QImage image = ui->mainCanvas->getImage();
+    QImage image(ui->mainCanvas->getImage());
     sendMessage([&](QDataStream *out) {
         *out << (message_t)C_CANVAS_GET_IMAGE << image;
     });

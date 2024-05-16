@@ -22,23 +22,27 @@ class LogoControllerGUI : public LogoController
     int cursorRow;
     int cursorCol;
 
-    /// cursorOverwriteMode:
-    /// true:  cursor overwrites previously-written text
-    /// false: cursor inserts text (default)
+    // cursorOverwriteMode:
+    // true:  cursor overwrites previously-written text
+    // false: cursor inserts text (default)
     bool cursoreModeIsOverwrite = false;
 
     // Text returned from editor winow
     QString editorText;
 
-    double minPensize;
-    double maxPensize;
     double penSize;
 
-    double xbound;
-    double ybound;
+    double xbound = initialBoundX;
+    double ybound = initialBoundY;
     bool canvasIsBounded = true;
 
-    QColor currentBackgroundColor;
+    QVector2D mousePos = QVector2D(0,0);
+    QVector2D clickPos = QVector2D(0,0);
+    int lastButtonpressID = 0;
+    bool isMouseButtonDown = false;
+
+    QColor currentBackgroundColor = initialCanvasBackgroundColor;
+    QColor currentForegroundColor = initialCanvasForegroundColor;
     QImage canvasImage;
 
     QStringList allFontNames;
@@ -59,19 +63,23 @@ public:
 
     void initialize();
 
-    void printToConsole(const QString &s);
-    QString inputRawlineWithPrompt(const QString prompt);
+    void printToConsole(QString s);
+    QString inputRawlineWithPrompt(QString prompt);
     DatumPtr readchar();
-    const QString editText(const QString startText);
+    QString editText(QString startText);
 
-    void setTurtlePos(const QMatrix4x4 &newTurtlePos);
+    void setTurtlePos(const QTransform &newTurtlePos);
     void setTurtleIsVisible(bool isVisible);
     void setPenmode(PenModeEnum aMode);
-    void drawLine(const QVector3D &start, const QVector3D &end, const QColor &startColor, const QColor &endColor);
-    void drawPolygon(const QList<QVector3D> &points, const QList<QColor> &colors);
-    void clearScreen();
-    void drawLabel(const QString &, const QVector3D &, const QColor &);
-    void setCanvasBackgroundColor(QColor);
+    void emitVertex();
+    void setPenIsDown(bool penIsDown);
+    void setCanvasForegroundColor(const QColor &color);
+    void setCanvasBackgroundColor(const QColor &color);
+    void setCanvasBackgroundImage(QImage image);
+    void beginPolygon(const QColor &color);
+    void endPolygon();
+    void clearCanvas();
+    void drawLabel(QString);
     bool getIsMouseButtonDown();
     int getAndResetButtonID();
     QVector2D lastMouseclickPosition();
@@ -82,27 +90,27 @@ public:
     void setBounds(double x, double y);
     double boundX() { return xbound; }
     double boundY() { return ybound; }
-    QColor getCanvasBackgroundColor(void);
+    const QColor getCanvasBackgroundColor(void);
     void setIsCanvasBounded(bool aIsBounded);
     bool isCanvasBounded();
 
-    bool isPenSizeValid(double candidate) { return ((candidate >= minPensize) && (candidate <= maxPensize)); }
+    bool isPenSizeValid(double candidate) { return candidate >= 0; }
     QImage getCanvasImage();
     void setTextFontSize(double aSize);
     double getTextFontSize();
-    const QString getTextFontName();
-    void setTextFontName(const QString aFontName);
-    const QStringList getAllFontNames() { return allFontNames; }
-    QString addStandoutToString(const QString src);
+    QString getTextFontName();
+    void setTextFontName(QString aFontName);
+    QStringList getAllFontNames() { return allFontNames; }
+    QString addStandoutToString(QString src);
     void getTextCursorPos(int &row, int &col);
     void setTextCursorPos(int row, int col);
-    void setTextColor(const QColor foregroundColor, const QColor backgroundColor);
+    void setTextColor(const QColor &foregroundColor, const QColor &backgroundColor);
     void setCursorOverwriteMode(bool isOverwriteMode);
     bool cursorOverwriteMode();
     void setLabelFontSize(double aSize);
     double getLabelFontSize();
-    const QString getLabelFontName();
-    void setLabelFontName(const QString &aName);
+    QString getLabelFontName();
+    void setLabelFontName(QString aName);
 
     void setPensize(double);
     void mwait(unsigned long msecs);

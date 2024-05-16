@@ -75,7 +75,7 @@ DatumPtr Kernel::excForward(DatumPtr node) {
   ProcedureHelper h(this, node);
   double value = h.numberAtIndex(0);
 
-  mainTurtle()->move(0, value, 0);
+  mainTurtle()->forward(value);
 
   return nothing;
 }
@@ -95,7 +95,7 @@ DatumPtr Kernel::excBack(DatumPtr node) {
   ProcedureHelper h(this, node);
   double value = h.numberAtIndex(0);
 
-  mainTurtle()->move(0, -value, 0);
+  mainTurtle()->forward(-value);
 
   return nothing;
 }
@@ -114,7 +114,7 @@ DatumPtr Kernel::excLeft(DatumPtr node) {
   ProcedureHelper h(this, node);
   double value = h.numberAtIndex(0);
 
-  mainTurtle()->rotate(value, 'Z');
+  mainTurtle()->rotate(value);
 
   return nothing;
 }
@@ -133,7 +133,7 @@ DatumPtr Kernel::excRight(DatumPtr node) {
   ProcedureHelper h(this, node);
   double value = h.numberAtIndex(0);
 
-  mainTurtle()->rotate(-value, 'Z');
+  mainTurtle()->rotate(-value);
 
   return nothing;
 }
@@ -156,16 +156,12 @@ DatumPtr Kernel::excSetpos(DatumPtr node) {
       return false;
     if (!numbersFromList(v, candidate))
       return false;
-    if ((v.size() != 2) && (v.size() != 3))
+    if (v.size() != 2)
       return false;
     return true;
   });
 
-  if (v.size() == 3) {
-    mainTurtle()->setxyz(v[0], v[1], v[2]);
-  } else {
-    mainTurtle()->setxy(v[0], v[1]);
-  }
+  mainTurtle()->setxy(v[0], v[1]);
 
   return nothing;
 }
@@ -185,17 +181,6 @@ DatumPtr Kernel::excSetXY(DatumPtr node) {
   double y = h.numberAtIndex(1);
 
   mainTurtle()->setxy(x, y);
-
-  return nothing;
-}
-
-DatumPtr Kernel::excSetXYZ(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double x = h.numberAtIndex(0);
-  double y = h.numberAtIndex(1);
-  double z = h.numberAtIndex(2);
-
-  mainTurtle()->setxyz(x, y, z);
 
   return nothing;
 }
@@ -238,15 +223,6 @@ DatumPtr Kernel::excSetY(DatumPtr node) {
   return nothing;
 }
 
-DatumPtr Kernel::excSetZ(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double z = h.numberAtIndex(0);
-
-  mainTurtle()->setz(z);
-
-  return nothing;
-}
-
 
 /***DOC SETHEADING SETH
 SETHEADING degrees
@@ -261,23 +237,13 @@ COD***/
 DatumPtr Kernel::excSetheading(DatumPtr node) {
   ProcedureHelper h(this, node);
   double newHeading = h.numberAtIndex(0);
-  char axis = 'Z';
-  if (node.astnodeValue()->countOfChildren() == 2) {
-    h.validatedDatumAtIndex(1, [&axis](DatumPtr candidate) {
-        char cAxis = axisFromDatumPtr(candidate);
-        if (cAxis == 0)
-            return false;
-        axis = cAxis;
-        return true;
-    });
-  }
-  double oldHeading = mainTurtle()->getHeading(axis);
+  double oldHeading = mainTurtle()->getHeading();
 
   // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
   newHeading = 360 - newHeading;
 
   double adjustment = newHeading - oldHeading;
-  mainTurtle()->rotate(adjustment, axis);
+  mainTurtle()->rotate(adjustment);
   return nothing;
 }
 
@@ -292,7 +258,7 @@ COD***/
 
 DatumPtr Kernel::excHome(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainTurtle()->home();
+  mainTurtle()->moveToHome();
 
   return nothing;
 }
@@ -337,15 +303,12 @@ COD***/
 
 DatumPtr Kernel::excPos(DatumPtr node) {
   ProcedureHelper h(this, node);
-  double x, y, z;
-  mainTurtle()->getxyz(x, y, z);
+  double x, y;
+  mainTurtle()->getxy(x, y);
 
   List *retval = List::alloc();
   retval->append(DatumPtr(x));
   retval->append(DatumPtr(y));
-  if (h.countOfChildren() > 0) {
-    retval->append(DatumPtr(z));
-  }
   return h.ret(retval);
 }
 
@@ -359,17 +322,7 @@ COD***/
 
 DatumPtr Kernel::excHeading(DatumPtr node) {
   ProcedureHelper h(this, node);
-  char axis = 'Z';
-  if (node.astnodeValue()->countOfChildren() == 2) {
-    h.validatedDatumAtIndex(1, [&axis](DatumPtr candidate) {
-      char cAxis = axisFromDatumPtr(candidate);
-      if (cAxis == 0)
-        return false;
-      axis = cAxis;
-      return true;
-    });
-  }
-  double retval = mainTurtle()->getHeading(axis);
+  double retval = mainTurtle()->getHeading();
 
   // Heading is positive in the counter-clockwise direction.
   if (retval > 0)
@@ -391,7 +344,7 @@ COD***/
 DatumPtr Kernel::excTowards(DatumPtr node) {
   ProcedureHelper h(this, node);
   QVector<double> v;
-  double x, y, z;
+  double x, y;
   h.validatedDatumAtIndex(0, [&v, this](DatumPtr candidate) {
     if (!candidate.isList())
       return false;
@@ -401,7 +354,7 @@ DatumPtr Kernel::excTowards(DatumPtr node) {
       return false;
     return true;
   });
-  mainTurtle()->getxyz(x, y, z);
+  mainTurtle()->getxy(x, y);
   double retval = atan2(x - v[0], v[1] - y) * (180 / M_PI);
   if (retval < 0)
     retval += 360;
@@ -483,7 +436,7 @@ COD***/
 
 DatumPtr Kernel::excClean(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainController()->clearScreen();
+  mainController()->clearCanvas();
   return nothing;
 }
 
@@ -499,8 +452,8 @@ COD***/
 
 DatumPtr Kernel::excClearscreen(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainTurtle()->home(false);
-  mainController()->clearScreen();
+  mainTurtle()->moveToHome();
+  mainController()->clearCanvas();
 
   return nothing;
 }
@@ -524,11 +477,7 @@ DatumPtr Kernel::excWrap(DatumPtr node) {
   TurtleModeEnum newMode = turtleWrap;
   if (mainTurtle()->getMode() != newMode) {
     mainTurtle()->setMode(newMode);
-    if (mainController()->isCanvasBounded() == false) {
-        mainController()->setIsCanvasBounded(true);
-        mainTurtle()->home(false);
-        mainController()->clearScreen();
-    }
+      mainController()->setIsCanvasBounded(true);
   }
   return nothing;
 }
@@ -572,11 +521,7 @@ DatumPtr Kernel::excFence(DatumPtr node) {
   TurtleModeEnum newMode = turtleFence;
   if (mainTurtle()->getMode() != newMode) {
     mainTurtle()->setMode(newMode);
-    if (mainController()->isCanvasBounded() == false) {
-        mainController()->setIsCanvasBounded(true);
-        mainTurtle()->home(false);
-        mainController()->clearScreen();
-    }
+      mainController()->setIsCanvasBounded(true);
   }
   return nothing;
 }
@@ -674,10 +619,9 @@ COD***/
 DatumPtr Kernel::excLabel(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString text = h.wordAtIndex(0).wordValue()->printValue();
-  double x = 0, y = 0, z = 0;
-  mainTurtle()->getxyz(x, y, z);
-  QVector3D pos(x, y, z);
-  mainController()->drawLabel(text, pos, mainTurtle()->getPenColor());
+  qreal x = 0, y = 0;
+  mainTurtle()->getxy(x, y);
+  mainController()->drawLabel(text);
   return nothing;
 }
 
@@ -1209,7 +1153,7 @@ DatumPtr Kernel::excSavepict(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr filenameP = h.wordAtIndex(0);
 
-  const QString filepath = filepathForFilename(filenameP);
+  QString filepath = filepathForFilename(filenameP);
   QImage image = mainController()->getCanvasImage();
   bool isSuccessful = image.save(filepath);
   if (!isSuccessful) {

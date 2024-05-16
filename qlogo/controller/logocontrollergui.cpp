@@ -88,11 +88,6 @@ message_t LogoControllerGUI::getMessage()
         bufferStream >> allFontNames
                      >> textFontName
                      >> textFontSize
-                     >> minPensize
-                     >> maxPensize
-                     >> xbound
-                     >> ybound
-                     >> currentBackgroundColor
                 ;
         labelFontName = textFontName;
         break;
@@ -159,7 +154,7 @@ void LogoControllerGUI::waitForMessage(message_t expectedType)
 }
 
 
-void LogoControllerGUI::printToConsole(const QString &s)
+void LogoControllerGUI::printToConsole(QString s)
 {
     sendMessage([&](QDataStream *out) {
         *out << (message_t)C_CONSOLE_PRINT_STRING << s;
@@ -170,7 +165,7 @@ void LogoControllerGUI::printToConsole(const QString &s)
 }
 
 
-QString LogoControllerGUI::addStandoutToString(const QString src) {
+QString LogoControllerGUI::addStandoutToString(QString src) {
   QString retval = escapeString + src + escapeString;
   return retval;
 }
@@ -179,7 +174,7 @@ QString LogoControllerGUI::addStandoutToString(const QString src) {
 void LogoControllerGUI::clearScreenText()
 {
     sendMessage([&](QDataStream *out) {
-        *out << (message_t)C_CANVAS_CLEAR_SCREEN_TEXT;
+        *out << (message_t)C_CONSOLE_CLEAR_SCREEN_TEXT;
     });
 }
 
@@ -205,7 +200,7 @@ void LogoControllerGUI::setTextCursorPos(int row, int col)
 }
 
 
-void LogoControllerGUI::setTextColor(const QColor foregroundColor, const QColor backgroundColor)
+void LogoControllerGUI::setTextColor(const QColor &foregroundColor, const QColor &backgroundColor)
 {
     sendMessage([&](QDataStream *out) {
       *out << (message_t)C_CONSOLE_SET_TEXT_COLOR
@@ -229,7 +224,7 @@ bool LogoControllerGUI::cursorOverwriteMode()
 }
 
 
-const QString LogoControllerGUI::editText(const QString startText)
+QString LogoControllerGUI::editText(QString startText)
 {
     sendMessage([&](QDataStream *out) {
       *out << (message_t)C_CONSOLE_BEGIN_EDIT_TEXT << startText;
@@ -266,13 +261,13 @@ double LogoControllerGUI::getTextFontSize()
     return textFontSize;
 }
 
-const QString LogoControllerGUI::getTextFontName()
+QString LogoControllerGUI::getTextFontName()
 {
     return textFontName;
 }
 
 
-QString LogoControllerGUI::inputRawlineWithPrompt(const QString prompt)
+QString LogoControllerGUI::inputRawlineWithPrompt(QString prompt)
 {
     if (dribbleStream)
       *dribbleStream << prompt;
@@ -298,7 +293,7 @@ DatumPtr LogoControllerGUI::readchar()
   return DatumPtr(rawChar);
 }
 
-void LogoControllerGUI::setTurtlePos(const QMatrix4x4 &newTurtlePos)
+void LogoControllerGUI::setTurtlePos(const QTransform &newTurtlePos)
 {
   sendMessage([&](QDataStream *out) {
     *out << (message_t)C_CANVAS_UPDATE_TURTLE_POS << newTurtlePos;
@@ -348,37 +343,45 @@ void LogoControllerGUI::setTurtleIsVisible(bool isVisible)
     });
 }
 
-void LogoControllerGUI::drawLine(const QVector3D &start, const QVector3D &end, const QColor &startColor, const QColor &endColor)
+void LogoControllerGUI::setPenIsDown(bool penIsDown)
+{
+    sendMessage([&](QDataStream *out) {
+        *out << (message_t)C_CANVAS_SET_PENUPDOWN
+             << penIsDown;
+    });
+}
+
+void LogoControllerGUI::emitVertex()
 {
   sendMessage([&](QDataStream *out) {
-    *out << (message_t)C_CANVAS_DRAW_LINE
-         << start
-         << end
-         << startColor
-         << endColor;
-  });
-}
-
-void LogoControllerGUI::drawPolygon(const QList<QVector3D> &points, const QList<QColor> &colors)
-{
-    sendMessage([&](QDataStream *out) {
-      *out << (message_t)C_CANVAS_DRAW_POLYGON
-           << points
-           << colors;
+    *out << (message_t)C_CANVAS_EMIT_VERTEX;
     });
 }
 
-void LogoControllerGUI::drawLabel(const QString &aString, const QVector3D &aPosition, const QColor &aColor)
+void LogoControllerGUI::beginPolygon(const QColor &color)
 {
     sendMessage([&](QDataStream *out) {
-      *out << (message_t)C_CANVAS_DRAW_LABEL
-           << aString
-           << aPosition
-           << aColor;
+      *out << (message_t)C_CANVAS_BEGIN_POLYGON
+           << color;
     });
 }
 
-void LogoControllerGUI::setLabelFontName(const QString &aName)
+void LogoControllerGUI::endPolygon()
+{
+    sendMessage([&](QDataStream *out) {
+        *out << (message_t)C_CANVAS_END_POLYGON;
+    });
+}
+
+void LogoControllerGUI::drawLabel(QString aString)
+{
+    sendMessage([&](QDataStream *out) {
+        *out << (message_t)C_CANVAS_DRAW_LABEL
+             << aString;
+    });
+}
+
+void LogoControllerGUI::setLabelFontName(QString aName)
 {
     if (aName == labelFontName)
         return;
@@ -400,7 +403,7 @@ void LogoControllerGUI::setLabelFontSize(double aSize)
     });
 }
 
-const QString LogoControllerGUI::getLabelFontName()
+QString LogoControllerGUI::getLabelFontName()
 {
     return labelFontName;
 }
@@ -410,7 +413,7 @@ double LogoControllerGUI::getLabelFontSize()
     return labelFontSize;
 }
 
-void LogoControllerGUI::setCanvasBackgroundColor(QColor aColor)
+void LogoControllerGUI::setCanvasBackgroundColor(const QColor &aColor)
 {
     currentBackgroundColor = aColor;
     sendMessage([&](QDataStream *out) {
@@ -419,12 +422,31 @@ void LogoControllerGUI::setCanvasBackgroundColor(QColor aColor)
     });
 }
 
-QColor LogoControllerGUI::getCanvasBackgroundColor(void)
+void LogoControllerGUI::setCanvasForegroundColor(const QColor &aColor)
+{
+    if (currentForegroundColor != aColor) {
+        currentForegroundColor = aColor;
+        sendMessage([&](QDataStream *out) {
+            *out << (message_t)C_CANVAS_SET_FOREGROUND_COLOR
+                 << aColor;
+        });
+    }
+}
+
+void LogoControllerGUI::setCanvasBackgroundImage(QImage anImage)
+{
+    sendMessage([&](QDataStream *out) {
+        *out << (message_t)C_CANVAS_SET_BACKGROUND_IMAGE
+             << anImage;
+    });
+}
+
+const QColor LogoControllerGUI::getCanvasBackgroundColor(void)
 {
     return currentBackgroundColor;
 }
 
-void LogoControllerGUI::clearScreen()
+void LogoControllerGUI::clearCanvas()
 {
     sendMessage([&](QDataStream *out) {
       *out << (message_t)C_CANVAS_CLEAR_SCREEN;

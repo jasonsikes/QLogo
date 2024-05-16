@@ -256,7 +256,6 @@ void Kernel::initPalette() {
   palette.push_back(QColor(QStringLiteral("orange")));      // 14
   palette.push_back(QColor(QStringLiteral("grey")));        // 15
   palette.resize(paletteSize);
-  mainTurtle()->setPenColor(palette[7]);
 }
 
 void Kernel::initLibrary() { executeText(libraryStr); }

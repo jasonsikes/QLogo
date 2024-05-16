@@ -96,8 +96,8 @@ public slots:
   void splitterHasMovedSlot(int, int);
   void editingHasEndedSlot(QString text);
 
-  void mouseclickedSlot(const QVector2D position, int buttonID);
-  void mousemovedSlot(const QVector2D position);
+  void mouseclickedSlot(QPointF QPointF, int buttonID);
+  void mousemovedSlot(QPointF position);
   void mousereleasedSlot();
 
 };

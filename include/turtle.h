@@ -28,66 +28,63 @@
 
 #include <QColor>
 #include <QMatrix4x4>
+#include "QtGui/qtransform.h"
 #include "sharedconstants.h"
 
 #include "datum/datum.h"
-#include <math.h>
 
 class Turtle {
-  QMatrix4x4 matrix;
-  void preTurtleMovement();
-  void postTurtleMovement();
-  void drawTurtleWrap();
-  void drawTurtleFence();
-  void drawTurtleWindow();
+    QTransform turtlePosition;
+
+    void moveTurtle(const QTransform &newPosition);
+    void moveTurtleWrap(const QTransform &newPosition);
+    void moveTurtleFence(const QTransform &newPosition);
+    void moveTurtleWindow(const QTransform &newPosition);
+
   QColor penColor;
-  QVector3D lineStart;
   TurtleModeEnum mode = turtleFence;
   bool isFilling = false;
-  QList<QVector3D> fillVertices;
-  QList<QColor> fillVertexColors;
-  QColor fillColor;
-  PenModeEnum penMode = penModePaint;
-  double penSize = startingPensize;
 
-  bool isVisible;
+  PenModeEnum penMode = penModePaint;
+
+  double penSize = initialPensize;
+
+  bool turtleIsVisible;
   bool penIsDown;
 
 public:
   Turtle();
   ~Turtle();
 
-  const QMatrix4x4 &getMatrix(void) { return matrix; }
+  const QTransform &getMatrix(void) { return turtlePosition; }
 
-  bool isTurtleVisible() { return isVisible; }
-  void setIsTurtleVisible(bool aIsVisible) { isVisible = aIsVisible; }
+  bool isTurtleVisible() { return turtleIsVisible; }
+  void setIsTurtleVisible(bool aIsVisible) { turtleIsVisible = aIsVisible; }
 
   bool isPenDown() { return penIsDown; }
-  void setPenIsDown(bool aIsPenDown) { penIsDown = aIsPenDown; }
+  void setPenIsDown(bool aIsPenDown);
   void setPenMode(PenModeEnum aPenMode);
   PenModeEnum getPenMode();
 
-  void rotate(qreal angle, char axis);
-  void move(qreal x, qreal y, qreal z);
-  void setxyz(qreal x, qreal y, qreal z);
-  void getxyz(qreal &x, qreal &y, qreal &z);
+  void rotate(qreal angle);
+  void forward(qreal steps);
   void setMode(TurtleModeEnum newMode);
   TurtleModeEnum getMode();
-  qreal getHeading(char axis);
+  qreal getHeading();
+  void getxy(qreal &x, qreal &y);
   void setxy(qreal x, qreal y);
   void setx(qreal x);
   void sety(qreal y);
-  void setz(qreal z);
   void setPenColor(const QColor &c);
   void setPenSize(double aPenSize);
   bool isPenSizeValid(double aPenSize);
   double getPenSize();
   const QColor &getPenColor();
-  void home(bool canDraw = true);
+  void moveToHome();
   DatumPtr print();
   void drawArc(qreal angle, qreal radius);
 
-  void beginFillWithColor(const QColor &aFillColor);
+  void beginFillWithColor(const QColor &fillColor);
   void endFill();
 };
 

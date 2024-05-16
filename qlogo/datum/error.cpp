@@ -28,6 +28,7 @@
 #include "kernel.h"
 #include "datum/word.h"
 #include <QDebug>
+#include <unistd.h>
 #include "stringconstants.h"
 
 static DatumPool<Error> pool(3);

@@ -22,7 +22,7 @@ static void restoreSignals()
 
 #else
 
-// Not a part of LogoController because we are handling interrupts
+// Not a part of LogoController class because we are handling interrupts
 static void handle_signal(int sig)
 {
     switch(sig) {
@@ -87,7 +87,7 @@ LogoController::~LogoController()
 }
 
 
-void LogoController::printToConsole(const QString &s) {
+void LogoController::printToConsole(QString s) {
     *outStream << s;
     if (dribbleStream)
         *dribbleStream << s;
@@ -98,7 +98,7 @@ bool LogoController::atEnd() { return inStream->atEnd(); }
 bool LogoController::keyQueueHasChars() { return !inStream->atEnd(); }
 
 // This is READRAWLINE
-QString LogoController::inputRawlineWithPrompt(const QString prompt) {
+QString LogoController::inputRawlineWithPrompt(QString prompt) {
   QString retval;
   if ( ! inStream->atEnd())
   {
@@ -128,7 +128,7 @@ void LogoController::mwait(unsigned long msecs) {
   QThread::msleep(msecs);
 }
 
-bool LogoController::setDribble(const QString &filePath) {
+bool LogoController::setDribble(QString filePath) {
   if (filePath == "") {
     if (dribbleStream) {
       QIODevice *file = dribbleStream->device();
