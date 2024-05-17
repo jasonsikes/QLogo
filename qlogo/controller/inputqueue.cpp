@@ -19,6 +19,7 @@ void InputQueueThread::run()
     qint64 dataread;
     QByteArray message;
     forever {
+        qint64 datareadSofar = 0;
         dataread = read(STDIN_FILENO, &datalen, sizeof(qint64));
         if (dataread <= 0) {
             // I guess we're done.
@@ -26,12 +27,16 @@ void InputQueueThread::run()
         }
         Q_ASSERT(dataread == sizeof(qint64));
         message.resize(datalen);
-        dataread = read(STDIN_FILENO, message.data(), datalen);
-        if (dataread <= 0) {
-            // Like tears in rain, time to die.
-            return;
+        while (datalen > 0) {
+            dataread = read(STDIN_FILENO, message.data() + datareadSofar, datalen);
+            if (dataread <= 0) {
+                // Like tears in rain, time to die.
+                return;
+            }
+            datareadSofar += dataread;
+            datalen -= dataread;
         }
-        Q_ASSERT(dataread == datalen);
+        Q_ASSERT(0 == datalen);
         queueLock.lock();
         messageQueue.enqueue(message);
         queueLock.unlock();
