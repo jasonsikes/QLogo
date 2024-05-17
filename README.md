@@ -5,14 +5,12 @@
 
 ## Downloading
 
-I am not providing compiled versions of QLogo at this time. Windows
-and Macos systems require me to sign the binaries. This is a
-good thing. I still have yet to learn how to do that.
+I am not providing compiled versions of QLogo at this time. 
 
 ***
 
 QLogo is an interpreter for the Logo language written in C++ using
-Qt and OpenGL. It mimics (as much as I find reasonable) the UCBLogo
+Qt. It mimics (as much as I find reasonable) the UCBLogo
 interpreter developed by Brian Harvey at U.C. Berkeley.
 
 Copyright (C) 2017-2024 Jason Sikes
@@ -50,7 +48,7 @@ The differences between QLogo and UCBLogo are described in the
 
 ## Compiling
 
-Building QLogo requires Qt6 and CMake.
+Building QLogo requires Qt6.5 and CMake.
 
 ### To build in MacOS and Windows:
 
@@ -58,13 +56,13 @@ Simply open the CMakeLists.txt file in QtCreator and build within there.
 
 ### To build in Linux:
 
-If you have qtcreator, you can use qtcreator in Linux in the same mannor as
+If you have qtcreator, you can use qtcreator in Linux in the same manner as
 in Windows and MacOS described above.
 
 Otherwise, you can follow the standard CMake build procedure. First, create a
 build directory somewhere outside of the QLogo source directory.
 
-*In my case, since I keep my projects in a "Projects" directory under my home,
+*In my case, since I keep my projects in a "Projects" directory under my home directory,
 my QLogo directory can be found at "\~/Projects/QLogo". Thus, one place to create
 my "build" would be adjacent to my QLogo directory, "\~/Projects/build".*
 
@@ -72,24 +70,18 @@ Then have CMake create the build structure.
 
 
 ```
-
 $ cd ~/Projects
-
 $ mkdir build
-
 $ cmake -S QLogo -B build
 
 ```
 
-Then enter into your build directory and issue ```make```, and if all goes well,
-you can run ```make install```
+Then enter into your build directory and issue ```make```, and, optionally, if
+all goes well (it will) you can run ```make install```
 
 ```
-
 $ cd build
-
 $ make
-
 $ sudo make install
 ```
 
@@ -98,21 +90,24 @@ This will give you two executables:
 1. "qlogo": this is the Logo interpreter that can be run from a script or command line.
 
 2. "QLogo-GUI": this is the graphical user interface that will run qlogo and provides
-the turtle.
+the turtle and editor.
 
 ***
 
 ## Here are the nuances (they're mostly insignificant, I think):
 
 
-* Colors can be specified in one of three ways:
+* Colors can be specified in one of four ways:
 
    1. as a palette index (0 to 100), same as UCBLogo
 
-   2. as a list of 3 percentages, one for each of red, green, blue `[0 0 0]` is
-   black, `[100 100 100]` is white, also same as UCBLogo
+   2. as a list of three percentages, one for each of red, green, blue `[0 0 0]` is
+   black, `[100 100 100]` is white, also same as UCBLogo.
+   
+   3. as a list of **four** percentages, similar to Option 2 above, with the fourth
+   value being "alpha". `100` is fully opaque, and `0` means fully transparent.
 
-   3. as a named color from the X Color Database, e.g. `white` or `lemonchiffon`.
+   4. as a named color from the X Color Database, e.g. `white` or `lemonchiffon`.
    The X Color database can be found here:
    https://en.wikipedia.org/wiki/X11_color_names
 
@@ -147,7 +142,6 @@ the turtle.
   format. QLogo can save an image in the following formats: BMP, JPG/JPEG,
   PNG, PPM, XBM, and XPM
 
-
 * There is no facility yet for translation/internationalization. Yet.
 
 
@@ -176,13 +170,9 @@ the canvas. The other reason is that the Flood Fill
 algorithm can slow down window resizing. FILLED is still
 available.
 
-`LOADPICT`:
-
-This will be implemented soon.
-
 `EPSPICT`:
 
-This will be replaced by SVGPICT.
+This is replaced by SVGPICT.
 
 `CSLSLOAD`:
 
@@ -194,8 +184,8 @@ Not implemented yet.
 
 `SETEDITOR`:
 
-QLogo uses a built-in editor. If you run the logo program on the
-command line, no editor is available.
+The QLogo GUI has its own built-in editor. If you run the logo program from a
+command line, such as in a terminal, no editor is available.
 
 `SETLIBLOC`:
 
@@ -229,6 +219,10 @@ Ditto.
 
 ### The following commands are NEW:
 
+`SVGPICT` has been added and is a replacement for `EPSPICT`. `SVGPICT` will
+save the image on the canvas in Scalable Vector
+Graphics format.
+
 `ALLFONTS`:
 
 Returns a list of all the fonts available on your system.
@@ -247,26 +241,26 @@ Outputs either `INSERT` or `OVERWRITE`.
 
 `STANDOUT`:
 
-This works in QLogo by switching the font's foreground and background
+This works in the QLogo GUI by switching the font's foreground and background
 colors. It isn't implemented for text terminals.
+
+`SETBOUNDS`:
+
+The drawing canvas in the QLogo GUI is designed to be device and resolution
+independent. The user can stretch and resize the GUI window and its components
+without needing interaction or permission from the QLogo program. Therefore,
+the best way for the programmer to have control and the GUI to have responsiveness
+is to set the bounds programatically. The GUI then can squeeze or stretch the
+canvas to fit the window as needed.
+
+The coordinate system of the drawing canvas is Cartesian: the Origin `[0,0]` is
+always in the center. The range of the X-coordinate is between `-boundX` and
+`boundX`. The range of the Y-coordinate is between `-boundY` and `boundY`. For
+example, a bound set at `[350 150]` means that the turtle is visible if its
+X-coordinate is between -350 and 350 and its Y-coordinate is between -150 and
+150. See also `BOUNDS`.
 
 `BOUNDS`:
 
 Outputs a list of two numbers giving the maximum bounds (x,y)
-of the canvas.  e.g. bounds of [350 150] means that the
-turtle is visible if its X-coordinate is between -350 and 350
-and its Y-coordinate is between -150 and 150. The coordinate
-[0, 0] is always in the center. See `SETBOUNDS`
-
-`SETBOUNDS`:
-
-Takes two integers and sets outer bounds of the canvas.
-See `BOUNDS`.
-
-`MATRIX`:
-
-This exists for debugging and may be removed. Outputs a
-list of four lists, each sublist contains four numbers. This
-is the matrix that represents the current turtle state. In
-row-major order.
-
+of the canvas. See `SETBOUNDS`.

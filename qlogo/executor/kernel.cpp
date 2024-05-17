@@ -133,14 +133,15 @@ bool Kernel::colorFromDatumPtr(QColor &retval, DatumPtr colorP) {
     QVector<double> v;
     if (!numbersFromList(v, colorP.listValue()))
       return false;
-    if (v.size() != 3)
+    if ((v.size() != 3) && (v.size() != 4))
       return false;
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < v.size(); ++i) {
       if ((v[i] < 0) || (v[i] > 100))
         return false;
       v[i] *= 255.0 / 100;
     }
-    retval = QColor(v[0], v[1], v[2], 255);
+    double alpha = (v.size() == 4) ? v[3] : 255;
+    retval = QColor(v[0], v[1], v[2], alpha);
     return true;
   }
   return false;

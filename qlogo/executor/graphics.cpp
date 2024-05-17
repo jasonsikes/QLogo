@@ -926,7 +926,10 @@ SETPC color
     specifying the percent saturation of red, green, and blue in the desired
     color).
 
-    Option 3: a named color from the X Color Database, e.g. 'white' or
+    Option 3: RGBA values (a list of four nonnegative numbers less than 100
+    specifying the percent saturation of red, green, blue, and alpha).
+
+    Option 4: a named color from the X Color Database, e.g. 'white' or
     'lemonchiffon'. The X Color database can be found here:
     https://en.wikipedia.org/wiki/X11_color_names
 
