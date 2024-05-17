@@ -28,7 +28,6 @@
 #include "workspace/propertylists.h"
 #include "datum/datump.h"
 #include "datum/list.h"
-#include "datum/word.h"
 
 PropertyLists::PropertyLists() {}
 
@@ -82,9 +81,9 @@ bool PropertyLists::isPropertyList(const QString &plistname) {
 
 DatumPtr PropertyLists::allPLists(showContents_t showWhat) {
   List *retval = List::alloc();
-  for (auto &name : plists.keys()) {
-    if (shouldInclude(showWhat, name))
-      retval->append(DatumPtr(name));
+  for (auto name : plists.asKeyValueRange()) {
+    if (shouldInclude(showWhat, name.first))
+      retval->append(DatumPtr(name.first));
   }
   return DatumPtr(retval);
 }

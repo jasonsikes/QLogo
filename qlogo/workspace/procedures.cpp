@@ -26,6 +26,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "workspace/procedures.h"
+#include "datum/iterator.h"
 #include "kernel.h"
 #include "stringconstants.h"
 #include "datum/word.h"
@@ -851,16 +852,17 @@ bool Procedures::isDefined(QString procname) {
 DatumPtr Procedures::allProcedureNames(showContents_t showWhat) {
     List *retval = List::alloc();
 
-    for (auto &name : procedures.keys()) {
+    for (const auto &iter : procedures.asKeyValueRange()) {
 
-        if (shouldInclude(showWhat, name))
-            retval->append(DatumPtr(name));
+        if (shouldInclude(showWhat, iter.first))
+            retval->append(DatumPtr(iter.first));
     }
     return DatumPtr(retval);
 }
 
 void Procedures::eraseAllProcedures() {
-    for (auto &iter : procedures.keys()) {
+    QStringList names = procedures.keys();
+    for (auto &iter : names) {
         if (!isBuried(iter)) {
             procedures.remove(iter);
         }
@@ -870,8 +872,8 @@ void Procedures::eraseAllProcedures() {
 DatumPtr Procedures::allPrimitiveProcedureNames() {
     List *retval = List::alloc();
 
-    for (auto name : stringToCmd.keys()) {
-        retval->append(DatumPtr(name));
+    for (const auto &iter : stringToCmd.asKeyValueRange()) {
+        retval->append(DatumPtr(iter.first));
     }
     return DatumPtr(retval);
 }

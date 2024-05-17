@@ -684,8 +684,8 @@ DatumPtr Kernel::excAllopen(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = List::alloc();
   DatumPtr retvalP = h.ret(retval);
-  for (auto &filename : fileStreams.keys()) {
-    retval->append(DatumPtr(filename));
+  for (const auto &filename : fileStreams.asKeyValueRange()) {
+    retval->append(DatumPtr(filename.first));
   }
   return retvalP;
 }

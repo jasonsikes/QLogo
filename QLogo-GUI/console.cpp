@@ -241,7 +241,7 @@ void Console::processLineModeKeyPressEvent(QKeyEvent *event)
       }
       if (event->matches(QKeySequence::Cut) ||
           event->matches(QKeySequence::MoveToNextChar) ||
-          ((event->text() != "") && (event->text()[0] >= ' ')
+          ((event->text() != "") && (event->text().at(0) >= ' ')
               && (eventKey != Qt::Key_Backspace))) {
         QTextEdit::keyPressEvent(event);
         return;

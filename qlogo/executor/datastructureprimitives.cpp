@@ -798,7 +798,7 @@ DatumPtr Kernel::excAscii(DatumPtr node) {
   DatumPtr chr = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     return candidate.isWord() && candidate.wordValue()->size() == 1;
   });
-  QChar c = chr.printValue()[0];
+  QChar c = chr.printValue().at(0);
   int asc = c.unicode();
   return h.ret(asc);
 }

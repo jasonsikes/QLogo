@@ -143,9 +143,7 @@ void Array::setItem(int anIndex, DatumPtr aValue) {
 
 void Array::setButfirstItem(DatumPtr aValue) {
   Q_ASSERT(array.size() > 0);
-  auto estart = array.begin();
-  ++estart;
-  array.erase(estart, array.end());
+  array.erase(array.cbegin()+1, array.cend());
   array.reserve(aValue.arrayValue()->size() + 1);
   array.append(aValue.arrayValue()->array);
 }

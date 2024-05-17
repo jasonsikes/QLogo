@@ -28,7 +28,6 @@
 
 #include "datum/datump.h"
 #include "datum/list.h"
-#include "datum/iterator.h"
 #include "workspace/workspace.h"
 #include <QHash>
 
