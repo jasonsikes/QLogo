@@ -640,9 +640,8 @@ DatumPtr Kernel::excFulltext(DatumPtr node) {
 COPYDEF newname oldname
 
     command.  Makes "newname" a procedure identical to "oldname".
-    The latter may be a primitive.  If "newname" was already defined,
-    its previous definition is lost.  If "newname" was already a
-    primitive, the redefinition is not permitted.
+    Neither may be a primitive.  If "newname" was already defined,
+    its previous definition is lost.
 
     Note: dialects of Logo differ as to the order of inputs to COPYDEF.
     This dialect uses "MAKE order," not "NAME order."

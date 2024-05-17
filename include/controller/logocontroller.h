@@ -83,7 +83,7 @@ public:
   virtual void setCanvasBackgroundImage(QImage image) { Error::noGraphics(); }
   virtual const QColor getCanvasBackgroundColor(void) { Error::noGraphics(); return QColor(); }
   virtual QImage getCanvasImage() { Error::noGraphics(); return QImage(); }
-
+  virtual QByteArray getSvgImage() { Error::noGraphics(); return QByteArray(); }
   virtual bool getIsMouseButtonDown() { Error::noGraphics(); return false; }
   virtual int getAndResetButtonID() { Error::noGraphics();  return 0; }
   virtual QVector2D lastMouseclickPosition() { Error::noGraphics(); return QVector2D(); }

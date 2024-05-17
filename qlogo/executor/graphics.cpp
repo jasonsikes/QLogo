@@ -1131,7 +1131,7 @@ SAVEPICT filename
     command.  Writes a file with the specified name containing the
     contents of the graphics window, in the format determined by the filename's
     extension. The dimensions of the image are determined by the canvas bounds.
-    See EPSPICT to export Logo graphics for other programs.
+    See SVGPICT to export Logo graphics as SVG.
 
 COD***/
 
@@ -1178,6 +1178,35 @@ DatumPtr Kernel::excLoadpict(DatumPtr node) {
     } else {
         mainController()->setCanvasBackgroundImage(QImage());
     }
+    return nothing;
+}
+
+/***DOC SVGPICT
+SVGPICT filename
+
+    command.  Writes a file with the specified name containing the
+    contents of the graphics window in SVG format. The dimensions of the image
+    are determined by the canvas bounds.
+
+COD***/
+
+DatumPtr Kernel::excSvgpict(DatumPtr node) {
+    ProcedureHelper h(this, node);
+    DatumPtr filenameP = h.wordAtIndex(0);
+
+    QString filepath = filepathForFilename(filenameP);
+    QByteArray svgImage = mainController()->getSvgImage();
+
+    QFile file(filepath);
+    bool isSuccessful = file.open(QIODevice::WriteOnly);
+    if (!isSuccessful) {
+        return h.ret(Error::fileSystemRecoverable());
+    }
+
+    qint64 bytesWritten = file.write(svgImage);
+    if (bytesWritten != svgImage.size())
+        return h.ret(Error::fileSystemRecoverable());
+
     return nothing;
 }
 

@@ -44,6 +44,7 @@ class LogoControllerGUI : public LogoController
     QColor currentBackgroundColor = initialCanvasBackgroundColor;
     QColor currentForegroundColor = initialCanvasForegroundColor;
     QImage canvasImage;
+    QByteArray canvasSvg;
 
     QStringList allFontNames;
     QString textFontName;
@@ -97,6 +98,7 @@ public:
 
     bool isPenSizeValid(double candidate) { return candidate >= 0; }
     QImage getCanvasImage();
+    QByteArray getSvgImage();
     void setTextFontSize(double aSize);
     double getTextFontSize();
     QString getTextFontName();

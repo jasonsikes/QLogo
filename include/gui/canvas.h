@@ -233,6 +233,9 @@ public:
   /// Redraw the canvas onto an image object and return it.
   QImage getImage();
 
+  /// Draw the canvas onto an SVG object string and return it.
+  QByteArray getSvg();
+
   /// Clears the screen and removes all painting elements from the paintList.
   void clearScreen();
 

@@ -83,6 +83,7 @@ private:
   void openEditorWindow(const QString startingText);
 
   void sendCanvasImage();
+  void sendCanvasSvg();
 
 public slots:
   void readStandardOutput();

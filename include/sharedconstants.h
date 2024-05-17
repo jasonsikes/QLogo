@@ -76,6 +76,7 @@ enum messageCategory : message_t {
     C_CANVAS_SET_FONT_NAME,           // Set the label font name
     C_CANVAS_SET_FONT_SIZE,           // Set the label font size
     C_CANVAS_GET_IMAGE,               // Request a screenshot of the current image
+    C_CANVAS_GET_SVG,                 // Request a SVG representation of the current image
     C_CANVAS_MOUSE_BUTTON_DOWN,       // A mouse button was pressed
     C_CANVAS_MOUSE_MOVED,             // Mouse moved over the canvas
     C_CANVAS_MOUSE_BUTTON_UP,         // A mouse button was released

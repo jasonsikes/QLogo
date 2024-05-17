@@ -54,7 +54,7 @@ target_include_directories("${QLOGO_GUI}" PUBLIC
 
 target_link_libraries("${QLOGO_GUI}" PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::OpenGLWidgets
+    Qt${QT_VERSION_MAJOR}::Svg
     Qt${QT_VERSION_MAJOR}::Sql
 )
 

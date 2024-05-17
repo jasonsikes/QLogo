@@ -118,6 +118,9 @@ message_t LogoControllerGUI::getMessage()
     case C_CANVAS_GET_IMAGE:
         bufferStream >> canvasImage;
         break;
+    case C_CANVAS_GET_SVG:
+        bufferStream >> canvasSvg;
+        break;
     case C_CANVAS_MOUSE_BUTTON_DOWN:
         bufferStream >> clickPos
                      >> lastButtonpressID;
@@ -472,6 +475,18 @@ QImage LogoControllerGUI::getCanvasImage()
 
     return canvasImage;
 }
+
+QByteArray LogoControllerGUI::getSvgImage()
+{
+        sendMessage([&](QDataStream *out) {
+            *out << (message_t)C_CANVAS_GET_SVG;
+        });
+
+    waitForMessage(C_CANVAS_GET_SVG);
+
+    return canvasSvg;
+}
+
 
 bool LogoControllerGUI::getIsMouseButtonDown()
 {

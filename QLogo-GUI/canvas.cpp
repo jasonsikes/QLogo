@@ -30,6 +30,8 @@
 #include "math.h"
 #include <QColor>
 #include <QMouseEvent>
+#include <QSvgGenerator>
+#include <QBuffer>
 
 Arc::Arc(QPointF center, qreal a, qreal span, qreal radius)
 {
@@ -152,7 +154,8 @@ void Canvas::setPenIsDown(bool aPenIsDown)
     penIsDown = aPenIsDown;
 
     if (penIsDown) {
-        Q_ASSERT(lineGroup.size() == 0);
+        Q_ASSERT(lineGroup.size() < 2);
+        lineGroup.clear();
         lineGroup.push_back(pointFromTurtle());
     } else {
         pushLineGroup();
@@ -295,6 +298,26 @@ QImage Canvas::getImage()
     QPainter imagePainter = QPainter(&retval);
     retval.fill(backgroundColor);
     painter = &imagePainter;
+    painter->translate(boundsX, boundsY);
+    painter->scale(1, -1);
+
+    drawCanvas();
+
+    return retval;
+}
+
+
+QByteArray Canvas::getSvg()
+{
+    QByteArray retval;
+    QBuffer bufferStream(&retval);
+    QSvgGenerator generator;
+    generator.setOutputDevice(&bufferStream);
+
+    generator.setSize(QSize(boundsX * 2, boundsY * 2));
+
+    QPainter svgPainter = QPainter(&generator);
+    painter = &svgPainter;
     painter->translate(boundsX, boundsY);
     painter->scale(1, -1);
 

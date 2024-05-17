@@ -498,6 +498,11 @@ void MainWindow::readStandardOutput()
             sendCanvasImage();
             break;
         }
+        case C_CANVAS_GET_SVG:
+        {
+            sendCanvasSvg();
+            break;
+        }
         default:
             qDebug() <<"was not expecting" <<header;
             break;
@@ -621,6 +626,15 @@ void MainWindow::sendCanvasImage()
     QImage image(ui->mainCanvas->getImage());
     sendMessage([&](QDataStream *out) {
         *out << (message_t)C_CANVAS_GET_IMAGE << image;
+    });
+}
+
+
+void MainWindow::sendCanvasSvg()
+{
+    QByteArray svg = ui->mainCanvas->getSvg();
+    sendMessage([&](QDataStream *out) {
+        *out << (message_t)C_CANVAS_GET_SVG << svg;
     });
 }
 
