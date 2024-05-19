@@ -30,7 +30,7 @@
 #include "datum/list.h"
 #include "datum/iterator.h"
 #include <qdebug.h>
-#include "stringconstants.h"
+#include <QObject>
 
 QList<void *> aryVisited;
 QList<void *> otherAryVisited;
@@ -61,7 +61,7 @@ Array::~Array() {}
 Datum::DatumType Array::isa() { return Datum::arrayType; }
 
 QString Array::name() {
-  return k.array();
+  return QObject::tr("Array");
 }
 
 QString Array::printValue(bool fullPrintp, int printDepthLimit,

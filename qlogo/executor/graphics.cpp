@@ -30,7 +30,6 @@
 #include "datum/word.h"
 #include "datum/list.h"
 #include "datum/astnode.h"
-#include "stringconstants.h"
 #include "controller/logocontroller.h"
 
 #include <math.h>
@@ -735,13 +734,13 @@ DatumPtr Kernel::excScreenmode(DatumPtr node) {
   switch (mainController()->getScreenMode()) {
   case textScreenMode:
   case initScreenMode:
-    retval = k.textscreen();
+    retval = QObject::tr("textscreen");
     break;
   case fullScreenMode:
-    retval = k.fullscreen();
+    retval = QObject::tr("fullscreen");
     break;
   case splitScreenMode:
-    retval = k.splitscreen();
+    retval = QObject::tr("splitscreen");
     break;
   default:
     break;
@@ -763,13 +762,13 @@ DatumPtr Kernel::excTurtlemode(DatumPtr node) {
   QString retval;
   switch (mainTurtle()->getMode()) {
   case turtleWrap:
-    retval = k.wrap();
+    retval = QObject::tr("wrap");
     break;
   case turtleFence:
-    retval = k.fence();
+    retval = QObject::tr("fence");
     break;
   case turtleWindow:
-    retval = k.window();
+    retval = QObject::tr("window");
     break;
   default:
     qDebug() << "what mode is the turtle?";
@@ -1041,13 +1040,13 @@ DatumPtr Kernel::excPenmode(DatumPtr node) {
   QString retval;
   switch (pm) {
   case penModePaint:
-    retval = k.paint();
+    retval = QObject::tr("paint");
     break;
   case penModeReverse:
-    retval = k.reverse();
+    retval = QObject::tr("reverse");
     break;
   case penModeErase:
-    retval = k.erase();
+    retval = QObject::tr("erase");
     break;
   default:
     retval = "ERROR!!!";

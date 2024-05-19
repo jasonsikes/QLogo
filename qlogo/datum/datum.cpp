@@ -27,9 +27,9 @@
 
 #include "datum/datump.h"
 #include "datum/list.h"
-#include "stringconstants.h"
 #include <qdebug.h>
 #include <unistd.h>
+#include <QObject>
 
 // TODO: is this necessary?
 int countOfNodes = 0;
@@ -66,7 +66,7 @@ Datum::~Datum()
 QString Datum::printValue(bool, int, int) { return name(); }
 
 QString Datum::name(void) {
-  return k.nothing();
+  return QObject::tr("nothing");
 }
 
 QString Datum::showValue(bool, int, int) { return name(); }

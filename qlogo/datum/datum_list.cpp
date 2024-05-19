@@ -29,8 +29,8 @@
 #include "datum/list.h"
 #include "datum/array.h"
 #include "datum/iterator.h"
-#include "stringconstants.h"
 #include <qdebug.h>
+#include <QObject>
 
 QList<void *> listVisited;
 QList<void *> otherListVisited;
@@ -63,7 +63,7 @@ List::List(List *source) {
 Datum::DatumType List::isa() { return listType; }
 
 QString List::name() {
-  return k.list();
+  return QObject::tr("List");
 }
 
 QString List::printValue(bool fullPrintp, int printDepthLimit,

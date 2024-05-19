@@ -29,8 +29,8 @@
 #include "datum/datump.h"
 #include "datum/word.h"
 #include "datum/list.h"
-#include "stringconstants.h"
 #include <qdebug.h>
+#include <QObject>
 
 DatumPtr::DatumPtr() { d = &notADatum; }
 
@@ -49,7 +49,7 @@ DatumPtr::DatumPtr(const DatumPtr &other) noexcept {
 }
 
 DatumPtr::DatumPtr(bool b) {
-  d = new Word(b ? k.ktrue() : k.kfalse());
+  d = new Word(b ? QObject::tr("true") : QObject::tr("false"));
   d -> retain();
 }
 

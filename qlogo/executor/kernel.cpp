@@ -40,7 +40,6 @@
 #include "turtle.h"
 
 #include "controller/logocontroller.h"
-#include "stringconstants.h"
 
 // The maximum depth of procedure iterations before error is thrown.
 const int maxIterationDepth = 1000;
@@ -169,11 +168,11 @@ bool Kernel::getLineAndRunIt(bool shouldHandleError) {
   } catch (Error *e) {
     if (shouldHandleError) {
       if (e->tag.isWord()) {
-          if (e->tag.wordValue()->keyValue() == k.toplevel()) {
+          if (e->tag.wordValue()->keyValue() == QObject::tr("TOPLEVEL")) {
               sysPrint("\n");
               return true;
           }
-          if (e->tag.wordValue()->keyValue() == k.system()) {
+          if (e->tag.wordValue()->keyValue() == QObject::tr("SYSTEM")) {
               sysPrint("\n");
               mainController()->systemStop();
               return false;
@@ -209,7 +208,7 @@ DatumPtr Kernel::registerError(DatumPtr anError, bool allowErract,
       e->procedure = currentProcedure;
       e->instructionLine = currentLine;
     }
-    DatumPtr erractP = variables.datumForName(k.erract());
+    DatumPtr erractP = variables.datumForName(QObject::tr("ERRACT"));
     bool shouldPause = (currentProcedure != nothing) &&
         (erractP != nothing) && (erractP.datumValue()->size() > 0);
 
@@ -222,12 +221,12 @@ DatumPtr Kernel::registerError(DatumPtr anError, bool allowErract,
       DatumPtr retval = pause();
 
       if (retval == nothing)
-        Error::throwError(DatumPtr(k.toplevel()), nothing);
+        Error::throwError(DatumPtr(QObject::tr("TOPLEVEL")), nothing);
       if (allowRecovery) {
         return retval;
       }
       sysPrint(
-          k.errNoSay().arg(retval.printValue()));
+          QObject::tr("You don't say what to do with %1").arg(retval.printValue()));
       return nothing;
     } else {
       throw anError.errorValue();
@@ -267,14 +266,14 @@ void Kernel::initVariables(void)
 {
     DatumPtr platform(LOGOPLATFORM);
     DatumPtr version(LOGOVERSION);
-    DatumPtr trueDatumPtr(k.ktrue());
+    DatumPtr trueDatumPtr(QObject::tr("true"));
 
-    variables.setDatumForName(platform, k.logoPlatform());
-    variables.setDatumForName(version, k.logoVersion());
-    variables.setDatumForName(trueDatumPtr, k.allowGetSet());
-    variables.bury(k.logoPlatform());
-    variables.bury(k.logoVersion());
-    variables.bury(k.allowGetSet());
+    variables.setDatumForName(platform, QObject::tr("LOGOPLATFORM"));
+    variables.setDatumForName(version, QObject::tr("LOGOVERSION"));
+    variables.setDatumForName(trueDatumPtr, QObject::tr("ALLOWGETSET"));
+    variables.bury(QObject::tr("LOGOPLATFORM"));
+    variables.bury(QObject::tr("LOGOVERSION"));
+    variables.bury(QObject::tr("ALLOWGETSET"));
 }
 
 Kernel::Kernel() {
@@ -308,7 +307,7 @@ void Kernel::makeVarLocal(const QString &varname) {
   if (variables.size() <= 1)
     return;
   if (variables.isStepped(varname)) {
-    QString line = varname + k.shadowed_by_local();
+    QString line = varname + QObject::tr(" shadowed by local in procedure call");
     if (currentProcedure != nothing) {
       line +=
           " in " +
@@ -442,7 +441,10 @@ DatumPtr Kernel::executeProcedure(DatumPtr node) {
 
   while (retval.isASTNode()) {
       KernelMethod method = retval.astnodeValue()->kernel;
-      if ((method == &Kernel::excOutput) || (method == &Kernel::excDotMaybeoutput) || ((method == &Kernel::excStop) && (retval.astnodeValue()->countOfChildren() > 0))) {
+      if ((method == &Kernel::excOutput)
+          || (method == &Kernel::excDotMaybeoutput)
+          || ((method == &Kernel::excStop)
+              && (retval.astnodeValue()->countOfChildren() > 0))) {
           if (method == &Kernel::excOutput) {
               lastOutputCmd = retval.astnodeValue();
             }
@@ -518,12 +520,12 @@ SignalsEnum_t Kernel::interruptCheck()
     SignalsEnum_t latestSignal = mainController()->latestSignal();
     if (latestSignal == toplevelSignal) {
         if (currentProcedure != nothing)
-            Error::throwError(DatumPtr(k.toplevel()), nothing);
+            Error::throwError(DatumPtr(QObject::tr("TOPLEVEL")), nothing);
     } else if (latestSignal == pauseSignal) {
         if (currentProcedure != nothing)
             pause();
     } else if (latestSignal == systemSignal) {
-        Error::throwError(DatumPtr(k.system()), nothing);
+        Error::throwError(DatumPtr(QObject::tr("SYSTEM")), nothing);
     }
     return latestSignal;
 }
@@ -608,14 +610,14 @@ DatumPtr Kernel::excErrorNoGui(DatumPtr node) {
 
 DatumPtr Kernel::pause() {
     if (isPausing) {
-        sysPrint(k.already_pausing());
+        sysPrint(QObject::tr("Already Pausing"));
         return nothing;
     }
   ProcedureScope procScope(nothing);
   isPausing = true;
   StreamRedirect streamScope(stdioStream, stdioStream);
 
-  sysPrint(k.pausing());
+  sysPrint(QObject::tr("Pausing...\n"));
 
   forever {
     try {
@@ -624,14 +626,14 @@ DatumPtr Kernel::pause() {
         shouldContinue = getLineAndRunIt(false);
       }
     } catch (Error *e) {
-      if ((e->code == 14) && (e->tag.wordValue()->keyValue() == k.pause())) {
+      if ((e->code == 14) && (e->tag.wordValue()->keyValue() == QObject::tr("PAUSE"))) {
         DatumPtr retval = e->output;
         registerError(nothing);
         isPausing = false;
         return retval;
       }
-      if ((e->code == 14) && ((e->tag.wordValue()->keyValue() == k.toplevel())
-                              || (e->tag.wordValue()->keyValue() == k.system()))) {
+      if ((e->code == 14) && ((e->tag.wordValue()->keyValue() == QObject::tr("TOPLEVEL"))
+                              || (e->tag.wordValue()->keyValue() == QObject::tr("SYSTEM")))) {
           isPausing = false;
         throw e;
       }

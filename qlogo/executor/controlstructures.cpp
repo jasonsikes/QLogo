@@ -30,7 +30,7 @@
 #include "parser.h"
 #include "datum/word.h"
 #include "datum/astnode.h"
-#include "stringconstants.h"
+#include <QObject>
 
 // CONTROL STRUCTURES
 
@@ -128,7 +128,7 @@ COD***/
 DatumPtr Kernel::excBye(DatumPtr node) {
   ProcedureHelper h(this, node);
 
-  Error::throwError(DatumPtr(k.system()), nothing);
+  Error::throwError(DatumPtr(QObject::tr("SYSTEM")), nothing);
 
   return nothing;
 }
@@ -438,10 +438,10 @@ DatumPtr Kernel::excCatch(DatumPtr node) {
   QString tag = h.wordAtIndex(0).wordValue()->keyValue();
   DatumPtr instructionlist = h.listAtIndex(1);
   DatumPtr retval;
-  DatumPtr tempErract = variables.datumForName(k.erract());
+  DatumPtr tempErract = variables.datumForName(QObject::tr("ERRACT"));
 
-  if (variables.doesExist(k.erract())) {
-    variables.setDatumForName(nothing, k.erract());
+  if (variables.doesExist(QObject::tr("ERRACT"))) {
+    variables.setDatumForName(nothing, QObject::tr("ERRACT"));
   }
 
   try {
@@ -468,12 +468,12 @@ DatumPtr Kernel::excCatch(DatumPtr node) {
           }
       }
   } catch (Error *e) {
-    if (variables.doesExist(k.erract())) {
-      variables.setDatumForName(tempErract, k.erract());
+    if (variables.doesExist(QObject::tr("ERRACT"))) {
+      variables.setDatumForName(tempErract, QObject::tr("ERRACT"));
     }
 
-    if ((tag == k.error()) &&
-        (((e->code == 14) && (e->tag.wordValue()->keyValue()) == k.error()) ||
+    if ((tag == QObject::tr("ERROR")) &&
+        (((e->code == 14) && (e->tag.wordValue()->keyValue()) == QObject::tr("ERROR")) ||
          (e->code != 14))) {
       ProcedureHelper::setIsErroring(false);
       return nothing;
@@ -485,8 +485,8 @@ DatumPtr Kernel::excCatch(DatumPtr node) {
     throw e;
   }
 
-  if (variables.doesExist(k.erract())) {
-    variables.setDatumForName(tempErract, k.erract());
+  if (variables.doesExist(QObject::tr("ERRACT"))) {
+    variables.setDatumForName(tempErract, QObject::tr("ERRACT"));
   }
   return h.ret(retval);
 }
@@ -630,7 +630,7 @@ DatumPtr Kernel::excContinue(DatumPtr node) {
     }
   }
 
-  Error::throwError(DatumPtr(k.pause()), retval);
+  Error::throwError(DatumPtr(QObject::tr("PAUSE")), retval);
 
   return nothing;
 }
@@ -670,7 +670,7 @@ DatumPtr Kernel::excGoto(DatumPtr node) {
         .procedureValue()
         ->tagToLine.contains(tag);
   });
-  ASTNode *a = new ASTNode(k.kgoto());
+  ASTNode *a = new ASTNode(QObject::tr("GOTO"));
   a->kernel = &Kernel::excGotoToken;
   a->addChild(tagP);
   return DatumPtr(a);
@@ -775,7 +775,7 @@ DatumPtr Kernel::excApply(DatumPtr node) {
     ListIterator paramIter = params.listValue()->newIterator();
     while (paramIter.elementExists()) {
       DatumPtr p = paramIter.element();
-      DatumPtr a = DatumPtr(new ASTNode(k.literal()));
+      DatumPtr a = DatumPtr(new ASTNode(QObject::tr("literal")));
       a.astnodeValue()->kernel = &Kernel::executeLiteral;
       a.astnodeValue()->addChild(p);
       procnode->addChild(a);

@@ -29,7 +29,6 @@
 #include "datum/word.h"
 #include <QDebug>
 #include <unistd.h>
-#include "stringconstants.h"
 
 
 Error::Error()
@@ -52,174 +51,174 @@ Error * Error::createError(int aNumber, DatumPtr aErrorText) {
 }
 
 void Error::turtleOutOfBounds() {
-  mainKernel()->registerError(createError(ERR_TURTLE_BOUNDS, k.eOutBounds()), true);
+  mainKernel()->registerError(createError(ERR_TURTLE_BOUNDS, QObject::tr("Turtle out of bounds")), true);
 }
 
 DatumPtr Error::doesntLike(DatumPtr who, DatumPtr what, bool allowErract,
                          bool allowRecovery) {
-  QString message = k.eDontlike().arg(who.showValue(),what.showValue());
+  QString message = QObject::tr("%1 doesn't like %2 as input").arg(who.showValue(),what.showValue());
   return mainKernel()->registerError(createError(ERR_DOESNT_LIKE, message), allowErract,
                                    allowRecovery);
 }
 
 void Error::didntOutput(DatumPtr src, DatumPtr dest) {
-  QString message = k.eDidntOutput().arg(src.showValue(),dest.showValue());
+  QString message = QObject::tr("%1 didn't output to %2").arg(src.showValue(),dest.showValue());
   mainKernel()->registerError(createError(ERR_DIDNT_OUTPUT, message), true);
 }
 
 void Error::notEnough(DatumPtr dest) {
-  QString message = k.eNotEnoughInputs().arg(dest.showValue());
+  QString message = QObject::tr("not enough inputs to %1").arg(dest.showValue());
   mainKernel()->registerError(createError(ERR_NOT_ENOUGH_INPUTS, message));
 }
 
 void Error::tooMany(DatumPtr dest) {
-  QString message = k.eTooManyInputs().arg(dest.showValue());
+  QString message = QObject::tr("too many inputs to %1").arg(dest.showValue());
   mainKernel()->registerError(createError(ERR_TOO_MANY_INPUTS, message));
 }
 
 void Error::dontSay(DatumPtr datum) {
-  QString message = k.eNoSay().arg(datum.showValue());
+  QString message = QObject::tr("You don't say what to do with %1").arg(datum.showValue());
   mainKernel()->registerError(createError(ERR_DONT_SAY, message));
 }
 
 void Error::parenNf() {
-  mainKernel()->registerError(createError(ERR_PAREN_NF, k.eCParenNotFound()));
+  mainKernel()->registerError(createError(ERR_PAREN_NF, QObject::tr("')' not found")));
 }
 
 DatumPtr Error::noValueRecoverable(DatumPtr datum) {
-  QString message = k.eNoValue().arg(datum.showValue());
+  QString message = QObject::tr("%1 has no value").arg(datum.showValue());
   return mainKernel()->registerError(createError(ERR_NO_VALUE, message), true, true);
 }
 
 void Error::noValue(DatumPtr datum) {
-  QString message = k.eNoValue().arg(datum.showValue());
+  QString message = QObject::tr("%1 has no value").arg(datum.showValue());
   mainKernel()->registerError(createError(ERR_NO_VALUE, message));
 }
 
 void Error::noHow(DatumPtr dest) {
-  QString message = k.eNoHow().arg(dest.showValue());
+  QString message = QObject::tr("I don't know how to %1").arg(dest.showValue());
   mainKernel()->registerError(createError(ERR_NO_HOW, message));
 }
 
 DatumPtr Error::noHowRecoverable(DatumPtr dest) {
-  QString message = k.eNoHow().arg(dest.showValue());
+  QString message = QObject::tr("I don't know how to %1").arg(dest.showValue());
   return mainKernel()->registerError(createError(ERR_NO_HOW, message), true, true);
 }
 
 void Error::procDefined(DatumPtr procname) {
-  QString message = k.eAlreadyDefined().arg(procname.showValue());
+  QString message = QObject::tr("%1 is already defined").arg(procname.showValue());
   mainKernel()->registerError(createError(ERR_ALREADY_DEFINED, message));
 }
 
 void Error::isPrimative(DatumPtr procname) {
-  QString message = k.eIsPrimitive().arg(procname.showValue());
+  QString message = QObject::tr("%1 is a primitive").arg(procname.showValue());
   mainKernel()->registerError(createError(ERR_IS_PRIMATIVE, message));
 }
 
 void Error::toInProc(DatumPtr cmd) {
-  QString message = k.eCantInProcedure().arg(cmd.showValue());
+  QString message = QObject::tr("can't use %1 inside a procedure").arg(cmd.showValue());
   mainKernel()->registerError(createError(ERR_TO_IN_PROC, message));
 }
 
 void Error::toInPause(DatumPtr cmd) {
-  QString message = k.eCantInPause().arg(cmd.showValue());
+  QString message = QObject::tr("Can't use %1 within PAUSE").arg(cmd.showValue());
   mainKernel()->registerError(createError(ERR_TO_IN_PAUSE, message));
 }
 
 void Error::unexpectedCloseSquare() {
-  mainKernel()->registerError(createError(ERR_UNEXPECTED_SQUARE, k.eUnexpectedBracket()));
+  mainKernel()->registerError(createError(ERR_UNEXPECTED_SQUARE, QObject::tr("unexpected ']'")));
 }
 
 void Error::unexpectedCloseBrace() {
-  mainKernel()->registerError(createError(ERR_UNEXPECTED_BRACE, k.eUnexpectedBrace()));
+  mainKernel()->registerError(createError(ERR_UNEXPECTED_BRACE, QObject::tr("unexpected '}'")));
 }
 
 void Error::unexpectedCloseParen() {
-  mainKernel()->registerError(createError(ERR_UNEXPECTED_PAREN, k.eUnexpectedParen()));
+  mainKernel()->registerError(createError(ERR_UNEXPECTED_PAREN, QObject::tr("unexpected ')'")));
 }
 
 void Error::alreadyDribbling() {
-  mainKernel()->registerError(createError(ERR_ALREADY_DRIBBLING, k.eAlreadyDribbling()), true);
+  mainKernel()->registerError(createError(ERR_ALREADY_DRIBBLING, QObject::tr("already dribbling")), true);
 }
 
 void Error::fileSystem() {
-  mainKernel()->registerError(createError(ERR_FILESYSTEM, k.eFileError()));
+  mainKernel()->registerError(createError(ERR_FILESYSTEM, QObject::tr("File system error")));
 }
 
 DatumPtr Error::fileSystemRecoverable() {
-  return mainKernel()->registerError(createError(ERR_FILESYSTEM, k.eFileError()), true, true);
+  return mainKernel()->registerError(createError(ERR_FILESYSTEM, QObject::tr("File system error")), true, true);
 }
 
 void Error::listHasMultExp(DatumPtr list) {
-  QString message = k.eRunlistMultExpressions().arg(list.showValue());
+  QString message = QObject::tr("Runlist %1 has more than one expression").arg(list.showValue());
   mainKernel()->registerError(createError(ERR_LIST_HAS_MULTIPLE_EXPRESSIONS, message));
 }
 
 void Error::alreadyOpen(DatumPtr what) {
-  QString message = k.eAlreadyOpen().arg(what.showValue());
+  QString message = QObject::tr("File %1 already open").arg(what.showValue());
   mainKernel()->registerError(createError(ERR_ALREADY_OPEN, message), true);
 }
 
 void Error::cantOpen(DatumPtr what) {
-  QString message = k.eCantOpen().arg(what.showValue());
+  QString message = QObject::tr("I can't open file %1").arg(what.showValue());
   mainKernel()->registerError(createError(ERR_CANT_OPEN, message), true);
 }
 
 void Error::notOpen(DatumPtr what) {
-  QString message = k.eNotOpen().arg(what.showValue());
+  QString message = QObject::tr("File %1 not open").arg(what.showValue());
   mainKernel()->registerError(createError(ERR_NOT_OPEN, message), true);
 }
 
 void Error::alreadyFilling() {
-  mainKernel()->registerError(createError(ERR_ALREADY_FILLING, k.eAlreadyFilling()), true);
+  mainKernel()->registerError(createError(ERR_ALREADY_FILLING, QObject::tr("Already filling")), true);
 }
 
 void Error::noGraphics() {
-  mainKernel()->registerError(createError(ERR_NO_GRAPHICS, k.eNoGraphics()), true);
+  mainKernel()->registerError(createError(ERR_NO_GRAPHICS, QObject::tr("Graphics not initialized")), true);
 }
 
 DatumPtr Error::noTest(DatumPtr what) {
-  QString message = k.eNoTest().arg(what.showValue());
+  QString message = QObject::tr("%1 without TEST").arg(what.showValue());
   return mainKernel()->registerError(createError(ERR_NO_TEST, message), true, true);
 }
 
 void Error::notInsideProcedure(DatumPtr what) {
-  QString message = k.eNotInProcedure().arg(what.showValue());
+  QString message = QObject::tr("Can only use %1 inside a procedure").arg(what.showValue());
   mainKernel()->registerError(createError(ERR_NOT_INSIDE_PROCEDURE, message));
 }
 
 DatumPtr Error::macroReturned(DatumPtr aOutput) {
-  QString message = k.eNotList().arg(aOutput.showValue());
+  QString message = QObject::tr("Macro returned %1 instead of a list").arg(aOutput.showValue());
   return mainKernel()->registerError(createError(ERR_MACRO_RETURNED_NOT_LIST, message), true, true);
 }
 
 DatumPtr Error::insideRunresult(DatumPtr cmdName) {
-  QString message = k.eCantInsideRunresult().arg(cmdName.showValue());
+  QString message = QObject::tr("Can't use %1 inside RUNRESULT").arg(cmdName.showValue());
   return mainKernel()->registerError(createError(ERR_INSIDE_RUNRESULT, message), true, true);
 }
 
 DatumPtr Error::noApply(DatumPtr what) {
-  QString message = k.eCantNoApply().arg(what.showValue());
+  QString message = QObject::tr("Can't use %1 without APPLY").arg(what.showValue());
   return mainKernel()->registerError(createError(ERR_NO_APPLY, message), true, true);
 }
 
 void Error::stackOverflow()
 {
-  mainKernel()->registerError(createError(ERR_STACK_OVERFLOW, k.eStackOverflow()));
+  mainKernel()->registerError(createError(ERR_STACK_OVERFLOW, QObject::tr("Stack overflow")));
 }
 
 void Error::throwError(DatumPtr aTag, DatumPtr aOutput) {
   Error *e;
-  if (aTag.wordValue()->keyValue() == k.error()) {
+  if (aTag.wordValue()->keyValue() == QObject::tr("ERROR")) {
     if (aOutput == nothing) {
-          e = createError(ERR_THROW, k.throwError());
+          e = createError(ERR_THROW, QObject::tr("Throw \"Error"));
       e->tag = aTag;
     } else {
       e = createError(ERR_CUSTOM_THROW, aOutput);
       e->tag = aTag;
     }
   } else {
-    QString message = k.eNoCatch().arg(aTag.showValue());
+    QString message = QObject::tr("Can't find catch tag for %1").arg(aTag.showValue());
     e = createError(ERR_NO_CATCH, message);
     e->tag = aTag;
     e->output = aOutput;

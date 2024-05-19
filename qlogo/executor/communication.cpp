@@ -32,7 +32,6 @@
 #include "datum/list.h"
 
 #include "controller/logocontroller.h"
-#include "stringconstants.h"
 
 #include <QByteArray> // for SHELL
 #include <QDir>
@@ -1229,6 +1228,6 @@ COD***/
 DatumPtr Kernel::excCursorMode(DatumPtr node) {
   ProcedureHelper h(this, node);
   bool mode = mainController()->cursorOverwriteMode();
-  QString retval = mode ? k.overwrite() : k.insert();
+  QString retval = mode ? QObject::tr("OVERWRITE") : QObject::tr("INSERT");
   return h.ret(retval);
 }

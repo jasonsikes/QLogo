@@ -22,7 +22,6 @@ set(QLOGO_SOURCES
   misc/help.cpp
   misc/library.cpp
   misc/procedurehelper.cpp
-  misc/stringconstants.cpp
   misc/turtle.cpp
   parser/parser.cpp
   parser/runparser.cpp
@@ -48,7 +47,6 @@ set(QLOGO_SOURCES
   ../include/kernel.h
   ../include/library.h
   ../include/procedurehelper.h
-  ../include/stringconstants.h
   ../include/turtle.h
   ../include/parser.h
   ../include/runparser.h

@@ -33,7 +33,6 @@
 #include "datum/word.h"
 #include <QDebug>
 #include <math.h>
-#include "stringconstants.h"
 
 
 bool isErroring = false;
@@ -82,10 +81,10 @@ ProcedureHelper::~ProcedureHelper() {
     if (!isErroring) {
       if (returnValue == nothing) {
         parent->sysPrint(indent() + node->nodeName.wordValue()->printValue() +
-                         k._stops());
+                         QObject::tr(" stops\n"));
       } else {
         parent->sysPrint(indent() + node->nodeName.wordValue()->printValue() +
-                         k._outputs_() + returnValue.datumValue()->printValue() +
+                         QObject::tr(" outputs ") + returnValue.datumValue()->printValue() +
                          '\n');
       }
     }
@@ -156,9 +155,9 @@ bool ProcedureHelper::boolAtIndex(int index, bool canRunlist) {
   DatumPtr retval = wordAtIndex(index, canRunlist);
   forever {
     QString word = retval.wordValue()->keyValue();
-    if (word == k.kctrue())
+    if (word == QObject::tr("TRUE"))
       return true;
-    if (word == k.kcfalse())
+    if (word == QObject::tr("FALSE"))
       return false;
     do {
       retval = reject(retval, true, true);

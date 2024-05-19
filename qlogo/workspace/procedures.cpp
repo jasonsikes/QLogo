@@ -28,12 +28,12 @@
 #include "workspace/procedures.h"
 #include "datum/iterator.h"
 #include "kernel.h"
-#include "stringconstants.h"
 #include "datum/word.h"
 #include "datum/array.h"
 #include "error.h"
 #include "datum/astnode.h"
 #include <QDateTime>
+#include "QApplication"
 
 // return the method pointer if a GUI is available,
 // else return a pointer to the excErrorNoGUI method
@@ -65,370 +65,370 @@ Procedures::Procedures() {
     // until end of line
     // (MAX = -1)     = All parameters are consumed within
     // parens
-    stringToCmd[k.cword()] = {&Kernel::excWord, 0, 2, -1};
-    stringToCmd[k.clist()] = {&Kernel::excList, 0, 2, -1};
-    stringToCmd[k.sentence()] = {&Kernel::excSentence, 0, 2, -1};
-    stringToCmd[k.se()] = {&Kernel::excSentence, 0, 2, -1};
-    stringToCmd[k.fput()] = {&Kernel::excFput, 2, 2, 2};
-    stringToCmd[k.lput()] = {&Kernel::excLput, 2, 2, 2};
-    stringToCmd[k.carray()] = {&Kernel::excArray, 1, 1, 2};
-    stringToCmd[k.listtoarray()] = {&Kernel::excListtoarray, 1, 1, 2};
-    stringToCmd[k.arraytolist()] = {&Kernel::excArraytolist, 1, 1, 1};
-    stringToCmd[k.readlist()] = {&Kernel::excReadlist, 0, 0, 0};
-    stringToCmd[k.rl()] = {&Kernel::excReadlist, 0, 0, 0};
-    stringToCmd[k.readword()] = {&Kernel::excReadword, 0, 0, 0};
-    stringToCmd[k.rw()] = {&Kernel::excReadword, 0, 0, 0};
-    stringToCmd[k.readrawline()] = {&Kernel::excReadrawline, 0, 0, 0};
-    stringToCmd[k.readchar()] = {&Kernel::excReadchar, 0, 0, 0};
-    stringToCmd[k.rc()] = {&Kernel::excReadchar, 0, 0, 0};
-    stringToCmd[k.readchars()] = {&Kernel::excReadchars, 1, 1, 1};
-    stringToCmd[k.rcs()] = {&Kernel::excReadchars, 1, 1, 1};
-    stringToCmd[k.shell()] = {&Kernel::excShell, 1, 1, 2};
+    stringToCmd[QObject::tr("WORD")] = {&Kernel::excWord, 0, 2, -1};
+    stringToCmd[QObject::tr("LIST")] = {&Kernel::excList, 0, 2, -1};
+    stringToCmd[QObject::tr("SENTENCE")] = {&Kernel::excSentence, 0, 2, -1};
+    stringToCmd[QObject::tr("SE")] = {&Kernel::excSentence, 0, 2, -1};
+    stringToCmd[QObject::tr("FPUT")] = {&Kernel::excFput, 2, 2, 2};
+    stringToCmd[QObject::tr("LPUT")] = {&Kernel::excLput, 2, 2, 2};
+    stringToCmd[QObject::tr("ARRAY")] = {&Kernel::excArray, 1, 1, 2};
+    stringToCmd[QObject::tr("LISTTOARRAY")] = {&Kernel::excListtoarray, 1, 1, 2};
+    stringToCmd[QObject::tr("ARRAYTOLIST")] = {&Kernel::excArraytolist, 1, 1, 1};
+    stringToCmd[QObject::tr("READLIST")] = {&Kernel::excReadlist, 0, 0, 0};
+    stringToCmd[QObject::tr("RL")] = {&Kernel::excReadlist, 0, 0, 0};
+    stringToCmd[QObject::tr("READWORD")] = {&Kernel::excReadword, 0, 0, 0};
+    stringToCmd[QObject::tr("RW")] = {&Kernel::excReadword, 0, 0, 0};
+    stringToCmd[QObject::tr("READRAWLINE")] = {&Kernel::excReadrawline, 0, 0, 0};
+    stringToCmd[QObject::tr("READCHAR")] = {&Kernel::excReadchar, 0, 0, 0};
+    stringToCmd[QObject::tr("RC")] = {&Kernel::excReadchar, 0, 0, 0};
+    stringToCmd[QObject::tr("READCHARS")] = {&Kernel::excReadchars, 1, 1, 1};
+    stringToCmd[QObject::tr("RCS")] = {&Kernel::excReadchars, 1, 1, 1};
+    stringToCmd[QObject::tr("SHELL")] = {&Kernel::excShell, 1, 1, 2};
 
-    stringToCmd[k.setprefix()] = {&Kernel::excSetprefix, 1, 1, 1};
-    stringToCmd[k.prefix()] = {&Kernel::excPrefix, 0, 0, 0};
-    stringToCmd[k.openread()] = {&Kernel::excOpenread, 1, 1, 1};
-    stringToCmd[k.openwrite()] = {&Kernel::excOpenwrite, 1, 1, 1};
-    stringToCmd[k.openappend()] = {&Kernel::excOpenappend, 1, 1, 1};
-    stringToCmd[k.openupdate()] = {&Kernel::excOpenupdate, 1, 1, 1};
-    stringToCmd[k.allopen()] = {&Kernel::excAllopen, 0, 0, 0};
-    stringToCmd[k.setread()] = {&Kernel::excSetread, 1, 1, 1};
-    stringToCmd[k.setwrite()] = {&Kernel::excSetwrite, 1, 1, 1};
-    stringToCmd[k.reader()] = {&Kernel::excReader, 0, 0, 0};
-    stringToCmd[k.writer()] = {&Kernel::excWriter, 0, 0, 0};
-    stringToCmd[k.readpos()] = {&Kernel::excReadpos, 0, 0, 0};
-    stringToCmd[k.writepos()] = {&Kernel::excWritepos, 0, 0, 0};
-    stringToCmd[k.setreadpos()] = {&Kernel::excSetreadpos, 1, 1, 1};
-    stringToCmd[k.setwritepos()] = {&Kernel::excSetwritepos, 1, 1, 1};
-    stringToCmd[k.eofp()] = {&Kernel::excEofp, 0, 0, 0};
-    stringToCmd[k.eofq()] = {&Kernel::excEofp, 0, 0, 0};
-    stringToCmd[k.keyp()] = {&Kernel::excKeyp, 0, 0, 0};
-    stringToCmd[k.keyq()] = {&Kernel::excKeyp, 0, 0, 0};
-    stringToCmd[k.dribble()] = {&Kernel::excDribble, 1, 1, 1};
-    stringToCmd[k.nodribble()] = {&Kernel::excNodribble, 0, 0, 0};
+    stringToCmd[QObject::tr("SETPREFIX")] = {&Kernel::excSetprefix, 1, 1, 1};
+    stringToCmd[QObject::tr("PREFIX")] = {&Kernel::excPrefix, 0, 0, 0};
+    stringToCmd[QObject::tr("OPENREAD")] = {&Kernel::excOpenread, 1, 1, 1};
+    stringToCmd[QObject::tr("OPENWRITE")] = {&Kernel::excOpenwrite, 1, 1, 1};
+    stringToCmd[QObject::tr("OPENAPPEND")] = {&Kernel::excOpenappend, 1, 1, 1};
+    stringToCmd[QObject::tr("OPENUPDATE")] = {&Kernel::excOpenupdate, 1, 1, 1};
+    stringToCmd[QObject::tr("ALLOPEN")] = {&Kernel::excAllopen, 0, 0, 0};
+    stringToCmd[QObject::tr("SETREAD")] = {&Kernel::excSetread, 1, 1, 1};
+    stringToCmd[QObject::tr("SETWRITE")] = {&Kernel::excSetwrite, 1, 1, 1};
+    stringToCmd[QObject::tr("READER")] = {&Kernel::excReader, 0, 0, 0};
+    stringToCmd[QObject::tr("WRITER")] = {&Kernel::excWriter, 0, 0, 0};
+    stringToCmd[QObject::tr("READPOS")] = {&Kernel::excReadpos, 0, 0, 0};
+    stringToCmd[QObject::tr("WRITEPOS")] = {&Kernel::excWritepos, 0, 0, 0};
+    stringToCmd[QObject::tr("SETREADPOS")] = {&Kernel::excSetreadpos, 1, 1, 1};
+    stringToCmd[QObject::tr("SETWRITEPOS")] = {&Kernel::excSetwritepos, 1, 1, 1};
+    stringToCmd[QObject::tr("EOFP")] = {&Kernel::excEofp, 0, 0, 0};
+    stringToCmd[QObject::tr("EOF?")] = {&Kernel::excEofp, 0, 0, 0};
+    stringToCmd[QObject::tr("KEYP")] = {&Kernel::excKeyp, 0, 0, 0};
+    stringToCmd[QObject::tr("KEY?")] = {&Kernel::excKeyp, 0, 0, 0};
+    stringToCmd[QObject::tr("DRIBBLE")] = {&Kernel::excDribble, 1, 1, 1};
+    stringToCmd[QObject::tr("NODRIBBLE")] = {&Kernel::excNodribble, 0, 0, 0};
 
-    stringToCmd[k.cleartext()] = {&Kernel::excCleartext, 0, 0, 0};
-    stringToCmd[k.ct()] = {&Kernel::excCleartext, 0, 0, 0};
-    stringToCmd[k.cursorinsert()] = {ifGUI(&Kernel::excCursorInsert), 0, 0, 0};
-    stringToCmd[k.cursoroverwrite()] = {ifGUI(&Kernel::excCursorOverwrite), 0, 0, 0};
-    stringToCmd[k.cursormode()] = {ifGUI(&Kernel::excCursorMode), 0, 0, 0};
+    stringToCmd[QObject::tr("CLEARTEXT")] = {&Kernel::excCleartext, 0, 0, 0};
+    stringToCmd[QObject::tr("CT")] = {&Kernel::excCleartext, 0, 0, 0};
+    stringToCmd[QObject::tr("CURSORINSERT")] = {ifGUI(&Kernel::excCursorInsert), 0, 0, 0};
+    stringToCmd[QObject::tr("CURSOROVERWRITE")] = {ifGUI(&Kernel::excCursorOverwrite), 0, 0, 0};
+    stringToCmd[QObject::tr("CURSORMODE")] = {ifGUI(&Kernel::excCursorMode), 0, 0, 0};
 
-    stringToCmd[k.close()] = {&Kernel::excClose, 1, 1, 1};
-    stringToCmd[k.closeall()] = {&Kernel::excCloseall, 0, 0, 0};
-    stringToCmd[k.erasefile()] = {&Kernel::excErasefile, 1, 1, 1};
-    stringToCmd[k.erf()] = {&Kernel::excErasefile, 1, 1, 1};
+    stringToCmd[QObject::tr("CLOSE")] = {&Kernel::excClose, 1, 1, 1};
+    stringToCmd[QObject::tr("CLOSEALL")] = {&Kernel::excCloseall, 0, 0, 0};
+    stringToCmd[QObject::tr("ERASEFILE")] = {&Kernel::excErasefile, 1, 1, 1};
+    stringToCmd[QObject::tr("ERF")] = {&Kernel::excErasefile, 1, 1, 1};
 
-    stringToCmd[k.first()] = {&Kernel::excFirst, 1, 1, 1};
-    stringToCmd[k.last()] = {&Kernel::excLast, 1, 1, 1};
-    stringToCmd[k.butfirst()] = {&Kernel::excButfirst, 1, 1, 1};
-    stringToCmd[k.bf()] = {&Kernel::excButfirst, 1, 1, 1};
-    stringToCmd[k.firsts()] = {&Kernel::excFirsts, 1, 1, 1};
-    stringToCmd[k.butfirsts()] = {&Kernel::excButfirsts, 1, 1, 1};
-    stringToCmd[k.bfs()] = {&Kernel::excButfirsts, 1, 1, 1};
-    stringToCmd[k.butlast()] = {&Kernel::excButlast, 1, 1, 1};
-    stringToCmd[k.bl()] = {&Kernel::excButlast, 1, 1, 1};
-    stringToCmd[k.item()] = {&Kernel::excItem, 2, 2, 2};
+    stringToCmd[QObject::tr("FIRST")] = {&Kernel::excFirst, 1, 1, 1};
+    stringToCmd[QObject::tr("LAST")] = {&Kernel::excLast, 1, 1, 1};
+    stringToCmd[QObject::tr("BUTFIRST")] = {&Kernel::excButfirst, 1, 1, 1};
+    stringToCmd[QObject::tr("BF")] = {&Kernel::excButfirst, 1, 1, 1};
+    stringToCmd[QObject::tr("FIRSTS")] = {&Kernel::excFirsts, 1, 1, 1};
+    stringToCmd[QObject::tr("BUTFIRSTS")] = {&Kernel::excButfirsts, 1, 1, 1};
+    stringToCmd[QObject::tr("BFS")] = {&Kernel::excButfirsts, 1, 1, 1};
+    stringToCmd[QObject::tr("BUTLAST")] = {&Kernel::excButlast, 1, 1, 1};
+    stringToCmd[QObject::tr("BL")] = {&Kernel::excButlast, 1, 1, 1};
+    stringToCmd[QObject::tr("ITEM")] = {&Kernel::excItem, 2, 2, 2};
 
-    stringToCmd[k.setitem()] = {&Kernel::excSetitem, 3, 3, 3};
-    stringToCmd[k.dsetfirst()] = {&Kernel::excDotSetfirst, 2, 2, 2};
-    stringToCmd[k.dsetbf()] = {&Kernel::excDotSetbf, 2, 2, 2};
-    stringToCmd[k.dsetitem()] = {&Kernel::excDotSetitem, 3, 3, 3};
+    stringToCmd[QObject::tr("SETITEM")] = {&Kernel::excSetitem, 3, 3, 3};
+    stringToCmd[QObject::tr(".SETFIRST")] = {&Kernel::excDotSetfirst, 2, 2, 2};
+    stringToCmd[QObject::tr(".SETBF")] = {&Kernel::excDotSetbf, 2, 2, 2};
+    stringToCmd[QObject::tr(".SETITEM")] = {&Kernel::excDotSetitem, 3, 3, 3};
 
-    stringToCmd[k.wordp()] = {&Kernel::excWordp, 1, 1, 1};
-    stringToCmd[k.wordq()] = {&Kernel::excWordp, 1, 1, 1};
-    stringToCmd[k.listp()] = {&Kernel::excListp, 1, 1, 1};
-    stringToCmd[k.listq()] = {&Kernel::excListp, 1, 1, 1};
-    stringToCmd[k.arrayp()] = {&Kernel::excArrayp, 1, 1, 1};
-    stringToCmd[k.arrayq()] = {&Kernel::excArrayp, 1, 1, 1};
-    stringToCmd[k.emptyp()] = {&Kernel::excEmptyp, 1, 1, 1};
-    stringToCmd[k.emptyq()] = {&Kernel::excEmptyp, 1, 1, 1};
-    stringToCmd[k.equalp()] = {&Kernel::excEqualp, 2, 2, 2};
-    stringToCmd[k.equalq()] = {&Kernel::excEqualp, 2, 2, 2};
-    stringToCmd[k.notequalp()] = {&Kernel::excNotequal, 2, 2, 2};
-    stringToCmd[k.notequalq()] = {&Kernel::excNotequal, 2, 2, 2};
-    stringToCmd[k.beforep()] = {&Kernel::excBeforep, 2, 2, 2};
-    stringToCmd[k.beforeq()] = {&Kernel::excBeforep, 2, 2, 2};
-    stringToCmd[k.deq()] = {&Kernel::excDotEq, 2, 2, 2};
-    stringToCmd[k.memberp()] = {&Kernel::excMemberp, 2, 2, 2};
-    stringToCmd[k.memberq()] = {&Kernel::excMemberp, 2, 2, 2};
-    stringToCmd[k.substringp()] = {&Kernel::excSubstringp, 2, 2, 2};
-    stringToCmd[k.substringq()] = {&Kernel::excSubstringp, 2, 2, 2};
-    stringToCmd[k.numberp()] = {&Kernel::excNumberp, 1, 1, 1};
-    stringToCmd[k.numberq()] = {&Kernel::excNumberp, 1, 1, 1};
-    stringToCmd[k.vbarredp()] = {&Kernel::excVbarredp, 1, 1, 1};
-    stringToCmd[k.vbarredq()] = {&Kernel::excVbarredp, 1, 1, 1};
+    stringToCmd[QObject::tr("WORDP")] = {&Kernel::excWordp, 1, 1, 1};
+    stringToCmd[QObject::tr("WORD?")] = {&Kernel::excWordp, 1, 1, 1};
+    stringToCmd[QObject::tr("LISTP")] = {&Kernel::excListp, 1, 1, 1};
+    stringToCmd[QObject::tr("LIST?")] = {&Kernel::excListp, 1, 1, 1};
+    stringToCmd[QObject::tr("ARRAYP")] = {&Kernel::excArrayp, 1, 1, 1};
+    stringToCmd[QObject::tr("ARRAY?")] = {&Kernel::excArrayp, 1, 1, 1};
+    stringToCmd[QObject::tr("EMPTYP")] = {&Kernel::excEmptyp, 1, 1, 1};
+    stringToCmd[QObject::tr("EMPTY?")] = {&Kernel::excEmptyp, 1, 1, 1};
+    stringToCmd[QObject::tr("EQUALP")] = {&Kernel::excEqualp, 2, 2, 2};
+    stringToCmd[QObject::tr("EQUAL?")] = {&Kernel::excEqualp, 2, 2, 2};
+    stringToCmd[QObject::tr("NOTEQUALP")] = {&Kernel::excNotequal, 2, 2, 2};
+    stringToCmd[QObject::tr("NOTEQUAL?")] = {&Kernel::excNotequal, 2, 2, 2};
+    stringToCmd[QObject::tr("BEFOREP")] = {&Kernel::excBeforep, 2, 2, 2};
+    stringToCmd[QObject::tr("BEFORE?")] = {&Kernel::excBeforep, 2, 2, 2};
+    stringToCmd[QObject::tr(".EQ")] = {&Kernel::excDotEq, 2, 2, 2};
+    stringToCmd[QObject::tr("MEMBERP")] = {&Kernel::excMemberp, 2, 2, 2};
+    stringToCmd[QObject::tr("MEMBER?")] = {&Kernel::excMemberp, 2, 2, 2};
+    stringToCmd[QObject::tr("SUBSTRINGP")] = {&Kernel::excSubstringp, 2, 2, 2};
+    stringToCmd[QObject::tr("SUBSTRING?")] = {&Kernel::excSubstringp, 2, 2, 2};
+    stringToCmd[QObject::tr("NUMBERP")] = {&Kernel::excNumberp, 1, 1, 1};
+    stringToCmd[QObject::tr("NUMBER?")] = {&Kernel::excNumberp, 1, 1, 1};
+    stringToCmd[QObject::tr("VBARREDP")] = {&Kernel::excVbarredp, 1, 1, 1};
+    stringToCmd[QObject::tr("VBARRED?")] = {&Kernel::excVbarredp, 1, 1, 1};
 
-    stringToCmd[k.count()] = {&Kernel::excCount, 1, 1, 1};
-    stringToCmd[k.ascii()] = {&Kernel::excAscii, 1, 1, 1};
-    stringToCmd[k.rawascii()] = {&Kernel::excRawascii, 1, 1, 1};
-    stringToCmd[k.kchar()] = {&Kernel::excChar, 1, 1, 1};
-    stringToCmd[k.member()] = {&Kernel::excMember, 2, 2, 2};
-    stringToCmd[k.lowercase()] = {&Kernel::excLowercase, 1, 1, 1};
-    stringToCmd[k.uppercase()] = {&Kernel::excUppercase, 1, 1, 1};
-    stringToCmd[k.standout()] = {ifGUI(&Kernel::excStandout), 1, 1, 1};
-    stringToCmd[k.parse()] = {&Kernel::excParse, 1, 1, 1};
-    stringToCmd[k.runparse()] = {&Kernel::excRunparse, 1, 1, 1};
+    stringToCmd[QObject::tr("COUNT")] = {&Kernel::excCount, 1, 1, 1};
+    stringToCmd[QObject::tr("ASCII")] = {&Kernel::excAscii, 1, 1, 1};
+    stringToCmd[QObject::tr("RAWASCII")] = {&Kernel::excRawascii, 1, 1, 1};
+    stringToCmd[QObject::tr("CHAR")] = {&Kernel::excChar, 1, 1, 1};
+    stringToCmd[QObject::tr("MEMBER")] = {&Kernel::excMember, 2, 2, 2};
+    stringToCmd[QObject::tr("LOWERCASE")] = {&Kernel::excLowercase, 1, 1, 1};
+    stringToCmd[QObject::tr("UPPERCASE")] = {&Kernel::excUppercase, 1, 1, 1};
+    stringToCmd[QObject::tr("STANDOUT")] = {ifGUI(&Kernel::excStandout), 1, 1, 1};
+    stringToCmd[QObject::tr("PARSE")] = {&Kernel::excParse, 1, 1, 1};
+    stringToCmd[QObject::tr("RUNPARSE")] = {&Kernel::excRunparse, 1, 1, 1};
 
-    stringToCmd[k.minus()] = {&Kernel::excMinus, 1, 1, 1};
+    stringToCmd[QObject::tr("MINUS")] = {&Kernel::excMinus, 1, 1, 1};
     stringToCmd["-"] = {&Kernel::excMinus, 1, 1, 1};
     stringToCmd["--"] = {&Kernel::excMinus, 1, 1, 1};
 
-    stringToCmd[k.print()] = {&Kernel::excPrint, 0, 1, -1};
-    stringToCmd[k.pr()] = {&Kernel::excPrint, 0, 1, -1};
-    stringToCmd[k.type()] = {&Kernel::excType, 0, 1, -1};
-    stringToCmd[k.show()] = {&Kernel::excShow, 0, 1, -1};
-    stringToCmd[k.make()] = {&Kernel::excMake, 2, 2, 2};
-    stringToCmd[k.repeat()] = {&Kernel::excRepeat, 2, 2, 2};
-    stringToCmd[k.sqrt()] = {&Kernel::excSqrt, 1, 1, 1};
-    stringToCmd[k.random()] = {&Kernel::excRandom, 1, 1, 2};
-    stringToCmd[k.rerandom()] = {&Kernel::excRerandom, 0, 0, 1};
-    stringToCmd[k.thing()] = {&Kernel::excThing, 1, 1, 1};
-    stringToCmd[k.wait()] = {&Kernel::excWait, 1, 1, 1};
-    stringToCmd[k.setcursor()] = {ifGUI(&Kernel::excSetcursor), 1, 1, 1};
-    stringToCmd[k.cursor()] = {ifGUI(&Kernel::excCursor), 0, 0, 0};
-    stringToCmd[k.settextcolor()] = {ifGUI(&Kernel::excSettextcolor), 1, 2, 2};
-    stringToCmd[k.settc()] = {ifGUI(&Kernel::excSettextcolor), 1, 2, 2};
-    stringToCmd[k.increasefont()] = {ifGUI(&Kernel::excIncreasefont), 0, 0, 0};
-    stringToCmd[k.decreasefont()] = {ifGUI(&Kernel::excDecreasefont), 0, 0, 0};
-    stringToCmd[k.settextsize()] = {ifGUI(&Kernel::excSettextsize), 1, 1, 1};
-    stringToCmd[k.textsize()] = {ifGUI(&Kernel::excTextsize), 0, 0, 0};
-    stringToCmd[k.setfont()] = {ifGUI(&Kernel::excSetfont), 1, 1, 1};
-    stringToCmd[k.font()] = {ifGUI(&Kernel::excFont), 0, 0, 0};
-    stringToCmd[k.allfonts()] = {ifGUI(&Kernel::excAllfonts), 0, 0, 0};
+    stringToCmd[QObject::tr("PRINT")] = {&Kernel::excPrint, 0, 1, -1};
+    stringToCmd[QObject::tr("PR")] = {&Kernel::excPrint, 0, 1, -1};
+    stringToCmd[QObject::tr("TYPE")] = {&Kernel::excType, 0, 1, -1};
+    stringToCmd[QObject::tr("SHOW")] = {&Kernel::excShow, 0, 1, -1};
+    stringToCmd[QObject::tr("MAKE")] = {&Kernel::excMake, 2, 2, 2};
+    stringToCmd[QObject::tr("REPEAT")] = {&Kernel::excRepeat, 2, 2, 2};
+    stringToCmd[QObject::tr("SQRT")] = {&Kernel::excSqrt, 1, 1, 1};
+    stringToCmd[QObject::tr("RANDOM")] = {&Kernel::excRandom, 1, 1, 2};
+    stringToCmd[QObject::tr("RERANDOM")] = {&Kernel::excRerandom, 0, 0, 1};
+    stringToCmd[QObject::tr("THING")] = {&Kernel::excThing, 1, 1, 1};
+    stringToCmd[QObject::tr("WAIT")] = {&Kernel::excWait, 1, 1, 1};
+    stringToCmd[QObject::tr("SETCURSOR")] = {ifGUI(&Kernel::excSetcursor), 1, 1, 1};
+    stringToCmd[QObject::tr("CURSOR")] = {ifGUI(&Kernel::excCursor), 0, 0, 0};
+    stringToCmd[QObject::tr("SETTEXTCOLOR")] = {ifGUI(&Kernel::excSettextcolor), 1, 2, 2};
+    stringToCmd[QObject::tr("SETTC")] = {ifGUI(&Kernel::excSettextcolor), 1, 2, 2};
+    stringToCmd[QObject::tr("INCREASEFONT")] = {ifGUI(&Kernel::excIncreasefont), 0, 0, 0};
+    stringToCmd[QObject::tr("DECREASEFONT")] = {ifGUI(&Kernel::excDecreasefont), 0, 0, 0};
+    stringToCmd[QObject::tr("SETTEXTSIZE")] = {ifGUI(&Kernel::excSettextsize), 1, 1, 1};
+    stringToCmd[QObject::tr("TEXTSIZE")] = {ifGUI(&Kernel::excTextsize), 0, 0, 0};
+    stringToCmd[QObject::tr("SETFONT")] = {ifGUI(&Kernel::excSetfont), 1, 1, 1};
+    stringToCmd[QObject::tr("FONT")] = {ifGUI(&Kernel::excFont), 0, 0, 0};
+    stringToCmd[QObject::tr("ALLFONTS")] = {ifGUI(&Kernel::excAllfonts), 0, 0, 0};
 
-    stringToCmd[k.forward()] = {ifGUI(&Kernel::excForward), 1, 1, 1};
-    stringToCmd[k.fd()] = {ifGUI(&Kernel::excForward), 1, 1, 1};
-    stringToCmd[k.back()] = {ifGUI(&Kernel::excBack), 1, 1, 1};
-    stringToCmd[k.bk()] = {ifGUI(&Kernel::excBack), 1, 1, 1};
-    stringToCmd[k.right()] = {ifGUI(&Kernel::excRight), 1, 1, 1};
-    stringToCmd[k.rt()] = {ifGUI(&Kernel::excRight), 1, 1, 1};
-    stringToCmd[k.left()] = {ifGUI(&Kernel::excLeft), 1, 1, 1};
-    stringToCmd[k.lt()] = {ifGUI(&Kernel::excLeft), 1, 1, 1};
-    stringToCmd[k.clearscreen()] = {ifGUI(&Kernel::excClearscreen), 0, 0, 0};
-    stringToCmd[k.cs()] = {ifGUI(&Kernel::excClearscreen), 0, 0, 0};
-    stringToCmd[k.clean()] = {ifGUI(&Kernel::excClean), 0, 0, 0};
-    stringToCmd[k.penup()] = {ifGUI(&Kernel::excPenup), 0, 0, 0};
-    stringToCmd[k.pu()] = {ifGUI(&Kernel::excPenup), 0, 0, 0};
-    stringToCmd[k.pendown()] = {ifGUI(&Kernel::excPendown), 0, 0, 0};
-    stringToCmd[k.pd()] = {ifGUI(&Kernel::excPendown), 0, 0, 0};
-    stringToCmd[k.pendownp()] = {ifGUI(&Kernel::excPendownp), 0, 0, 0};
-    stringToCmd[k.pendownq()] = {ifGUI(&Kernel::excPendownp), 0, 0, 0};
-    stringToCmd[k.hideturtle()] = {ifGUI(&Kernel::excHideturtle), 0, 0, 0};
-    stringToCmd[k.ht()] = {ifGUI(&Kernel::excHideturtle), 0, 0, 0};
-    stringToCmd[k.showturtle()] = {ifGUI(&Kernel::excShowturtle), 0, 0, 0};
-    stringToCmd[k.st()] = {ifGUI(&Kernel::excShowturtle), 0, 0, 0};
-    stringToCmd[k.setxy()] = {ifGUI(&Kernel::excSetXY), 2, 2, 2};
-    stringToCmd[k.setx()] = {ifGUI(&Kernel::excSetX), 1, 1, 1};
-    stringToCmd[k.sety()] = {ifGUI(&Kernel::excSetY), 1, 1, 1};
-    stringToCmd[k.setpos()] = {ifGUI(&Kernel::excSetpos), 1, 1, 1};
-    stringToCmd[k.pos()] = {ifGUI(&Kernel::excPos), 0, 0, 1};
-    stringToCmd[k.home()] = {ifGUI(&Kernel::excHome), 0, 0, 0};
-    stringToCmd[k.heading()] = {ifGUI(&Kernel::excHeading), 0, 0, 1};
-    stringToCmd[k.setheading()] = {ifGUI(&Kernel::excSetheading), 1, 1, 1};
-    stringToCmd[k.seth()] = {ifGUI(&Kernel::excSetheading), 1, 1, 1};
-    stringToCmd[k.arc()] = {ifGUI(&Kernel::excArc), 2, 2, 2};
-    stringToCmd[k.towards()] = {ifGUI(&Kernel::excTowards), 1, 1, 1};
-    stringToCmd[k.scrunch()] = {ifGUI(&Kernel::excScrunch), 0, 0, 0};
-    stringToCmd[k.setscrunch()] = {ifGUI(&Kernel::excSetscrunch), 2, 2, 2};
-    stringToCmd[k.label()] = {ifGUI(&Kernel::excLabel), 1, 1, 1};
-    stringToCmd[k.labelheight()] = {ifGUI(&Kernel::excLabelheight), 0, 0, 0};
-    stringToCmd[k.setlabelheight()] = {ifGUI(&Kernel::excSetlabelheight), 1, 1, 1};
-    stringToCmd[k.shownp()] = {ifGUI(&Kernel::excShownp), 0, 0, 0};
-    stringToCmd[k.shownq()] = {ifGUI(&Kernel::excShownp), 0, 0, 0};
-    stringToCmd[k.setpencolor()] = {ifGUI(&Kernel::excSetpencolor), 1, 1, 1};
-    stringToCmd[k.setpc()] = {ifGUI(&Kernel::excSetpencolor), 1, 1, 1};
-    stringToCmd[k.pencolor()] = {ifGUI(&Kernel::excPencolor), 0, 0, 0};
-    stringToCmd[k.pc()] = {ifGUI(&Kernel::excPencolor), 0, 0, 0};
-    stringToCmd[k.setpalette()] = {ifGUI(&Kernel::excSetpalette), 2, 2, 2};
-    stringToCmd[k.palette()] = {ifGUI(&Kernel::excPalette), 1, 1, 1};
-    stringToCmd[k.background()] = {ifGUI(&Kernel::excBackground), 0, 0, 0};
-    stringToCmd[k.bg()] = {ifGUI(&Kernel::excBackground), 0, 0, 0};
-    stringToCmd[k.setbackground()] = {ifGUI(&Kernel::excSetbackground), 1, 1, 1};
-    stringToCmd[k.setbg()] = {ifGUI(&Kernel::excSetbackground), 1, 1, 1};
-    stringToCmd[k.savepict()] = {ifGUI(&Kernel::excSavepict), 1, 1, 1};
-    stringToCmd[k.loadpict()] = {ifGUI(&Kernel::excLoadpict), 1, 1, 1};
-    stringToCmd[k.svgpict()] = {ifGUI(&Kernel::excSvgpict), 1, 1, 1};
+    stringToCmd[QObject::tr("FORWARD")] = {ifGUI(&Kernel::excForward), 1, 1, 1};
+    stringToCmd[QObject::tr("FD")] = {ifGUI(&Kernel::excForward), 1, 1, 1};
+    stringToCmd[QObject::tr("BACK")] = {ifGUI(&Kernel::excBack), 1, 1, 1};
+    stringToCmd[QObject::tr("BK")] = {ifGUI(&Kernel::excBack), 1, 1, 1};
+    stringToCmd[QObject::tr("RIGHT")] = {ifGUI(&Kernel::excRight), 1, 1, 1};
+    stringToCmd[QObject::tr("RT")] = {ifGUI(&Kernel::excRight), 1, 1, 1};
+    stringToCmd[QObject::tr("LEFT")] = {ifGUI(&Kernel::excLeft), 1, 1, 1};
+    stringToCmd[QObject::tr("LT")] = {ifGUI(&Kernel::excLeft), 1, 1, 1};
+    stringToCmd[QObject::tr("CLEARSCREEN")] = {ifGUI(&Kernel::excClearscreen), 0, 0, 0};
+    stringToCmd[QObject::tr("CS")] = {ifGUI(&Kernel::excClearscreen), 0, 0, 0};
+    stringToCmd[QObject::tr("CLEAN")] = {ifGUI(&Kernel::excClean), 0, 0, 0};
+    stringToCmd[QObject::tr("PENUP")] = {ifGUI(&Kernel::excPenup), 0, 0, 0};
+    stringToCmd[QObject::tr("PU")] = {ifGUI(&Kernel::excPenup), 0, 0, 0};
+    stringToCmd[QObject::tr("PENDOWN")] = {ifGUI(&Kernel::excPendown), 0, 0, 0};
+    stringToCmd[QObject::tr("PD")] = {ifGUI(&Kernel::excPendown), 0, 0, 0};
+    stringToCmd[QObject::tr("PENDOWNP")] = {ifGUI(&Kernel::excPendownp), 0, 0, 0};
+    stringToCmd[QObject::tr("PENDOWN?")] = {ifGUI(&Kernel::excPendownp), 0, 0, 0};
+    stringToCmd[QObject::tr("HIDETURTLE")] = {ifGUI(&Kernel::excHideturtle), 0, 0, 0};
+    stringToCmd[QObject::tr("HT")] = {ifGUI(&Kernel::excHideturtle), 0, 0, 0};
+    stringToCmd[QObject::tr("SHOWTURTLE")] = {ifGUI(&Kernel::excShowturtle), 0, 0, 0};
+    stringToCmd[QObject::tr("ST")] = {ifGUI(&Kernel::excShowturtle), 0, 0, 0};
+    stringToCmd[QObject::tr("SETXY")] = {ifGUI(&Kernel::excSetXY), 2, 2, 2};
+    stringToCmd[QObject::tr("SETX")] = {ifGUI(&Kernel::excSetX), 1, 1, 1};
+    stringToCmd[QObject::tr("SETY")] = {ifGUI(&Kernel::excSetY), 1, 1, 1};
+    stringToCmd[QObject::tr("SETPOS")] = {ifGUI(&Kernel::excSetpos), 1, 1, 1};
+    stringToCmd[QObject::tr("POS")] = {ifGUI(&Kernel::excPos), 0, 0, 1};
+    stringToCmd[QObject::tr("HOME")] = {ifGUI(&Kernel::excHome), 0, 0, 0};
+    stringToCmd[QObject::tr("HEADING")] = {ifGUI(&Kernel::excHeading), 0, 0, 1};
+    stringToCmd[QObject::tr("SETHEADING")] = {ifGUI(&Kernel::excSetheading), 1, 1, 1};
+    stringToCmd[QObject::tr("SETH")] = {ifGUI(&Kernel::excSetheading), 1, 1, 1};
+    stringToCmd[QObject::tr("ARC")] = {ifGUI(&Kernel::excArc), 2, 2, 2};
+    stringToCmd[QObject::tr("TOWARDS")] = {ifGUI(&Kernel::excTowards), 1, 1, 1};
+    stringToCmd[QObject::tr("SCRUNCH")] = {ifGUI(&Kernel::excScrunch), 0, 0, 0};
+    stringToCmd[QObject::tr("SETSCRUNCH")] = {ifGUI(&Kernel::excSetscrunch), 2, 2, 2};
+    stringToCmd[QObject::tr("LABEL")] = {ifGUI(&Kernel::excLabel), 1, 1, 1};
+    stringToCmd[QObject::tr("LABELHEIGHT")] = {ifGUI(&Kernel::excLabelheight), 0, 0, 0};
+    stringToCmd[QObject::tr("SETLABELHEIGHT")] = {ifGUI(&Kernel::excSetlabelheight), 1, 1, 1};
+    stringToCmd[QObject::tr("SHOWNP")] = {ifGUI(&Kernel::excShownp), 0, 0, 0};
+    stringToCmd[QObject::tr("SHOWN?")] = {ifGUI(&Kernel::excShownp), 0, 0, 0};
+    stringToCmd[QObject::tr("SETPENCOLOR")] = {ifGUI(&Kernel::excSetpencolor), 1, 1, 1};
+    stringToCmd[QObject::tr("SETPC")] = {ifGUI(&Kernel::excSetpencolor), 1, 1, 1};
+    stringToCmd[QObject::tr("PENCOLOR")] = {ifGUI(&Kernel::excPencolor), 0, 0, 0};
+    stringToCmd[QObject::tr("PC")] = {ifGUI(&Kernel::excPencolor), 0, 0, 0};
+    stringToCmd[QObject::tr("SETPALETTE")] = {ifGUI(&Kernel::excSetpalette), 2, 2, 2};
+    stringToCmd[QObject::tr("PALETTE")] = {ifGUI(&Kernel::excPalette), 1, 1, 1};
+    stringToCmd[QObject::tr("BACKGROUND")] = {ifGUI(&Kernel::excBackground), 0, 0, 0};
+    stringToCmd[QObject::tr("BG")] = {ifGUI(&Kernel::excBackground), 0, 0, 0};
+    stringToCmd[QObject::tr("SETBACKGROUND")] = {ifGUI(&Kernel::excSetbackground), 1, 1, 1};
+    stringToCmd[QObject::tr("SETBG")] = {ifGUI(&Kernel::excSetbackground), 1, 1, 1};
+    stringToCmd[QObject::tr("SAVEPICT")] = {ifGUI(&Kernel::excSavepict), 1, 1, 1};
+    stringToCmd[QObject::tr("LOADPICT")] = {ifGUI(&Kernel::excLoadpict), 1, 1, 1};
+    stringToCmd[QObject::tr("SVGPICT")] = {ifGUI(&Kernel::excSvgpict), 1, 1, 1};
 
-    stringToCmd[k.penpaint()] = {ifGUI(&Kernel::excPenpaint), 0, 0, 0};
-    stringToCmd[k.ppt()] = {ifGUI(&Kernel::excPenpaint), 0, 0, 0};
-    stringToCmd[k.penerase()] = {ifGUI(&Kernel::excPenerase), 0, 0, 0};
-    stringToCmd[k.pe()] = {ifGUI(&Kernel::excPenerase), 0, 0, 0};
-    stringToCmd[k.penreverse()] = {ifGUI(&Kernel::excPenreverse), 0, 0, 0};
-    stringToCmd[k.px()] = {ifGUI(&Kernel::excPenreverse), 0, 0, 0};
-    stringToCmd[k.penmode()] = {ifGUI(&Kernel::excPenmode), 0, 0, 0};
-    stringToCmd[k.setpensize()] = {ifGUI(&Kernel::excSetpensize), 1, 1, 1};
-    stringToCmd[k.pensize()] = {ifGUI(&Kernel::excPensize), 0, 0, 0};
-    stringToCmd[k.filled()] = {ifGUI(&Kernel::excFilled), 2, 2, 2};
+    stringToCmd[QObject::tr("PENPAINT")] = {ifGUI(&Kernel::excPenpaint), 0, 0, 0};
+    stringToCmd[QObject::tr("PPT")] = {ifGUI(&Kernel::excPenpaint), 0, 0, 0};
+    stringToCmd[QObject::tr("PENERASE")] = {ifGUI(&Kernel::excPenerase), 0, 0, 0};
+    stringToCmd[QObject::tr("PE")] = {ifGUI(&Kernel::excPenerase), 0, 0, 0};
+    stringToCmd[QObject::tr("PENREVERSE")] = {ifGUI(&Kernel::excPenreverse), 0, 0, 0};
+    stringToCmd[QObject::tr("PX")] = {ifGUI(&Kernel::excPenreverse), 0, 0, 0};
+    stringToCmd[QObject::tr("PENMODE")] = {ifGUI(&Kernel::excPenmode), 0, 0, 0};
+    stringToCmd[QObject::tr("SETPENSIZE")] = {ifGUI(&Kernel::excSetpensize), 1, 1, 1};
+    stringToCmd[QObject::tr("PENSIZE")] = {ifGUI(&Kernel::excPensize), 0, 0, 0};
+    stringToCmd[QObject::tr("FILLED")] = {ifGUI(&Kernel::excFilled), 2, 2, 2};
 
-    stringToCmd[k.cwrap()] = {ifGUI(&Kernel::excWrap), 0, 0, 0};
-    stringToCmd[k.cfence()] = {ifGUI(&Kernel::excFence), 0, 0, 0};
-    stringToCmd[k.cwindow()] = {ifGUI(&Kernel::excWindow), 0, 0, 0};
-    stringToCmd[k.turtlemode()] = {ifGUI(&Kernel::excTurtlemode), 0, 0, 0};
+    stringToCmd[QObject::tr("WRAP")] = {ifGUI(&Kernel::excWrap), 0, 0, 0};
+    stringToCmd[QObject::tr("FENCE")] = {ifGUI(&Kernel::excFence), 0, 0, 0};
+    stringToCmd[QObject::tr("WINDOW")] = {ifGUI(&Kernel::excWindow), 0, 0, 0};
+    stringToCmd[QObject::tr("TURTLEMODE")] = {ifGUI(&Kernel::excTurtlemode), 0, 0, 0};
 
-    stringToCmd[k.mousepos()] = {ifGUI(&Kernel::excMousepos), 0, 0, 0};
-    stringToCmd[k.clickpos()] = {ifGUI(&Kernel::excClickpos), 0, 0, 0};
-    stringToCmd[k.bounds()] = {ifGUI(&Kernel::excBounds), 0, 0, 0};
-    stringToCmd[k.setbounds()] = {ifGUI(&Kernel::excSetbounds), 2, 2, 2};
+    stringToCmd[QObject::tr("MOUSEPOS")] = {ifGUI(&Kernel::excMousepos), 0, 0, 0};
+    stringToCmd[QObject::tr("CLICKPOS")] = {ifGUI(&Kernel::excClickpos), 0, 0, 0};
+    stringToCmd[QObject::tr("BOUNDS")] = {ifGUI(&Kernel::excBounds), 0, 0, 0};
+    stringToCmd[QObject::tr("SETBOUNDS")] = {ifGUI(&Kernel::excSetbounds), 2, 2, 2};
 
-    stringToCmd[k.ctextscreen()] = {ifGUI(&Kernel::excTextscreen), 0, 0, 0};
-    stringToCmd[k.ts()] = {ifGUI(&Kernel::excTextscreen), 0, 0, 0};
-    stringToCmd[k.cfullscreen()] = {ifGUI(&Kernel::excFullscreen), 0, 0, 0};
-    stringToCmd[k.fs()] = {ifGUI(&Kernel::excFullscreen), 0, 0, 0};
-    stringToCmd[k.csplitscreen()] = {ifGUI(&Kernel::excSplitscreen), 0, 0, 0};
-    stringToCmd[k.ss()] = {ifGUI(&Kernel::excSplitscreen), 0, 0, 0};
-    stringToCmd[k.screenmode()] = {ifGUI(&Kernel::excScreenmode), 0, 0, 0};
+    stringToCmd[QObject::tr("TEXTSCREEN")] = {ifGUI(&Kernel::excTextscreen), 0, 0, 0};
+    stringToCmd[QObject::tr("TS")] = {ifGUI(&Kernel::excTextscreen), 0, 0, 0};
+    stringToCmd[QObject::tr("FULLSCREEN")] = {ifGUI(&Kernel::excFullscreen), 0, 0, 0};
+    stringToCmd[QObject::tr("FS")] = {ifGUI(&Kernel::excFullscreen), 0, 0, 0};
+    stringToCmd[QObject::tr("SPLITSCREEN")] = {ifGUI(&Kernel::excSplitscreen), 0, 0, 0};
+    stringToCmd[QObject::tr("SS")] = {ifGUI(&Kernel::excSplitscreen), 0, 0, 0};
+    stringToCmd[QObject::tr("SCREENMODE")] = {ifGUI(&Kernel::excScreenmode), 0, 0, 0};
 
-    stringToCmd[k.buttonp()] = {ifGUI(&Kernel::excButtonp), 0, 0, 0};
-    stringToCmd[k.buttonq()] = {ifGUI(&Kernel::excButtonp), 0, 0, 0};
-    stringToCmd[k.button()] = {ifGUI(&Kernel::excButton), 0, 0, 0};
+    stringToCmd[QObject::tr("BUTTONP")] = {ifGUI(&Kernel::excButtonp), 0, 0, 0};
+    stringToCmd[QObject::tr("BUTTON?")] = {ifGUI(&Kernel::excButtonp), 0, 0, 0};
+    stringToCmd[QObject::tr("BUTTON")] = {ifGUI(&Kernel::excButton), 0, 0, 0};
 
-    stringToCmd[k.matrix()] = {ifGUI(&Kernel::excMatrix), 0, 0, 0}; // for debugging
+    stringToCmd[QObject::tr("MATRIX")] = {ifGUI(&Kernel::excMatrix), 0, 0, 0}; // for debugging
 
-    stringToCmd[k.sum()] = {&Kernel::excSum, 0, 2, -1};
-    stringToCmd[k.difference()] = {&Kernel::excDifference, 2, 2, 2};
-    stringToCmd[k.product()] = {&Kernel::excProduct, 0, 2, -1};
-    stringToCmd[k.quotient()] = {&Kernel::excQuotient, 1, 2, 2};
-    stringToCmd[k.remainder()] = {&Kernel::excRemainder, 2, 2, 2};
-    stringToCmd[k.modulo()] = {&Kernel::excModulo, 2, 2, 2};
-    stringToCmd[k.kint()] = {&Kernel::excInt, 1, 1, 1};
-    stringToCmd[k.exp()] = {&Kernel::excExp, 1, 1, 1};
-    stringToCmd[k.log10()] = {&Kernel::excLog10, 1, 1, 1};
-    stringToCmd[k.ln()] = {&Kernel::excLn, 1, 1, 1};
-    stringToCmd[k.sin()] = {&Kernel::excSin, 1, 1, 1};
-    stringToCmd[k.radsin()] = {&Kernel::excRadsin, 1, 1, 1};
-    stringToCmd[k.cos()] = {&Kernel::excCos, 1, 1, 1};
-    stringToCmd[k.radcos()] = {&Kernel::excRadcos, 1, 1, 1};
-    stringToCmd[k.arctan()] = {&Kernel::excArctan, 1, 1, 2};
-    stringToCmd[k.radarctan()] = {&Kernel::excRadarctan, 1, 1, 2};
-    stringToCmd[k.round()] = {&Kernel::excRound, 1, 1, 1};
-    stringToCmd[k.power()] = {&Kernel::excPower, 2, 2, 2};
-    stringToCmd[k.kbitand()] = {&Kernel::excBitand, 0, 2, -1};
-    stringToCmd[k.kbitor()] = {&Kernel::excBitor, 0, 2, -1};
-    stringToCmd[k.bitxor()] = {&Kernel::excBitxor, 0, 2, -1};
-    stringToCmd[k.bitnot()] = {&Kernel::excBitnot, 1, 1, 1};
-    stringToCmd[k.ashift()] = {&Kernel::excAshift, 2, 2, 2};
-    stringToCmd[k.lshift()] = {&Kernel::excLshift, 2, 2, 2};
-    stringToCmd[k.kand()] = {&Kernel::excAnd, 0, 2, -1};
-    stringToCmd[k.kor()] = {&Kernel::excOr, 0, 2, -1};
-    stringToCmd[k.knot()] = {&Kernel::excNot, 1, 1, 1};
+    stringToCmd[QObject::tr("SUM")] = {&Kernel::excSum, 0, 2, -1};
+    stringToCmd[QObject::tr("DIFFERENCE")] = {&Kernel::excDifference, 2, 2, 2};
+    stringToCmd[QObject::tr("PRODUCT")] = {&Kernel::excProduct, 0, 2, -1};
+    stringToCmd[QObject::tr("QUOTIENT")] = {&Kernel::excQuotient, 1, 2, 2};
+    stringToCmd[QObject::tr("REMAINDER")] = {&Kernel::excRemainder, 2, 2, 2};
+    stringToCmd[QObject::tr("MODULO")] = {&Kernel::excModulo, 2, 2, 2};
+    stringToCmd[QObject::tr("INT")] = {&Kernel::excInt, 1, 1, 1};
+    stringToCmd[QObject::tr("EXP")] = {&Kernel::excExp, 1, 1, 1};
+    stringToCmd[QObject::tr("LOG10")] = {&Kernel::excLog10, 1, 1, 1};
+    stringToCmd[QObject::tr("LN")] = {&Kernel::excLn, 1, 1, 1};
+    stringToCmd[QObject::tr("SIN")] = {&Kernel::excSin, 1, 1, 1};
+    stringToCmd[QObject::tr("RADSIN")] = {&Kernel::excRadsin, 1, 1, 1};
+    stringToCmd[QObject::tr("COS")] = {&Kernel::excCos, 1, 1, 1};
+    stringToCmd[QObject::tr("RADCOS")] = {&Kernel::excRadcos, 1, 1, 1};
+    stringToCmd[QObject::tr("ARCTAN")] = {&Kernel::excArctan, 1, 1, 2};
+    stringToCmd[QObject::tr("RADARCTAN")] = {&Kernel::excRadarctan, 1, 1, 2};
+    stringToCmd[QObject::tr("ROUND")] = {&Kernel::excRound, 1, 1, 1};
+    stringToCmd[QObject::tr("POWER")] = {&Kernel::excPower, 2, 2, 2};
+    stringToCmd[QObject::tr("BITAND")] = {&Kernel::excBitand, 0, 2, -1};
+    stringToCmd[QObject::tr("BITOR")] = {&Kernel::excBitor, 0, 2, -1};
+    stringToCmd[QObject::tr("BITXOR")] = {&Kernel::excBitxor, 0, 2, -1};
+    stringToCmd[QObject::tr("BITNOT")] = {&Kernel::excBitnot, 1, 1, 1};
+    stringToCmd[QObject::tr("ASHIFT")] = {&Kernel::excAshift, 2, 2, 2};
+    stringToCmd[QObject::tr("LSHIFT")] = {&Kernel::excLshift, 2, 2, 2};
+    stringToCmd[QObject::tr("AND")] = {&Kernel::excAnd, 0, 2, -1};
+    stringToCmd[QObject::tr("OR")] = {&Kernel::excOr, 0, 2, -1};
+    stringToCmd[QObject::tr("NOT")] = {&Kernel::excNot, 1, 1, 1};
 
-    stringToCmd[k.form()] = {&Kernel::excForm, 3, 3, 3};
+    stringToCmd[QObject::tr("FORM")] = {&Kernel::excForm, 3, 3, 3};
 
-    stringToCmd[k.lessp()] = {&Kernel::excLessp, 2, 2, 2};
-    stringToCmd[k.lessq()] = {&Kernel::excLessp, 2, 2, 2};
-    stringToCmd[k.greaterp()] = {&Kernel::excGreaterp, 2, 2, 2};
-    stringToCmd[k.greaterq()] = {&Kernel::excGreaterp, 2, 2, 2};
-    stringToCmd[k.lessequalp()] = {&Kernel::excLessequalp, 2, 2, 2};
-    stringToCmd[k.lessequalq()] = {&Kernel::excLessequalp, 2, 2, 2};
-    stringToCmd[k.greaterequalp()] = {&Kernel::excGreaterequalp, 2, 2, 2};
-    stringToCmd[k.greaterequalq()] = {&Kernel::excGreaterequalp, 2, 2, 2};
+    stringToCmd[QObject::tr("LESSP")] = {&Kernel::excLessp, 2, 2, 2};
+    stringToCmd[QObject::tr("LESS?")] = {&Kernel::excLessp, 2, 2, 2};
+    stringToCmd[QObject::tr("GREATERP")] = {&Kernel::excGreaterp, 2, 2, 2};
+    stringToCmd[QObject::tr("GREATER?")] = {&Kernel::excGreaterp, 2, 2, 2};
+    stringToCmd[QObject::tr("LESSEQUALP")] = {&Kernel::excLessequalp, 2, 2, 2};
+    stringToCmd[QObject::tr("LESSEQUAL?")] = {&Kernel::excLessequalp, 2, 2, 2};
+    stringToCmd[QObject::tr("GREATEREQUALP")] = {&Kernel::excGreaterequalp, 2, 2, 2};
+    stringToCmd[QObject::tr("GREATEREQUAL?")] = {&Kernel::excGreaterequalp, 2, 2, 2};
 
-    stringToCmd[k.define()] = {&Kernel::excDefine, 2, 2, 2};
-    stringToCmd[k.text()] = {&Kernel::excText, 1, 1, 1};
-    stringToCmd[k.fulltext()] = {&Kernel::excFulltext, 1, 1, 1};
-    stringToCmd[k.copydef()] = {&Kernel::excCopydef, 2, 2, 2};
-    stringToCmd[k.local()] = {&Kernel::excLocal, 1, 1, -1};
-    stringToCmd[k.global()] = {&Kernel::excGlobal, 1, 1, -1};
+    stringToCmd[QObject::tr("DEFINE")] = {&Kernel::excDefine, 2, 2, 2};
+    stringToCmd[QObject::tr("TEXT")] = {&Kernel::excText, 1, 1, 1};
+    stringToCmd[QObject::tr("FULLTEXT")] = {&Kernel::excFulltext, 1, 1, 1};
+    stringToCmd[QObject::tr("COPYDEF")] = {&Kernel::excCopydef, 2, 2, 2};
+    stringToCmd[QObject::tr("LOCAL")] = {&Kernel::excLocal, 1, 1, -1};
+    stringToCmd[QObject::tr("GLOBAL")] = {&Kernel::excGlobal, 1, 1, -1};
 
-    stringToCmd[k.pprop()] = {&Kernel::excPprop, 3, 3, 3};
-    stringToCmd[k.gprop()] = {&Kernel::excGprop, 2, 2, 2};
-    stringToCmd[k.remprop()] = {&Kernel::excRemprop, 2, 2, 2};
-    stringToCmd[k.plist()] = {&Kernel::excPlist, 1, 1, 1};
+    stringToCmd[QObject::tr("PPROP")] = {&Kernel::excPprop, 3, 3, 3};
+    stringToCmd[QObject::tr("GPROP")] = {&Kernel::excGprop, 2, 2, 2};
+    stringToCmd[QObject::tr("REMPROP")] = {&Kernel::excRemprop, 2, 2, 2};
+    stringToCmd[QObject::tr("PLIST")] = {&Kernel::excPlist, 1, 1, 1};
 
-    stringToCmd[k.procedurep()] = {&Kernel::excProcedurep, 1, 1, 1};
-    stringToCmd[k.procedureq()] = {&Kernel::excProcedurep, 1, 1, 1};
-    stringToCmd[k.primitivep()] = {&Kernel::excPrimitivep, 1, 1, 1};
-    stringToCmd[k.primitiveq()] = {&Kernel::excPrimitivep, 1, 1, 1};
-    stringToCmd[k.definedp()] = {&Kernel::excDefinedp, 1, 1, 1};
-    stringToCmd[k.definedq()] = {&Kernel::excDefinedp, 1, 1, 1};
-    stringToCmd[k.namep()] = {&Kernel::excNamep, 1, 1, 1};
-    stringToCmd[k.nameq()] = {&Kernel::excNamep, 1, 1, 1};
-    stringToCmd[k.plistp()] = {&Kernel::excPlistp, 1, 1, 1};
-    stringToCmd[k.plistq()] = {&Kernel::excPlistp, 1, 1, 1};
+    stringToCmd[QObject::tr("PROCEDUREP")] = {&Kernel::excProcedurep, 1, 1, 1};
+    stringToCmd[QObject::tr("PROCEDURE?")] = {&Kernel::excProcedurep, 1, 1, 1};
+    stringToCmd[QObject::tr("PRIMITIVEP")] = {&Kernel::excPrimitivep, 1, 1, 1};
+    stringToCmd[QObject::tr("PRIMITIVE?")] = {&Kernel::excPrimitivep, 1, 1, 1};
+    stringToCmd[QObject::tr("DEFINEDP")] = {&Kernel::excDefinedp, 1, 1, 1};
+    stringToCmd[QObject::tr("DEFINED?")] = {&Kernel::excDefinedp, 1, 1, 1};
+    stringToCmd[QObject::tr("NAMEP")] = {&Kernel::excNamep, 1, 1, 1};
+    stringToCmd[QObject::tr("NAME?")] = {&Kernel::excNamep, 1, 1, 1};
+    stringToCmd[QObject::tr("PLISTP")] = {&Kernel::excPlistp, 1, 1, 1};
+    stringToCmd[QObject::tr("PLIST?")] = {&Kernel::excPlistp, 1, 1, 1};
 
-    stringToCmd[k.contents()] = {&Kernel::excContents, 0, 0, 0};
-    stringToCmd[k.buried()] = {&Kernel::excBuried, 0, 0, 0};
-    stringToCmd[k.traced()] = {&Kernel::excTraced, 0, 0, 0};
-    stringToCmd[k.stepped()] = {&Kernel::excStepped, 0, 0, 0};
-    stringToCmd[k.procedures()] = {&Kernel::excProcedures, 0, 0, 0};
-    stringToCmd[k.primitives()] = {&Kernel::excPrimitives, 0, 0, 0};
-    stringToCmd[k.names()] = {&Kernel::excNames, 0, 0, 0};
-    stringToCmd[k.plists()] = {&Kernel::excPlists, 0, 0, 0};
-    stringToCmd[k.arity()] = {&Kernel::excArity, 1, 1, 1};
-    stringToCmd[k.nodes()] = {&Kernel::excNodes, 0, 0, 0};
+    stringToCmd[QObject::tr("CONTENTS")] = {&Kernel::excContents, 0, 0, 0};
+    stringToCmd[QObject::tr("BURIED")] = {&Kernel::excBuried, 0, 0, 0};
+    stringToCmd[QObject::tr("TRACED")] = {&Kernel::excTraced, 0, 0, 0};
+    stringToCmd[QObject::tr("STEPPED")] = {&Kernel::excStepped, 0, 0, 0};
+    stringToCmd[QObject::tr("PROCEDURES")] = {&Kernel::excProcedures, 0, 0, 0};
+    stringToCmd[QObject::tr("PRIMITIVES")] = {&Kernel::excPrimitives, 0, 0, 0};
+    stringToCmd[QObject::tr("NAMES")] = {&Kernel::excNames, 0, 0, 0};
+    stringToCmd[QObject::tr("PLISTS")] = {&Kernel::excPlists, 0, 0, 0};
+    stringToCmd[QObject::tr("ARITY")] = {&Kernel::excArity, 1, 1, 1};
+    stringToCmd[QObject::tr("NODES")] = {&Kernel::excNodes, 0, 0, 0};
 
-    stringToCmd[k.printout()] = {&Kernel::excPrintout, 1, 1, 1};
-    stringToCmd[k.po()] = {&Kernel::excPrintout, 1, 1, 1};
-    stringToCmd[k.pot()] = {&Kernel::excPot, 1, 1, 1};
+    stringToCmd[QObject::tr("PRINTOUT")] = {&Kernel::excPrintout, 1, 1, 1};
+    stringToCmd[QObject::tr("PO")] = {&Kernel::excPrintout, 1, 1, 1};
+    stringToCmd[QObject::tr("POT")] = {&Kernel::excPot, 1, 1, 1};
 
-    stringToCmd[k.cerase()] = {&Kernel::excErase, 1, 1, 1};
-    stringToCmd[k.er()] = {&Kernel::excErase, 1, 1, 1};
-    stringToCmd[k.erall()] = {&Kernel::excErall, 0, 0, 0};
-    stringToCmd[k.erps()] = {&Kernel::excErps, 0, 0, 0};
-    stringToCmd[k.erns()] = {&Kernel::excErns, 0, 0, 0};
-    stringToCmd[k.erpls()] = {&Kernel::excErpls, 0, 0, 0};
-    stringToCmd[k.bury()] = {&Kernel::excBury, 1, 1, 1};
-    stringToCmd[k.unbury()] = {&Kernel::excUnbury, 1, 1, 1};
-    stringToCmd[k.buriedp()] = {&Kernel::excBuriedp, 1, 1, 1};
-    stringToCmd[k.buriedq()] = {&Kernel::excBuriedp, 1, 1, 1};
-    stringToCmd[k.trace()] = {&Kernel::excTrace, 1, 1, 1};
-    stringToCmd[k.untrace()] = {&Kernel::excUntrace, 1, 1, 1};
-    stringToCmd[k.tracedp()] = {&Kernel::excTracedp, 1, 1, 1};
-    stringToCmd[k.tracedq()] = {&Kernel::excTracedp, 1, 1, 1};
-    stringToCmd[k.step()] = {&Kernel::excStep, 1, 1, 1};
-    stringToCmd[k.unstep()] = {&Kernel::excUnstep, 1, 1, 1};
-    stringToCmd[k.steppedp()] = {&Kernel::excSteppedp, 1, 1, 1};
-    stringToCmd[k.steppedq()] = {&Kernel::excSteppedp, 1, 1, 1};
-    stringToCmd[k.edit()] = {&Kernel::excEdit, 0, -1, 1};
-    stringToCmd[k.ed()] = {&Kernel::excEdit, 0, -1, 1};
-    stringToCmd[k.editfile()] = {&Kernel::excEditfile, 1, 1, 1};
-    stringToCmd[k.save()] = {&Kernel::excSave, 0, -1, 1};
-    stringToCmd[k.load()] = {&Kernel::excLoad, 1, 1, 1};
-    stringToCmd[k.help()] = {&Kernel::excHelp, 0, -1, -1};
+    stringToCmd[QObject::tr("ERASE")] = {&Kernel::excErase, 1, 1, 1};
+    stringToCmd[QObject::tr("ER")] = {&Kernel::excErase, 1, 1, 1};
+    stringToCmd[QObject::tr("ERALL")] = {&Kernel::excErall, 0, 0, 0};
+    stringToCmd[QObject::tr("ERPS")] = {&Kernel::excErps, 0, 0, 0};
+    stringToCmd[QObject::tr("ERNS")] = {&Kernel::excErns, 0, 0, 0};
+    stringToCmd[QObject::tr("ERPLS")] = {&Kernel::excErpls, 0, 0, 0};
+    stringToCmd[QObject::tr("BURY")] = {&Kernel::excBury, 1, 1, 1};
+    stringToCmd[QObject::tr("UNBURY")] = {&Kernel::excUnbury, 1, 1, 1};
+    stringToCmd[QObject::tr("BURIEDP")] = {&Kernel::excBuriedp, 1, 1, 1};
+    stringToCmd[QObject::tr("BURIED?")] = {&Kernel::excBuriedp, 1, 1, 1};
+    stringToCmd[QObject::tr("TRACE")] = {&Kernel::excTrace, 1, 1, 1};
+    stringToCmd[QObject::tr("UNTRACE")] = {&Kernel::excUntrace, 1, 1, 1};
+    stringToCmd[QObject::tr("TRACEDP")] = {&Kernel::excTracedp, 1, 1, 1};
+    stringToCmd[QObject::tr("TRACED?")] = {&Kernel::excTracedp, 1, 1, 1};
+    stringToCmd[QObject::tr("STEP")] = {&Kernel::excStep, 1, 1, 1};
+    stringToCmd[QObject::tr("UNSTEP")] = {&Kernel::excUnstep, 1, 1, 1};
+    stringToCmd[QObject::tr("STEPPEDP")] = {&Kernel::excSteppedp, 1, 1, 1};
+    stringToCmd[QObject::tr("STEPPED?")] = {&Kernel::excSteppedp, 1, 1, 1};
+    stringToCmd[QObject::tr("EDIT")] = {&Kernel::excEdit, 0, -1, 1};
+    stringToCmd[QObject::tr("ED")] = {&Kernel::excEdit, 0, -1, 1};
+    stringToCmd[QObject::tr("EDITFILE")] = {&Kernel::excEditfile, 1, 1, 1};
+    stringToCmd[QObject::tr("SAVE")] = {&Kernel::excSave, 0, -1, 1};
+    stringToCmd[QObject::tr("LOAD")] = {&Kernel::excLoad, 1, 1, 1};
+    stringToCmd[QObject::tr("HELP")] = {&Kernel::excHelp, 0, -1, -1};
 
     // CONTROL STRUCTURES
 
-    stringToCmd[k.run()] = {&Kernel::excRun, 1, 1, 1};
-    stringToCmd[k.time()] = {&Kernel::excTime, 1, 1, 1};
-    stringToCmd[k.runresult()] = {&Kernel::excRunresult, 1, 1, 1};
-    stringToCmd[k.kforever()] = {&Kernel::excForever, 1, 1, 1};
-    stringToCmd[k.repcount()] = {&Kernel::excRepcount, 0, 0, 0};
-    stringToCmd[k.kif()] = {&Kernel::excIf, 2, 2, 2};
-    stringToCmd[k.ifelse()] = {&Kernel::excIfelse, 3, 3, 3};
-    stringToCmd[k.test()] = {&Kernel::excTest, 1, 1, 1};
-    stringToCmd[k.iftrue()] = {&Kernel::excIftrue, 1, 1, 1};
-    stringToCmd[k.ift()] = {&Kernel::excIftrue, 1, 1, 1};
-    stringToCmd[k.iffalse()] = {&Kernel::excIffalse, 1, 1, 1};
-    stringToCmd[k.iff()] = {&Kernel::excIffalse, 1, 1, 1};
-    stringToCmd[k.stop()] = {&Kernel::excStop, 0, 0, 1};
-    stringToCmd[k.output()] = {&Kernel::excOutput, 1, 1, 1};
-    stringToCmd[k.op()] = {&Kernel::excOutput, 1, 1, 1};
-    stringToCmd[k.kcatch()] = {&Kernel::excCatch, 2, 2, 2};
-    stringToCmd[k.kthrow()] = {&Kernel::excThrow, 1, 1, 2};
-    stringToCmd[k.error()] = {&Kernel::excError, 0, 0, 0};
-    stringToCmd[k.pause()] = {&Kernel::excPause, 0, 0, 0};
-    stringToCmd[k.kcontinue()] = {&Kernel::excContinue, 0, -1, 1};
-    stringToCmd[k.co()] = {&Kernel::excContinue, 0, -1, 1};
-    stringToCmd[k.bye()] = {&Kernel::excBye, 0, 0, 0};
-    stringToCmd[k.dmaybeoutput()] = {&Kernel::excDotMaybeoutput, 1, 1, 1};
-    stringToCmd[k.tag()] = {&Kernel::excTag, 1, 1, 1};
-    stringToCmd[k.kgoto()] = {&Kernel::excGoto, 1, 1, 1};
+    stringToCmd[QObject::tr("RUN")] = {&Kernel::excRun, 1, 1, 1};
+    stringToCmd[QObject::tr("TIME")] = {&Kernel::excTime, 1, 1, 1};
+    stringToCmd[QObject::tr("RUNRESULT")] = {&Kernel::excRunresult, 1, 1, 1};
+    stringToCmd[QObject::tr("FOREVER")] = {&Kernel::excForever, 1, 1, 1};
+    stringToCmd[QObject::tr("REPCOUNT")] = {&Kernel::excRepcount, 0, 0, 0};
+    stringToCmd[QObject::tr("IF")] = {&Kernel::excIf, 2, 2, 2};
+    stringToCmd[QObject::tr("IFELSE")] = {&Kernel::excIfelse, 3, 3, 3};
+    stringToCmd[QObject::tr("TEST")] = {&Kernel::excTest, 1, 1, 1};
+    stringToCmd[QObject::tr("IFTRUE")] = {&Kernel::excIftrue, 1, 1, 1};
+    stringToCmd[QObject::tr("IFT")] = {&Kernel::excIftrue, 1, 1, 1};
+    stringToCmd[QObject::tr("IFFALSE")] = {&Kernel::excIffalse, 1, 1, 1};
+    stringToCmd[QObject::tr("IFF")] = {&Kernel::excIffalse, 1, 1, 1};
+    stringToCmd[QObject::tr("STOP")] = {&Kernel::excStop, 0, 0, 1};
+    stringToCmd[QObject::tr("OUTPUT")] = {&Kernel::excOutput, 1, 1, 1};
+    stringToCmd[QObject::tr("OP")] = {&Kernel::excOutput, 1, 1, 1};
+    stringToCmd[QObject::tr("CATCH")] = {&Kernel::excCatch, 2, 2, 2};
+    stringToCmd[QObject::tr("THROW")] = {&Kernel::excThrow, 1, 1, 2};
+    stringToCmd[QObject::tr("ERROR")] = {&Kernel::excError, 0, 0, 0};
+    stringToCmd[QObject::tr("PAUSE")] = {&Kernel::excPause, 0, 0, 0};
+    stringToCmd[QObject::tr("CONTINUE")] = {&Kernel::excContinue, 0, -1, 1};
+    stringToCmd[QObject::tr("CO")] = {&Kernel::excContinue, 0, -1, 1};
+    stringToCmd[QObject::tr("BYE")] = {&Kernel::excBye, 0, 0, 0};
+    stringToCmd[QObject::tr(".MAYBEOUTPUT")] = {&Kernel::excDotMaybeoutput, 1, 1, 1};
+    stringToCmd[QObject::tr("TAG")] = {&Kernel::excTag, 1, 1, 1};
+    stringToCmd[QObject::tr("GOTO")] = {&Kernel::excGoto, 1, 1, 1};
 
-    stringToCmd[k.apply()] = {&Kernel::excApply, 2, 2, 2};
+    stringToCmd[QObject::tr("APPLY")] = {&Kernel::excApply, 2, 2, 2};
     stringToCmd["?"] = {&Kernel::excNamedSlot, 0, 0, 1};
 
-    stringToCmd[k.cto()] = {&Kernel::excTo, -1, -1, -1};
-    stringToCmd[k.dcMacro()] = {&Kernel::excTo, -1, -1, -1};
-    stringToCmd[k.dDefmacro()] = {&Kernel::excDefine, 2, 2, 2};
-    stringToCmd[k.macrop()] = {&Kernel::excMacrop, 1, 1, 1};
-    stringToCmd[k.macroq()] = {&Kernel::excMacrop, 1, 1, 1};
+    stringToCmd[QObject::tr("TO")] = {&Kernel::excTo, -1, -1, -1};
+    stringToCmd[QObject::tr(".MACRO")] = {&Kernel::excTo, -1, -1, -1};
+    stringToCmd[QObject::tr(".DEFMACRO")] = {&Kernel::excDefine, 2, 2, 2};
+    stringToCmd[QObject::tr("MACROP")] = {&Kernel::excMacrop, 1, 1, 1};
+    stringToCmd[QObject::tr("MACRO?")] = {&Kernel::excMacrop, 1, 1, 1};
 
-    stringToCmd[k.gc()] = {&Kernel::excNoop, 0, 0, -1};
-    stringToCmd[k.dsetsegmentsize()] = {&Kernel::excNoop, 1, 1, 1};
-    stringToCmd[k.setpenpattern()] = {&Kernel::excNoop, 1, 1, 1};
-    stringToCmd[k.penpattern()] = {&Kernel::excNoop, 1, 1, 1};
-    stringToCmd[k.refresh()] = {&Kernel::excNoop, 0, 0, 0};
-    stringToCmd[k.norefresh()] = {&Kernel::excNoop, 0, 0, 0};
+    stringToCmd[QObject::tr("GC")] = {&Kernel::excNoop, 0, 0, -1};
+    stringToCmd[QObject::tr(".SETSEGMENTSIZE")] = {&Kernel::excNoop, 1, 1, 1};
+    stringToCmd[QObject::tr("SETPENPATTERN")] = {&Kernel::excNoop, 1, 1, 1};
+    stringToCmd[QObject::tr("PENPATTERN")] = {&Kernel::excNoop, 1, 1, 1};
+    stringToCmd[QObject::tr("REFRESH")] = {&Kernel::excNoop, 0, 0, 0};
+    stringToCmd[QObject::tr("NOREFRESH")] = {&Kernel::excNoop, 0, 0, 0};
 
     stringToCmd["+"] = {&Kernel::excSum, 0, 2, -1};
     stringToCmd["*"] = {&Kernel::excProduct, 0, 2, -1};
@@ -475,7 +475,7 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
     lastProcedureCreatedTimestamp = QDateTime::currentMSecsSinceEpoch();
 
     QString cmdString = cmd.wordValue()->keyValue();
-    bool isMacro = ((cmdString == k.dcMacro()) || (cmdString == k.dDefmacro()));
+    bool isMacro = ((cmdString == QObject::tr(".MACRO")) || (cmdString == QObject::tr(".DEFMACRO")));
 
     body->countOfDefaultParams = 0;
     body->countOfMinParams = 0;
@@ -577,7 +577,7 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
         ListIterator wordIter = lineP.listValue()->newIterator();
         while (wordIter.elementExists()) {
             DatumPtr d = wordIter.element();
-            if (d.isWord() && (d.wordValue()->keyValue() == k.tag()) &&
+            if (d.isWord() && (d.wordValue()->keyValue() == QObject::tr("TAG")) &&
                 wordIter.elementExists()) {
                 DatumPtr d = wordIter.element();
                 if (d.isWord()) {
@@ -684,7 +684,7 @@ DatumPtr Procedures::procedureFulltext(DatumPtr procnameP, bool shouldValidate) 
                 retval->append(DatumPtr(unreadList(b.element().listValue(), false)));
             }
 
-            DatumPtr end(k.end());
+            DatumPtr end(QObject::tr("END"));
             retval->append(end);
             return DatumPtr(retval);
         } else {
@@ -695,8 +695,8 @@ DatumPtr Procedures::procedureFulltext(DatumPtr procnameP, bool shouldValidate) 
     }
     List *retval = new List();
     retval->append(
-        DatumPtr(k.to_() + procnameP.wordValue()->printValue()));
-    retval->append(DatumPtr(k.end()));
+        DatumPtr(QObject::tr("to ") + procnameP.wordValue()->printValue()));
+    retval->append(DatumPtr(QObject::tr("END")));
     return DatumPtr(retval);
 }
 
@@ -715,9 +715,9 @@ QString Procedures::procedureTitle(DatumPtr procnameP) {
     List *firstLine = firstlineP.listValue();
 
     if (body->isMacro)
-        firstLine->append(DatumPtr(k.dMacro()));
+        firstLine->append(DatumPtr(QObject::tr(".macro")));
     else
-        firstLine->append(DatumPtr(k.to()));
+        firstLine->append(DatumPtr(QObject::tr("to")));
     firstLine->append(procnameP);
 
     QString paramName;
@@ -776,7 +776,7 @@ DatumPtr Procedures::astnodeFromCommand(DatumPtr cmdP, int &minParams,
         minParams = command.countOfMinParams;
         maxParams = command.countOfMaxParams;
         node.astnodeValue()->kernel = command.method;
-    } else if (cmdString.startsWith(k.set()) && (cmdString.size() > 3) &&
+    } else if (cmdString.startsWith(QObject::tr("SET")) && (cmdString.size() > 3) &&
                mainKernel()->varALLOWGETSET()) {
         node.astnodeValue()->kernel = &Kernel::excSetfoo;
         defaultParams = 1;
@@ -807,7 +807,7 @@ DatumPtr Procedures::astnodeWithLiterals(DatumPtr cmd, DatumPtr params) {
     ListIterator iter = params.listValue()->newIterator();
     while (iter.elementExists()) {
         DatumPtr p = iter.element();
-        DatumPtr a = DatumPtr(new ASTNode(k.literal()));
+        DatumPtr a = DatumPtr(new ASTNode(QObject::tr("literal")));
         a.astnodeValue()->kernel = &Kernel::executeLiteral;
         a.astnodeValue()->addChild(p);
         node.astnodeValue()->addChild(a);

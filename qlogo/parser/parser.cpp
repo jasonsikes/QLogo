@@ -34,7 +34,6 @@
 //#include "datum/array.h"
 #include <qdatetime.h>
 #include <qdebug.h>
-#include "stringconstants.h"
 
 // TODO: we could implement this into something a little faster.
 const QString specialChars("+-()*%/<>=");
@@ -83,7 +82,7 @@ void Parser::inputProcedure(DatumPtr nodeP, TextStream *readStream) {
     DatumPtr first = line.listValue()->first();
     if (first.isWord()) {
       QString firstWord = first.wordValue()->keyValue();
-      if (firstWord == k.end())
+      if (firstWord == QObject::tr("END"))
         break;
     }
     textP.listValue()->append(line);
@@ -93,7 +92,7 @@ void Parser::inputProcedure(DatumPtr nodeP, TextStream *readStream) {
   mainProcedures()->defineProcedure(to, procnameP, textP, sourceText);
 
   mainKernel()->sysPrint(procnameP.wordValue()->printValue());
-  mainKernel()->sysPrint(k._defined());
+  mainKernel()->sysPrint(QObject::tr(" defined\n"));
 }
 
 
@@ -239,7 +238,7 @@ DatumPtr Parser::parseTermexp() {
     return nothing;
 
   if (currentToken.isa() == Datum::listType) {
-    DatumPtr node(new ASTNode(k.word()));
+    DatumPtr node(new ASTNode(QObject::tr("Word")));
     node.astnodeValue()->kernel = &Kernel::executeLiteral;
     node.astnodeValue()->addChild(currentToken);
     advanceToken();
@@ -247,7 +246,7 @@ DatumPtr Parser::parseTermexp() {
   }
 
   if (currentToken.isa() == Datum::arrayType) {
-    DatumPtr node(new ASTNode(k.array()));
+    DatumPtr node(new ASTNode(QObject::tr("Array")));
     node.astnodeValue()->kernel = &Kernel::executeLiteral;
     node.astnodeValue()->addChild(currentToken);
     advanceToken();
@@ -296,14 +295,14 @@ DatumPtr Parser::parseTermexp() {
       rawToChar(name);
     }
     if (firstChar == '"') {
-      DatumPtr node(new ASTNode(k.quotedname()));
+      DatumPtr node(new ASTNode(QObject::tr("QuotedName")));
       node.astnodeValue()->kernel = &Kernel::executeLiteral;
       node.astnodeValue()->addChild(
           DatumPtr(DatumPtr(name, currentToken.wordValue()->isForeverSpecial)));
       advanceToken();
       return node;
     } else {
-      DatumPtr node(new ASTNode(k.valueof()));
+      DatumPtr node(new ASTNode(QObject::tr("ValueOf")));
       node.astnodeValue()->kernel = &Kernel::executeValueOf;
       node.astnodeValue()->addChild(DatumPtr(name));
       advanceToken();
@@ -314,7 +313,7 @@ DatumPtr Parser::parseTermexp() {
   // See if it's a number
   double number = currentToken.wordValue()->numberValue();
   if (currentToken.wordValue()->didNumberConversionSucceed()) {
-    DatumPtr node(new ASTNode(k.number()));
+    DatumPtr node(new ASTNode(QObject::tr("number")));
     node.astnodeValue()->kernel = &Kernel::executeLiteral;
     node.astnodeValue()->addChild(DatumPtr(number));
     advanceToken();
@@ -331,7 +330,7 @@ DatumPtr Parser::parseTermexp() {
 DatumPtr Parser::parseStopIfExists(DatumPtr command)
 {
     if ((currentToken != nothing) && currentToken.isWord()
-            && (currentToken.wordValue()->keyValue() == k.stop())) {
+            && (currentToken.wordValue()->keyValue() == QObject::tr("STOP"))) {
         // Consume and create the STOP node
         DatumPtr stopCmd = parseCommand(false);
         stopCmd.astnodeValue()->addChild(command);

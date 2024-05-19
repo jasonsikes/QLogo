@@ -29,7 +29,6 @@
 #include "parser.h"
 #include "datum/word.h"
 #include "datum/astnode.h"
-#include "stringconstants.h"
 #include "controller/logocontroller.h"
 
 QString Kernel::executeText(const QString &text) {
@@ -216,7 +215,7 @@ QString Kernel::createPrintoutFromContentsList(DatumPtr contentslist,
     if ((value == nothing) && shouldValidate) {
       Error::noValue(varnameP);
     } else {
-      QString line = k.make12().arg(varname,
+      QString line = QObject::tr("Make \"%1 %2\n").arg(varname,
                                     procedures->printoutDatum(value));
       retval += line;
     }
@@ -231,7 +230,7 @@ QString Kernel::createPrintoutFromContentsList(DatumPtr contentslist,
     while (j.elementExists()) {
       DatumPtr nameP = j.element();
       DatumPtr valueP = j.element();
-      QString line = k.pprop123()
+      QString line = QObject::tr("Pprop %1 %2 %3\n")
                          .arg(procedures->printoutDatum(listnameP),
                               procedures->printoutDatum(nameP),
                               procedures->printoutDatum(valueP));
@@ -253,8 +252,8 @@ LOADNOISILY						(variable)
 COD***/
 
 bool Kernel::varLOADNOISILY() {
-  DatumPtr retvalP = variables.datumForName(k.loadnoisily());
-  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == k.kctrue()))
+  DatumPtr retvalP = variables.datumForName(QObject::tr("LOADNOISILY"));
+  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
     return true;
   return false;
 }
@@ -271,8 +270,8 @@ ALLOWGETSET						(variable)
 COD***/
 
 bool Kernel::varALLOWGETSET() {
-  DatumPtr retvalP = variables.datumForName(k.allowGetSet());
-  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == k.kctrue()))
+  DatumPtr retvalP = variables.datumForName(QObject::tr("ALLOWGETSET"));
+  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
     return true;
   return false;
 }
@@ -302,7 +301,7 @@ BUTTONACT						(variable)
 
 COD***/
 
-DatumPtr Kernel::varBUTTONACT() { return variables.datumForName(k.buttonact()); }
+DatumPtr Kernel::varBUTTONACT() { return variables.datumForName(QObject::tr("BUTTONACT")); }
 
 
 /***DOC KEYACT
@@ -327,7 +326,7 @@ KEYACT							(variable)
 
 COD***/
 
-DatumPtr Kernel::varKEYACT() { return variables.datumForName(k.keyact()); }
+DatumPtr Kernel::varKEYACT() { return variables.datumForName(QObject::tr("KEYACT")); }
 
 
 /***DOC FULLPRINTP
@@ -343,8 +342,8 @@ FULLPRINTP						(variable)
 COD***/
 
 bool Kernel::varFULLPRINTP() {
-  DatumPtr retvalP = variables.datumForName(k.fullprintp());
-  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == k.kctrue()))
+  DatumPtr retvalP = variables.datumForName(QObject::tr("FULLPRINTP"));
+  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
     return true;
   return false;
 }
@@ -359,7 +358,7 @@ PRINTDEPTHLIMIT						(variable)
 COD***/
 
 int Kernel::varPRINTDEPTHLIMIT() {
-  DatumPtr retvalP = variables.datumForName(k.printdepthlimit());
+  DatumPtr retvalP = variables.datumForName(QObject::tr("PRINTDEPTHLIMIT"));
   if (retvalP.isWord()) {
     double retval = retvalP.wordValue()->numberValue();
     if (retvalP.wordValue()->didNumberConversionSucceed()) {
@@ -379,7 +378,7 @@ PRINTWIDTHLIMIT						(variable)
 COD***/
 
 int Kernel::varPRINTWIDTHLIMIT() {
-  DatumPtr retvalP = variables.datumForName(k.printwidthlimit());
+  DatumPtr retvalP = variables.datumForName(QObject::tr("PRINTWIDTHLIMIT"));
   if (retvalP.isWord()) {
     double retval = retvalP.wordValue()->numberValue();
     if (retvalP.wordValue()->didNumberConversionSucceed()) {
@@ -398,7 +397,7 @@ STARTUP							(variable)
 
 COD***/
 
-DatumPtr Kernel::varSTARTUP() { return variables.datumForName(k.startup()); }
+DatumPtr Kernel::varSTARTUP() { return variables.datumForName(QObject::tr("STARTUP")); }
 
 
 /***DOC UNBURYONEDIT
@@ -411,8 +410,8 @@ UNBURYONEDIT						(variable)
 COD***/
 
 bool Kernel::varUNBURYONEDIT() {
-  DatumPtr retvalP = variables.datumForName(k.unburyonedit());
-  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == k.kctrue()))
+  DatumPtr retvalP = variables.datumForName(QObject::tr("UNBURYONEDIT"));
+  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
     return true;
   return false;
 }
@@ -428,8 +427,8 @@ CASEIGNOREDP						(variable)
 COD***/
 
 bool Kernel::varCASEIGNOREDP() {
-  DatumPtr retvalP = variables.datumForName(k.caseignoredp());
-  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == k.kctrue()))
+  DatumPtr retvalP = variables.datumForName(QObject::tr("CASEIGNOREDP"));
+  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
     return true;
   return false;
 }
@@ -681,7 +680,7 @@ DatumPtr Kernel::excMake(DatumPtr node) {
   variables.setDatumForName(rvalue, lvalue);
 
   if (variables.isTraced(lvalue)) {
-    QString line = k.make12()
+    QString line = QObject::tr("Make \"%1 %2\n")
                        .arg(h.wordAtIndex(0).wordValue()->printValue(),
                             procedures->unreadDatum(rvalue));
     sysPrint(line);
@@ -862,7 +861,7 @@ DatumPtr Kernel::excPprop(DatumPtr node) {
   DatumPtr value = h.datumAtIndex(2);
   plists.addProperty(plistname, propname, value);
   if (plists.isTraced(plistname)) {
-    QString line = k.pprop123()
+    QString line = QObject::tr("Pprop %1 %2 %3\n")
                        .arg(procedures->unreadDatum(h.datumAtIndex(0)),
                             procedures->unreadDatum(h.datumAtIndex(1)),
                             procedures->unreadDatum(value));
@@ -1238,7 +1237,7 @@ DatumPtr Kernel::excPot(DatumPtr node) {
     DatumPtr value = variables.datumForName(varname);
     if (value == nothing)
       Error::noValue(varnameP);
-    QString line = k.make12().arg(varname, procedures->unreadDatum(value));
+    QString line = QObject::tr("Make \"%1 %2\n").arg(varname, procedures->unreadDatum(value));
     stdPrint(line);
   }
 
@@ -1248,7 +1247,7 @@ DatumPtr Kernel::excPot(DatumPtr node) {
     QString listname = listnameP.wordValue()->keyValue();
     DatumPtr proplist = plists.getPropertyList(listname);
     if (proplist.listValue()->size() > 0) {
-      QString line = k.plist12()
+      QString line = QObject::tr("Plist %1 = %2\n")
                          .arg(procedures->unreadDatum(listnameP),
                               procedures->unreadDatum(proplist, true));
       stdPrint(line);

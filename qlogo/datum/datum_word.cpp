@@ -27,8 +27,8 @@
 
 #include "datum/word.h"
 #include "datum/datump.h"
-#include "stringconstants.h"
 #include <qdebug.h>
+#include <QObject>
 
 QChar rawToChar(const QChar &src) {
   const ushort rawToAsciiMap[] = {
@@ -137,7 +137,7 @@ void Word::genKeyString()
 Datum::DatumType Word::isa() { return wordType; }
 
 QString Word::name() {
-  return k.word();
+  return QObject::tr("Word");
 }
 
 QString Word::keyValue() {
