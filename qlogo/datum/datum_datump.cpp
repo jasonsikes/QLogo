@@ -49,34 +49,34 @@ DatumPtr::DatumPtr(const DatumPtr &other) noexcept {
 }
 
 DatumPtr::DatumPtr(bool b) {
-  d = Word::alloc(b ? k.ktrue() : k.kfalse());
+  d = new Word(b ? k.ktrue() : k.kfalse());
   d -> retain();
 }
 
 
 DatumPtr::DatumPtr(double n)
 {
-  d = Word::alloc(n);
+  d = new Word(n);
   d->retain();
 }
 
 
 DatumPtr::DatumPtr(int n)
 {
-  d = Word::alloc((double)n);
+  d = new Word((double)n);
   d->retain();
 }
 
 
-DatumPtr::DatumPtr(const QString n, bool isVBarred)
+DatumPtr::DatumPtr(QString n, bool isVBarred)
 {
-  d = Word::alloc(n, isVBarred);
+  d = new Word(n, isVBarred);
   d->retain();
 }
 
 DatumPtr::DatumPtr(const char* n)
 {
-  d = Word::alloc(QString(n));
+  d = new Word(QString(n));
   d->retain();
 }
 

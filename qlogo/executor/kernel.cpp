@@ -293,7 +293,7 @@ Kernel::Kernel() {
   initVariables();
   initPalette();
 
-  filePrefix = List::alloc();
+  filePrefix = new List();
 }
 
 Kernel::~Kernel() {
@@ -357,7 +357,7 @@ DatumPtr Kernel::executeProcedureCore(DatumPtr node) {
   // Finally, take in the remainder (if any) as a list.
   if (proc.procedureValue()->restInput != "") {
     const QString &name = proc.procedureValue()->restInput;
-    DatumPtr remainderList = DatumPtr(List::alloc());
+    DatumPtr remainderList = DatumPtr(new List());
     while (childIndex < h.countOfChildren()) {
       DatumPtr value = h.datumAtIndex(childIndex);
       remainderList.listValue()->append(value);

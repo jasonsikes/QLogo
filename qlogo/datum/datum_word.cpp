@@ -30,8 +30,6 @@
 #include "stringconstants.h"
 #include <qdebug.h>
 
-static DatumPool<Word> pool(50);
-
 QChar rawToChar(const QChar &src) {
   const ushort rawToAsciiMap[] = {
       2,  58, 3,  32, 4,  9,  5,  10, 6,  40,  11, 63,  14, 43, 15, 126,
@@ -78,28 +76,24 @@ Word::Word() {
   printableStringIsValid = false;
 }
 
-Word * Word::alloc(const QString other, bool aIsForeverSpecial) {
-  Word * retval = (Word *) pool.alloc();
-  retval->numberIsValid = false;
-  retval->rawStringIsValid = true;
-  retval->keyStringIsValid = false;
-  retval->printableStringIsValid = false;
-  retval->sourceIsNumber = false;
-  retval->isForeverSpecial = aIsForeverSpecial;
+Word::Word(const QString other, bool aIsForeverSpecial) {
+  numberIsValid = false;
+  rawStringIsValid = true;
+  keyStringIsValid = false;
+  printableStringIsValid = false;
+  sourceIsNumber = false;
+  isForeverSpecial = aIsForeverSpecial;
 
-  retval->rawString = other;
-  return retval;
+  rawString = other;
 }
 
-Word * Word::alloc(double other) {
-  Word * retval = (Word *) pool.alloc();
-  retval->number = other;
-  retval->numberIsValid = true;
-  retval->rawStringIsValid = false;
-  retval->keyStringIsValid = false;
-  retval->printableStringIsValid = false;
-  retval->sourceIsNumber = true;
-  return retval;
+Word::Word(double other) {
+  number = other;
+  numberIsValid = true;
+  rawStringIsValid = false;
+  keyStringIsValid = false;
+  printableStringIsValid = false;
+  sourceIsNumber = true;
 }
 
 
@@ -144,11 +138,6 @@ Datum::DatumType Word::isa() { return wordType; }
 
 QString Word::name() {
   return k.word();
-}
-
-void Word::addToPool()
-{
-  pool.dealloc(this);
 }
 
 QString Word::keyValue() {

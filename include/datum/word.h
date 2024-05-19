@@ -57,8 +57,6 @@ protected:
     bool printableStringIsValid;
     bool sourceIsNumber;
 
-    void addToPool();
-
 public:
 
     /// Set to true if the word was created with vertical bars as delimiters.
@@ -73,10 +71,10 @@ public:
     ///
     /// \param other the string value of this word
     /// \param aIsForeverSpecial characters defined with vertical bars will retain their special use.
-    static Word * alloc(const QString other, bool aIsForeverSpecial = false);
+    Word(const QString other, bool aIsForeverSpecial = false);
 
     /// Create a Word object with a number.
-    static Word * alloc(double other);
+    Word(double other);
 
     /// returns the number representation of the Word. Use didNumberConversionSucceed() to check.
     double numberValue(void);

@@ -42,7 +42,7 @@ DatumPtr nodes()
 
   maxCountOfNodes = countOfNodes;
 
-  List *retval = List::alloc();
+  List *retval = new List();
   retval->append(DatumPtr(a));
   retval->append(DatumPtr(b));
   return DatumPtr(retval);
@@ -62,12 +62,6 @@ Datum::~Datum()
   --countOfNodes;
 }
 
-
-void Datum::addToPool()
-{
-  // Base class does nothing. Subclasses should add themselves to their pools.
-  Q_ASSERT(false);
-}
 
 QString Datum::printValue(bool, int, int) { return name(); }
 

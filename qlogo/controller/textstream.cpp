@@ -52,7 +52,7 @@ TextStream::TextStream(QTextStream *aStream)
 
 void TextStream::clearLineHistory()
 {
-  recentLineHistory = DatumPtr(List::alloc());
+  recentLineHistory = DatumPtr(new List());
 }
 
 
@@ -68,7 +68,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt, bool isBaseLe
     listSourceWord = lineP.wordValue()->rawValue();
     listSourceWordIter = listSourceWord.begin();
   }
-  List *retval = List::alloc();
+  List *retval = new List();
   DatumPtr retvalP(retval);
   QString currentWord = "";
 
@@ -162,7 +162,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt, bool isBaseLe
                   }
                   origin = originStr.toInt();
               }
-              Array *ary = Array::alloc(origin, retval);
+              Array *ary = new Array(origin, retval);
               return DatumPtr(ary);
           }
           case '{':
@@ -198,7 +198,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt, bool isBaseLe
     }
     // We have exhausted our source. Return what we have.
     if (makeArray) {
-      Array *ary = Array::alloc(1, retval);
+      Array *ary = new Array(1, retval);
       return DatumPtr(ary);
     }
     return retvalP;
@@ -311,7 +311,7 @@ DatumPtr TextStream::readChar() {
   }
 
   if (stream->atEnd())
-    return DatumPtr(List::alloc());
+    return DatumPtr(new List());
   QString line = stream->read(1);
   if (stream->status() != QTextStream::Ok)
     Error::fileSystem();

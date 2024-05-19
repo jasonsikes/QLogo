@@ -31,8 +31,6 @@
 #include <unistd.h>
 #include "stringconstants.h"
 
-static DatumPool<Error> pool(3);
-
 
 Error::Error()
 {
@@ -43,7 +41,7 @@ Error * Error::createError(int aNumber, const QString &aErrorText) {
 }
 
 Error * Error::createError(int aNumber, DatumPtr aErrorText) {
-  Error * retval = (Error *) pool.alloc();
+    Error * retval = new Error();
   retval->code = aNumber;
   retval->errorText = aErrorText;
   retval->tag = nothing;
@@ -229,14 +227,4 @@ void Error::throwError(DatumPtr aTag, DatumPtr aOutput) {
   mainKernel()->registerError(e);
 }
 
-
-void Error::addToPool()
-{
-  tag = nothing;
-  errorText = nothing;
-  output = nothing;
-  procedure = nothing;
-  instructionLine = nothing;
-  pool.dealloc(this);
-}
 

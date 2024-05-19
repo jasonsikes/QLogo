@@ -28,7 +28,6 @@
 
 #include <QChar>
 #include <QStack>
-#include <QVector>
 #include "QDebug"
 
 #ifndef dv
@@ -79,8 +78,6 @@ class Datum {
 protected:
   int retainCount;
 
-  virtual void addToPool();
-
 public:
   /// Value returned by isa().
   enum DatumType {
@@ -117,9 +114,6 @@ public:
   /// Decrement the retain count.
   inline void release(void) {
       --retainCount;
-      if (retainCount <= 0) {
-          addToPool();
-      }
   }
 
   /// Return type of this object.
@@ -200,53 +194,6 @@ public:
   virtual DatumPtr fromMember(DatumPtr aDatum, bool ignoreCase);
 };
 
-
-
-template <class T> class DatumPool
-{
-  QStack<T *>stack;
-
-  // Every block allocated should contain this many elements.
-  int blockSize;
-
-  // For debugging
-  int wildCount = 0; // Count of objects allocated that are outside the pool
-
-  // Create a new block of objects.
-  void addToPool()
-  {
-    QVector<T> *block = new QVector<T>(blockSize);
-      Q_ASSERT(block != NULL);
-      for (auto &i : *block) {
-          stack.push(&i);
-      }
-  }
-
-  public:
-
-  /// Constructor.
-  /// /param aBlockSize: the count of objects that should be allocated in each block
-      DatumPool(int aBlockSize)
-      {
-      blockSize = aBlockSize;
-      addToPool();
-      }
-
-  /// acquire a Datum from its pool.
-      T* alloc()
-      {
-      if (stack.isEmpty())
-          addToPool();
-      return stack.pop();
-      }
-
-  /// place a datum into its pool.
-      void dealloc(T *obj)
-      {
-      stack.push(obj);
-      }
-
-};
 
 
 /// A datum that has no value.

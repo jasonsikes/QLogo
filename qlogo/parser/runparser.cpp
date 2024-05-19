@@ -196,7 +196,7 @@ DatumPtr Runparser::doRunparse(DatumPtr src) {
     TextStream stream(&srcStream);
     src = stream.readlistWithPrompt("", false);
   }
-  runparseRetval = List::alloc();
+  runparseRetval = new List();
   ListIterator iter = src.listValue()->newIterator();
 
   while (iter.elementExists()) {

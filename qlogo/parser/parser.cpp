@@ -66,8 +66,8 @@ void Parser::inputProcedure(DatumPtr nodeP, TextStream *readStream) {
   if (mainProcedures()->isProcedure(procname))
     Error::procDefined(procnameP);
 
-  DatumPtr textP = DatumPtr(List::alloc());
-  DatumPtr firstLine = DatumPtr(List::alloc());
+  DatumPtr textP = DatumPtr(new List());
+  DatumPtr firstLine = DatumPtr(new List());
   for (int i = 1; i < node->countOfChildren(); ++i) {
     firstLine.listValue()->append(node->childAtIndex(i));
   }
@@ -137,7 +137,7 @@ DatumPtr Parser::parseExp() {
     advanceToken();
     DatumPtr right = parseSumexp();
 
-    DatumPtr node = DatumPtr(ASTNode::alloc(op));
+    DatumPtr node = DatumPtr(new ASTNode(op));
     if (right == nothing)
       Error::notEnough(op);
 
@@ -170,7 +170,7 @@ DatumPtr Parser::parseSumexp() {
     advanceToken();
     DatumPtr right = parseMulexp();
 
-    DatumPtr node = DatumPtr(ASTNode::alloc(op));
+    DatumPtr node = DatumPtr(new ASTNode(op));
     if (right == nothing)
       Error::notEnough(op);
 
@@ -196,7 +196,7 @@ DatumPtr Parser::parseMulexp() {
     advanceToken();
     DatumPtr right = parseminusexp();
 
-    DatumPtr node = DatumPtr(ASTNode::alloc(op));
+    DatumPtr node = DatumPtr(new ASTNode(op));
     if (right == nothing)
       Error::notEnough(op);
 
@@ -222,7 +222,7 @@ DatumPtr Parser::parseminusexp() {
     advanceToken();
     DatumPtr right = parseTermexp();
 
-    DatumPtr node = DatumPtr(ASTNode::alloc(op));
+    DatumPtr node = DatumPtr(new ASTNode(op));
     if (right == nothing)
       Error::notEnough(op);
 
@@ -239,7 +239,7 @@ DatumPtr Parser::parseTermexp() {
     return nothing;
 
   if (currentToken.isa() == Datum::listType) {
-    DatumPtr node(ASTNode::alloc(k.word()));
+    DatumPtr node(new ASTNode(k.word()));
     node.astnodeValue()->kernel = &Kernel::executeLiteral;
     node.astnodeValue()->addChild(currentToken);
     advanceToken();
@@ -247,7 +247,7 @@ DatumPtr Parser::parseTermexp() {
   }
 
   if (currentToken.isa() == Datum::arrayType) {
-    DatumPtr node(ASTNode::alloc(k.array()));
+    DatumPtr node(new ASTNode(k.array()));
     node.astnodeValue()->kernel = &Kernel::executeLiteral;
     node.astnodeValue()->addChild(currentToken);
     advanceToken();
@@ -296,14 +296,14 @@ DatumPtr Parser::parseTermexp() {
       rawToChar(name);
     }
     if (firstChar == '"') {
-      DatumPtr node(ASTNode::alloc(k.quotedname()));
+      DatumPtr node(new ASTNode(k.quotedname()));
       node.astnodeValue()->kernel = &Kernel::executeLiteral;
       node.astnodeValue()->addChild(
           DatumPtr(DatumPtr(name, currentToken.wordValue()->isForeverSpecial)));
       advanceToken();
       return node;
     } else {
-      DatumPtr node(ASTNode::alloc(k.valueof()));
+      DatumPtr node(new ASTNode(k.valueof()));
       node.astnodeValue()->kernel = &Kernel::executeValueOf;
       node.astnodeValue()->addChild(DatumPtr(name));
       advanceToken();
@@ -314,7 +314,7 @@ DatumPtr Parser::parseTermexp() {
   // See if it's a number
   double number = currentToken.wordValue()->numberValue();
   if (currentToken.wordValue()->didNumberConversionSucceed()) {
-    DatumPtr node(ASTNode::alloc(k.number()));
+    DatumPtr node(new ASTNode(k.number()));
     node.astnodeValue()->kernel = &Kernel::executeLiteral;
     node.astnodeValue()->addChild(DatumPtr(number));
     advanceToken();

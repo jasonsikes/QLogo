@@ -29,8 +29,6 @@
 #include <qdebug.h>
 
 
-static DatumPool<ASTNode> pool(40);
-
 void ASTNode::addChild(DatumPtr aChild) { children.push_back(aChild); }
 
 int ASTNode::countOfChildren() { return (int)children.size(); }
@@ -38,27 +36,20 @@ int ASTNode::countOfChildren() { return (int)children.size(); }
 DatumPtr ASTNode::childAtIndex(unsigned index) { return children.at(index); }
 
 
-ASTNode * ASTNode::alloc(DatumPtr aNodeName) {
-    ASTNode *retval = (ASTNode *)pool.alloc();
-    retval->children.clear();
-    retval->nodeName = aNodeName;
-    retval->kernel = NULL;
-    return retval;
+ASTNode::ASTNode(DatumPtr aNodeName) {
+    children.clear();
+    nodeName = aNodeName;
+    kernel = NULL;
 }
 
 
-ASTNode * ASTNode::alloc(QString aNodeName) {
-    return alloc(DatumPtr(aNodeName));
+ASTNode::ASTNode(QString aNodeName) {
+    children.clear();
+    nodeName = DatumPtr(aNodeName);
+    kernel = NULL;
 }
 
 ASTNode::~ASTNode() {
-}
-
-void ASTNode::addToPool()
-{
-    nodeName = nothing;
-    children.clear();
-    pool.dealloc(this);
 }
 
 Datum::DatumType ASTNode::isa() { return astnodeType; }

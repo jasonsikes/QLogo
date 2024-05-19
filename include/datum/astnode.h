@@ -30,7 +30,6 @@
 
 
 #include "datum/datump.h"
-#include <QVector>
 
 
 /// \brief A node of QLogo's Abstract Syntax Tree.
@@ -40,17 +39,15 @@
 /// and an array of zero or more children.
 class ASTNode : public Datum {
 protected:
-    QVector<DatumPtr> children;
-
-    void addToPool();
+    QList<DatumPtr> children;
 
 public:
 
     /// Allocate an ASTNode with the node's name as a Word.
-    static ASTNode * alloc(DatumPtr aNodeName);
+    ASTNode(DatumPtr aNodeName);
 
     /// Allocate an ASTNode with the node's name as a QString.
-    static ASTNode * alloc(QString aNodeName);
+    ASTNode(QString aNodeName);
 
     /// A human-readable string. Usually the command name.
     DatumPtr nodeName;
@@ -71,7 +68,6 @@ public:
 
 
     /// Create an ASTNode with no name.
-    /// Don't use this! Use alloc() instead.
     ASTNode() {}
 
     ~ASTNode();

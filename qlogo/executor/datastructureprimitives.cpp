@@ -68,7 +68,7 @@ COD***/
 
 DatumPtr Kernel::excList(DatumPtr node) {
   ProcedureHelper h(this, node);
-  List *retval = List::alloc();
+  List *retval = new List();
   for (int i = 0; i < h.countOfChildren(); ++i) {
     DatumPtr value = h.datumAtIndex(i);
     retval->append(value);
@@ -90,7 +90,7 @@ COD***/
 
 DatumPtr Kernel::excSentence(DatumPtr node) {
   ProcedureHelper h(this, node);
-  List *retval = List::alloc();
+  List *retval = new List();
   for (int i = 0; i < node.astnodeValue()->countOfChildren(); ++i) {
     DatumPtr value = h.datumAtIndex(i);
     if (value.isList()) {
@@ -153,7 +153,7 @@ DatumPtr Kernel::excLput(DatumPtr node) {
     return candidate.isList();
   });
   if (list.isList()) {
-    List *retval = List::alloc();
+    List *retval = new List();
     ListIterator iter = list.listValue()->newIterator();
     while (iter.elementExists()) {
       retval->append(iter.element());
@@ -189,9 +189,9 @@ DatumPtr Kernel::excArray(DatumPtr node) {
   if (h.countOfChildren() > 1) {
     origin = h.integerAtIndex(1);
   }
-  Array *retval = Array::alloc(origin, size);
+  Array *retval = new Array(origin, size);
   for (int i = 0; i < size; ++i) {
-    retval->append(DatumPtr(List::alloc()));
+    retval->append(DatumPtr(new List()));
   }
   return h.ret(DatumPtr(retval));
 }
@@ -213,7 +213,7 @@ DatumPtr Kernel::excListtoarray(DatumPtr node) {
   if (h.countOfChildren() > 1) {
     origin = h.integerAtIndex(1);
   }
-  return h.ret(Array::alloc(origin, source.listValue()));
+  return h.ret(new Array(origin, source.listValue()));
 }
 
 
@@ -229,7 +229,7 @@ COD***/
 DatumPtr Kernel::excArraytolist(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr source = h.arrayAtIndex(0);
-  List *retval = List::alloc(source.arrayValue());
+  List *retval = new List(source.arrayValue());
   return h.ret(retval);
 }
 
@@ -272,7 +272,7 @@ COD***/
 
 DatumPtr Kernel::excFirsts(DatumPtr node) {
   ProcedureHelper h(this, node);
-  List *retval = List::alloc();
+  List *retval = new List();
   h.validatedListAtIndex(0, [retval](DatumPtr candidate) {
     ListIterator iter = candidate.listValue()->newIterator();
     while (iter.elementExists()) {
@@ -341,7 +341,7 @@ COD***/
 
 DatumPtr Kernel::excButfirsts(DatumPtr node) {
   ProcedureHelper h(this, node);
-  List *retval = List::alloc();
+  List *retval = new List();
   h.validatedListAtIndex(0, [retval](DatumPtr candidate) {
     ListIterator iter = candidate.listValue()->newIterator();
     while (iter.elementExists()) {

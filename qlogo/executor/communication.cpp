@@ -313,7 +313,7 @@ DatumPtr Kernel::excReadword(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr retval = readStream->readwordWithPrompt("");
   if (retval == nothing)
-    return h.ret(List::alloc());
+    return h.ret(new List());
   return h.ret(retval);
 }
 
@@ -335,7 +335,7 @@ DatumPtr Kernel::excReadrawline(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr retval = readStream->readrawlineWithPrompt("");
   if (retval == nothing)
-    return h.ret(List::alloc());
+    return h.ret(new List());
   return h.ret(retval);
 }
 
@@ -358,7 +358,7 @@ DatumPtr Kernel::excReadchar(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr retval = readStream->readChar();
   if (retval == nothing)
-    return h.ret(List::alloc());
+    return h.ret(new List());
   return h.ret(retval);
 }
 
@@ -393,7 +393,7 @@ DatumPtr Kernel::excReadchars(DatumPtr node) {
   }
 
   if (retval == "")
-    return h.ret(List::alloc());
+    return h.ret(new List());
   return h.ret(retval);
 }
 
@@ -475,7 +475,7 @@ DatumPtr Kernel::excShell(DatumPtr node) {
   proc.waitForFinished(-1);
 
   QByteArray result = proc.readAll();
-  List *retval = List::alloc();
+  List *retval = new List();
 
   if ((result.size() > 0) && (result.at(result.size() - 1) == '\n')) {
     result.chop(1);
@@ -528,7 +528,7 @@ DatumPtr Kernel::excSetprefix(DatumPtr node) {
   if (newPrefix.isWord())
     filePrefix = newPrefix;
   else
-    filePrefix = List::alloc();
+    filePrefix = new List();
 
   return nothing;
 }
@@ -682,7 +682,7 @@ COD***/
 
 DatumPtr Kernel::excAllopen(DatumPtr node) {
   ProcedureHelper h(this, node);
-  List *retval = List::alloc();
+  List *retval = new List();
   DatumPtr retvalP = h.ret(retval);
   for (const auto &filename : fileStreams.asKeyValueRange()) {
     retval->append(DatumPtr(filename.first));
@@ -833,7 +833,7 @@ COD***/
 DatumPtr Kernel::excReader(DatumPtr node) {
   ProcedureHelper h(this, node);
   if (readStream == stdioStream)
-    return h.ret(List::alloc());
+    return h.ret(new List());
 
   const QString retval = fileStreams.key(readStream);
   return h.ret(retval);
@@ -851,7 +851,7 @@ COD***/
 DatumPtr Kernel::excWriter(DatumPtr node) {
   ProcedureHelper h(this, node);
   if (writeStream == stdioStream)
-    return h.ret(List::alloc());
+    return h.ret(new List());
 
   const QString retval = fileStreams.key(writeStream);
   return h.ret(retval);
@@ -1039,7 +1039,7 @@ DatumPtr Kernel::excCursor(DatumPtr node) {
   ProcedureHelper h(this, node);
   int row = 0, col = 0;
   mainController()->getTextCursorPos(row, col);
-  List *retval = List::alloc();
+  List *retval = new List();
   retval->append(DatumPtr(row));
   retval->append(DatumPtr(col));
   return h.ret(retval);
@@ -1182,7 +1182,7 @@ COD***/
 
 DatumPtr Kernel::excAllfonts(DatumPtr node) {
   ProcedureHelper h(this, node);
-  List *retval = List::alloc();
+  List *retval = new List();
   QStringList fonts = mainController()->getAllFontNames();
   for (const QString &i : fonts) {
     retval->append(DatumPtr(i));

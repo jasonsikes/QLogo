@@ -35,8 +35,6 @@
 #include "datum/astnode.h"
 #include <QDateTime>
 
-static DatumPool<Procedure> pool(20);
-
 // return the method pointer if a GUI is available,
 // else return a pointer to the excErrorNoGUI method
 KernelMethod ifGUI(KernelMethod method) {
@@ -445,18 +443,6 @@ Procedures::Procedures() {
 }
 
 
-void Procedure::addToPool()
-{
-    instructionList = nothing;
-    requiredInputs.clear();
-    optionalInputs.clear();
-    optionalDefaults.clear();
-    tagToLine.clear();
-    sourceText = nothing;
-    pool.dealloc(this);
-
-}
-
 void Procedures::defineProcedure(DatumPtr cmd, DatumPtr procnameP, DatumPtr text,
                              DatumPtr sourceText) {
     procnameP.wordValue()->numberValue();
@@ -482,7 +468,7 @@ void Procedures::defineProcedure(DatumPtr cmd, DatumPtr procnameP, DatumPtr text
 }
 
 DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourceText) {
-    Procedure *body = (Procedure *) pool.alloc();
+    Procedure *body = new Procedure();
     body->init();
     DatumPtr bodyP(body);
 
@@ -643,9 +629,9 @@ DatumPtr Procedures::procedureText(DatumPtr procnameP) {
         Error::noHow(procnameP);
     Procedure *body = procedures[procname].procedureValue();
 
-    List *retval = List::alloc();
+    List *retval = new List();
 
-    List *inputs = List::alloc();
+    List *inputs = new List();
 
     for (auto &i : body->requiredInputs) {
         inputs->append(DatumPtr(i));
@@ -653,14 +639,14 @@ DatumPtr Procedures::procedureText(DatumPtr procnameP) {
 
     QList<DatumPtr>::iterator d = body->optionalDefaults.begin();
     for (auto &i : body->optionalInputs) {
-        List *optInput = List::alloc(d->listValue());
+        List *optInput = new List(d->listValue());
         optInput->prepend(DatumPtr(i));
         ++d;
         inputs->append(DatumPtr(optInput));
     }
 
     if (body->restInput != "") {
-        List *restInput = List::alloc();
+        List *restInput = new List();
         restInput->append(DatumPtr(body->restInput));
         inputs->append(DatumPtr(restInput));
     }
@@ -689,7 +675,7 @@ DatumPtr Procedures::procedureFulltext(DatumPtr procnameP, bool shouldValidate) 
         Procedure *body = procedures[procname].procedureValue();
 
         if (body->sourceText == nothing) {
-            List *retval = List::alloc();
+            List *retval = new List();
             retval->append(DatumPtr(procedureTitle(procnameP)));
 
             ListIterator b = body->instructionList.listValue()->newIterator();
@@ -707,7 +693,7 @@ DatumPtr Procedures::procedureFulltext(DatumPtr procnameP, bool shouldValidate) 
     } else if (shouldValidate) {
         Error::noHow(procnameP);
     }
-    List *retval = List::alloc();
+    List *retval = new List();
     retval->append(
         DatumPtr(k.to_() + procnameP.wordValue()->printValue()));
     retval->append(DatumPtr(k.end()));
@@ -724,7 +710,7 @@ QString Procedures::procedureTitle(DatumPtr procnameP) {
 
     Procedure *body = procedures[procname].procedureValue();
 
-    DatumPtr firstlineP = DatumPtr(List::alloc());
+    DatumPtr firstlineP = DatumPtr(new List());
 
     List *firstLine = firstlineP.listValue();
 
@@ -746,7 +732,7 @@ QString Procedures::procedureTitle(DatumPtr procnameP) {
     for (auto &i : body->optionalInputs) {
         paramName = i;
         paramName.push_front(':');
-        List *optInput = List::alloc(d->listValue());
+        List *optInput = new List(d->listValue());
         optInput->prepend(DatumPtr(paramName));
         firstLine->append(DatumPtr(optInput));
         ++d;
@@ -755,7 +741,7 @@ QString Procedures::procedureTitle(DatumPtr procnameP) {
     paramName = body->restInput;
     if (paramName != "") {
         paramName.push_front(':');
-        List *restInput = List::alloc();
+        List *restInput = new List();
         restInput->append(DatumPtr(paramName));
         firstLine->append(DatumPtr(restInput));
     }
@@ -773,7 +759,7 @@ DatumPtr Procedures::astnodeFromCommand(DatumPtr cmdP, int &minParams,
     QString cmdString = cmdP.wordValue()->keyValue();
 
     Cmd_t command;
-    DatumPtr node = DatumPtr(ASTNode::alloc(cmdP));
+    DatumPtr node = DatumPtr(new ASTNode(cmdP));
     if (procedures.contains(cmdString)) {
         DatumPtr procBody = procedures[cmdString];
         if (procBody.procedureValue()->isMacro)
@@ -821,7 +807,7 @@ DatumPtr Procedures::astnodeWithLiterals(DatumPtr cmd, DatumPtr params) {
     ListIterator iter = params.listValue()->newIterator();
     while (iter.elementExists()) {
         DatumPtr p = iter.element();
-        DatumPtr a = DatumPtr(ASTNode::alloc(k.literal()));
+        DatumPtr a = DatumPtr(new ASTNode(k.literal()));
         a.astnodeValue()->kernel = &Kernel::executeLiteral;
         a.astnodeValue()->addChild(p);
         node.astnodeValue()->addChild(a);
@@ -850,7 +836,7 @@ bool Procedures::isDefined(QString procname) {
 }
 
 DatumPtr Procedures::allProcedureNames(showContents_t showWhat) {
-    List *retval = List::alloc();
+    List *retval = new List();
 
     for (const auto &iter : procedures.asKeyValueRange()) {
 
@@ -870,7 +856,7 @@ void Procedures::eraseAllProcedures() {
 }
 
 DatumPtr Procedures::allPrimitiveProcedureNames() {
-    List *retval = List::alloc();
+    List *retval = new List();
 
     for (const auto &iter : stringToCmd.asKeyValueRange()) {
         retval->append(DatumPtr(iter.first));
@@ -897,7 +883,7 @@ DatumPtr Procedures::arity(DatumPtr nameP) {
         return nothing;
     }
 
-    List *retval = List::alloc();
+    List *retval = new List();
     retval->append(DatumPtr(minParams));
     retval->append(DatumPtr(defParams));
     retval->append(DatumPtr(maxParams));

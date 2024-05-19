@@ -44,7 +44,7 @@ DatumPtr PropertyLists::getProperty(const QString &plistname,
                                   const QString &propname) {
   if (plists.contains(plistname) && plists[plistname].contains(propname))
     return plists[plistname][propname];
-  return DatumPtr(List::alloc());
+  return DatumPtr(new List());
 }
 
 void PropertyLists::removeProperty(const QString &plistname,
@@ -57,7 +57,7 @@ void PropertyLists::removeProperty(const QString &plistname,
 }
 
 DatumPtr PropertyLists::getPropertyList(const QString &plistname) {
-  List *retval = List::alloc();
+  List *retval = new List();
   if (plists.contains(plistname)) {
     QList<QString> keys = plists[plistname].keys();
     QList<DatumPtr> values = plists[plistname].values();
@@ -80,7 +80,7 @@ bool PropertyLists::isPropertyList(const QString &plistname) {
 }
 
 DatumPtr PropertyLists::allPLists(showContents_t showWhat) {
-  List *retval = List::alloc();
+  List *retval = new List();
   for (auto name : plists.asKeyValueRange()) {
     if (shouldInclude(showWhat, name.first))
       retval->append(DatumPtr(name.first));

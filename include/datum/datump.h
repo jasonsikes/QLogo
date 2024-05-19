@@ -68,7 +68,7 @@ public:
     explicit DatumPtr(int n);
 
     /// Convenience constructor for strings.
-    explicit DatumPtr(const QString n, bool isVBarred = false);
+    explicit DatumPtr(QString n, bool isVBarred = false);
 
     /// Convenience constructor for const char strings
     explicit DatumPtr(const char* n);
@@ -78,7 +78,7 @@ public:
     ///
     /// Decreases the retain count of the referred object. If this is the last
     /// pointer to the referred object (if its retain count reaches zero) the
-    /// object is deallocated, if possible.
+    /// object is destroyed, if possible.
     ~DatumPtr();
 
     /// Returns a pointer to the referred Datum or any of Datum's subclasses.

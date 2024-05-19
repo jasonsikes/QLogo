@@ -29,16 +29,13 @@
 
 
 #include "datum/datum.h"
-#include <QVector>
 
 /// The container that allows efficient read and write access to its elements.
 class Array : public Datum {
     friend class ArrayIterator;
 
 protected:
-    QVector<DatumPtr> array;
-
-    void addToPool();
+    QList<DatumPtr> array;
 
 public:
 
@@ -46,9 +43,7 @@ public:
     Array(int aOrigin = 1, int aSize = 0);
 
     /// Create an Array containing items copied from source with index starting at aOrigin.
-    static Array * alloc(int aOrigin, List *source);
-
-    static Array * alloc(int aOrigin, int aSize);
+    Array(int aOrigin, List *source);
 
 
     ~Array();

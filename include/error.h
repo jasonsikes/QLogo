@@ -72,8 +72,6 @@ protected:
 
     static Error * createError(int aNumber, DatumPtr aErrorText);
 
-  void addToPool();
-
 public:
 
   Error();

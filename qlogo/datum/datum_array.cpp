@@ -32,17 +32,12 @@
 #include <qdebug.h>
 #include "stringconstants.h"
 
-static DatumPool<Array> pool(5);
-
 QList<void *> aryVisited;
 QList<void *> otherAryVisited;
 
 Array::Array(int aOrigin, int aSize) {
   origin = aOrigin;
   array.reserve(aSize);
-  for (int i = 0; i < aSize; ++i) {
-    array.append(DatumPtr(List::alloc()));
-  }
 }
 
 
@@ -52,33 +47,16 @@ void Array::clear()
   array.clear();
 }
 
-Array * Array::alloc(int aOrigin, int aSize)
+Array::Array(int aOrigin, List *source)
 {
-  Array * retval = (Array *) pool.alloc();
-  retval->array.reserve(aSize);
-  retval->origin = aOrigin;
-  return retval;
-}
-
-Array * Array::alloc(int aOrigin, List *source)
-{
-  Array * retval = alloc(aOrigin, source->size());
-
   auto iter = source->newIterator();
-
+    origin = aOrigin;
   while (iter.elementExists()) {
-    retval->append(iter.element());
+    append(iter.element());
   }
-  return retval;
 }
 
 Array::~Array() {}
-
-void Array::addToPool()
-{
-  clear();
-  pool.dealloc(this);
-}
 
 Datum::DatumType Array::isa() { return Datum::arrayType; }
 

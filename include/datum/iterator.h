@@ -30,7 +30,6 @@
 
 
 #include "datum/datump.h"
-#include <QVector>
 
 
 /// A very simple iterator. Base class does nothing. Meant to be subclassed.
@@ -60,14 +59,14 @@ public:
 /// Iterator for an Array.
 class ArrayIterator : public Iterator {
 protected:
-    QVector<DatumPtr>::iterator arrayIter;
-    QVector<DatumPtr>::iterator end;
+    QList<DatumPtr>::iterator arrayIter;
+    QList<DatumPtr>::iterator end;
 
 public:
     ArrayIterator();
 
     /// Create a new ArrayIterator pointing to the first element of the Array.
-    ArrayIterator(QVector<DatumPtr> *aArray);
+    ArrayIterator(QList<DatumPtr> *aArray);
 
     /// Return the element at the current index. Advance the index pointer.
     DatumPtr element();

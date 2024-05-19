@@ -87,7 +87,7 @@ void Kernel::editAndRunFile() {
 }
 
 DatumPtr Kernel::buildContentsList(showContents_t showWhat) {
-  List *retval = List::alloc();
+  List *retval = new List();
   retval->append(procedures->allProcedureNames(showWhat));
   retval->append(variables.allVariables(showWhat));
   retval->append(plists.allPLists(showWhat));
@@ -98,7 +98,7 @@ DatumPtr Kernel::contentslistFromDatumPtr(DatumPtr sourceNode) {
   List *sublists[3];
   DatumPtr locker[3];
   for (int i = 0; i < 3; ++i) {
-    sublists[i] = List::alloc();
+    sublists[i] = new List();
     locker[i] = DatumPtr(sublists[i]);
   }
 
@@ -130,7 +130,7 @@ DatumPtr Kernel::contentslistFromDatumPtr(DatumPtr sourceNode) {
     return nothing;
   }
 
-  List *retval = List::alloc();
+  List *retval = new List();
   for (int i = 0; i < 3; ++i) {
     retval->append(DatumPtr(sublists[i]));
   }
@@ -1114,8 +1114,8 @@ COD***/
 
 DatumPtr Kernel::excNames(DatumPtr node) {
   ProcedureHelper h(this, node);
-  List *retval = List::alloc();
-  retval->append(DatumPtr(List::alloc()));
+  List *retval = new List();
+  retval->append(DatumPtr(new List()));
   retval->append(variables.allVariables(showUnburied));
   return h.ret(retval);
 }
@@ -1132,9 +1132,9 @@ COD***/
 
 DatumPtr Kernel::excPlists(DatumPtr node) {
   ProcedureHelper h(this, node);
-  List *retval = List::alloc();
-  retval->append(DatumPtr(List::alloc()));
-  retval->append(DatumPtr(List::alloc()));
+  List *retval = new List();
+  retval->append(DatumPtr(new List()));
+  retval->append(DatumPtr(new List()));
   retval->append(plists.allPLists(showUnburied));
   return h.ret(retval);
 }

@@ -103,7 +103,7 @@ DatumPtr Kernel::excRunresult(DatumPtr node) {
     return candidate.isWord() || candidate.isList();
   });
 
-  List* retval = List::alloc();
+  List* retval = new List();
   DatumPtr temp = runList(instructionList);
 
   if (temp.isASTNode()) {
@@ -559,7 +559,7 @@ COD***/
 DatumPtr Kernel::excError(DatumPtr node) {
   ProcedureHelper h(this, node);
 
-  List *retval = List::alloc();
+  List *retval = new List();
   if (currentError != nothing) {
     Error *e = currentError.errorValue();
     retval->append(DatumPtr(e->code));
@@ -567,11 +567,11 @@ DatumPtr Kernel::excError(DatumPtr node) {
     if (e->procedure != nothing)
       retval->append(e->procedure.astnodeValue()->nodeName);
     else
-      retval->append(DatumPtr(List::alloc()));
+      retval->append(DatumPtr(new List()));
     if (e->instructionLine != nothing)
       retval->append(e->instructionLine);
     else
-      retval->append(DatumPtr(List::alloc()));
+      retval->append(DatumPtr(new List()));
     currentError = nothing;
   }
   return h.ret(retval);
@@ -670,7 +670,7 @@ DatumPtr Kernel::excGoto(DatumPtr node) {
         .procedureValue()
         ->tagToLine.contains(tag);
   });
-  ASTNode *a = ASTNode::alloc(k.kgoto());
+  ASTNode *a = new ASTNode(k.kgoto());
   a->kernel = &Kernel::excGotoToken;
   a->addChild(tagP);
   return DatumPtr(a);
@@ -762,7 +762,7 @@ DatumPtr Kernel::excApply(DatumPtr node) {
   case procedure: {
     DatumPtr anonyProcedure = procedures->createProcedure(
         node.astnodeValue()->nodeName, tmplate, nothing);
-    ASTNode *procnode = ASTNode::alloc(node.astnodeValue()->nodeName);
+    ASTNode *procnode = new ASTNode(node.astnodeValue()->nodeName);
     DatumPtr procnodeP(procnode);
     procnode->addChild(anonyProcedure);
     if (params.listValue()->size() >
@@ -775,7 +775,7 @@ DatumPtr Kernel::excApply(DatumPtr node) {
     ListIterator paramIter = params.listValue()->newIterator();
     while (paramIter.elementExists()) {
       DatumPtr p = paramIter.element();
-      DatumPtr a = DatumPtr(ASTNode::alloc(k.literal()));
+      DatumPtr a = DatumPtr(new ASTNode(k.literal()));
       a.astnodeValue()->kernel = &Kernel::executeLiteral;
       a.astnodeValue()->addChild(p);
       procnode->addChild(a);

@@ -94,7 +94,7 @@ bool Vars::doesExist(const QString &name) {
 }
 
 DatumPtr Vars::allVariables(showContents_t showWhat) {
-  List *retval = List::alloc();
+  List *retval = new List();
   QSet<const QString> seenVars;
 
   for (auto frame : frames) {

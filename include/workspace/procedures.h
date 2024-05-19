@@ -88,8 +88,6 @@ public:
 
 class Procedure : public Datum {
 
-  void addToPool();
-
 public:
   Procedure() {}
   QStringList requiredInputs;

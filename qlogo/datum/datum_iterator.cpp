@@ -27,7 +27,6 @@
 
 #include "datum/iterator.h"
 #include "datum/list.h"
-#include "datum/word.h"
 
 #include <qdebug.h>
 
@@ -75,7 +74,7 @@ bool ListIterator::elementExists() { return (ptr != nothing); }
 
 ArrayIterator::ArrayIterator() {}
 
-ArrayIterator::ArrayIterator(QVector<DatumPtr> *aArray) {
+ArrayIterator::ArrayIterator(QList<DatumPtr> *aArray) {
   arrayIter = aArray->begin();
   end = aArray->end();
 }
