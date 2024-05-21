@@ -42,7 +42,7 @@ RUN instructionlist
     list; outputs if the list contains an expression that outputs.
 
 COD***/
-
+//CMD RUN 1 1 1
 DatumPtr Kernel::excRun(DatumPtr node) {
   ProcedureHelper h(this, node);
 
@@ -63,7 +63,7 @@ TIME instructionlist
     if the list contains an expression that outputs.
 
 COD***/
-
+//CMD TIME 1 1 1
 DatumPtr Kernel::excTime(DatumPtr node) {
     ProcedureHelper h(this, node);
 
@@ -95,7 +95,7 @@ RUNRESULT instructionlist
         output first :result
 
 COD***/
-
+//CMD RUNRESULT 1 1 1
 DatumPtr Kernel::excRunresult(DatumPtr node) {
   ProcedureHelper h(this, node);
 
@@ -124,7 +124,7 @@ BYE
     command.  Exits from Logo.
 
 COD***/
-
+//CMD BYE 0 0 0
 DatumPtr Kernel::excBye(DatumPtr node) {
   ProcedureHelper h(this, node);
 
@@ -140,7 +140,7 @@ REPEAT num instructionlist
     command.  Runs the "instructionlist" repeatedly, "num" times.
 
 COD***/
-
+//CMD REPEAT 2 2 2
 DatumPtr Kernel::excRepeat(DatumPtr node) {
   ProcedureHelper h(this, node);
   int countValue = h.validatedIntegerAtIndex(
@@ -175,7 +175,7 @@ FOREVER instructionlist
     inside the instructionlist (such as STOP or THROW) makes it stop.
 
 COD***/
-
+//CMD FOREVER 1 1 1
 DatumPtr Kernel::excForever(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr commandList = h.listAtIndex(0);
@@ -211,7 +211,7 @@ REPCOUNT
     FOREACH, in which case # has a different meaning.
 
 COD***/
-
+//CMD REPCOUNT 0 0 0
 DatumPtr Kernel::excRepcount(DatumPtr node) {
   ProcedureHelper h(this, node);
 
@@ -229,17 +229,8 @@ IF tf instructionlist
     as described below.)  It is an error if the first input is not
     either TRUE or FALSE.
 
-    For compatibility with earlier versions of Logo, if an IF
-    instruction is not enclosed in parentheses, but the first thing
-    on the instruction line after the second input expression is a
-    literal list (i.e., a list in square brackets), the IF is
-    treated as if it were IFELSE, but a warning message is given.
-    If this aberrant IF appears in a procedure body, the warning is
-    given only the first time the procedure is invoked in each Logo
-    session.
-
 COD***/
-
+//CMD IF 2 2 3
 DatumPtr Kernel::excIf(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr retval;
@@ -259,7 +250,8 @@ IFELSE tf instructionlist1 instructionlist2
     instructionlist contains an expression that outputs a value.
 
 COD***/
-
+//*CMD IF 2 2 3
+//CMD IFELSE 3 3 3
 DatumPtr Kernel::excIfelse(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr retval;
@@ -281,7 +273,7 @@ TEST tf
     IFFALSE must be in the same procedure or a subprocedure.
 
 COD***/
-
+//CMD TEST 1 1 1
 DatumPtr Kernel::excTest(DatumPtr node) {
   ProcedureHelper h(this, node);
 
@@ -300,7 +292,8 @@ IFT instructionlist
     superprocedure.
 
 COD***/
-
+//CMD IFTRUE 1 1 1
+//CMD IFT 1 1 1
 DatumPtr Kernel::excIftrue(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr retval;
@@ -322,7 +315,8 @@ IFF instructionlist
     superprocedure.
 
 COD***/
-
+//CMD IFFALSE 1 1 1
+//CMD IFF 1 1 1
 DatumPtr Kernel::excIffalse(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr retval;
@@ -349,7 +343,7 @@ STOP
     invoked.  The stopped procedure does not output a value.
 
 COD***/
-
+//CMD STOP 0 0 1
 DatumPtr Kernel:: excStop(DatumPtr node) {
   if (currentProcedure == nothing) {
     Error::notInsideProcedure(node.astnodeValue()->nodeName);
@@ -368,7 +362,8 @@ OP value
     but the procedure that invokes OUTPUT is an operation.
 
 COD***/
-
+//CMD OUTPUT 1 1 1
+//CMD OP 1 1 1
 DatumPtr Kernel::excOutput(DatumPtr node) {
   if (currentProcedure == nothing) {
     Error::notInsideProcedure(node.astnodeValue()->nodeName);
@@ -402,7 +397,7 @@ DatumPtr Kernel::excOutput(DatumPtr node) {
     supposed to provide an input to something doesn't have a value.)
 
 COD***/
-
+//CMD .MAYBEOUTPUT 1 1 1
 DatumPtr Kernel::excDotMaybeoutput(DatumPtr node) {
   if (currentProcedure == nothing) {
     Error::notInsideProcedure(node.astnodeValue()->nodeName);
@@ -432,7 +427,7 @@ CATCH tag instructionlist
     is the list [PAUSE].)
 
 COD***/
-
+//CMD CATCH 2 2 2
 DatumPtr Kernel::excCatch(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString tag = h.wordAtIndex(0).wordValue()->keyValue();
@@ -526,7 +521,7 @@ THROW tag
     deleting any editor temporary file written by EDIT.
 
 COD***/
-
+//CMD THROW 1 1 2
 DatumPtr Kernel::excThrow(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr tag = h.wordAtIndex(0);
@@ -555,7 +550,7 @@ ERROR
     occurred.
 
 COD***/
-
+//CMD ERROR 0 0 0
 DatumPtr Kernel::excError(DatumPtr node) {
   ProcedureHelper h(this, node);
 
@@ -592,7 +587,7 @@ PAUSE
     values of local variables at the time of the error.
 
 COD***/
-
+//CMD PAUSE 0 0 0
 DatumPtr Kernel::excPause(DatumPtr node) {
   ProcedureHelper h(this, node);
   if (currentProcedure == nothing) {
@@ -618,7 +613,8 @@ CO value
     the instruction line.
 
 COD***/
-
+//CMD CONTINUE 0 -1 1
+//CMD CO 0 -1 1
 DatumPtr Kernel::excContinue(DatumPtr node) {
   ProcedureHelper h(this, node);
 
@@ -644,7 +640,7 @@ TAG quoted.word
     used by the GOTO command.
 
 COD***/
-
+//CMD TAG 1 1 1
 DatumPtr Kernel::excTag(DatumPtr) { return nothing; }
 
 
@@ -656,7 +652,7 @@ GOTO word
     that TAG.  It is meaningless to use GOTO outside of a procedure.
 
 COD***/
-
+//CMD GOTO 1 1 1
 DatumPtr Kernel::excGoto(DatumPtr node) {
   ProcedureHelper h(this, node);
   if (currentProcedure == nothing)
@@ -689,7 +685,7 @@ APPLY template inputlist
     is okay.  APPLY outputs what "template" outputs, if anything.
 
 COD***/
-
+//CMD APPLY 2 2 2
 DatumPtr Kernel::excApply(DatumPtr node) {
   ProcedureHelper h(this, node);
   enum Form { explicit_slot, named_procedure, lambda, procedure };
@@ -790,6 +786,7 @@ DatumPtr Kernel::excApply(DatumPtr node) {
 }
 
 // '?' operator
+//CMD ? 0 0 1
 DatumPtr Kernel::excNamedSlot(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr inputList = variables.explicitSlotList();
@@ -813,7 +810,8 @@ MACRO? name
     outputs TRUE if its input is the name of a macro.
 
 COD***/
-
+//CMD MACROP 1 1 1
+//CMD MACRO? 1 1 1
 DatumPtr Kernel::excMacrop(DatumPtr node) {
   ProcedureHelper h(this, node);
   bool retval = procedures->isMacro(h.wordAtIndex(0).wordValue()->keyValue());

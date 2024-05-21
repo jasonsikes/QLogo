@@ -543,7 +543,8 @@ TO procname :input1 :input2 ...				(special form)
     type a line containing only the word END.
 
 COD***/
-
+//CMD TO -1 -1 -1
+//CMD .MACRO -1 -1 -1
 DatumPtr Kernel::excTo(DatumPtr node) {
   // None of the children of node are ASTNode. They have to be literal so there
   // is no procedurehelper here.
@@ -572,7 +573,8 @@ DEFINE procname text
     It is an error to redefine a primitive procedure.
 
 COD***/
-
+//CMD DEFINE 2 2 2
+//CMD .DEFMACRO 2 2 2
 DatumPtr Kernel::excDefine(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr text = h.validatedListAtIndex(1, [](DatumPtr candidate) {
@@ -604,7 +606,7 @@ TEXT procname
     extra spaces.
 
 COD***/
-
+//CMD TEXT 1 1 1
 DatumPtr Kernel::excText(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr procnameP = h.wordAtIndex(0);
@@ -627,7 +629,7 @@ FULLTEXT procname
     is not suitable for use as input to DEFINE!
 
 COD***/
-
+//CMD FULLTEXT 1 1 1
 DatumPtr Kernel::excFulltext(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr procnameP = h.wordAtIndex(0);
@@ -645,9 +647,8 @@ COPYDEF newname oldname
     Note: dialects of Logo differ as to the order of inputs to COPYDEF.
     This dialect uses "MAKE order," not "NAME order."
 
-
 COD***/
-
+//CMD COPYDEF 2 2 2
 DatumPtr Kernel::excCopydef(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr newname = h.wordAtIndex(0);
@@ -670,7 +671,7 @@ MAKE varname value
     variable is changed.  If not, a new global variable is created.
 
 COD***/
-
+//CMD MAKE 2 2 2
 DatumPtr Kernel::excMake(DatumPtr node) {
   ProcedureHelper h(this, node);
 
@@ -742,8 +743,8 @@ LOCAL varnamelist
     attempts to read their value.
 
 COD***/
-
 // TODO: [varname:varnamelist:etc] procedure is duplicated in excGlobal().
+//CMD LOCAL 1 1 -1
 DatumPtr Kernel::excLocal(DatumPtr node) {
   ProcedureHelper h(this, node);
   for (int i = 0; i < h.countOfChildren(); ++i) {
@@ -787,7 +788,7 @@ THING varname
     so that :FOO means THING "FOO.
 
 COD***/
-
+//CMD THING 1 1 1
 DatumPtr Kernel::excThing(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString varName = h.wordAtIndex(0).wordValue()->keyValue();
@@ -814,7 +815,7 @@ GLOBAL varnamelist
 
 
 COD***/
-
+//CMD GLOBAL 1 1 -1
 DatumPtr Kernel::excGlobal(DatumPtr node) {
   ProcedureHelper h(this, node);
   for (int i = 0; i < h.countOfChildren(); ++i) {
@@ -853,7 +854,7 @@ PPROP plistname propname value
     with name "propname" and value "value".
 
 COD***/
-
+//CMD PPROP 3 3 3
 DatumPtr Kernel::excPprop(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString plistname = h.wordAtIndex(0).wordValue()->keyValue();
@@ -878,7 +879,7 @@ GPROP plistname propname
     property list, or the empty list if there is no such property.
 
 COD***/
-
+//CMD GPROP 2 2 2
 DatumPtr Kernel::excGprop(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString plistname = h.wordAtIndex(0).wordValue()->keyValue();
@@ -894,7 +895,7 @@ REMPROP plistname propname
     property list named "plistname".
 
 COD***/
-
+//CMD REMPROP 2 2 2
 DatumPtr Kernel::excRemprop(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString plistname = h.wordAtIndex(0).wordValue()->keyValue();
@@ -916,7 +917,7 @@ PLIST plistname
 
 
 COD***/
-
+//CMD PLIST 1 1 1
 DatumPtr Kernel::excPlist(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString plistname = h.wordAtIndex(0).wordValue()->keyValue();
@@ -933,7 +934,8 @@ PROCEDURE? name
     outputs TRUE if the input is the name of a procedure.
 
 COD***/
-
+//CMD PROCEDUREP 1 1 1
+//CMD PROCEDURE? 1 1 1
 DatumPtr Kernel::excProcedurep(DatumPtr node) {
   ProcedureHelper h(this, node);
   bool retval = procedures->isProcedure(h.wordAtIndex(0).wordValue()->keyValue());
@@ -950,7 +952,8 @@ PRIMITIVE? name
     described in this document are library procedures, not primitives.
 
 COD***/
-
+//CMD PRIMITIVEP 1 1 1
+//CMD PRIMITIVE? 1 1 1
 DatumPtr Kernel::excPrimitivep(DatumPtr node) {
   ProcedureHelper h(this, node);
   bool retval = procedures->isPrimitive(h.wordAtIndex(0).wordValue()->keyValue());
@@ -966,7 +969,8 @@ DEFINED? name
     including a library procedure.
 
 COD***/
-
+//CMD DEFINEDP 1 1 1
+//CMD DEFINED? 1 1 1
 DatumPtr Kernel::excDefinedp(DatumPtr node) {
   ProcedureHelper h(this, node);
   bool retval = procedures->isDefined(h.wordAtIndex(0).wordValue()->keyValue());
@@ -981,7 +985,8 @@ NAME? name
     outputs TRUE if the input is the name of a variable.
 
 COD***/
-
+//CMD NAMEP 1 1 1
+//CMD NAME? 1 1 1
 DatumPtr Kernel::excNamep(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString varname = h.wordAtIndex(0).wordValue()->keyValue();
@@ -1001,7 +1006,8 @@ PLIST? name
 
 
 COD***/
-
+//CMD PLISTP 1 1 1
+//CMD PLIST? 1 1 1
 DatumPtr Kernel::excPlistp(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString listName = h.wordAtIndex(0).wordValue()->keyValue();
@@ -1021,7 +1027,7 @@ CONTENTS
     the workspace.
 
 COD***/
-
+//CMD CONTENTS 0 0 0
 DatumPtr Kernel::excContents(DatumPtr node) {
   ProcedureHelper h(this, node);
   return h.ret(buildContentsList(showUnburied));
@@ -1035,7 +1041,7 @@ BURIED
     the workspace.
 
 COD***/
-
+//CMD BURIED 0 0 0
 DatumPtr Kernel::excBuried(DatumPtr node) {
   ProcedureHelper h(this, node);
   return h.ret(buildContentsList(showBuried));
@@ -1049,7 +1055,7 @@ TRACED
     the workspace.
 
 COD***/
-
+//CMD TRACED 0 0 0
 DatumPtr Kernel::excTraced(DatumPtr node) {
   ProcedureHelper h(this, node);
   return h.ret(buildContentsList(showTraced));
@@ -1063,7 +1069,7 @@ STEPPED
     the workspace.
 
 COD***/
-
+//CMD STEPPED 0 0 0
 DatumPtr Kernel::excStepped(DatumPtr node) {
   ProcedureHelper h(this, node);
   return h.ret(buildContentsList(showStepped));
@@ -1079,7 +1085,7 @@ PROCEDURES
     as input will accept this list.)
 
 COD***/
-
+//CMD PROCEDURES 0 0 0
 DatumPtr Kernel::excProcedures(DatumPtr node) {
   ProcedureHelper h(this, node);
   return h.ret(procedures->allProcedureNames(showUnburied));
@@ -1095,7 +1101,7 @@ PRIMITIVES
     as input will accept this list.)
 
 COD***/
-
+//CMD PRIMITIVES 0 0 0
 DatumPtr Kernel::excPrimitives(DatumPtr node) {
   ProcedureHelper h(this, node);
   return h.ret(procedures->allPrimitiveProcedureNames());
@@ -1110,7 +1116,7 @@ NAMES
     names in the workspace.
 
 COD***/
-
+//CMD NAMES 0 0 0
 DatumPtr Kernel::excNames(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = new List();
@@ -1128,7 +1134,7 @@ PLISTS
     nonempty property lists in the workspace.
 
 COD***/
-
+//CMD PLISTS 0 0 0
 DatumPtr Kernel::excPlists(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = new List();
@@ -1148,7 +1154,7 @@ ARITY procedurename
     number of inputs is unlimited.
 
 COD***/
-
+//CMD ARITY 1 1 1
 DatumPtr Kernel::excArity(DatumPtr node) {
   ProcedureHelper h(this, node);
   return h.ret(procedures->arity(h.wordAtIndex(0)));
@@ -1167,7 +1173,7 @@ NODES
 
 
 COD***/
-
+//CMD NODES 0 0 0
 DatumPtr Kernel::excNodes(DatumPtr node) {
   ProcedureHelper h(this, node);
   return h.ret(nodes());
@@ -1185,7 +1191,8 @@ PO contentslist
     contents list.
 
 COD***/
-
+//CMD PRINTOUT 1 1 1
+//CMD PO 1 1 1
 DatumPtr Kernel::excPrintout(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr contentslist;
@@ -1210,7 +1217,7 @@ POT contentslist
     instead of as a series of PPROP instructions as in PO.
 
 COD***/
-
+//CMD POT 1 1 1
 DatumPtr Kernel::excPot(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr contentslist;
@@ -1269,7 +1276,8 @@ ER contentslist
     not be erased.
 
 COD***/
-
+//CMD ERASE 1 1 1
+//CMD ER 1 1 1
 DatumPtr Kernel::excErase(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr contentslist;
@@ -1312,7 +1320,7 @@ ERALL
     lists from the workspace.  Abbreviates ERASE CONTENTS.
 
 COD***/
-
+//CMD ERALL 0 0 0
 DatumPtr Kernel::excErall(DatumPtr node) {
   ProcedureHelper h(this, node);
   procedures->eraseAllProcedures();
@@ -1330,7 +1338,7 @@ ERPS
     Abbreviates ERASE PROCEDURES.
 
 COD***/
-
+//CMD ERPS 0 0 0
 DatumPtr Kernel::excErps(DatumPtr node) {
   ProcedureHelper h(this, node);
   procedures->eraseAllProcedures();
@@ -1346,7 +1354,7 @@ ERNS
     Abbreviates ERASE NAMES.
 
 COD***/
-
+//CMD ERNS 0 0 0
 DatumPtr Kernel::excErns(DatumPtr node) {
   ProcedureHelper h(this, node);
   variables.eraseAll();
@@ -1362,7 +1370,7 @@ ERPLS
     Abbreviates ERASE PLISTS.
 
 COD***/
-
+//CMD ERPLS 0 0 0
 DatumPtr Kernel::excErpls(DatumPtr node) {
   ProcedureHelper h(this, node);
   plists.eraseAll();
@@ -1381,7 +1389,7 @@ BURY contentslist
     things are not printed by POALL or saved by SAVE.
 
 COD***/
-
+//CMD BURY 1 1 1
 DatumPtr Kernel::excBury(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr contentslist;
@@ -1404,7 +1412,7 @@ UNBURY contentslist
     view in CONTENTS, etc.
 
 COD***/
-
+//CMD UNBURY 1 1 1
 DatumPtr Kernel::excUnbury(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr contentslist;
@@ -1430,7 +1438,8 @@ BURIED? contentslist
     BURIEDP [[] [VARIABLE]] or BURIEDP [[] [] [PROPLIST]].
 
 COD***/
-
+//CMD BURIEDP 1 1 1
+//CMD BURIED? 1 1 1
 DatumPtr Kernel::excBuriedp(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr retval;
@@ -1458,7 +1467,7 @@ TRACE contentslist
     is given to a traced property list using PPROP.
 
 COD***/
-
+//CMD TRACE 1 1 1
 DatumPtr Kernel::excTrace(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr contentslist;
@@ -1479,7 +1488,7 @@ UNTRACE contentslist
     command.  Turns off tracing for the named items.
 
 COD***/
-
+//CMD UNTRACE 1 1 1
 DatumPtr Kernel::excUntrace(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr contentslist;
@@ -1505,7 +1514,8 @@ TRACED? contentslist
     TRACEDP [[] [VARIABLE]] or TRACEDP [[] [] [PROPLIST]].
 
 COD***/
-
+//CMD TRACEDP 1 1 1
+//CMD TRACED? 1 1 1
 DatumPtr Kernel::excTracedp(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr retval;
@@ -1534,7 +1544,7 @@ STEP contentslist
     LOCAL command.
 
 COD***/
-
+//CMD STEP 1 1 1
 DatumPtr Kernel::excStep(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr contentslist;
@@ -1555,7 +1565,7 @@ UNSTEP contentslist
     command.  Turns off stepping for the named items.
 
 COD***/
-
+//CMD UNSTEP 1 1 1
 DatumPtr Kernel::excUnstep(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr contentslist;
@@ -1581,7 +1591,8 @@ STEPPED? contentslist
     can STEPPEDP [[] [VARIABLE]] or STEPPEDP [[] [] [PROPLIST]].
 
 COD***/
-
+//CMD STEPPEDP 1 1 1
+//CMD STEPPED? 1 1 1
 DatumPtr Kernel::excSteppedp(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr retval;
@@ -1623,7 +1634,8 @@ ED contentslist
     the instruction line.
 
 COD***/
-
+//CMD EDIT 0 1 1
+//CMD ED 0 1 1
 DatumPtr Kernel::excEdit(DatumPtr node) {
   ProcedureHelper h(this, node);
   if (h.countOfChildren() > 0) {
@@ -1662,7 +1674,7 @@ EDITFILE filename
     definitions appear, maintaining comments in the file, and so on.
 
 COD***/
-
+//CMD EDITFILE 1 1 1
 DatumPtr Kernel::excEditfile(DatumPtr node) {
   ProcedureHelper h(this, node);
   editFileName = h.wordAtIndex(0);
@@ -1694,7 +1706,7 @@ SAVE filename
     is an error if there has been no previous LOAD or SAVE.)
 
 COD***/
-
+//CMD SAVE 1 1 1
 DatumPtr Kernel::excSave(DatumPtr node) {
   ProcedureHelper h(this, node);
   if (h.countOfChildren() > 0) {
@@ -1737,7 +1749,7 @@ LOAD filename
     carried out silently.
 
 COD***/
-
+//CMD LOAD 1 1 1
 DatumPtr Kernel::excLoad(DatumPtr node) {
   ProcedureHelper h(this, node);
   editFileName = h.wordAtIndex(0);
@@ -1785,7 +1797,7 @@ COD***/
     followed by lines from the procedure body that start with semicolon,
     stopping when a non-semicolon line is seen.
 */
-
+//CMD HELP 0 -1 -1
 DatumPtr Kernel::excHelp(DatumPtr node) {
   ProcedureHelper h(this, node);
 

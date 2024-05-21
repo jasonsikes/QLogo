@@ -185,7 +185,8 @@ PR thing
     printed around sublists.  Braces are always printed around arrays.
 
 COD***/
-
+//CMD PRINT 0 1 -1
+//CMD PR 0 1 -1
 DatumPtr Kernel::excPrint(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString printString = "";
@@ -224,7 +225,7 @@ TYPE thing
     actually waiting.
 
 COD***/
-
+//CMD TYPE 0 1 -1
 DatumPtr Kernel::excType(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString printString = "";
@@ -247,7 +248,7 @@ SHOW thing
 
 
 COD***/
-
+//CMD SHOW 0 1 -1
 DatumPtr Kernel::excShow(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString printString = "";
@@ -281,7 +282,8 @@ RL
     as a comment character.
 
 COD***/
-
+//CMD READLIST 0 0 0
+//CMD RL 0 0 0
 DatumPtr Kernel::excReadlist(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr retval = readStream->readlistWithPrompt("", false);
@@ -307,7 +309,8 @@ RW
     Backslash characters are not preserved in the output.
 
 COD***/
-
+//CMD READWORD 0 0 0
+//CMD RW 0 0 0
 DatumPtr Kernel::excReadword(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr retval = readStream->readwordWithPrompt("");
@@ -329,7 +332,7 @@ READRAWLINE
     tilde, or any other formatting characters.
 
 COD***/
-
+//CMD READRAWLINE 0 0 0
 DatumPtr Kernel::excReadrawline(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr retval = readStream->readrawlineWithPrompt("");
@@ -352,7 +355,7 @@ RC
     and tilde characters have no special meaning in this context.
 
 COD***/
-
+//CMD READCHAR 0 0 0
 DatumPtr Kernel::excReadchar(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr retval = readStream->readChar();
@@ -375,7 +378,8 @@ RCS num
     and tilde characters have no special meaning in this context.
 
 COD***/
-
+//CMD READCHARS 1 1 1
+//CMD RCS 1 1 1
 DatumPtr Kernel::excReadchars(DatumPtr node) {
   ProcedureHelper h(this, node);
   int count = h.validatedIntegerAtIndex(
@@ -433,7 +437,7 @@ SHELL command
 
 
 COD***/
-
+//CMD SHELL 1 1 2
 DatumPtr Kernel::excShell(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr commandP = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
@@ -509,13 +513,14 @@ SETPREFIX string
     command.  Sets a prefix that will be used as the implicit beginning
     of filenames in OPENREAD, OPENWRITE, OPENAPPEND, OPENUPDATE, LOAD,
     and SAVE commands.  Logo will put the appropriate separator
-    character (slash for Unix, backslash for DOS/Windows, colon for
-    MacOS Classic) between the prefix and the filename entered by the user.
-    The input to SETPREFIX must be a word, unless it is the empty list,
-    to indicate that there should be no prefix.
+    character (slash for Unix, backslash for Windows) between the prefix
+    and the filename entered by the user. On Windows, either a forward
+    slash or backslash can be used as a separator character. The input
+    to SETPREFIX must be a word, unless it is the empty list, to indicate
+    that there should be no prefix.
 
 COD***/
-
+//CMD SETPREFIX 1 1 1
 DatumPtr Kernel::excSetprefix(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr newPrefix = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
@@ -540,7 +545,7 @@ PREFIX
     See SETPREFIX.
 
 COD***/
-
+//CMD PREFIX 0 0 0
 DatumPtr Kernel::excPrefix(DatumPtr node) {
   ProcedureHelper h(this, node);
   return h.ret(filePrefix);
@@ -554,7 +559,7 @@ OPENREAD filename
     initially at the beginning of the file.
 
 COD***/
-
+//CMD OPENREAD 1 1 1
 DatumPtr Kernel::excOpenread(DatumPtr node) {
   ProcedureHelper h(this, node);
   QIODevice::OpenMode openFlags = QIODevice::ReadOnly | QIODevice::Text;
@@ -572,26 +577,26 @@ OPENWRITE filename
     existed, the old version is deleted and a new, empty file created.
 
     OPENWRITE, but not the other OPEN variants, will accept as input
-    a two-element list, in which the first element must be a variable
-    name, and the second must be a positive integer.  A character
-    buffer of the specified size will be created.  When a SETWRITE is
-    done with this same list (in the sense of .EQ, not a copy, so
-    you must do something like
-        ? make "buf [foo 100]
+    a list, in which the first element must be a variable name, and
+    the remainder will be ignored (for compatibility with UCBLogo).
+    A character will be created.  When a SETWRITE is done with this
+    same list (in the sense of .EQ, not a copy, so you must do
+    something like
+        ? make "buf [foo]
         ? openwrite :buf
         ? setwrite :buf
             [...]
         ? close :buf
     and not just
-        ? openwrite [foo 100]
-        ? setwrite [foo 100]
+        ? openwrite [foo]
+        ? setwrite [foo]
     and so on), the printed characters are stored in the buffer;
     when a CLOSE is done with the same list as input, the characters
     from the buffer (treated as one long word, even if spaces and
     newlines are included) become the value of the specified variable.
 
 COD***/
-
+//CMD OPENWRITE 1 1 1
 DatumPtr Kernel::excOpenwrite(DatumPtr node) {
   ProcedureHelper h(this, node);
   QIODevice::OpenMode openFlags =
@@ -611,7 +616,7 @@ OPENAPPEND filename
     file, so that newly written data will be appended to it.
 
 COD***/
-
+//CMD OPENAPPEND 1 1 1
 DatumPtr Kernel::excOpenappend(DatumPtr node) {
   ProcedureHelper h(this, node);
   QIODevice::OpenMode openFlags =
@@ -636,7 +641,7 @@ OPENUPDATE filename
     between a read and a write.
 
 COD***/
-
+//CMD OPENUPDATE 1 1 1
 DatumPtr Kernel::excOpenupdate(DatumPtr node) {
   ProcedureHelper h(this, node);
   QIODevice::OpenMode openFlags = QIODevice::ReadWrite | QIODevice::Text;
@@ -656,7 +661,7 @@ CLOSE filename
     keyboard or screen, as if SETREAD [] or SETWRITE [] had been done.
 
 COD***/
-
+//CMD CLOSE 1 1 1
 DatumPtr Kernel::excClose(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr filenameP = h.wordAtIndex(0);
@@ -678,7 +683,7 @@ ALLOPEN
     This list does not include the dribble file, if any.
 
 COD***/
-
+//CMD ALLOPEN 0 0 0
 DatumPtr Kernel::excAllopen(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = new List();
@@ -696,7 +701,7 @@ CLOSEALL
     command.  Closes all open files.
 
 COD***/
-
+//CMD CLOSEALL 0 0 0
 DatumPtr Kernel::excCloseall(DatumPtr node) {
   ProcedureHelper h(this, node);
   closeAll();
@@ -712,7 +717,8 @@ ERF filename
     currently be open.
 
 COD***/
-
+//CMD ERASEFILE 1 1 1
+//CMD ERF 1 1 1
 DatumPtr Kernel::excErasefile(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr filenameP = h.wordAtIndex(0);
@@ -736,7 +742,7 @@ DRIBBLE filename
     characters and interactions.
 
 COD***/
-
+//CMD DRIBBLE 1 1 1
 DatumPtr Kernel::excDribble(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr filenameP = h.wordAtIndex(0);
@@ -760,7 +766,7 @@ NODRIBBLE
     closes the file.
 
 COD***/
-
+//CMD NODRIBBLE 0 0 0
 DatumPtr Kernel::excNodribble(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainController()->setDribble("");
@@ -779,7 +785,7 @@ SETREAD filename
     alternate between files.
 
 COD***/
-
+//CMD SETREAD 1 1 1
 DatumPtr Kernel::excSetread(DatumPtr node) {
   ProcedureHelper h(this, node);
   readStream = getStream(h);
@@ -813,7 +819,7 @@ SETWRITE filename
     the allocated buffer.
 
 COD***/
-
+//CMD SETWRITE 1 1 1
 DatumPtr Kernel::excSetwrite(DatumPtr node) {
   ProcedureHelper h(this, node);
   writeStream = getStream(h);
@@ -828,7 +834,7 @@ READER
     if the read stream is the terminal.
 
 COD***/
-
+//CMD READER 0 0 0
 DatumPtr Kernel::excReader(DatumPtr node) {
   ProcedureHelper h(this, node);
   if (readStream == stdioStream)
@@ -846,7 +852,7 @@ WRITER
     if the write stream is the screen.
 
 COD***/
-
+//CMD WRITER 0 0 0
 DatumPtr Kernel::excWriter(DatumPtr node) {
   ProcedureHelper h(this, node);
   if (writeStream == stdioStream)
@@ -867,7 +873,7 @@ SETREADPOS charpos
     stream is the screen.
 
 COD***/
-
+//CMD SETREADPOS 1 1 1
 DatumPtr Kernel::excSetreadpos(DatumPtr node) {
   ProcedureHelper h(this, node);
   int pos = h.validatedIntegerAtIndex(
@@ -889,7 +895,7 @@ SETWRITEPOS charpos
     stream is the screen.
 
 COD***/
-
+//CMD SETWRITEPOS 1 1 1
 DatumPtr Kernel::excSetwritepos(DatumPtr node) {
   ProcedureHelper h(this, node);
   int pos = h.validatedIntegerAtIndex(
@@ -907,7 +913,7 @@ READPOS
     outputs the file position of the current read stream file.
 
 COD***/
-
+//CMD READPOS 0 0 0
 DatumPtr Kernel::excReadpos(DatumPtr node) {
   ProcedureHelper h(this, node);
   double retval = 0;
@@ -925,7 +931,7 @@ WRITEPOS
     outputs the file position of the current write stream file.
 
 COD***/
-
+//CMD WRITEPOS 0 0 0
 DatumPtr Kernel::excWritepos(DatumPtr node) {
   ProcedureHelper h(this, node);
   double retval = 0;
@@ -947,7 +953,8 @@ EOF?
     read in the read stream file, FALSE otherwise.
 
 COD***/
-
+//CMD EOFP 0 0 0
+//CMD EOF? 0 0 0
 DatumPtr Kernel::excEofp(DatumPtr node) {
   ProcedureHelper h(this, node);
   bool retval =
@@ -973,7 +980,8 @@ KEY?
     invocation will always output FALSE.
 
 COD***/
-
+//CMD KEYP 0 0 0
+//CMD KEY? 0 0 0
 DatumPtr Kernel::excKeyp(DatumPtr node) {
   ProcedureHelper h(this, node);
   bool retval = (readStream != stdioStream) ? !readStream->atEnd()
@@ -989,7 +997,8 @@ CT
     command.  Clears the text window.
 
 COD***/
-
+//CMD CLEARTEXT 0 0 0
+//CMD CT 0 0 0
 DatumPtr Kernel::excCleartext(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainController()->clearScreenText();
@@ -1003,10 +1012,11 @@ SETCURSOR vector
     command.  The input is a list of two numbers, the row and column
     coordinates of the text cursor position in the text console portion of the
     GUI terminal.  The text cursor is moved to the requested position. The
-    text console may scroll to reveal the requested position.
+    text console may scroll to reveal the requested position if it was
+    previously ouside of the viewing area.
 
 COD***/
-
+//CMD SETCURSOR 1 1 1
 DatumPtr Kernel::excSetcursor(DatumPtr node) {
   ProcedureHelper h(this, node);
   QVector<double> v;
@@ -1033,7 +1043,7 @@ CURSOR
     the text cursor.
 
 COD***/
-
+//CMD CURSOR 0 0 0
 DatumPtr Kernel::excCursor(DatumPtr node) {
   ProcedureHelper h(this, node);
   int row = 0, col = 0;
@@ -1048,13 +1058,18 @@ DatumPtr Kernel::excCursor(DatumPtr node) {
 /***DOC SETTEXTCOLOR SETTC
 SETTEXTCOLOR foreground background
 SETTC foreground background
+(SETTEXTCOLOR foreground)
+(SETTC foreground)
 
-    The inputs are color numbers, as for turtle graphics.  Future printing
-    to the text window will use the specified colors for foreground (the
-    characters printed) and background (the space under those characters).
+    The inputs are colors.  Future printing to the text window will use
+    the specified colors for foreground (the characters printed) and
+    background (the space under those characters). If only one color is
+    specified, that color will be assigned to the foreground, and the
+    background color will remain unchanged.
 
 COD***/
-
+//CMD SETTEXTCOLOR 1 2 2
+//CMD SETTC 1 2 2
 DatumPtr Kernel::excSettextcolor(DatumPtr node) {
   ProcedureHelper h(this, node);
   QColor foreground;
@@ -1074,7 +1089,7 @@ DatumPtr Kernel::excSettextcolor(DatumPtr node) {
   mainController()->setTextColor(foreground, background);
   return nothing;
 }
-
+//CMD INCREASEFONT 0 0 0
 DatumPtr Kernel::excIncreasefont(DatumPtr node) {
   ProcedureHelper h(this, node);
   double f = mainController()->getTextFontSize();
@@ -1093,7 +1108,7 @@ DECREASEFONT
     windows to the next larger or smaller available size.
 
 COD***/
-
+//CMD DECREASEFONT 0 0 0
 DatumPtr Kernel::excDecreasefont(DatumPtr node) {
   ProcedureHelper h(this, node);
   double f = mainController()->getTextFontSize();
@@ -1113,7 +1128,7 @@ SETTEXTSIZE height
     used for the graphics window.
 
 COD***/
-
+//CMD SETTEXTSIZE 1 1 1
 DatumPtr Kernel::excSettextsize(DatumPtr node) {
   ProcedureHelper h(this, node);
   double newSize = h.validatedNumberAtIndex(
@@ -1131,7 +1146,7 @@ TEXTSIZE
     different approach used for the graphics window.
 
 COD***/
-
+//CMD TEXTSIZE 0 0 0
 DatumPtr Kernel::excTextsize(DatumPtr node) {
   ProcedureHelper h(this, node);
   double size = mainController()->getTextFontSize();
@@ -1145,7 +1160,7 @@ SETFONT fontname
     See ALLFONTS for a list of all fonts available on your system.
 
 COD***/
-
+//CMD SETFONT 1 1 1
 DatumPtr Kernel::excSetfont(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString fontName = h.wordAtIndex(0).wordValue()->printValue();
@@ -1153,14 +1168,14 @@ DatumPtr Kernel::excSetfont(DatumPtr node) {
   return nothing;
 }
 
-/***DOC FONTNAME
-FONTNAME
+/***DOC FONT
+FONT
 
     outputs the "font family name" of the font used in the text and edit
     windows.
 
 COD***/
-
+//CMD FONT 0 0 0
 DatumPtr Kernel::excFont(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString retval = mainController()->getTextFontName();
@@ -1178,7 +1193,7 @@ ALLFONTS
         foreach allfonts [print ?]
 
 COD***/
-
+//CMD ALLFONTS 0 0 0
 DatumPtr Kernel::excAllfonts(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = new List();
@@ -1197,7 +1212,7 @@ CURSORINSERT
     forward to make room for the inserted text.
 
 COD***/
-
+//CMD CURSORINSERT 0 0 0
 DatumPtr Kernel::excCursorInsert(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainController()->setCursorOverwriteMode(false);
@@ -1211,7 +1226,7 @@ CURSOROVERWRITE
     overwrite any text that was already positioned after the cursor.
 
 COD***/
-
+//CMD CURSOROVERWRITE 0 0 0
 DatumPtr Kernel::excCursorOverwrite(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainController()->setCursorOverwriteMode(true);
@@ -1224,7 +1239,7 @@ CURSORMODE
     Outputs the current cursor mode, either "OVERWRITE" or "INSERT".
 
 COD***/
-
+//CMD CURSORMODE 0 0 0
 DatumPtr Kernel::excCursorMode(DatumPtr node) {
   ProcedureHelper h(this, node);
   bool mode = mainController()->cursorOverwriteMode();

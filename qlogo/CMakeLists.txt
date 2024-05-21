@@ -45,11 +45,13 @@ set(QLOGO_SOURCES
   ../include/error.h
   ../include/help.h
   ../include/kernel.h
+  ../include/primitives.h
   ../include/library.h
   ../include/procedurehelper.h
   ../include/turtle.h
   ../include/parser.h
   ../include/runparser.h
+  ../include/workspace/primitivetable.h
   ../include/workspace/procedures.h
   ../include/workspace/propertylists.h
   ../include/workspace/vars.h

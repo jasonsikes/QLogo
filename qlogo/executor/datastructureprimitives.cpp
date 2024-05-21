@@ -45,7 +45,7 @@ WORD word1 word2
     outputs a word formed by concatenating its inputs.
 
 COD***/
-
+//CMD WORD 0 2 -1
 DatumPtr Kernel::excWord(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString retval = "";
@@ -65,7 +65,7 @@ LIST thing1 thing2
     Logo datum (word, list, or array).
 
 COD***/
-
+//CMD LIST 0 2 -1
 DatumPtr Kernel::excList(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = new List();
@@ -87,7 +87,8 @@ SE thing1 thing2
     not lists, or the members of its inputs, if those inputs are lists.
 
 COD***/
-
+//CMD SENTENCE 0 2 -1
+//CMD SE 0 2 -1
 DatumPtr Kernel::excSentence(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = new List();
@@ -116,7 +117,7 @@ FPUT thing list
     equivalent to WORD.
 
 COD***/
-
+//CMD FPUT 2 2 2
 DatumPtr Kernel::excFput(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr thing = h.datumAtIndex(0);
@@ -143,7 +144,7 @@ LPUT thing list
     equivalent to WORD with its inputs in the other order.
 
 COD***/
-
+//CMD LPUT 2 2 2
 DatumPtr Kernel::excLput(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr thing = h.datumAtIndex(0);
@@ -181,7 +182,7 @@ ARRAY size
     typed in, inside curly braces; indicate an origin with {a b c}@0.
 
 COD***/
-
+//CMD ARRAY 1 1 2
 DatumPtr Kernel::excArray(DatumPtr node) {
   ProcedureHelper h(this, node);
   int origin = 1;
@@ -205,7 +206,7 @@ LISTTOARRAY list
     are the members of the input list.
 
 COD***/
-
+//CMD LISTTOARRAY 1 1 2
 DatumPtr Kernel::excListtoarray(DatumPtr node) {
   ProcedureHelper h(this, node);
   int origin = 1;
@@ -225,7 +226,7 @@ ARRAYTOLIST array
     regardless of the array's origin.
 
 COD***/
-
+//CMD ARRAYTOLIST 1 1 1
 DatumPtr Kernel::excArraytolist(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr source = h.arrayAtIndex(0);
@@ -245,7 +246,7 @@ FIRST thing
     is, the INDEX OF the first member of the array).
 
 COD***/
-
+//CMD FIRST 1 1 1
 DatumPtr Kernel::excFirst(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr value = h.validatedDatumAtIndex(
@@ -269,7 +270,7 @@ FIRSTS list
     but is provided as a primitive in order to speed up the iteration
     tools MAP, MAP.SE, and FOREACH.
 COD***/
-
+//CMD FIRSTS 1 1 1
 DatumPtr Kernel::excFirsts(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = new List();
@@ -294,7 +295,7 @@ LAST wordorlist
     If the input is a list, outputs the last member of the list.
 
 COD***/
-
+//CMD LAST 1 1 1
 DatumPtr Kernel::excLast(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr value = h.validatedDatumAtIndex(
@@ -312,7 +313,8 @@ BF wordorlist
     containing all but the first member of the input.
 
 COD***/
-
+//CMD BUTFIRST 1 1 1
+//CMD BF 1 1 1
 DatumPtr Kernel::excButfirst(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr value = h.validatedDatumAtIndex(
@@ -338,7 +340,8 @@ BFS list
     tools MAP, MAP.SE, and FOREACH.
 
 COD***/
-
+//CMD BUTFIRSTS 1 1 1
+//CMD BFS 1 1 1
 DatumPtr Kernel::excButfirsts(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = new List();
@@ -365,7 +368,8 @@ BL wordorlist
     containing all but the last member of the input.
 
 COD***/
-
+//CMD BUTLAST 1 1 1
+//CMD BL 1 1 1
 DatumPtr Kernel::excButlast(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr value = h.validatedDatumAtIndex(
@@ -385,7 +389,7 @@ ITEM index thing
     created.
 
 COD***/
-
+//CMD ITEM 2 2 2
 DatumPtr Kernel::excItem(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr thing = h.datumAtIndex(1);
@@ -407,7 +411,7 @@ SETITEM index array value
     "value" may not be a list or array that contains "array".
 
 COD***/
-
+//CMD SETITEM 3 3 3
 DatumPtr Kernel::excSetitem(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr array = h.validatedDatumAtIndex(1, [](DatumPtr candidate) {
@@ -441,7 +445,7 @@ DatumPtr Kernel::excSetitem(DatumPtr node) {
     structures that share storage with the list being modified.
 
 COD***/
-
+//CMD .SETFIRST 2 2 2
 DatumPtr Kernel::excDotSetfirst(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr array = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
@@ -468,7 +472,7 @@ DatumPtr Kernel::excDotSetfirst(DatumPtr node) {
     coredumps if the butfirst of a list is not itself a list.
 
 COD***/
-
+//CMD .SETBF 2 2 2
 DatumPtr Kernel::excDotSetbf(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr thing = h.datumAtIndex(1);
@@ -496,7 +500,7 @@ DatumPtr Kernel::excDotSetbf(DatumPtr node) {
     infinite loops.
 
 COD***/
-
+//CMD .SETITEM 3 3 3
 DatumPtr Kernel::excDotSetitem(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr array = h.validatedDatumAtIndex(1, [](DatumPtr candidate) {
@@ -520,7 +524,8 @@ WORD? thing
     outputs TRUE if the input is a word, FALSE otherwise.
 
 COD***/
-
+//CMD WORDP 1 1 1
+//CMD WORD? 1 1 1
 DatumPtr Kernel::excWordp(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr src = h.datumAtIndex(0);
@@ -535,7 +540,8 @@ LIST? thing
     outputs TRUE if the input is a list, FALSE otherwise.
 
 COD***/
-
+//CMD LISTP 1 1 1
+//CMD LIST? 1 1 1
 DatumPtr Kernel::excListp(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr src = h.datumAtIndex(0);
@@ -550,7 +556,8 @@ ARRAY? thing
     outputs TRUE if the input is an array, FALSE otherwise.
 
 COD***/
-
+//CMD ARRAYP 1 1 1
+//CMD ARRAY? 1 1 1
 DatumPtr Kernel::excArrayp(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr src = h.datumAtIndex(0);
@@ -566,7 +573,8 @@ EMPTY? thing
     FALSE otherwise.
 
 COD***/
-
+//CMD EMPTYP 1 1 1
+//CMD EMPTY? 1 1 1
 DatumPtr Kernel::excEmptyp(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr src = h.datumAtIndex(0);
@@ -593,7 +601,8 @@ thing1 = thing2
     performing SETITEM on one of them will also change the other.)
 
 COD***/
-
+//CMD EQUALP 2 2 2
+//CMD EQUAL? 2 2 2
 DatumPtr Kernel::excEqualp(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr a = h.datumAtIndex(0);
@@ -611,9 +620,9 @@ thing1 <> thing2
     for the meaning of equality for different data types.
 
 COD***/
-
-// TODO: should this be 'excNotequalp'?
-DatumPtr Kernel::excNotequal(DatumPtr node) {
+//CMD NOTEQUALP 2 2 2
+//CMD NOTEQUAL? 2 2 2
+DatumPtr Kernel::excNotequalp(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr a = h.datumAtIndex(0);
   DatumPtr b = h.datumAtIndex(1);
@@ -632,9 +641,10 @@ BEFORE? word1 word2
     BEFOREP 3 12 is false because 3 collates after 1.
 
 COD***/
-
-// TODO case-sensitivity
+//CMD BEFOREP 2 2 2
+//CMD BEFORE? 2 2 2
 DatumPtr Kernel::excBeforep(DatumPtr node) {
+  // TODO case-sensitivity?
   ProcedureHelper h(this, node);
   const QString &a = h.wordAtIndex(0).wordValue()->printValue();
   const QString &b = h.wordAtIndex(1).wordValue()->printValue();
@@ -653,7 +663,7 @@ DatumPtr Kernel::excBeforep(DatumPtr node) {
     can lead to circular data structures, infinite loops, or Logo crashes.
 
 COD***/
-
+//CMD .EQ 2 2 2
 DatumPtr Kernel::excDotEq(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr a = h.datumAtIndex(0);
@@ -672,7 +682,8 @@ MEMBER? thing1 thing2
     character of "thing2", FALSE otherwise.
 
 COD***/
-
+//CMD MEMBERP 2 2 2
+//CMD MEMBER? 2 2 2
 DatumPtr Kernel::excMemberp(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr container = h.validatedDatumAtIndex(1, [](DatumPtr candidate) {
@@ -698,7 +709,8 @@ SUBSTRING? thing1 thing2
     substring of "thing2", FALSE otherwise.
 
 COD***/
-
+//CMD SUBSTRINGP 2 2 2
+//CMD SUBSTRING? 2 2 2
 DatumPtr Kernel::excSubstringp(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr thing = h.datumAtIndex(0);
@@ -716,7 +728,8 @@ NUMBER? thing
     outputs TRUE if the input is a number, FALSE otherwise.
 
 COD***/
-
+//CMD NUMBERP 1 1 1
+//CMD NUMBER? 1 1 1
 DatumPtr Kernel::excNumberp(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr thing = h.datumAtIndex(0);
@@ -745,7 +758,8 @@ BACKSLASHED? char                               (library procedure)
 
 
 COD***/
-
+//CMD VBARREDP 1 1 1
+//CMD VBARRED? 1 1 1
 DatumPtr Kernel::excVbarredp(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr thing = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
@@ -769,7 +783,7 @@ COUNT thing
     last member, depending on the array's origin.)
 
 COD***/
-
+//CMD COUNT 1 1 1
 DatumPtr Kernel::excCount(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr thing = h.datumAtIndex(0);
@@ -792,7 +806,7 @@ ASCII char
     because ASCII is a proper subset of Unicode.
 
 COD***/
-
+//CMD ASCII 1 1 1
 DatumPtr Kernel::excAscii(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr chr = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
@@ -815,7 +829,7 @@ RAWASCII char
     See ASCII for discussion of Unicode characters.
 
 COD***/
-
+//CMD RAWASCII 1 1 1
 DatumPtr Kernel::excRawascii(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr chr = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
@@ -836,7 +850,7 @@ CHAR int
     See ASCII for discussion of Unicode characters.
 
 COD***/
-
+//CMD CHAR 1 1 1
 DatumPtr Kernel::excChar(DatumPtr node) {
   ProcedureHelper h(this, node);
   int n = h.validatedIntegerAtIndex(0, [](int candidate) {
@@ -856,7 +870,7 @@ MEMBER thing1 thing2
     for "thing2" to be an array.
 
 COD***/
-
+//CMD MEMBER 2 2 2
 DatumPtr Kernel::excMember(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr container = h.datumAtIndex(1);
@@ -874,7 +888,7 @@ LOWERCASE word
     changed to the corresponding lowercase letter.
 
 COD***/
-
+//CMD LOWERCASE 1 1 1
 DatumPtr Kernel::excLowercase(DatumPtr node) {
   ProcedureHelper h(this, node);
   const QString &phrase = h.wordAtIndex(0).wordValue()->printValue();
@@ -890,7 +904,7 @@ UPPERCASE word
     changed to the corresponding uppercase letter.
 
 COD***/
-
+//CMD UPPERCASE 1 1 1
 DatumPtr Kernel::excUppercase(DatumPtr node) {
   ProcedureHelper h(this, node);
   const QString &phrase = h.wordAtIndex(0).wordValue()->printValue();
@@ -910,7 +924,7 @@ STANDOUT thing
     spaces and other formatting characters.
 
 COD***/
-
+//CMD STANDOUT 1 1 1
 DatumPtr Kernel::excStandout(DatumPtr node) {
   ProcedureHelper h(this, node);
   const QString &phrase = h.wordAtIndex(0).wordValue()->printValue();
@@ -927,7 +941,7 @@ PARSE word
     the same value as READLIST for the same characters read.
 
 COD***/
-
+//CMD PARSE 1 1 1
 DatumPtr Kernel::excParse(DatumPtr node) {
   ProcedureHelper h(this, node);
   Parser p;
@@ -952,7 +966,7 @@ RUNPARSE wordorlist
 
 
 COD***/
-
+//CMD RUNPARSE 1 1 1
 DatumPtr Kernel::excRunparse(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr wordOrList = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {

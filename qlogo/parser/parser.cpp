@@ -143,7 +143,7 @@ DatumPtr Parser::parseExp() {
     if (op.wordValue()->printValue() == "=") {
       node.astnodeValue()->kernel = &Kernel::excEqualp;
     } else if (op.wordValue()->printValue() == "<>") {
-      node.astnodeValue()->kernel = &Kernel::excNotequal;
+      node.astnodeValue()->kernel = &Kernel::excNotequalp;
     } else if (op.wordValue()->printValue() == "<") {
       node.astnodeValue()->kernel = &Kernel::excLessp;
     } else if (op.wordValue()->printValue() == ">") {

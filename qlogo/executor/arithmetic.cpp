@@ -25,10 +25,9 @@
 //===----------------------------------------------------------------------===//
 
 #include "kernel.h"
-#include "datum/word.h"
 #include "datum/astnode.h"
 
-#include <functional>
+#include <error.h>
 #include <math.h>
 
 #ifndef M_PI
@@ -46,7 +45,7 @@ num1 + num2
     outputs the sum of its inputs.
 
 COD***/
-
+//CMD SUM 0 2 -1
 DatumPtr Kernel::excSum(DatumPtr node) {
   ProcedureHelper h(this, node);
   double result = 0;
@@ -69,7 +68,7 @@ num1 - num2
     by a nonspace.  (See also MINUS.)
 
 COD***/
-
+//CMD DIFFERENCE 2 2 2
 DatumPtr Kernel::excDifference(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
@@ -95,7 +94,8 @@ MINUS num
         - 3 + 4		means	(-3)+4
 
 COD***/
-
+//CMD MINUS 1 1 1
+//CMD - 1 1 1
 DatumPtr Kernel::excMinus(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
@@ -112,7 +112,7 @@ num1 * num2
     outputs the product of its inputs.
 
 COD***/
-
+//CMD PRODUCT 0 2 -1
 DatumPtr Kernel::excProduct(DatumPtr node) {
   ProcedureHelper h(this, node);
   double result = 1;
@@ -137,7 +137,7 @@ num1 / num2
     QUOTIENT outputs the reciprocal of the input.
 
 COD***/
-
+//CMD QUOTIENT 1 2 2
 DatumPtr Kernel::excQuotient(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a, c;
@@ -165,7 +165,7 @@ REMAINDER num1 num2
     integers and the result is an integer with the same sign as num1.
 
 COD***/
-
+//CMD REMAINDER 2 2 2
 DatumPtr Kernel::excRemainder(DatumPtr node) {
   ProcedureHelper h(this, node);
   int a = h.integerAtIndex(0);
@@ -186,7 +186,7 @@ MODULO num1 num2
     integers and the result is an integer with the same sign as num2.
 
 COD***/
-
+//CMD MODULO 2 2 2
 DatumPtr Kernel::excModulo(DatumPtr node) {
   ProcedureHelper h(this, node);
   int a = h.integerAtIndex(0);
@@ -210,7 +210,7 @@ INT num
     the input.
 
 COD***/
-
+//CMD INT 1 1 1
 DatumPtr Kernel::excInt(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
@@ -227,7 +227,7 @@ ROUND num
     outputs the nearest integer to the input.
 
 COD***/
-
+//CMD ROUND 1 1 1
 DatumPtr Kernel::excRound(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
@@ -244,7 +244,7 @@ SQRT num
     outputs the square root of the input, which must be nonnegative.
 
 COD***/
-
+//CMD SQRT 1 1 1
 DatumPtr Kernel::excSqrt(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.validatedNumberAtIndex(
@@ -263,7 +263,7 @@ POWER num1 num2
     num2 must be an integer.
 
 COD***/
-
+//CMD POWER 2 2 2
 DatumPtr Kernel::excPower(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
@@ -287,7 +287,7 @@ EXP num
     outputs e (2.718281828+) to the input power.
 
 COD***/
-
+//CMD EXP 1 1 1
 DatumPtr Kernel::excExp(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
@@ -304,7 +304,7 @@ LOG10 num
     outputs the common logarithm of the input.
 
 COD***/
-
+//CMD LOG10 1 1 1
 DatumPtr Kernel::excLog10(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.validatedNumberAtIndex(
@@ -322,7 +322,7 @@ LN num
     outputs the natural logarithm of the input.
 
 COD***/
-
+//CMD LN 1 1 1
 DatumPtr Kernel::excLn(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.validatedNumberAtIndex(
@@ -340,7 +340,7 @@ SIN degrees
     outputs the sine of its input, which is taken in degrees.
 
 COD***/
-
+//CMD SIN 1 1 1
 DatumPtr Kernel::excSin(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
@@ -357,7 +357,7 @@ RADSIN radians
     outputs the sine of its input, which is taken in radians.
 
 COD***/
-
+//CMD RADSIN 1 1 1
 DatumPtr Kernel::excRadsin(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
@@ -374,7 +374,7 @@ COS degrees
     outputs the cosine of its input, which is taken in degrees.
 
 COD***/
-
+//CMD COS 1 1 1
 DatumPtr Kernel::excCos(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
@@ -391,7 +391,7 @@ RADCOS radians
     outputs the cosine of its input, which is taken in radians.
 
 COD***/
-
+//CMD RADCOS 1 1 1
 DatumPtr Kernel::excRadcos(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
@@ -411,7 +411,7 @@ ARCTAN num
     90 or -90 depending on the sign of y, if x is zero.
 
 COD***/
-
+//CMD ARCTAN 1 1 2
 DatumPtr Kernel::excArctan(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
@@ -440,7 +440,7 @@ RADARCTAN num
     value of pi.
 
 COD***/
-
+//CMD RADARCTAN 1 1 2
 DatumPtr Kernel::excRadarctan(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
@@ -467,7 +467,8 @@ num1 < num2
     outputs TRUE if its first input is strictly less than its second.
 
 COD***/
-
+//CMD LESSP 2 2 2
+//CMD LESS? 2 2 2
 DatumPtr Kernel::excLessp(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
@@ -484,7 +485,8 @@ num1 > num2
     outputs TRUE if its first input is strictly greater than its second.
 
 COD***/
-
+//CMD GREATERP 2 2 2
+//CMD GREATER? 2 2 2
 DatumPtr Kernel::excGreaterp(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
@@ -501,7 +503,8 @@ num1 <= num2
     outputs TRUE if its first input is less than or equal to its second.
 
 COD***/
-
+//CMD LESSEQUALP 2 2 2
+//CMD LESSEQUAL? 2 2 2
 DatumPtr Kernel::excLessequalp(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
@@ -517,9 +520,9 @@ num1 >= num2
 
     outputs TRUE if its first input is greater than or equal to its second.
 
-
 COD***/
-
+//CMD GREATEREQUALP 2 2 2
+//CMD GREATEREQUAL? 2 2 2
 DatumPtr Kernel::excGreaterequalp(DatumPtr node) {
   ProcedureHelper h(this, node);
   double a = h.numberAtIndex(0);
@@ -544,7 +547,7 @@ RANDOM num
     (RANDOM 3 8) is equivalent to (RANDOM 6)+3.
 
 COD***/
-
+//CMD RANDOM 1 1 2
 DatumPtr Kernel::excRandom(DatumPtr node) {
   ProcedureHelper h(this, node);
   int start, end, result;
@@ -583,7 +586,7 @@ RERANDOM
     input selects a unique sequence of numbers.
 
 COD***/
-
+//CMD RERANDOM 0 0 1
 DatumPtr Kernel::excRerandom(DatumPtr node) {
     ProcedureHelper h(this, node);
     int seedVal;
@@ -613,7 +616,7 @@ FORM num width precision
     decimal point in the output.)
 
 COD***/
-
+//CMD FORM 3 3 3
 DatumPtr Kernel::excForm(DatumPtr node) {
   ProcedureHelper h(this, node);
   double num = h.numberAtIndex(0);
@@ -636,7 +639,7 @@ BITAND num1 num2
     outputs the bitwise AND of its inputs, which must be integers.
 
 COD***/
-
+//CMD BITAND 0 2 -1
 DatumPtr Kernel::excBitand(DatumPtr node) {
   ProcedureHelper h(this, node);
   int retval = -1;
@@ -657,7 +660,7 @@ BITOR num1 num2
     outputs the bitwise OR of its inputs, which must be integers.
 
 COD***/
-
+//CMD BITOR 0 2 -1
 DatumPtr Kernel::excBitor(DatumPtr node) {
   ProcedureHelper h(this, node);
   int retval = 0;
@@ -679,7 +682,7 @@ BITXOR num1 num2
     integers.
 
 COD***/
-
+//CMD BITXOR 0 2 -1
 DatumPtr Kernel::excBitxor(DatumPtr node) {
   ProcedureHelper h(this, node);
   int retval = 0;
@@ -699,7 +702,7 @@ BITNOT num
     outputs the bitwise NOT of its input, which must be an integer.
 
 COD***/
-
+//CMD BITNOT 1 1 1
 DatumPtr Kernel::excBitnot(DatumPtr node) {
   ProcedureHelper h(this, node);
   int a = h.integerAtIndex(0);
@@ -716,7 +719,7 @@ ASHIFT num1 num2
     extension.  The inputs must be integers.
 
 COD***/
-
+//CMD ASHIFT 2 2 2
 DatumPtr Kernel::excAshift(DatumPtr node) {
   ProcedureHelper h(this, node);
   int a = h.integerAtIndex(0);
@@ -735,7 +738,7 @@ LSHIFT num1 num2
 
 
 COD***/
-
+//CMD LSHIFT 2 2 2
 DatumPtr Kernel::excLshift(DatumPtr node) {
   ProcedureHelper h(this, node);
   unsigned int a = h.integerAtIndex(0);
@@ -760,8 +763,7 @@ AND tf1 tf2
 MAKE "RESULT AND [NOT (:X = 0)] [(1 / :X) > .5]
     to avoid the division by zero if the first part is false.
 COD***/
-
-
+//CMD AND 0 2 -1
 DatumPtr Kernel::excAnd(DatumPtr node) {
   ProcedureHelper h(this, node);
   for (int i = 0; i < h.countOfChildren(); ++i) {
@@ -790,7 +792,7 @@ OR tf1 tf2
     to avoid the long computation if the first condition is met.
 
 COD***/
-
+//CMD OR 0 2 -1
 DatumPtr Kernel::excOr(DatumPtr node) {
   ProcedureHelper h(this, node);
   for (int i = 0; i < h.countOfChildren(); ++i) {
@@ -812,10 +814,31 @@ NOT tf
 
 
 COD***/
-
+//CMD NOT 1 1 1
 DatumPtr Kernel::excNot(DatumPtr node) {
   ProcedureHelper h(this, node);
   bool a = h.boolAtIndex(0, true);
 
   return h.ret(!a);
 }
+
+
+// Add infix entries to table. This will cause an error if they are used as
+// prefix operators.
+//CMD + 1 1 1
+//CMD * 1 1 1
+//CMD / 1 1 1
+//CMD < 1 1 1
+//CMD > 1 1 1
+//CMD = 1 1 1
+//CMD <= 1 1 1
+//CMD >= 1 1 1
+//CMD <> 1 1 1
+DatumPtr Kernel::excInfixError(DatumPtr node) {
+    ProcedureHelper h(this, node);
+    Error::notEnough(node.astnodeValue()->nodeName);
+    return nothing;
+}
+
+
+

@@ -57,7 +57,8 @@ FD dist
     the specified distance (measured in turtle steps).
 
 COD***/
-
+//CMD FORWARD 1 1 1
+//CMD FD 1 1 1
 DatumPtr Kernel::excForward(DatumPtr node) {
   ProcedureHelper h(this, node);
   double value = h.numberAtIndex(0);
@@ -77,7 +78,8 @@ BK dist
     turtle does not change.)
 
 COD***/
-
+//CMD BACK 1 1 1
+//CMD BK 1 1 1
 DatumPtr Kernel::excBack(DatumPtr node) {
   ProcedureHelper h(this, node);
   double value = h.numberAtIndex(0);
@@ -96,7 +98,8 @@ LT degrees
     in degrees (1/360 of a circle).
 
 COD***/
-
+//CMD LEFT 1 1 1
+//CMD LT 1 1 1
 DatumPtr Kernel::excLeft(DatumPtr node) {
   ProcedureHelper h(this, node);
   double value = h.numberAtIndex(0);
@@ -115,7 +118,8 @@ RT degrees
     degrees (1/360 of a circle).
 
 COD***/
-
+//CMD RIGHT 1 1 1
+//CMD RT 1 1 1
 DatumPtr Kernel::excRight(DatumPtr node) {
   ProcedureHelper h(this, node);
   double value = h.numberAtIndex(0);
@@ -133,7 +137,7 @@ SETPOS pos
     input is a list of two numbers, the X and Y coordinates.
 
 COD***/
-
+//CMD SETPOS 1 1 1
 DatumPtr Kernel::excSetpos(DatumPtr node) {
   ProcedureHelper h(this, node);
 
@@ -161,7 +165,7 @@ SETXY xcor ycor
     two inputs are numbers, the X and Y coordinates.
 
 COD***/
-
+//CMD SETXY 2 2 2
 DatumPtr Kernel::excSetXY(DatumPtr node) {
   ProcedureHelper h(this, node);
   double x = h.numberAtIndex(0);
@@ -181,7 +185,7 @@ SETX xcor
     coordinate.
 
 COD***/
-
+//CMD SETX 1 1 1
 DatumPtr Kernel::excSetX(DatumPtr node) {
   ProcedureHelper h(this, node);
   double x = h.numberAtIndex(0);
@@ -200,7 +204,7 @@ SETY ycor
     coordinate.
 
 COD***/
-
+//CMD SETY 1 1 1
 DatumPtr Kernel::excSetY(DatumPtr node) {
   ProcedureHelper h(this, node);
   double y = h.numberAtIndex(0);
@@ -220,7 +224,8 @@ SETH degrees
     Y axis.
 
 COD***/
-
+//CMD SETHEADING 1 1 1
+//CMD SETH 1 1 1
 DatumPtr Kernel::excSetheading(DatumPtr node) {
   ProcedureHelper h(this, node);
   double newHeading = h.numberAtIndex(0);
@@ -242,7 +247,7 @@ HOME
     SETPOS [0 0] SETHEADING 0.
 
 COD***/
-
+//CMD HOME 0 0 0
 DatumPtr Kernel::excHome(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainTurtle()->moveToHome();
@@ -259,7 +264,7 @@ ARC angle radius
     clockwise through the specified angle.  The turtle does not move.
 
 COD***/
-
+//CMD ARC 2 2 2
 DatumPtr Kernel::excArc(DatumPtr node) {
   ProcedureHelper h(this, node);
   double angle = h.numberAtIndex(0);
@@ -287,7 +292,7 @@ POS
     numbers, the X and Y coordinates.
 
 COD***/
-
+//CMD POS 1 1 1
 DatumPtr Kernel::excPos(DatumPtr node) {
   ProcedureHelper h(this, node);
   double x, y;
@@ -306,7 +311,7 @@ HEADING
     outputs a number, the turtle's heading in degrees.
 
 COD***/
-
+//CMD HEADING 0 0 0
 DatumPtr Kernel::excHeading(DatumPtr node) {
   ProcedureHelper h(this, node);
   double retval = mainTurtle()->getHeading();
@@ -327,7 +332,7 @@ TOWARDS pos
     the position given as the input.
 
 COD***/
-
+//CMD TOWARDS 1 1 1
 DatumPtr Kernel::excTowards(DatumPtr node) {
   ProcedureHelper h(this, node);
   QVector<double> v;
@@ -364,7 +369,7 @@ SCRUNCH
 
 
 COD***/
-
+//CMD SCRUNCH 0 0 0
 DatumPtr Kernel::excScrunch(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = new List();
@@ -383,7 +388,8 @@ ST
     makes the turtle visible.
 
 COD***/
-
+//CMD SHOWTURTLE 0 0 0
+//CMD ST 0 0 0
 DatumPtr Kernel::excShowturtle(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainTurtle()->setIsTurtleVisible(true);
@@ -402,7 +408,8 @@ HT
     the turtle speeds up the drawing substantially.
 
 COD***/
-
+//CMD HIDETURTLE 0 0 0
+//CMD HT 0 0 0
 DatumPtr Kernel::excHideturtle(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainTurtle()->setIsTurtleVisible(false);
@@ -420,7 +427,7 @@ CLEAN
     changed.
 
 COD***/
-
+//CMD CLEAN 0 0 0
 DatumPtr Kernel::excClean(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainController()->clearCanvas();
@@ -436,7 +443,7 @@ CS
     position and heading.  Like HOME and CLEAN together.
 
 COD***/
-
+//CMD CS 0 0 0
 DatumPtr Kernel::excClearscreen(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainTurtle()->moveToHome();
@@ -458,7 +465,7 @@ WRAP
     Compare WINDOW and FENCE.
 
 COD***/
-
+//CMD WRAP 0 0 0
 DatumPtr Kernel::excWrap(DatumPtr node) {
   ProcedureHelper h(this, node);
   TurtleModeEnum newMode = turtleWrap;
@@ -481,7 +488,7 @@ WINDOW
     it back to the center of the window.)  Compare WRAP and FENCE.
 
 COD***/
-
+//CMD WINDOW 0 0 0
 DatumPtr Kernel::excWindow(DatumPtr node) {
   ProcedureHelper h(this, node);
   TurtleModeEnum newMode = turtleWindow;
@@ -502,7 +509,7 @@ FENCE
     "out of bounds" error message.  Compare WRAP and WINDOW.
 
 COD***/
-
+//CMD FENCE 0 0 0
 DatumPtr Kernel::excFence(DatumPtr node) {
   ProcedureHelper h(this, node);
   TurtleModeEnum newMode = turtleFence;
@@ -515,20 +522,13 @@ DatumPtr Kernel::excFence(DatumPtr node) {
 
 
 /***DOC BOUNDS
-BOUNDS x y
+BOUNDS
 
-    sets the bounds for the canvas:  The canvas will show everything within
-    the bounds. In WINDOW mode the GUI may also show the canvas beyond the
-    bounds. The origin (position 0 0) will always be in the center. The
-    horizontal range will be [-x, x] while the horizontal range will be
-    [-y, y].
-
-    In WINDOW mode the entire view will show the canvas's background color.
-    In FENCE and WRAP modes only the drawable canvas area will show the
-    background color.
+    outputs a list of two positive numbers [X,Y] giving the maximum bounds
+    of the canvas. See SETBOUNDS.
 
 COD***/
-
+//CMD BOUNDS 2 2 2
 DatumPtr Kernel::excBounds(DatumPtr node) {
   ProcedureHelper h(this, node);
   double x = mainController()->boundX();
@@ -540,6 +540,18 @@ DatumPtr Kernel::excBounds(DatumPtr node) {
   return h.ret(retval);
 }
 
+/***DOC SETBOUNDS
+SETBOUNDS x y
+
+    sets the bounds for the canvas:  The input should be two positive
+    numbers, the X-maximum, and Y-maximum. The canvas will reshape itself
+    to those proportions. The drawing area is a Cartesian coordinate system
+    where the origin (position 0 0) will always be in the center. The
+    horizontal range will be [-x, x] while the horizontal range will be
+    [-y, y].
+
+COD***/
+//CMD SETBOUNDS 2 2 2
 DatumPtr Kernel::excSetbounds(DatumPtr node) {
   ProcedureHelper h(this, node);
   auto v = [](double candidate) { return candidate > 0; };
@@ -563,15 +575,8 @@ FILLED color instructions
     which can be a color number or an RGB list.  The instruction list
     cannot include another FILLED invocation.
 
-    Since QLogo uses OpenGL for drawing commands, the polygon is drawn
-    as a "triangle fan". The first vertex will be common for all triangles.
-    For example, if the polygon has four points, then two trangles will be
-    drawn: one using indices [1, 2, 3] the other using indices [1, 3, 4].
-    A five-point polygon will be drawn from three triangles: [1, 2, 3],
-    [1, 3, 4], and [1, 4, 5]. And so on...
-
 COD***/
-
+//CMD FILLED 2 2 2
 DatumPtr Kernel::excFilled(DatumPtr node) {
   ProcedureHelper h(this, node);
   QColor c;
@@ -601,8 +606,8 @@ LABEL text
     starting at the turtle's position.
 
 COD***/
-
 // TODO: should also accept list as input.
+//CMD LABEL 1 1 1
 DatumPtr Kernel::excLabel(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString text = h.wordAtIndex(0).wordValue()->printValue();
@@ -616,10 +621,10 @@ DatumPtr Kernel::excLabel(DatumPtr node) {
 /***DOC SETLABELHEIGHT
 SETLABELHEIGHT height
 
-    command. Takes a positive integer argument and sets the label font size.
+    command. Takes a positive number argument and sets the label font size.
 
 COD***/
-
+//CMD SETLABELHEIGHT 1 1 1
 DatumPtr Kernel::excSetlabelheight(DatumPtr node) {
   ProcedureHelper h(this, node);
   double height = h.validatedNumberAtIndex(
@@ -638,7 +643,8 @@ TS
     interaction with Logo).  Compare SPLITSCREEN and FULLSCREEN.
 
 COD***/
-
+//CMD TEXTSCREEN 0 0 0
+//CMD TS 0 0 0
 DatumPtr Kernel::excTextscreen(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainController()->setScreenMode(textScreenMode);
@@ -659,7 +665,8 @@ FS
     25% text console. This is identical to SPLITSCREEN.
 
 COD***/
-
+//CMD FULLSCREEN 0 0 0
+//CMD FS 0 0 0
 DatumPtr Kernel::excFullscreen(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainController()->setScreenMode(fullScreenMode);
@@ -677,7 +684,8 @@ SS
     Compare TEXTSCREEN and FULLSCREEN.
 
 COD***/
-
+//CMD SPLITSCREEN 0 0 0
+//CMD SS 0 0 0
 DatumPtr Kernel::excSplitscreen(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainController()->setScreenMode(splitScreenMode);
@@ -688,10 +696,10 @@ DatumPtr Kernel::excSplitscreen(DatumPtr node) {
 /***DOC SETSCRUNCH
 SETSCRUNCH xscale yscale
 
-    In QLogo this does nothing. It should be removed. See SCRUNCH.
+    In QLogo this does nothing. See SCRUNCH.
 
 COD***/
-
+//CMD SETSCRUNCH 2 2 2
 DatumPtr Kernel::excSetscrunch(DatumPtr node) {
   ProcedureHelper h(this, node);
   return nothing;
@@ -708,7 +716,8 @@ SHOWN?
     turtle is hidden.  See SHOWTURTLE and HIDETURTLE.
 
 COD***/
-
+//CMD SHOWNP 0 0 0
+//CMD SHOWN? 0 0 0
 DatumPtr Kernel::excShownp(DatumPtr node) {
   ProcedureHelper h(this, node);
   bool retval = mainTurtle()->isTurtleVisible();
@@ -727,7 +736,7 @@ SCREENMODE
     last used mode command.
 
 COD***/
-
+//CMD SCREENMODE 0 0 0
 DatumPtr Kernel::excScreenmode(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString retval;
@@ -756,7 +765,7 @@ TURTLEMODE
     turtle mode.
 
 COD***/
-
+//CMD TURTLEMODE 0 0 0
 DatumPtr Kernel::excTurtlemode(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString retval;
@@ -788,7 +797,7 @@ LABELSIZE
     are variable-width, and therefore the width is difficult to calculate.
 
 COD***/
-
+//CMD LABELSIZE 0 0 0
 DatumPtr Kernel::excLabelheight(DatumPtr node) {
   ProcedureHelper h(this, node);
   double retval = mainController()->getLabelFontSize();
@@ -798,15 +807,16 @@ DatumPtr Kernel::excLabelheight(DatumPtr node) {
 /***DOC MATRIX
 MATRIX
 
-    outputs a 4-by-4 transformation matrix in the form of a list of four lists,
-    each list contains four numbers. This represents the state of the turtle in
-    3D space, and is only present for debugging purposes. It may be removed or
+    outputs a 3-by-3 transformation matrix in the form of a list of three lists,
+    each list contains three numbers. This represents the state of the turtle in
+    2D space, and is only present for debugging purposes. It may be removed or
     replaced in the future and should be considered DEPRICATED.
 
 COD***/
 
 // TODO: TURTLEMATRIX, and maybe .SETTURTLEMATRIX
 // TODO: This should be an array of arrays.
+//CMD MATRIX 0 0 0
 DatumPtr Kernel::excMatrix(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = new List();
@@ -831,7 +841,8 @@ PD
     sets the pen's position to DOWN, without changing its mode.
 
 COD***/
-
+//CMD PENDOWN 0 0 0
+//CMD PD 0 0 0
 DatumPtr Kernel::excPendown(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainTurtle()->setPenIsDown(true);
@@ -847,7 +858,8 @@ PU
     sets the pen's position to UP, without changing its mode.
 
 COD***/
-
+//CMD PENUP 0 0 0
+//CMD PU 0 0 0
 DatumPtr Kernel::excPenup(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainTurtle()->setPenIsDown(false);
@@ -863,7 +875,8 @@ PPT
     sets the pen's position to DOWN and mode to PAINT.
 
 COD***/
-
+//CMD PENPAINT 0 0 0
+//CMD PPT 0 0 0
 DatumPtr Kernel::excPenpaint(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainTurtle()->setPenIsDown(true);
@@ -879,7 +892,8 @@ PE
     sets the pen's position to DOWN and mode to ERASE.
 
 COD***/
-
+//CMD PENERASE 0 0 0
+//CMD PE 0 0 0
 DatumPtr Kernel::excPenerase(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainTurtle()->setPenIsDown(true);
@@ -896,7 +910,8 @@ PX
     The pen color value is ignored while in penreverse mode.
 
 COD***/
-
+//CMD PENREVERSE 0 0 0
+//CMD PX 0 0 0
 DatumPtr Kernel::excPenreverse(DatumPtr node) {
   ProcedureHelper h(this, node);
   mainTurtle()->setPenIsDown(true);
@@ -914,18 +929,18 @@ SETPC color
     Option 1: a nonnegative integer.  There are initial assignments for the
     first 16 colors:
 
-     0  black	 1  blue	 2  green	 3  cyan
-     4  red		 5  magenta	 6  yellow	 7 white
-     8  brown	 9  tan		10  forest	11  aqua
-    12  salmon	13  purple	14  orange	15  grey
+     0  black    1  blue         2  green        3  cyan
+     4  red      5  magenta      6  yellow       7 white
+     8  brown    9  tan         10  forest      11  aqua
+    12  salmon  13  purple      14  orange      15  grey
 
     but other colors can be assigned to numbers by the PALETTE command.
 
-    Option 2: RGB values (a list of three nonnegative numbers less than 100
+    Option 2: RGB values (a list of three numbers between 0 and 100
     specifying the percent saturation of red, green, and blue in the desired
     color).
 
-    Option 3: RGBA values (a list of four nonnegative numbers less than 100
+    Option 3: RGBA values (a list of four numbers between 0 and 100
     specifying the percent saturation of red, green, blue, and alpha).
 
     Option 4: a named color from the X Color Database, e.g. 'white' or
@@ -933,7 +948,8 @@ SETPC color
     https://en.wikipedia.org/wiki/X11_color_names
 
 COD***/
-
+//CMD SETPENCOLOR 1 1 1
+//CMD SETPC 1 1 1
 DatumPtr Kernel::excSetpencolor(DatumPtr node) {
   ProcedureHelper h(this, node);
   QColor c;
@@ -955,7 +971,7 @@ SETPALETTE colornumber color
     methods of specifying a color.
 
 COD***/
-
+//CMD SETPALETTE 2 2 2
 DatumPtr Kernel::excSetpalette(DatumPtr node) {
   ProcedureHelper h(this, node);
   int colornumber = h.validatedIntegerAtIndex(0, [this](int candidate) {
@@ -979,7 +995,7 @@ SETPENSIZE size
     drawn.
 
 COD***/
-
+//CMD SETPENSIZE 1 1 1
 DatumPtr Kernel::excSetpensize(DatumPtr node) {
   ProcedureHelper h(this, node);
   double newSize = h.validatedNumberAtIndex(0, [](double candidate) {
@@ -998,7 +1014,8 @@ SETBG color
 
 
 COD***/
-
+//CMD SETBACKGROUND 1 1 1
+//CMD SETBG 1 1 1
 DatumPtr Kernel::excSetbackground(DatumPtr node) {
   ProcedureHelper h(this, node);
   QColor c;
@@ -1019,7 +1036,8 @@ PENDOWN?
     outputs TRUE if the pen is down, FALSE if it's up.
 
 COD***/
-
+//CMD PENDOWNP 0 0 0
+//CMD PENDOWN? 0 0 0
 DatumPtr Kernel::excPendownp(DatumPtr node) {
   ProcedureHelper h(this, node);
   return h.ret(mainTurtle()->isPenDown());
@@ -1033,7 +1051,7 @@ PENMODE
     the current pen mode.
 
 COD***/
-
+//CMD PENMODE 0 0 0
 DatumPtr Kernel::excPenmode(DatumPtr node) {
   ProcedureHelper h(this, node);
   PenModeEnum pm = mainTurtle()->getPenMode();
@@ -1065,7 +1083,8 @@ PC
     with the current pen color.
 
 COD***/
-
+//CMD PENCOLOR 0 0 0
+//CMD PC 0 0 0
 DatumPtr Kernel::excPencolor(DatumPtr node) {
   ProcedureHelper h(this, node);
   const QColor &c = mainTurtle()->getPenColor();
@@ -1081,7 +1100,7 @@ PALETTE colornumber
     with the given number.
 
 COD***/
-
+//CMD PALETTE 1 1 1
 DatumPtr Kernel::excPalette(DatumPtr node) {
   ProcedureHelper h(this, node);
   int colornumber = h.validatedIntegerAtIndex(0, [this](int candidate) {
@@ -1098,7 +1117,7 @@ PENSIZE
     outputs a positive integer, specifying the thickness of the turtle pen.
 
 COD***/
-
+//CMD PENSIZE 0 0 0
 DatumPtr Kernel::excPensize(DatumPtr node) {
   ProcedureHelper h(this, node);
   double retval = mainTurtle()->getPenSize();
@@ -1116,7 +1135,8 @@ BG
 
 
 COD***/
-
+//CMD BACKGROUND 0 0 0
+//CMD BG 0 0 0
 DatumPtr Kernel::excBackground(DatumPtr node) {
   ProcedureHelper h(this, node);
   QColor c = mainController()->getCanvasBackgroundColor();
@@ -1136,7 +1156,7 @@ SAVEPICT filename
     See SVGPICT to export Logo graphics as SVG.
 
 COD***/
-
+//CMD SAVEPICT 1 1 1
 DatumPtr Kernel::excSavepict(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr filenameP = h.wordAtIndex(0);
@@ -1161,7 +1181,7 @@ LOADPICT filename
     set as the background will be cleared.
 
 COD***/
-
+//CMD LOADPICT 1 1 1
 DatumPtr Kernel::excLoadpict(DatumPtr node) {
     ProcedureHelper h(this, node);
     DatumPtr filenameP = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
@@ -1191,7 +1211,7 @@ SVGPICT filename
     are determined by the canvas bounds.
 
 COD***/
-
+//CMD SVGPICT 1 1 1
 DatumPtr Kernel::excSvgpict(DatumPtr node) {
     ProcedureHelper h(this, node);
     DatumPtr filenameP = h.wordAtIndex(0);
@@ -1226,7 +1246,7 @@ MOUSEPOS
     position is returned as if the window were big enough to include it.
 
 COD***/
-
+//CMD MOUSEPOS 0 0 0
 DatumPtr Kernel::excMousepos(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = new List();
@@ -1245,7 +1265,7 @@ CLICKPOS
     graphics window, in turtle coordinates.
 
 COD***/
-
+//CMD CLICKPOS 0 0 0
 DatumPtr Kernel::excClickpos(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = new List();
@@ -1266,7 +1286,8 @@ BUTTON?
     graphics window.
 
 COD***/
-
+//CMD BUTTONP 0 0 0
+//CMD BUTTON? 0 0 0
 DatumPtr Kernel::excButtonp(DatumPtr node) {
   ProcedureHelper h(this, node);
   return h.ret(mainController()->getIsMouseButtonDown());
@@ -1284,7 +1305,7 @@ BUTTON
 
 
 COD***/
-
+//CMD BUTTON 0 0 0
 DatumPtr Kernel::excButton(DatumPtr node) {
   ProcedureHelper h(this, node);
   return h.ret(mainController()->getAndResetButtonID());

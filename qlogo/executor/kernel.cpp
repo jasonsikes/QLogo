@@ -588,7 +588,7 @@ WAIT time
     buffer flushing without actually waiting.
 
 COD***/
-
+//CMD WAIT 1 1 1
 DatumPtr Kernel::excWait(DatumPtr node) {
   ProcedureHelper h(this, node);
   double value = h.validatedNumberAtIndex(
