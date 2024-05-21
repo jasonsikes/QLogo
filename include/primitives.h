@@ -63,7 +63,6 @@ DatumPtr excBye(DatumPtr node);
 DatumPtr excRepeat(DatumPtr node);
 DatumPtr excForever(DatumPtr node);
 DatumPtr excRepcount(DatumPtr node);
-DatumPtr excIf(DatumPtr node);
 DatumPtr excIfelse(DatumPtr node);
 DatumPtr excTest(DatumPtr node);
 DatumPtr excIftrue(DatumPtr node);

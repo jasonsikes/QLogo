@@ -230,16 +230,6 @@ IF tf instructionlist
     either TRUE or FALSE.
 
 COD***/
-//CMD IF 2 2 3
-DatumPtr Kernel::excIf(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr retval;
-  if (h.boolAtIndex(0, true)) {
-    retval = runList(h.datumAtIndex(1));
-  }
-  return h.ret(retval);
-}
-
 
 /***DOC IFELSE
 IFELSE tf instructionlist1 instructionlist2
@@ -250,7 +240,7 @@ IFELSE tf instructionlist1 instructionlist2
     instructionlist contains an expression that outputs a value.
 
 COD***/
-//*CMD IF 2 2 3
+//CMD IF 2 2 3
 //CMD IFELSE 3 3 3
 DatumPtr Kernel::excIfelse(DatumPtr node) {
   ProcedureHelper h(this, node);
@@ -258,7 +248,8 @@ DatumPtr Kernel::excIfelse(DatumPtr node) {
   if (h.boolAtIndex(0, true)) {
     retval = runList(h.datumAtIndex(1));
   } else {
-    retval = runList(h.datumAtIndex(2));
+      if (h.countOfChildren() == 3)
+          retval = runList(h.datumAtIndex(2));
   }
   return h.ret(retval);
 }
