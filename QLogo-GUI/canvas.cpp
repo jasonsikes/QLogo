@@ -191,14 +191,12 @@ void Canvas::setPensize(qreal aSize)
 
 
 const QColor& Canvas::colorForPenmode() {
-    switch (penMode) {
-    case penModePaint:
+    if (penMode == penModePaint)
         return foregroundColor;
-    case penModeErase:
+    if (penMode == penModeErase)
         return backgroundColor;
-    case penModeReverse:
-        return QColorConstants::White;
-    }
+    // Else it must be penModeReverse. Return white for full reverse effect.
+    return QColorConstants::White;
 }
 
 

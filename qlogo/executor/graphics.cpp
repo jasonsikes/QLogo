@@ -292,7 +292,7 @@ POS
     numbers, the X and Y coordinates.
 
 COD***/
-//CMD POS 1 1 1
+//CMD POS 0 0 0
 DatumPtr Kernel::excPos(DatumPtr node) {
   ProcedureHelper h(this, node);
   double x, y;
@@ -443,6 +443,7 @@ CS
     position and heading.  Like HOME and CLEAN together.
 
 COD***/
+//CMD CLEARSCREEN 0 0 0
 //CMD CS 0 0 0
 DatumPtr Kernel::excClearscreen(DatumPtr node) {
   ProcedureHelper h(this, node);

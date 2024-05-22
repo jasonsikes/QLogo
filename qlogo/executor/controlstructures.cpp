@@ -89,6 +89,12 @@ MARK value
     is no longer being used by QLogo, a message will again be printed out when
     the internal representation of the value is destroyed, including the address.
 
+    Example: MAKE "A MARK 2+2
+
+    or:
+
+    PRINT MARK "Hello
+
 COD***/
 //CMD MARK 1 1 1
 DatumPtr Kernel::excMark(DatumPtr node) {
