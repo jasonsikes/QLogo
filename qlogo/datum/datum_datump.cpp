@@ -32,57 +32,63 @@
 #include <qdebug.h>
 #include <QObject>
 
-DatumPtr::DatumPtr() { d = &notADatum; }
+DatumPtr::DatumPtr() : d(&notADatum) {}
 
 DatumPtr::DatumPtr(Datum *other) {
   d = other;
   if (d) {
-    d->retain();
+    d->retainCount++;
   }
 }
 
 DatumPtr::DatumPtr(const DatumPtr &other) noexcept {
   d = other.d;
   if (d) {
-    d->retain();
+      d->retainCount++;
   }
 }
 
 DatumPtr::DatumPtr(bool b) {
   d = new Word(b ? QObject::tr("true") : QObject::tr("false"));
-  d -> retain();
+    d->retainCount++;
 }
 
 
 DatumPtr::DatumPtr(double n)
 {
   d = new Word(n);
-  d->retain();
+    d->retainCount++;
 }
 
 
 DatumPtr::DatumPtr(int n)
 {
   d = new Word((double)n);
-  d->retain();
+    d->retainCount++;
 }
 
 
 DatumPtr::DatumPtr(QString n, bool isVBarred)
 {
   d = new Word(n, isVBarred);
-  d->retain();
+    d->retainCount++;
 }
 
 DatumPtr::DatumPtr(const char* n)
 {
   d = new Word(QString(n));
-  d->retain();
+    d->retainCount++;
 }
 
 void DatumPtr::destroy() {
   if (d != &notADatum) {
-    d->release();
+        d->retainCount--;
+      if (d->retainCount <= 0) {
+            if (d->alertOnDelete) {
+              qDebug() <<"DELETING: " <<d <<" " <<d->showValue();
+          }
+            delete d;
+      }
   }
 }
 
@@ -93,7 +99,7 @@ DatumPtr &DatumPtr::operator=(const DatumPtr &other) noexcept {
     destroy();
     d = other.d;
     if (d) {
-      d->retain();
+        d->retainCount++;
     }
   }
   return *this;
@@ -103,7 +109,7 @@ DatumPtr &DatumPtr::operator=(DatumPtr *other) noexcept {
   if (other != this) {
     destroy();
     d = other->d;
-    d->retain();
+    d->retainCount++;
   }
   return *this;
 }

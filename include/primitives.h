@@ -58,6 +58,7 @@ DatumPtr excLoad(DatumPtr node);
 DatumPtr excHelp(DatumPtr node);
 DatumPtr excRun(DatumPtr node);
 DatumPtr excTime(DatumPtr node);
+DatumPtr excMark(DatumPtr node);
 DatumPtr excRunresult(DatumPtr node);
 DatumPtr excBye(DatumPtr node);
 DatumPtr excRepeat(DatumPtr node);

@@ -49,9 +49,8 @@ DatumPtr nodes()
 }
 
 
-Datum::Datum()
+Datum::Datum() : retainCount(0)
 {
-  retainCount = 0;
   ++countOfNodes;
   if (countOfNodes > maxCountOfNodes)
     maxCountOfNodes = countOfNodes;

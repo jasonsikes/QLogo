@@ -81,6 +81,25 @@ DatumPtr Kernel::excTime(DatumPtr node) {
 }
 
 
+/***DOC MARK
+MARK value
+
+    Takes the input, places a mark on it, and outputs whatever was input. The
+    address of the marked value will be printed out. Later if or when the value
+    is no longer being used by QLogo, a message will again be printed out when
+    the internal representation of the value is destroyed, including the address.
+
+COD***/
+//CMD MARK 1 1 1
+DatumPtr Kernel::excMark(DatumPtr node) {
+    ProcedureHelper h(this, node);
+
+    DatumPtr item = h.datumAtIndex(0);
+    item.alertOnDelete();
+
+    return item;
+}
+
 /***DOC RUNRESULT
 RUNRESULT instructionlist
 

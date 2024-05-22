@@ -227,6 +227,20 @@ Graphics format.
 
 Returns a list of all the fonts available on your system.
 
+`TIME`:
+
+This is mostly for debugging and my own curiosity. `TIME` will take one parameter,
+a list, which it will execute. A timer will start when the list is executed and
+then stop when the list is finished. The total running time of the list will be
+printed. The output will be whatever the list outputs.
+
+`MARK`:
+
+This is for debugging memory management. `MARK` will take one parameter, set a
+flag on it, and output that parameter. At the moment it is marked, a debugging
+message will be printed out. Later, if/when the item is deleted, another
+debugging message will be printed.
+
 `CURSORINSERT`:
 
 Sets cursor to insert mode in QLogo. This is the default.

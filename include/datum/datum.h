@@ -74,9 +74,11 @@ DatumPtr nodes();
 /// The unit of data for QLogo. The base class for Word, List, Array, ASTNode, etc.
 class Datum {
   friend class Iterator;
-
-protected:
+  friend class DatumPtr;
   int retainCount;
+
+  // If set to 'true', DatumPtr will send qDebug message when this is deleted.
+  bool alertOnDelete = false;
 
 public:
   /// Value returned by isa().
@@ -95,26 +97,11 @@ public:
   ///
   /// The Datum class is the superclass for all data.
   /// The Datum superclass maintains retain counts (manipulated by the DatumPtr class).
-  ///
-  /// To hold data:
-  /// 1. use one of the subclasses, NOT Datum, and
-  /// 2. use alloc(), NOT the default constructor.
   Datum();
 
-  ~Datum();
+  virtual ~Datum();
 
   Datum &operator=(const Datum &);
-
-  /// Increment the retain count.
-  inline void retain(void)
-  {
-      ++retainCount;
-  }
-
-  /// Decrement the retain count.
-  inline void release(void) {
-      --retainCount;
-  }
 
   /// Return type of this object.
   virtual DatumType isa();

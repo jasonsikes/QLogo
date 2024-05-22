@@ -54,11 +54,7 @@ public:
     /// is destroyed.
     DatumPtr(Datum *);
 
-    /// \brief Convenience constructor for "true" and "false".
-    ///
-    /// For efficiency of boolean operations, the Word objects "true" and "false"
-    /// are static. This constructor simply creates a pointer to one of the two
-    /// words depending on the value b.
+    /// Convenience constructor for "true" and "false".
     explicit DatumPtr(bool b);
 
     /// Convenience constructor for numbers.
@@ -78,7 +74,7 @@ public:
     ///
     /// Decreases the retain count of the referred object. If this is the last
     /// pointer to the referred object (if its retain count reaches zero) the
-    /// object is destroyed, if possible.
+    /// object is destroyed.
     ~DatumPtr();
 
     /// Returns a pointer to the referred Datum or any of Datum's subclasses.
@@ -157,11 +153,18 @@ public:
 
     /// returns a DatumType enumerated value which is the DatumType of the referenced object.
     Datum::DatumType isa();
+
+    /// Set a mark on the datum so that debug message will print when datum is
+    /// destroyed.
+    void alertOnDelete() {
+        qDebug() <<"MARKED: " <<d <<" " <<d->showValue();
+        d->alertOnDelete = true;
+    }
 };
 
 // If/when List is implemented using QList, this will increase efficiency.
 // Since we're using linked lists, this is a noop for now.
-Q_DECLARE_TYPEINFO(DatumPtr, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(DatumPtr, Q_RELOCATABLE_TYPE);
 
 
 /// A pointer to notADatum, like NULL.

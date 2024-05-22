@@ -753,15 +753,18 @@ AND tf1 tf2
     (AND tf1 tf2 tf3 ...)
 
     outputs TRUE if all inputs are TRUE, otherwise FALSE.  All inputs
-        must be TRUE or FALSE.  (Comparison is case-insensitive regardless
-                      of the value of CASEIGNOREDP.  That is, "true" or "True" or "TRUE"
-                                      are all the same.)  An input can be a list, in which case it is
+    must be TRUE or FALSE.  (Comparison is case-insensitive regardless
+    of the value of CASEIGNOREDP.  That is, "true" or "True" or "TRUE"
+    are all the same.)  An input can be a list, in which case it is
     taken as an expression to run; that expression must produce a TRUE
     or FALSE value.  List expressions are evaluated from left to right;
     as soon as a FALSE value is found, the remaining inputs are not
-                                       examined.  Example:
-MAKE "RESULT AND [NOT (:X = 0)] [(1 / :X) > .5]
+    examined.  Example:
+
+    MAKE "RESULT AND [NOT (:X = 0)] [(1 / :X) > .5]
+
     to avoid the division by zero if the first part is false.
+
 COD***/
 //CMD AND 0 2 -1
 DatumPtr Kernel::excAnd(DatumPtr node) {

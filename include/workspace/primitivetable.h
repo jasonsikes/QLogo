@@ -71,6 +71,7 @@ stringToCmd[QObject::tr("LOAD")] = {&Kernel::excLoad,1,1,1};
 stringToCmd[QObject::tr("HELP")] = {&Kernel::excHelp,0,-1,-1};
 stringToCmd[QObject::tr("RUN")] = {&Kernel::excRun,1,1,1};
 stringToCmd[QObject::tr("TIME")] = {&Kernel::excTime,1,1,1};
+stringToCmd[QObject::tr("MARK")] = {&Kernel::excMark,1,1,1};
 stringToCmd[QObject::tr("RUNRESULT")] = {&Kernel::excRunresult,1,1,1};
 stringToCmd[QObject::tr("BYE")] = {&Kernel::excBye,0,0,0};
 stringToCmd[QObject::tr("REPEAT")] = {&Kernel::excRepeat,2,2,2};
