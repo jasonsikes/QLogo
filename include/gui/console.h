@@ -60,7 +60,9 @@ protected:
     void insertNextCharFromQueue();
     void insertFromMimeData(const QMimeData *source) Q_DECL_OVERRIDE;
 
+    bool isPrintingStandout = false;
     void writeTextFragment(const QString text);
+    void standout();
 
     QTextCharFormat textFormat;
 

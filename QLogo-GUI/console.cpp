@@ -33,12 +33,10 @@
 #include <QMenu>
 #include <QMimeData>
 #include <QTextBlock>
-#include <math.h>
 
 Console::Console(QWidget *parent) : QTextEdit(parent) {
     consoleMode = consoleModeNoWait;
     textFormat.setForeground(QBrush(QWidget::palette().color(QPalette::Text)));
-    textFormat.setBackground(QBrush(QWidget::palette().color(QPalette::Base)));
 }
 
 Console::~Console() {}
@@ -68,6 +66,19 @@ void Console::writeTextFragment(const QString text)
 }
 
 
+void Console::standout()
+{
+    if (isPrintingStandout) {
+        textFormat.setForeground(textFormat.background());
+        textFormat.setBackground(QBrush(Qt::transparent));
+    } else {
+        textFormat.setBackground(textFormat.foreground());
+        textFormat.setForeground(palette().brush(QPalette::Base));
+    }
+    isPrintingStandout = ! isPrintingStandout;
+}
+
+
 void Console::printString(const QString text) {
     // Because STANDOUT requires characters added to strings, we have to
     // handle them here.
@@ -75,9 +86,7 @@ void Console::printString(const QString text) {
   for (auto i = stringList.begin(); i != stringList.end(); ++i) {
 
       if (i != stringList.begin()) {
-          QBrush bg = textFormat.background();
-          textFormat.setBackground(textFormat.foreground());
-          textFormat.setForeground(bg);
+          standout();
       }
       writeTextFragment(*i);
   }
@@ -103,7 +112,6 @@ void Console::setTextFontColor(QColor foreground, QColor background)
     textFormat.setForeground(QBrush(foreground));
     if (background.isValid()) {
         QBrush brush = QBrush(background);
-        textFormat.setBackground(brush);
         QPalette p = palette();
         p.setBrush(QPalette::Base, brush);
         setPalette(p);
