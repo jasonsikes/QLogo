@@ -91,7 +91,7 @@ void Console::setTextFontName(const QString aName)
     textFormat.setFont(f);
 }
 
-void Console::setTextFontSize(double aSize)
+void Console::setTextFontSize(qreal aSize)
 {
     QFont f = textFormat.font();
     f.setPointSizeF(aSize);

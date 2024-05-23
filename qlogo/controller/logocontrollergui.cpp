@@ -383,12 +383,12 @@ void LogoControllerGUI::drawLabel(QString aString)
     });
 }
 
-void LogoControllerGUI::drawArc(qreal angle, qreal radius)
+void LogoControllerGUI::drawArc(double angle, double radius)
 {
     sendMessage([&](QDataStream *out) {
         *out << (message_t)C_CANVAS_DRAW_ARC
-             << angle
-             << radius;
+             << (qreal)angle
+             << (qreal)radius;
     });
 }
 
@@ -410,7 +410,7 @@ void LogoControllerGUI::setLabelFontSize(double aSize)
     labelFontSize = aSize;
     sendMessage([&](QDataStream *out) {
       *out << (message_t)C_CANVAS_SET_FONT_SIZE
-           << labelFontSize;
+           << (qreal)labelFontSize;
     });
 }
 
@@ -524,8 +524,8 @@ void LogoControllerGUI::setBounds(double x, double y)
     ybound = y;
     sendMessage([&](QDataStream *out) {
       *out << (message_t)C_CANVAS_SETBOUNDS
-           << xbound
-           << ybound;
+           << (qreal)xbound
+           << (qreal)ybound;
     });
 
 }
@@ -536,7 +536,7 @@ void LogoControllerGUI::setPensize(double aSize)
         return;
     sendMessage([&](QDataStream *out) {
       *out << (message_t)C_CANVAS_SET_PENSIZE
-           << aSize;
+           << (qreal)aSize;
     });
     penSize = aSize;
 }

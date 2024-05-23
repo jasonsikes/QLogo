@@ -612,7 +612,7 @@ COD***/
 DatumPtr Kernel::excLabel(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString text = h.wordAtIndex(0).wordValue()->printValue();
-  qreal x = 0, y = 0;
+  double x = 0, y = 0;
   mainTurtle()->getxy(x, y);
   mainController()->drawLabel(text);
   return nothing;

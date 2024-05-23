@@ -48,12 +48,12 @@ class LogoControllerGUI : public LogoController
 
     QStringList allFontNames;
     QString textFontName;
-    qreal textFontSize;
+    double textFontSize;
 
     ScreenModeEnum screenMode;
 
     QString labelFontName;
-    qreal labelFontSize;
+    double labelFontSize;
 
     void processInputMessageQueue();
 
@@ -81,7 +81,7 @@ public:
     void endPolygon();
     void clearCanvas();
     void drawLabel(QString);
-    void drawArc(qreal angle, qreal radius);
+    void drawArc(double angle, double radius);
     bool getIsMouseButtonDown();
     int getAndResetButtonID();
     QVector2D lastMouseclickPosition();

@@ -194,7 +194,7 @@ void MainWindow::initialize()
         << (message_t)W_INITIALIZE
         << QFontDatabase::families()
         << defaultFont.family()
-        << (qreal)defaultFont.pointSizeF();
+        << (double)defaultFont.pointSizeF();
     });
 
 }
@@ -307,7 +307,7 @@ void MainWindow::readStandardOutput()
         }
         case C_CONSOLE_SET_FONT_SIZE:
         {
-            double aSize;
+            qreal aSize;
             *dataStream >> aSize;
             ui->mainConsole->setTextFontSize(aSize);
             break;
@@ -425,7 +425,7 @@ void MainWindow::readStandardOutput()
             break;
         case C_CANVAS_SETBOUNDS:
         {
-            double x,y;
+            qreal x,y;
             *dataStream
                     >> x
                     >> y;
@@ -448,7 +448,7 @@ void MainWindow::readStandardOutput()
         }
         case C_CANVAS_SET_FONT_SIZE:
         {
-            double aSize;
+            qreal aSize;
             *dataStream >> aSize;
             ui->mainCanvas->setLabelFontSize(aSize);
             break;
@@ -474,9 +474,9 @@ void MainWindow::readStandardOutput()
         }
         case C_CANVAS_SET_PENSIZE:
         {
-            double newSize;
+            qreal newSize;
             *dataStream >> newSize;
-            ui->mainCanvas->setPensize((GLfloat)newSize);
+            ui->mainCanvas->setPensize(newSize);
             break;
         }
         case C_CANVAS_SET_PENMODE:

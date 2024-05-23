@@ -66,15 +66,15 @@ public:
   void setPenMode(PenModeEnum aPenMode);
   PenModeEnum getPenMode();
 
-  void rotate(qreal angle);
-  void forward(qreal steps);
+  void rotate(double angle);
+  void forward(double steps);
   void setMode(TurtleModeEnum newMode);
   TurtleModeEnum getMode();
-  qreal getHeading();
-  void getxy(qreal &x, qreal &y);
-  void setxy(qreal x, qreal y);
-  void setx(qreal x);
-  void sety(qreal y);
+  double getHeading();
+  void getxy(double &x, double &y);
+  void setxy(double x, double y);
+  void setx(double x);
+  void sety(double y);
   void setPenColor(const QColor &c);
   void setPenSize(double aPenSize);
   bool isPenSizeValid(double aPenSize);
@@ -82,7 +82,7 @@ public:
   const QColor &getPenColor();
   void moveToHome();
   DatumPtr print();
-  void drawArc(qreal angle, qreal radius);
+  void drawArc(double angle, double radius);
 
   void beginFillWithColor(const QColor &fillColor);
   void endFill();
