@@ -106,9 +106,6 @@ public:
   /// Return type of this object.
   virtual DatumType isa();
 
-  /// For debugging.
-  virtual QString name();
-
   /// \brief Return a string suitable for the PRINT command
   ///
   /// \param fullPrintp if true print with backslashes and vertical bars

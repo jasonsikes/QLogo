@@ -133,10 +133,6 @@ void Word::genKeyString()
 
 Datum::DatumType Word::isa() { return wordType; }
 
-QString Word::name() {
-  return QObject::tr("Word");
-}
-
 QString Word::keyValue() {
   genKeyString();
   return keyString;

@@ -62,10 +62,6 @@ List::List(List *source) {
 
 Datum::DatumType List::isa() { return listType; }
 
-QString List::name() {
-  return QObject::tr("List");
-}
-
 QString List::printValue(bool fullPrintp, int printDepthLimit,
                          int printWidthLimit) {
   DatumPtr iter = head;

@@ -78,7 +78,6 @@ public:
     double numberValue(void);
 
     DatumType isa();
-    QString name();
 
     // print() and show() will convert encoded chars to their displayable
     // equivalents

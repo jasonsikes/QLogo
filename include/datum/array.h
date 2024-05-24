@@ -48,7 +48,7 @@ public:
 
     ~Array();
     DatumType isa();
-    QString name();
+
     QString printValue(bool fullPrintp = false, int printDepthLimit = -1,
                        int printWidthLimit = -1);
     QString showValue(bool fullPrintp = false, int printDepthLimit = -1,

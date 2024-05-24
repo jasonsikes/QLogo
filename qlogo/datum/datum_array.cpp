@@ -60,10 +60,6 @@ Array::~Array() {}
 
 Datum::DatumType Array::isa() { return Datum::arrayType; }
 
-QString Array::name() {
-  return QObject::tr("Array");
-}
-
 QString Array::printValue(bool fullPrintp, int printDepthLimit,
                           int printWidthLimit) {
     if (!aryVisited.contains(this)) {

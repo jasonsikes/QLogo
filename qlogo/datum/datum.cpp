@@ -62,13 +62,9 @@ Datum::~Datum()
 }
 
 
-QString Datum::printValue(bool, int, int) { return name(); }
+QString Datum::printValue(bool, int, int) { return QObject::tr("nothing"); }
 
-QString Datum::name(void) {
-  return QObject::tr("nothing");
-}
-
-QString Datum::showValue(bool, int, int) { return name(); }
+QString Datum::showValue(bool, int, int) { return printValue(); }
 
 bool Datum::isEqual(DatumPtr other, bool) {
   return (other.isa() == Datum::noType);
