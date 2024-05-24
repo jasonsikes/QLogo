@@ -51,7 +51,6 @@ protected:
     void genPrintString();
     void genKeyString();
     double number;
-    bool rawStringIsValid;
     bool keyStringIsValid;
     bool printableStringIsValid;
     bool sourceIsNumber;

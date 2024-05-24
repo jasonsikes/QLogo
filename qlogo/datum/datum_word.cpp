@@ -71,14 +71,13 @@ QChar charToRaw(const QChar &src) {
 
 Word::Word() {
   number = nan("");
-  rawStringIsValid = false;
+  rawString = QString();
   keyStringIsValid = false;
   printableStringIsValid = false;
 }
 
 Word::Word(const QString other, bool aIsForeverSpecial) {
   number = nan("");
-  rawStringIsValid = true;
   keyStringIsValid = false;
   printableStringIsValid = false;
   sourceIsNumber = false;
@@ -89,7 +88,7 @@ Word::Word(const QString other, bool aIsForeverSpecial) {
 
 Word::Word(double other) {
   number = other;
-  rawStringIsValid = false;
+  rawString = QString();
   keyStringIsValid = false;
   printableStringIsValid = false;
   sourceIsNumber = true;
@@ -98,10 +97,9 @@ Word::Word(double other) {
 
 void Word::genRawString()
 {
-  if ( ! rawStringIsValid) {
+  if ( rawString.isNull()) {
     Q_ASSERT( ! isnan(number));
     rawString.setNum(number);
-    rawStringIsValid = true;
   }
 }
 
