@@ -168,6 +168,7 @@ DatumPtr excPenpaint(DatumPtr node);
 DatumPtr excPenerase(DatumPtr node);
 DatumPtr excPenreverse(DatumPtr node);
 DatumPtr excSetpencolor(DatumPtr node);
+DatumPtr excAllcolors(DatumPtr node);
 DatumPtr excSetpalette(DatumPtr node);
 DatumPtr excSetpensize(DatumPtr node);
 DatumPtr excSetbackground(DatumPtr node);

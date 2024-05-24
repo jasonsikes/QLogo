@@ -214,6 +214,7 @@ stringToCmd[QObject::tr("PENREVERSE")] = {&Kernel::excPenreverse,0,0,0};
 stringToCmd[QObject::tr("PX")] = {&Kernel::excPenreverse,0,0,0};
 stringToCmd[QObject::tr("SETPENCOLOR")] = {&Kernel::excSetpencolor,1,1,1};
 stringToCmd[QObject::tr("SETPC")] = {&Kernel::excSetpencolor,1,1,1};
+stringToCmd[QObject::tr("ALLCOLORS")] = {&Kernel::excAllcolors,0,0,0};
 stringToCmd[QObject::tr("SETPALETTE")] = {&Kernel::excSetpalette,2,2,2};
 stringToCmd[QObject::tr("SETPENSIZE")] = {&Kernel::excSetpensize,1,1,1};
 stringToCmd[QObject::tr("SETBACKGROUND")] = {&Kernel::excSetbackground,1,1,1};

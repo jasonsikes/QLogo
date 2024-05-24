@@ -108,7 +108,8 @@ the turtle and editor.
    value being "alpha". `100` is fully opaque, and `0` means fully transparent.
 
    4. as a named color from the X Color Database, e.g. `white` or `lemonchiffon`.
-   The X Color database can be found here:
+   The list of color names can be retrieved using the `ALLCOLORS` command or
+   from the X Color database found here:
    https://en.wikipedia.org/wiki/X11_color_names
    
    5. as a hex triplet, preceded by "#"

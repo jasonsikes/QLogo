@@ -946,7 +946,8 @@ SETPC color
     This is the only way to specify the alpha component.
 
     Option 4: a named color from the X Color Database, e.g. "white or
-    "lemonchiffon. The X Color database can be found here:
+    "lemonchiffon. The list of color names can be retrieved using the
+    ALLCOLORS command or from the X Color database found here:
     https://en.wikipedia.org/wiki/X11_color_names
 
     Option 5: a hex triplet preceded by a '#'. Each component may contain
@@ -964,6 +965,24 @@ DatumPtr Kernel::excSetpencolor(DatumPtr node) {
   });
   mainTurtle()->setPenColor(c);
   return nothing;
+}
+
+
+/***DOC ALLCOLORS
+ALLCOLORS
+
+    returns a list of all of the color names that QLogo knows about.
+
+COD***/
+//CMD ALLCOLORS 0 0 0
+DatumPtr Kernel::excAllcolors(DatumPtr node) {
+    ProcedureHelper h(this, node);
+    List *retval = new List();
+    QStringList colors = QColor::colorNames();
+    for (const QString &i : colors) {
+        retval->append(DatumPtr(i));
+    }
+    return h.ret(retval);
 }
 
 
