@@ -97,7 +97,7 @@ the turtle and editor.
 ## Here are the nuances (they're mostly insignificant, I think):
 
 
-* Colors can be specified in one of four ways:
+* Colors can be specified in one of five ways:
 
    1. as a palette index (0 to 100), same as UCBLogo
 
@@ -230,12 +230,16 @@ Graphics format.
 
 Returns a list of all the fonts available on your system.
 
+`ALLCOLORS`:
+
+Returns a list of all the named colors that QLogo knows about.
+
 `TIME`:
 
-This is mostly for debugging and my own curiosity. `TIME` will take one parameter,
+This is mostly for my own curiosity and for debugging. `TIME` will take one parameter,
 a list, which it will execute. A timer will start when the list is executed and
 then stop when the list is finished. The total running time of the list will be
-printed. The output will be whatever the list outputs.
+printed. The output will be whatever the list outputs, if anything.
 
 `MARK`:
 
