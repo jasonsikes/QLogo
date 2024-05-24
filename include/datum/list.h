@@ -45,11 +45,10 @@ public:
 /// The container for data. The QLogo List is implemented as a linked list.
 class List : public Datum {
     friend class ListIterator;
-    friend class Parser; // Parser needs access to astList and astParseTimeStamp
+    friend class Parser; // Parser needs access to astList
 
 protected:
     QList<DatumPtr> astList;
-    qint64 astParseTimeStamp;
 
 public:
 
@@ -77,6 +76,13 @@ public:
     /// The last node of the list. Only use as a shortcut during list
     /// initialization. Should not be directly accessible to user.
     DatumPtr lastNode;
+
+    /// The time, as returned by QDateTime::currentMSecsSinceEpoch(), which is
+    /// set when the most recent ASTList is generated from this list. Reset this
+    /// to zero when the list is modified to trigger reparsing, if needed.
+    /// TODO: reconsider whether this is useful, as it is unfeasable to keep
+    /// track of all this list's sublist modifications.
+    qint64 astParseTimeStamp;
 
     /// Return the first item of the List.
     DatumPtr first(void);
@@ -108,9 +114,6 @@ public:
 
     /// Returns true if anIndex is between 1 and the count of elements in the List.
     bool isIndexInRange(int anIndex);
-
-    /// Replaces the first item in the List with aValue.
-    void setFirstItem(DatumPtr aValue);
 
     /// Replaces everything but the first item in the List with aValue.
     void setButfirstItem(DatumPtr aValue);

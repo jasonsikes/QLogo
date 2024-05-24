@@ -151,12 +151,6 @@ void List::setButfirstItem(DatumPtr aValue) {
     astParseTimeStamp = 0;
 }
 
-void List::setFirstItem(DatumPtr aValue) {
-    Q_ASSERT(head != nothing);
-    head.listNodeValue()->item = aValue;
-  astParseTimeStamp = 0;
-}
-
 // TODO: Check for cyclic list structures.
 bool List::containsDatum(DatumPtr aDatum, bool ignoreCase) {
     ListIterator iter = newIterator();

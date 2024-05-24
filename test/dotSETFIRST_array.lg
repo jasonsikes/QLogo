@@ -1,3 +1,0 @@
-make "a {hello there}
-.setfirst :a "bye
-show :a

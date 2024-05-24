@@ -117,8 +117,6 @@ void Array::setButfirstItem(DatumPtr aValue) {
   array.append(aValue.arrayValue()->array);
 }
 
-void Array::setFirstItem(DatumPtr aValue) { array[0] = aValue; }
-
 bool Array::containsDatum(DatumPtr aDatum, bool ignoreCase) {
   for (int i = 0; i < array.size(); ++i) {
     DatumPtr e = array[i];

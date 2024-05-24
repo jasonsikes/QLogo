@@ -87,8 +87,6 @@ DatumPtr Datum::butfirst() {
 
 void Datum::setButfirstItem(DatumPtr) { Q_ASSERT(false); }
 
-void Datum::setFirstItem(DatumPtr) { Q_ASSERT(false); }
-
 bool Datum::containsDatum(DatumPtr, bool) {
   Q_ASSERT(false);
   return false;

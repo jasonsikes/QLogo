@@ -156,9 +156,6 @@ public:
   /// returns true if the index given is valid for this object.
   virtual bool isIndexInRange(int);
 
-  /// replaces the first element of this object with aValue.
-  virtual void setFirstItem(DatumPtr aValue);
-
   /// replaces everything but the first element of this object with aValue.
   virtual void setButfirstItem(DatumPtr aValue);
 

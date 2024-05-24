@@ -67,9 +67,6 @@ struct Array : public Datum {
     /// Returns true if anIndex can point to a valid element in the Array.
     bool isIndexInRange(int anIndex);
 
-    /// Replace the first item in the Array with aValue.
-    void setFirstItem(DatumPtr aValue);
-
     /// Replace all but the first item in the Array with elements from aValue Array.
     void setButfirstItem(DatumPtr aValue);
 

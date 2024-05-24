@@ -472,13 +472,12 @@ COD***/
 //CMD .SETFIRST 2 2 2
 DatumPtr Kernel::excDotSetfirst(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumPtr array = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
-    if (!candidate.isList() && !candidate.isArray())
-      return false;
+  DatumPtr list = h.validatedListAtIndex(0, [](DatumPtr candidate) {
     return candidate.datumValue()->size() > 0;
   });
-  DatumPtr thing = h.datumAtIndex(1);
-  array.datumValue()->setFirstItem(thing);
+  DatumPtr value = h.datumAtIndex(1);
+  list.listValue()->head.listNodeValue()->item = value;
+  list.listValue()->astParseTimeStamp = 0;
   return nothing;
 }
 
