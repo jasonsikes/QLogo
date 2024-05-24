@@ -102,11 +102,6 @@ DatumPtr Datum::fromMember(DatumPtr, bool) {
   return nothing;
 }
 
-DatumPtr Datum::datumAtIndex(int) {
-  Q_ASSERT(false);
-  return nothing;
-}
-
 bool Datum::isIndexInRange(int) {
   Q_ASSERT(false);
   return false;

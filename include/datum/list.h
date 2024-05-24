@@ -110,7 +110,7 @@ public:
     DatumPtr fput(DatumPtr item);
 
     /// Returns the element pointed to by anIndex.
-    DatumPtr datumAtIndex(int anIndex);
+    DatumPtr itemAtIndex(int anIndex);
 
     /// Returns true if anIndex is between 1 and the count of elements in the List.
     bool isIndexInRange(int anIndex);

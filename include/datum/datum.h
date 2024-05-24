@@ -150,9 +150,6 @@ public:
   /// creates and returns a new Iterator object for this object.
   Iterator newIterator(void);
 
-  /// returns the element at the index given.
-  virtual DatumPtr datumAtIndex(int);
-
   /// returns true if the index given is valid for this object.
   virtual bool isIndexInRange(int);
 

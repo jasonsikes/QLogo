@@ -61,9 +61,6 @@ struct Array : public Datum {
     /// Empty the array of its contents and set the origin
     void clear();
 
-    /// Returns the item pointed to by anIndex.
-    DatumPtr datumAtIndex(int anIndex);
-
     /// Returns true if anIndex can point to a valid element in the Array.
     bool isIndexInRange(int anIndex);
 

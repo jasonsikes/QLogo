@@ -420,7 +420,19 @@ DatumPtr Kernel::excItem(DatumPtr node) {
     return thing.datumValue()->isIndexInRange((int)candidate);
   });
 
-  return h.ret(thing.datumValue()->datumAtIndex((int)index));
+  DatumPtr retval;
+  if (thing.isArray()) {
+      Array *ary = thing.arrayValue();
+      retval = ary->array[index - ary->origin];
+  } else if (thing.isWord()) {
+      retval = DatumPtr(thing.wordValue()->rawValue().mid(index - 1, 1));
+  } else if (thing.isList()) {
+      retval = thing.listValue()->itemAtIndex((int)index);
+  } else {
+      Q_ASSERT(false);
+  }
+
+  return h.ret(retval);
 }
 
 // MUTATORS

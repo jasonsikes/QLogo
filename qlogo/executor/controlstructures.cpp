@@ -722,7 +722,7 @@ DatumPtr Kernel::excApply(DatumPtr node) {
     }
     if (!first.isList() || (candidate.listValue()->size() < 2))
       return false;
-    DatumPtr procedureFirst = candidate.datumValue()->datumAtIndex(2);
+    DatumPtr procedureFirst = candidate.listValue()->itemAtIndex(2);
     if (procedureFirst.isWord()) {
       f = Form::lambda;
       return true;
@@ -815,7 +815,7 @@ DatumPtr Kernel::excNamedSlot(DatumPtr node) {
       return (candidate >= 1) && (candidate <= inputList.listValue()->size());
     });
   }
-  return h.ret(inputList.listValue()->datumAtIndex((int)index));
+  return h.ret(inputList.listValue()->itemAtIndex(index));
 }
 
 

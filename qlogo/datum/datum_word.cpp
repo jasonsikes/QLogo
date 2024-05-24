@@ -233,13 +233,6 @@ bool Word::isIndexInRange(int anIndex) {
   return ((anIndex >= 0) && (anIndex < printableString.size()));
 }
 
-DatumPtr Word::datumAtIndex(int anIndex) {
-  genPrintString();
-  --anIndex;
-  Q_ASSERT((anIndex >= 0) && (anIndex < printableString.size()));
-  return DatumPtr(printableString.mid(anIndex, 1));
-}
-
 bool Word::containsDatum(DatumPtr aDatum, bool ignoreCase) {
   if (!aDatum.isWord())
     return false;

@@ -151,12 +151,6 @@ DatumPtr Array::fromMember(DatumPtr aDatum, bool ignoreCase) {
   return DatumPtr(new Array(origin, 0));
 }
 
-DatumPtr Array::datumAtIndex(int anIndex) {
-  int index = anIndex - origin;
-  Q_ASSERT((index >= 0) && (index < array.size()));
-  return array[index];
-}
-
 DatumPtr Array::first() { return DatumPtr(origin); }
 
 DatumPtr Array::last() {

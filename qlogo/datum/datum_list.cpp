@@ -188,7 +188,7 @@ DatumPtr List::fromMember(DatumPtr aDatum, bool ignoreCase) {
   return DatumPtr(retval);
 }
 
-DatumPtr List::datumAtIndex(int anIndex) {
+DatumPtr List::itemAtIndex(int anIndex) {
   Q_ASSERT(isIndexInRange(anIndex));
     DatumPtr ptr = head;
     while (anIndex > 1) {

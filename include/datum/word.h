@@ -109,9 +109,6 @@ public:
     /// returns the length of the string in characters.
     int size();
 
-    /// Returns the character at position indicated by anIndex.
-    DatumPtr datumAtIndex(int anIndex);
-
     /// Retruns true if anIndex is between 1 and the length of the string.
     bool isIndexInRange(int anIndex);
 
