@@ -110,11 +110,6 @@ bool Array::isIndexInRange(int anIndex) {
   return ((index >= 0) && (index < array.size()));
 }
 
-void Array::setItem(int anIndex, DatumPtr aValue) {
-  int index = anIndex - origin;
-  array[index] = aValue;
-}
-
 void Array::setButfirstItem(DatumPtr aValue) {
   Q_ASSERT(array.size() > 0);
   array.erase(array.cbegin()+1, array.cend());

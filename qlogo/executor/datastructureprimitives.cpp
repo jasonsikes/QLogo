@@ -437,20 +437,22 @@ COD***/
 //CMD SETITEM 3 3 3
 DatumPtr Kernel::excSetitem(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumPtr array = h.arrayAtIndex(1);
-  int index = h.validatedIntegerAtIndex(0, [&array](int candidate) {
-    return array.arrayValue()->isIndexInRange(candidate);
+  Array *ary = h.arrayAtIndex(1).arrayValue();
+  int index = h.validatedIntegerAtIndex(0, [&ary](int candidate) {
+    return ary->isIndexInRange(candidate);
   });
-  DatumPtr value = h.validatedDatumAtIndex(2, [&array, this](DatumPtr candidate) {
-      if (candidate == array)
+  DatumPtr value = h.validatedDatumAtIndex(2, [&ary, this](DatumPtr candidate) {
+      if (candidate == ary)
           return false;
-      if (candidate.isArray() && candidate.arrayValue()->containsDatum(array, varCASEIGNOREDP()))
+      if (candidate.isArray() && candidate.arrayValue()->containsDatum(ary, varCASEIGNOREDP()))
           return false;
-      if (candidate.isList() && candidate.listValue()->containsDatum(array, varCASEIGNOREDP()))
+      if (candidate.isList() && candidate.listValue()->containsDatum(ary, varCASEIGNOREDP()))
           return false;
       return true;
   });
-  array.arrayValue()->setItem(index, value);
+
+  index -= ary->origin;
+  ary->array[index] = value;
   return nothing;
 }
 
@@ -530,7 +532,9 @@ DatumPtr Kernel::excDotSetitem(DatumPtr node) {
     return ary->isIndexInRange(candidate);
   });
   DatumPtr value = h.datumAtIndex(2);
-  ary->setItem(index, value);
+
+  index -= ary->origin;
+  ary->array[index] = value;
   return nothing;
 }
 

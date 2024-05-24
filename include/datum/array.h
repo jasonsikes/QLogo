@@ -31,13 +31,8 @@
 #include "datum/datum.h"
 
 /// The container that allows efficient read and write access to its elements.
-class Array : public Datum {
-    friend class ArrayIterator;
-
-protected:
+struct Array : public Datum {
     QList<DatumPtr> array;
-
-public:
 
     /// Create an Array containing aSize empty List with starting index at aOrigin.
     Array(int aOrigin = 1, int aSize = 0);
@@ -71,9 +66,6 @@ public:
 
     /// Returns true if anIndex can point to a valid element in the Array.
     bool isIndexInRange(int anIndex);
-
-    /// Replace item at anIndex with aValue.
-    void setItem(int anIndex, DatumPtr aValue);
 
     /// Replace the first item in the Array with aValue.
     void setFirstItem(DatumPtr aValue);
