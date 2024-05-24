@@ -110,6 +110,8 @@ the turtle and editor.
    4. as a named color from the X Color Database, e.g. `white` or `lemonchiffon`.
    The X Color database can be found here:
    https://en.wikipedia.org/wiki/X11_color_names
+   
+   5. as a hex triplet, preceded by "#"
 
 
 * Changes in font properties (size, color, family) do not affect characters
@@ -277,4 +279,4 @@ X-coordinate is between -350 and 350 and its Y-coordinate is between -150 and
 `BOUNDS`:
 
 Outputs a list of two numbers giving the maximum bounds (x,y)
-of the canvas. See `SETBOUNDS`.
+of the canvas.

@@ -943,10 +943,15 @@ SETPC color
 
     Option 3: RGBA values (a list of four numbers between 0 and 100
     specifying the percent saturation of red, green, blue, and alpha).
+    This is the only way to specify the alpha component.
 
-    Option 4: a named color from the X Color Database, e.g. 'white' or
-    'lemonchiffon'. The X Color database can be found here:
+    Option 4: a named color from the X Color Database, e.g. "white or
+    "lemonchiffon. The X Color database can be found here:
     https://en.wikipedia.org/wiki/X11_color_names
+
+    Option 5: a hex triplet preceded by a '#'. Each component may contain
+    one to four hex digits. Each of the following produces the color red:
+    "#f00 "#ff0000 "#fff000000 and "#ffff00000000
 
 COD***/
 //CMD SETPENCOLOR 1 1 1
