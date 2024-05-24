@@ -371,10 +371,34 @@ COD***/
 //CMD BUTLAST 1 1 1
 //CMD BL 1 1 1
 DatumPtr Kernel::excButlast(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr value = h.validatedDatumAtIndex(
-      0, [](DatumPtr candidate) { return candidate.datumValue()->size() > 0; });
-  return h.ret(value.datumValue()->butlast());
+    ProcedureHelper h(this, node);
+    DatumPtr value = h.validatedDatumAtIndex(
+        0, [](DatumPtr candidate) { return (candidate.isWord() || candidate.isList())
+                                        && (candidate.datumValue()->size() > 0); });
+    // value is either a Word or List
+    if (value.isWord()) {
+        QString source = value.wordValue()->rawValue();
+        QString retval = source.left(source.size() - 1);
+        return h.ret(retval);
+    }
+
+    List *srcList = value.listValue();
+    List *retval = new List();
+    retval->listSize = srcList->listSize - 1;
+
+    DatumPtr srcP = srcList->head;
+    while (srcP.listNodeValue()->next != nothing) {
+        ListNode *newNode = new ListNode;
+        newNode->item = srcP.listNodeValue()->item;
+        if (retval->head.isNothing()) {
+            retval->head = newNode;
+        } else {
+            retval->lastNode.listNodeValue()->next = newNode;
+        }
+        retval->lastNode = newNode;
+        srcP = srcP.listNodeValue()->next;
+    }
+    return h.ret(retval);
 }
 
 

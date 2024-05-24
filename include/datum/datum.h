@@ -141,9 +141,6 @@ public:
   /// Return the last element.
   virtual DatumPtr last(void);
 
-  /// Return everything but the last element.
-  virtual DatumPtr butlast(void);
-
   /// Determine if the object pointed to by other is equal to this object.
   virtual bool isEqual(DatumPtr other, bool);
 

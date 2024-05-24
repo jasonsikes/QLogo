@@ -276,11 +276,6 @@ DatumPtr Word::last() {
   return DatumPtr(QString(printableString[printableString.size() - 1]));
 }
 
-DatumPtr Word::butlast() {
-  genPrintString();
-  return DatumPtr(printableString.left(printableString.size() - 1));
-}
-
 DatumPtr Word::butfirst() {
   genPrintString();
   Q_ASSERT(printableString.size() > 0);

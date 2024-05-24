@@ -204,7 +204,7 @@ DatumPtr List::fromMember(DatumPtr aDatum, bool ignoreCase) {
       }
       ptr = ptr.listNodeValue()->next;
   }
-  retval->setListSize();
+  retval->calculateListSize();
   return DatumPtr(retval);
 }
 
@@ -255,27 +255,6 @@ DatumPtr List::last() {
     return lastNode.listNodeValue()->item;
 }
 
-DatumPtr List::butlast() {
-  List *retval = new List();
-  retval->listSize = listSize - 1;
-  if (head.listNodeValue()->next != nothing) {
-      DatumPtr src = head;
-      while (src.listNodeValue()->next != nothing) {
-          ListNode *newnode = new ListNode;
-          newnode->item = src.listNodeValue()->item;
-          if (retval->head == nothing) {
-              retval->head = newnode;
-              retval->lastNode = newnode;
-          } else {
-            retval->lastNode.listNodeValue()->next = newnode;
-            retval->lastNode = newnode;
-          }
-          src = src.listNodeValue()->next;
-      }
-  }
-  return DatumPtr(retval);
-}
-
 void List::prepend(DatumPtr element) {
     ListNode *newnode = new ListNode();
     newnode->item = element;
@@ -296,7 +275,7 @@ DatumPtr List::fput(DatumPtr item)
     return retval;
 }
 
-void List::setListSize()
+void List::calculateListSize()
 {
     listSize = 0;
     DatumPtr ptr = head;

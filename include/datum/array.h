@@ -99,9 +99,6 @@ public:
     /// Returns the last element of the Array.
     DatumPtr last(void);
 
-    /// Returns a new Array which is everything but the last element of this Array.
-    DatumPtr butlast(void);
-
     /// Add an element to the end of this Array.
     void append(DatumPtr value);
 

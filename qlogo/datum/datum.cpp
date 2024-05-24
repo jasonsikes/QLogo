@@ -80,11 +80,6 @@ DatumPtr Datum::last() {
   return nothing;
 }
 
-DatumPtr Datum::butlast() {
-  Q_ASSERT(false);
-  return nothing;
-}
-
 DatumPtr Datum::butfirst() {
   Q_ASSERT(false);
   return nothing;

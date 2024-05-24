@@ -177,11 +177,5 @@ DatumPtr Array::butfirst() {
   return DatumPtr(retval);
 }
 
-DatumPtr Array::butlast() {
-  Array *retval = new Array(origin, 0);
-  retval->array = array.mid(0, array.size() - 1);
-  return DatumPtr(retval);
-}
-
 ArrayIterator Array::newIterator() { return ArrayIterator(&array); }
 

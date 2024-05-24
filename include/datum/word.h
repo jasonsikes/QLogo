@@ -106,9 +106,6 @@ public:
     /// Returns the last character of the string value
     DatumPtr last(void);
 
-    /// Returns all but the last character of the string value
-    DatumPtr butlast(void);
-
     /// returns the length of the string in characters.
     int size();
 

@@ -48,12 +48,9 @@ class List : public Datum {
     friend class Parser; // Parser needs access to astList and astParseTimeStamp
 
 protected:
-    DatumPtr head;
-    DatumPtr lastNode;
-    int listSize;
     QList<DatumPtr> astList;
     qint64 astParseTimeStamp;
-    void setListSize();
+    void calculateListSize();
 
 public:
 
@@ -75,6 +72,16 @@ public:
                       int printWidthLimit = -1);
     bool isEqual(DatumPtr other, bool ignoreCase);
 
+    /// The head of the list, can either be a ListNode or nothing.
+    DatumPtr head;
+
+    /// The last node of the list. Only use as a shortcut during list
+    /// initialization. Should not be directly accessible to user.
+    DatumPtr lastNode;
+
+    /// TODO: remove this. There is no feasable way to make this reliable.
+    int listSize;
+
     /// Return the first item of the List.
     DatumPtr first(void);
 
@@ -93,9 +100,6 @@ public:
 
     /// Returns the last elements of the List.
     DatumPtr last();
-
-    /// Creates a new List using all but the last element of this List.
-    DatumPtr butlast(void);
 
     /// Adds an element to the head of this List.
     void prepend(DatumPtr element);
