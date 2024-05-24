@@ -50,7 +50,6 @@ class List : public Datum {
 protected:
     QList<DatumPtr> astList;
     qint64 astParseTimeStamp;
-    void calculateListSize();
 
 public:
 
@@ -79,9 +78,6 @@ public:
     /// initialization. Should not be directly accessible to user.
     DatumPtr lastNode;
 
-    /// TODO: remove this. There is no feasable way to make this reliable.
-    int listSize;
-
     /// Return the first item of the List.
     DatumPtr first(void);
 
@@ -96,7 +92,7 @@ public:
     void append(DatumPtr element);
 
     /// Returns the count of elements in the List.
-    int size() { return listSize; }
+    int size();
 
     /// Returns the last elements of the List.
     DatumPtr last();
@@ -112,9 +108,6 @@ public:
 
     /// Returns true if anIndex is between 1 and the count of elements in the List.
     bool isIndexInRange(int anIndex);
-
-    /// Replaces the item pointed to by anIndex with aValue.
-    void setItem(int anIndex, DatumPtr aValue);
 
     /// Replaces the first item in the List with aValue.
     void setFirstItem(DatumPtr aValue);

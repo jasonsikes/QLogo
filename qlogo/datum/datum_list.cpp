@@ -38,7 +38,6 @@ QList<void *> otherListVisited;
 
 List::List() {
     astParseTimeStamp = 0;
-    listSize = 0;
 }
 
 
@@ -57,7 +56,6 @@ List::List(List *source) {
     astParseTimeStamp = 0;
     head = source->head;
     lastNode = source->lastNode;
-    listSize = source->size();
 }
 
 Datum::DatumType List::isa() { return listType; }
@@ -143,17 +141,7 @@ DatumPtr List::first() {
 }
 
 bool List::isIndexInRange(int anIndex) {
-    return (anIndex >= 1) && (anIndex <= listSize);
-}
-
-void List::setItem(int anIndex, DatumPtr aValue) {
-    DatumPtr ptr = head;
-    while (anIndex > 1) {
-        --anIndex;
-        ptr = ptr.listNodeValue()->next;
-    }
-  ptr.listNodeValue()->item = aValue;
-  astParseTimeStamp = 0;
+    return (anIndex >= 1) && (anIndex <= size());
 }
 
 void List::setButfirstItem(DatumPtr aValue) {
@@ -161,7 +149,6 @@ void List::setButfirstItem(DatumPtr aValue) {
   Q_ASSERT(aValue.isList());
     head.listNodeValue()->next = aValue.listValue()->head;
     astParseTimeStamp = 0;
-    listSize = aValue.listValue()->size() + 1;
 }
 
 void List::setFirstItem(DatumPtr aValue) {
@@ -204,7 +191,6 @@ DatumPtr List::fromMember(DatumPtr aDatum, bool ignoreCase) {
       }
       ptr = ptr.listNodeValue()->next;
   }
-  retval->calculateListSize();
   return DatumPtr(retval);
 }
 
@@ -222,7 +208,6 @@ DatumPtr List::butfirst() {
     Q_ASSERT(head != nothing);
     List *retval = new List();
     retval->head = head.listNodeValue()->next;
-    retval->listSize = listSize - 1;
     retval->lastNode = lastNode;
   return DatumPtr(retval);
 }
@@ -230,7 +215,6 @@ DatumPtr List::butfirst() {
 void List::clear() {
   head = nothing;
   lastNode = nothing;
-  listSize = 0;
   astList.clear();
   astParseTimeStamp = 0;
 }
@@ -238,7 +222,6 @@ void List::clear() {
 // This should NOT be used in cases where a list may be shared
 void List::append(DatumPtr element) {
     ListNode *newNode = new ListNode();
-    ++listSize;
     newNode->item = element;
     if (head == nothing) {
         head = newNode;
@@ -260,7 +243,6 @@ void List::prepend(DatumPtr element) {
     newnode->item = element;
     newnode->next = head;
     head = newnode;
-    ++listSize;
   astParseTimeStamp = 0;
 }
 
@@ -271,18 +253,18 @@ DatumPtr List::fput(DatumPtr item)
     newnode->item = item;
     newnode->next = head;
     retval->head = newnode;
-    retval->listSize = listSize + 1;
     return retval;
 }
 
-void List::calculateListSize()
+int List::size()
 {
-    listSize = 0;
+    int retval = 0;
     DatumPtr ptr = head;
     while (ptr != nothing) {
-        ++listSize;
+        ++retval;
         ptr = ptr.listNodeValue()->next;
     }
+    return retval;
 }
 
 ListIterator List::newIterator() { return ListIterator(head); }

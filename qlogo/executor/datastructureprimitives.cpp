@@ -384,7 +384,6 @@ DatumPtr Kernel::excButlast(DatumPtr node) {
 
     List *srcList = value.listValue();
     List *retval = new List();
-    retval->listSize = srcList->listSize - 1;
 
     DatumPtr srcP = srcList->head;
     while (srcP.listNodeValue()->next != nothing) {
@@ -438,21 +437,20 @@ COD***/
 //CMD SETITEM 3 3 3
 DatumPtr Kernel::excSetitem(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumPtr array = h.validatedDatumAtIndex(1, [](DatumPtr candidate) {
-    return candidate.isList() || candidate.isArray();
-  });
+  DatumPtr array = h.arrayAtIndex(1);
   int index = h.validatedIntegerAtIndex(0, [&array](int candidate) {
-    return array.datumValue()->isIndexInRange(candidate);
+    return array.arrayValue()->isIndexInRange(candidate);
   });
-  DatumPtr thing = h.validatedDatumAtIndex(2, [&array, this](DatumPtr candidate) {
-    if (candidate.isArray() || candidate.isList()) {
+  DatumPtr value = h.validatedDatumAtIndex(2, [&array, this](DatumPtr candidate) {
       if (candidate == array)
-        return false;
-      return !candidate.datumValue()->containsDatum(array, varCASEIGNOREDP());
-    }
-    return true;
+          return false;
+      if (candidate.isArray() && candidate.arrayValue()->containsDatum(array, varCASEIGNOREDP()))
+          return false;
+      if (candidate.isList() && candidate.listValue()->containsDatum(array, varCASEIGNOREDP()))
+          return false;
+      return true;
   });
-  array.datumValue()->setItem(index, thing);
+  array.arrayValue()->setItem(index, value);
   return nothing;
 }
 
@@ -527,14 +525,12 @@ COD***/
 //CMD .SETITEM 3 3 3
 DatumPtr Kernel::excDotSetitem(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumPtr array = h.validatedDatumAtIndex(1, [](DatumPtr candidate) {
-    return candidate.isList() || candidate.isArray();
+  Array *ary = h.arrayAtIndex(1).arrayValue();
+  int index = (int)h.validatedIntegerAtIndex(0, [ary](int candidate) {
+    return ary->isIndexInRange(candidate);
   });
-  int index = (int)h.validatedIntegerAtIndex(0, [&array](int candidate) {
-    return array.datumValue()->isIndexInRange(candidate);
-  });
-  DatumPtr thing = h.datumAtIndex(2);
-  array.datumValue()->setItem(index, thing);
+  DatumPtr value = h.datumAtIndex(2);
+  ary->setItem(index, value);
   return nothing;
 }
 

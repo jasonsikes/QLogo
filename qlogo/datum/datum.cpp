@@ -85,8 +85,6 @@ DatumPtr Datum::butfirst() {
   return nothing;
 }
 
-void Datum::setItem(int, DatumPtr) { Q_ASSERT(false); }
-
 void Datum::setButfirstItem(DatumPtr) { Q_ASSERT(false); }
 
 void Datum::setFirstItem(DatumPtr) { Q_ASSERT(false); }

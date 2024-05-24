@@ -1,3 +1,0 @@
-make "a [hello there]
-.setitem 1 :a "bye
-show :a
