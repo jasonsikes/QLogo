@@ -104,7 +104,7 @@ double ProcedureHelper::validatedNumberAtIndex(int index, validatorD v,
   DatumPtr retvalP = wordAtIndex(index, canRunList);
   forever {
     double retval = retvalP.wordValue()->numberValue();
-    if (retvalP.wordValue()->didNumberConversionSucceed() && v(retval))
+    if ( (! isnan(retval)) && v(retval))
       return retval;
     do {
       retvalP = reject(retvalP, true, true);
@@ -114,18 +114,19 @@ double ProcedureHelper::validatedNumberAtIndex(int index, validatorD v,
 }
 
 int ProcedureHelper::validatedIntegerAtIndex(int index, validatorI v) {
-  DatumPtr retvalP = wordAtIndex(index);
-  forever {
-    double retvalD = retvalP.wordValue()->numberValue();
-    int retvalI = (int)retvalD;
-    if (retvalP.wordValue()->didNumberConversionSucceed() &&
-        (floor(retvalD) == retvalD) && v(retvalI))
-      return retvalI;
-    do {
-      retvalP = reject(retvalP, true, true);
-    } while (!retvalP.isWord());
-  }
-  return 0;
+    DatumPtr retvalP = wordAtIndex(index);
+    forever {
+        double retvalD = retvalP.wordValue()->numberValue();
+        if ( ! isnan(retvalD)) {
+            int retvalI = (int)retvalD;
+            if ((floor(retvalD) == retvalD) && v(retvalI))
+                return retvalI;
+        }
+        do {
+            retvalP = reject(retvalP, true, true);
+        } while (!retvalP.isWord());
+    }
+    return 0;
 }
 
 DatumPtr ProcedureHelper::validatedListAtIndex(int index, validatorL v) {
@@ -184,7 +185,7 @@ double ProcedureHelper::numberAtIndex(int index, bool canRunList) {
   DatumPtr retvalP = wordAtIndex(index, canRunList);
   forever {
     double retval = retvalP.wordValue()->numberValue();
-    if (retvalP.wordValue()->didNumberConversionSucceed())
+    if ( ! isnan(retval))
       return retval;
     do {
       retvalP = reject(retvalP, true, true);
@@ -197,11 +198,12 @@ int ProcedureHelper::integerAtIndex(int index) {
   DatumPtr retvalP = datumAtIndex(index);
   forever {
     double retvalD = retvalP.wordValue()->numberValue();
-    int retval = (int)retvalD;
-    if (retvalP.wordValue()->didNumberConversionSucceed() &&
-        (floor(retvalD) == retvalD))
-      return retval;
-    do {
+      if ( ! isnan(retvalD)) {
+          int retvalI = (int)retvalD;
+          if (floor(retvalD) == retvalD)
+      return retvalI;
+      }
+      do {
       retvalP = reject(retvalP, true, true);
     } while (!retvalP.isWord());
   }

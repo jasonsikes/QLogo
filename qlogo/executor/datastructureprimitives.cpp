@@ -735,8 +735,7 @@ DatumPtr Kernel::excNumberp(DatumPtr node) {
   DatumPtr thing = h.datumAtIndex(0);
   if (!thing.isWord())
     return h.ret(false);
-  thing.wordValue()->numberValue();
-  return h.ret(thing.wordValue()->didNumberConversionSucceed());
+  return h.ret( ! isnan(thing.wordValue()->numberValue()));
 }
 
 

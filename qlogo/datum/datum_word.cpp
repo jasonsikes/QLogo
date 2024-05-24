@@ -70,14 +70,14 @@ QChar charToRaw(const QChar &src) {
 }
 
 Word::Word() {
-  numberIsValid = false;
+  number = nan("");
   rawStringIsValid = false;
   keyStringIsValid = false;
   printableStringIsValid = false;
 }
 
 Word::Word(const QString other, bool aIsForeverSpecial) {
-  numberIsValid = false;
+  number = nan("");
   rawStringIsValid = true;
   keyStringIsValid = false;
   printableStringIsValid = false;
@@ -89,7 +89,6 @@ Word::Word(const QString other, bool aIsForeverSpecial) {
 
 Word::Word(double other) {
   number = other;
-  numberIsValid = true;
   rawStringIsValid = false;
   keyStringIsValid = false;
   printableStringIsValid = false;
@@ -100,7 +99,7 @@ Word::Word(double other) {
 void Word::genRawString()
 {
   if ( ! rawStringIsValid) {
-    Q_ASSERT(numberIsValid);
+    Q_ASSERT( ! isnan(number));
     rawString.setNum(number);
     rawStringIsValid = true;
   }
@@ -151,15 +150,14 @@ QString Word::rawValue() {
 }
 
 double Word::numberValue() {
-  if ( ! numberIsValid) {
+    if (isnan(number)) {
+    bool numberIsValid;
     genPrintString();
     number = printableString.toDouble(&numberIsValid);
+    if ( ! numberIsValid)
+        number = nan("");
   }
   return number;
-}
-
-bool Word::didNumberConversionSucceed() {
-  return numberIsValid;
 }
 
 QString Word::printValue(bool fullPrintp, int printDepthLimit,
@@ -221,21 +219,18 @@ int Word::size() {
 }
 
 bool Word::isEqual(DatumPtr other, bool ignoreCase) {
-  if (sourceIsNumber) {
-    bool answer = (number == other.wordValue()->numberValue());
-    if (!other.wordValue()->didNumberConversionSucceed())
-      return false;
-    return answer;
-  }
-  if (other.wordValue()->sourceIsNumber) {
-    bool answer = (numberValue() == other.wordValue()->numberValue());
-    if (!didNumberConversionSucceed())
-      return false;
-    return answer;
-  }
-  genPrintString();
-  Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive : Qt::CaseSensitive;
-  return printableString.compare(other.wordValue()->printValue(), cs) == 0;
+    if (sourceIsNumber) {
+        double otherNumber = other.wordValue()->numberValue();
+        if (isnan(otherNumber))
+            return false;
+        return number == other.wordValue()->numberValue();
+    }
+    if (other.wordValue()->sourceIsNumber) {
+        return (numberValue() == other.wordValue()->numberValue());
+    }
+    genPrintString();
+    Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive : Qt::CaseSensitive;
+    return printableString.compare(other.wordValue()->printValue(), cs) == 0;
 }
 
 bool Word::isIndexInRange(int anIndex) {

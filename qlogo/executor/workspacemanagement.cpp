@@ -361,7 +361,7 @@ int Kernel::varPRINTDEPTHLIMIT() {
   DatumPtr retvalP = variables.datumForName(QObject::tr("PRINTDEPTHLIMIT"));
   if (retvalP.isWord()) {
     double retval = retvalP.wordValue()->numberValue();
-    if (retvalP.wordValue()->didNumberConversionSucceed()) {
+    if ( ! isnan(retval)) {
       return (int)retval;
     }
   }
@@ -381,7 +381,7 @@ int Kernel::varPRINTWIDTHLIMIT() {
   DatumPtr retvalP = variables.datumForName(QObject::tr("PRINTWIDTHLIMIT"));
   if (retvalP.isWord()) {
     double retval = retvalP.wordValue()->numberValue();
-    if (retvalP.wordValue()->didNumberConversionSucceed()) {
+    if ( ! isnan(retval)) {
       return (int)retval;
     }
   }

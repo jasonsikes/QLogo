@@ -51,7 +51,6 @@ protected:
     void genPrintString();
     void genKeyString();
     double number;
-    bool numberIsValid;
     bool rawStringIsValid;
     bool keyStringIsValid;
     bool printableStringIsValid;
@@ -63,8 +62,7 @@ public:
     /// Words created this way will not be separated during parsing or runparsing.
     bool isForeverSpecial;
 
-    /// Create a Word object that is invalid. Don't use this.
-    /// To get a new word, use alloc().
+    /// Create a Word object that is invalid.
     Word();
 
     /// Create a Word object with a string.
@@ -76,7 +74,8 @@ public:
     /// Create a Word object with a number.
     Word(double other);
 
-    /// returns the number representation of the Word. Use didNumberConversionSucceed() to check.
+    /// returns the number representation of the Word, if possible. Otherwise,
+    /// returns NaN.
     double numberValue(void);
 
     DatumType isa();
@@ -111,9 +110,6 @@ public:
 
     /// Returns all but the last character of the string value
     DatumPtr butlast(void);
-
-    /// Returns true if the last call to numberValue() returned a valid number.
-    bool didNumberConversionSucceed();
 
     /// returns the length of the string in characters.
     int size();

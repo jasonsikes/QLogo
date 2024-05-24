@@ -66,8 +66,7 @@ Procedures::Procedures() {
 
 void Procedures::defineProcedure(DatumPtr cmd, DatumPtr procnameP, DatumPtr text,
                              DatumPtr sourceText) {
-    procnameP.wordValue()->numberValue();
-    if (procnameP.wordValue()->didNumberConversionSucceed())
+    if ( ! isnan(procnameP.wordValue()->numberValue()))
         Error::doesntLike(cmd, procnameP);
 
     QString procname = procnameP.wordValue()->keyValue();
@@ -120,7 +119,7 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
 
         if (currentParam.isWord()) { // default 5 OR required :FOO
             double paramAsNumber = currentParam.wordValue()->numberValue();
-            if (currentParam.wordValue()->didNumberConversionSucceed()) { // default 5
+            if ( ! isnan(paramAsNumber)) { // default 5
                 if (isDefaultDefined)
                     Error::doesntLike(cmd, currentParam);
                 if ((paramAsNumber != floor(paramAsNumber)) ||
@@ -559,8 +558,7 @@ QString Procedures::unreadArray(Array *anArray) {
 }
 
 QString Procedures::unreadWord(Word *aWord, bool isInList) {
-    aWord->numberValue();
-    if (aWord->didNumberConversionSucceed())
+    if ( ! isnan(aWord->numberValue()))
         return aWord->showValue();
 
     QString retval("");
