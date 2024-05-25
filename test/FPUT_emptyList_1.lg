@@ -1,0 +1,4 @@
+make "a fput "hello []
+show :a
+make "b fput [] []
+show :b

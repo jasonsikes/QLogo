@@ -113,8 +113,7 @@ FPUT thing list
 
     outputs a list equal to its second input with one extra member,
     the first input, at the beginning.  If the second input is a word,
-    then the first input must be a one-letter word, and FPUT is
-    equivalent to WORD.
+    then the first input must be a word, and FPUT is equivalent to WORD.
 
 COD***/
 //CMD FPUT 2 2 2
@@ -126,8 +125,7 @@ DatumPtr Kernel::excFput(DatumPtr node) {
     return candidate.isList() || candidate.isWord();
   });
   if (list.isList()) {
-    DatumPtr retval = list.listValue()->fput(thing);
-    return h.ret(retval);
+      return h.ret(new List(thing, list.listValue()));
   }
   QString retval = thing.wordValue()->rawValue();
   retval.append(list.wordValue()->rawValue());
@@ -375,6 +373,7 @@ DatumPtr Kernel::excButlast(DatumPtr node) {
     DatumPtr value = h.validatedDatumAtIndex(
         0, [](DatumPtr candidate) { return (candidate.isWord() || candidate.isList())
                                         && (candidate.datumValue()->size() > 0); });
+
     // value is either a Word or List
     if (value.isWord()) {
         QString source = value.wordValue()->rawValue();
@@ -382,20 +381,20 @@ DatumPtr Kernel::excButlast(DatumPtr node) {
         return h.ret(retval);
     }
 
-    List *srcList = value.listValue();
+    // Value is a list.
     List *retval = new List();
+    List *dest = retval;
 
-    DatumPtr srcP = srcList->head;
-    while (srcP.listNodeValue()->next != nothing) {
-        ListNode *newNode = new ListNode;
-        newNode->item = srcP.listNodeValue()->item;
-        if (retval->head.isNothing()) {
-            retval->head = newNode;
+    List *src = value.listValue();
+    while (src->tail != nothing) {
+        dest->head = src->head;
+        src = src->tail.listValue();
+        if (src->tail == nothing) {
+            dest->tail = nothing;
         } else {
-            retval->lastNode.listNodeValue()->next = newNode;
+            dest->tail = DatumPtr(new List);
+            dest = dest->tail.listValue();
         }
-        retval->lastNode = newNode;
-        srcP = srcP.listNodeValue()->next;
     }
     return h.ret(retval);
 }
@@ -488,7 +487,7 @@ DatumPtr Kernel::excDotSetfirst(DatumPtr node) {
     return candidate.datumValue()->size() > 0;
   });
   DatumPtr value = h.datumAtIndex(1);
-  list.listValue()->head.listNodeValue()->item = value;
+  list.listValue()->head = value;
   list.listValue()->astParseTimeStamp = 0;
   return nothing;
 }

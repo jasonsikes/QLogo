@@ -54,17 +54,20 @@ bool Iterator::elementExists() {
 
 ListIterator::ListIterator() {}
 
-ListIterator::ListIterator(DatumPtr head) {
-    ptr = head;
+ListIterator::ListIterator(DatumPtr aList) {
+    ptr = aList;
 }
 
 DatumPtr ListIterator::element() {
-    DatumPtr retval = ptr.listNodeValue()->item;
-    ptr = ptr.listNodeValue()->next;
+    DatumPtr retval = ptr.listValue()->head;
+    ptr = ptr.listValue()->tail;
     return retval;
 }
 
-bool ListIterator::elementExists() { return (ptr != nothing); }
+bool ListIterator::elementExists()
+{
+    return (( ! ptr.isNothing()) && ( ! (ptr.listValue()->head).isNothing()));
+}
 
 /******************************************
  *

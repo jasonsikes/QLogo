@@ -47,7 +47,7 @@ public:
     ListIterator();
 
     /// Create a new ListIterator pointing to the head of the List.
-    ListIterator(DatumPtr head);
+    ListIterator(DatumPtr aList);
 
     /// Return the element at the current location. Advance Iterator to the next location.
     DatumPtr element();

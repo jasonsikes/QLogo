@@ -259,10 +259,9 @@ DatumPtr Procedures::procedureText(DatumPtr procnameP) {
 
     QList<DatumPtr>::iterator d = body->optionalDefaults.begin();
     for (auto &i : body->optionalInputs) {
-        List *optInput = new List(d->listValue());
-        optInput->prepend(DatumPtr(i));
+        List *optInput = d->listValue();
         ++d;
-        inputs->append(DatumPtr(optInput));
+        inputs->append(new List(DatumPtr(i),optInput));
     }
 
     if (body->restInput != "") {
@@ -352,8 +351,7 @@ QString Procedures::procedureTitle(DatumPtr procnameP) {
     for (auto &i : body->optionalInputs) {
         paramName = i;
         paramName.push_front(':');
-        List *optInput = new List(d->listValue());
-        optInput->prepend(DatumPtr(paramName));
+        List *optInput = new List(DatumPtr(paramName),d->listValue());
         firstLine->append(DatumPtr(optInput));
         ++d;
     }

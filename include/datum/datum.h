@@ -37,7 +37,6 @@
 class ASTNode;
 class Word;
 class List;
-class ListNode;
 class Array;
 class Error;
 class DatumPtr;
@@ -86,7 +85,6 @@ public:
     noType,
     wordType,
     listType,
-      listNodeType,
     arrayType,
     astnodeType,
     procedureType,

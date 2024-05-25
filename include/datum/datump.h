@@ -86,9 +86,6 @@ public:
     /// Returns a pointer to the referred Datum as a List.
     List *listValue();
 
-    /// Returns a pointer to the referred Datum as a ListNodeValue.
-    ListNode *listNodeValue();
-
     /// Returns a pointer to the referred Datum as a Procedure.
     Procedure *procedureValue();
 

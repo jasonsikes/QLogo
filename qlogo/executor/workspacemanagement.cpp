@@ -38,12 +38,12 @@ void extractFromContentslist(DatumPtr contentslist,
                              List **variablesList,
                              List **propertiesList)
 {
-    ListNode *src = contentslist.listValue()->head.listNodeValue();
-    *proceduresList = src->item.listValue();
-    src = src->next.listNodeValue();
-    *variablesList = src->item.listValue();
-    src = src->next.listNodeValue();
-    *propertiesList = src->item.listValue();
+    List *src = contentslist.listValue();
+    *proceduresList = src->head.listValue();
+    src = src->tail.listValue();
+    *variablesList = src->head.listValue();
+    src = src->tail.listValue();
+    *propertiesList = src->head.listValue();
 }
 
 

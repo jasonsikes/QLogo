@@ -158,14 +158,6 @@ List *DatumPtr::listValue() {
   return (List *)d;
 }
 
-ListNode *DatumPtr::listNodeValue() {
-  if (d->isa() != Datum::listNodeType) {
-    qDebug() << "Hello";
-  }
-  Q_ASSERT(d->isa() == Datum::listNodeType);
-  return (ListNode *)d;
-}
-
 Array *DatumPtr::arrayValue() {
   Q_ASSERT(d->isa() == Datum::arrayType);
   return (Array *)d;

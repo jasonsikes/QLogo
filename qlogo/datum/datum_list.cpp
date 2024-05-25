@@ -49,6 +49,18 @@ List::List(Array *source)
     }
 }
 
+List::List(DatumPtr item, List *srcList)
+{
+    head = item;
+    if (! srcList->head.isNothing()) {
+        tail = DatumPtr(srcList);
+        lastNode = srcList->lastNode;
+    } else {
+        lastNode = DatumPtr(this);
+    }
+    astParseTimeStamp = 0;
+}
+
 List::~List() {}
 
 
@@ -62,24 +74,23 @@ Datum::DatumType List::isa() { return listType; }
 
 QString List::printValue(bool fullPrintp, int printDepthLimit,
                          int printWidthLimit) {
-  DatumPtr iter = head;
-  if (iter == nothing) {
+  if (head.isNothing())
     return "";
-  }
+  DatumPtr iter = DatumPtr(this);
   if ((printDepthLimit == 0) || (printWidthLimit == 0)) {
     return "...";
   }
   int printWidth = printWidthLimit - 1;
-  QString retval = iter.listNodeValue()->item.showValue(fullPrintp, printDepthLimit - 1, printWidthLimit);
-  while (iter.listNodeValue()->next != nothing) {
-      iter = iter.listNodeValue()->next;
+  QString retval = iter.listValue()->head.showValue(fullPrintp, printDepthLimit - 1, printWidthLimit);
+  while (iter.listValue()->tail != nothing) {
+      iter = iter.listValue()->tail;
     retval.append(' ');
     if (printWidth == 0) {
       retval.append("...");
       break;
     }
     retval.append(
-        iter.listNodeValue()->item.showValue(fullPrintp, printDepthLimit - 1, printWidthLimit));
+        iter.listValue()->head.showValue(fullPrintp, printDepthLimit - 1, printWidthLimit));
     --printWidth;
   }
   return retval;
@@ -137,7 +148,7 @@ exit_false:
 
 DatumPtr List::first() {
   Q_ASSERT(head != nothing);
-  return head.listNodeValue()->item;
+  return head;
 }
 
 bool List::isIndexInRange(int anIndex) {
@@ -147,7 +158,8 @@ bool List::isIndexInRange(int anIndex) {
 void List::setButfirstItem(DatumPtr aValue) {
   Q_ASSERT(head != nothing);
   Q_ASSERT(aValue.isList());
-    head.listNodeValue()->next = aValue.listValue()->head;
+  tail = aValue;
+  lastNode = aValue.listValue()->lastNode;
     astParseTimeStamp = 0;
 }
 
@@ -174,92 +186,84 @@ bool List::isMember(DatumPtr aDatum, bool ignoreCase) {
 }
 
 DatumPtr List::fromMember(DatumPtr aDatum, bool ignoreCase) {
-    List *retval = new List();
-  DatumPtr ptr = head;
-  while (ptr != nothing) {
-      DatumPtr e = ptr.listNodeValue()->item;
-      if (e.isEqual(aDatum, ignoreCase)) {
-          retval->head = ptr;
-          retval->lastNode = lastNode;
-          break;
-      }
-      ptr = ptr.listNodeValue()->next;
-  }
-  return DatumPtr(retval);
+    DatumPtr ptr(this);
+    while (ptr != nothing) {
+        DatumPtr e = ptr.listValue()->head;
+        if (e.isEqual(aDatum, ignoreCase)) {
+            return ptr;
+        }
+        ptr = ptr.listValue()->tail;
+    }
+    return DatumPtr(new List());
 }
 
 DatumPtr List::itemAtIndex(int anIndex) {
   Q_ASSERT(isIndexInRange(anIndex));
-    DatumPtr ptr = head;
+    DatumPtr ptr(this);
     while (anIndex > 1) {
         --anIndex;
-        ptr = ptr.listNodeValue()->next;
+        ptr = ptr.listValue()->tail;
     }
-  return ptr.listNodeValue()->item;
+  return ptr.listValue()->head;
 }
 
 DatumPtr List::butfirst() {
     Q_ASSERT(head != nothing);
-    List *retval = new List();
-    retval->head = head.listNodeValue()->next;
-    retval->lastNode = lastNode;
-  return DatumPtr(retval);
+    if (tail.isNothing()) return DatumPtr(new List);
+    return tail;
 }
 
 void List::clear() {
   head = nothing;
+  tail = nothing;
   lastNode = nothing;
   astList.clear();
   astParseTimeStamp = 0;
 }
 
-// This should NOT be used in cases where a list may be shared
+// This should only be used when initializing a list. It should not be used
+// afterwards.
 void List::append(DatumPtr element) {
-    ListNode *newNode = new ListNode();
-    newNode->item = element;
+    astParseTimeStamp = 0;
+
     if (head == nothing) {
-        head = newNode;
-        lastNode = newNode;
+        head = element;
+        tail = nothing;
+        lastNode = nothing;
         return;
     }
-    lastNode.listNodeValue()->next = newNode;
-    lastNode = newNode;
-  astParseTimeStamp = 0;
+
+    List *l = new List();
+    l->head = element;
+    l->tail = nothing;
+    l->lastNode = nothing;
+    DatumPtr lP(l);
+
+    if (tail == nothing) {
+        tail = lP;
+        lastNode = tail;
+        return;
+    }
+
+    lastNode.listValue()->tail = lP;
+    lastNode = lP;
 }
 
 DatumPtr List::last() {
     Q_ASSERT(lastNode != nothing);
-    return lastNode.listNodeValue()->item;
-}
-
-void List::prepend(DatumPtr element) {
-    ListNode *newnode = new ListNode();
-    newnode->item = element;
-    newnode->next = head;
-    head = newnode;
-  astParseTimeStamp = 0;
-}
-
-DatumPtr List::fput(DatumPtr item)
-{
-    ListNode *newnode = new ListNode();
-    List *retval = new List();
-    newnode->item = item;
-    newnode->next = head;
-    retval->head = newnode;
-    return retval;
+    return lastNode.listValue()->head;
 }
 
 int List::size()
 {
     int retval = 0;
-    DatumPtr ptr = head;
-    while (ptr != nothing) {
+    DatumPtr ptr(this);
+    while (ptr.isList() && ( ! ptr.listValue()->head.isNothing())) {
         ++retval;
-        ptr = ptr.listNodeValue()->next;
+        ptr = ptr.listValue()->tail;
     }
     return retval;
 }
 
-ListIterator List::newIterator() { return ListIterator(head); }
+ListIterator List::newIterator() { return ListIterator(this); }
 

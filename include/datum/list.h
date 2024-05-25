@@ -29,19 +29,6 @@
 
 #include "datum/datump.h"
 
-/// An element of a List.
-class ListNode : public Datum {
-
-public:
-    DatumType isa() { return listNodeType; }
-
-    /// The item at this position in the list.
-    DatumPtr item;
-
-    /// A pointer to the next ListNode.
-    DatumPtr next;
-};
-
 /// The container for data. The QLogo List is implemented as a linked list.
 class List : public Datum {
     friend class ListIterator;
@@ -52,26 +39,11 @@ protected:
 
 public:
 
-    /// Create an empty List.
-    List();
-
-    /// Create a new list populated with elements of Array.
-    List(Array *source);
-
-    /// Create a new list populated with elements of another List.
-    // TODO: When do we use this?
-    List(List *source);
-
-    ~List();
-    DatumType isa();
-    QString printValue(bool fullPrintp = false, int printDepthLimit = -1,
-                       int printWidthLimit = -1);
-    QString showValue(bool fullPrintp = false, int printDepthLimit = -1,
-                      int printWidthLimit = -1);
-    bool isEqual(DatumPtr other, bool ignoreCase);
-
-    /// The head of the list, can either be a ListNode or nothing.
+    /// The head of the list, also called the 'element'.
     DatumPtr head;
+
+    /// The remainder of the list after the head. Can be a list or nothing.
+    DatumPtr tail;
 
     /// The last node of the list. Only use as a shortcut during list
     /// initialization. Should not be directly accessible to user.
@@ -83,6 +55,27 @@ public:
     /// TODO: reconsider whether this is useful, as it is unfeasable to keep
     /// track of all this list's sublist modifications.
     qint64 astParseTimeStamp;
+
+    /// Create an empty List.
+    List();
+
+    /// Create a new list populated with elements of Array.
+    List(Array *source);
+
+    /// Create a new list populated with elements of another List.
+    // TODO: When do we use this?
+    List(List *source);
+
+    /// Create a new list by attaching item as the head of srcList.
+    List(DatumPtr item, List *srcList);
+
+    ~List();
+    DatumType isa();
+    QString printValue(bool fullPrintp = false, int printDepthLimit = -1,
+                       int printWidthLimit = -1);
+    QString showValue(bool fullPrintp = false, int printDepthLimit = -1,
+                      int printWidthLimit = -1);
+    bool isEqual(DatumPtr other, bool ignoreCase);
 
     /// Return the first item of the List.
     DatumPtr first(void);
@@ -100,14 +93,8 @@ public:
     /// Returns the count of elements in the List.
     int size();
 
-    /// Returns the last elements of the List.
+    /// Returns the last element of the List.
     DatumPtr last();
-
-    /// Adds an element to the head of this List.
-    void prepend(DatumPtr element);
-
-    /// Creates a new List by adding an element to the head of this List.
-    DatumPtr fput(DatumPtr item);
 
     /// Returns the element pointed to by anIndex.
     DatumPtr itemAtIndex(int anIndex);
