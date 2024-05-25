@@ -248,7 +248,13 @@ COD***/
 DatumPtr Kernel::excFirst(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr value = h.validatedDatumAtIndex(
-      0, [](DatumPtr candidate) { return candidate.datumValue()->size() >= 1; });
+      0, [](DatumPtr candidate)
+      {
+          if (candidate.isWord()) return candidate.wordValue()->rawValue().size() > 0;
+          if (candidate.isArray()) return true;
+          if (candidate.isList()) return ! candidate.listValue()->isEmpty();
+          return false;
+      });
   return h.ret(value.datumValue()->first());
 }
 
@@ -276,8 +282,9 @@ DatumPtr Kernel::excFirsts(DatumPtr node) {
     ListIterator iter = candidate.listValue()->newIterator();
     while (iter.elementExists()) {
       DatumPtr item = iter.element();
-      if (item.datumValue()->size() < 1)
-        return false;
+      if (item.isWord() && item.wordValue()->rawValue().size() < 1) return false;
+      if (item.isArray() && item.arrayValue()->array.size() < 1) return false;
+      if (item.isList() && item.listValue()->isEmpty()) return false;
       retval->append(item.datumValue()->first());
     }
     return true;
@@ -297,7 +304,12 @@ COD***/
 DatumPtr Kernel::excLast(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr value = h.validatedDatumAtIndex(
-      0, [](DatumPtr candidate) { return candidate.datumValue()->size() > 0; });
+      0, [](DatumPtr candidate)
+      {
+          if (candidate.isWord()) return candidate.wordValue()->rawValue().size() > 0;
+          if (candidate.isList()) return ! candidate.listValue()->isEmpty();
+          return false;
+      });
   return h.ret(value.datumValue()->last());
 }
 
@@ -316,7 +328,13 @@ COD***/
 DatumPtr Kernel::excButfirst(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr value = h.validatedDatumAtIndex(
-      0, [](DatumPtr candidate) { return candidate.datumValue()->size() > 0; });
+      0, [](DatumPtr candidate)
+      {
+          if (candidate.isWord()) return candidate.wordValue()->rawValue().size() > 0;
+          if (candidate.isList()) return ! candidate.listValue()->isEmpty();
+          return false;
+      });
+
   return h.ret(value.datumValue()->butfirst());
 }
 
@@ -347,8 +365,9 @@ DatumPtr Kernel::excButfirsts(DatumPtr node) {
     ListIterator iter = candidate.listValue()->newIterator();
     while (iter.elementExists()) {
       DatumPtr item = iter.element();
-      if (item.datumValue()->size() < 1)
-        return false;
+      if (item.isWord() && item.wordValue()->rawValue().size() < 1) return false;
+      if (item.isArray() && item.arrayValue()->array.size() < 1) return false;
+      if (item.isList() && item.listValue()->isEmpty()) return false;
       retval->append(item.datumValue()->butfirst());
     }
     return true;
@@ -371,8 +390,12 @@ COD***/
 DatumPtr Kernel::excButlast(DatumPtr node) {
     ProcedureHelper h(this, node);
     DatumPtr value = h.validatedDatumAtIndex(
-        0, [](DatumPtr candidate) { return (candidate.isWord() || candidate.isList())
-                                        && (candidate.datumValue()->size() > 0); });
+        0, [](DatumPtr candidate)
+        {
+            if (candidate.isWord()) return candidate.wordValue()->rawValue().size() > 0;
+            if (candidate.isList()) return ! candidate.listValue()->isEmpty();
+            return false;
+        });
 
     // value is either a Word or List
     if (value.isWord()) {
@@ -484,7 +507,7 @@ COD***/
 DatumPtr Kernel::excDotSetfirst(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr list = h.validatedListAtIndex(0, [](DatumPtr candidate) {
-    return candidate.datumValue()->size() > 0;
+    return ! candidate.listValue()->isEmpty();
   });
   DatumPtr value = h.datumAtIndex(1);
   list.listValue()->head = value;
@@ -512,7 +535,7 @@ DatumPtr Kernel::excDotSetbf(DatumPtr node) {
     // other than lists. So they must be lists.
   ProcedureHelper h(this, node);
   DatumPtr list = h.validatedListAtIndex(0, [](DatumPtr candidate) {
-      return candidate.listValue()->size() > 0;
+      return ! candidate.listValue()->isEmpty();
   });
   DatumPtr value = h.listAtIndex(1);
   list.listValue()->setButfirstItem(value);
@@ -610,7 +633,11 @@ COD***/
 DatumPtr Kernel::excEmptyp(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr src = h.datumAtIndex(0);
-  return h.ret(src.datumValue()->size() == 0);
+  bool retval = false;
+  if (src.isWord()) retval = (src.wordValue()->rawValue().size() == 0);
+  if (src.isList()) retval = src.listValue()->isEmpty();
+
+  return h.ret(retval);
 }
 
 
@@ -818,7 +845,12 @@ COD***/
 DatumPtr Kernel::excCount(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr thing = h.datumAtIndex(0);
-  int count = thing.datumValue()->size();
+  int count = -1;
+  if (thing.isWord()) count = thing.wordValue()->rawValue().size();
+  if (thing.isArray()) count = thing.arrayValue()->array.size();
+  if (thing.isList()) count = thing.listValue()->count();
+
+  Q_ASSERT(count != -1);
   return h.ret(count);
 }
 

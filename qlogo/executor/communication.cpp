@@ -99,7 +99,7 @@ TextStream* Kernel::open(ProcedureHelper &h, QIODevice::OpenMode openFlags) {
   DatumPtr filenameP = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     if (candidate.isWord())
       return true;
-    if (!candidate.isList() || (candidate.listValue()->size() == 0))
+    if (!candidate.isList() || (candidate.listValue()->isEmpty()))
       return false;
     return candidate.listValue()->first().isWord();
   });
@@ -114,11 +114,11 @@ TextStream* Kernel::open(ProcedureHelper &h, QIODevice::OpenMode openFlags) {
 
 TextStream* Kernel::getStream(ProcedureHelper &h) {
   DatumPtr filenameP = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
-    if (candidate.isList() && (candidate.listValue()->size() != 0))
+    if (candidate.isList() && ( ! candidate.listValue()->isEmpty()))
       return false;
     return candidate.isWord() || candidate.isList();
   });
-  if (filenameP.isList() && (filenameP.listValue()->size() == 0)) {
+  if (filenameP.isList() && (filenameP.listValue()->isEmpty())) {
     return stdioStream;
   }
 
@@ -443,7 +443,7 @@ DatumPtr Kernel::excShell(DatumPtr node) {
   DatumPtr commandP = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     if (candidate.isWord())
       return true;
-    if (!candidate.isList() || (candidate.listValue()->size() == 0))
+    if (!candidate.isList() || (candidate.listValue()->isEmpty()))
       return false;
     ListIterator iter = candidate.listValue()->newIterator();
     while (iter.elementExists()) {
@@ -524,7 +524,7 @@ COD***/
 DatumPtr Kernel::excSetprefix(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr newPrefix = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
-    if (candidate.isList() && (candidate.listValue()->size() == 0))
+    if (candidate.isList() && (candidate.listValue()->isEmpty()))
       return true;
     return candidate.isWord();
   });

@@ -112,10 +112,6 @@ Datum &Datum::operator=(const Datum &) {
 
 Datum::DatumType Datum::isa() { return noType; }
 
-int Datum::size() {
-  Q_ASSERT(false);
-  return 0;
-}
 
 
 // Values to represent no data (NULL)

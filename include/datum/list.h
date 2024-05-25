@@ -90,14 +90,18 @@ public:
     /// DO NOT USE after the List has been modified by any other method.
     void append(DatumPtr element);
 
-    /// Returns the count of elements in the List.
-    int size();
+    /// Returns the count of elements in the List. This should only be used when
+    /// you need a specfic number. Consider using isEmpty() instead.
+    int count();
 
     /// Returns the last element of the List.
     DatumPtr last();
 
     /// Returns the element pointed to by anIndex.
     DatumPtr itemAtIndex(int anIndex);
+
+    /// Returns true if this is an empty list.
+    bool isEmpty();
 
     /// Returns true if anIndex is between 1 and the count of elements in the List.
     bool isIndexInRange(int anIndex);

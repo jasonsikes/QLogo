@@ -76,7 +76,7 @@ void Parser::inputProcedure(DatumPtr nodeP, TextStream *readStream) {
     DatumPtr line = readStream->readlistWithPrompt("> ", true, true);
     if ( ! line.isList()) // this must be the end of the input
         break;
-    if (line.listValue()->size() == 0)
+    if (line.listValue()->isEmpty())
       continue;
     DatumPtr first = line.listValue()->first();
     if (first.isWord()) {

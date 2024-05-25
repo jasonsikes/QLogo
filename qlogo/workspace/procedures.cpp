@@ -146,10 +146,10 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
         } else if (currentParam.isList()) { // Optional [:BAZ 87] or rest [:GARPLY]
             List *paramList = currentParam.listValue();
 
-            if (paramList->size() == 0)
+            if (paramList->isEmpty())
                 Error::doesntLike(cmd, currentParam);
 
-            if (paramList->size() == 1) { // rest input [:GARPLY]
+            if (paramList->count() == 1) { // rest input [:GARPLY]
                 if (isRestDefined)
                     Error::doesntLike(cmd, currentParam);
                 DatumPtr param = paramList->first();
@@ -416,7 +416,7 @@ DatumPtr Procedures::astnodeWithLiterals(DatumPtr cmd, DatumPtr params) {
     int minParams = 0, maxParams = 0, defaultParams = 0;
     DatumPtr node = astnodeFromCommand(cmd, minParams, defaultParams, maxParams);
 
-    int countOfChildren = params.listValue()->size();
+    int countOfChildren = params.listValue()->count();
     if (countOfChildren < minParams)
         Error::notEnough(cmd);
     if ((countOfChildren > maxParams) && (maxParams != -1))

@@ -189,17 +189,17 @@ DatumPtr Kernel::queryContentsListWithMethod(
     List *propertiesList;
     extractFromContentslist(contentslist, &proceduresList, &variablesList, &propertiesList);
 
-  if (proceduresList->size() > 0) {
+  if ( ! proceduresList->isEmpty()) {
     QString procname = proceduresList->first().wordValue()->keyValue();
     return DatumPtr((procedures->*method)(procname));
   }
 
-  if (variablesList->size() > 0) {
+  if ( ! variablesList->isEmpty()) {
     QString varname = variablesList->first().wordValue()->keyValue();
     return DatumPtr((variables.*method)(varname));
   }
 
-  if (propertiesList->size() > 0) {
+  if (! propertiesList->isEmpty()) {
     QString pname = propertiesList->first().wordValue()->keyValue();
     return DatumPtr((plists.*method)(pname));
   }
@@ -1274,7 +1274,7 @@ DatumPtr Kernel::excPot(DatumPtr node) {
     DatumPtr listnameP = i.element();
     QString listname = listnameP.wordValue()->keyValue();
     DatumPtr proplist = plists.getPropertyList(listname);
-    if (proplist.listValue()->size() > 0) {
+    if ( ! proplist.listValue()->isEmpty()) {
       QString line = QObject::tr("Plist %1 = %2\n")
                          .arg(procedures->unreadDatum(listnameP),
                               procedures->unreadDatum(proplist, true));

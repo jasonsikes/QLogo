@@ -121,9 +121,6 @@ bool List::isEqual(DatumPtr other, bool ignoreCase) {
   if (myIndex > -1)
     return true;
 
-  if (size() != o->size())
-    goto exit_false;
-
   iter = newIterator();
   otherIter = o->newIterator();
   listVisited.push_back(this);
@@ -151,8 +148,19 @@ DatumPtr List::first() {
   return head;
 }
 
+bool List::isEmpty() {
+    return head.isNothing();
+}
+
 bool List::isIndexInRange(int anIndex) {
-    return (anIndex >= 1) && (anIndex <= size());
+    if (head.isNothing()) return false;
+    if (anIndex < 1) return false;
+    DatumPtr ptr(this);
+    while (ptr.isList()) {
+        if (--anIndex < 1) return true;
+        ptr = ptr.listValue()->tail;
+    }
+    return false;
 }
 
 void List::setButfirstItem(DatumPtr aValue) {
@@ -254,7 +262,7 @@ DatumPtr List::last() {
     return lastNode.listValue()->head;
 }
 
-int List::size()
+int List::count()
 {
     int retval = 0;
     DatumPtr ptr(this);

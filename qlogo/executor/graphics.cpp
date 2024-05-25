@@ -1210,7 +1210,7 @@ COD***/
 DatumPtr Kernel::excLoadpict(DatumPtr node) {
     ProcedureHelper h(this, node);
     DatumPtr filenameP = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
-        if (candidate.isList() && (candidate.listValue()->size() == 0))
+        if (candidate.isList() && (candidate.listValue()->isEmpty()))
             return true;
         return candidate.isWord();
     });

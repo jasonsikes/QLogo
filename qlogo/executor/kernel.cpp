@@ -159,7 +159,7 @@ bool Kernel::getLineAndRunIt(bool shouldHandleError) {
     DatumPtr line = systemReadStream->readlistWithPrompt(prompt, true);
     if (line == nothing)
       return false; // EOF
-    if (line.listValue()->size() == 0)
+    if (line.listValue()->isEmpty())
       return true;
 
     DatumPtr result = runList(line);
@@ -210,7 +210,8 @@ DatumPtr Kernel::registerError(DatumPtr anError, bool allowErract,
     }
     DatumPtr erractP = variables.datumForName(QObject::tr("ERRACT"));
     bool shouldPause = (currentProcedure != nothing) &&
-        (erractP != nothing) && (erractP.datumValue()->size() > 0);
+                       ((erractP.isList() && ( ! erractP.listValue()->isEmpty()))
+                                                         || (erractP.isWord() && (erractP.wordValue()->rawValue().size() > 0)));
 
     if (allowErract && shouldPause) {
       sysPrint(e->errorText.printValue());

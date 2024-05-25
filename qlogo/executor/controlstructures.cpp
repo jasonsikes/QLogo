@@ -712,7 +712,7 @@ DatumPtr Kernel::excApply(DatumPtr node) {
       f = Form::named_procedure;
       return true;
     }
-    if (!candidate.isList() || candidate.listValue()->size() == 0)
+    if (!candidate.isList() || candidate.listValue()->isEmpty())
       return false;
     DatumPtr first = candidate.listValue()->head;
 
@@ -720,7 +720,7 @@ DatumPtr Kernel::excApply(DatumPtr node) {
       f = Form::explicit_slot;
       return true;
     }
-    if (!first.isList() || (candidate.listValue()->size() < 2))
+    if (!first.isList() || (candidate.listValue()->count() < 2))
       return false;
     DatumPtr butfirst = candidate.listValue()->tail;
     DatumPtr procedureFirst = butfirst.listValue()->head;
@@ -753,9 +753,9 @@ DatumPtr Kernel::excApply(DatumPtr node) {
     VarFrame s(&variables);
     DatumPtr varList = tmplate.listValue()->first();
     DatumPtr procedureList = tmplate.listValue()->butfirst();
-    if (varList.listValue()->size() > params.listValue()->size())
+    if (varList.listValue()->count() > params.listValue()->count())
       Error::notEnough(tmplate);
-    if (varList.listValue()->size() < params.listValue()->size())
+    if (varList.listValue()->count() < params.listValue()->count())
       Error::tooMany(tmplate);
 
     ListIterator nameIter = varList.listValue()->newIterator();
@@ -778,10 +778,10 @@ DatumPtr Kernel::excApply(DatumPtr node) {
     ASTNode *procnode = new ASTNode(node.astnodeValue()->nodeName);
     DatumPtr procnodeP(procnode);
     procnode->addChild(anonyProcedure);
-    if (params.listValue()->size() >
+    if (params.listValue()->count() >
         anonyProcedure.procedureValue()->countOfMaxParams)
       Error::tooMany(node.astnodeValue()->nodeName);
-    if (params.listValue()->size() <
+    if (params.listValue()->count() <
         anonyProcedure.procedureValue()->countOfMinParams)
       Error::notEnough(node.astnodeValue()->nodeName);
 
@@ -813,7 +813,7 @@ DatumPtr Kernel::excNamedSlot(DatumPtr node) {
   if (h.countOfChildren() > 0) {
     h.integerAtIndex(0);
     index = h.validatedIntegerAtIndex(0, [&inputList](int candidate) {
-      return (candidate >= 1) && (candidate <= inputList.listValue()->size());
+      return (inputList.listValue()->isIndexInRange(candidate));
     });
   }
   return h.ret(inputList.listValue()->itemAtIndex(index));

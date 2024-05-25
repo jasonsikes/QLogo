@@ -142,9 +142,6 @@ public:
   /// Determine if the object pointed to by other is equal to this object.
   virtual bool isEqual(DatumPtr other, bool);
 
-  /// return the number of elements in the object.
-  virtual int size();
-
   /// creates and returns a new Iterator object for this object.
   Iterator newIterator(void);
 
