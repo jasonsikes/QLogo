@@ -115,10 +115,6 @@ public:
     /// Returns true if aDatum is a member of this List.
     bool isMember(DatumPtr aDatum, bool ignoreCase);
 
-    /// Non-recursively searches this List for aDatum. Returns a new List starting
-    /// from where aDaum was found to the end of this List.
-    DatumPtr fromMember(DatumPtr aDatum, bool ignoreCase);
-
     ListIterator newIterator(void);
 };
 

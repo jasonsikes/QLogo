@@ -245,18 +245,6 @@ bool Word::isMember(DatumPtr aDatum, bool ignoreCase) {
   return containsDatum(aDatum, ignoreCase);
 }
 
-DatumPtr Word::fromMember(DatumPtr aDatum, bool ignoreCase) {
-  genPrintString();
-  Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive : Qt::CaseSensitive;
-  const QString &searchString = aDatum.wordValue()->printValue();
-  int pos = printableString.indexOf(searchString, 0, cs);
-  QString retval;
-  if (pos >= 0) {
-    retval = printableString.right(rawString.size() - pos);
-  }
-  return DatumPtr(retval);
-}
-
 DatumPtr Word::first() {
   genPrintString();
   Q_ASSERT(printableString.size() > 0);

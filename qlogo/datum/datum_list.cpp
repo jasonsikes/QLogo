@@ -193,18 +193,6 @@ bool List::isMember(DatumPtr aDatum, bool ignoreCase) {
   return false;
 }
 
-DatumPtr List::fromMember(DatumPtr aDatum, bool ignoreCase) {
-    DatumPtr ptr(this);
-    while (ptr != nothing) {
-        DatumPtr e = ptr.listValue()->head;
-        if (e.isEqual(aDatum, ignoreCase)) {
-            return ptr;
-        }
-        ptr = ptr.listValue()->tail;
-    }
-    return DatumPtr(new List());
-}
-
 DatumPtr List::itemAtIndex(int anIndex) {
   Q_ASSERT(isIndexInRange(anIndex));
     DatumPtr ptr(this);

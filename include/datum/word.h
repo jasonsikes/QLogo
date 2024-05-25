@@ -118,8 +118,6 @@ public:
     /// Returns true if aDatum is a substring.
     bool isMember(DatumPtr aDatum, bool ignoreCase);
 
-    /// Returns a substring starting at the first occurrence of aDatum to the end of the string.
-    DatumPtr fromMember(DatumPtr aDatum, bool ignoreCase);
 };
 
 

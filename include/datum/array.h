@@ -70,9 +70,6 @@ struct Array : public Datum {
     /// Returns true if aDatum is a member of Array.
     bool isMember(DatumPtr aDatum, bool ignoreCase);
 
-    /// Returns a new Array beginning with the first occurrence of aDatum to the end of the Array.
-    DatumPtr fromMember(DatumPtr aDatum, bool ignoreCase);
-
     /// Returns the first element of the Array.
     DatumPtr first();
 

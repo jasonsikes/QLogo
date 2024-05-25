@@ -935,12 +935,35 @@ MEMBER thing1 thing2
 COD***/
 //CMD MEMBER 2 2 2
 DatumPtr Kernel::excMember(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr container = h.datumAtIndex(1);
-  DatumPtr thing = h.validatedDatumAtIndex(0, [&container](DatumPtr candidate) {
-    return container.isArray() || container.isList() || candidate.isWord();
-  });
-  return h.ret(container.datumValue()->fromMember(thing, varCASEIGNOREDP()));
+    ProcedureHelper h(this, node);
+    DatumPtr containerP = h.validatedDatumAtIndex(1, [](DatumPtr candidate) {
+        return candidate.isList() || candidate.isWord();
+    });
+    DatumPtr thingP = h.validatedDatumAtIndex(0, [&containerP](DatumPtr candidate) {
+        return containerP.isList() || candidate.isWord();
+    });
+
+    bool ignoreCase = varCASEIGNOREDP();
+    if (containerP.isWord()) {
+        QString container = containerP.wordValue()->printValue();
+        QString thing = thingP.wordValue()->printValue();
+        Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive
+                                            : Qt::CaseSensitive;
+        int start = container.indexOf(thing, 0, cs);
+        QString retval = (start >= 0) ? container.last(container.size() - start)
+                                      : "";
+        return h.ret(retval);
+    }
+
+    // Else, it must be a list.
+    while (containerP != nothing) {
+        DatumPtr e = containerP.listValue()->head;
+        if (e.isEqual(thingP, ignoreCase)) {
+            return h.ret(containerP);
+        }
+        containerP = containerP.listValue()->tail;
+    }
+    return h.ret(new List());
 }
 
 

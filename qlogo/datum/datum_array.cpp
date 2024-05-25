@@ -129,21 +129,6 @@ bool Array::isMember(DatumPtr aDatum, bool ignoreCase) {
   return false;
 }
 
-DatumPtr Array::fromMember(DatumPtr aDatum, bool ignoreCase) {
-  for (int i = 0; i < array.size(); ++i) {
-    if (array[i].isEqual(aDatum, ignoreCase)) {
-      Array *retval = new Array(origin, 0);
-      retval->array.reserve(array.size() - i);
-      while (i < array.size()) {
-        retval->append(array[i]);
-        ++i;
-      }
-      return DatumPtr(retval);
-    }
-  }
-  return DatumPtr(new Array(origin, 0));
-}
-
 DatumPtr Array::first() { return DatumPtr(origin); }
 
 DatumPtr Array::last() {

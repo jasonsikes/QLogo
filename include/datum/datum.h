@@ -153,9 +153,6 @@ public:
 
   /// nonrecursively search this object for an instance of a Datum.
   virtual bool isMember(DatumPtr aDatum, bool);
-
-  /// return a new Datum beginning with the first occurrence of aDatum.
-  virtual DatumPtr fromMember(DatumPtr aDatum, bool ignoreCase);
 };
 
 

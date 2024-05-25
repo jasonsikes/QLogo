@@ -95,11 +95,6 @@ bool Datum::isMember(DatumPtr, bool) {
   return false;
 }
 
-DatumPtr Datum::fromMember(DatumPtr, bool) {
-  Q_ASSERT(false);
-  return nothing;
-}
-
 bool Datum::isIndexInRange(int) {
   Q_ASSERT(false);
   return false;
