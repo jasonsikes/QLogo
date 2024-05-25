@@ -31,6 +31,23 @@
 #include "datum/astnode.h"
 #include "controller/logocontroller.h"
 
+
+// Extract the three components from a contents list
+void extractFromContentslist(DatumPtr contentslist,
+                             List **proceduresList,
+                             List **variablesList,
+                             List **propertiesList)
+{
+    ListNode *src = contentslist.listValue()->head.listNodeValue();
+    *proceduresList = src->item.listValue();
+    src = src->next.listNodeValue();
+    *variablesList = src->item.listValue();
+    src = src->next.listNodeValue();
+    *propertiesList = src->item.listValue();
+}
+
+
+
 QString Kernel::executeText(const QString &text) {
   QString inText = text;
   QString outText;
@@ -138,9 +155,10 @@ DatumPtr Kernel::contentslistFromDatumPtr(DatumPtr sourceNode) {
 
 void Kernel::processContentsListWithMethod(
     DatumPtr contentslist, void (Workspace::*method)(const QString &)) {
-  List *proceduresList = contentslist.listValue()->itemAtIndex(1).listValue();
-  List *variablesList = contentslist.listValue()->itemAtIndex(2).listValue();
-  List *propertiesList = contentslist.listValue()->itemAtIndex(3).listValue();
+    List *proceduresList;
+    List *variablesList;
+    List *propertiesList;
+    extractFromContentslist(contentslist, &proceduresList, &variablesList, &propertiesList);
 
   ListIterator i = proceduresList->newIterator();
   while (i.elementExists()) {
@@ -163,22 +181,23 @@ void Kernel::processContentsListWithMethod(
 }
 
 DatumPtr Kernel::queryContentsListWithMethod(
-    DatumPtr contentslist, bool (Workspace::*method)(const QString &)) {
-  List *proceduresList = contentslist.listValue()->itemAtIndex(1).listValue();
+    DatumPtr contentslist,
+    bool (Workspace::*method)(const QString &))
+{
+    List *proceduresList;
+    List *variablesList;
+    List *propertiesList;
+    extractFromContentslist(contentslist, &proceduresList, &variablesList, &propertiesList);
 
   if (proceduresList->size() > 0) {
     QString procname = proceduresList->first().wordValue()->keyValue();
     return DatumPtr((procedures->*method)(procname));
   }
 
-  List *variablesList = contentslist.listValue()->itemAtIndex(2).listValue();
-
   if (variablesList->size() > 0) {
     QString varname = variablesList->first().wordValue()->keyValue();
     return DatumPtr((variables.*method)(varname));
   }
-
-  List *propertiesList = contentslist.listValue()->itemAtIndex(3).listValue();
 
   if (propertiesList->size() > 0) {
     QString pname = propertiesList->first().wordValue()->keyValue();
@@ -191,9 +210,10 @@ QString Kernel::createPrintoutFromContentsList(DatumPtr contentslist,
                                                bool shouldValidate) {
   QString retval("");
 
-  List *proceduresList = contentslist.listValue()->itemAtIndex(1).listValue();
-  List *variablesList = contentslist.listValue()->itemAtIndex(2).listValue();
-  List *propertiesList = contentslist.listValue()->itemAtIndex(3).listValue();
+    List *proceduresList;
+    List *variablesList;
+    List *propertiesList;
+    extractFromContentslist(contentslist, &proceduresList, &variablesList, &propertiesList);
 
   ListIterator i = proceduresList->newIterator();
   while (i.elementExists()) {
@@ -1226,9 +1246,10 @@ DatumPtr Kernel::excPot(DatumPtr node) {
     return contentslist != nothing;
   });
 
-  List *proceduresList = contentslist.listValue()->itemAtIndex(1).listValue();
-  List *variablesList = contentslist.listValue()->itemAtIndex(2).listValue();
-  List *propertiesList = contentslist.listValue()->itemAtIndex(3).listValue();
+  List *proceduresList;
+  List *variablesList;
+  List *propertiesList;
+  extractFromContentslist(contentslist, &proceduresList, &variablesList, &propertiesList);
 
   ListIterator i = proceduresList->newIterator();
   while (i.elementExists()) {
@@ -1286,9 +1307,10 @@ DatumPtr Kernel::excErase(DatumPtr node) {
     return contentslist != nothing;
   });
 
-  List *proceduresList = contentslist.listValue()->itemAtIndex(1).listValue();
-  List *variablesList = contentslist.listValue()->itemAtIndex(2).listValue();
-  List *propertiesList = contentslist.listValue()->itemAtIndex(3).listValue();
+  List *proceduresList;
+  List *variablesList;
+  List *propertiesList;
+  extractFromContentslist(contentslist, &proceduresList, &variablesList, &propertiesList);
 
   ListIterator i = proceduresList->newIterator();
   while (i.elementExists()) {
