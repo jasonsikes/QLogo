@@ -64,9 +64,6 @@ struct Array : public Datum {
     /// Returns true if anIndex can point to a valid element in the Array.
     bool isIndexInRange(int anIndex);
 
-    /// Replace all but the first item in the Array with elements from aValue Array.
-    void setButfirstItem(DatumPtr aValue);
-
     /// Recursively searches Array for aDatum. Returns true if found.
     bool containsDatum(DatumPtr aDatum, bool ignoreCase);
 

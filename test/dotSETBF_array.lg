@@ -1,3 +1,0 @@
-make "a {hello there}
-.setbf :a {bye you}
-show :a

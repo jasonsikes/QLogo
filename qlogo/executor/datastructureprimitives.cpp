@@ -509,16 +509,14 @@ DatumPtr Kernel::excDotSetfirst(DatumPtr node) {
 COD***/
 //CMD .SETBF 2 2 2
 DatumPtr Kernel::excDotSetbf(DatumPtr node) {
+    // I'm not sure of the practicality of having list and value being anything
+    // other than lists. So they must be lists.
   ProcedureHelper h(this, node);
-  DatumPtr thing = h.datumAtIndex(1);
-  DatumPtr array = h.validatedDatumAtIndex(0, [&thing](DatumPtr candidate) {
-    if (!candidate.isList() && !candidate.isArray())
-      return false;
-    if (candidate.datumValue()->size() == 0)
-      return false;
-    return candidate.isa() == thing.isa();
+  DatumPtr list = h.validatedListAtIndex(0, [](DatumPtr candidate) {
+      return candidate.listValue()->size() > 0;
   });
-  array.datumValue()->setButfirstItem(thing);
+  DatumPtr value = h.listAtIndex(1);
+  list.listValue()->setButfirstItem(value);
   return nothing;
 }
 

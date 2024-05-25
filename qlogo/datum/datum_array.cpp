@@ -110,13 +110,6 @@ bool Array::isIndexInRange(int anIndex) {
   return ((index >= 0) && (index < array.size()));
 }
 
-void Array::setButfirstItem(DatumPtr aValue) {
-  Q_ASSERT(array.size() > 0);
-  array.erase(array.cbegin()+1, array.cend());
-  array.reserve(aValue.arrayValue()->size() + 1);
-  array.append(aValue.arrayValue()->array);
-}
-
 bool Array::containsDatum(DatumPtr aDatum, bool ignoreCase) {
   for (int i = 0; i < array.size(); ++i) {
     DatumPtr e = array[i];

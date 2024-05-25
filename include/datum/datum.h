@@ -153,9 +153,6 @@ public:
   /// returns true if the index given is valid for this object.
   virtual bool isIndexInRange(int);
 
-  /// replaces everything but the first element of this object with aValue.
-  virtual void setButfirstItem(DatumPtr aValue);
-
   /// recursively search this object for an instance of a Datum.
   virtual bool containsDatum(DatumPtr, bool);
 
