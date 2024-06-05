@@ -121,14 +121,6 @@ bool Array::containsDatum(DatumPtr aDatum, bool ignoreCase) {
   return false;
 }
 
-bool Array::isMember(DatumPtr aDatum, bool ignoreCase) {
-  for (int i = 0; i < array.size(); ++i) {
-    if (array[i].isEqual(aDatum, ignoreCase))
-      return true;
-  }
-  return false;
-}
-
 DatumPtr Array::first() { return DatumPtr(origin); }
 
 DatumPtr Array::last() {

@@ -115,9 +115,6 @@ public:
     /// Returns true if aDatum is a substring.
     bool containsDatum(DatumPtr aDatum, bool ignoreCase);
 
-    /// Returns true if aDatum is a substring.
-    bool isMember(DatumPtr aDatum, bool ignoreCase);
-
 };
 
 

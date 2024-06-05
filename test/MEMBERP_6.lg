@@ -1,0 +1,6 @@
+show memberp "this {this is a test}
+show memberp "this {is {this} a test}
+show memberp "this [is {this} a test]
+show memberp "this {is [this] a test}
+show memberp "this {is a test}
+show memberp "test {this is a test}

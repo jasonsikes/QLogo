@@ -67,9 +67,6 @@ struct Array : public Datum {
     /// Recursively searches Array for aDatum. Returns true if found.
     bool containsDatum(DatumPtr aDatum, bool ignoreCase);
 
-    /// Returns true if aDatum is a member of Array.
-    bool isMember(DatumPtr aDatum, bool ignoreCase);
-
     /// Returns the first element of the Array.
     DatumPtr first();
 

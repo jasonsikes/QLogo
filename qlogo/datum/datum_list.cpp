@@ -184,15 +184,6 @@ bool List::containsDatum(DatumPtr aDatum, bool ignoreCase) {
   return false;
 }
 
-bool List::isMember(DatumPtr aDatum, bool ignoreCase) {
-    ListIterator iter = newIterator();
-    while (iter.elementExists()) {
-        if (aDatum.isEqual(iter.element(), ignoreCase))
-            return true;
-    }
-  return false;
-}
-
 DatumPtr List::itemAtIndex(int anIndex) {
   Q_ASSERT(isIndexInRange(anIndex));
     DatumPtr ptr(this);

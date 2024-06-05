@@ -112,9 +112,6 @@ public:
     /// Recursively searches List for aDatum. Returns true if found.
     bool containsDatum(DatumPtr aDatum, bool ignoreCase);
 
-    /// Returns true if aDatum is a member of this List.
-    bool isMember(DatumPtr aDatum, bool ignoreCase);
-
     ListIterator newIterator(void);
 };
 

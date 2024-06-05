@@ -746,16 +746,24 @@ COD***/
 DatumPtr Kernel::excMemberp(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr container = h.validatedDatumAtIndex(1, [](DatumPtr candidate) {
-    return candidate.isList() || candidate.isWord();
+    return candidate.isList() || candidate.isWord() || candidate.isArray();
   });
   DatumPtr thing = h.validatedDatumAtIndex(0, [&container](DatumPtr candidate) {
     if (container.isWord())
       return candidate.isWord();
     return true;
   });
-  if (container.isWord() && (thing.wordValue()->size() != 1))
-    return h.ret(false);
-  return h.ret(container.datumValue()->isMember(thing, varCASEIGNOREDP()));
+  if (container.isWord()) {
+      if (thing.wordValue()->size() != 1)
+          return h.ret(false);
+      return h.ret(container.wordValue()->printValue().
+                   contains(thing.wordValue()->printValue()));
+  }
+
+  if (container.isList()) {
+      return h.ret(container.listValue()->containsDatum(thing, varCASEIGNOREDP()));
+  }
+  return h.ret(container.arrayValue()->containsDatum(thing, varCASEIGNOREDP()));
 }
 
 
@@ -772,11 +780,12 @@ COD***/
 //CMD SUBSTRING? 2 2 2
 DatumPtr Kernel::excSubstringp(DatumPtr node) {
   ProcedureHelper h(this, node);
-  DatumPtr thing = h.datumAtIndex(0);
-  DatumPtr container = h.datumAtIndex(1);
-  if (!container.isWord() || !thing.isWord())
+  DatumPtr thingP = h.datumAtIndex(0);
+  DatumPtr containerP = h.datumAtIndex(1);
+  if (!containerP.isWord() || !thingP.isWord())
     return h.ret(false);
-  return h.ret(container.datumValue()->isMember(thing, varCASEIGNOREDP()));
+  Qt::CaseSensitivity cs = varCASEIGNOREDP() ? Qt::CaseInsensitive : Qt::CaseSensitive;
+  return h.ret(containerP.wordValue()->printValue().contains(thingP.wordValue()->printValue(), cs));
 }
 
 

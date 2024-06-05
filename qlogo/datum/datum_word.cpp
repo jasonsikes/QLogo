@@ -241,10 +241,6 @@ bool Word::containsDatum(DatumPtr aDatum, bool ignoreCase) {
   return printableString.contains(aDatum.wordValue()->printValue(), cs);
 }
 
-bool Word::isMember(DatumPtr aDatum, bool ignoreCase) {
-  return containsDatum(aDatum, ignoreCase);
-}
-
 DatumPtr Word::first() {
   genPrintString();
   Q_ASSERT(printableString.size() > 0);

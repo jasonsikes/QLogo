@@ -150,9 +150,6 @@ public:
 
   /// recursively search this object for an instance of a Datum.
   virtual bool containsDatum(DatumPtr, bool);
-
-  /// nonrecursively search this object for an instance of a Datum.
-  virtual bool isMember(DatumPtr aDatum, bool);
 };
 
 

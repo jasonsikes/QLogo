@@ -90,11 +90,6 @@ bool Datum::containsDatum(DatumPtr, bool) {
   return false;
 }
 
-bool Datum::isMember(DatumPtr, bool) {
-  Q_ASSERT(false);
-  return false;
-}
-
 bool Datum::isIndexInRange(int) {
   Q_ASSERT(false);
   return false;
