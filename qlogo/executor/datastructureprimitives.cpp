@@ -84,6 +84,21 @@ bool Kernel::searchContainerForDatum(DatumPtr containerP, DatumPtr thingP, bool 
 }
 
 
+DatumPtr Kernel::butfirst(DatumPtr srcValue)
+{
+    if (srcValue.isWord()) {
+        QString src = srcValue.wordValue()->printValue();
+        return DatumPtr(src.right(src.size() - 1));
+    }
+    Q_ASSERT( ! srcValue.listValue()->head.isNothing());
+    DatumPtr retval = srcValue.listValue()->tail;
+    if (retval.isNothing())
+        retval = DatumPtr(new List);
+    return retval;
+}
+
+
+
 
 // CONSTRUCTORS
 
@@ -385,7 +400,7 @@ DatumPtr Kernel::excButfirst(DatumPtr node) {
           return false;
       });
 
-  return h.ret(value.datumValue()->butfirst());
+  return h.ret(butfirst(value));
 }
 
 
@@ -410,18 +425,30 @@ COD***/
 //CMD BFS 1 1 1
 DatumPtr Kernel::excButfirsts(DatumPtr node) {
   ProcedureHelper h(this, node);
-  List *retval = new List();
-  h.validatedListAtIndex(0, [retval](DatumPtr candidate) {
+  DatumPtr list = h.validatedListAtIndex(0, [](DatumPtr candidate) {
     ListIterator iter = candidate.listValue()->newIterator();
     while (iter.elementExists()) {
       DatumPtr item = iter.element();
-      if (item.isWord() && item.wordValue()->rawValue().size() < 1) return false;
-      if (item.isArray() && item.arrayValue()->array.size() < 1) return false;
-      if (item.isList() && item.listValue()->isEmpty()) return false;
-      retval->append(item.datumValue()->butfirst());
+        if (item.isWord()) {
+          if (item.wordValue()->rawValue().size() < 1)
+                return false;
+        } else if (item.isList()) {
+            if (item.listValue()->isEmpty())
+                return false;
+        } else {
+            return false;
+        }
     }
     return true;
   });
+
+  List *retval = new List();
+  ListIterator iter = list.listValue()->newIterator();
+  while (iter.elementExists()) {
+      DatumPtr e = iter.element();
+      retval->append(butfirst(e));
+  }
+
   return h.ret(retval);
 }
 

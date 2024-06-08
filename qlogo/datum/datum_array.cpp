@@ -117,11 +117,5 @@ DatumPtr Array::last() {
   return array[array.size() - 1];
 }
 
-DatumPtr Array::butfirst() {
-  Array *retval = new Array(origin, 0);
-  retval->array = array.mid(1, array.size() - 1);
-  return DatumPtr(retval);
-}
-
 ArrayIterator Array::newIterator() { return ArrayIterator(&array); }
 

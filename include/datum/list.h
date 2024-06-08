@@ -80,9 +80,6 @@ public:
     /// Return the first item of the List.
     DatumPtr first(void);
 
-    /// Return a new List starting with the second item of the List.
-    DatumPtr butfirst(void);
-
     /// Empty the List
     void clear();
 

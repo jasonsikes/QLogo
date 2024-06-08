@@ -128,6 +128,8 @@ class Kernel {
 
   bool searchContainerForDatum(DatumPtr containerP, DatumPtr thingP, bool ignoreCase);
 
+  // Return the butfirst of a word or list
+  DatumPtr butfirst(DatumPtr srcValue);
 
 public:
   Kernel();

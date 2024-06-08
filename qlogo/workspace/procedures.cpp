@@ -169,7 +169,7 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
                 if (isRestDefined || isDefaultDefined)
                     Error::doesntLike(cmd, currentParam);
                 DatumPtr param = paramList->first();
-                DatumPtr defaultValue = paramList->butfirst();
+                DatumPtr defaultValue = paramList->tail;
                 if (param.isWord()) {
                     QString name = param.wordValue()->keyValue();
                     if (name.startsWith(':') || name.startsWith('"'))
@@ -189,7 +189,9 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
         }
     } // /for each parameter
 
-    body->instructionList = text.listValue()->butfirst();
+    body->instructionList = text.listValue()->tail;
+    if (body->instructionList.isNothing())
+        body->instructionList = DatumPtr(new List);
 
     ListIterator lineIter = body->instructionList.listValue()->newIterator();
     while (lineIter.elementExists()) {

@@ -67,9 +67,6 @@ struct Array : public Datum {
     /// Returns the first element of the Array.
     DatumPtr first();
 
-    /// Returns a new Array which is everything but the first element of this Array.
-    DatumPtr butfirst();
-
     /// Returns the last element of the Array.
     DatumPtr last(void);
 

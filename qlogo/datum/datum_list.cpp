@@ -181,12 +181,6 @@ DatumPtr List::itemAtIndex(int anIndex) {
   return ptr.listValue()->head;
 }
 
-DatumPtr List::butfirst() {
-    Q_ASSERT(head != nothing);
-    if (tail.isNothing()) return DatumPtr(new List);
-    return tail;
-}
-
 void List::clear() {
   head = nothing;
   tail = nothing;

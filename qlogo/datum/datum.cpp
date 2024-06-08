@@ -80,11 +80,6 @@ DatumPtr Datum::last() {
   return nothing;
 }
 
-DatumPtr Datum::butfirst() {
-  Q_ASSERT(false);
-  return nothing;
-}
-
 bool Datum::isIndexInRange(int) {
   Q_ASSERT(false);
   return false;

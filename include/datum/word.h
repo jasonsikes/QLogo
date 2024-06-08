@@ -100,9 +100,6 @@ public:
     /// Returns the first character of the string value.
     DatumPtr first(void);
 
-    /// Returns all but the first character of the string value
-    DatumPtr butfirst(void);
-
     /// Returns the last character of the string value
     DatumPtr last(void);
 

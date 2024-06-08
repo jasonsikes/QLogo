@@ -133,9 +133,6 @@ public:
   /// Return the first element.
   virtual DatumPtr first(void);
 
-  /// Return everything but the first element.
-  virtual DatumPtr butfirst(void);
-
   /// Return the last element.
   virtual DatumPtr last(void);
 
