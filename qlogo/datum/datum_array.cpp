@@ -110,17 +110,6 @@ bool Array::isIndexInRange(int anIndex) {
   return ((index >= 0) && (index < array.size()));
 }
 
-bool Array::containsDatum(DatumPtr aDatum, bool ignoreCase) {
-  for (int i = 0; i < array.size(); ++i) {
-    DatumPtr e = array[i];
-    if (e == aDatum)
-      return true;
-    if (e.datumValue()->containsDatum(aDatum, ignoreCase))
-      return true;
-  }
-  return false;
-}
-
 DatumPtr Array::first() { return DatumPtr(origin); }
 
 DatumPtr Array::last() {

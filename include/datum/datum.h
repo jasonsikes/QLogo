@@ -147,9 +147,6 @@ public:
 
   /// returns true if the index given is valid for this object.
   virtual bool isIndexInRange(int);
-
-  /// recursively search this object for an instance of a Datum.
-  virtual bool containsDatum(DatumPtr, bool);
 };
 
 

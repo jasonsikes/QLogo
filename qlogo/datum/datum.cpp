@@ -85,11 +85,6 @@ DatumPtr Datum::butfirst() {
   return nothing;
 }
 
-bool Datum::containsDatum(DatumPtr, bool) {
-  Q_ASSERT(false);
-  return false;
-}
-
 bool Datum::isIndexInRange(int) {
   Q_ASSERT(false);
   return false;

@@ -233,14 +233,6 @@ bool Word::isIndexInRange(int anIndex) {
   return ((anIndex >= 0) && (anIndex < printableString.size()));
 }
 
-bool Word::containsDatum(DatumPtr aDatum, bool ignoreCase) {
-  if (!aDatum.isWord())
-    return false;
-  genPrintString();
-  Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive : Qt::CaseSensitive;
-  return printableString.contains(aDatum.wordValue()->printValue(), cs);
-}
-
 DatumPtr Word::first() {
   genPrintString();
   Q_ASSERT(printableString.size() > 0);

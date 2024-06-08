@@ -35,6 +35,56 @@
 
 #include "controller/logocontroller.h"
 
+
+// Recursively search the given container for thing. Returns true if thing is
+// found in container or subcontainer.
+bool Kernel::searchContainerForDatum(DatumPtr containerP, DatumPtr thingP, bool ignoreCase)
+{
+    Iterator *iter;
+
+    // Only one of these iterators is actually used. iter (above) will point to
+    // the active iterator.
+    ListIterator listIter;
+    ArrayIterator aryIter;
+
+    if (containerP.isList()) {
+        listIter = containerP.listValue()->newIterator();
+        iter = &listIter;
+    } else if (containerP.isArray()) {
+        aryIter = containerP.arrayValue()->newIterator();
+        iter = &aryIter;
+    } else {
+        qDebug() <<"Unknown container type.";
+        Q_ASSERT(false);
+    }
+
+    while (iter->elementExists()) {
+        DatumPtr eP = iter->element();
+        // Check if we are comparing against itself.
+        if (eP == thingP)
+            return true;
+        // If items are both words, do word compare.
+        if (eP.isWord() && thingP.isWord()) {
+            if (eP.wordValue()->isEqual(thingP, ignoreCase)) {
+                return true;
+            }
+        } else if (eP.isList() || eP.isArray()) {
+            void *e = eP.datumValue();
+            if ( ! searchedContainers.contains(e)) {
+                searchedContainers.insert(e);
+                if (searchContainerForDatum(eP, thingP, ignoreCase))
+                    return true;
+            }
+        } else {
+            qDebug() << "New container type?";
+            Q_ASSERT(false);
+        }
+    }
+    return false;
+}
+
+
+
 // CONSTRUCTORS
 
 
@@ -471,17 +521,21 @@ COD***/
 //CMD SETITEM 3 3 3
 DatumPtr Kernel::excSetitem(DatumPtr node) {
   ProcedureHelper h(this, node);
-  Array *ary = h.arrayAtIndex(1).arrayValue();
+  DatumPtr aryP = h.arrayAtIndex(1);
+  Array *ary = aryP.arrayValue();
   int index = h.validatedIntegerAtIndex(0, [&ary](int candidate) {
     return ary->isIndexInRange(candidate);
   });
-  DatumPtr value = h.validatedDatumAtIndex(2, [&ary, this](DatumPtr candidate) {
-      if (candidate == ary)
+  DatumPtr value = h.validatedDatumAtIndex(2, [aryP, this](DatumPtr candidate) {
+      if (candidate == aryP)
           return false;
-      if (candidate.isArray() && candidate.arrayValue()->containsDatum(ary, varCASEIGNOREDP()))
-          return false;
-      if (candidate.isList() && candidate.listValue()->containsDatum(ary, varCASEIGNOREDP()))
-          return false;
+
+      if (candidate.isArray() || candidate.isList()) {
+          searchedContainers.clear();
+          // Case sensitivity is not important since we aren't looking for a word.
+          if (searchContainerForDatum(candidate, aryP, false))
+              return false;
+      }
       return true;
   });
 
@@ -753,17 +807,24 @@ DatumPtr Kernel::excMemberp(DatumPtr node) {
       return candidate.isWord();
     return true;
   });
+
+  bool ignoreCase = varCASEIGNOREDP();
+  Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive
+                                      : Qt::CaseSensitive;
   if (container.isWord()) {
       if (thing.wordValue()->size() != 1)
           return h.ret(false);
       return h.ret(container.wordValue()->printValue().
-                   contains(thing.wordValue()->printValue()));
+                   contains(thing.wordValue()->printValue(), cs));
   }
 
-  if (container.isList()) {
-      return h.ret(container.listValue()->containsDatum(thing, varCASEIGNOREDP()));
+  if (container.isList() || container.isArray()) {
+      searchedContainers.clear();
+      return h.ret(searchContainerForDatum(container, thing, ignoreCase));
   }
-  return h.ret(container.arrayValue()->containsDatum(thing, varCASEIGNOREDP()));
+  qDebug()<< "in excMemberp: strange container";
+  Q_ASSERT(false);
+  return nothing;
 }
 
 

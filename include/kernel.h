@@ -86,6 +86,10 @@ class Kernel {
   DatumPtr editFileName;
   QString workspaceText;
 
+  // Recursive searches need to make sure we don't get caught in infinite loops.
+  // Remember what we searched so we don't search it again.
+  QSet<void *> searchedContainers;
+
   ASTNode *astnodeValue(DatumPtr caller, DatumPtr value);
   bool numbersFromList(QVector<double> &retval, DatumPtr l);
   DatumPtr contentslistFromDatumPtr(DatumPtr sourceNode);
@@ -121,6 +125,9 @@ class Kernel {
 
   /// Check for interrupts and handle them accordingly.
   SignalsEnum_t interruptCheck();
+
+  bool searchContainerForDatum(DatumPtr containerP, DatumPtr thingP, bool ignoreCase);
+
 
 public:
   Kernel();

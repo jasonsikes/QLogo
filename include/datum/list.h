@@ -109,9 +109,6 @@ public:
     /// Replaces everything but the first item in the List with aValue.
     void setButfirstItem(DatumPtr aValue);
 
-    /// Recursively searches List for aDatum. Returns true if found.
-    bool containsDatum(DatumPtr aDatum, bool ignoreCase);
-
     ListIterator newIterator(void);
 };
 

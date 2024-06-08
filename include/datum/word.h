@@ -111,10 +111,6 @@ public:
 
     /// Retruns true if anIndex is between 1 and the length of the string.
     bool isIndexInRange(int anIndex);
-
-    /// Returns true if aDatum is a substring.
-    bool containsDatum(DatumPtr aDatum, bool ignoreCase);
-
 };
 
 
