@@ -109,11 +109,6 @@ QString List::showValue(bool fullPrintp, int printDepthLimit,
   return "...";
 }
 
-DatumPtr List::first() {
-  Q_ASSERT(head != nothing);
-  return head;
-}
-
 bool List::isEmpty() {
     return head.isNothing();
 }

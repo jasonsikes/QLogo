@@ -751,7 +751,7 @@ DatumPtr Kernel::excApply(DatumPtr node) {
   }
   case lambda: {
     VarFrame s(&variables);
-    DatumPtr varList = tmplate.listValue()->first();
+    DatumPtr varList = tmplate.listValue()->head;
     DatumPtr procedureList = butfirst(tmplate);
     if (varList.listValue()->count() > params.listValue()->count())
       Error::notEnough(tmplate);

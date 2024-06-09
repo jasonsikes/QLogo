@@ -78,7 +78,7 @@ void Parser::inputProcedure(DatumPtr nodeP, TextStream *readStream) {
         break;
     if (line.listValue()->isEmpty())
       continue;
-    DatumPtr first = line.listValue()->first();
+    DatumPtr first = line.listValue()->head;
     if (first.isWord()) {
       QString firstWord = first.wordValue()->keyValue();
       if (firstWord == QObject::tr("END"))

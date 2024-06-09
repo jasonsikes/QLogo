@@ -75,7 +75,7 @@ TextStream *Kernel::openFileStream(DatumPtr filenameP,
 
 TextStream* Kernel::createStringStream(DatumPtr filenameP,
                                         QIODevice::OpenMode mode) {
-  QString filename = filenameP.datumValue()->first().wordValue()->keyValue();
+  QString filename = filenameP.listValue()->head.wordValue()->keyValue();
   if (fileStreams.contains(filename)) {
     Error::alreadyOpen(filenameP);
   }
@@ -101,7 +101,7 @@ TextStream* Kernel::open(ProcedureHelper &h, QIODevice::OpenMode openFlags) {
       return true;
     if (!candidate.isList() || (candidate.listValue()->isEmpty()))
       return false;
-    return candidate.listValue()->first().isWord();
+    return candidate.listValue()->head.isWord();
   });
   TextStream *stream;
   if (filenameP.isWord()) {

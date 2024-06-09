@@ -399,7 +399,15 @@ DatumPtr Kernel::excFirst(DatumPtr node) {
           if (candidate.isList()) return ! candidate.listValue()->isEmpty();
           return false;
       });
-  return h.ret(value.datumValue()->first());
+  switch (value.isa()) {
+  case Datum::listType:
+      return h.ret(value.listValue()->head);
+  case Datum::arrayType:
+      return h.ret(value.arrayValue()->origin);
+  default:
+      Q_ASSERT(value.isWord());
+  }
+  return h.ret(value.wordValue()->rawValue().left(1));
 }
 
 
@@ -421,18 +429,52 @@ COD***/
 //CMD FIRSTS 1 1 1
 DatumPtr Kernel::excFirsts(DatumPtr node) {
   ProcedureHelper h(this, node);
-  List *retval = new List();
-  h.validatedListAtIndex(0, [retval](DatumPtr candidate) {
-    ListIterator iter = candidate.listValue()->newIterator();
-    while (iter.elementExists()) {
-      DatumPtr item = iter.element();
-      if (item.isWord() && item.wordValue()->rawValue().size() < 1) return false;
-      if (item.isArray() && item.arrayValue()->array.size() < 1) return false;
-      if (item.isList() && item.listValue()->isEmpty()) return false;
-      retval->append(item.datumValue()->first());
-    }
-    return true;
+  DatumPtr retvalP = h.validatedListAtIndex(0, [](DatumPtr candidate) {
+      ListIterator iter = candidate.listValue()->newIterator();
+      while (iter.elementExists()) {
+          DatumPtr item = iter.element();
+          switch (item.isa()) {
+          case Datum::wordType:
+              if (item.wordValue()->rawValue().size() < 1)
+                  return false;
+              break;
+          case Datum::arrayType:
+              if (item.arrayValue()->array.size() < 1)
+                  return false;
+              break;
+          case Datum::listType:
+              if (item.listValue()->isEmpty())
+                  return false;
+              break;
+          default:
+              Q_ASSERT(false);
+          }
+      }
+      return true;
   });
+
+  List *retval = new List();
+
+  ListIterator iter = retvalP.listValue()->newIterator();
+  DatumPtr firstP;
+  while (iter.elementExists()) {
+      DatumPtr item = iter.element();
+      switch (item.isa()) {
+      case Datum::wordType:
+          firstP = DatumPtr(item.wordValue()->printValue().left(1));
+          break;
+      case Datum::arrayType:
+          firstP = DatumPtr(item.arrayValue()->origin);
+          break;
+      case Datum::listType:
+          firstP = item.listValue()->head;
+          break;
+      default:
+          Q_ASSERT(false);
+      }
+      retval->append(firstP);
+  }
+
   return h.ret(retval);
 }
 

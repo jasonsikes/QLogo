@@ -100,7 +100,5 @@ int Array::size() { return array.size(); }
 
 void Array::append(DatumPtr value) { array.append(value); }
 
-DatumPtr Array::first() { return DatumPtr(origin); }
-
 ArrayIterator Array::newIterator() { return ArrayIterator(&array); }
 

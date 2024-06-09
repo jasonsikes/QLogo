@@ -66,11 +66,6 @@ QString Datum::printValue(bool, int, int) { return QObject::tr("nothing"); }
 
 QString Datum::showValue(bool, int, int) { return printValue(); }
 
-DatumPtr Datum::first() {
-  Q_ASSERT(false);
-  return nothing;
-}
-
 Datum &Datum::operator=(const Datum &) {
   Q_ASSERT(false);
   return *this;

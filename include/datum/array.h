@@ -58,9 +58,6 @@ struct Array : public Datum {
     /// Empty the array of its contents and set the origin
     void clear();
 
-    /// Returns the first element of the Array.
-    DatumPtr first();
-
     /// Add an element to the end of this Array.
     void append(DatumPtr value);
 

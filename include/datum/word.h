@@ -92,9 +92,6 @@ public:
     /// Returns the string with the special character encoding intact.
     QString rawValue();
 
-    /// Returns the first character of the string value.
-    DatumPtr first(void);
-
     /// returns the length of the string in characters.
     int size();
 

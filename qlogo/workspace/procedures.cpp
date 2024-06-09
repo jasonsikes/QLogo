@@ -112,7 +112,7 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
     // Rest input      [:GARPLY]
     // default number  5
 
-    ListIterator paramIter = text.listValue()->first().listValue()->newIterator();
+    ListIterator paramIter = text.listValue()->head.listValue()->newIterator();
 
     while (paramIter.elementExists()) {
         DatumPtr currentParam = paramIter.element();
@@ -152,7 +152,7 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
             if (paramList->count() == 1) { // rest input [:GARPLY]
                 if (isRestDefined)
                     Error::doesntLike(cmd, currentParam);
-                DatumPtr param = paramList->first();
+                DatumPtr param = paramList->head;
                 if (param.isWord()) {
                     QString restName = param.wordValue()->keyValue();
                     if (restName.startsWith(':') || restName.startsWith('"'))
@@ -168,7 +168,7 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
             } else { // Optional [:BAZ 87]
                 if (isRestDefined || isDefaultDefined)
                     Error::doesntLike(cmd, currentParam);
-                DatumPtr param = paramList->first();
+                DatumPtr param = paramList->head;
                 DatumPtr defaultValue = paramList->tail;
                 if (param.isWord()) {
                     QString name = param.wordValue()->keyValue();

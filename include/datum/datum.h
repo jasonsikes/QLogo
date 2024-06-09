@@ -130,9 +130,6 @@ public:
       bool = false, int printDepthLimit = -1,
       int printWidthLimit = -1);
 
-  /// Return the first element.
-  virtual DatumPtr first(void);
-
   /// creates and returns a new Iterator object for this object.
   Iterator newIterator(void);
 };

@@ -76,9 +76,6 @@ public:
     QString showValue(bool fullPrintp = false, int printDepthLimit = -1,
                       int printWidthLimit = -1);
 
-    /// Return the first item of the List.
-    DatumPtr first(void);
-
     /// Empty the List
     void clear();
 

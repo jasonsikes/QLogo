@@ -190,17 +190,17 @@ DatumPtr Kernel::queryContentsListWithMethod(
     extractFromContentslist(contentslist, &proceduresList, &variablesList, &propertiesList);
 
   if ( ! proceduresList->isEmpty()) {
-    QString procname = proceduresList->first().wordValue()->keyValue();
+        QString procname = proceduresList->head.wordValue()->keyValue();
     return DatumPtr((procedures->*method)(procname));
   }
 
   if ( ! variablesList->isEmpty()) {
-    QString varname = variablesList->first().wordValue()->keyValue();
+    QString varname = variablesList->head.wordValue()->keyValue();
     return DatumPtr((variables.*method)(varname));
   }
 
   if (! propertiesList->isEmpty()) {
-    QString pname = propertiesList->first().wordValue()->keyValue();
+    QString pname = propertiesList->head.wordValue()->keyValue();
     return DatumPtr((plists.*method)(pname));
   }
   return nothing;

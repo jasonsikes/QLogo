@@ -212,9 +212,3 @@ int Word::size() {
   return printableString.size();
 }
 
-DatumPtr Word::first() {
-  genPrintString();
-  Q_ASSERT(printableString.size() > 0);
-  return DatumPtr(QString(printableString[0]));
-}
-
