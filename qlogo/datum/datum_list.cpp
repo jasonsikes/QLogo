@@ -152,17 +152,6 @@ bool List::isEmpty() {
     return head.isNothing();
 }
 
-bool List::isIndexInRange(int anIndex) {
-    if (head.isNothing()) return false;
-    if (anIndex < 1) return false;
-    DatumPtr ptr(this);
-    while (ptr.isList()) {
-        if (--anIndex < 1) return true;
-        ptr = ptr.listValue()->tail;
-    }
-    return false;
-}
-
 void List::setButfirstItem(DatumPtr aValue) {
   Q_ASSERT(head != nothing);
   Q_ASSERT(aValue.isList());
@@ -172,7 +161,6 @@ void List::setButfirstItem(DatumPtr aValue) {
 }
 
 DatumPtr List::itemAtIndex(int anIndex) {
-  Q_ASSERT(isIndexInRange(anIndex));
     DatumPtr ptr(this);
     while (anIndex > 1) {
         --anIndex;

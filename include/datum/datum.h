@@ -141,9 +141,6 @@ public:
 
   /// creates and returns a new Iterator object for this object.
   Iterator newIterator(void);
-
-  /// returns true if the index given is valid for this object.
-  virtual bool isIndexInRange(int);
 };
 
 

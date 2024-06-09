@@ -105,9 +105,6 @@ public:
 
     /// returns the length of the string in characters.
     int size();
-
-    /// Retruns true if anIndex is between 1 and the length of the string.
-    bool isIndexInRange(int anIndex);
 };
 
 

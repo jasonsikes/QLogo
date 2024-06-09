@@ -100,9 +100,6 @@ public:
     /// Returns true if this is an empty list.
     bool isEmpty();
 
-    /// Returns true if anIndex is between 1 and the count of elements in the List.
-    bool isIndexInRange(int anIndex);
-
     /// Replaces everything but the first item in the List with aValue.
     void setButfirstItem(DatumPtr aValue);
 

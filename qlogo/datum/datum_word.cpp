@@ -227,12 +227,6 @@ bool Word::isEqual(DatumPtr other, bool ignoreCase) {
     return printableString.compare(other.wordValue()->printValue(), cs) == 0;
 }
 
-bool Word::isIndexInRange(int anIndex) {
-  --anIndex;
-  genPrintString();
-  return ((anIndex >= 0) && (anIndex < printableString.size()));
-}
-
 DatumPtr Word::first() {
   genPrintString();
   Q_ASSERT(printableString.size() > 0);

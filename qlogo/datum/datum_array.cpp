@@ -105,11 +105,6 @@ int Array::size() { return array.size(); }
 
 void Array::append(DatumPtr value) { array.append(value); }
 
-bool Array::isIndexInRange(int anIndex) {
-  int index = anIndex - origin;
-  return ((index >= 0) && (index < array.size()));
-}
-
 DatumPtr Array::first() { return DatumPtr(origin); }
 
 DatumPtr Array::last() {

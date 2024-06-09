@@ -80,11 +80,6 @@ DatumPtr Datum::last() {
   return nothing;
 }
 
-bool Datum::isIndexInRange(int) {
-  Q_ASSERT(false);
-  return false;
-}
-
 Datum &Datum::operator=(const Datum &) {
   Q_ASSERT(false);
   return *this;

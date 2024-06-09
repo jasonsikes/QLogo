@@ -812,8 +812,8 @@ DatumPtr Kernel::excNamedSlot(DatumPtr node) {
   int index = 1;
   if (h.countOfChildren() > 0) {
     h.integerAtIndex(0);
-    index = h.validatedIntegerAtIndex(0, [&inputList](int candidate) {
-      return (inputList.listValue()->isIndexInRange(candidate));
+    index = h.validatedIntegerAtIndex(0, [&inputList, this](int candidate) {
+        return doesListHaveCountOrMore(inputList.listValue(), candidate);
     });
   }
   return h.ret(inputList.listValue()->itemAtIndex(index));

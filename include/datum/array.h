@@ -61,9 +61,6 @@ struct Array : public Datum {
     /// Empty the array of its contents and set the origin
     void clear();
 
-    /// Returns true if anIndex can point to a valid element in the Array.
-    bool isIndexInRange(int anIndex);
-
     /// Returns the first element of the Array.
     DatumPtr first();
 

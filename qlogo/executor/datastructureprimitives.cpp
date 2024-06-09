@@ -98,6 +98,23 @@ DatumPtr Kernel::butfirst(DatumPtr srcValue)
 }
 
 
+bool Kernel::doesListHaveCountOrMore(List *list, int count)
+{
+    if (list->head.isNothing())
+        return false;
+    if (count < 1)
+        return false;
+
+    DatumPtr walker(list);
+    while (walker.isList()) {
+        if (--count < 1)
+            return true;
+        walker = walker.listValue()->tail;
+    }
+    return false;
+}
+
+
 
 
 // CONSTRUCTORS
@@ -515,8 +532,18 @@ COD***/
 DatumPtr Kernel::excItem(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr thing = h.datumAtIndex(1);
-  int index = h.validatedIntegerAtIndex(0, [&thing](int candidate) {
-    return thing.datumValue()->isIndexInRange((int)candidate);
+  int index = h.validatedIntegerAtIndex(0, [&thing, this](int candidate) {
+      if (thing.isWord()) {
+          return (candidate >=1) && (candidate <= thing.wordValue()->rawValue().size());
+      }
+      if (thing.isArray()) {
+          candidate -= thing.arrayValue()->origin;
+          return (candidate >= 0) && (candidate <thing.arrayValue()->array.size());
+      }
+      Q_ASSERT(thing.isList());
+      if (thing.isList())
+          return doesListHaveCountOrMore(thing.listValue(), candidate);
+      return false;
   });
 
   DatumPtr retval;
@@ -551,7 +578,8 @@ DatumPtr Kernel::excSetitem(DatumPtr node) {
   DatumPtr aryP = h.arrayAtIndex(1);
   Array *ary = aryP.arrayValue();
   int index = h.validatedIntegerAtIndex(0, [&ary](int candidate) {
-    return ary->isIndexInRange(candidate);
+      candidate -= ary->origin;
+      return (candidate >= 0) && (candidate <ary->array.size());
   });
   DatumPtr value = h.validatedDatumAtIndex(2, [aryP, this](DatumPtr candidate) {
       if (candidate == aryP)
@@ -641,7 +669,8 @@ DatumPtr Kernel::excDotSetitem(DatumPtr node) {
   ProcedureHelper h(this, node);
   Array *ary = h.arrayAtIndex(1).arrayValue();
   int index = (int)h.validatedIntegerAtIndex(0, [ary](int candidate) {
-    return ary->isIndexInRange(candidate);
+      candidate -= ary->origin;
+      return (candidate >= 0) && (candidate <ary->array.size());
   });
   DatumPtr value = h.datumAtIndex(2);
 

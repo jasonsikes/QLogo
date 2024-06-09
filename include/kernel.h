@@ -131,6 +131,10 @@ class Kernel {
   // Return the butfirst of a word or list
   DatumPtr butfirst(DatumPtr srcValue);
 
+  // Determine if the given list contains at least as many items as the
+  // integer given.
+  bool doesListHaveCountOrMore(List *list, int count);
+
 public:
   Kernel();
   ~Kernel();
