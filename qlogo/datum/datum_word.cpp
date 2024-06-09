@@ -212,21 +212,6 @@ int Word::size() {
   return printableString.size();
 }
 
-bool Word::isEqual(DatumPtr other, bool ignoreCase) {
-    if (sourceIsNumber) {
-        double otherNumber = other.wordValue()->numberValue();
-        if (isnan(otherNumber))
-            return false;
-        return number == other.wordValue()->numberValue();
-    }
-    if (other.wordValue()->sourceIsNumber) {
-        return (numberValue() == other.wordValue()->numberValue());
-    }
-    genPrintString();
-    Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive : Qt::CaseSensitive;
-    return printableString.compare(other.wordValue()->printValue(), cs) == 0;
-}
-
 DatumPtr Word::first() {
   genPrintString();
   Q_ASSERT(printableString.size() > 0);

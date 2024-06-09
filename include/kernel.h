@@ -128,6 +128,9 @@ class Kernel {
 
   bool searchContainerForDatum(DatumPtr containerP, DatumPtr thingP, bool ignoreCase);
 
+  // Compare two datums, return true iff equal.
+  bool areDatumsEqual(DatumPtr datumP1, DatumPtr datumP2, bool ignoreCase);
+
   // Return the butfirst of a word or list
   DatumPtr butfirst(DatumPtr srcValue);
 

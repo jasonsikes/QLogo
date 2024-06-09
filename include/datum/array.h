@@ -49,9 +49,6 @@ struct Array : public Datum {
     QString showValue(bool fullPrintp = false, int printDepthLimit = -1,
                       int printWidthLimit = -1);
 
-    /// Returns true if items in other Array are equal to this Array's items.
-    bool isEqual(DatumPtr other, bool ignoreCase);
-
     /// The starting index of this Array.
     int origin = 1;
 

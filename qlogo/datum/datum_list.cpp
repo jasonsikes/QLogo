@@ -109,40 +109,6 @@ QString List::showValue(bool fullPrintp, int printDepthLimit,
   return "...";
 }
 
-bool List::isEqual(DatumPtr other, bool ignoreCase) {
-  ListIterator iter;
-  ListIterator otherIter;
-  List *o = other.listValue();
-  int myIndex = listVisited.indexOf(this);
-  int otherIndex = otherListVisited.indexOf(o);
-  if (myIndex != otherIndex)
-    goto exit_false;
-
-  if (myIndex > -1)
-    return true;
-
-  iter = newIterator();
-  otherIter = o->newIterator();
-  listVisited.push_back(this);
-  otherListVisited.push_back(o);
-
-  while (iter.elementExists()) {
-    DatumPtr value = iter.element();
-    DatumPtr otherValue = otherIter.element();
-    if (!value.isEqual(otherValue, ignoreCase))
-      goto exit_false;
-  }
-
-  listVisited.pop_back();
-  otherListVisited.pop_back();
-  return true;
-
-exit_false:
-  listVisited.clear();
-  otherListVisited.clear();
-  return false;
-}
-
 DatumPtr List::first() {
   Q_ASSERT(head != nothing);
   return head;

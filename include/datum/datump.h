@@ -134,9 +134,6 @@ public:
     /// Return true if and only if other does not point to the same object as this.
     bool operator!=(const DatumPtr &other);
 
-    /// Return true if and only if the other object is equal to this in the manner suitable for EQUALP.
-    bool isEqual(DatumPtr other, bool ignoreCase);
-
     /// Return true if and only if the other object is equal to this in the manner suitable for .EQ.
     bool isDotEqual(DatumPtr other);
 

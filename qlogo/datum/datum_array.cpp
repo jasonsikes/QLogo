@@ -96,11 +96,6 @@ QString Array::showValue(bool fullPrintp, int printDepthLimit,
     return printValue(fullPrintp, printDepthLimit, printWidthLimit);
 }
 
-bool Array::isEqual(DatumPtr other, bool) {
-  Array *o = other.arrayValue();
-  return this == o;
-}
-
 int Array::size() { return array.size(); }
 
 void Array::append(DatumPtr value) { array.append(value); }

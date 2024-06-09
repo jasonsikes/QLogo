@@ -133,9 +133,6 @@ public:
   /// Return the first element.
   virtual DatumPtr first(void);
 
-  /// Determine if the object pointed to by other is equal to this object.
-  virtual bool isEqual(DatumPtr other, bool);
-
   /// creates and returns a new Iterator object for this object.
   Iterator newIterator(void);
 };

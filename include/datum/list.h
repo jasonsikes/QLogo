@@ -75,7 +75,6 @@ public:
                        int printWidthLimit = -1);
     QString showValue(bool fullPrintp = false, int printDepthLimit = -1,
                       int printWidthLimit = -1);
-    bool isEqual(DatumPtr other, bool ignoreCase);
 
     /// Return the first item of the List.
     DatumPtr first(void);

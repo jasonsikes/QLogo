@@ -92,16 +92,15 @@ public:
     /// Returns the string with the special character encoding intact.
     QString rawValue();
 
-    /// Returns true if the value pointed to by other is equal to this Word's value.
-    /// \param other the value to be tested against.
-    /// \param ignoreCase if true use case-insensitive compare.
-    bool isEqual(DatumPtr other, bool ignoreCase);
-
     /// Returns the first character of the string value.
     DatumPtr first(void);
 
     /// returns the length of the string in characters.
     int size();
+
+    /// Return true iff this word was created with a number.
+    bool isSourceNumber() { return sourceIsNumber; }
+
 };
 
 

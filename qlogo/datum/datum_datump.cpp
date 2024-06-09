@@ -122,15 +122,6 @@ bool DatumPtr::operator!=(DatumPtr *other) { return d != other->d; }
 
 bool DatumPtr::operator!=(const DatumPtr &other) { return d != other.d; }
 
-// This is true IFF EQUALP is true
-bool DatumPtr::isEqual(DatumPtr other, bool ignoreCase) {
-  if (d->isa() != other.isa())
-    return false;
-  if (d == other.d)
-    return true;
-  return d->isEqual(other, ignoreCase);
-}
-
 bool DatumPtr::isDotEqual(DatumPtr other) { return (d == other.d); }
 
 bool DatumPtr::isASTNode() { return d->isa() == Datum::astnodeType; }

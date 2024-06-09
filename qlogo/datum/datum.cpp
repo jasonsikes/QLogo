@@ -66,10 +66,6 @@ QString Datum::printValue(bool, int, int) { return QObject::tr("nothing"); }
 
 QString Datum::showValue(bool, int, int) { return printValue(); }
 
-bool Datum::isEqual(DatumPtr other, bool) {
-  return (other.isa() == Datum::noType);
-}
-
 DatumPtr Datum::first() {
   Q_ASSERT(false);
   return nothing;
