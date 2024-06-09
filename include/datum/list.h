@@ -91,9 +91,6 @@ public:
     /// you need a specfic number. Consider using isEmpty() instead.
     int count();
 
-    /// Returns the last element of the List.
-    DatumPtr last();
-
     /// Returns the element pointed to by anIndex.
     DatumPtr itemAtIndex(int anIndex);
 

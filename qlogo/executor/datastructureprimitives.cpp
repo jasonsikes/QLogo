@@ -392,7 +392,19 @@ DatumPtr Kernel::excLast(DatumPtr node) {
           if (candidate.isList()) return ! candidate.listValue()->isEmpty();
           return false;
       });
-  return h.ret(value.datumValue()->last());
+  if (value.isWord()) {
+      return h.ret(value.wordValue()->rawValue().last(1));
+  }
+
+  DatumPtr retval;
+
+  // Run through the list until we find the last element.
+  ListIterator iter = value.listValue()->newIterator();
+  while (iter.elementExists()) {
+      retval = iter.element();
+  }
+
+  return h.ret(retval);
 }
 
 

@@ -107,10 +107,5 @@ void Array::append(DatumPtr value) { array.append(value); }
 
 DatumPtr Array::first() { return DatumPtr(origin); }
 
-DatumPtr Array::last() {
-  Q_ASSERT(array.size() > 0);
-  return array[array.size() - 1];
-}
-
 ArrayIterator Array::newIterator() { return ArrayIterator(&array); }
 

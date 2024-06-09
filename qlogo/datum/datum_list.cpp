@@ -205,11 +205,6 @@ void List::append(DatumPtr element) {
     lastNode = lP;
 }
 
-DatumPtr List::last() {
-    Q_ASSERT(lastNode != nothing);
-    return lastNode.listValue()->head;
-}
-
 int List::count()
 {
     int retval = 0;

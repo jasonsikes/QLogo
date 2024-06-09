@@ -233,8 +233,3 @@ DatumPtr Word::first() {
   return DatumPtr(QString(printableString[0]));
 }
 
-DatumPtr Word::last() {
-  genPrintString();
-  Q_ASSERT(printableString.size() > 0);
-  return DatumPtr(QString(printableString[printableString.size() - 1]));
-}

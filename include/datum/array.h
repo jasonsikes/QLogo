@@ -64,9 +64,6 @@ struct Array : public Datum {
     /// Returns the first element of the Array.
     DatumPtr first();
 
-    /// Returns the last element of the Array.
-    DatumPtr last(void);
-
     /// Add an element to the end of this Array.
     void append(DatumPtr value);
 

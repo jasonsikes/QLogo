@@ -75,11 +75,6 @@ DatumPtr Datum::first() {
   return nothing;
 }
 
-DatumPtr Datum::last() {
-  Q_ASSERT(false);
-  return nothing;
-}
-
 Datum &Datum::operator=(const Datum &) {
   Q_ASSERT(false);
   return *this;

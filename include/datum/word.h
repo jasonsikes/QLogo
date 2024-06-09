@@ -100,9 +100,6 @@ public:
     /// Returns the first character of the string value.
     DatumPtr first(void);
 
-    /// Returns the last character of the string value
-    DatumPtr last(void);
-
     /// returns the length of the string in characters.
     int size();
 };
