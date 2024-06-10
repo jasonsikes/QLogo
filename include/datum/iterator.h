@@ -1,7 +1,7 @@
 #ifndef DATUM_ITERATOR_H
 #define DATUM_ITERATOR_H
 
-//===-- qlogo/datum/iterator.h - Iterator class definition ------*- C++ -*-===//
+//===-- qlogo/datum/iterator.h - ListIterator class definition ------*- C++ -*-===//
 //
 // This file is part of QLogo.
 //
@@ -21,9 +21,8 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the declaration of the Iterator class and its subclasses,
-/// WordIterator, ListIterator, and ArrayIterator, which are simple iterators
-/// for their respective Datum subclasses.
+/// This file contains the declaration of the ListIterator class, which is a
+/// simple iterator for lists.
 ///
 //===----------------------------------------------------------------------===//
 
@@ -32,14 +31,7 @@
 #include "datum/datump.h"
 
 
-/// A very simple iterator. Base class does nothing. Meant to be subclassed.
-class Iterator {
-public:
-    virtual DatumPtr element(); /// Returns current DatumPtr in collection, advances pointer.
-    virtual bool elementExists(); /// Returns true if not at end.
-};
-
-class ListIterator : public Iterator {
+class ListIterator {
 protected:
     DatumPtr ptr;
 

@@ -42,10 +42,7 @@ class Error;
 class DatumPtr;
 class Procedure;
 
-class Iterator;
-class WordIterator;
 class ListIterator;
-class ArrayIterator;
 
 class Kernel;
 typedef DatumPtr (Kernel::*KernelMethod)(DatumPtr);
@@ -72,7 +69,7 @@ DatumPtr nodes();
 
 /// The unit of data for QLogo. The base class for Word, List, Array, ASTNode, etc.
 class Datum {
-  friend class Iterator;
+  friend class ListIterator;
   friend class DatumPtr;
   int retainCount;
 

@@ -42,8 +42,6 @@
 class Word : public Datum {
 protected:
 
-    friend class WordIterator;
-
     QString rawString;
     QString keyString;
     QString printableString;

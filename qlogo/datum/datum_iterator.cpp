@@ -1,5 +1,5 @@
 
-//===-- qlogo/datum_iterator.cpp - Iterator class and subclasses implementations -------*-
+//===-- qlogo/datum_iterator.cpp - ListIterator class implementation -------*-
 // C++ -*-===//
 //
 // This file is part of QLogo.
@@ -20,8 +20,8 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the Iterator class and subclasses.
-/// Iterators are used internally so they are rather minimal.
+/// This file contains the implementation of the ListIterator class.
+/// ListIterator is used internally so it is rather minimal.
 ///
 //===----------------------------------------------------------------------===//
 
@@ -29,28 +29,6 @@
 #include "datum/list.h"
 
 #include <qdebug.h>
-
-/******************************************
- *
- * Iterator
- *
- ******************************************/
-
-DatumPtr Iterator::element() {
-  Q_ASSERT(false);
-  return DatumPtr();
-}
-
-bool Iterator::elementExists() {
-  Q_ASSERT(false);
-  return false;
-}
-
-/******************************************
- *
- * ListIterator
- *
- ******************************************/
 
 ListIterator::ListIterator() {}
 
