@@ -334,7 +334,7 @@ DatumPtr Kernel::excArray(DatumPtr node) {
   }
   Array *retval = new Array(origin, size);
   for (int i = 0; i < size; ++i) {
-    retval->append(DatumPtr(new List()));
+    retval->array.append(DatumPtr(new List()));
   }
   return h.ret(DatumPtr(retval));
 }

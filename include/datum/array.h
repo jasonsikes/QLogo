@@ -52,15 +52,6 @@ struct Array : public Datum {
     /// The starting index of this Array.
     int origin = 1;
 
-    /// Returns the number of items in this Array.
-    int size();
-
-    /// Empty the array of its contents and set the origin
-    void clear();
-
-    /// Add an element to the end of this Array.
-    void append(DatumPtr value);
-
     ArrayIterator newIterator();
 };
 

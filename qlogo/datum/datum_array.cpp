@@ -41,18 +41,12 @@ Array::Array(int aOrigin, int aSize) {
 }
 
 
-void Array::clear()
-{
-  origin = 1;
-  array.clear();
-}
-
 Array::Array(int aOrigin, List *source)
 {
   auto iter = source->newIterator();
     origin = aOrigin;
   while (iter.elementExists()) {
-    append(iter.element());
+    array.append(iter.element());
   }
 }
 
@@ -95,10 +89,6 @@ QString Array::showValue(bool fullPrintp, int printDepthLimit,
                          int printWidthLimit) {
     return printValue(fullPrintp, printDepthLimit, printWidthLimit);
 }
-
-int Array::size() { return array.size(); }
-
-void Array::append(DatumPtr value) { array.append(value); }
 
 ArrayIterator Array::newIterator() { return ArrayIterator(&array); }
 

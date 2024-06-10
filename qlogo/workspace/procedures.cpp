@@ -546,12 +546,10 @@ QString Procedures::unreadList(List *aList, bool isInList) {
 
 QString Procedures::unreadArray(Array *anArray) {
     QString retval("{");
-    ArrayIterator i = anArray->newIterator();
-    while (i.elementExists()) {
-        DatumPtr e = i.element();
-        if (retval != "{")
+    for (auto &i : anArray->array) {
+        if (retval.size() > 1)
             retval.append(' ');
-        retval.append(unreadDatum(e, true));
+        retval.append(unreadDatum(i, true));
     }
     retval.append('}');
     return retval;
