@@ -1,0 +1,3 @@
+print rawascii butfirst "|h |
+print rawascii lowercase "| |
+print rawascii uppercase "| |

@@ -1,0 +1,5 @@
+make "fullprintp "true
+make "a [| hello| there]
+make "l firsts :a
+show :l
+print rawascii first :l

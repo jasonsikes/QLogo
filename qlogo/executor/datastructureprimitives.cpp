@@ -140,7 +140,7 @@ bool Kernel::areDatumsEqual(DatumPtr datumP1, DatumPtr datumP2, bool ignoreCase)
 DatumPtr Kernel::butfirst(DatumPtr srcValue)
 {
     if (srcValue.isWord()) {
-        QString src = srcValue.wordValue()->printValue();
+        QString src = srcValue.wordValue()->rawValue();
         return DatumPtr(src.right(src.size() - 1));
     }
     Q_ASSERT( ! srcValue.listValue()->head.isNothing());
@@ -452,7 +452,7 @@ DatumPtr Kernel::excFirsts(DatumPtr node) {
       DatumPtr item = iter.element();
       switch (item.isa()) {
       case Datum::wordType:
-          firstP = DatumPtr(item.wordValue()->printValue().left(1));
+          firstP = DatumPtr(item.wordValue()->rawValue().left(1));
           break;
       case Datum::arrayType:
           firstP = DatumPtr(item.arrayValue()->origin);
@@ -1060,7 +1060,7 @@ DatumPtr Kernel::excVbarredp(DatumPtr node) {
   DatumPtr thing = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     if (!candidate.isWord())
       return false;
-    return candidate.wordValue()->printValue().size() == 1;
+    return candidate.wordValue()->rawValue().size() == 1;
   });
   QChar c = thing.wordValue()->rawValue()[0];
   return h.ret(c != rawToChar(c));
@@ -1133,7 +1133,7 @@ COD***/
 DatumPtr Kernel::excRawascii(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr chr = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
-    return candidate.isWord() && candidate.wordValue()->printValue().size() == 1;
+    return candidate.isWord() && candidate.wordValue()->rawValue().size() == 1;
   });
   QChar c = chr.wordValue()->rawValue()[0];
   int asc = c.unicode();
@@ -1215,7 +1215,7 @@ COD***/
 //CMD LOWERCASE 1 1 1
 DatumPtr Kernel::excLowercase(DatumPtr node) {
   ProcedureHelper h(this, node);
-  const QString &phrase = h.wordAtIndex(0).wordValue()->printValue();
+  const QString &phrase = h.wordAtIndex(0).wordValue()->rawValue();
   QString retval = phrase.toLower();
   return h.ret(retval);
 }
@@ -1231,7 +1231,7 @@ COD***/
 //CMD UPPERCASE 1 1 1
 DatumPtr Kernel::excUppercase(DatumPtr node) {
   ProcedureHelper h(this, node);
-  const QString &phrase = h.wordAtIndex(0).wordValue()->printValue();
+  const QString &phrase = h.wordAtIndex(0).wordValue()->rawValue();
   QString retval = phrase.toUpper();
   return h.ret(retval);
 }
