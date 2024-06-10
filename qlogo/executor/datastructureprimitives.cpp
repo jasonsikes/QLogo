@@ -948,7 +948,7 @@ DatumPtr Kernel::excDotEq(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr a = h.datumAtIndex(0);
   DatumPtr b = h.datumAtIndex(1);
-  return h.ret(a.isDotEqual(b));
+  return h.ret(a == b);
 }
 
 

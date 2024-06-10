@@ -134,9 +134,6 @@ public:
     /// Return true if and only if other does not point to the same object as this.
     bool operator!=(const DatumPtr &other);
 
-    /// Return true if and only if the other object is equal to this in the manner suitable for .EQ.
-    bool isDotEqual(DatumPtr other);
-
     /// Return a string suitable for the PRINT command
     QString printValue(bool fullPrintp = false, int printDepthLimit = -1,
                        int printWidthLimit = -1);

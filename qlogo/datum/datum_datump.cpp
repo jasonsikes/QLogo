@@ -122,8 +122,6 @@ bool DatumPtr::operator!=(DatumPtr *other) { return d != other->d; }
 
 bool DatumPtr::operator!=(const DatumPtr &other) { return d != other.d; }
 
-bool DatumPtr::isDotEqual(DatumPtr other) { return (d == other.d); }
-
 bool DatumPtr::isASTNode() { return d->isa() == Datum::astnodeType; }
 
 bool DatumPtr::isList() { return d->isa() == Datum::listType; }
