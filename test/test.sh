@@ -25,7 +25,7 @@ run_test() {
     if [[ $f == *.lg ]]
     then
 	echo $f
-	$logo_path < $f  2>&1 | diff "${f%.lg}.result" -
+    $logo_path --nolib < $f  2>&1 | diff "${f%.lg}.result" -
 	if [ $? -eq 1 ]
 	then
             failed_tests+=($f)
