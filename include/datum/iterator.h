@@ -56,24 +56,4 @@ public:
     bool elementExists();
 };
 
-/// Iterator for an Array.
-class ArrayIterator : public Iterator {
-protected:
-    QList<DatumPtr>::iterator arrayIter;
-    QList<DatumPtr>::iterator end;
-
-public:
-    ArrayIterator();
-
-    /// Create a new ArrayIterator pointing to the first element of the Array.
-    ArrayIterator(QList<DatumPtr> *aArray);
-
-    /// Return the element at the current index. Advance the index pointer.
-    DatumPtr element();
-
-    /// Returns true if the index points to an element in the Array.
-    bool elementExists();
-};
-
-
 #endif // DATUM_ITERATOR_H

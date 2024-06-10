@@ -68,20 +68,3 @@ bool ListIterator::elementExists()
 {
     return (( ! ptr.isNothing()) && ( ! (ptr.listValue()->head).isNothing()));
 }
-
-/******************************************
- *
- * ArrayIterator
- *
- ******************************************/
-
-ArrayIterator::ArrayIterator() {}
-
-ArrayIterator::ArrayIterator(QList<DatumPtr> *aArray) {
-  arrayIter = aArray->begin();
-  end = aArray->end();
-}
-
-DatumPtr ArrayIterator::element() { return *arrayIter++; }
-
-bool ArrayIterator::elementExists() { return (arrayIter != end); }

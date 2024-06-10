@@ -51,8 +51,6 @@ struct Array : public Datum {
 
     /// The starting index of this Array.
     int origin = 1;
-
-    ArrayIterator newIterator();
 };
 
 

@@ -43,9 +43,8 @@ List::List() {
 
 List::List(Array *source)
 {
-    auto aryIter = source->newIterator();
-    while (aryIter.elementExists()) {
-        append(aryIter.element());
+    for (auto &aryIter : source->array) {
+        append(aryIter);
     }
 }
 

@@ -89,6 +89,8 @@ class Kernel {
   // Recursive searches need to make sure we don't get caught in infinite loops.
   // Remember what we searched so we don't search it again.
   QSet<void *> searchedContainers;
+  QSet<void *>comparedContainers;
+
 
   ASTNode *astnodeValue(DatumPtr caller, DatumPtr value);
   bool numbersFromList(QVector<double> &retval, DatumPtr l);

@@ -90,5 +90,3 @@ QString Array::showValue(bool fullPrintp, int printDepthLimit,
     return printValue(fullPrintp, printDepthLimit, printWidthLimit);
 }
 
-ArrayIterator Array::newIterator() { return ArrayIterator(&array); }
-

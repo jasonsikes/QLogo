@@ -129,9 +129,6 @@ public:
   virtual QString showValue(
       bool = false, int printDepthLimit = -1,
       int printWidthLimit = -1);
-
-  /// creates and returns a new Iterator object for this object.
-  Iterator newIterator(void);
 };
 
 

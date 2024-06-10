@@ -40,44 +40,35 @@
 // found in container or subcontainer.
 bool Kernel::searchContainerForDatum(DatumPtr containerP, DatumPtr thingP, bool ignoreCase)
 {
-    Iterator *iter;
-
-    // Only one of these iterators is actually used. iter (above) will point to
-    // the active iterator.
-    ListIterator listIter;
-    ArrayIterator aryIter;
-
-    if (containerP.isList()) {
-        listIter = containerP.listValue()->newIterator();
-        iter = &listIter;
-    } else if (containerP.isArray()) {
-        aryIter = containerP.arrayValue()->newIterator();
-        iter = &aryIter;
-    } else {
-        qDebug() <<"Unknown container type.";
-        Q_ASSERT(false);
+    if (containerP.isArray()) {
+        for (auto eP : containerP.arrayValue()->array) {
+            if (areDatumsEqual(eP, thingP, ignoreCase))
+                return true;
+            if (eP.isArray() || eP.isList()) {
+                void *e = eP.datumValue();
+                if ( ! searchedContainers.contains(e)) {
+                    searchedContainers.insert(e);
+                    if (searchContainerForDatum(eP, thingP, ignoreCase))
+                        return true;
+                }
+            }
+        }
+        return false;
     }
 
-    while (iter->elementExists()) {
-        DatumPtr eP = iter->element();
-        // Check if we are comparing against itself.
-        if (eP == thingP)
+    ListIterator iter = containerP.listValue()->newIterator();
+
+    while (iter.elementExists()) {
+        DatumPtr eP = iter.element();
+        if (areDatumsEqual(eP, thingP, ignoreCase))
             return true;
-        // If items are both words, do word compare.
-        if (eP.isWord() && thingP.isWord()) {
-            if (areDatumsEqual(eP, thingP, ignoreCase)) {
-                return true;
-            }
-        } else if (eP.isList() || eP.isArray()) {
+        if (eP.isList() || eP.isArray()) {
             void *e = eP.datumValue();
             if ( ! searchedContainers.contains(e)) {
                 searchedContainers.insert(e);
                 if (searchContainerForDatum(eP, thingP, ignoreCase))
                     return true;
             }
-        } else {
-            qDebug() << "New container type?";
-            Q_ASSERT(false);
         }
     }
     return false;
@@ -115,11 +106,11 @@ bool Kernel::areDatumsEqual(DatumPtr datumP1, DatumPtr datumP2, bool ignoreCase)
 
         // If we have searched both of these lists before, then assume we would
         // keep searching forever.
-        if (searchedContainers.contains(list1)
-            && searchedContainers.contains(list2))
+        if (comparedContainers.contains(list1)
+            && comparedContainers.contains(list2))
             Error::stackOverflow();
-        searchedContainers.insert(list1);
-        searchedContainers.insert(list2);
+        comparedContainers.insert(list1);
+        comparedContainers.insert(list2);
 
         ListIterator iter1 = list1->newIterator();
         ListIterator iter2 = list2->newIterator();
@@ -893,6 +884,7 @@ DatumPtr Kernel::excEqualp(DatumPtr node) {
   DatumPtr thing1 = h.datumAtIndex(0);
   DatumPtr thing2 = h.datumAtIndex(1);
 
+  comparedContainers.clear();
   return h.ret(areDatumsEqual(thing1, thing2, varCASEIGNOREDP()));
 }
 
@@ -913,6 +905,7 @@ DatumPtr Kernel::excNotequalp(DatumPtr node) {
   DatumPtr thing1 = h.datumAtIndex(0);
   DatumPtr thing2 = h.datumAtIndex(1);
 
+  comparedContainers.clear();
   return h.ret( ! areDatumsEqual(thing1, thing2, varCASEIGNOREDP()));
 }
 
@@ -1200,6 +1193,7 @@ DatumPtr Kernel::excMember(DatumPtr node) {
     }
 
     Q_ASSERT(containerP.isList());
+    comparedContainers.clear();
     while ( ! containerP.isNothing()) {
         DatumPtr e = containerP.listValue()->head;
         if (areDatumsEqual(e,thingP, ignoreCase)) {
