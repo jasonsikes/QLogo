@@ -7,7 +7,7 @@
 #include <QFile>
 #include <QFont>
 #include "controller/inputqueue.h"
-#include "datum/datum.h"
+#include "datum.h"
 
 class LogoControllerGUI : public LogoController
 {

@@ -31,7 +31,7 @@
 #include "QtGui/qtransform.h"
 #include "sharedconstants.h"
 
-#include "datum/datum.h"
+#include "datum.h"
 
 class Turtle {
     QTransform turtlePosition;

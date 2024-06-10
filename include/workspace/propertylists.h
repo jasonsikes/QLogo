@@ -28,7 +28,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "workspace/workspace.h"
-#include "datum/datum.h"
+#include "datum.h"
 
 class PropertyLists : public Workspace {
   QHash<QString, QHash<QString, DatumPtr>> plists;

@@ -26,9 +26,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum/list.h"
-#include "datum/array.h"
-#include "datum/iterator.h"
+#include "datum.h"
 #include <qdebug.h>
 #include <QObject>
 

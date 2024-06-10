@@ -26,9 +26,7 @@
 
 #include "controller/textstream.h"
 #include "controller/logocontroller.h"
-#include "datum/word.h"
-#include "datum/list.h"
-#include "datum/array.h"
+#include "datum.h"
 
 
 

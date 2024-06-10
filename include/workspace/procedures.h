@@ -26,8 +26,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum/datump.h"
-#include "datum/list.h"
+#include "datum.h"
 #include "workspace/workspace.h"
 #include <QHash>
 

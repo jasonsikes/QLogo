@@ -29,8 +29,8 @@
 #include "error.h"
 #include "kernel.h"
 #include "parser.h"
-#include "datum/astnode.h"
-#include "datum/word.h"
+#include "astnode.h"
+#include "datum.h"
 #include <QDebug>
 #include <math.h>
 

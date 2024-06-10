@@ -27,8 +27,8 @@
 #include "error.h"
 #include "kernel.h"
 #include "parser.h"
-#include "datum/word.h"
-#include "datum/astnode.h"
+#include "datum.h"
+#include "astnode.h"
 #include "controller/logocontroller.h"
 
 

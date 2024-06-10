@@ -25,7 +25,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum/astnode.h"
+#include "astnode.h"
 #include <qdebug.h>
 
 

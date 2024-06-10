@@ -25,8 +25,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum/word.h"
-#include "datum/datump.h"
+#include "datum.h"
 #include <qdebug.h>
 #include <QObject>
 

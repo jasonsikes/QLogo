@@ -26,12 +26,10 @@
 //===----------------------------------------------------------------------===//
 
 #include "workspace/procedures.h"
-#include "datum/iterator.h"
+#include "datum.h"
 #include "kernel.h"
-#include "datum/word.h"
-#include "datum/array.h"
 #include "error.h"
-#include "datum/astnode.h"
+#include "astnode.h"
 #include <QDateTime>
 #include "QApplication"
 

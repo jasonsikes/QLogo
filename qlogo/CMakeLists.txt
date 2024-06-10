@@ -35,13 +35,8 @@ set(QLOGO_SOURCES
   ../include/controller/logocontroller.h
   ../include/controller/logocontrollergui.h
   ../include/controller/textstream.h
-  ../include/datum/datum.h
-  ../include/datum/array.h
-  ../include/datum/astnode.h
-  ../include/datum/datump.h
-  ../include/datum/iterator.h
-  ../include/datum/list.h
-  ../include/datum/word.h
+  ../include/datum.h
+  ../include/astnode.h
   ../include/error.h
   ../include/help.h
   ../include/kernel.h

@@ -26,7 +26,7 @@
 
 #include "error.h"
 #include "kernel.h"
-#include "datum/word.h"
+#include "datum.h"
 #include <QDebug>
 #include <unistd.h>
 

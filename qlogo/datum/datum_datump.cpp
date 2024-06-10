@@ -26,9 +26,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum/datump.h"
-#include "datum/word.h"
-#include "datum/list.h"
+#include "datum.h"
 #include <qdebug.h>
 #include <QObject>
 
@@ -132,7 +130,7 @@ bool DatumPtr::isWord() { return d->isa() == Datum::wordType; }
 
 bool DatumPtr::isError() { return d->isa() == Datum::errorType; }
 
-bool DatumPtr::isNothing() { return d == &notADatum; }
+bool DatumPtr::isNothing() { return d->isa() == Datum::noType; }
 
 Word *DatumPtr::wordValue() {
   Q_ASSERT(d->isa() == Datum::wordType);

@@ -25,13 +25,12 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum/datump.h"
-#include "datum/list.h"
+#include "datum.h"
 #include <qdebug.h>
 #include <unistd.h>
 #include <QObject>
 
-// TODO: is this necessary?
+
 int countOfNodes = 0;
 int maxCountOfNodes = 0;
 

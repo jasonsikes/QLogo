@@ -25,7 +25,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "kernel.h"
-#include "datum/astnode.h"
+#include "astnode.h"
 
 #include <error.h>
 #include <math.h>

@@ -26,7 +26,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum/datump.h"
+#include "datum.h"
 
 #include "procedurehelper.h"
 #include "workspace/propertylists.h"

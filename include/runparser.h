@@ -26,9 +26,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum/datump.h"
-#include "datum/list.h"
-#include "datum/iterator.h"
+#include "datum.h"
 #include <QHash>
 
 class Procedures;

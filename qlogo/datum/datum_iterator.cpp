@@ -25,8 +25,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum/iterator.h"
-#include "datum/list.h"
+#include "datum.h"
 
 #include <qdebug.h>
 
