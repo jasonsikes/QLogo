@@ -90,9 +90,6 @@ public:
     /// Returns the string with the special character encoding intact.
     QString rawValue();
 
-    /// returns the length of the string in characters.
-    int size();
-
     /// Return true iff this word was created with a number.
     bool isSourceNumber() { return sourceIsNumber; }
 

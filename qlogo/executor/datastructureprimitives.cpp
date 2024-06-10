@@ -979,7 +979,7 @@ DatumPtr Kernel::excMemberp(DatumPtr node) {
   Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive
                                       : Qt::CaseSensitive;
   if (container.isWord()) {
-      if (thing.wordValue()->size() != 1)
+      if (thing.wordValue()->printValue().size() != 1)
           return h.ret(false);
       return h.ret(container.wordValue()->printValue().
                    contains(thing.wordValue()->printValue(), cs));
@@ -1060,7 +1060,7 @@ DatumPtr Kernel::excVbarredp(DatumPtr node) {
   DatumPtr thing = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
     if (!candidate.isWord())
       return false;
-    return candidate.wordValue()->size() == 1;
+    return candidate.wordValue()->printValue().size() == 1;
   });
   QChar c = thing.wordValue()->rawValue()[0];
   return h.ret(c != rawToChar(c));
@@ -1110,7 +1110,7 @@ COD***/
 DatumPtr Kernel::excAscii(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr chr = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
-    return candidate.isWord() && candidate.wordValue()->size() == 1;
+    return candidate.isWord() && candidate.wordValue()->printValue().size() == 1;
   });
   QChar c = chr.printValue().at(0);
   int asc = c.unicode();
@@ -1133,7 +1133,7 @@ COD***/
 DatumPtr Kernel::excRawascii(DatumPtr node) {
   ProcedureHelper h(this, node);
   DatumPtr chr = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
-    return candidate.isWord() && candidate.wordValue()->size() == 1;
+    return candidate.isWord() && candidate.wordValue()->printValue().size() == 1;
   });
   QChar c = chr.wordValue()->rawValue()[0];
   int asc = c.unicode();

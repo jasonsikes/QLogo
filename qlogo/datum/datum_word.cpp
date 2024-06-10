@@ -206,9 +206,3 @@ QString Word::showValue(bool fullPrintp, int printDepthLimit,
                         int printWidthLimit) {
   return printValue(fullPrintp, printDepthLimit, printWidthLimit);
 }
-
-int Word::size() {
-  genPrintString();
-  return printableString.size();
-}
-
