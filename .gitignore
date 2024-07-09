@@ -46,6 +46,9 @@ html
 .DS_Store
 .directory
 
+# Added by VS Code
+.vscode/
+
 # CMake-generated files
 CMakeFiles
 CMakeLists.txt.user
