@@ -71,25 +71,25 @@ QChar charToRaw(const QChar &src) {
 Word::Word() {
   number = nan("");
   rawString = QString();
-  keyStringIsValid = false;
-  printableStringIsValid = false;
+  printableString = QString();
+  keyString = QString();
+  sourceIsNumber = false;
 }
 
 Word::Word(const QString other, bool aIsForeverSpecial) {
   number = nan("");
-  keyStringIsValid = false;
-  printableStringIsValid = false;
-  sourceIsNumber = false;
   isForeverSpecial = aIsForeverSpecial;
-
   rawString = other;
+  printableString = QString();
+  keyString = QString();
+  sourceIsNumber = false;
 }
 
 Word::Word(double other) {
   number = other;
   rawString = QString();
-  keyStringIsValid = false;
-  printableStringIsValid = false;
+  printableString = QString();
+  keyString = QString();
   sourceIsNumber = true;
 }
 
@@ -106,18 +106,17 @@ void Word::genRawString()
 
 void Word::genPrintString()
 {
-  if ( ! printableStringIsValid) {
+  if (printableString.isNull()) {
     genRawString();
     printableString = rawString;
     rawToChar(printableString);
-    printableStringIsValid = true;
   }
 }
 
 
 void Word::genKeyString()
 {
-  if ( ! keyStringIsValid) {
+  if (keyString.isNull()) {
     genPrintString();
     keyString = printableString;
     for (int i = 0; i < keyString.size(); ++i) {
@@ -126,7 +125,6 @@ void Word::genKeyString()
       if (s != d)
           keyString[i] = d;
     }
-    keyStringIsValid = true;
   }
 }
 
@@ -143,12 +141,12 @@ QString Word::rawValue() {
 }
 
 double Word::numberValue() {
-    if (isnan(number)) {
+  if (isnan(number)) {
     bool numberIsValid;
     genPrintString();
     number = printableString.toDouble(&numberIsValid);
-    if ( ! numberIsValid)
-        number = nan("");
+    if (!numberIsValid)
+      number = nan("");
   }
   return number;
 }

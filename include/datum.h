@@ -271,13 +271,12 @@ protected:
     QString rawString;
     QString keyString;
     QString printableString;
+    double number;
+    bool sourceIsNumber;
+
     void genRawString();
     void genPrintString();
     void genKeyString();
-    double number;
-    bool keyStringIsValid;
-    bool printableStringIsValid;
-    bool sourceIsNumber;
 
 public:
 
