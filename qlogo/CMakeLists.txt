@@ -11,6 +11,7 @@ set(QLOGO_SOURCES
   datum/datum_list.cpp
   datum/datum_word.cpp
   datum/error.cpp
+  executor/callframe.cpp
   executor/kernel.cpp
   executor/arithmetic.cpp
   executor/communication.cpp
@@ -37,6 +38,7 @@ set(QLOGO_SOURCES
   ../include/controller/textstream.h
   ../include/datum.h
   ../include/astnode.h
+  ../include/callframe.h
   ../include/error.h
   ../include/help.h
   ../include/kernel.h

@@ -35,6 +35,7 @@
 #include "controller/textstream.h"
 #include "help.h"
 #include "workspace/procedures.h"
+#include "callframe.h"
 
 #include <QColor>
 #include <QFile>
@@ -49,7 +50,7 @@ class Turtle;
 class ProcedureScope;
 
 class Kernel {
-  friend class ProcedureScope;
+  friend class ProcedureHelper;
   friend class StreamRedirect;
   Parser *parser;
   Procedures *procedures;
@@ -57,7 +58,6 @@ class Kernel {
   DatumPtr filePrefix;
   int repcount = -1;
   int pauseLevel = 0;
-  int procedureIterationDepth = 0;
   bool isRunningMacroResult = false;
   bool isPausing = false;
 
@@ -69,6 +69,8 @@ class Kernel {
 
   Help help;
 
+  QList<CallFrame *> callStack;
+
   QHash<QString, TextStream *> fileStreams;
   QSet<TextStream *> writableStreams;
   QSet<TextStream *> readableStreams;
@@ -79,9 +81,7 @@ class Kernel {
   TextStream *stdioStream;
 
   DatumPtr currentError;
-  DatumPtr currentProcedure;
   DatumPtr currentLine;
-  DatumPtr callingProcedure;
   DatumPtr callingLine;
   DatumPtr editFileName;
   QString workspaceText;
@@ -95,11 +95,10 @@ class Kernel {
   ASTNode *astnodeValue(DatumPtr caller, DatumPtr value);
   bool numbersFromList(QVector<double> &retval, DatumPtr l);
   DatumPtr contentslistFromDatumPtr(DatumPtr sourceNode);
-  void processContentsListWithMethod(
-      DatumPtr contentsList, void (Workspace::*method)(const QString &aName));
-  DatumPtr
-  queryContentsListWithMethod(DatumPtr contentslist,
-                              bool (Workspace::*method)(const QString &aName));
+  void processContentsListWithMethod(DatumPtr contentsList,
+                                     void (Workspace::*method)(const QString &aName));
+  DatumPtr queryContentsListWithMethod(DatumPtr contentslist,
+                                       bool (Workspace::*method)(const QString &aName));
   void makeVarLocal(const QString &varname);
   DatumPtr executeProcedureCore(DatumPtr node);
   void inputProcedure(DatumPtr nodeP);
@@ -181,15 +180,6 @@ public:
   DatumPtr varSTARTUP();
   bool varUNBURYONEDIT();
   bool varCASEIGNOREDP();
-};
-
-class ProcedureScope {
-  DatumPtr procedureHistory;
-  DatumPtr lineHistory;
-
-public:
-  ProcedureScope(DatumPtr procname);
-  ~ProcedureScope();
 };
 
 class StreamRedirect {

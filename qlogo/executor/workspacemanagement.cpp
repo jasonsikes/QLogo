@@ -568,7 +568,7 @@ COD***/
 DatumPtr Kernel::excTo(DatumPtr node) {
   // None of the children of node are ASTNode. They have to be literal so there
   // is no procedurehelper here.
-  if (currentProcedure != nothing) {
+  if ( ! callStack.last()->sourceNode.isNothing()) {
     Error::toInProc(node.astnodeValue()->nodeName);
   }
   parser->inputProcedure(node, systemReadStream);

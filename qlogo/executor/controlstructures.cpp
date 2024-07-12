@@ -361,10 +361,11 @@ STOP
 COD***/
 //CMD STOP 0 0 1
 DatumPtr Kernel:: excStop(DatumPtr node) {
-  if (currentProcedure == nothing) {
-    Error::notInsideProcedure(node.astnodeValue()->nodeName);
-  }
-  return node;
+    Q_ASSERT(callStack.size() > 0);
+    if (callStack.last()->sourceNode.isNothing()) {
+        Error::notInsideProcedure(node.astnodeValue()->nodeName);
+    }
+    return node;
 }
 
 
@@ -381,11 +382,11 @@ COD***/
 //CMD OUTPUT 1 1 1
 //CMD OP 1 1 1
 DatumPtr Kernel::excOutput(DatumPtr node) {
-  if (currentProcedure == nothing) {
-    Error::notInsideProcedure(node.astnodeValue()->nodeName);
-  }
-
-  return node;
+    Q_ASSERT(callStack.size() > 0);
+    if (callStack.last()->sourceNode.isNothing()) {
+        Error::notInsideProcedure(node.astnodeValue()->nodeName);
+    }
+    return node;
 }
 
 
@@ -415,10 +416,11 @@ DatumPtr Kernel::excOutput(DatumPtr node) {
 COD***/
 //CMD .MAYBEOUTPUT 1 1 1
 DatumPtr Kernel::excDotMaybeoutput(DatumPtr node) {
-  if (currentProcedure == nothing) {
-    Error::notInsideProcedure(node.astnodeValue()->nodeName);
-  }
-  return node;
+    Q_ASSERT(callStack.size() > 0);
+    if (callStack.last()->sourceNode.isNothing()) {
+        Error::notInsideProcedure(node.astnodeValue()->nodeName);
+    }
+    return node;
 }
 
 
@@ -606,9 +608,10 @@ COD***/
 //CMD PAUSE 0 0 0
 DatumPtr Kernel::excPause(DatumPtr node) {
   ProcedureHelper h(this, node);
-  if (currentProcedure == nothing) {
-      Error::notInsideProcedure(node.astnodeValue()->nodeName);
-  }
+    Q_ASSERT(callStack.size() > 0);
+    if (callStack.last()->sourceNode.isNothing()) {
+        Error::notInsideProcedure(node.astnodeValue()->nodeName);
+    }
   return h.ret(pause());
 }
 
@@ -671,13 +674,13 @@ COD***/
 //CMD GOTO 1 1 1
 DatumPtr Kernel::excGoto(DatumPtr node) {
   ProcedureHelper h(this, node);
-  if (currentProcedure == nothing)
+  if (callStack.last()->sourceNode.isNothing())
     Error::notInsideProcedure(node.astnodeValue()->nodeName);
   DatumPtr tagP = h.validatedDatumAtIndex(0, [this](DatumPtr candidate) {
     if (!candidate.isWord())
       return false;
     QString tag = candidate.wordValue()->keyValue();
-    return currentProcedure.astnodeValue()
+    return callStack.last()->sourceNode.astnodeValue()
         ->childAtIndex(0)
         .procedureValue()
         ->tagToLine.contains(tag);

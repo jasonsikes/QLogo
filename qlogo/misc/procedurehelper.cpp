@@ -52,11 +52,13 @@ ProcedureHelper::ProcedureHelper(Kernel *aParent, DatumPtr sourceNode) {
       ASTNode *child = node->childAtIndex(i).astnodeValue();
       KernelMethod method = child->kernel;
       DatumPtr param = (parent->*method)(child);
+      if (param.isASTNode()) {
+          if (parent->callStack.last()->sourceNode.isNothing())
+              Error::notInsideProcedure(param.astnodeValue()->nodeName);
+          param = nothing;
+      }
       if (param == nothing) {
         Error::didntOutput(child->nodeName, node->nodeName);
-      }
-      if (param.isASTNode()) {
-        Error::notInsideProcedure(param.astnodeValue()->nodeName);
       }
       parameters.push_back(param);
     }

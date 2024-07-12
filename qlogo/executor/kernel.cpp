@@ -51,23 +51,6 @@ Kernel* mainKernel() {
   return _mainKernel;
 }
 
-ProcedureScope::ProcedureScope(DatumPtr procname) {
-  ++(_mainKernel->procedureIterationDepth);
-  procedureHistory = _mainKernel->callingProcedure;
-  _mainKernel->callingProcedure = _mainKernel->currentProcedure;
-  _mainKernel->currentProcedure = procname;
-  lineHistory = _mainKernel->callingLine;
-  _mainKernel->callingLine = _mainKernel->currentLine;
-}
-
-ProcedureScope::~ProcedureScope() {
-  --(_mainKernel->procedureIterationDepth);
-  _mainKernel->currentProcedure = _mainKernel->callingProcedure;
-  _mainKernel->callingProcedure = procedureHistory;
-  _mainKernel->currentLine = _mainKernel->callingLine;
-  _mainKernel->callingLine = lineHistory;
-}
-
 StreamRedirect::StreamRedirect(TextStream *newReadStream,
                                TextStream *newWriteStream) {
   originalWriteStream = _mainKernel->writeStream;
@@ -147,13 +130,12 @@ bool Kernel::colorFromDatumPtr(QColor &retval, DatumPtr colorP) {
 }
 
 bool Kernel::getLineAndRunIt(bool shouldHandleError) {
-  QString prompt;
-  if (currentProcedure.isASTNode()) {
-    prompt =
-        currentProcedure.astnodeValue()->nodeName.wordValue()->printValue();
-  }
-  prompt += "? ";
-  ProcedureScope ps(nothing);
+    QString prompt;
+    Q_ASSERT(callStack.size() > 0);
+    if (callStack.last()->sourceNode.isASTNode()) {
+        prompt = callStack.last()->sourceNode.astnodeValue()->nodeName.printValue();
+    }
+    prompt += "? ";
 
   try {
     DatumPtr line = systemReadStream->readlistWithPrompt(prompt, true);
@@ -201,17 +183,29 @@ DatumPtr Kernel::registerError(DatumPtr anError, bool allowErract,
   ProcedureHelper::setIsErroring(anError != nothing);
   if (anError != nothing) {
     Error *e = currentError.errorValue();
-    if (e->code == 35) {
-      e->procedure = callingProcedure;
-      e->instructionLine = callingLine;
+
+    // An error with a message shifts the blame to the calling method.
+    if ((e->code == ERR_CUSTOM_THROW) && (callStack.size() > 1)) {
+        CallFrame *frame = callStack[ callStack.size() - 2 ];
+        e->procedure = frame->sourceNode;
+        if ( ! e->procedure.isNothing())
+            e->instructionLine = frame->evalStack.last();
+        else
+            e->instructionLine = nothing;
     } else {
-      e->procedure = currentProcedure;
-      e->instructionLine = currentLine;
+        Q_ASSERT(callStack.size() > 0);
+        CallFrame *frame = callStack[ callStack.size() - 1 ];
+        e->procedure = frame->sourceNode;
+        if ( ! e->procedure.isNothing())
+            e->instructionLine = currentLine;
+        else
+            e->instructionLine = nothing;
     }
+
     DatumPtr erractP = variables.datumForName(QObject::tr("ERRACT"));
-    bool shouldPause = (currentProcedure != nothing) &&
-                       ((erractP.isList() && ( ! erractP.listValue()->isEmpty()))
-                                                         || (erractP.isWord() && (erractP.wordValue()->rawValue().size() > 0)));
+    bool shouldPause = ( ! callStack.last()->sourceNode.isNothing())
+                       && ((erractP.isList() && ( ! erractP.listValue()->isEmpty()))
+                           || (erractP.isWord() && (erractP.wordValue()->rawValue().size() > 0)));
 
     if (allowErract && shouldPause) {
       sysPrint(e->errorText.printValue());
@@ -290,6 +284,10 @@ Kernel::Kernel() {
   procedures = new Procedures;
   parser = new Parser;
 
+  // callStack holds a pointer to the new frame so it will be deleted when this
+  // Kernel is deleted.
+  new CallFrame(callStack);
+
   initVariables();
   initPalette();
 
@@ -302,6 +300,8 @@ Kernel::~Kernel() {
   delete procedures;
   delete turtle;
 
+  Q_ASSERT(callStack.size() == 1);
+  callStack.removeLast();
 }
 
 void Kernel::makeVarLocal(const QString &varname) {
@@ -309,10 +309,9 @@ void Kernel::makeVarLocal(const QString &varname) {
     return;
   if (variables.isStepped(varname)) {
     QString line = varname + QObject::tr(" shadowed by local in procedure call");
-    if (currentProcedure != nothing) {
-      line +=
-          " in " +
-          currentProcedure.astnodeValue()->nodeName.wordValue()->printValue();
+      if ((callStack.size() > 1) && ( ! callStack[callStack.size() - 2]->sourceNode.isNothing())) {
+        line += " in " +
+                  callStack[callStack.size() - 2]->sourceNode.astnodeValue()->nodeName.wordValue()->printValue();
     }
     sysPrint(line + "\n");
   }
@@ -371,7 +370,6 @@ DatumPtr Kernel::executeProcedureCore(DatumPtr node) {
 
   DatumPtr retval;
   {
-    ProcedureScope ps(node);
     ListIterator iter =
         proc.procedureValue()->instructionList.listValue()->newIterator();
     bool isStepped = procedures->isStepped(
@@ -432,11 +430,13 @@ DatumPtr Kernel::executeProcedureCore(DatumPtr node) {
 }
 
 DatumPtr Kernel::executeProcedure(DatumPtr node) {
-  VarFrame s(&variables);
-
-  if (procedureIterationDepth > maxIterationDepth) {
-      Error::stackOverflow();
+    if (callStack.size() > maxIterationDepth) {
+        Error::stackOverflow();
     }
+
+    VarFrame s(&variables);
+    CallFrame cf(callStack, node.astnodeValue());
+
   DatumPtr retval = executeProcedureCore(node);
   ASTNode *lastOutputCmd = NULL;
 
@@ -520,10 +520,10 @@ SignalsEnum_t Kernel::interruptCheck()
 {
     SignalsEnum_t latestSignal = mainController()->latestSignal();
     if (latestSignal == toplevelSignal) {
-        if (currentProcedure != nothing)
+        if (callStack.last()->sourceNode != NULL)
             Error::throwError(DatumPtr(QObject::tr("TOPLEVEL")), nothing);
     } else if (latestSignal == pauseSignal) {
-        if (currentProcedure != nothing)
+        if (callStack.last()->sourceNode != NULL)
             pause();
     } else if (latestSignal == systemSignal) {
         Error::throwError(DatumPtr(QObject::tr("SYSTEM")), nothing);
@@ -544,6 +544,8 @@ DatumPtr Kernel::runList(DatumPtr listP, const QString startTag) {
     Error::noHow(listP);
   }
 
+  Q_ASSERT(callStack.size() > 0);
+  Evaluator e(listP, callStack.last()->evalStack);
   bool tagHasBeenFound = !shouldSearchForTag;
 
   QList<DatumPtr> *parsedList = parser->astFromList(listP.listValue());
@@ -614,7 +616,8 @@ DatumPtr Kernel::pause() {
         sysPrint(QObject::tr("Already Pausing"));
         return nothing;
     }
-  ProcedureScope procScope(nothing);
+
+    // TODO: PAUSE and getLineAndRunIt should not be procedure but evalStack entry.
   isPausing = true;
   StreamRedirect streamScope(stdioStream, stdioStream);
 
