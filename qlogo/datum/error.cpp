@@ -207,6 +207,11 @@ void Error::stackOverflow()
   mainKernel()->registerError(createError(ERR_STACK_OVERFLOW, QObject::tr("Stack overflow")));
 }
 
+void Error::badDefaultExpression(DatumPtr what) {
+    QString message = QObject::tr("Bad default expression for optional input: %1").arg(what.showValue());
+    mainKernel()->registerError(createError(ERR_BAD_DEFAULT_EXPRESSION, message), true);
+}
+
 void Error::throwError(DatumPtr aTag, DatumPtr aOutput) {
   Error *e;
   if (aTag.wordValue()->keyValue() == QObject::tr("ERROR")) {

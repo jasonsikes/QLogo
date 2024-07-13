@@ -167,7 +167,6 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
                 if (isRestDefined || isDefaultDefined)
                     Error::doesntLike(cmd, currentParam);
                 DatumPtr param = paramList->head;
-                DatumPtr defaultValue = paramList->tail;
                 if (param.isWord()) {
                     QString name = param.wordValue()->keyValue();
                     if (name.startsWith(':') || name.startsWith('"'))
@@ -175,7 +174,7 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
                     if (name.size() < 1)
                         Error::doesntLike(cmd, param);
                     body->optionalInputs.append(name);
-                    body->optionalDefaults.append(defaultValue);
+                    body->optionalDefaults.append(paramList);
                     isOptionalDefined = true;
                     body->countOfMaxParams += 1;
                 } else {
@@ -259,7 +258,7 @@ DatumPtr Procedures::procedureText(DatumPtr procnameP) {
 
     QList<DatumPtr>::iterator d = body->optionalDefaults.begin();
     for (auto &i : body->optionalInputs) {
-        List *optInput = d->listValue();
+        List *optInput = d->listValue()->tail.listValue();
         ++d;
         inputs->append(new List(DatumPtr(i),optInput));
     }
@@ -347,13 +346,8 @@ QString Procedures::procedureTitle(DatumPtr procnameP) {
         firstLine->append(DatumPtr(paramName));
     }
 
-    QList<DatumPtr>::iterator d = body->optionalDefaults.begin();
-    for (auto &i : body->optionalInputs) {
-        paramName = i;
-        paramName.push_front(':');
-        List *optInput = new List(DatumPtr(paramName),d->listValue());
-        firstLine->append(DatumPtr(optInput));
-        ++d;
+    for (auto &i : body->optionalDefaults) {
+        firstLine->append(i);
     }
 
     paramName = body->restInput;

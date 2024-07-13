@@ -347,7 +347,15 @@ DatumPtr Kernel::executeProcedureCore(DatumPtr node) {
       value = h.datumAtIndex(childIndex);
       ++childIndex;
     } else {
-      value = runList(*defaultIter);
+        // The first element is the name of the default, ignore it unless there
+        // is an error. The tail is the default expression.
+        DatumPtr defaultList = *defaultIter;
+        DatumPtr defaultValue = defaultList.listValue()->tail;
+        QList<DatumPtr> *parsedList = parser->astFromList(defaultValue.listValue());
+        if (parsedList->size() != 1)
+            Error::badDefaultExpression(defaultList);
+
+      value = runList(defaultValue);
     }
     makeVarLocal(name);
     variables.setDatumForName(value, name);

@@ -1,5 +1,5 @@
 ? > > a1 defined
-? ? ? ? to a1 [:P1 "|a test|]
+? ? ? ? to a1 [:p1 "|a test|]
 Make "Q 4
 Plist "joe = [2 hello]
 Plist 2 = [LA 4]
