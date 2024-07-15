@@ -16,7 +16,6 @@ argc="$#"
 
 logo_binary=qlogo
 logo_path="../qlogo/$logo_binary"
-log_file=~/Documents/QLogo_test_runs.csv
 
 failed_tests=()
 
@@ -24,12 +23,12 @@ run_test() {
     f="$1"
     if [[ $f == *.lg ]]
     then
-	echo $f
-    $logo_path --nolib < $f  2>&1 | diff "${f%.lg}.result" -
-	if [ $? -eq 1 ]
-	then
+        echo $f
+        $logo_path --nolib < $f  2>&1 | diff "${f%.lg}.result" -
+        if [ $? -eq 1 ]
+        then
             failed_tests+=($f)
-	fi
+        fi
     fi
 }
 
@@ -44,32 +43,36 @@ if (( $argc > 0 ))
 then
     for filename in ${filenames[*]}
     do
-	run_test $filename
+        run_test $filename
     done
 else
-    log_date=`date "+%Y-%m-%d %H:%M:%S,"`
     start_time=`date +%s`
     test_count=0
     for a in *.lg; do
-	run_test $a
-	((++test_count))
+        run_test $a
+        ((++test_count))
     done
     end_time=`date +%s`
     trt=$((end_time-start_time))
-    echo ${log_date}${trt}, $test_count >> $log_file
+
+    if (( ${#failed_tests[@]} )); then
+        echo
+        echo "============================"
+        echo "====" FAILED TESTS:
+        echo "===="
+        for f in ${failed_tests[@]}
+        do
+            echo "====" $f
+            echo "===="
+        done
+        echo "============================"
+    fi
+
+    echo $test_count tests.
+    echo Total Running time: ${trt} seconds
 fi
 
 if (( ${#failed_tests[@]} )); then
-    echo
-    echo "============================"
-    echo "====" FAILED TESTS:
-    echo "===="
-    for f in ${failed_tests[@]}
-    do
-	echo "====" $f
-	echo "===="
-    done
-    echo "============================"
     exit 1
 fi
 
