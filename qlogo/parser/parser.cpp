@@ -50,7 +50,7 @@ void Parser::inputProcedure(DatumPtr nodeP, TextStream *readStream) {
   if (!procnameP.isWord())
     Error::doesntLike(to, procnameP);
 
-  if ( ! isnan(procnameP.wordValue()->numberValue()))
+  if ( ! std::isnan(procnameP.wordValue()->numberValue()))
     Error::doesntLike(to, procnameP);
 
   QString procname = procnameP.wordValue()->keyValue();
@@ -310,7 +310,7 @@ DatumPtr Parser::parseTermexp() {
 
   // See if it's a number
   double number = currentToken.wordValue()->numberValue();
-  if ( ! isnan(number)) {
+  if ( ! std::isnan(number)) {
     DatumPtr node(new ASTNode(QObject::tr("number")));
     node.astnodeValue()->kernel = &Kernel::executeLiteral;
     node.astnodeValue()->addChild(DatumPtr(number));

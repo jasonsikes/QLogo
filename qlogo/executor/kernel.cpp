@@ -107,7 +107,7 @@ bool Kernel::numbersFromList(QVector<double> &retval, DatumPtr l) {
     if (!n.isWord())
       return false;
     double v = n.wordValue()->numberValue();
-    if (isnan(v))
+    if (std::isnan(v))
       return false;
     retval.push_back(v);
   }
@@ -117,7 +117,7 @@ bool Kernel::numbersFromList(QVector<double> &retval, DatumPtr l) {
 bool Kernel::colorFromDatumPtr(QColor &retval, DatumPtr colorP) {
   if (colorP.isWord()) {
     double colorNum = colorP.wordValue()->numberValue();
-    if ( ! isnan(colorNum)) {
+      if ( ! std::isnan(colorNum)) {
       if ((colorNum != round(colorNum)) || (colorNum < 0) ||
           (colorNum >= palette.size()))
         return false;

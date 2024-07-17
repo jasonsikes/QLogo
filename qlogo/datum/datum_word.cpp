@@ -97,7 +97,7 @@ Word::Word(double other) {
 void Word::genRawString()
 {
   if ( rawString.isNull()) {
-    Q_ASSERT( ! isnan(number));
+        Q_ASSERT( ! std::isnan(number));
     rawString.setNum(number);
   }
 }
@@ -141,7 +141,7 @@ QString Word::rawValue() {
 }
 
 double Word::numberValue() {
-  if (isnan(number)) {
+  if (std::isnan(number)) {
     bool numberIsValid;
     genPrintString();
     number = printableString.toDouble(&numberIsValid);
