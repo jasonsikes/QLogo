@@ -36,12 +36,13 @@
 class Help
 {
     QSqlDatabase db;
-    bool connectionIsValid;
+    bool connectionIsValid = false;
 
     QString findHelpDB();
     void getConnection();
 public:
-    Help();
+
+    Help() {}
     ~Help();
 
     /// Return a list of all command names that have a help text entry.

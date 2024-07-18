@@ -39,16 +39,12 @@ extern QString helpdb;
 // TODO: This should be set in the CMake file
 const char* helpDbFilename = "qlogo_help.db";
 
-Help::Help()
-{
-    connectionIsValid = false;
-    db = QSqlDatabase::addDatabase("QSQLITE");
-}
 
 
 Help::~Help()
 {
-    db.removeDatabase("QSQLITE");
+    if (db.isValid())
+        db.removeDatabase("QSQLITE");
 }
 
 
@@ -91,6 +87,9 @@ QString Help::findHelpDB()
 void Help::getConnection()
 {
     if ( ! connectionIsValid) {
+        if ( ! db.isValid()) {
+            db = QSqlDatabase::addDatabase("QSQLITE");
+        }
         QString path = findHelpDB();
         db.setDatabaseName(path);
         if (db.open())
