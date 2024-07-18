@@ -1030,7 +1030,7 @@ DatumPtr Kernel::excNumberp(DatumPtr node) {
   DatumPtr thing = h.datumAtIndex(0);
   if (!thing.isWord())
     return h.ret(false);
-  return h.ret( ! isnan(thing.wordValue()->numberValue()));
+  return h.ret( ! std::isnan(thing.wordValue()->numberValue()));
 }
 
 

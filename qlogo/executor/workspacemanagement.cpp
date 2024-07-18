@@ -381,7 +381,7 @@ int Kernel::varPRINTDEPTHLIMIT() {
   DatumPtr retvalP = callStack.datumForName(QObject::tr("PRINTDEPTHLIMIT"));
   if (retvalP.isWord()) {
     double retval = retvalP.wordValue()->numberValue();
-    if ( ! isnan(retval)) {
+      if ( ! std::isnan(retval)) {
       return (int)retval;
     }
   }
@@ -401,7 +401,7 @@ int Kernel::varPRINTWIDTHLIMIT() {
   DatumPtr retvalP = callStack.datumForName(QObject::tr("PRINTWIDTHLIMIT"));
   if (retvalP.isWord()) {
     double retval = retvalP.wordValue()->numberValue();
-    if ( ! isnan(retval)) {
+      if ( ! std::isnan(retval)) {
       return (int)retval;
     }
   }

@@ -58,6 +58,7 @@ enum ErrorCode : int {
     ERR_NO_TEST = 25,
     ERR_NOT_INSIDE_PROCEDURE = 31,
     ERR_MACRO_RETURNED_NOT_LIST = 29,
+    ERR_BAD_DEFAULT_EXPRESSION = 37,
     ERR_INSIDE_RUNRESULT = 38,
     ERR_NO_APPLY = 44,
     ERR_STACK_OVERFLOW = 2,
@@ -121,6 +122,7 @@ public:
   static DatumPtr noApply(DatumPtr what);
   static void stackOverflow();
   static void noGraphics();
+  static void badDefaultExpression(DatumPtr what);
 };
 
 

@@ -90,7 +90,7 @@ bool Kernel::numbersFromList(QVector<double> &retval, DatumPtr l) {
     if (!n.isWord())
       return false;
     double v = n.wordValue()->numberValue();
-    if (isnan(v))
+    if (std::isnan(v))
       return false;
     retval.push_back(v);
   }
@@ -100,7 +100,7 @@ bool Kernel::numbersFromList(QVector<double> &retval, DatumPtr l) {
 bool Kernel::colorFromDatumPtr(QColor &retval, DatumPtr colorP) {
   if (colorP.isWord()) {
     double colorNum = colorP.wordValue()->numberValue();
-    if ( ! isnan(colorNum)) {
+      if ( ! std::isnan(colorNum)) {
       if ((colorNum != round(colorNum)) || (colorNum < 0) ||
           (colorNum >= palette.size()))
         return false;
@@ -347,7 +347,15 @@ DatumPtr Kernel::executeProcedureCore(DatumPtr node) {
       value = h.datumAtIndex(childIndex);
       ++childIndex;
     } else {
-      value = runList(*defaultIter);
+        // The first element is the name of the default, ignore it unless there
+        // is an error. The tail is the default expression.
+        DatumPtr defaultList = *defaultIter;
+        DatumPtr defaultValue = defaultList.listValue()->tail;
+        QList<DatumPtr> *parsedList = parser->astFromList(defaultValue.listValue());
+        if (parsedList->size() != 1)
+            Error::badDefaultExpression(defaultList);
+
+      value = runList(defaultValue);
     }
     makeVarLocal(name);
     callStack.setDatumForName(value, name);
