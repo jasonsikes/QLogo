@@ -11,7 +11,6 @@ set(QLOGO_SOURCES
   datum/datum_list.cpp
   datum/datum_word.cpp
   datum/error.cpp
-  executor/callframe.cpp
   executor/kernel.cpp
   executor/arithmetic.cpp
   executor/communication.cpp
@@ -26,11 +25,11 @@ set(QLOGO_SOURCES
   misc/turtle.cpp
   parser/parser.cpp
   parser/runparser.cpp
+  workspace/callframe.cpp
   workspace/procedures.cpp
   workspace/propertylists.cpp
-  workspace/vars.cpp
   workspace/workspace.cpp
-  
+
   ../include/sharedconstants.h
   ../include/controller/inputqueue.h
   ../include/controller/logocontroller.h
@@ -38,7 +37,6 @@ set(QLOGO_SOURCES
   ../include/controller/textstream.h
   ../include/datum.h
   ../include/astnode.h
-  ../include/callframe.h
   ../include/error.h
   ../include/help.h
   ../include/kernel.h
@@ -48,10 +46,10 @@ set(QLOGO_SOURCES
   ../include/turtle.h
   ../include/parser.h
   ../include/runparser.h
+  ../include/workspace/callframe.h
   ../include/workspace/primitivetable.h
   ../include/workspace/procedures.h
   ../include/workspace/propertylists.h
-  ../include/workspace/vars.h
   ../include/workspace/workspace.h
 )
 

@@ -132,8 +132,8 @@ bool Kernel::colorFromDatumPtr(QColor &retval, DatumPtr colorP) {
 bool Kernel::getLineAndRunIt(bool shouldHandleError) {
     QString prompt;
     Q_ASSERT(callStack.size() > 0);
-    if (callStack.last()->sourceNode.isASTNode()) {
-        prompt = callStack.last()->sourceNode.astnodeValue()->nodeName.printValue();
+    if (callStack.localFrame()->sourceNode.isASTNode()) {
+        prompt = callStack.localFrame()->sourceNode.astnodeValue()->nodeName.printValue();
     }
     prompt += "? ";
 
@@ -186,15 +186,15 @@ DatumPtr Kernel::registerError(DatumPtr anError, bool allowErract,
 
     // An error with a message shifts the blame to the calling method.
     if ((e->code == ERR_CUSTOM_THROW) && (callStack.size() > 1)) {
-        CallFrame *frame = callStack[ callStack.size() - 2 ];
+        CallFrame *frame = callStack.parentFrame();
         e->procedure = frame->sourceNode;
         if ( ! e->procedure.isNothing())
-            e->instructionLine = frame->evalStack.last();
+            e->instructionLine = frame->evalStack.last()->list;
         else
             e->instructionLine = nothing;
     } else {
         Q_ASSERT(callStack.size() > 0);
-        CallFrame *frame = callStack[ callStack.size() - 1 ];
+        CallFrame *frame = callStack.localFrame();
         e->procedure = frame->sourceNode;
         if ( ! e->procedure.isNothing())
             e->instructionLine = currentLine;
@@ -202,8 +202,9 @@ DatumPtr Kernel::registerError(DatumPtr anError, bool allowErract,
             e->instructionLine = nothing;
     }
 
-    DatumPtr erractP = variables.datumForName(QObject::tr("ERRACT"));
-    bool shouldPause = ( ! callStack.last()->sourceNode.isNothing())
+    // TODO: need varERRACT()
+    DatumPtr erractP = callStack.datumForName(QObject::tr("ERRACT"));
+    bool shouldPause = ( ! callStack.globalFrame()->sourceNode.isNothing())
                        && ((erractP.isList() && ( ! erractP.listValue()->isEmpty()))
                            || (erractP.isWord() && (erractP.wordValue()->rawValue().size() > 0)));
 
@@ -263,12 +264,12 @@ void Kernel::initVariables(void)
     DatumPtr version(LOGOVERSION);
     DatumPtr trueDatumPtr(QObject::tr("true"));
 
-    variables.setDatumForName(platform, QObject::tr("LOGOPLATFORM"));
-    variables.setDatumForName(version, QObject::tr("LOGOVERSION"));
-    variables.setDatumForName(trueDatumPtr, QObject::tr("ALLOWGETSET"));
-    variables.bury(QObject::tr("LOGOPLATFORM"));
-    variables.bury(QObject::tr("LOGOVERSION"));
-    variables.bury(QObject::tr("ALLOWGETSET"));
+    callStack.setDatumForName(platform, QObject::tr("LOGOPLATFORM"));
+    callStack.setDatumForName(version, QObject::tr("LOGOVERSION"));
+    callStack.setDatumForName(trueDatumPtr, QObject::tr("ALLOWGETSET"));
+    callStack.bury(QObject::tr("LOGOPLATFORM"));
+    callStack.bury(QObject::tr("LOGOVERSION"));
+    callStack.bury(QObject::tr("ALLOWGETSET"));
 }
 
 Kernel::Kernel() {
@@ -286,7 +287,7 @@ Kernel::Kernel() {
 
   // callStack holds a pointer to the new frame so it will be deleted when this
   // Kernel is deleted.
-  new CallFrame(callStack);
+  new CallFrame(&callStack);
 
   initVariables();
   initPalette();
@@ -301,21 +302,21 @@ Kernel::~Kernel() {
   delete turtle;
 
   Q_ASSERT(callStack.size() == 1);
-  callStack.removeLast();
+  callStack.stack.removeLast();
 }
 
 void Kernel::makeVarLocal(const QString &varname) {
-  if (variables.size() <= 1)
+  if (callStack.size() <= 1)
     return;
-  if (variables.isStepped(varname)) {
+  if (callStack.isStepped(varname)) {
     QString line = varname + QObject::tr(" shadowed by local in procedure call");
-      if ((callStack.size() > 1) && ( ! callStack[callStack.size() - 2]->sourceNode.isNothing())) {
+      if ((callStack.size() > 1) && ( ! callStack.parentFrame()->sourceNode.isNothing())) {
         line += " in " +
-                  callStack[callStack.size() - 2]->sourceNode.astnodeValue()->nodeName.wordValue()->printValue();
+                  callStack.parentFrame()->sourceNode.astnodeValue()->nodeName.wordValue()->printValue();
     }
     sysPrint(line + "\n");
   }
-  variables.setVarAsLocal(varname);
+  callStack.setVarAsLocal(varname);
 }
 
 DatumPtr Kernel::executeProcedureCore(DatumPtr node) {
@@ -332,7 +333,7 @@ DatumPtr Kernel::executeProcedureCore(DatumPtr node) {
     DatumPtr value = h.datumAtIndex(childIndex);
     ++childIndex;
     makeVarLocal(name);
-    variables.setDatumForName(value, name);
+    callStack.setDatumForName(value, name);
   }
 
   // then assign the OPTIONAL params
@@ -349,7 +350,7 @@ DatumPtr Kernel::executeProcedureCore(DatumPtr node) {
       value = runList(*defaultIter);
     }
     makeVarLocal(name);
-    variables.setDatumForName(value, name);
+    callStack.setDatumForName(value, name);
     ++defaultIter;
   }
 
@@ -363,7 +364,7 @@ DatumPtr Kernel::executeProcedureCore(DatumPtr node) {
       ++childIndex;
     }
     makeVarLocal(name);
-    variables.setDatumForName(remainderList, name);
+    callStack.setDatumForName(remainderList, name);
   }
 
   // Execute the commands in the procedure.
@@ -434,8 +435,8 @@ DatumPtr Kernel::executeProcedure(DatumPtr node) {
         Error::stackOverflow();
     }
 
-    VarFrame s(&variables);
-    CallFrame cf(callStack, node.astnodeValue());
+    // VarFrame s(&variables);
+    CallFrame cf(&callStack, node.astnodeValue());
 
   DatumPtr retval = executeProcedureCore(node);
   ASTNode *lastOutputCmd = NULL;
@@ -510,7 +511,7 @@ DatumPtr Kernel::executeLiteral(DatumPtr node) {
 DatumPtr Kernel::executeValueOf(DatumPtr node) {
   DatumPtr varnameP = node.astnodeValue()->childAtIndex(0);
   QString varName = varnameP.wordValue()->keyValue();
-  DatumPtr retval = variables.datumForName(varName);
+  DatumPtr retval = callStack.datumForName(varName);
   if (retval == nothing)
     return (Error::noValueRecoverable(varnameP));
   return retval;
@@ -520,10 +521,10 @@ SignalsEnum_t Kernel::interruptCheck()
 {
     SignalsEnum_t latestSignal = mainController()->latestSignal();
     if (latestSignal == toplevelSignal) {
-        if (callStack.last()->sourceNode != NULL)
+        if (callStack.globalFrame()->sourceNode != NULL)
             Error::throwError(DatumPtr(QObject::tr("TOPLEVEL")), nothing);
     } else if (latestSignal == pauseSignal) {
-        if (callStack.last()->sourceNode != NULL)
+        if (callStack.globalFrame()->sourceNode != NULL)
             pause();
     } else if (latestSignal == systemSignal) {
         Error::throwError(DatumPtr(QObject::tr("SYSTEM")), nothing);
@@ -545,7 +546,7 @@ DatumPtr Kernel::runList(DatumPtr listP, const QString startTag) {
   }
 
   Q_ASSERT(callStack.size() > 0);
-  Evaluator e(listP, callStack.last()->evalStack);
+  Evaluator e(listP, callStack.localFrame()->evalStack);
   bool tagHasBeenFound = !shouldSearchForTag;
 
   QList<DatumPtr> *parsedList = parser->astFromList(listP.listValue());

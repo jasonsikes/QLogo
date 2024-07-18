@@ -30,12 +30,11 @@
 
 #include "procedurehelper.h"
 #include "workspace/propertylists.h"
-#include "workspace/vars.h"
 #include "sharedconstants.h"
 #include "controller/textstream.h"
 #include "help.h"
 #include "workspace/procedures.h"
-#include "callframe.h"
+#include "workspace/callframe.h"
 
 #include <QColor>
 #include <QFile>
@@ -54,7 +53,6 @@ class Kernel {
   friend class StreamRedirect;
   Parser *parser;
   Procedures *procedures;
-  Vars variables;
   DatumPtr filePrefix;
   int repcount = -1;
   int pauseLevel = 0;
@@ -69,7 +67,7 @@ class Kernel {
 
   Help help;
 
-  QList<CallFrame *> callStack;
+  CallFrameStack callStack;
 
   QHash<QString, TextStream *> fileStreams;
   QSet<TextStream *> writableStreams;

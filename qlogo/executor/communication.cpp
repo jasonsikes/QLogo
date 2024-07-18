@@ -79,7 +79,7 @@ TextStream* Kernel::createStringStream(DatumPtr filenameP,
   }
 
   QString *buffer = NULL;
-  DatumPtr value = variables.datumForName(filename);
+  DatumPtr value = callStack.datumForName(filename);
   if (value.isWord()) {
     // buffer will be deleted when stream is closed
     buffer = new QString(value.wordValue()->printValue());
@@ -145,7 +145,7 @@ void Kernel::close(const QString &filename) {
   delete stream;
   if (buffer != NULL) {
     DatumPtr w = DatumPtr(*buffer);
-    variables.setDatumForName(w, filename);
+    callStack.setDatumForName(w, filename);
     delete buffer;
   }
   if (device != NULL)

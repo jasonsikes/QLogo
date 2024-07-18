@@ -53,7 +53,7 @@ ProcedureHelper::ProcedureHelper(Kernel *aParent, DatumPtr sourceNode) {
       KernelMethod method = child->kernel;
       DatumPtr param = (parent->*method)(child);
       if (param.isASTNode()) {
-          if (parent->callStack.last()->sourceNode.isNothing())
+          if (parent->callStack.localFrame()->sourceNode.isNothing())
               Error::notInsideProcedure(param.astnodeValue()->nodeName);
           param = nothing;
       }

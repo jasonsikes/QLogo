@@ -105,7 +105,7 @@ void Kernel::editAndRunFile() {
 DatumPtr Kernel::buildContentsList(showContents_t showWhat) {
   List *retval = new List();
   retval->append(procedures->allProcedureNames(showWhat));
-  retval->append(variables.allVariables(showWhat));
+  retval->append(callStack.allVariables(showWhat));
   retval->append(plists.allPLists(showWhat));
   return retval;
 }
@@ -169,7 +169,7 @@ void Kernel::processContentsListWithMethod(
   i = variablesList->newIterator();
   while (i.elementExists()) {
     QString varname = i.element().wordValue()->keyValue();
-    (variables.*method)(varname);
+    (callStack.*method)(varname);
   }
 
   i = propertiesList->newIterator();
@@ -196,7 +196,7 @@ DatumPtr Kernel::queryContentsListWithMethod(
 
   if ( ! variablesList->isEmpty()) {
     QString varname = variablesList->head.wordValue()->keyValue();
-    return DatumPtr((variables.*method)(varname));
+    return DatumPtr((callStack.*method)(varname));
   }
 
   if (! propertiesList->isEmpty()) {
@@ -231,7 +231,7 @@ QString Kernel::createPrintoutFromContentsList(DatumPtr contentslist,
   while (i.elementExists()) {
     DatumPtr varnameP = i.element();
     QString varname = varnameP.wordValue()->keyValue();
-    DatumPtr value = variables.datumForName(varname);
+    DatumPtr value = callStack.datumForName(varname);
     if ((value == nothing) && shouldValidate) {
       Error::noValue(varnameP);
     } else {
@@ -272,7 +272,7 @@ LOADNOISILY						(variable)
 COD***/
 
 bool Kernel::varLOADNOISILY() {
-  DatumPtr retvalP = variables.datumForName(QObject::tr("LOADNOISILY"));
+  DatumPtr retvalP = callStack.datumForName(QObject::tr("LOADNOISILY"));
   if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
     return true;
   return false;
@@ -290,7 +290,7 @@ ALLOWGETSET						(variable)
 COD***/
 
 bool Kernel::varALLOWGETSET() {
-  DatumPtr retvalP = variables.datumForName(QObject::tr("ALLOWGETSET"));
+  DatumPtr retvalP = callStack.datumForName(QObject::tr("ALLOWGETSET"));
   if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
     return true;
   return false;
@@ -321,7 +321,7 @@ BUTTONACT						(variable)
 
 COD***/
 
-DatumPtr Kernel::varBUTTONACT() { return variables.datumForName(QObject::tr("BUTTONACT")); }
+DatumPtr Kernel::varBUTTONACT() { return callStack.datumForName(QObject::tr("BUTTONACT")); }
 
 
 /***DOC KEYACT
@@ -346,7 +346,7 @@ KEYACT							(variable)
 
 COD***/
 
-DatumPtr Kernel::varKEYACT() { return variables.datumForName(QObject::tr("KEYACT")); }
+DatumPtr Kernel::varKEYACT() { return callStack.datumForName(QObject::tr("KEYACT")); }
 
 
 /***DOC FULLPRINTP
@@ -362,7 +362,7 @@ FULLPRINTP						(variable)
 COD***/
 
 bool Kernel::varFULLPRINTP() {
-  DatumPtr retvalP = variables.datumForName(QObject::tr("FULLPRINTP"));
+  DatumPtr retvalP = callStack.datumForName(QObject::tr("FULLPRINTP"));
   if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
     return true;
   return false;
@@ -378,7 +378,7 @@ PRINTDEPTHLIMIT						(variable)
 COD***/
 
 int Kernel::varPRINTDEPTHLIMIT() {
-  DatumPtr retvalP = variables.datumForName(QObject::tr("PRINTDEPTHLIMIT"));
+  DatumPtr retvalP = callStack.datumForName(QObject::tr("PRINTDEPTHLIMIT"));
   if (retvalP.isWord()) {
     double retval = retvalP.wordValue()->numberValue();
     if ( ! isnan(retval)) {
@@ -398,7 +398,7 @@ PRINTWIDTHLIMIT						(variable)
 COD***/
 
 int Kernel::varPRINTWIDTHLIMIT() {
-  DatumPtr retvalP = variables.datumForName(QObject::tr("PRINTWIDTHLIMIT"));
+  DatumPtr retvalP = callStack.datumForName(QObject::tr("PRINTWIDTHLIMIT"));
   if (retvalP.isWord()) {
     double retval = retvalP.wordValue()->numberValue();
     if ( ! isnan(retval)) {
@@ -417,7 +417,7 @@ STARTUP							(variable)
 
 COD***/
 
-DatumPtr Kernel::varSTARTUP() { return variables.datumForName(QObject::tr("STARTUP")); }
+DatumPtr Kernel::varSTARTUP() { return callStack.datumForName(QObject::tr("STARTUP")); }
 
 
 /***DOC UNBURYONEDIT
@@ -430,7 +430,7 @@ UNBURYONEDIT						(variable)
 COD***/
 
 bool Kernel::varUNBURYONEDIT() {
-  DatumPtr retvalP = variables.datumForName(QObject::tr("UNBURYONEDIT"));
+  DatumPtr retvalP = callStack.datumForName(QObject::tr("UNBURYONEDIT"));
   if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
     return true;
   return false;
@@ -447,7 +447,7 @@ CASEIGNOREDP						(variable)
 COD***/
 
 bool Kernel::varCASEIGNOREDP() {
-  DatumPtr retvalP = variables.datumForName(QObject::tr("CASEIGNOREDP"));
+  DatumPtr retvalP = callStack.datumForName(QObject::tr("CASEIGNOREDP"));
   if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
     return true;
   return false;
@@ -568,7 +568,7 @@ COD***/
 DatumPtr Kernel::excTo(DatumPtr node) {
   // None of the children of node are ASTNode. They have to be literal so there
   // is no procedurehelper here.
-  if ( ! callStack.last()->sourceNode.isNothing()) {
+  if ( ! callStack.localFrame()->sourceNode.isNothing()) {
     Error::toInProc(node.astnodeValue()->nodeName);
   }
   parser->inputProcedure(node, systemReadStream);
@@ -698,9 +698,9 @@ DatumPtr Kernel::excMake(DatumPtr node) {
   QString lvalue = h.wordAtIndex(0).wordValue()->keyValue();
   DatumPtr rvalue = h.datumAtIndex(1);
 
-  variables.setDatumForName(rvalue, lvalue);
+  callStack.setDatumForName(rvalue, lvalue);
 
-  if (variables.isTraced(lvalue)) {
+  if (callStack.isTraced(lvalue)) {
     QString line = QObject::tr("Make \"%1 %2\n")
                        .arg(h.wordAtIndex(0).wordValue()->printValue(),
                             procedures->unreadDatum(rvalue));
@@ -719,13 +719,13 @@ DatumPtr Kernel::excSetfoo(DatumPtr node) {
   QString lvalue = foo.right(foo.size() - 3);
   DatumPtr rvalue = h.datumAtIndex(0);
 
-  if (!variables.doesExist(lvalue)) {
+  if ( ! callStack.doesExist(lvalue)) {
     Error::noHow(nodeName);
   }
 
-  variables.setDatumForName(rvalue, lvalue);
+  callStack.setDatumForName(rvalue, lvalue);
 
-  if (variables.isTraced(lvalue.toUpper())) {
+  if (callStack.isTraced(lvalue.toUpper())) {
     QString line =
         QString("%1 %2\n")
             .arg(node.astnodeValue()->nodeName.wordValue()->printValue(),
@@ -740,7 +740,7 @@ DatumPtr Kernel::excFoo(DatumPtr node) {
   DatumPtr fooP = node.astnodeValue()->nodeName;
   QString foo = fooP.wordValue()->keyValue();
 
-  DatumPtr retval = variables.datumForName(foo);
+  DatumPtr retval = callStack.datumForName(foo);
   if (retval == nothing)
     return Error::noHowRecoverable(fooP);
   return retval;
@@ -812,7 +812,7 @@ COD***/
 DatumPtr Kernel::excThing(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString varName = h.wordAtIndex(0).wordValue()->keyValue();
-  DatumPtr retval = h.ret(variables.datumForName(varName));
+  DatumPtr retval = h.ret(callStack.datumForName(varName));
   if (retval == nothing)
     return h.ret(Error::noValueRecoverable(h.datumAtIndex(0)));
   return retval;
@@ -852,12 +852,12 @@ DatumPtr Kernel::excGlobal(DatumPtr node) {
       return false;
     });
     if (var.isWord()) {
-      variables.setVarAsGlobal(var.wordValue()->keyValue());
+      callStack.setVarAsGlobal(var.wordValue()->keyValue());
     } else {
       ListIterator j = var.listValue()->newIterator();
       while (j.elementExists()) {
         DatumPtr v = j.element();
-        variables.setVarAsGlobal(v.wordValue()->keyValue());
+        callStack.setVarAsGlobal(v.wordValue()->keyValue());
       }
     }
   }
@@ -1010,7 +1010,7 @@ COD***/
 DatumPtr Kernel::excNamep(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString varname = h.wordAtIndex(0).wordValue()->keyValue();
-  bool retval = (variables.doesExist(varname));
+  bool retval = (callStack.doesExist(varname));
   return h.ret(retval);
 }
 
@@ -1141,7 +1141,7 @@ DatumPtr Kernel::excNames(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = new List();
   retval->append(DatumPtr(new List()));
-  retval->append(variables.allVariables(showUnburied));
+  retval->append(callStack.allVariables(showUnburied));
   return h.ret(retval);
 }
 
@@ -1262,7 +1262,7 @@ DatumPtr Kernel::excPot(DatumPtr node) {
   while (i.elementExists()) {
     DatumPtr varnameP = i.element();
     QString varname = varnameP.wordValue()->keyValue();
-    DatumPtr value = variables.datumForName(varname);
+    DatumPtr value = callStack.datumForName(varname);
     if (value == nothing)
       Error::noValue(varnameP);
     QString line = QObject::tr("Make \"%1 %2\n").arg(varname, procedures->unreadDatum(value));
@@ -1321,7 +1321,7 @@ DatumPtr Kernel::excErase(DatumPtr node) {
   i = variablesList->newIterator();
   while (i.elementExists()) {
     QString varname = i.element().wordValue()->keyValue();
-    variables.eraseVar(varname);
+    callStack.eraseVar(varname);
   }
 
   i = propertiesList->newIterator();
@@ -1346,7 +1346,7 @@ COD***/
 DatumPtr Kernel::excErall(DatumPtr node) {
   ProcedureHelper h(this, node);
   procedures->eraseAllProcedures();
-  variables.eraseAll();
+  callStack.eraseAll();
   plists.eraseAll();
 
   return nothing;
@@ -1379,7 +1379,7 @@ COD***/
 //CMD ERNS 0 0 0
 DatumPtr Kernel::excErns(DatumPtr node) {
   ProcedureHelper h(this, node);
-  variables.eraseAll();
+  callStack.eraseAll();
 
   return nothing;
 }
