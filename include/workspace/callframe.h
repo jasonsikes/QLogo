@@ -139,6 +139,9 @@ struct CallFrame {
     /// The evaluation stack, maintains the stack of currently-executing lists and sublists.
     QList<Evaluator *> evalStack;
 
+    /// Return the Evaluator object that is currently executing.
+    Evaluator* localEvaluator() { return evalStack.first(); }
+
     CallFrame(CallFrameStack *aFrameStack, DatumPtr aSourceNode = nothing)
         : frameStack(aFrameStack), sourceNode(aSourceNode)
     {
@@ -157,8 +160,8 @@ struct CallFrame {
 
 /// @brief  The evaluator.
 ///
-/// The evaluator handles the evaluation of a list. It doesn't do anything right now except
-/// add and remove itself from the evaluation stack.
+/// The evaluator will handle the evaluation of a list. It doesn't do anything
+/// right now except add and remove itself from the evaluation stack.
 struct Evaluator {
     QList<Evaluator *> &evalStack;
     DatumPtr list;
@@ -166,12 +169,13 @@ struct Evaluator {
     Evaluator(DatumPtr aList, QList<Evaluator *> &anEvalStack)
         : evalStack(anEvalStack), list(aList)
     {
-        evalStack.push_back(this);
+        evalStack.push_front(this);
     }
 
     ~Evaluator()
     {
-        evalStack.removeLast();
+        Q_ASSERT(evalStack.first() == this);
+        evalStack.removeFirst();
     }
 };
 

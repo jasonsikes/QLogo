@@ -189,7 +189,7 @@ DatumPtr Kernel::registerError(DatumPtr anError, bool allowErract,
         CallFrame *frame = callStack.parentFrame();
         e->procedure = frame->sourceNode;
         if ( ! e->procedure.isNothing())
-            e->instructionLine = frame->evalStack.last()->list;
+            e->instructionLine = frame->localEvaluator()->list;
         else
             e->instructionLine = nothing;
     } else {
