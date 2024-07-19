@@ -7,6 +7,7 @@ include(GNUInstallDirs)
 set(QLOGO_BIN qlogo)
 set(QLOGO_GUI QLogo-GUI)
 set(QLOGO_HELP qlogo_help.db)
+set(QLOGO_LIB qlogo_library.db)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -28,6 +29,7 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Sql Svg)
 
 set(QLOGO_DATA_DIR "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_DATADIR}/${QLOGO_BIN}")
 set(QLOGO_HELP_DB "${QLOGO_DATA_DIR}/${QLOGO_HELP}")
+set(QLOGO_LIB_DB "${QLOGO_DATA_DIR}/${QLOGO_LIB}")
 
 add_subdirectory("${QLOGO_BIN}")
 
@@ -35,7 +37,7 @@ add_subdirectory("${QLOGO_GUI}")
 
 file(MAKE_DIRECTORY "${QLOGO_DATA_DIR}")
 
-file(COPY "share/${QLOGO_HELP}"
+file(COPY "share/${QLOGO_HELP}" "share/${QLOGO_LIB}"
     DESTINATION "${QLOGO_DATA_DIR}"
 )
 
@@ -72,7 +74,7 @@ if (APPLE)
     set(QLOGO_BUNDLE_RESOURCES_DIR ${CMAKE_BINARY_DIR}/${QLOGO_GUI}/${QLOGO_GUI}.app/Contents/Resources)
     add_custom_target(QLogoBundleCp ALL
         COMMAND cp "${QLOGO_BIN_LOC}" "${QLOGO_BUNDLE_EXE_DIR}"
-        COMMAND cp "${QLOGO_HELP_DB}" "${QLOGO_BUNDLE_RESOURCES_DIR}"
+        COMMAND cp "${QLOGO_HELP_DB}" "${QLOGO_LIB_DB}" "${QLOGO_BUNDLE_RESOURCES_DIR}"
         DEPENDS "${QLOGO_GUI}" "${QLOGO_BIN}"
     )
 endif()

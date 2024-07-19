@@ -149,7 +149,6 @@ public:
   DatumPtr pause();
 
   bool isInputRedirected();
-  void initLibrary();
   DatumPtr runList(DatumPtr listP, const QString startTag = "");
   DatumPtr excGotoToken(DatumPtr);
   DatumPtr executeProcedure(DatumPtr node);
@@ -186,9 +185,12 @@ class StreamRedirect {
   TextStream *originalReadStream;
   TextStream *originalSystemReadStream;
 
+  Parser *originalParser;
+
 public:
   StreamRedirect(TextStream *newReadStreamc,
-                 TextStream *newWriteStream);
+                 TextStream *newWriteStream,
+                   Parser *newParser);
   ~StreamRedirect();
 };
 

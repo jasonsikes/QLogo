@@ -21,13 +21,35 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the declaration of the QLogo library text, which provides
-/// standard supporting functions to the QLogo language.
+/// This file contains the declaration of the QLogo library interface, which
+/// provides standard supporting functions to the QLogo language.
 ///
 //===----------------------------------------------------------------------===//
 
-#include <QString>
+#include <QStringList>
 
-extern QString libraryStr;
+#include <QSqlDatabase>
+
+class Library
+{
+    QSqlDatabase db;
+    bool connectionIsValid = false;
+
+    QString findLibraryDB();
+    void getConnection();
+
+    QStringList allProcedures;
+public:
+
+    Library() {}
+    ~Library();
+
+    /// Return the text of library procedure of the given name.
+    /// Returns null string if no procedure found.
+    QString procedureText(QString alias);
+
+    /// Returns a list of all procedure names available in the library.
+    QStringList allProcedureNames();
+};
 
 #endif // LIBRARY_H

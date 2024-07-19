@@ -159,9 +159,6 @@ SignalsEnum_t LogoController::latestSignal()
 
 
 int LogoController::run(void) {
-    extern bool loadLibrary;
-    if (loadLibrary)
-        kernel->initLibrary();
   initialize();
 
   initSignals();

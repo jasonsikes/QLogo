@@ -7,8 +7,8 @@
 // Some global options.
 // Use 'extern' to access them.
 bool hasGUI = false;
+QString library_db;
 QString helpdb;
-bool loadLibrary = true;
 
 void processOptions(QCoreApplication *a)
 {
@@ -26,10 +26,9 @@ void processOptions(QCoreApplication *a)
        QCoreApplication::translate("main",
                                    "DO NOT USE! Set the input and output to the format used by "
                                    "the QLogo GUI Application. Useless elsewhere.")},
-      {"nolib",
+      {"libdb",
        QCoreApplication::translate("main",
-                                   "Tell QLogo not to load the library. Library commands will "
-                                   "be unavailable.")},
+                                   "Specify the location of the standard library database.")},
       {"helpdb",
        QCoreApplication::translate("main", "Specify the location of the help database."),
        QCoreApplication::translate("main", "help_database")},
@@ -41,8 +40,8 @@ void processOptions(QCoreApplication *a)
       hasGUI = true;
     }
 
-  if (commandlineParser.isSet("nolib")) {
-      loadLibrary = false;
+  if (commandlineParser.isSet("libdb")) {
+        library_db = commandlineParser.value("libdb");
   }
 
   if (commandlineParser.isSet("helpdb")) {

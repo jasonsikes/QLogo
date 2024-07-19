@@ -58,7 +58,9 @@ QString Kernel::executeText(const QString &text) {
   TextStream inStream(&inQStream);
   TextStream outStream(&outQStream);
 
-  StreamRedirect sr(&inStream, &outStream);
+  Parser textParser;
+
+  StreamRedirect sr(&inStream, &outStream, &textParser);
 
   bool shouldContinue = true;
   while (shouldContinue) {

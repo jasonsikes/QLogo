@@ -223,7 +223,7 @@ void Procedures::copyProcedure(DatumPtr newnameP, DatumPtr oldnameP) {
     if (stringToCmd.contains(oldname)) {
         Error::isPrimative(oldnameP);
     }
-    if (procedures.contains(oldname)) {
+    if (isNamedProcedure(oldname)) {
         procedures[newname] = procedures[oldname];
         return;
     }
@@ -244,9 +244,9 @@ DatumPtr Procedures::procedureText(DatumPtr procnameP) {
 
     if (stringToCmd.contains(procname))
         Error::isPrimative(procnameP);
-    if (!procedures.contains(procname))
+    if ( ! isNamedProcedure(procname))
         Error::noHow(procnameP);
-    Procedure *body = procedures[procname].procedureValue();
+    Procedure *body = procedureForName(procname).procedureValue();
 
     List *retval = new List();
 
@@ -289,8 +289,8 @@ DatumPtr Procedures::procedureFulltext(DatumPtr procnameP, bool shouldValidate) 
     if (stringToCmd.contains(procname))
         Error::isPrimative(procnameP);
 
-    if (procedures.contains(procname)) {
-        Procedure *body = procedures[procname].procedureValue();
+    if (isNamedProcedure(procname)) {
+        Procedure *body = procedureForName(procname).procedureValue();
 
         if (body->sourceText == nothing) {
             List *retval = new List();
@@ -323,10 +323,10 @@ QString Procedures::procedureTitle(DatumPtr procnameP) {
 
     if (stringToCmd.contains(procname))
         Error::isPrimative(procnameP);
-    if (!procedures.contains(procname))
+    if ( ! isNamedProcedure(procname))
         Error::noHow(procnameP);
 
-    Procedure *body = procedures[procname].procedureValue();
+    Procedure *body = procedureForName(procname).procedureValue();
 
     DatumPtr firstlineP = DatumPtr(new List());
 
@@ -366,14 +366,42 @@ QString Procedures::procedureTitle(DatumPtr procnameP) {
     return retval;
 }
 
+DatumPtr Procedures::procedureForName(QString aName)
+{
+    if ( ! procedures.contains(aName)) {
+        if ( ! stdLib.allProcedureNames().contains(aName)) {
+            return nothing;
+        }
+        QString libraryText = stdLib.procedureText(aName);
+        Q_ASSERT( ! libraryText.isEmpty());
+        mainKernel()->executeText(libraryText);
+    }
+    Q_ASSERT(procedures.contains(aName));
+    return procedures[aName];
+}
+
+
+bool Procedures::isNamedProcedure(QString aName)
+{
+    return procedures.contains(aName)
+        || stdLib.allProcedureNames().contains(aName);
+}
+
+
 DatumPtr Procedures::astnodeFromCommand(DatumPtr cmdP, int &minParams,
                                     int &defaultParams, int &maxParams) {
     QString cmdString = cmdP.wordValue()->keyValue();
 
     Cmd_t command;
     DatumPtr node = DatumPtr(new ASTNode(cmdP));
-    if (procedures.contains(cmdString)) {
-        DatumPtr procBody = procedures[cmdString];
+    if (stringToCmd.contains(cmdString)) {
+        command = stringToCmd[cmdString];
+        defaultParams = command.countOfDefaultParams;
+        minParams = command.countOfMinParams;
+        maxParams = command.countOfMaxParams;
+        node.astnodeValue()->kernel = command.method;
+    } else if (isNamedProcedure(cmdString)) {
+        DatumPtr procBody = procedureForName(cmdString);
         if (procBody.procedureValue()->isMacro)
             node.astnodeValue()->kernel = &Kernel::executeMacro;
         else
@@ -382,12 +410,6 @@ DatumPtr Procedures::astnodeFromCommand(DatumPtr cmdP, int &minParams,
         defaultParams = procBody.procedureValue()->countOfDefaultParams;
         minParams = procBody.procedureValue()->countOfMinParams;
         maxParams = procBody.procedureValue()->countOfMaxParams;
-    } else if (stringToCmd.contains(cmdString)) {
-        command = stringToCmd[cmdString];
-        defaultParams = command.countOfDefaultParams;
-        minParams = command.countOfMinParams;
-        maxParams = command.countOfMaxParams;
-        node.astnodeValue()->kernel = command.method;
     } else if (cmdString.startsWith(QObject::tr("SET")) && (cmdString.size() > 3) &&
                mainKernel()->varALLOWGETSET()) {
         node.astnodeValue()->kernel = &Kernel::excSetfoo;

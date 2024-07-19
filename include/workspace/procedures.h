@@ -29,6 +29,7 @@
 #include "datum.h"
 #include "workspace/workspace.h"
 #include <QHash>
+#include "library.h"
 
 struct Cmd_t {
   KernelMethod method;
@@ -42,6 +43,11 @@ class Procedures : public Workspace {
 
   QHash<QString, DatumPtr> procedures;
   qint64 lastProcedureCreatedTimestamp;
+
+  DatumPtr procedureForName(QString aName);
+  bool isNamedProcedure(QString aName);
+
+  Library stdLib;
 
 public:
   Procedures();

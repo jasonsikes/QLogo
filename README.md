@@ -27,7 +27,7 @@ GNU General Public License for more details.
 
 ***
 
-The help files included in this package derive from UCBLogo under
+The help and library texts included in this package derive from UCBLogo under
 terms of the GNU General Public License as published by the Free
 Software Foundation, version 3.
 
@@ -85,12 +85,16 @@ $ make
 $ sudo make install
 ```
 
-This will give you two executables:
+This will give you two executables and supporting files:
 
 1. "qlogo": this is the Logo interpreter that can be run from a script or command line.
 
 2. "QLogo-GUI": this is the graphical user interface that will run qlogo and provides
 the turtle and editor.
+
+3. "qlogo_library.db": this is the SQLite database that stores the standard library.
+
+4. "qlogo_help.db": this is the SQLite database that stores the help texts.
 
 ***
 
@@ -118,10 +122,6 @@ the turtle and editor.
 * Changes in font properties (size, color, family) do not affect characters
   already printed. This enables multiple colors and fonts on the same console.
   
-
-* The entire Logo standard library is loaded internally and buried. There is
-  no library directory at this time.
-
 
 * QLogo does not look for nor automatically load `STARTUP.LG`.
 
@@ -175,7 +175,7 @@ available.
 
 `EPSPICT`:
 
-This is replaced by SVGPICT.
+This is replaced by `SVGPICT`. See below.
 
 `CSLSLOAD`:
 
@@ -192,7 +192,7 @@ command line, such as in a terminal, no editor is available.
 
 `SETLIBLOC`:
 
-The QLogo library is stored internally.
+Not implemented. QLogo uses a SQLite database to store its standard library.
 
 `SETHELPLOC`:
 

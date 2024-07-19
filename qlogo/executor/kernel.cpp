@@ -35,7 +35,6 @@
 #include <stdlib.h> // arc4random_uniform()
 
 #include "error.h"
-#include "library.h"
 #include "runparser.h"
 #include "turtle.h"
 
@@ -52,23 +51,27 @@ Kernel* mainKernel() {
 }
 
 StreamRedirect::StreamRedirect(TextStream *newReadStream,
-                               TextStream *newWriteStream) {
-  originalWriteStream = _mainKernel->writeStream;
-  originalSystemWriteStream = _mainKernel->systemWriteStream;
-  originalReadStream = _mainKernel->readStream;
-  originalSystemReadStream = _mainKernel->systemReadStream;
+                               TextStream *newWriteStream,
+                               Parser *newParser) {
+    originalWriteStream = _mainKernel->writeStream;
+    originalSystemWriteStream = _mainKernel->systemWriteStream;
+    originalReadStream = _mainKernel->readStream;
+    originalSystemReadStream = _mainKernel->systemReadStream;
+    originalParser = _mainKernel->parser;
 
-  _mainKernel->writeStream = newWriteStream;
-  _mainKernel->systemWriteStream = newWriteStream;
-  _mainKernel->readStream = newReadStream;
-  _mainKernel->systemReadStream = newReadStream;
+    _mainKernel->writeStream = newWriteStream;
+    _mainKernel->systemWriteStream = newWriteStream;
+    _mainKernel->readStream = newReadStream;
+    _mainKernel->systemReadStream = newReadStream;
+    _mainKernel->parser = newParser;
 }
 
 StreamRedirect::~StreamRedirect() {
-  _mainKernel->writeStream = originalWriteStream;
-  _mainKernel->readStream = originalReadStream;
-  _mainKernel->systemWriteStream = originalSystemWriteStream;
-  _mainKernel->systemReadStream = originalSystemReadStream;
+    _mainKernel->parser = originalParser;
+    _mainKernel->writeStream = originalWriteStream;
+    _mainKernel->readStream = originalReadStream;
+    _mainKernel->systemWriteStream = originalSystemWriteStream;
+    _mainKernel->systemReadStream = originalSystemReadStream;
 }
 
 
@@ -253,8 +256,6 @@ void Kernel::initPalette() {
   palette.push_back(QColor(QStringLiteral("grey")));        // 15
   palette.resize(paletteSize);
 }
-
-void Kernel::initLibrary() { executeText(libraryStr); }
 
 
 // TODO: System vars need standardization
@@ -628,7 +629,7 @@ DatumPtr Kernel::pause() {
 
     // TODO: PAUSE and getLineAndRunIt should not be procedure but evalStack entry.
   isPausing = true;
-  StreamRedirect streamScope(stdioStream, stdioStream);
+  StreamRedirect streamScope(stdioStream, stdioStream, parser);
 
   sysPrint(QObject::tr("Pausing...\n"));
 
