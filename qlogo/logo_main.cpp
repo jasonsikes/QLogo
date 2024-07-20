@@ -20,10 +20,10 @@ void processOptions(QCoreApplication *a)
        QCoreApplication::translate("main",
                                    "DO NOT USE! Set the input and output to the format used by "
                                    "the QLogo GUI Application. Useless elsewhere.")},
-      {"libdb",
+      {"setlibloc",
        QCoreApplication::translate("main",
                                    "Specify the location of the standard library database.")},
-      {"helpdb",
+      {"sethelploc",
        QCoreApplication::translate("main", "Specify the location of the help database."),
        QCoreApplication::translate("main", "help_database")},
                      });
@@ -34,12 +34,12 @@ void processOptions(QCoreApplication *a)
       Config::get().hasGUI = true;
     }
 
-  if (commandlineParser.isSet("libdb")) {
-        Config::get().paramLibraryDatabaseFilepath = commandlineParser.value("libdb");
+  if (commandlineParser.isSet("setlibloc")) {
+        Config::get().paramLibraryDatabaseFilepath = commandlineParser.value("setlibloc");
   }
 
-  if (commandlineParser.isSet("helpdb")) {
-      Config::get().paramHelpDatabaseFilepath = commandlineParser.value("helpdb");
+  if (commandlineParser.isSet("sethelploc")) {
+      Config::get().paramHelpDatabaseFilepath = commandlineParser.value("sethelploc");
   }
 }
 

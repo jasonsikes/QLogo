@@ -126,6 +126,11 @@ the turtle and editor.
 * QLogo does not look for nor automatically load `STARTUP.LG`.
 
 
+* `COMMANDLINE` contains **ALL** of the parameters used to start qlogo instead
+  of just the ones that appear after a hyphen. This is because I use QCommandLineParser
+  to handle all of the command line arguments that begin with a hyphen.
+
+
 * If `ERRACT` is set and its size is greater than zero, then any errors execute
   `PAUSE`. This was necessary because I couldn't find a reliable way to prevent
   infinite loops during error handling.
@@ -194,31 +199,31 @@ command line, such as in a terminal, no editor is available.
 `SETLIBLOC`:
 
 Not implemented. QLogo uses a SQLite database to store its standard library.
+You can use the `setlibloc` command line parameter to tell qlogo where to find
+the SQLite database if it is in a different location than where qlogo expects it.
 
 `SETHELPLOC`:
 
-Not implemented. QLogo uses a SQLite database to store help text.
+Not implemented. QLogo uses a SQLite database to store its help text.
+You can use the `sethelploc` command line parameter to tell qlogo where to find
+the SQLite database if it is in a different location than where qlogo expects it.
 
 `SETTEMPLOC`:
 
-QLogo doesn't create temporary files at this time.
+QLogo doesn't create temporary files.
 
 
 ### The following variables have no special meaning:
 
-`COMMANDLINE`:
-
-Not implemented yet.
-
 `REDEFP`:
 
-Qt has strong support for internationalization, but QLogo
-is not designed at this time to take advantage of
-that. Internationalization will be supported soon.
+Qt has strong support for internationalization, but in QLogo it is only partially implemented.
+Internationalization will be supported soon.
 
 `USEALTERNATENAMES`:
 
-Ditto.
+Qt has strong support for internationalization, but in QLogo it is only partially implemented.
+Internationalization will be supported soon.
 
 
 ### The following commands are NEW:
