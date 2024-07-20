@@ -4,12 +4,6 @@
 #include <unistd.h>
 
 
-// Some global options.
-// Use 'extern' to access them.
-bool hasGUI = false;
-QString library_db;
-QString helpdb;
-
 void processOptions(QCoreApplication *a)
 {
   QCommandLineParser commandlineParser;
@@ -37,15 +31,15 @@ void processOptions(QCoreApplication *a)
   commandlineParser.process(*a);
 
   if (commandlineParser.isSet("QLogoGUI")) {
-      hasGUI = true;
+      Config::get().hasGUI = true;
     }
 
   if (commandlineParser.isSet("libdb")) {
-        library_db = commandlineParser.value("libdb");
+        Config::get().paramLibraryDatabaseFilepath = commandlineParser.value("libdb");
   }
 
   if (commandlineParser.isSet("helpdb")) {
-      helpdb = commandlineParser.value("helpdb");
+      Config::get().paramHelpDatabaseFilepath = commandlineParser.value("helpdb");
   }
 }
 
@@ -57,7 +51,7 @@ int main(int argc, char **argv)
   processOptions(&application);
 
   LogoController *mainController;
-  if (hasGUI) {
+  if (Config::get().hasGUI) {
       mainController = new LogoControllerGUI;
   } else {
       mainController = new LogoController;

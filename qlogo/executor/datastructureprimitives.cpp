@@ -1251,7 +1251,7 @@ COD***/
 DatumPtr Kernel::excStandout(DatumPtr node) {
   ProcedureHelper h(this, node);
   const QString &phrase = h.wordAtIndex(0).wordValue()->printValue();
-  QString t = mainController()->addStandoutToString(phrase);
+  QString t = Config::get().mainController()->addStandoutToString(phrase);
   return h.ret(t);
 }
 

@@ -6,6 +6,7 @@
 #include <QCoreApplication>
 #include <QFileInfo>
 #include <QDir>
+#include "sharedconstants.h"
 
 //===-- qlogo/help.cpp - Help class implementation -------*- C++ -*-===//
 //
@@ -32,12 +33,6 @@
 ///
 //===----------------------------------------------------------------------===//
 
-// If the help location was given as a command line parameter,
-// This is where it would be.
-extern QString helpdb;
-
-// TODO: This should be set in the CMake file
-const char* helpDbFilename = "qlogo_help.db";
 
 
 
@@ -51,8 +46,8 @@ Help::~Help()
 QString Help::findHelpDB()
 {
     // If the helpDB location was passed as a parameter, use that.
-    if ( ! helpdb.isNull()) {
-        return helpdb;
+    if ( ! Config::get().paramHelpDatabaseFilepath.isNull()) {
+        return Config::get().paramHelpDatabaseFilepath;
     }
 
     // else, build a list of candidate locations to try.
@@ -63,15 +58,15 @@ QString Help::findHelpDB()
                       + QDir::separator() + ".."
                       + QDir::separator() + "share"
                       + QDir::separator() + "qlogo"
-                      + QDir::separator() + helpDbFilename;
+                      + QDir::separator() + Config::get().defaultHelpDbFilename;
     // The Resources directory relative to wherever the app binary is.
     candidates << QCoreApplication::applicationDirPath()
                       + QDir::separator() + ".."
                       + QDir::separator() + "Resources"
-                      + QDir::separator() + helpDbFilename;
+                      + QDir::separator() + Config::get().defaultHelpDbFilename;
     // The same directory as the app binary.
     candidates << QCoreApplication::applicationDirPath()
-                      + QDir::separator() + helpDbFilename;
+                      + QDir::separator() + Config::get().defaultHelpDbFilename;
 
     for (auto &c : candidates) {
         // qDebug() << "Checking: " << c;
@@ -80,7 +75,7 @@ QString Help::findHelpDB()
     }
 
     // TODO: How do we handle this gracefully?
-    return helpdb;
+    return Config::get().defaultHelpDbFilename;
 }
 
 

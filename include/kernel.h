@@ -193,6 +193,4 @@ public:
   ~StreamRedirect();
 };
 
-Kernel* mainKernel();
-
 #endif // EXECUTOR_H

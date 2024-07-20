@@ -51,6 +51,7 @@ class Procedures : public Workspace {
 
 public:
   Procedures();
+  ~Procedures();
 
   qint64 timeOfLastProcedureCreation() { return lastProcedureCreatedTimestamp; }
 
@@ -123,8 +124,6 @@ public:
     sourceText = nothing;
   }
 };
-
-Procedures* mainProcedures();
 
 
 #endif // PROCEDURES_H

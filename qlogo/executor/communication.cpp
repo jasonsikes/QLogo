@@ -747,10 +747,10 @@ DatumPtr Kernel::excDribble(DatumPtr node) {
 
   const QString filepath = filepathForFilename(filenameP);
 
-  if (mainController()->isDribbling())
+  if (Config::get().mainController()->isDribbling())
     Error::alreadyDribbling();
 
-  if (!mainController()->setDribble(filepath)) {
+  if ( ! Config::get().mainController()->setDribble(filepath)) {
     Error::cantOpen(filenameP);
   }
   return nothing;
@@ -767,7 +767,7 @@ COD***/
 //CMD NODRIBBLE 0 0 0
 DatumPtr Kernel::excNodribble(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainController()->setDribble("");
+  Config::get().mainController()->setDribble("");
   return nothing;
 }
 
@@ -956,7 +956,9 @@ COD***/
 DatumPtr Kernel::excEofp(DatumPtr node) {
   ProcedureHelper h(this, node);
   bool retval =
-      (readStream != stdioStream) ? readStream->atEnd() : mainController()->atEnd();
+      (readStream != stdioStream)
+                    ? readStream->atEnd()
+                    : Config::get().mainController()->atEnd();
   return h.ret(retval);
 }
 
@@ -982,8 +984,9 @@ COD***/
 //CMD KEY? 0 0 0
 DatumPtr Kernel::excKeyp(DatumPtr node) {
   ProcedureHelper h(this, node);
-  bool retval = (readStream != stdioStream) ? !readStream->atEnd()
-                                            : mainController()->keyQueueHasChars();
+  bool retval = (readStream != stdioStream)
+                    ? !readStream->atEnd()
+                    : Config::get().mainController()->keyQueueHasChars();
   return h.ret(retval);
 }
 
@@ -999,7 +1002,7 @@ COD***/
 //CMD CT 0 0 0
 DatumPtr Kernel::excCleartext(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainController()->clearScreenText();
+  Config::get().mainController()->clearScreenText();
   return nothing;
 }
 
@@ -1029,7 +1032,7 @@ DatumPtr Kernel::excSetcursor(DatumPtr node) {
       return false;
     return true;
   });
-  mainController()->setTextCursorPos(v[0], v[1]);
+  Config::get().mainController()->setTextCursorPos(v[0], v[1]);
   return nothing;
 }
 
@@ -1045,7 +1048,7 @@ COD***/
 DatumPtr Kernel::excCursor(DatumPtr node) {
   ProcedureHelper h(this, node);
   int row = 0, col = 0;
-  mainController()->getTextCursorPos(row, col);
+  Config::get().mainController()->getTextCursorPos(row, col);
   List *retval = new List();
   retval->append(DatumPtr(row));
   retval->append(DatumPtr(col));
@@ -1084,16 +1087,16 @@ DatumPtr Kernel::excSettextcolor(DatumPtr node) {
         });
   }
 
-  mainController()->setTextColor(foreground, background);
+  Config::get().mainController()->setTextColor(foreground, background);
   return nothing;
 }
 //CMD INCREASEFONT 0 0 0
 DatumPtr Kernel::excIncreasefont(DatumPtr node) {
   ProcedureHelper h(this, node);
-  double f = mainController()->getTextFontSize();
+  double f = Config::get().mainController()->getTextFontSize();
   f += 2;
   // There doesn't appear to be a maximum font size.
-  mainController()->setTextFontSize(f);
+  Config::get().mainController()->setTextFontSize(f);
   return nothing;
 }
 
@@ -1109,11 +1112,11 @@ COD***/
 //CMD DECREASEFONT 0 0 0
 DatumPtr Kernel::excDecreasefont(DatumPtr node) {
   ProcedureHelper h(this, node);
-  double f = mainController()->getTextFontSize();
+  double f = Config::get().mainController()->getTextFontSize();
   f -= 2;
   if (f < 2)
     f = 2;
-  mainController()->setTextFontSize(f);
+  Config::get().mainController()->setTextFontSize(f);
   return nothing;
 }
 
@@ -1131,7 +1134,7 @@ DatumPtr Kernel::excSettextsize(DatumPtr node) {
   ProcedureHelper h(this, node);
   double newSize = h.validatedNumberAtIndex(
       0, [](double candidate) { return candidate >= 1; });
-  mainController()->setTextFontSize(newSize);
+  Config::get().mainController()->setTextFontSize(newSize);
   return nothing;
 }
 
@@ -1147,7 +1150,7 @@ COD***/
 //CMD TEXTSIZE 0 0 0
 DatumPtr Kernel::excTextsize(DatumPtr node) {
   ProcedureHelper h(this, node);
-  double size = mainController()->getTextFontSize();
+  double size = Config::get().mainController()->getTextFontSize();
   return h.ret(size);
 }
 
@@ -1162,7 +1165,7 @@ COD***/
 DatumPtr Kernel::excSetfont(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString fontName = h.wordAtIndex(0).wordValue()->printValue();
-  mainController()->setTextFontName(fontName);
+  Config::get().mainController()->setTextFontName(fontName);
   return nothing;
 }
 
@@ -1176,7 +1179,7 @@ COD***/
 //CMD FONT 0 0 0
 DatumPtr Kernel::excFont(DatumPtr node) {
   ProcedureHelper h(this, node);
-  QString retval = mainController()->getTextFontName();
+  QString retval = Config::get().mainController()->getTextFontName();
   return h.ret(retval);
 }
 
@@ -1195,7 +1198,7 @@ COD***/
 DatumPtr Kernel::excAllfonts(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = new List();
-  QStringList fonts = mainController()->getAllFontNames();
+  QStringList fonts = Config::get().mainController()->getAllFontNames();
   for (const QString &i : fonts) {
     retval->append(DatumPtr(i));
   }
@@ -1213,7 +1216,7 @@ COD***/
 //CMD CURSORINSERT 0 0 0
 DatumPtr Kernel::excCursorInsert(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainController()->setCursorOverwriteMode(false);
+  Config::get().mainController()->setCursorOverwriteMode(false);
   return nothing;
 }
 
@@ -1227,7 +1230,7 @@ COD***/
 //CMD CURSOROVERWRITE 0 0 0
 DatumPtr Kernel::excCursorOverwrite(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainController()->setCursorOverwriteMode(true);
+  Config::get().mainController()->setCursorOverwriteMode(true);
   return nothing;
 }
 
@@ -1240,7 +1243,7 @@ COD***/
 //CMD CURSORMODE 0 0 0
 DatumPtr Kernel::excCursorMode(DatumPtr node) {
   ProcedureHelper h(this, node);
-  bool mode = mainController()->cursorOverwriteMode();
+  bool mode = Config::get().mainController()->cursorOverwriteMode();
   QString retval = mode ? QObject::tr("OVERWRITE") : QObject::tr("INSERT");
   return h.ret(retval);
 }

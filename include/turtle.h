@@ -47,7 +47,7 @@ class Turtle {
 
   PenModeEnum penMode = penModePaint;
 
-  double penSize = initialPensize;
+  double penSize = Config::get().initialPensize;
 
   bool turtleIsVisible;
   bool penIsDown;
@@ -87,7 +87,5 @@ public:
   void beginFillWithColor(const QColor &fillColor);
   void endFill();
 };
-
-Turtle *mainTurtle();
 
 #endif // TURTLE_H

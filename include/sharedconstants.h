@@ -33,6 +33,11 @@
 
 using message_t = quint8;
 
+class Turtle;
+class Kernel;
+class Procedures;
+class LogoController;
+
 enum messageCategory : message_t {
     W_ZERO = 0,             // Zeroes get ignored
     W_INITIALIZE,           // The initialization message, either request or response
@@ -83,19 +88,108 @@ enum messageCategory : message_t {
     C_CANVAS_SET_PENMODE,             // Set canvas pen mode
 };
 
-const QChar escapeChar(27);
-const QString escapeString(escapeChar);
+class Config
+{
+private:
+    Config() {}
+    Config(const Config&);
+    Config& operator=(const Config&);
+    ~Config() {
+        Q_ASSERT(mTurtle == NULL);
+        Q_ASSERT(mKernel == NULL);
+        Q_ASSERT(mProcedures == NULL);
+        Q_ASSERT(mLogoController == NULL);
+    }
+
+    Turtle *mTurtle = NULL;
+    Kernel *mKernel = NULL;
+    Procedures *mProcedures = NULL;
+    LogoController *mLogoController = NULL;
+
+public:
+    static Config& get()
+    {
+        static Config instance;
+        return instance;
+    }
+
+    // Escape char and string are the separators between Console messages and
+    // Console control characters. Currently, the only control is switching
+    // STANDOUT modes.
+    const QChar escapeChar = QChar(27);
+    const QString escapeString = QString(escapeChar);
+
+    const float initialBoundX = 150;
+    const float initialBoundY = 150;
+
+    const float initialPensize = 1;
+
+    const QColor initialCanvasForegroundColor = QColorConstants::White;
+    const QColor initialCanvasBackgroundColor = QColorConstants::Black;
+
+    // Canvas size proportions for each mode. 0.0 means Canvas is completely
+    // hidden. 0.8 means Canvas takes up 80% of available space (remaining 20%
+    // belongs to the Console).
+    const float textScreenSize  = 0.0;
+    const float fullScreenSize  = 0.8;
+    const float splitScreenSize = 0.8;
+    const float initScreenSize  = textScreenSize;
+
+    Turtle *mainTurtle() {
+        Q_ASSERT(mTurtle != NULL);
+        return mTurtle;
+    }
+
+    Kernel* mainKernel() {
+        Q_ASSERT(mKernel != NULL);
+        return mKernel;
+    }
+
+    Procedures* mainProcedures() {
+        Q_ASSERT(mProcedures != NULL);
+        return mProcedures;
+    }
+
+    LogoController *mainController() {
+        Q_ASSERT(mLogoController != NULL);
+        return mLogoController;
+    }
+
+    void setMainTurtle(Turtle *aTurtle) {
+        Q_ASSERT((mTurtle == NULL) || (aTurtle == NULL));
+        mTurtle = aTurtle;
+    }
+
+    void setMainKernel(Kernel *aKernel) {
+        Q_ASSERT((mKernel == NULL) || (aKernel == NULL));
+        mKernel = aKernel;
+    }
+
+    void setMainProcedures(Procedures *aProcedures) {
+        Q_ASSERT((mProcedures == NULL) || (aProcedures == NULL));
+        mProcedures = aProcedures;
+    }
+
+    void setMainLogoController(LogoController *aLogoController) {
+        Q_ASSERT((mLogoController == NULL) || (aLogoController == NULL));
+        mLogoController = aLogoController;
+    }
+
+    // Set to true iff qlogo is communicating with QLogo-GUI.
+    bool hasGUI = false;
+
+    // ARGV initialization parameters
+    QString paramLibraryDatabaseFilepath;
+    QString paramHelpDatabaseFilepath;
+
+    // TODO: These should be set in the CMake file
+    const char* defaultLibraryDbFilename = "qlogo_library.db";
+    const char* defaultHelpDbFilename = "qlogo_help.db";
+
+};
 
 #define dv(x) qDebug()<<#x<<'='<<x
 
-
-const float initialBoundX = 150;
-const float initialBoundY = 150;
-
-const float initialPensize = 1;
-
-const QColor initialCanvasBackgroundColor = QColorConstants::Black;
-const QColor initialCanvasForegroundColor = QColorConstants::White;
 
 enum PenModeEnum { penModePaint, penModeErase, penModeReverse };
 
@@ -115,12 +209,6 @@ enum ScreenModeEnum {
   fullScreenMode,
   splitScreenMode
 };
-
-// Canvas size proportions for each mode.
-const float textScreenSize  = 0.0;
-const float fullScreenSize  = 0.8;
-const float splitScreenSize = 0.8;
-const float initScreenSize  = 0.0;
 
 
 #endif // CONSTANTS_H

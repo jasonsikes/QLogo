@@ -137,7 +137,8 @@ the turtle and editor.
 
 * No scunching. UCBLogo provided a scrunch to compensate for older CRT screens
   with non-square pixels. This enabled turtle operations to maintain consistent
-  physical height-width. `SCRUNCH` and `SETSCRUNCH` are no-ops.
+  physical height-width. The drawback is that some orientation queries are
+  inaccurate. `SCRUNCH` and `SETSCRUNCH` are no-ops.
 
 
 * `SAVEPICT` saves a copy of the canvas in the format given by the filename's
@@ -145,7 +146,7 @@ the turtle and editor.
   format. QLogo can save an image in the following formats: BMP, JPG/JPEG,
   PNG, PPM, XBM, and XPM
 
-* There is no facility yet for translation/internationalization. Yet.
+* There is no facility yet for translation/internationalization.
 
 
 ### The following commands are not implemented:
@@ -170,7 +171,7 @@ will be redrawn with the new dimensions. The Flood Fill
 algorithm depends on specific pixels which means that the
 display can change dramatically depending on the size of
 the canvas. The other reason is that the Flood Fill
-algorithm can slow down window resizing. FILLED is still
+algorithm can slow down window resizing. `FILLED` is still
 available.
 
 `EPSPICT`:

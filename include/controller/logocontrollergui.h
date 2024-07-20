@@ -32,8 +32,8 @@ class LogoControllerGUI : public LogoController
 
     double penSize;
 
-    double xbound = initialBoundX;
-    double ybound = initialBoundY;
+    double xbound = Config::get().initialBoundX;
+    double ybound = Config::get().initialBoundY;
     bool canvasIsBounded = true;
 
     QVector2D mousePos = QVector2D(0,0);
@@ -41,8 +41,8 @@ class LogoControllerGUI : public LogoController
     int lastButtonpressID = 0;
     bool isMouseButtonDown = false;
 
-    QColor currentBackgroundColor = initialCanvasBackgroundColor;
-    QColor currentForegroundColor = initialCanvasForegroundColor;
+    QColor currentBackgroundColor = Config::get().initialCanvasBackgroundColor;
+    QColor currentForegroundColor = Config::get().initialCanvasForegroundColor;
     QImage canvasImage;
     QByteArray canvasSvg;
 

@@ -48,7 +48,7 @@ class LogoController : public QObject {
 
 public:
   LogoController(QObject *parent = 0);
-  ~LogoController();
+  virtual ~LogoController();
 
   /// Returns the most recent interrupt signal that was received. Resets the signal.
   SignalsEnum_t latestSignal();
@@ -128,7 +128,5 @@ protected:
   QTextStream *outStream;
 
 };
-
-LogoController *mainController();
 
 #endif // LOGOCONTROLLER_H

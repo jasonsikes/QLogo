@@ -211,7 +211,7 @@ DatumPtr TextStream::readrawlineWithPrompt(const QString &prompt,
 {
   QString retval;
   if (stream == NULL) {
-    retval = mainController()->inputRawlineWithPrompt(prompt);
+    retval = Config::get().mainController()->inputRawlineWithPrompt(prompt);
     if (retval.isNull())
       return nothing;
   } else {
@@ -305,7 +305,7 @@ DatumPtr TextStream::readlistWithPrompt(const QString &prompt,
 
 DatumPtr TextStream::readChar() {
   if (stream == NULL) {
-    return mainController()->readchar();
+    return Config::get().mainController()->readchar();
   }
 
   if (stream->atEnd())
@@ -350,7 +350,7 @@ void TextStream::flush()
 void TextStream::lprint(QString text)
 {
   if (stream == NULL) {
-    mainController()->printToConsole(text);
+    Config::get().mainController()->printToConsole(text);
   } else {
     *stream << text;
     if (stream->status() != QTextStream::Ok)

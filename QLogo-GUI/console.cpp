@@ -82,7 +82,7 @@ void Console::standout()
 void Console::printString(const QString text) {
     // Because STANDOUT requires characters added to strings, we have to
     // handle them here.
-  QStringList stringList = text.split(escapeChar);
+  QStringList stringList = text.split(Config::get().escapeChar);
   for (auto i = stringList.begin(); i != stringList.end(); ++i) {
 
       if (i != stringList.begin()) {

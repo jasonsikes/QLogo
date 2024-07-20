@@ -4,8 +4,6 @@
 #include <QApplication>
 #include <signal.h>
 
-LogoController *_maincontroller = NULL;
-
 SignalsEnum_t lastSignal = noSignal;
 
 #ifdef _WIN32
@@ -59,16 +57,10 @@ static void restoreSignals()
 
 
 
-LogoController *mainController() {
-  Q_ASSERT(_maincontroller != NULL);
-  return _maincontroller;
-}
-
 LogoController::LogoController(QObject *parent)
 {
-    Q_ASSERT(_maincontroller == NULL);
     dribbleStream = NULL;
-    _maincontroller = this;
+    Config::get().setMainLogoController(this);
     kernel = new Kernel;
 
     inStream = new QTextStream(stdin, QIODevice::ReadOnly);
@@ -83,7 +75,7 @@ LogoController::~LogoController()
     delete inStream;
     delete outStream;
     delete kernel;
-    _maincontroller = NULL;
+    Config::get().setMainLogoController(NULL);
 }
 
 

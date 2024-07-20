@@ -61,7 +61,8 @@ DatumPtr Kernel::excForward(DatumPtr node) {
   ProcedureHelper h(this, node);
   double value = h.numberAtIndex(0);
 
-  mainTurtle()->forward(value);
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->forward(value);
 
   return nothing;
 }
@@ -82,7 +83,8 @@ DatumPtr Kernel::excBack(DatumPtr node) {
   ProcedureHelper h(this, node);
   double value = h.numberAtIndex(0);
 
-  mainTurtle()->forward(-value);
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->forward(-value);
 
   return nothing;
 }
@@ -102,7 +104,8 @@ DatumPtr Kernel::excLeft(DatumPtr node) {
   ProcedureHelper h(this, node);
   double value = h.numberAtIndex(0);
 
-  mainTurtle()->rotate(value);
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->rotate(value);
 
   return nothing;
 }
@@ -122,7 +125,8 @@ DatumPtr Kernel::excRight(DatumPtr node) {
   ProcedureHelper h(this, node);
   double value = h.numberAtIndex(0);
 
-  mainTurtle()->rotate(-value);
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->rotate(-value);
 
   return nothing;
 }
@@ -150,7 +154,8 @@ DatumPtr Kernel::excSetpos(DatumPtr node) {
     return true;
   });
 
-  mainTurtle()->setxy(v[0], v[1]);
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->setxy(v[0], v[1]);
 
   return nothing;
 }
@@ -169,7 +174,8 @@ DatumPtr Kernel::excSetXY(DatumPtr node) {
   double x = h.numberAtIndex(0);
   double y = h.numberAtIndex(1);
 
-  mainTurtle()->setxy(x, y);
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->setxy(x, y);
 
   return nothing;
 }
@@ -188,7 +194,8 @@ DatumPtr Kernel::excSetX(DatumPtr node) {
   ProcedureHelper h(this, node);
   double x = h.numberAtIndex(0);
 
-  mainTurtle()->setx(x);
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->setx(x);
 
   return nothing;
 }
@@ -207,7 +214,8 @@ DatumPtr Kernel::excSetY(DatumPtr node) {
   ProcedureHelper h(this, node);
   double y = h.numberAtIndex(0);
 
-  mainTurtle()->sety(y);
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->sety(y);
 
   return nothing;
 }
@@ -227,13 +235,15 @@ COD***/
 DatumPtr Kernel::excSetheading(DatumPtr node) {
   ProcedureHelper h(this, node);
   double newHeading = h.numberAtIndex(0);
-  double oldHeading = mainTurtle()->getHeading();
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  double oldHeading = Config::get().mainTurtle()->getHeading();
 
   // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
   newHeading = 360 - newHeading;
 
   double adjustment = newHeading - oldHeading;
-  mainTurtle()->rotate(adjustment);
+  Config::get().mainTurtle()->rotate(adjustment);
   return nothing;
 }
 
@@ -248,7 +258,9 @@ COD***/
 //CMD HOME 0 0 0
 DatumPtr Kernel::excHome(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainTurtle()->moveToHome();
+
+    if ( ! Config::get().hasGUI) Error::noGraphics();
+    Config::get().mainTurtle()->moveToHome();
 
   return nothing;
 }
@@ -274,8 +286,9 @@ DatumPtr Kernel::excArc(DatumPtr node) {
   if ((angle < -360) || (angle > 360))
     angle = 360;
 
+  if ( ! Config::get().hasGUI) Error::noGraphics();
   if ((angle != 0) && (radius != 0))
-    mainTurtle()->drawArc(angle, radius);
+    Config::get().mainTurtle()->drawArc(angle, radius);
 
   return nothing;
 }
@@ -294,7 +307,9 @@ COD***/
 DatumPtr Kernel::excPos(DatumPtr node) {
   ProcedureHelper h(this, node);
   double x, y;
-  mainTurtle()->getxy(x, y);
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->getxy(x, y);
 
   List *retval = new List();
   retval->append(DatumPtr(x));
@@ -312,7 +327,9 @@ COD***/
 //CMD HEADING 0 0 0
 DatumPtr Kernel::excHeading(DatumPtr node) {
   ProcedureHelper h(this, node);
-  double retval = mainTurtle()->getHeading();
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  double retval = Config::get().mainTurtle()->getHeading();
 
   // Heading is positive in the counter-clockwise direction.
   if (retval > 0)
@@ -344,7 +361,9 @@ DatumPtr Kernel::excTowards(DatumPtr node) {
       return false;
     return true;
   });
-  mainTurtle()->getxy(x, y);
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->getxy(x, y);
   double retval = atan2(x - v[0], v[1] - y) * (180 / M_PI);
   if (retval < 0)
     retval += 360;
@@ -390,8 +409,10 @@ COD***/
 //CMD ST 0 0 0
 DatumPtr Kernel::excShowturtle(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainTurtle()->setIsTurtleVisible(true);
-  mainController()->setTurtleIsVisible(true);
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->setIsTurtleVisible(true);
+  Config::get().mainController()->setTurtleIsVisible(true);
 
   return nothing;
 }
@@ -410,8 +431,10 @@ COD***/
 //CMD HT 0 0 0
 DatumPtr Kernel::excHideturtle(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainTurtle()->setIsTurtleVisible(false);
-  mainController()->setTurtleIsVisible(false);
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->setIsTurtleVisible(false);
+  Config::get().mainController()->setTurtleIsVisible(false);
 
   return nothing;
 }
@@ -428,7 +451,7 @@ COD***/
 //CMD CLEAN 0 0 0
 DatumPtr Kernel::excClean(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainController()->clearCanvas();
+  Config::get().mainController()->clearCanvas();
   return nothing;
 }
 
@@ -445,8 +468,10 @@ COD***/
 //CMD CS 0 0 0
 DatumPtr Kernel::excClearscreen(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainTurtle()->moveToHome();
-  mainController()->clearCanvas();
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->moveToHome();
+  Config::get().mainController()->clearCanvas();
 
   return nothing;
 }
@@ -468,9 +493,11 @@ COD***/
 DatumPtr Kernel::excWrap(DatumPtr node) {
   ProcedureHelper h(this, node);
   TurtleModeEnum newMode = turtleWrap;
-  if (mainTurtle()->getMode() != newMode) {
-    mainTurtle()->setMode(newMode);
-      mainController()->setIsCanvasBounded(true);
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  if (Config::get().mainTurtle()->getMode() != newMode) {
+    Config::get().mainTurtle()->setMode(newMode);
+      Config::get().mainController()->setIsCanvasBounded(true);
   }
   return nothing;
 }
@@ -491,9 +518,11 @@ COD***/
 DatumPtr Kernel::excWindow(DatumPtr node) {
   ProcedureHelper h(this, node);
   TurtleModeEnum newMode = turtleWindow;
-  if (mainTurtle()->getMode() != newMode) {
-    mainTurtle()->setMode(newMode);
-    mainController()->setIsCanvasBounded(false);
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  if (Config::get().mainTurtle()->getMode() != newMode) {
+    Config::get().mainTurtle()->setMode(newMode);
+    Config::get().mainController()->setIsCanvasBounded(false);
   }
   return nothing;
 }
@@ -512,9 +541,11 @@ COD***/
 DatumPtr Kernel::excFence(DatumPtr node) {
   ProcedureHelper h(this, node);
   TurtleModeEnum newMode = turtleFence;
-  if (mainTurtle()->getMode() != newMode) {
-    mainTurtle()->setMode(newMode);
-      mainController()->setIsCanvasBounded(true);
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  if (Config::get().mainTurtle()->getMode() != newMode) {
+    Config::get().mainTurtle()->setMode(newMode);
+      Config::get().mainController()->setIsCanvasBounded(true);
   }
   return nothing;
 }
@@ -530,8 +561,8 @@ COD***/
 //CMD BOUNDS 2 2 2
 DatumPtr Kernel::excBounds(DatumPtr node) {
   ProcedureHelper h(this, node);
-  double x = mainController()->boundX();
-  double y = mainController()->boundY();
+  double x = Config::get().mainController()->boundX();
+  double y = Config::get().mainController()->boundY();
 
   List *retval = new List();
   retval->append(DatumPtr(x));
@@ -558,7 +589,7 @@ DatumPtr Kernel::excSetbounds(DatumPtr node) {
   double x = h.validatedNumberAtIndex(0, v);
   double y = h.validatedNumberAtIndex(1, v);
 
-  mainController()->setBounds(x, y);
+  Config::get().mainController()->setBounds(x, y);
 
   return nothing;
 }
@@ -585,15 +616,16 @@ DatumPtr Kernel::excFilled(DatumPtr node) {
 
   DatumPtr commandList = h.datumAtIndex(1);
 
-  mainTurtle()->beginFillWithColor(c);
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->beginFillWithColor(c);
   DatumPtr retval;
   try {
     retval = runList(commandList);
   } catch (Error *e) {
-    mainTurtle()->endFill();
+    Config::get().mainTurtle()->endFill();
     throw e;
   }
-  mainTurtle()->endFill();
+  Config::get().mainTurtle()->endFill();
   return h.ret(retval);
 }
 
@@ -611,8 +643,10 @@ DatumPtr Kernel::excLabel(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString text = h.wordAtIndex(0).wordValue()->printValue();
   double x = 0, y = 0;
-  mainTurtle()->getxy(x, y);
-  mainController()->drawLabel(text);
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->getxy(x, y);
+  Config::get().mainController()->drawLabel(text);
   return nothing;
 }
 
@@ -628,7 +662,7 @@ DatumPtr Kernel::excSetlabelheight(DatumPtr node) {
   ProcedureHelper h(this, node);
   double height = h.validatedNumberAtIndex(
       0, [](double candidate) { return candidate > 0; });
-  mainController()->setLabelFontSize(height);
+  Config::get().mainController()->setLabelFontSize(height);
   return nothing;
 }
 
@@ -646,7 +680,7 @@ COD***/
 //CMD TS 0 0 0
 DatumPtr Kernel::excTextscreen(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainController()->setScreenMode(textScreenMode);
+  Config::get().mainController()->setScreenMode(textScreenMode);
   return nothing;
 }
 
@@ -668,7 +702,7 @@ COD***/
 //CMD FS 0 0 0
 DatumPtr Kernel::excFullscreen(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainController()->setScreenMode(fullScreenMode);
+  Config::get().mainController()->setScreenMode(fullScreenMode);
   return nothing;
 }
 
@@ -687,7 +721,7 @@ COD***/
 //CMD SS 0 0 0
 DatumPtr Kernel::excSplitscreen(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainController()->setScreenMode(splitScreenMode);
+  Config::get().mainController()->setScreenMode(splitScreenMode);
   return nothing;
 }
 
@@ -719,7 +753,9 @@ COD***/
 //CMD SHOWN? 0 0 0
 DatumPtr Kernel::excShownp(DatumPtr node) {
   ProcedureHelper h(this, node);
-  bool retval = mainTurtle()->isTurtleVisible();
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  bool retval = Config::get().mainTurtle()->isTurtleVisible();
   return h.ret(retval);
 }
 
@@ -739,7 +775,7 @@ COD***/
 DatumPtr Kernel::excScreenmode(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString retval;
-  switch (mainController()->getScreenMode()) {
+  switch (Config::get().mainController()->getScreenMode()) {
   case textScreenMode:
   case initScreenMode:
     retval = QObject::tr("textscreen");
@@ -768,7 +804,9 @@ COD***/
 DatumPtr Kernel::excTurtlemode(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString retval;
-  switch (mainTurtle()->getMode()) {
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  switch (Config::get().mainTurtle()->getMode()) {
   case turtleWrap:
     retval = QObject::tr("wrap");
     break;
@@ -799,7 +837,7 @@ COD***/
 //CMD LABELSIZE 0 0 0
 DatumPtr Kernel::excLabelheight(DatumPtr node) {
   ProcedureHelper h(this, node);
-  double retval = mainController()->getLabelFontSize();
+  double retval = Config::get().mainController()->getLabelFontSize();
   return h.ret(retval);
 }
 
@@ -819,7 +857,9 @@ COD***/
 DatumPtr Kernel::excMatrix(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = new List();
-  const QMatrix4x4 &m = mainTurtle()->getMatrix();
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  const QMatrix4x4 &m = Config::get().mainTurtle()->getMatrix();
   for (int row = 0; row < 4; ++row) {
     List *r = new List();
     for (int col = 0; col < 4; ++col) {
@@ -844,7 +884,9 @@ COD***/
 //CMD PD 0 0 0
 DatumPtr Kernel::excPendown(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainTurtle()->setPenIsDown(true);
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->setPenIsDown(true);
 
   return nothing;
 }
@@ -861,7 +903,9 @@ COD***/
 //CMD PU 0 0 0
 DatumPtr Kernel::excPenup(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainTurtle()->setPenIsDown(false);
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->setPenIsDown(false);
 
   return nothing;
 }
@@ -878,8 +922,10 @@ COD***/
 //CMD PPT 0 0 0
 DatumPtr Kernel::excPenpaint(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainTurtle()->setPenIsDown(true);
-  mainTurtle()->setPenMode(penModePaint);
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->setPenIsDown(true);
+  Config::get().mainTurtle()->setPenMode(penModePaint);
   return nothing;
 }
 
@@ -895,8 +941,10 @@ COD***/
 //CMD PE 0 0 0
 DatumPtr Kernel::excPenerase(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainTurtle()->setPenIsDown(true);
-  mainTurtle()->setPenMode(penModeErase);
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->setPenIsDown(true);
+  Config::get().mainTurtle()->setPenMode(penModeErase);
   return nothing;
 }
 
@@ -913,8 +961,10 @@ COD***/
 //CMD PX 0 0 0
 DatumPtr Kernel::excPenreverse(DatumPtr node) {
   ProcedureHelper h(this, node);
-  mainTurtle()->setPenIsDown(true);
-  mainTurtle()->setPenMode(penModeReverse);
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->setPenIsDown(true);
+  Config::get().mainTurtle()->setPenMode(penModeReverse);
   return nothing;
 }
 
@@ -961,7 +1011,9 @@ DatumPtr Kernel::excSetpencolor(DatumPtr node) {
   h.validatedDatumAtIndex(0, [&c, this](DatumPtr candidate) {
     return colorFromDatumPtr(c, candidate);
   });
-  mainTurtle()->setPenColor(c);
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  Config::get().mainTurtle()->setPenColor(c);
   return nothing;
 }
 
@@ -1022,9 +1074,11 @@ COD***/
 DatumPtr Kernel::excSetpensize(DatumPtr node) {
   ProcedureHelper h(this, node);
   double newSize = h.validatedNumberAtIndex(0, [](double candidate) {
-    return mainTurtle()->isPenSizeValid(candidate);
+
+      if ( ! Config::get().hasGUI) Error::noGraphics();
+      return Config::get().mainTurtle()->isPenSizeValid(candidate);
   });
-  mainTurtle()->setPenSize(newSize);
+  Config::get().mainTurtle()->setPenSize(newSize);
   return nothing;
 }
 
@@ -1045,7 +1099,7 @@ DatumPtr Kernel::excSetbackground(DatumPtr node) {
   h.validatedDatumAtIndex(0, [&c, this](DatumPtr candidate) {
     return colorFromDatumPtr(c, candidate);
   });
-  mainController()->setCanvasBackgroundColor(c);
+  Config::get().mainController()->setCanvasBackgroundColor(c);
   return nothing;
 }
 
@@ -1063,7 +1117,9 @@ COD***/
 //CMD PENDOWN? 0 0 0
 DatumPtr Kernel::excPendownp(DatumPtr node) {
   ProcedureHelper h(this, node);
-  return h.ret(mainTurtle()->isPenDown());
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  return h.ret(Config::get().mainTurtle()->isPenDown());
 }
 
 
@@ -1077,7 +1133,9 @@ COD***/
 //CMD PENMODE 0 0 0
 DatumPtr Kernel::excPenmode(DatumPtr node) {
   ProcedureHelper h(this, node);
-  PenModeEnum pm = mainTurtle()->getPenMode();
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  PenModeEnum pm = Config::get().mainTurtle()->getPenMode();
   QString retval;
   switch (pm) {
   case penModePaint:
@@ -1110,7 +1168,9 @@ COD***/
 //CMD PC 0 0 0
 DatumPtr Kernel::excPencolor(DatumPtr node) {
   ProcedureHelper h(this, node);
-  const QColor &c = mainTurtle()->getPenColor();
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  const QColor &c = Config::get().mainTurtle()->getPenColor();
   return h.ret(listFromColor(c));
 }
 
@@ -1143,7 +1203,9 @@ COD***/
 //CMD PENSIZE 0 0 0
 DatumPtr Kernel::excPensize(DatumPtr node) {
   ProcedureHelper h(this, node);
-  double retval = mainTurtle()->getPenSize();
+
+  if ( ! Config::get().hasGUI) Error::noGraphics();
+  double retval = Config::get().mainTurtle()->getPenSize();
   return h.ret(retval);
 }
 
@@ -1162,7 +1224,7 @@ COD***/
 //CMD BG 0 0 0
 DatumPtr Kernel::excBackground(DatumPtr node) {
   ProcedureHelper h(this, node);
-  QColor c = mainController()->getCanvasBackgroundColor();
+  QColor c = Config::get().mainController()->getCanvasBackgroundColor();
 
   return h.ret(listFromColor(c));
 }
@@ -1185,7 +1247,7 @@ DatumPtr Kernel::excSavepict(DatumPtr node) {
   DatumPtr filenameP = h.wordAtIndex(0);
 
   QString filepath = filepathForFilename(filenameP);
-  QImage image = mainController()->getCanvasImage();
+  QImage image = Config::get().mainController()->getCanvasImage();
   bool isSuccessful = image.save(filepath);
   if (!isSuccessful) {
     return h.ret(Error::fileSystemRecoverable());
@@ -1219,9 +1281,9 @@ DatumPtr Kernel::excLoadpict(DatumPtr node) {
             return h.ret(Error::fileSystemRecoverable());
         }
 
-        mainController()->setCanvasBackgroundImage(image);
+        Config::get().mainController()->setCanvasBackgroundImage(image);
     } else {
-        mainController()->setCanvasBackgroundImage(QImage());
+        Config::get().mainController()->setCanvasBackgroundImage(QImage());
     }
     return nothing;
 }
@@ -1240,7 +1302,7 @@ DatumPtr Kernel::excSvgpict(DatumPtr node) {
     DatumPtr filenameP = h.wordAtIndex(0);
 
     QString filepath = filepathForFilename(filenameP);
-    QByteArray svgImage = mainController()->getSvgImage();
+    QByteArray svgImage = Config::get().mainController()->getSvgImage();
 
     QFile file(filepath);
     bool isSuccessful = file.open(QIODevice::WriteOnly);
@@ -1273,7 +1335,7 @@ COD***/
 DatumPtr Kernel::excMousepos(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = new List();
-  QVector2D position = mainController()->mousePosition();
+  QVector2D position = Config::get().mainController()->mousePosition();
   retval->append(DatumPtr(position.x()));
   retval->append(DatumPtr(position.y()));
   return h.ret(retval);
@@ -1292,7 +1354,7 @@ COD***/
 DatumPtr Kernel::excClickpos(DatumPtr node) {
   ProcedureHelper h(this, node);
   List *retval = new List();
-  QVector2D position = mainController()->lastMouseclickPosition();
+  QVector2D position = Config::get().mainController()->lastMouseclickPosition();
   retval->append(DatumPtr(position.x()));
   retval->append(DatumPtr(position.y()));
   return h.ret(retval);
@@ -1313,7 +1375,7 @@ COD***/
 //CMD BUTTON? 0 0 0
 DatumPtr Kernel::excButtonp(DatumPtr node) {
   ProcedureHelper h(this, node);
-  return h.ret(mainController()->getIsMouseButtonDown());
+  return h.ret(Config::get().mainController()->getIsMouseButtonDown());
 }
 
 
@@ -1331,5 +1393,5 @@ COD***/
 //CMD BUTTON 0 0 0
 DatumPtr Kernel::excButton(DatumPtr node) {
   ProcedureHelper h(this, node);
-  return h.ret(mainController()->getAndResetButtonID());
+  return h.ret(Config::get().mainController()->getAndResetButtonID());
 }

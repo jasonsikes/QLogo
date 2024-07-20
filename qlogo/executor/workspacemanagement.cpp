@@ -71,7 +71,7 @@ QString Kernel::executeText(const QString &text) {
 }
 
 void Kernel::editAndRunWorkspaceText() {
-  const QString textRetval = mainController()->editText(workspaceText);
+  const QString textRetval = Config::get().mainController()->editText(workspaceText);
   if (textRetval != workspaceText) {
     workspaceText = textRetval;
     QString output = executeText(textRetval);
@@ -90,7 +90,7 @@ void Kernel::editAndRunFile() {
   QTextStream in(&file);
   QString fileText = in.readAll();
 
-  const QString textRetval = mainController()->editText(fileText);
+  const QString textRetval = Config::get().mainController()->editText(fileText);
   if (textRetval != "") {
     fileText = textRetval;
     file.seek(0);

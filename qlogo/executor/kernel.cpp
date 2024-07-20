@@ -43,35 +43,28 @@
 // The maximum depth of procedure iterations before error is thrown.
 const int maxIterationDepth = 1000;
 
-Kernel* _mainKernel = NULL;
-
-Kernel* mainKernel() {
-  Q_ASSERT(_mainKernel != NULL);
-  return _mainKernel;
-}
-
 StreamRedirect::StreamRedirect(TextStream *newReadStream,
                                TextStream *newWriteStream,
                                Parser *newParser) {
-    originalWriteStream = _mainKernel->writeStream;
-    originalSystemWriteStream = _mainKernel->systemWriteStream;
-    originalReadStream = _mainKernel->readStream;
-    originalSystemReadStream = _mainKernel->systemReadStream;
-    originalParser = _mainKernel->parser;
+    originalWriteStream = Config::get().mainKernel()->writeStream;
+    originalSystemWriteStream = Config::get().mainKernel()->systemWriteStream;
+    originalReadStream = Config::get().mainKernel()->readStream;
+    originalSystemReadStream = Config::get().mainKernel()->systemReadStream;
+    originalParser = Config::get().mainKernel()->parser;
 
-    _mainKernel->writeStream = newWriteStream;
-    _mainKernel->systemWriteStream = newWriteStream;
-    _mainKernel->readStream = newReadStream;
-    _mainKernel->systemReadStream = newReadStream;
-    _mainKernel->parser = newParser;
+    Config::get().mainKernel()->writeStream = newWriteStream;
+    Config::get().mainKernel()->systemWriteStream = newWriteStream;
+    Config::get().mainKernel()->readStream = newReadStream;
+    Config::get().mainKernel()->systemReadStream = newReadStream;
+    Config::get().mainKernel()->parser = newParser;
 }
 
 StreamRedirect::~StreamRedirect() {
-    _mainKernel->parser = originalParser;
-    _mainKernel->writeStream = originalWriteStream;
-    _mainKernel->readStream = originalReadStream;
-    _mainKernel->systemWriteStream = originalSystemWriteStream;
-    _mainKernel->systemReadStream = originalSystemReadStream;
+    Config::get().mainKernel()->parser = originalParser;
+    Config::get().mainKernel()->writeStream = originalWriteStream;
+    Config::get().mainKernel()->readStream = originalReadStream;
+    Config::get().mainKernel()->systemWriteStream = originalSystemWriteStream;
+    Config::get().mainKernel()->systemReadStream = originalSystemReadStream;
 }
 
 
@@ -159,7 +152,7 @@ bool Kernel::getLineAndRunIt(bool shouldHandleError) {
           }
           if (e->tag.wordValue()->keyValue() == QObject::tr("SYSTEM")) {
               sysPrint("\n");
-              mainController()->systemStop();
+              Config::get().mainController()->systemStop();
               return false;
           }
       }
@@ -274,8 +267,7 @@ void Kernel::initVariables(void)
 }
 
 Kernel::Kernel() {
-  Q_ASSERT(_mainKernel == NULL);
-  _mainKernel = this;
+  Config::get().setMainKernel(this);
   stdioStream = new TextStream(NULL);
   readStream = stdioStream;
   systemReadStream = stdioStream;
@@ -304,6 +296,7 @@ Kernel::~Kernel() {
 
   Q_ASSERT(callStack.size() == 1);
   callStack.stack.removeLast();
+  Config::get().setMainKernel(NULL);
 }
 
 void Kernel::makeVarLocal(const QString &varname) {
@@ -541,7 +534,7 @@ DatumPtr Kernel::executeValueOf(DatumPtr node) {
 
 SignalsEnum_t Kernel::interruptCheck()
 {
-    SignalsEnum_t latestSignal = mainController()->latestSignal();
+    SignalsEnum_t latestSignal = Config::get().mainController()->latestSignal();
     if (latestSignal == toplevelSignal) {
         if (callStack.globalFrame()->sourceNode != NULL)
             Error::throwError(DatumPtr(QObject::tr("TOPLEVEL")), nothing);
@@ -615,7 +608,7 @@ DatumPtr Kernel::excWait(DatumPtr node) {
   ProcedureHelper h(this, node);
   double value = h.validatedNumberAtIndex(
       0, [](double candidate) { return candidate >= 0; });
-  mainController()->mwait((1000.0 / 60) * value);
+  Config::get().mainController()->mwait((1000.0 / 60) * value);
   return nothing;
 }
 

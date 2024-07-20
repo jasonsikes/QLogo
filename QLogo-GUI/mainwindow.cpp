@@ -38,7 +38,6 @@
 #include <QDir>
 #include <QThread>
 #include <QFontDatabase>
-#include <signal.h>
 
 // Wrapper function for sending data to the logo interpreter
 void MainWindow::sendMessage(std::function<void (QDataStream*)> func)
@@ -518,16 +517,16 @@ void MainWindow::setSplitterforMode(ScreenModeEnum mode)
     float canvasSize, consoleSize;
     switch (mode) {
     case initScreenMode:
-        canvasSize = initScreenSize;
+        canvasSize = Config::get().initScreenSize;
         break;
     case textScreenMode:
-        canvasSize = textScreenSize;
+        canvasSize = Config::get().textScreenSize;
         break;
     case fullScreenMode:
-        canvasSize = fullScreenSize;
+        canvasSize = Config::get().fullScreenSize;
         break;
     case splitScreenMode:
-        canvasSize = splitScreenSize;
+        canvasSize = Config::get().splitScreenSize;
         break;
     }
     QList<int>sizes = ui->splitter->sizes();

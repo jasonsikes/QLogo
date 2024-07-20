@@ -30,14 +30,7 @@
 #include <QDir>
 #include <QSqlError>
 #include <QSqlQuery>
-
-// If the library location was given as a command line parameter,
-// This is where it would be.
-extern QString library_db;
-
-// TODO: This should be set in the CMake file
-const char* libraryDbFilename = "qlogo_library.db";
-
+#include "sharedconstants.h"
 
 
 Library::~Library()
@@ -50,8 +43,8 @@ Library::~Library()
 QString Library::findLibraryDB()
 {
     // If the libraryDB location was passed as a parameter, use that.
-    if ( ! library_db.isNull()) {
-        return library_db;
+    if ( ! Config::get().paramLibraryDatabaseFilepath.isNull()) {
+        return Config::get().paramLibraryDatabaseFilepath;
     }
 
     // else, build a list of candidate locations to try.
@@ -62,15 +55,15 @@ QString Library::findLibraryDB()
                       + QDir::separator() + ".."
                       + QDir::separator() + "share"
                       + QDir::separator() + "qlogo"
-                      + QDir::separator() + libraryDbFilename;
+                      + QDir::separator() + Config::get().defaultLibraryDbFilename;
     // The Resources directory relative to wherever the app binary is.
     candidates << QCoreApplication::applicationDirPath()
                       + QDir::separator() + ".."
                       + QDir::separator() + "Resources"
-                      + QDir::separator() + libraryDbFilename;
+                      + QDir::separator() + Config::get().defaultLibraryDbFilename;
     // The same directory as the app binary.
     candidates << QCoreApplication::applicationDirPath()
-                      + QDir::separator() + libraryDbFilename;
+                      + QDir::separator() + Config::get().defaultLibraryDbFilename;
 
     for (auto &c : candidates) {
         // qDebug() << "Checking: " << c;
@@ -79,7 +72,7 @@ QString Library::findLibraryDB()
     }
 
     // TODO: How do we handle this gracefully?
-    return library_db;
+    return Config::get().defaultLibraryDbFilename;
 }
 
 
@@ -119,8 +112,6 @@ QString Library::procedureText(QString cmdName)
         query.exec();
         if (query.next()) {
             retval = query.value(0).toString();
-        } else {
-            goto bailout;
         }
     }
 

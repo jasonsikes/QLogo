@@ -42,10 +42,10 @@ Arc::Arc(QPointF center, qreal a, qreal span, qreal radius)
 }
 
 Canvas::Canvas(QWidget *parent) : QWidget(parent) {
-    boundsX = initialBoundX;
-    boundsY = initialBoundY;
-    backgroundColor = initialCanvasBackgroundColor;
-    foregroundColor = initialCanvasForegroundColor;
+    boundsX = Config::get().initialBoundX;
+    boundsY = Config::get().initialBoundY;
+    backgroundColor = Config::get().initialCanvasBackgroundColor;
+    foregroundColor = Config::get().initialCanvasForegroundColor;
     currentWriteInfo.pen = QPen(foregroundColor);
     currentWriteInfo.pen.setCapStyle(Qt::RoundCap);
     currentWriteInfo.pen.setJoinStyle(Qt::RoundJoin);
@@ -87,11 +87,11 @@ void Canvas::initTurtleImage()
     QPainter painter(&turtleImage);
     painter.translate(halfwidth + multiplier, multiplier-aft);
 
-    QPen pen = QPen(initialCanvasForegroundColor,multiplier*2);
+    QPen pen = QPen(Config::get().initialCanvasForegroundColor,multiplier*2);
     pen.setCapStyle(Qt::RoundCap);
     pen.setJoinStyle(Qt::RoundJoin);
     painter.setPen(pen);
-    painter.setBrush(QBrush(initialCanvasBackgroundColor));
+    painter.setBrush(QBrush(Config::get().initialCanvasBackgroundColor));
     painter.drawPolygon(turtlePolygon);
 
     // Whenever we draw the turtle, transform a bit.

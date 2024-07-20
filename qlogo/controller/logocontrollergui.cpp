@@ -167,7 +167,7 @@ void LogoControllerGUI::printToConsole(QString s)
 
 
 QString LogoControllerGUI::addStandoutToString(QString src) {
-  QString retval = escapeString + src + escapeString;
+  QString retval = Config::get().escapeString + src + Config::get().escapeString;
   return retval;
 }
 
