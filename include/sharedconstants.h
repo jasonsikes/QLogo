@@ -179,6 +179,7 @@ public:
     bool hasGUI = false;
 
     // ARGV initialization parameters
+    QStringList ARGV;
     QString paramLibraryDatabaseFilepath;
     QString paramHelpDatabaseFilepath;
 

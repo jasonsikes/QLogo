@@ -46,17 +46,22 @@ void processOptions(QCoreApplication *a)
 
 int main(int argc, char **argv)
 {
-  QCoreApplication application(argc, argv);
+    // Pass all the command line arguments to Config in case they are queried later.
+    for (int i = 0; i < argc; ++i) {
+        Config::get().ARGV.push_back(QString(argv[i]));
+    }
 
-  processOptions(&application);
+    QCoreApplication application(argc, argv);
 
-  LogoController *mainController;
-  if (Config::get().hasGUI) {
-      mainController = new LogoControllerGUI;
-  } else {
-      mainController = new LogoController;
-  }
-  int retval = mainController->run();
-  delete mainController;
-  return retval;
+    processOptions(&application);
+
+    LogoController *mainController;
+    if (Config::get().hasGUI) {
+        mainController = new LogoControllerGUI;
+    } else {
+        mainController = new LogoController;
+    }
+    int retval = mainController->run();
+    delete mainController;
+    return retval;
 }

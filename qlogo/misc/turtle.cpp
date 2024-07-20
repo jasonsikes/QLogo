@@ -33,21 +33,16 @@
 
 #include "controller/logocontroller.h"
 
-Turtle *_mainTurtle = NULL;
-
-Turtle *mainTurtle() {
-  Q_ASSERT(_mainTurtle != NULL);
-  return _mainTurtle;
-}
 
 Turtle::Turtle() : turtlePosition(QTransform()), turtleIsVisible(true), penIsDown(true) {
-  Q_ASSERT(_mainTurtle == NULL);
-  _mainTurtle = this;
-  penColor = Config::get().initialCanvasForegroundColor;
-  mode = turtleWrap;
+    Config::get().setMainTurtle(this);
+    penColor = Config::get().initialCanvasForegroundColor;
+    mode = turtleWrap;
 }
 
-Turtle::~Turtle() { _mainTurtle = NULL; }
+Turtle::~Turtle() {
+    Config::get().setMainTurtle(NULL);
+}
 
 QTransform matrixWithNewXY(const QTransform &src,double x, double y)
 {

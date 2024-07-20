@@ -264,6 +264,14 @@ void Kernel::initVariables(void)
     callStack.bury(QObject::tr("LOGOPLATFORM"));
     callStack.bury(QObject::tr("LOGOVERSION"));
     callStack.bury(QObject::tr("ALLOWGETSET"));
+
+    List *argv = new List;
+    for (auto &arg : Config::get().ARGV) {
+        argv->append(DatumPtr(arg));
+    }
+    DatumPtr commandLine(argv);
+    callStack.setDatumForName(commandLine, QObject::tr("COMMANDLINE"));
+    callStack.bury(QObject::tr("COMMANDLINE"));
 }
 
 Kernel::Kernel() {
