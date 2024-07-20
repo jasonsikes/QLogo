@@ -56,7 +56,6 @@ class Kernel {
   DatumPtr filePrefix;
   int repcount = -1;
   int pauseLevel = 0;
-  bool isRunningMacroResult = false;
   bool isPausing = false;
 
   Turtle *turtle;
@@ -149,7 +148,7 @@ public:
   DatumPtr pause();
 
   bool isInputRedirected();
-  DatumPtr runList(DatumPtr listP, const QString startTag = "");
+  DatumPtr runList(DatumPtr listP, QString startTag = QString());
   DatumPtr excGotoToken(DatumPtr);
   DatumPtr executeProcedure(DatumPtr node);
   DatumPtr executeMacro(DatumPtr node);

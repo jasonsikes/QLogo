@@ -487,24 +487,37 @@ DatumPtr Kernel::executeProcedure(DatumPtr node) {
 }
 
 DatumPtr Kernel::executeMacro(DatumPtr node) {
-    bool wasExecutingMacro = isRunningMacroResult;
-    isRunningMacroResult = true;
-    try {
-        while (node.isASTNode()) {
-            node = executeProcedure(node);
-            if (!node.isList()) {
-                isRunningMacroResult = wasExecutingMacro;
-                return Error::macroReturned(node);
-            }
-            node = runList(node);
-        }
-    } catch (Error *e) {
-        isRunningMacroResult = wasExecutingMacro;
-        throw e;
+    DatumPtr retval;
+tailCall:
+    node = executeProcedure(node);
+    if (!node.isList()) {
+        return Error::macroReturned(node);
     }
 
-    isRunningMacroResult = wasExecutingMacro;
-    return node;
+    // The result is a list, which means we will execute it, similar to
+    // runList(), but without tags and watching for tail recursion.
+    QList<DatumPtr> *parsedList = parser->astFromList(node.listValue());
+
+    Evaluator e(node, callStack.localFrame()->evalStack);
+
+    for (int i = 0; i < parsedList->size(); ++i) {
+        if ( ! retval.isNothing()) {
+            if (retval.isASTNode()) {
+                // TODO: need a new Error
+                Error::insideRunresult(retval.astnodeValue()->nodeName);
+            }
+            Error::dontSay(retval);
+        }
+        DatumPtr statement = (*parsedList)[i];
+        KernelMethod method = statement.astnodeValue()->kernel;
+        if (method == &Kernel::executeMacro) {
+            // This is a tail macro call.
+            node = statement;
+            goto tailCall;
+        }
+        retval = (this->*method)(statement);
+    }
+    return retval;
 }
 
 ASTNode *Kernel::astnodeValue(DatumPtr caller, DatumPtr value) {
@@ -541,8 +554,8 @@ SignalsEnum_t Kernel::interruptCheck()
     return latestSignal;
 }
 
-DatumPtr Kernel::runList(DatumPtr listP, const QString startTag) {
-  bool shouldSearchForTag = (startTag != "");
+DatumPtr Kernel::runList(DatumPtr listP, QString startTag) {
+  bool tagHasBeenFound = (startTag.isNull());
   DatumPtr retval;
 
   interruptCheck();
@@ -556,11 +569,10 @@ DatumPtr Kernel::runList(DatumPtr listP, const QString startTag) {
 
   Q_ASSERT(callStack.size() > 0);
   Evaluator e(listP, callStack.localFrame()->evalStack);
-  bool tagHasBeenFound = !shouldSearchForTag;
 
   QList<DatumPtr> *parsedList = parser->astFromList(listP.listValue());
   for (int i = 0; i < parsedList->size(); ++i) {
-    if (retval != nothing) {
+    if ( ! retval.isNothing()) {
       if (retval.isASTNode()) {
         return retval;
       }
@@ -569,9 +581,6 @@ DatumPtr Kernel::runList(DatumPtr listP, const QString startTag) {
     DatumPtr statement = (*parsedList)[i];
     KernelMethod method = statement.astnodeValue()->kernel;
     if (tagHasBeenFound) {
-        if (isRunningMacroResult && (method == &Kernel::executeMacro) && (i == parsedList->size()-1)) {
-            return statement;
-        }
       retval = (this->*method)(statement);
     } else {
       if (method == &Kernel::excTag) {
