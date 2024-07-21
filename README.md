@@ -132,8 +132,7 @@ the turtle and editor.
 
 
 * If `ERRACT` is set and its size is greater than zero, then any errors execute
-  `PAUSE`. This was necessary because I couldn't find a reliable way to prevent
-  infinite loops during error handling.
+  `PAUSE`.
   
 
 * Garbage collection is on-the-fly, meaning that memory is freed the moment a
@@ -150,6 +149,7 @@ the turtle and editor.
   extension. For example: `SAVEPICT "MY_PICTURE.PNG` will save in PNG
   format. QLogo can save an image in the following formats: BMP, JPG/JPEG,
   PNG, PPM, XBM, and XPM
+
 
 * There is no facility yet for translation/internationalization.
 
@@ -211,6 +211,16 @@ the SQLite database if it is in a different location than where qlogo expects it
 `SETTEMPLOC`:
 
 QLogo doesn't create temporary files.
+
+`NOREFRESH` and `REFRESH`:
+
+QLogo is designed from the ground up to have a very responsive user interface. The canvas
+will always redraw itself whenever the window is resized.
+
+`SETPENPATTERN` and `PENPATTERN`:
+
+This isn't implemented yet because I haven't yet decided what kinds of patterns
+are wanted or useful.
 
 
 ### The following variables have no special meaning:

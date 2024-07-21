@@ -173,6 +173,18 @@ bool Kernel::getLineAndRunIt(bool shouldHandleError) {
   return true;
 }
 
+
+/***DOC ERRACT
+ERRACT							(variable)
+
+    When set to a value that is not "False"false" nor an empty list,
+    the command interpreter will execute PAUSE to enable the user to
+    inspect the state of the program.
+
+
+COD***/
+
+
 DatumPtr Kernel::registerError(DatumPtr anError, bool allowErract,
                              bool allowRecovery) {
   currentError = anError;
@@ -251,7 +263,31 @@ void Kernel::initPalette() {
 }
 
 
-// TODO: System vars need standardization
+// Some Logo vars are set here and not used anywhere else.
+// Documentation is here because it doesn't fit anywhere else.
+
+/***DOC LOGOPLATFORM
+LOGOPLATFORM						(variable)
+
+    one of the following words: OSX, WINDOWS, or UNIX.
+
+
+COD***/
+
+/***DOC LOGOVERSION
+LOGOVERSION						(variable)
+
+    a real number indicating the Logo version number, e.g., 5.5
+
+COD***/
+
+/***DOC COMMANDLINE
+COMMANDLINE						(variable)
+
+    contains all text on the command line used to start Logo.
+
+COD***/
+
 void Kernel::initVariables(void)
 {
     DatumPtr platform(LOGOPLATFORM);
@@ -445,7 +481,6 @@ DatumPtr Kernel::executeProcedure(DatumPtr node) {
         Error::stackOverflow();
     }
 
-    // VarFrame s(&variables);
     CallFrame cf(&callStack, node.astnodeValue());
 
   DatumPtr retval = executeProcedureCore(node);

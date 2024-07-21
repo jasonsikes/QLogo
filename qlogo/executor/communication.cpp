@@ -1154,30 +1154,30 @@ DatumPtr Kernel::excTextsize(DatumPtr node) {
   return h.ret(size);
 }
 
-/***DOC SETFONT
-SETFONT fontname
+/***DOC SETTEXTFONT
+SETTEXTFONT fontname
 
-    Set the "font family name" of the font used in the text and edit windows.
+    Set the font family of the font used for all future text and edit windows.
     See ALLFONTS for a list of all fonts available on your system.
 
 COD***/
-//CMD SETFONT 1 1 1
-DatumPtr Kernel::excSetfont(DatumPtr node) {
+//CMD SETTEXTFONT 1 1 1
+DatumPtr Kernel::excSettextfont(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString fontName = h.wordAtIndex(0).wordValue()->printValue();
   Config::get().mainController()->setTextFontName(fontName);
   return nothing;
 }
 
-/***DOC FONT
-FONT
+/***DOC TEXTFONT
+TEXTFONT
 
-    outputs the "font family name" of the font used in the text and edit
+    outputs the font family of the font used in the text and edit
     windows.
 
 COD***/
 //CMD FONT 0 0 0
-DatumPtr Kernel::excFont(DatumPtr node) {
+DatumPtr Kernel::excTextfont(DatumPtr node) {
   ProcedureHelper h(this, node);
   QString retval = Config::get().mainController()->getTextFontName();
   return h.ret(retval);
