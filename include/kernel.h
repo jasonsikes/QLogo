@@ -32,7 +32,6 @@
 #include "workspace/propertylists.h"
 #include "sharedconstants.h"
 #include "controller/textstream.h"
-#include "help.h"
 #include "workspace/procedures.h"
 #include "workspace/callframe.h"
 

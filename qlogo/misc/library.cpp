@@ -20,7 +20,9 @@
 ///
 /// \file
 /// This file contains the implementation of the QLogo library interface, which
-/// provides standard supporting functions to the QLogo language.
+/// provides the standard library (supporting functions to the QLogo language),
+/// and the help facility. They are included here because they share use of the
+/// QSqlDatabase.
 ///
 //===----------------------------------------------------------------------===//
 
@@ -30,24 +32,13 @@
 #include <QDir>
 #include <QSqlError>
 #include <QSqlQuery>
+#include "error.h"
 #include "sharedconstants.h"
 
 
-Library::~Library()
+QString findDBPath(QString defaultDBName)
 {
-    if (connectionIsValid)
-        QSqlDatabase::removeDatabase(connectionName);
-}
-
-
-QString Library::findLibraryDB()
-{
-    // If the libraryDB location was passed as a parameter, use that.
-    if ( ! Config::get().paramLibraryDatabaseFilepath.isNull()) {
-        return Config::get().paramLibraryDatabaseFilepath;
-    }
-
-    // else, build a list of candidate locations to try.
+    // Build a list of candidate locations to try.
     QStringList candidates;
 
     // The share directory relative to wherever the app binary is.
@@ -55,15 +46,15 @@ QString Library::findLibraryDB()
                       + QDir::separator() + ".."
                       + QDir::separator() + "share"
                       + QDir::separator() + "qlogo"
-                      + QDir::separator() + Config::get().defaultLibraryDbFilename;
+                      + QDir::separator() + defaultDBName;
     // The Resources directory relative to wherever the app binary is.
     candidates << QCoreApplication::applicationDirPath()
                       + QDir::separator() + ".."
                       + QDir::separator() + "Resources"
-                      + QDir::separator() + Config::get().defaultLibraryDbFilename;
+                      + QDir::separator() + defaultDBName;
     // The same directory as the app binary.
     candidates << QCoreApplication::applicationDirPath()
-                      + QDir::separator() + Config::get().defaultLibraryDbFilename;
+                      + QDir::separator() + defaultDBName;
 
     for (auto &c : candidates) {
         // qDebug() << "Checking: " << c;
@@ -72,26 +63,49 @@ QString Library::findLibraryDB()
     }
 
     // TODO: How do we handle this gracefully?
-    return Config::get().defaultLibraryDbFilename;
+    return defaultDBName;
+}
+
+
+// Returns true if successful
+bool initDBConnection(QString connectionName,
+                      QString paramFilePath,
+                      QString defaultFilePath)
+{
+    QString path = paramFilePath;
+    if (path.isNull())
+        path = findDBPath(defaultFilePath);
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
+    db.setDatabaseName(path);
+    bool isSuccessful = db.open();
+    if ( ! isSuccessful)
+    {
+        qWarning() <<"DB Error: " << db.lastError().text();
+    }
+    return isSuccessful;
+}
+
+Library::~Library()
+{
+    if (connectionIsValid)
+        QSqlDatabase::removeDatabase(connectionName);
 }
 
 
 void Library::getConnection()
 {
     if (connectionIsValid) return;
-    QString path = findLibraryDB();
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
-    db.setDatabaseName(path);
-    if (db.open())
-    {
+    bool isOpen = initDBConnection(connectionName,
+                                   Config::get().paramLibraryDatabaseFilepath,
+                                   Config::get().defaultLibraryDbFilename);
+    if (isOpen) {
+        QSqlDatabase db = QSqlDatabase::database(connectionName);
         QStringList tables = db.tables();
         if (tables.contains("LIBRARY", Qt::CaseSensitive)) {
             connectionIsValid = true;
         } else {
             qDebug() << "library db format is wrong";
         }
-    } else {
-        qDebug() <<"DB Error: " << db.lastError().text();
     }
 }
 
@@ -131,4 +145,82 @@ QStringList Library::allProcedureNames()
         }
     }
     return allProcedures;
+}
+
+
+Help::~Help()
+{
+    if (connectionIsValid)
+        QSqlDatabase::removeDatabase(connectionName);
+}
+
+
+void Help::getConnection()
+{
+    if (connectionIsValid) return;
+    bool isOpen = initDBConnection(connectionName,
+                                   Config::get().paramHelpDatabaseFilepath,
+                                   Config::get().defaultHelpDbFilename);
+    if (isOpen) {
+        QSqlDatabase db = QSqlDatabase::database(connectionName);
+        QStringList tables = db.tables();
+        if (tables.contains("ALIASES", Qt::CaseSensitive)
+            && tables.contains("HELPTEXT", Qt::CaseSensitive)) {
+            connectionIsValid = true;
+        } else {
+            qDebug() << "help db format is wrong";
+        }
+    }
+}
+
+
+QStringList Help::allCommands()
+{
+    getConnection();
+    QStringList retval;
+    if (connectionIsValid) {
+        QSqlDatabase db = QSqlDatabase::database(connectionName);
+        QSqlQuery query("SELECT ALIAS FROM ALIASES", db);
+        while (query.next()) {
+            retval.append(query.value(0).toString());
+        }
+    } else {
+        Error::fileSystem();
+    }
+    return retval;
+}
+
+
+QString Help::helpText(QString alias)
+{
+    QString retval;
+    QString cmdName;
+
+    getConnection();
+
+    if (connectionIsValid) {
+        QSqlDatabase db = QSqlDatabase::database(connectionName);
+        // Every command has an alias
+        // even if the alias is the same as the command.
+        QSqlQuery query(db);
+        query.prepare("SELECT COMMAND FROM ALIASES WHERE ALIAS = ?");
+        query.addBindValue(alias);
+        query.exec();
+        if (query.next()) {
+            cmdName = query.value(0).toString();
+        } else {
+            goto bailout;
+        }
+        query.finish();
+
+        query.prepare("SELECT DESCRIPTION FROM HELPTEXT WHERE COMMAND = ?");
+        query.addBindValue(cmdName);
+        query.exec();
+        if (query.next()) {
+            retval = query.value(0).toString();
+        }
+    }
+
+bailout:
+    return retval;
 }

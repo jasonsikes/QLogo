@@ -22,7 +22,8 @@
 ///
 /// \file
 /// This file contains the declaration of the QLogo library interface, which
-/// provides standard supporting functions to the QLogo language.
+/// provides the standard library (supporting functions to the QLogo language),
+/// and the help facility.
 ///
 //===----------------------------------------------------------------------===//
 
@@ -34,7 +35,6 @@ class Library
 {
     bool connectionIsValid = false;
 
-    QString findLibraryDB();
     void getConnection();
 
     QStringList allProcedures;
@@ -52,5 +52,25 @@ public:
     /// Returns a list of all procedure names available in the library.
     QStringList allProcedureNames();
 };
+
+class Help
+{
+    bool connectionIsValid = false;
+
+    void getConnection();
+
+    const QString connectionName = "help";
+public:
+
+    Help() {}
+    ~Help();
+
+    /// Return a list of all command names that have a help text entry.
+    QStringList allCommands();
+
+    /// Return the help text for a command.
+    QString helpText(QString alias);
+};
+
 
 #endif // LIBRARY_H

@@ -19,7 +19,6 @@ set(QLOGO_SOURCES
   executor/graphics.cpp
   executor/workspacemanagement.cpp
   logo_main.cpp
-  misc/help.cpp
   misc/library.cpp
   misc/procedurehelper.cpp
   misc/turtle.cpp
@@ -38,7 +37,6 @@ set(QLOGO_SOURCES
   ../include/datum.h
   ../include/astnode.h
   ../include/error.h
-  ../include/help.h
   ../include/kernel.h
   ../include/primitives.h
   ../include/library.h
