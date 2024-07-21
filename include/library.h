@@ -32,13 +32,14 @@
 
 class Library
 {
-    QSqlDatabase db;
     bool connectionIsValid = false;
 
     QString findLibraryDB();
     void getConnection();
 
     QStringList allProcedures;
+
+    const QString connectionName = "libDB";
 public:
 
     Library() {}

@@ -38,8 +38,8 @@
 
 Help::~Help()
 {
-    if (db.isValid())
-        db.removeDatabase("QSQLITE");
+    if (connectionIsValid)
+        QSqlDatabase::removeDatabase(connectionName);
 }
 
 
@@ -81,24 +81,21 @@ QString Help::findHelpDB()
 
 void Help::getConnection()
 {
-    if ( ! connectionIsValid) {
-        if ( ! db.isValid()) {
-            db = QSqlDatabase::addDatabase("QSQLITE");
-        }
-        QString path = findHelpDB();
-        db.setDatabaseName(path);
-        if (db.open())
-        {
-            QStringList tables = db.tables();
-             if (tables.contains("ALIASES", Qt::CaseSensitive)
-                && tables.contains("HELPTEXT", Qt::CaseSensitive)) {
-                connectionIsValid = true;
-             } else {
-                qDebug() << "help db format is wrong";
-             }
+    if (connectionIsValid) return;
+    QString path = findHelpDB();
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
+    db.setDatabaseName(path);
+    if (db.open())
+    {
+        QStringList tables = db.tables();
+        if (tables.contains("ALIASES", Qt::CaseSensitive)
+            && tables.contains("HELPTEXT", Qt::CaseSensitive)) {
+            connectionIsValid = true;
         } else {
-            qDebug() <<"DB Error: " << db.lastError().text();
+            qDebug() << "help db format is wrong";
         }
+    } else {
+        qDebug() <<"DB Error: " << db.lastError().text();
     }
 }
 
@@ -108,6 +105,7 @@ QStringList Help::allCommands()
     getConnection();
     QStringList retval;
     if (connectionIsValid) {
+        QSqlDatabase db = QSqlDatabase::database(connectionName);
         QSqlQuery query("SELECT ALIAS FROM ALIASES", db);
         while (query.next()) {
             retval.append(query.value(0).toString());
@@ -127,6 +125,7 @@ QString Help::helpText(QString alias)
     getConnection();
 
     if (connectionIsValid) {
+        QSqlDatabase db = QSqlDatabase::database(connectionName);
         // Every command has an alias
         // even if the alias is the same as the command.
         QSqlQuery query(db);
@@ -145,11 +144,7 @@ QString Help::helpText(QString alias)
         query.exec();
         if (query.next()) {
             retval = query.value(0).toString();
-        } else {
-            goto bailout;
         }
-
-
     }
 
 bailout:

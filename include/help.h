@@ -27,19 +27,18 @@
 //===----------------------------------------------------------------------===//
 
 
-#include <QString>
-#include <QList>
 #include <QStringList>
 
 #include <QSqlDatabase>
 
 class Help
 {
-    QSqlDatabase db;
     bool connectionIsValid = false;
 
     QString findHelpDB();
     void getConnection();
+
+    const QString connectionName = "help";
 public:
 
     Help() {}

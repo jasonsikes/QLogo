@@ -35,8 +35,8 @@
 
 Library::~Library()
 {
-    if (db.isValid())
-        db.removeDatabase("QSQLITE");
+    if (connectionIsValid)
+        QSqlDatabase::removeDatabase(connectionName);
 }
 
 
@@ -78,23 +78,20 @@ QString Library::findLibraryDB()
 
 void Library::getConnection()
 {
-    if ( ! connectionIsValid) {
-        if ( ! db.isValid()) {
-            db = QSqlDatabase::addDatabase("QSQLITE");
-        }
-        QString path = findLibraryDB();
-        db.setDatabaseName(path);
-        if (db.open())
-        {
-            QStringList tables = db.tables();
-            if (tables.contains("LIBRARY", Qt::CaseSensitive)) {
-                connectionIsValid = true;
-            } else {
-                qDebug() << "library db format is wrong";
-            }
+    if (connectionIsValid) return;
+    QString path = findLibraryDB();
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
+    db.setDatabaseName(path);
+    if (db.open())
+    {
+        QStringList tables = db.tables();
+        if (tables.contains("LIBRARY", Qt::CaseSensitive)) {
+            connectionIsValid = true;
         } else {
-            qDebug() <<"DB Error: " << db.lastError().text();
+            qDebug() << "library db format is wrong";
         }
+    } else {
+        qDebug() <<"DB Error: " << db.lastError().text();
     }
 }
 
@@ -106,6 +103,7 @@ QString Library::procedureText(QString cmdName)
     getConnection();
 
     if (connectionIsValid) {
+        QSqlDatabase db = QSqlDatabase::database(connectionName);
         QSqlQuery query(db);
         query.prepare("SELECT CODE FROM LIBRARY WHERE COMMAND = ?");
         query.addBindValue(cmdName);
@@ -115,7 +113,6 @@ QString Library::procedureText(QString cmdName)
         }
     }
 
-bailout:
     return retval;
 }
 
@@ -126,6 +123,7 @@ QStringList Library::allProcedureNames()
         getConnection();
 
         if (connectionIsValid) {
+            QSqlDatabase db = QSqlDatabase::database(connectionName);
             QSqlQuery query("SELECT COMMAND FROM LIBRARY", db);
             while (query.next()) {
                 allProcedures.append(query.value(0).toString());
