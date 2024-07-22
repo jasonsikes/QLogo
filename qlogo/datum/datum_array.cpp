@@ -26,55 +26,64 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum.h"
-#include <qdebug.h>
-#include <QObject>
 
-QList<void *> aryVisited;
-QList<void *> otherAryVisited;
-
-Array::Array(int aOrigin, int aSize) {
-  origin = aOrigin;
-  array.reserve(aSize);
+Array::Array(int aOrigin, int aSize)
+{
+    origin = aOrigin;
+    array.reserve(aSize);
 }
-
 
 Array::Array(int aOrigin, List *source)
 {
-  auto iter = source->newIterator();
+    auto iter = source->newIterator();
     origin = aOrigin;
-  while (iter.elementExists()) {
-    array.append(iter.element());
-  }
+    while (iter.elementExists())
+    {
+        array.append(iter.element());
+    }
 }
 
-Array::~Array() {}
+Array::~Array()
+{
+}
 
-Datum::DatumType Array::isa() { return Datum::arrayType; }
+Datum::DatumType Array::isa()
+{
+    return Datum::arrayType;
+}
 
-QString Array::printValue(bool fullPrintp, int printDepthLimit,
-                          int printWidthLimit) {
-    if (!aryVisited.contains(this)) {
+QString Array::printValue(bool fullPrintp, int printDepthLimit, int printWidthLimit)
+{
+    // This is used to prevent infinite recursion when printing arrays.
+    static QList<void *> aryVisited;
+
+    // If this array has already been printed, don't print it again.
+    if (!aryVisited.contains(this))
+    {
         aryVisited.push_back(this);
         auto iter = array.begin();
-        if (iter == array.end()) {
+        if (iter == array.end())
+        {
             return "{}";
         }
-        if ((printDepthLimit == 0) || (printWidthLimit == 0)) {
+        if ((printDepthLimit == 0) || (printWidthLimit == 0))
+        {
             return "{...}";
         }
         int printWidth = printWidthLimit;
         QString retval = "{";
-        do {
+        do
+        {
             if (iter != array.begin())
                 retval.append(' ');
-            if (printWidth == 0) {
+            if (printWidth == 0)
+            {
                 retval.append("...");
                 break;
             }
-            retval.append(
-        iter->showValue(fullPrintp, printDepthLimit - 1, printWidthLimit));
+            retval.append(iter->showValue(fullPrintp, printDepthLimit - 1, printWidthLimit));
             --printWidth;
-        }while (++iter != array.end());
+        } while (++iter != array.end());
         retval += "}";
         aryVisited.removeOne(this);
         return retval;
@@ -82,8 +91,7 @@ QString Array::printValue(bool fullPrintp, int printDepthLimit,
     return "...";
 }
 
-QString Array::showValue(bool fullPrintp, int printDepthLimit,
-                         int printWidthLimit) {
+QString Array::showValue(bool fullPrintp, int printDepthLimit, int printWidthLimit)
+{
     return printValue(fullPrintp, printDepthLimit, printWidthLimit);
 }
-

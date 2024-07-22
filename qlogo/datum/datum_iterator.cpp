@@ -26,16 +26,19 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum.h"
-
 #include <qdebug.h>
 
-ListIterator::ListIterator() {}
+ListIterator::ListIterator()
+{
+}
 
-ListIterator::ListIterator(DatumPtr aList) {
+ListIterator::ListIterator(DatumPtr aList)
+{
     ptr = aList;
 }
 
-DatumPtr ListIterator::element() {
+DatumPtr ListIterator::element()
+{
     DatumPtr retval = ptr.listValue()->head;
     ptr = ptr.listValue()->tail;
     return retval;
@@ -43,5 +46,5 @@ DatumPtr ListIterator::element() {
 
 bool ListIterator::elementExists()
 {
-    return (( ! ptr.isNothing()) && ( ! (ptr.listValue()->head).isNothing()));
+    return ((!ptr.isNothing()) && (!(ptr.listValue()->head).isNothing()));
 }

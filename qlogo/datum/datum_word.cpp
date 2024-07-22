@@ -26,180 +26,222 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum.h"
-#include <qdebug.h>
 #include <QObject>
+#include <qdebug.h>
 
-QChar rawToChar(const QChar &src) {
-  const ushort rawToAsciiMap[] = {
-      2,  58, 3,  32, 4,  9,  5,  10, 6,  40,  11, 63,  14, 43, 15, 126,
-      16, 41, 17, 91, 18, 93, 19, 45, 20, 42,  21, 47,  22, 61, 23, 60,
-      24, 62, 25, 34, 26, 92, 28, 59, 29, 124, 30, 123, 31, 125};
-  ushort v = src.unicode();
-  if (v >= 32)
+/// @brief Convert a raw character to a printable character.
+/// @param src The raw character to convert.
+/// @return The printable character.
+/// @details This function converts a raw character to a printable character.
+/// If the raw character is printable (value is >= 32), it is returned unchanged.
+/// Otherwise, a mapping is used to convert the raw character to a printable character.
+QChar rawToChar(const QChar &src)
+{
+    const ushort rawToAsciiMap[] = {2,  58, 3,  32, 4,  9,  5,  10, 6,  40,  11, 63,  14, 43, 15, 126,
+                                    16, 41, 17, 91, 18, 93, 19, 45, 20, 42,  21, 47,  22, 61, 23, 60,
+                                    24, 62, 25, 34, 26, 92, 28, 59, 29, 124, 30, 123, 31, 125};
+    ushort v = src.unicode();
+    if (v >= 32)
+        return src;
+    for (const ushort *i = rawToAsciiMap; *i <= v; i += 2)
+    {
+        if (*i == v)
+        {
+            return QChar(*(i + 1));
+        }
+    }
     return src;
-  for (const ushort *i = rawToAsciiMap; *i <= v; i += 2) {
-    if (*i == v) {
-      return QChar(*(i + 1));
+}
+
+/// @brief Convert a string of raw characters to a string of printable characters.
+/// @param src The string of raw characters to convert, in place.
+/// @details This function converts a string of raw characters to a string of printable characters.
+/// It iterates through each character in the string and calls rawToChar() to convert each character.
+/// If all the characters are already printable, the QString subscript operator is never used,
+/// and thus QString's copy-on-write is not triggered.
+void rawToChar(QString &src)
+{
+    for (int i = 0; i < src.size(); ++i)
+    {
+        QChar s = src[i];
+        QChar d = rawToChar(s);
+        if (s != d)
+            src[i] = d;
     }
-  }
-  return src;
 }
 
-void rawToChar(QString &src) {
-  for (int i = 0; i < src.size(); ++i) {
-    QChar s = src[i];
-    QChar d = rawToChar(s);
-    if (s != d)
-      src[i] = d;
-  }
-}
-
-QChar charToRaw(const QChar &src) {
-  const ushort asciiToRawMap[] = {
-      126, 15, 125, 31, 124, 29, 123, 30, 93, 18, 92, 26, 91, 17, 63, 11,
-      62,  24, 61,  22, 60,  23, 59,  28, 58, 2,  47, 21, 45, 19, 43, 14,
-      42,  20, 41,  16, 40,  6,  34,  25, 32, 3,  10, 5,  9,  4,  0,  0};
-  ushort v = src.unicode();
-  for (const ushort *i = asciiToRawMap; *i >= v; i += 2) {
-    if (*i == v) {
-      return QChar(*(i + 1));
+/// @brief Convert a printable character to a raw character.
+/// @param src The printable character to convert.
+/// @return The raw character, or the original character if it does not map to a raw character.
+/// @details This function converts a printable character to a raw character.
+/// If the printable character does not map to a raw character, it is returned unchanged.
+/// Otherwise, a mapping is used to convert the printable character to a raw character.
+QChar charToRaw(const QChar &src)
+{
+    const ushort asciiToRawMap[] = {126, 15, 125, 31, 124, 29, 123, 30, 93, 18, 92, 26, 91, 17, 63, 11,
+                                    62,  24, 61,  22, 60,  23, 59,  28, 58, 2,  47, 21, 45, 19, 43, 14,
+                                    42,  20, 41,  16, 40,  6,  34,  25, 32, 3,  10, 5,  9,  4,  0,  0};
+    ushort v = src.unicode();
+    for (const ushort *i = asciiToRawMap; *i >= v; i += 2)
+    {
+        if (*i == v)
+        {
+            return QChar(*(i + 1));
+        }
     }
-  }
-  return src;
+    return src;
 }
 
-Word::Word() {
-  number = nan("");
-  rawString = QString();
-  printableString = QString();
-  keyString = QString();
-  sourceIsNumber = false;
+Word::Word()
+{
+    number = nan("");
+    rawString = QString();
+    printableString = QString();
+    keyString = QString();
+    sourceIsNumber = false;
 }
 
-Word::Word(const QString other, bool aIsForeverSpecial) {
-  number = nan("");
-  isForeverSpecial = aIsForeverSpecial;
-  rawString = other;
-  printableString = QString();
-  keyString = QString();
-  sourceIsNumber = false;
+Word::Word(const QString other, bool aIsForeverSpecial)
+{
+    number = nan("");
+    isForeverSpecial = aIsForeverSpecial;
+    rawString = other;
+    printableString = QString();
+    keyString = QString();
+    sourceIsNumber = false;
 }
 
-Word::Word(double other) {
-  number = other;
-  rawString = QString();
-  printableString = QString();
-  keyString = QString();
-  sourceIsNumber = true;
+Word::Word(double other)
+{
+    number = other;
+    rawString = QString();
+    printableString = QString();
+    keyString = QString();
+    sourceIsNumber = true;
 }
-
 
 void Word::genRawString()
 {
-  if ( rawString.isNull()) {
-        Q_ASSERT( ! std::isnan(number));
-    rawString.setNum(number);
-  }
+    if (rawString.isNull())
+    {
+        Q_ASSERT(!std::isnan(number));
+        rawString.setNum(number);
+    }
 }
-
-
 
 void Word::genPrintString()
 {
-  if (printableString.isNull()) {
-    genRawString();
-    printableString = rawString;
-    rawToChar(printableString);
-  }
+    if (printableString.isNull())
+    {
+        genRawString();
+        printableString = rawString;
+        rawToChar(printableString);
+    }
 }
-
 
 void Word::genKeyString()
 {
-  if (keyString.isNull()) {
+    if (keyString.isNull())
+    {
+        genPrintString();
+        keyString = printableString;
+        for (int i = 0; i < keyString.size(); ++i)
+        {
+            QChar s = printableString[i];
+            QChar d = s.toUpper();
+            if (s != d)
+                keyString[i] = d;
+        }
+    }
+}
+
+Datum::DatumType Word::isa()
+{
+    return wordType;
+}
+
+QString Word::keyValue()
+{
+    genKeyString();
+    return keyString;
+}
+
+QString Word::rawValue()
+{
+    genRawString();
+    return rawString;
+}
+
+double Word::numberValue()
+{
+    if (std::isnan(number))
+    {
+        bool numberIsValid;
+        genPrintString();
+        number = printableString.toDouble(&numberIsValid);
+        if (!numberIsValid)
+            number = nan("");
+    }
+    return number;
+}
+
+QString Word::printValue(bool fullPrintp, int printDepthLimit, int printWidthLimit)
+{
     genPrintString();
-    keyString = printableString;
-    for (int i = 0; i < keyString.size(); ++i) {
-      QChar s = printableString[i];
-      QChar d = s.toUpper();
-      if (s != d)
-          keyString[i] = d;
+    if (!fullPrintp && (printDepthLimit != 0) && (printWidthLimit < 0))
+        return printableString;
+    if (printDepthLimit == 0)
+        return "...";
+    QChar s, c;
+    if (!fullPrintp)
+    {
+        if ((printWidthLimit >= 0) && (printWidthLimit <= 10))
+            printWidthLimit = 10;
+        if ((printWidthLimit >= 0) && (printableString.size() > printWidthLimit))
+            return printableString.left(printWidthLimit) + "...";
+        return printableString;
     }
-  }
-}
 
-Datum::DatumType Word::isa() { return wordType; }
-
-QString Word::keyValue() {
-  genKeyString();
-  return keyString;
-}
-
-QString Word::rawValue() {
-  genRawString();
-  return rawString;
-}
-
-double Word::numberValue() {
-  if (std::isnan(number)) {
-    bool numberIsValid;
-    genPrintString();
-    number = printableString.toDouble(&numberIsValid);
-    if (!numberIsValid)
-      number = nan("");
-  }
-  return number;
-}
-
-QString Word::printValue(bool fullPrintp, int printDepthLimit,
-                         int printWidthLimit) {
-  genPrintString();
-  if (!fullPrintp && (printDepthLimit != 0) && (printWidthLimit < 0))
-    return printableString;
-  if (printDepthLimit == 0)
-    return "...";
-  QChar s, c;
-  if (!fullPrintp) {
-    if ((printWidthLimit >= 0) && (printWidthLimit <= 10))
-      printWidthLimit = 10;
-    if ((printWidthLimit >= 0) && (printableString.size() > printWidthLimit))
-      return printableString.left(printWidthLimit) + "...";
-    return printableString;
-  }
-
-  // TODO: should this be the same as "unread"?
-  QString temp = rawString;
-  QString retval;
-  if (temp.size() == 0)
-    return "||";
-  bool shouldShowBars = false;
-  for (int i = 0; i < temp.size(); ++i) {
-    QChar t = temp[i];
-    if (t < ' ') {
-      shouldShowBars = true;
-      break;
+    QString temp = rawString;
+    QString retval;
+    if (temp.size() == 0)
+        return "||";
+    bool shouldShowBars = false;
+    for (int i = 0; i < temp.size(); ++i)
+    {
+        QChar t = temp[i];
+        if (t < ' ')
+        {
+            shouldShowBars = true;
+            break;
+        }
     }
-  }
-  for (int i = 0; i < temp.size(); ++i) {
-    s = temp[i];
-    if (shouldShowBars) {
-      s = rawToChar(s);
-    } else {
-      c = charToRaw(s);
-      if (s != c) {
-        retval.append('\\');
-      }
+    for (int i = 0; i < temp.size(); ++i)
+    {
+        s = temp[i];
+        if (shouldShowBars)
+        {
+            s = rawToChar(s);
+        }
+        else
+        {
+            c = charToRaw(s);
+            if (s != c)
+            {
+                retval.append('\\');
+            }
+        }
+        retval.append(s);
     }
-    retval.append(s);
-  }
-  if (shouldShowBars) {
-    retval.prepend('|');
-    retval.append('|');
-  }
-  return retval;
+    if (shouldShowBars)
+    {
+        retval.prepend('|');
+        retval.append('|');
+    }
+    return retval;
 }
 
-QString Word::showValue(bool fullPrintp, int printDepthLimit,
-                        int printWidthLimit) {
-  return printValue(fullPrintp, printDepthLimit, printWidthLimit);
+QString Word::showValue(bool fullPrintp, int printDepthLimit, int printWidthLimit)
+{
+    return printValue(fullPrintp, printDepthLimit, printWidthLimit);
 }

@@ -30,7 +30,9 @@
 
 class Kernel;
 
-enum ErrorCode : int {
+/// @brief The error code for an error.
+enum ErrorCode : int
+{
     ERR_TURTLE_BOUNDS = 3,
     ERR_DOESNT_LIKE = 4,
     ERR_DIDNT_OUTPUT = 5,
@@ -67,64 +69,147 @@ enum ErrorCode : int {
     ERR_NO_CATCH = 14
 };
 
-class Error : public Datum {
-protected:
-    static Error * createError(int aNumber, const QString &aErrorText);
+/// @brief The error class.
+/// @details This class is used to store error information during exceptions.
+class Error : public Datum
+{
+  protected:
+    static Error *createError(int aNumber, const QString &aErrorText);
 
-    static Error * createError(int aNumber, DatumPtr aErrorText);
+    static Error *createError(int aNumber, DatumPtr aErrorText);
 
-public:
+  public:
+    /// @brief Constructor.
+    Error();
 
-  Error();
+    /// @brief The ErrorCode corresponding to the type of error.
+    int code;
 
-  int code;
-  DatumPtr tag;
-  DatumPtr errorText;
-  DatumPtr output;
-  DatumPtr procedure;
-  DatumPtr instructionLine; // The Word/List where the error occurred.
+    /// @brief The error tag, if one was provided for a custom throw.
+    DatumPtr tag;
 
-  DatumType isa() { return errorType; }
+    /// @brief The error text, either one of the standard error messages or a custom error message.
+    DatumPtr errorText;
 
-  // Throwers for all the error messages
-  static void turtleOutOfBounds();
-  static DatumPtr doesntLike(DatumPtr who, DatumPtr what, bool allowErract = false,
-                           bool allowRecovery = false);
-  static void didntOutput(DatumPtr src, DatumPtr dest);
-  static void notEnough(DatumPtr dest);
-  static void tooMany(DatumPtr dest);
-  static void dontSay(DatumPtr datum);
-  static void parenNf();
-  static void unexpectedCloseParen();
-  static DatumPtr noValueRecoverable(DatumPtr datum);
-  static void noValue(DatumPtr datum);
-  static void noHow(DatumPtr datum);
-  static DatumPtr noHowRecoverable(DatumPtr datum);
-  static void procDefined(DatumPtr procname);
-  static void toInProc(DatumPtr cmd);
-  static void toInPause(DatumPtr cmd);
-  static void unexpectedCloseSquare();
-  static void unexpectedCloseBrace();
-  static void listHasMultExp(DatumPtr list);
-  static void alreadyOpen(DatumPtr what);
-  static void cantOpen(DatumPtr what);
-  static void notOpen(DatumPtr what);
-  static void alreadyDribbling();
-  static void fileSystem();
-  static DatumPtr fileSystemRecoverable();
-  static void alreadyFilling();
-  static void isPrimative(DatumPtr what);
-  static DatumPtr noTest(DatumPtr what);
-  static void notInsideProcedure(DatumPtr what);
-  static void throwError(DatumPtr aTag, DatumPtr aOutput);
-  static DatumPtr macroReturned(DatumPtr aOutput);
-  static DatumPtr insideRunresult(DatumPtr cmdName);
-  static DatumPtr noApply(DatumPtr what);
-  static void stackOverflow();
-  static void noGraphics();
-  static void badDefaultExpression(DatumPtr what);
+    /// @brief The error output message, if one was provided.
+    DatumPtr output;
+
+    /// @brief The name of the procedure where the error occurred, if applicable.
+    DatumPtr procedure;
+
+    /// @brief The instruction line where the error occurred, if applicable.
+    DatumPtr instructionLine;
+
+    /// @brief The error type.
+    DatumType isa()
+    {
+        return errorType;
+    }
+
+    /// @brief Throw an error for a turtle out of bounds.
+    static void turtleOutOfBounds();
+
+    /// @brief Throw an error for a procedure not accepting an input value.
+    static DatumPtr doesntLike(DatumPtr who, DatumPtr what, bool allowErract = false, bool allowRecovery = false);
+
+    /// @brief Throw an error for a procedure not outputting a value where one is expected.
+    static void didntOutput(DatumPtr src, DatumPtr dest);
+
+    /// @brief Throw an error for not enough inputs to a procedure.
+    static void notEnough(DatumPtr dest);
+
+    /// @brief Throw an error for too many inputs to a procedure.
+    static void tooMany(DatumPtr dest);
+
+    /// @brief Throw an error for ignoring the output of a procedure.
+    static void dontSay(DatumPtr datum);
+
+    /// @brief Throw an error for a parenthesis not being found.
+    static void parenNf();
+
+    /// @brief Throw an error for an unexpected close parenthesis.
+    static void unexpectedCloseParen();
+
+    /// @brief Throw an error for a procedure not returning a value. Allow user to provide a value to recover.
+    static DatumPtr noValueRecoverable(DatumPtr datum);
+
+    /// @brief Throw an error for a procedure not returning a value. User may not provide a value to recover.
+    static void noValue(DatumPtr datum);
+
+    /// @brief Throw an error for command name not found.
+    static void noHow(DatumPtr datum);
+
+    /// @brief Throw an error for command name not found. Allow user to provide a procedure definition to recover.
+    static DatumPtr noHowRecoverable(DatumPtr datum);
+
+    /// @brief Throw an error for a procedure already defined.
+    static void procDefined(DatumPtr procname);
+
+    /// @brief Throw an error for attempting to define a procedure using 'TO' while inside a procedure.
+    static void toInProc(DatumPtr cmd);
+
+    /// @brief Throw an error for attempting to define a procedure using 'TO' while inside a pause.
+    static void toInPause(DatumPtr cmd);
+
+    /// @brief Throw an error for an unexpected close square bracket.
+    static void unexpectedCloseSquare();
+
+    /// @brief Throw an error for an unexpected close curly bracket.
+    static void unexpectedCloseBrace();
+
+    /// @brief Throw an error for a list containing multiple expressions.
+    static void listHasMultExp(DatumPtr list);
+
+    /// @brief Throw an error for attempting to open a file that is already open.
+    static void alreadyOpen(DatumPtr what);
+
+    /// @brief Throw an error for attempting to open a file that cannot be opened.
+    static void cantOpen(DatumPtr what);
+
+    /// @brief Throw an error for attempting to read or write a file that is not open.
+    static void notOpen(DatumPtr what);
+
+    /// @brief Throw an error for attempting to dribble while already dribbling.
+    static void alreadyDribbling();
+
+    /// @brief Throw an error for a file system error.
+    static void fileSystem();
+
+    /// @brief Throw an error for a file system error. Allow user to recover.
+    static DatumPtr fileSystemRecoverable();
+
+    /// @brief Throw an error for attempting to fill a polygon while already filling.
+    static void alreadyFilling();
+
+    /// @brief Throw an error for defining a procedure whose name is the same as a primitive.
+    static void isPrimative(DatumPtr what);
+
+    /// @brief Throw an error for using IFTRUE/IFFALSE when TEST has not been used.
+    static DatumPtr noTest(DatumPtr what);
+
+    /// @brief Throw an error for attempting to use a procedure primitive while not inside a procedure.
+    static void notInsideProcedure(DatumPtr what);
+
+    /// @brief Throw a custom error.
+    static void throwError(DatumPtr aTag, DatumPtr aOutput);
+
+    /// @brief Throw an error for a macro returning a non-list value.
+    static DatumPtr macroReturned(DatumPtr aOutput);
+
+    /// @brief Throw an error for using a procedure command while running RUNRESULT.
+    static DatumPtr insideRunresult(DatumPtr cmdName);
+
+    /// @brief Throw an error for attempting to use '?' operator but not in APPLY context.
+    static DatumPtr noApply(DatumPtr what);
+
+    /// @brief Throw an error for a stack overflow.
+    static void stackOverflow();
+
+    /// @brief Throw an error for attempting to use a graphics/turtle command with no active graphics window.
+    static void noGraphics();
+
+    /// @brief Throw an error for a bad default expression.
+    static void badDefaultExpression(DatumPtr what);
 };
-
-
 
 #endif // ERROR_H

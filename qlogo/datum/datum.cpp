@@ -26,53 +26,64 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum.h"
+#include <QObject>
 #include <qdebug.h>
 #include <unistd.h>
-#include <QObject>
 
-
+/// @brief The number of Datum objects in use.
 int countOfNodes = 0;
+/// @brief The maximum number of Datum objects that have ever been in use.
 int maxCountOfNodes = 0;
 
+/// @brief Get the number of Datum objects in use and the maximum number of Datum objects
+/// that have ever been in use.
+/// @return A List of two Words, the first contains the number of Datum objects in use and the
+/// second contains the maximum number of Datum objects that have ever been in use.
 DatumPtr nodes()
 {
-  int a = countOfNodes;
-  int b = maxCountOfNodes;
+    int a = countOfNodes;
+    int b = maxCountOfNodes;
 
-  maxCountOfNodes = countOfNodes;
+    maxCountOfNodes = countOfNodes;
 
-  List *retval = new List();
-  retval->append(DatumPtr(a));
-  retval->append(DatumPtr(b));
-  return DatumPtr(retval);
+    List *retval = new List();
+    retval->append(DatumPtr(a));
+    retval->append(DatumPtr(b));
+    return DatumPtr(retval);
 }
-
 
 Datum::Datum() : retainCount(0)
 {
-  ++countOfNodes;
-  if (countOfNodes > maxCountOfNodes)
-    maxCountOfNodes = countOfNodes;
+    ++countOfNodes;
+    if (countOfNodes > maxCountOfNodes)
+        maxCountOfNodes = countOfNodes;
 }
 
 Datum::~Datum()
 {
-  --countOfNodes;
+    --countOfNodes;
 }
 
-
-QString Datum::printValue(bool, int, int) { return QObject::tr("nothing"); }
-
-QString Datum::showValue(bool, int, int) { return printValue(); }
-
-Datum &Datum::operator=(const Datum &) {
-  Q_ASSERT(false);
-  return *this;
+QString Datum::printValue(bool, int, int)
+{
+    return QObject::tr("nothing");
 }
 
-Datum::DatumType Datum::isa() { return noType; }
+QString Datum::showValue(bool, int, int)
+{
+    return printValue();
+}
 
+Datum &Datum::operator=(const Datum &)
+{
+    Q_ASSERT(false);
+    return *this;
+}
 
+Datum::DatumType Datum::isa()
+{
+    return noType;
+}
 
 // Values to represent no data (NULL)
 Datum notADatum;

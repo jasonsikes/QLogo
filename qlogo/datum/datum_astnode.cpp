@@ -20,51 +20,66 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the AstNode class, which is the basic
-/// unit of the Abstract Syntax Tree.
+/// This file contains the implementation of the AstNode class, which is a node
+/// in the Abstract Syntax Tree.
 ///
 //===----------------------------------------------------------------------===//
 
 #include "astnode.h"
 #include <qdebug.h>
 
+void ASTNode::addChild(DatumPtr aChild)
+{
+    children.push_back(aChild);
+}
 
-void ASTNode::addChild(DatumPtr aChild) { children.push_back(aChild); }
+int ASTNode::countOfChildren()
+{
+    return (int)children.size();
+}
 
-int ASTNode::countOfChildren() { return (int)children.size(); }
+DatumPtr ASTNode::childAtIndex(unsigned index)
+{
+    return children.at(index);
+}
 
-DatumPtr ASTNode::childAtIndex(unsigned index) { return children.at(index); }
-
-
-ASTNode::ASTNode(DatumPtr aNodeName) {
+ASTNode::ASTNode(DatumPtr aNodeName)
+{
     children.clear();
     nodeName = aNodeName;
     kernel = NULL;
 }
 
-
-ASTNode::ASTNode(QString aNodeName) {
+ASTNode::ASTNode(QString aNodeName)
+{
     children.clear();
     nodeName = DatumPtr(aNodeName);
     kernel = NULL;
 }
 
-ASTNode::~ASTNode() {
+ASTNode::~ASTNode()
+{
 }
 
-Datum::DatumType ASTNode::isa() { return astnodeType; }
-
-
-QString ASTNode::printValue(bool, int, int) {
-  QString retval = QString("( %1").arg(nodeName.showValue());
-  for (auto &iter : children) {
-    retval.append(QString(" %2").arg(iter.showValue()));
-  }
-  retval.append(" )");
-  return retval;
+Datum::DatumType ASTNode::isa()
+{
+    return astnodeType;
 }
 
-QString ASTNode::showValue(bool, int, int) { return printValue(); }
+// For debugging. Parameters are ignored.
+QString ASTNode::printValue(bool, int, int)
+{
+    QString retval = QString("( %1").arg(nodeName.showValue());
+    for (auto &iter : children)
+    {
+        retval.append(QString(" %2").arg(iter.showValue()));
+    }
+    retval.append(" )");
+    return retval;
+}
 
-
-
+// For debugging. Parameters are ignored.
+QString ASTNode::showValue(bool, int, int)
+{
+    return printValue();
+}
