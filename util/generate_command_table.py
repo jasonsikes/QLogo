@@ -54,15 +54,15 @@ SOURCES = [f for f in os.listdir(source_prefix) if re.match(r'.*\.cpp', f)]
 # Return TRUE iff the given line is a command entry.
 
 # A command entry is a line that starts with:
-# "//CMD".
+# "// CMD".
 def is_command_entry(line):
-    return line.lstrip().startswith("//CMD")
+    return line.lstrip().startswith("// CMD")
 
 # Extract the elements of a command entry line
 # The elements are: [NAME, min_params, default_params, max_params]
-# The first result of the split is "//CMD" and is discarded.
+# The first result of the split is "// CMD" and is discarded.
 def extract_command_elements(line):
-    return line.strip().split()[1:]
+    return line.strip().split()[2:]
 
 # Find the next command entry line.
 def find_next_command(file):

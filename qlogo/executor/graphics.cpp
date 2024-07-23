@@ -19,33 +19,36 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the Kernel class, which is the
-/// executor proper of the QLogo language.
+/// This file contains a part of the implementation of the Kernel class, which is the
+/// executor proper of the QLogo language. Specifically, this file contains the
+/// implementations for operations that manipulate the drawing canvas and the turtle.
+///
+/// See README.md in this directory for information about the documentation
+/// structure for each Kernel::exc* method.
 ///
 //===----------------------------------------------------------------------===//
 
+#include "controller/logocontroller.h"
+#include "datum.h"
 #include "error.h"
 #include "kernel.h"
 #include "turtle.h"
-#include "datum.h"
-#include "controller/logocontroller.h"
-
 #include <math.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
-DatumPtr listFromColor(QColor c) {
-  List *retval = new List();
-  retval->append(DatumPtr(round(c.redF() * 100)));
-  retval->append(DatumPtr(round(c.greenF() * 100)));
-  retval->append(DatumPtr(round(c.blueF() * 100)));
-  return DatumPtr(retval);
+DatumPtr listFromColor(QColor c)
+{
+    List *retval = new List();
+    retval->append(DatumPtr(round(c.redF() * 100)));
+    retval->append(DatumPtr(round(c.greenF() * 100)));
+    retval->append(DatumPtr(round(c.blueF() * 100)));
+    return DatumPtr(retval);
 }
 
 // TURTLE MOTION
-
 
 /***DOC FORWARD FD
 FORWARD dist
@@ -55,18 +58,19 @@ FD dist
     the specified distance (measured in turtle steps).
 
 COD***/
-//CMD FORWARD 1 1 1
-//CMD FD 1 1 1
-DatumPtr Kernel::excForward(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double value = h.numberAtIndex(0);
+// CMD FORWARD 1 1 1
+// CMD FD 1 1 1
+DatumPtr Kernel::excForward(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double value = h.numberAtIndex(0);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->forward(value);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->forward(value);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC BACK BK
 BACK dist
@@ -77,18 +81,19 @@ BK dist
     turtle does not change.)
 
 COD***/
-//CMD BACK 1 1 1
-//CMD BK 1 1 1
-DatumPtr Kernel::excBack(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double value = h.numberAtIndex(0);
+// CMD BACK 1 1 1
+// CMD BK 1 1 1
+DatumPtr Kernel::excBack(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double value = h.numberAtIndex(0);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->forward(-value);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->forward(-value);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC LEFT LT
 LEFT degrees
@@ -98,18 +103,19 @@ LT degrees
     in degrees (1/360 of a circle).
 
 COD***/
-//CMD LEFT 1 1 1
-//CMD LT 1 1 1
-DatumPtr Kernel::excLeft(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double value = h.numberAtIndex(0);
+// CMD LEFT 1 1 1
+// CMD LT 1 1 1
+DatumPtr Kernel::excLeft(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double value = h.numberAtIndex(0);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->rotate(value);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->rotate(value);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC RIGHT RT
 RIGHT degrees
@@ -119,18 +125,19 @@ RT degrees
     degrees (1/360 of a circle).
 
 COD***/
-//CMD RIGHT 1 1 1
-//CMD RT 1 1 1
-DatumPtr Kernel::excRight(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double value = h.numberAtIndex(0);
+// CMD RIGHT 1 1 1
+// CMD RT 1 1 1
+DatumPtr Kernel::excRight(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double value = h.numberAtIndex(0);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->rotate(-value);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->rotate(-value);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC SETPOS
 SETPOS pos
@@ -139,27 +146,28 @@ SETPOS pos
     input is a list of two numbers, the X and Y coordinates.
 
 COD***/
-//CMD SETPOS 1 1 1
-DatumPtr Kernel::excSetpos(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD SETPOS 1 1 1
+DatumPtr Kernel::excSetpos(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  QVector<double> v;
-  h.validatedDatumAtIndex(0, [&v, this](DatumPtr candidate) {
-    if (!candidate.isList())
-      return false;
-    if (!numbersFromList(v, candidate))
-      return false;
-    if (v.size() != 2)
-      return false;
-    return true;
-  });
+    QVector<double> v;
+    h.validatedDatumAtIndex(0, [&v, this](DatumPtr candidate) {
+        if (!candidate.isList())
+            return false;
+        if (!numbersFromList(v, candidate))
+            return false;
+        if (v.size() != 2)
+            return false;
+        return true;
+    });
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->setxy(v[0], v[1]);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->setxy(v[0], v[1]);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC SETXY
 SETXY xcor ycor
@@ -168,18 +176,19 @@ SETXY xcor ycor
     two inputs are numbers, the X and Y coordinates.
 
 COD***/
-//CMD SETXY 2 2 2
-DatumPtr Kernel::excSetXY(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double x = h.numberAtIndex(0);
-  double y = h.numberAtIndex(1);
+// CMD SETXY 2 2 2
+DatumPtr Kernel::excSetXY(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double x = h.numberAtIndex(0);
+    double y = h.numberAtIndex(1);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->setxy(x, y);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->setxy(x, y);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC SETX
 SETX xcor
@@ -189,17 +198,18 @@ SETX xcor
     coordinate.
 
 COD***/
-//CMD SETX 1 1 1
-DatumPtr Kernel::excSetX(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double x = h.numberAtIndex(0);
+// CMD SETX 1 1 1
+DatumPtr Kernel::excSetX(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double x = h.numberAtIndex(0);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->setx(x);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->setx(x);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC SETY
 SETY ycor
@@ -209,17 +219,18 @@ SETY ycor
     coordinate.
 
 COD***/
-//CMD SETY 1 1 1
-DatumPtr Kernel::excSetY(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double y = h.numberAtIndex(0);
+// CMD SETY 1 1 1
+DatumPtr Kernel::excSetY(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double y = h.numberAtIndex(0);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->sety(y);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->sety(y);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC SETHEADING SETH
 SETHEADING degrees
@@ -230,23 +241,24 @@ SETH degrees
     Y axis.
 
 COD***/
-//CMD SETHEADING 1 1 1
-//CMD SETH 1 1 1
-DatumPtr Kernel::excSetheading(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double newHeading = h.numberAtIndex(0);
+// CMD SETHEADING 1 1 1
+// CMD SETH 1 1 1
+DatumPtr Kernel::excSetheading(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double newHeading = h.numberAtIndex(0);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  double oldHeading = Config::get().mainTurtle()->getHeading();
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    double oldHeading = Config::get().mainTurtle()->getHeading();
 
-  // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
-  newHeading = 360 - newHeading;
+    // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
+    newHeading = 360 - newHeading;
 
-  double adjustment = newHeading - oldHeading;
-  Config::get().mainTurtle()->rotate(adjustment);
-  return nothing;
+    double adjustment = newHeading - oldHeading;
+    Config::get().mainTurtle()->rotate(adjustment);
+    return nothing;
 }
-
 
 /***DOC HOME
 HOME
@@ -255,16 +267,17 @@ HOME
     SETPOS [0 0] SETHEADING 0.
 
 COD***/
-//CMD HOME 0 0 0
-DatumPtr Kernel::excHome(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD HOME 0 0 0
+DatumPtr Kernel::excHome(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-    if ( ! Config::get().hasGUI) Error::noGraphics();
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
     Config::get().mainTurtle()->moveToHome();
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC ARC
 ARC angle radius
@@ -274,27 +287,28 @@ ARC angle radius
     clockwise through the specified angle.  The turtle does not move.
 
 COD***/
-//CMD ARC 2 2 2
-DatumPtr Kernel::excArc(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double angle = h.numberAtIndex(0);
-  double radius = h.numberAtIndex(1);
+// CMD ARC 2 2 2
+DatumPtr Kernel::excArc(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double angle = h.numberAtIndex(0);
+    double radius = h.numberAtIndex(1);
 
-  // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
-  angle = 0 - angle;
+    // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
+    angle = 0 - angle;
 
-  if ((angle < -360) || (angle > 360))
-    angle = 360;
+    if ((angle < -360) || (angle > 360))
+        angle = 360;
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  if ((angle != 0) && (radius != 0))
-    Config::get().mainTurtle()->drawArc(angle, radius);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    if ((angle != 0) && (radius != 0))
+        Config::get().mainTurtle()->drawArc(angle, radius);
 
-  return nothing;
+    return nothing;
 }
 
 // TURTLE MOTION QUERIES
-
 
 /***DOC POS
 POS
@@ -303,20 +317,21 @@ POS
     numbers, the X and Y coordinates.
 
 COD***/
-//CMD POS 0 0 0
-DatumPtr Kernel::excPos(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double x, y;
+// CMD POS 0 0 0
+DatumPtr Kernel::excPos(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double x, y;
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->getxy(x, y);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->getxy(x, y);
 
-  List *retval = new List();
-  retval->append(DatumPtr(x));
-  retval->append(DatumPtr(y));
-  return h.ret(retval);
+    List *retval = new List();
+    retval->append(DatumPtr(x));
+    retval->append(DatumPtr(y));
+    return h.ret(retval);
 }
-
 
 /***DOC HEADING
 HEADING
@@ -324,20 +339,21 @@ HEADING
     outputs a number, the turtle's heading in degrees.
 
 COD***/
-//CMD HEADING 0 0 0
-DatumPtr Kernel::excHeading(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD HEADING 0 0 0
+DatumPtr Kernel::excHeading(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  double retval = Config::get().mainTurtle()->getHeading();
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    double retval = Config::get().mainTurtle()->getHeading();
 
-  // Heading is positive in the counter-clockwise direction.
-  if (retval > 0)
-      retval = 360 - retval;
+    // Heading is positive in the counter-clockwise direction.
+    if (retval > 0)
+        retval = 360 - retval;
 
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC TOWARDS
 TOWARDS pos
@@ -347,34 +363,35 @@ TOWARDS pos
     the position given as the input.
 
 COD***/
-//CMD TOWARDS 1 1 1
-DatumPtr Kernel::excTowards(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  QVector<double> v;
-  double x, y;
-  h.validatedDatumAtIndex(0, [&v, this](DatumPtr candidate) {
-    if (!candidate.isList())
-      return false;
-    if (!numbersFromList(v, candidate))
-      return false;
-    if (v.size() != 2)
-      return false;
-    return true;
-  });
+// CMD TOWARDS 1 1 1
+DatumPtr Kernel::excTowards(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QVector<double> v;
+    double x, y;
+    h.validatedDatumAtIndex(0, [&v, this](DatumPtr candidate) {
+        if (!candidate.isList())
+            return false;
+        if (!numbersFromList(v, candidate))
+            return false;
+        if (v.size() != 2)
+            return false;
+        return true;
+    });
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->getxy(x, y);
-  double retval = atan2(x - v[0], v[1] - y) * (180 / M_PI);
-  if (retval < 0)
-    retval += 360;
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->getxy(x, y);
+    double retval = atan2(x - v[0], v[1] - y) * (180 / M_PI);
+    if (retval < 0)
+        retval += 360;
 
-  // Heading is positive in the counter-clockwise direction.
-  if (retval > 0)
-      retval = 360 - retval;
+    // Heading is positive in the counter-clockwise direction.
+    if (retval > 0)
+        retval = 360 - retval;
 
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC SCRUNCH
 SCRUNCH
@@ -386,17 +403,17 @@ SCRUNCH
 
 
 COD***/
-//CMD SCRUNCH 0 0 0
-DatumPtr Kernel::excScrunch(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  List *retval = new List();
-  retval->append(DatumPtr(1));
-  retval->append(DatumPtr(1));
-  return h.ret(retval);
+// CMD SCRUNCH 0 0 0
+DatumPtr Kernel::excScrunch(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    List *retval = new List();
+    retval->append(DatumPtr(1));
+    retval->append(DatumPtr(1));
+    return h.ret(retval);
 }
 
 // TURTLE AND WINDOW CONTROL
-
 
 /***DOC SHOWTURTLE ST
 SHOWTURTLE
@@ -405,18 +422,19 @@ ST
     makes the turtle visible.
 
 COD***/
-//CMD SHOWTURTLE 0 0 0
-//CMD ST 0 0 0
-DatumPtr Kernel::excShowturtle(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD SHOWTURTLE 0 0 0
+// CMD ST 0 0 0
+DatumPtr Kernel::excShowturtle(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->setIsTurtleVisible(true);
-  Config::get().mainController()->setTurtleIsVisible(true);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->setIsTurtleVisible(true);
+    Config::get().mainController()->setTurtleIsVisible(true);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC HIDETURTLE HT
 HIDETURTLE
@@ -427,18 +445,19 @@ HT
     the turtle speeds up the drawing substantially.
 
 COD***/
-//CMD HIDETURTLE 0 0 0
-//CMD HT 0 0 0
-DatumPtr Kernel::excHideturtle(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD HIDETURTLE 0 0 0
+// CMD HT 0 0 0
+DatumPtr Kernel::excHideturtle(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->setIsTurtleVisible(false);
-  Config::get().mainController()->setTurtleIsVisible(false);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->setIsTurtleVisible(false);
+    Config::get().mainController()->setTurtleIsVisible(false);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC CLEAN
 CLEAN
@@ -448,13 +467,13 @@ CLEAN
     changed.
 
 COD***/
-//CMD CLEAN 0 0 0
-DatumPtr Kernel::excClean(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  Config::get().mainController()->clearCanvas();
-  return nothing;
+// CMD CLEAN 0 0 0
+DatumPtr Kernel::excClean(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    Config::get().mainController()->clearCanvas();
+    return nothing;
 }
-
 
 /***DOC CLEARSCREEN CS
 CLEARSCREEN
@@ -464,18 +483,19 @@ CS
     position and heading.  Like HOME and CLEAN together.
 
 COD***/
-//CMD CLEARSCREEN 0 0 0
-//CMD CS 0 0 0
-DatumPtr Kernel::excClearscreen(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD CLEARSCREEN 0 0 0
+// CMD CS 0 0 0
+DatumPtr Kernel::excClearscreen(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->moveToHome();
-  Config::get().mainController()->clearCanvas();
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->moveToHome();
+    Config::get().mainController()->clearCanvas();
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC WRAP
 WRAP
@@ -489,19 +509,21 @@ WRAP
     Compare WINDOW and FENCE.
 
 COD***/
-//CMD WRAP 0 0 0
-DatumPtr Kernel::excWrap(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  TurtleModeEnum newMode = turtleWrap;
+// CMD WRAP 0 0 0
+DatumPtr Kernel::excWrap(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    TurtleModeEnum newMode = turtleWrap;
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  if (Config::get().mainTurtle()->getMode() != newMode) {
-    Config::get().mainTurtle()->setMode(newMode);
-      Config::get().mainController()->setIsCanvasBounded(true);
-  }
-  return nothing;
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    if (Config::get().mainTurtle()->getMode() != newMode)
+    {
+        Config::get().mainTurtle()->setMode(newMode);
+        Config::get().mainController()->setIsCanvasBounded(true);
+    }
+    return nothing;
 }
-
 
 /***DOC WINDOW
 WINDOW
@@ -514,19 +536,21 @@ WINDOW
     it back to the center of the window.)  Compare WRAP and FENCE.
 
 COD***/
-//CMD WINDOW 0 0 0
-DatumPtr Kernel::excWindow(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  TurtleModeEnum newMode = turtleWindow;
+// CMD WINDOW 0 0 0
+DatumPtr Kernel::excWindow(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    TurtleModeEnum newMode = turtleWindow;
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  if (Config::get().mainTurtle()->getMode() != newMode) {
-    Config::get().mainTurtle()->setMode(newMode);
-    Config::get().mainController()->setIsCanvasBounded(false);
-  }
-  return nothing;
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    if (Config::get().mainTurtle()->getMode() != newMode)
+    {
+        Config::get().mainTurtle()->setMode(newMode);
+        Config::get().mainController()->setIsCanvasBounded(false);
+    }
+    return nothing;
 }
-
 
 /***DOC FENCE
 FENCE
@@ -537,19 +561,21 @@ FENCE
     "out of bounds" error message.  Compare WRAP and WINDOW.
 
 COD***/
-//CMD FENCE 0 0 0
-DatumPtr Kernel::excFence(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  TurtleModeEnum newMode = turtleFence;
+// CMD FENCE 0 0 0
+DatumPtr Kernel::excFence(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    TurtleModeEnum newMode = turtleFence;
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  if (Config::get().mainTurtle()->getMode() != newMode) {
-    Config::get().mainTurtle()->setMode(newMode);
-      Config::get().mainController()->setIsCanvasBounded(true);
-  }
-  return nothing;
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    if (Config::get().mainTurtle()->getMode() != newMode)
+    {
+        Config::get().mainTurtle()->setMode(newMode);
+        Config::get().mainController()->setIsCanvasBounded(true);
+    }
+    return nothing;
 }
-
 
 /***DOC BOUNDS
 BOUNDS
@@ -558,16 +584,17 @@ BOUNDS
     of the canvas. See SETBOUNDS.
 
 COD***/
-//CMD BOUNDS 2 2 2
-DatumPtr Kernel::excBounds(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double x = Config::get().mainController()->boundX();
-  double y = Config::get().mainController()->boundY();
+// CMD BOUNDS 2 2 2
+DatumPtr Kernel::excBounds(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double x = Config::get().mainController()->boundX();
+    double y = Config::get().mainController()->boundY();
 
-  List *retval = new List();
-  retval->append(DatumPtr(x));
-  retval->append(DatumPtr(y));
-  return h.ret(retval);
+    List *retval = new List();
+    retval->append(DatumPtr(x));
+    retval->append(DatumPtr(y));
+    return h.ret(retval);
 }
 
 /***DOC SETBOUNDS
@@ -581,19 +608,19 @@ SETBOUNDS x y
     [-y, y].
 
 COD***/
-//CMD SETBOUNDS 2 2 2
-DatumPtr Kernel::excSetbounds(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  auto v = [](double candidate) { return candidate > 0; };
+// CMD SETBOUNDS 2 2 2
+DatumPtr Kernel::excSetbounds(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    auto v = [](double candidate) { return candidate > 0; };
 
-  double x = h.validatedNumberAtIndex(0, v);
-  double y = h.validatedNumberAtIndex(1, v);
+    double x = h.validatedNumberAtIndex(0, v);
+    double y = h.validatedNumberAtIndex(1, v);
 
-  Config::get().mainController()->setBounds(x, y);
+    Config::get().mainController()->setBounds(x, y);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC FILLED
 FILLED color instructions
@@ -606,29 +633,31 @@ FILLED color instructions
     cannot include another FILLED invocation.
 
 COD***/
-//CMD FILLED 2 2 2
-DatumPtr Kernel::excFilled(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  QColor c;
-  h.validatedDatumAtIndex(0, [&c, this](DatumPtr candidate) {
-    return colorFromDatumPtr(c, candidate);
-  });
+// CMD FILLED 2 2 2
+DatumPtr Kernel::excFilled(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QColor c;
+    h.validatedDatumAtIndex(0, [&c, this](DatumPtr candidate) { return colorFromDatumPtr(c, candidate); });
 
-  DatumPtr commandList = h.datumAtIndex(1);
+    DatumPtr commandList = h.datumAtIndex(1);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->beginFillWithColor(c);
-  DatumPtr retval;
-  try {
-    retval = runList(commandList);
-  } catch (Error *e) {
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->beginFillWithColor(c);
+    DatumPtr retval;
+    try
+    {
+        retval = runList(commandList);
+    }
+    catch (Error *e)
+    {
+        Config::get().mainTurtle()->endFill();
+        throw e;
+    }
     Config::get().mainTurtle()->endFill();
-    throw e;
-  }
-  Config::get().mainTurtle()->endFill();
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC LABEL
 LABEL text
@@ -638,18 +667,19 @@ LABEL text
 
 COD***/
 // TODO: should also accept list as input.
-//CMD LABEL 1 1 1
-DatumPtr Kernel::excLabel(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  QString text = h.wordAtIndex(0).wordValue()->printValue();
-  double x = 0, y = 0;
+// CMD LABEL 1 1 1
+DatumPtr Kernel::excLabel(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QString text = h.wordAtIndex(0).wordValue()->printValue();
+    double x = 0, y = 0;
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->getxy(x, y);
-  Config::get().mainController()->drawLabel(text);
-  return nothing;
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->getxy(x, y);
+    Config::get().mainController()->drawLabel(text);
+    return nothing;
 }
-
 
 /***DOC SETLABELHEIGHT
 SETLABELHEIGHT height
@@ -657,15 +687,14 @@ SETLABELHEIGHT height
     command. Takes a positive number argument and sets the label font size.
 
 COD***/
-//CMD SETLABELHEIGHT 1 1 1
-DatumPtr Kernel::excSetlabelheight(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double height = h.validatedNumberAtIndex(
-      0, [](double candidate) { return candidate > 0; });
-  Config::get().mainController()->setLabelFontSize(height);
-  return nothing;
+// CMD SETLABELHEIGHT 1 1 1
+DatumPtr Kernel::excSetlabelheight(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double height = h.validatedNumberAtIndex(0, [](double candidate) { return candidate > 0; });
+    Config::get().mainController()->setLabelFontSize(height);
+    return nothing;
 }
-
 
 /***DOC TEXTSCREEN TS
 TEXTSCREEN
@@ -676,14 +705,14 @@ TS
     interaction with Logo).  Compare SPLITSCREEN and FULLSCREEN.
 
 COD***/
-//CMD TEXTSCREEN 0 0 0
-//CMD TS 0 0 0
-DatumPtr Kernel::excTextscreen(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  Config::get().mainController()->setScreenMode(textScreenMode);
-  return nothing;
+// CMD TEXTSCREEN 0 0 0
+// CMD TS 0 0 0
+DatumPtr Kernel::excTextscreen(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    Config::get().mainController()->setScreenMode(textScreenMode);
+    return nothing;
 }
-
 
 /***DOC FULLSCREEN FS
 FULLSCREEN
@@ -698,14 +727,14 @@ FS
     25% text console. This is identical to SPLITSCREEN.
 
 COD***/
-//CMD FULLSCREEN 0 0 0
-//CMD FS 0 0 0
-DatumPtr Kernel::excFullscreen(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  Config::get().mainController()->setScreenMode(fullScreenMode);
-  return nothing;
+// CMD FULLSCREEN 0 0 0
+// CMD FS 0 0 0
+DatumPtr Kernel::excFullscreen(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    Config::get().mainController()->setScreenMode(fullScreenMode);
+    return nothing;
 }
-
 
 /***DOC SPLITSCREEN SS
 SPLITSCREEN
@@ -717,14 +746,14 @@ SS
     Compare TEXTSCREEN and FULLSCREEN.
 
 COD***/
-//CMD SPLITSCREEN 0 0 0
-//CMD SS 0 0 0
-DatumPtr Kernel::excSplitscreen(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  Config::get().mainController()->setScreenMode(splitScreenMode);
-  return nothing;
+// CMD SPLITSCREEN 0 0 0
+// CMD SS 0 0 0
+DatumPtr Kernel::excSplitscreen(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    Config::get().mainController()->setScreenMode(splitScreenMode);
+    return nothing;
 }
-
 
 /***DOC SETSCRUNCH
 SETSCRUNCH xscale yscale
@@ -732,14 +761,14 @@ SETSCRUNCH xscale yscale
     In QLogo this does nothing. See SCRUNCH.
 
 COD***/
-//CMD SETSCRUNCH 2 2 2
-DatumPtr Kernel::excSetscrunch(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  return nothing;
+// CMD SETSCRUNCH 2 2 2
+DatumPtr Kernel::excSetscrunch(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    return nothing;
 }
 
 // TURTLE AND WINDOW QUERIES
-
 
 /***DOC SHOWNP SHOWN?
 SHOWNP
@@ -749,16 +778,17 @@ SHOWN?
     turtle is hidden.  See SHOWTURTLE and HIDETURTLE.
 
 COD***/
-//CMD SHOWNP 0 0 0
-//CMD SHOWN? 0 0 0
-DatumPtr Kernel::excShownp(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD SHOWNP 0 0 0
+// CMD SHOWN? 0 0 0
+DatumPtr Kernel::excShownp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  bool retval = Config::get().mainTurtle()->isTurtleVisible();
-  return h.ret(retval);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    bool retval = Config::get().mainTurtle()->isTurtleVisible();
+    return h.ret(retval);
 }
-
 
 /***DOC SCREENMODE
 SCREENMODE
@@ -771,27 +801,28 @@ SCREENMODE
     last used mode command.
 
 COD***/
-//CMD SCREENMODE 0 0 0
-DatumPtr Kernel::excScreenmode(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  QString retval;
-  switch (Config::get().mainController()->getScreenMode()) {
-  case textScreenMode:
-  case initScreenMode:
-    retval = QObject::tr("textscreen");
-    break;
-  case fullScreenMode:
-    retval = QObject::tr("fullscreen");
-    break;
-  case splitScreenMode:
-    retval = QObject::tr("splitscreen");
-    break;
-  default:
-    break;
-  }
-  return h.ret(retval);
+// CMD SCREENMODE 0 0 0
+DatumPtr Kernel::excScreenmode(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QString retval;
+    switch (Config::get().mainController()->getScreenMode())
+    {
+    case textScreenMode:
+    case initScreenMode:
+        retval = QObject::tr("textscreen");
+        break;
+    case fullScreenMode:
+        retval = QObject::tr("fullscreen");
+        break;
+    case splitScreenMode:
+        retval = QObject::tr("splitscreen");
+        break;
+    default:
+        break;
+    }
+    return h.ret(retval);
 }
-
 
 /***DOC TURTLEMODE
 TURTLEMODE
@@ -800,30 +831,32 @@ TURTLEMODE
     turtle mode.
 
 COD***/
-//CMD TURTLEMODE 0 0 0
-DatumPtr Kernel::excTurtlemode(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  QString retval;
+// CMD TURTLEMODE 0 0 0
+DatumPtr Kernel::excTurtlemode(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QString retval;
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  switch (Config::get().mainTurtle()->getMode()) {
-  case turtleWrap:
-    retval = QObject::tr("wrap");
-    break;
-  case turtleFence:
-    retval = QObject::tr("fence");
-    break;
-  case turtleWindow:
-    retval = QObject::tr("window");
-    break;
-  default:
-    qDebug() << "what mode is the turtle?";
-    Q_ASSERT(false);
-    break;
-  }
-  return h.ret(retval);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    switch (Config::get().mainTurtle()->getMode())
+    {
+    case turtleWrap:
+        retval = QObject::tr("wrap");
+        break;
+    case turtleFence:
+        retval = QObject::tr("fence");
+        break;
+    case turtleWindow:
+        retval = QObject::tr("window");
+        break;
+    default:
+        qDebug() << "what mode is the turtle?";
+        Q_ASSERT(false);
+        break;
+    }
+    return h.ret(retval);
 }
-
 
 /***DOC LABELSIZE
 LABELSIZE
@@ -834,11 +867,12 @@ LABELSIZE
     are variable-width, and therefore the width is difficult to calculate.
 
 COD***/
-//CMD LABELSIZE 0 0 0
-DatumPtr Kernel::excLabelheight(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double retval = Config::get().mainController()->getLabelFontSize();
-  return h.ret(retval);
+// CMD LABELSIZE 0 0 0
+DatumPtr Kernel::excLabelheight(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double retval = Config::get().mainController()->getLabelFontSize();
+    return h.ret(retval);
 }
 
 /***DOC MATRIX
@@ -853,25 +887,28 @@ COD***/
 
 // TODO: TURTLEMATRIX, and maybe .SETTURTLEMATRIX
 // TODO: This should be an array of arrays.
-//CMD MATRIX 0 0 0
-DatumPtr Kernel::excMatrix(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  List *retval = new List();
+// CMD MATRIX 0 0 0
+DatumPtr Kernel::excMatrix(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    List *retval = new List();
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  const QMatrix4x4 &m = Config::get().mainTurtle()->getMatrix();
-  for (int row = 0; row < 4; ++row) {
-    List *r = new List();
-    for (int col = 0; col < 4; ++col) {
-      r->append(DatumPtr(m(row, col)));
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    const QMatrix4x4 &m = Config::get().mainTurtle()->getMatrix();
+    for (int row = 0; row < 4; ++row)
+    {
+        List *r = new List();
+        for (int col = 0; col < 4; ++col)
+        {
+            r->append(DatumPtr(m(row, col)));
+        }
+        retval->append(DatumPtr(r));
     }
-    retval->append(DatumPtr(r));
-  }
-  return h.ret(retval);
+    return h.ret(retval);
 }
 
 // PEN AND BACKGROUND CONTROL
-
 
 /***DOC PENDOWN PD
 PENDOWN
@@ -880,17 +917,18 @@ PD
     sets the pen's position to DOWN, without changing its mode.
 
 COD***/
-//CMD PENDOWN 0 0 0
-//CMD PD 0 0 0
-DatumPtr Kernel::excPendown(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD PENDOWN 0 0 0
+// CMD PD 0 0 0
+DatumPtr Kernel::excPendown(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->setPenIsDown(true);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->setPenIsDown(true);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC PENUP PU
 PENUP
@@ -899,17 +937,18 @@ PU
     sets the pen's position to UP, without changing its mode.
 
 COD***/
-//CMD PENUP 0 0 0
-//CMD PU 0 0 0
-DatumPtr Kernel::excPenup(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD PENUP 0 0 0
+// CMD PU 0 0 0
+DatumPtr Kernel::excPenup(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->setPenIsDown(false);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->setPenIsDown(false);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC PENPAINT PPT
 PENPAINT
@@ -918,17 +957,18 @@ PPT
     sets the pen's position to DOWN and mode to PAINT.
 
 COD***/
-//CMD PENPAINT 0 0 0
-//CMD PPT 0 0 0
-DatumPtr Kernel::excPenpaint(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD PENPAINT 0 0 0
+// CMD PPT 0 0 0
+DatumPtr Kernel::excPenpaint(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->setPenIsDown(true);
-  Config::get().mainTurtle()->setPenMode(penModePaint);
-  return nothing;
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->setPenIsDown(true);
+    Config::get().mainTurtle()->setPenMode(penModePaint);
+    return nothing;
 }
-
 
 /***DOC PENERASE PE
 PENERASE
@@ -937,17 +977,18 @@ PE
     sets the pen's position to DOWN and mode to ERASE.
 
 COD***/
-//CMD PENERASE 0 0 0
-//CMD PE 0 0 0
-DatumPtr Kernel::excPenerase(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD PENERASE 0 0 0
+// CMD PE 0 0 0
+DatumPtr Kernel::excPenerase(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->setPenIsDown(true);
-  Config::get().mainTurtle()->setPenMode(penModeErase);
-  return nothing;
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->setPenIsDown(true);
+    Config::get().mainTurtle()->setPenMode(penModeErase);
+    return nothing;
 }
-
 
 /***DOC PENREVERSE PX
 PENREVERSE
@@ -957,17 +998,18 @@ PX
     The pen color value is ignored while in penreverse mode.
 
 COD***/
-//CMD PENREVERSE 0 0 0
-//CMD PX 0 0 0
-DatumPtr Kernel::excPenreverse(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD PENREVERSE 0 0 0
+// CMD PX 0 0 0
+DatumPtr Kernel::excPenreverse(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->setPenIsDown(true);
-  Config::get().mainTurtle()->setPenMode(penModeReverse);
-  return nothing;
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->setPenIsDown(true);
+    Config::get().mainTurtle()->setPenMode(penModeReverse);
+    return nothing;
 }
-
 
 /***DOC SETPENCOLOR SETPC
 SETPENCOLOR color
@@ -1003,20 +1045,19 @@ SETPC color
     "#f00 "#ff0000 "#fff000000 and "#ffff00000000
 
 COD***/
-//CMD SETPENCOLOR 1 1 1
-//CMD SETPC 1 1 1
-DatumPtr Kernel::excSetpencolor(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  QColor c;
-  h.validatedDatumAtIndex(0, [&c, this](DatumPtr candidate) {
-    return colorFromDatumPtr(c, candidate);
-  });
+// CMD SETPENCOLOR 1 1 1
+// CMD SETPC 1 1 1
+DatumPtr Kernel::excSetpencolor(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QColor c;
+    h.validatedDatumAtIndex(0, [&c, this](DatumPtr candidate) { return colorFromDatumPtr(c, candidate); });
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  Config::get().mainTurtle()->setPenColor(c);
-  return nothing;
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    Config::get().mainTurtle()->setPenColor(c);
+    return nothing;
 }
-
 
 /***DOC ALLCOLORS
 ALLCOLORS
@@ -1024,17 +1065,18 @@ ALLCOLORS
     returns a list of all of the color names that QLogo knows about.
 
 COD***/
-//CMD ALLCOLORS 0 0 0
-DatumPtr Kernel::excAllcolors(DatumPtr node) {
+// CMD ALLCOLORS 0 0 0
+DatumPtr Kernel::excAllcolors(DatumPtr node)
+{
     ProcedureHelper h(this, node);
     List *retval = new List();
     QStringList colors = QColor::colorNames();
-    for (const QString &i : colors) {
+    for (const QString &i : colors)
+    {
         retval->append(DatumPtr(i));
     }
     return h.ret(retval);
 }
-
 
 /***DOC SETPALETTE
 SETPALETTE colornumber color
@@ -1046,20 +1088,17 @@ SETPALETTE colornumber color
     methods of specifying a color.
 
 COD***/
-//CMD SETPALETTE 2 2 2
-DatumPtr Kernel::excSetpalette(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  int colornumber = h.validatedIntegerAtIndex(0, [this](int candidate) {
-    return (candidate >= 8) && (candidate < palette.size());
-  });
-  QColor c;
-  h.validatedDatumAtIndex(1, [&c, this](DatumPtr candidate) {
-    return colorFromDatumPtr(c, candidate);
-  });
-  palette[colornumber] = c;
-  return nothing;
+// CMD SETPALETTE 2 2 2
+DatumPtr Kernel::excSetpalette(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    int colornumber = h.validatedIntegerAtIndex(
+        0, [this](int candidate) { return (candidate >= 8) && (candidate < palette.size()); });
+    QColor c;
+    h.validatedDatumAtIndex(1, [&c, this](DatumPtr candidate) { return colorFromDatumPtr(c, candidate); });
+    palette[colornumber] = c;
+    return nothing;
 }
-
 
 /***DOC SETPENSIZE
 SETPENSIZE size
@@ -1070,18 +1109,18 @@ SETPENSIZE size
     drawn.
 
 COD***/
-//CMD SETPENSIZE 1 1 1
-DatumPtr Kernel::excSetpensize(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double newSize = h.validatedNumberAtIndex(0, [](double candidate) {
-
-      if ( ! Config::get().hasGUI) Error::noGraphics();
-      return Config::get().mainTurtle()->isPenSizeValid(candidate);
-  });
-  Config::get().mainTurtle()->setPenSize(newSize);
-  return nothing;
+// CMD SETPENSIZE 1 1 1
+DatumPtr Kernel::excSetpensize(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double newSize = h.validatedNumberAtIndex(0, [](double candidate) {
+        if (!Config::get().hasGUI)
+            Error::noGraphics();
+        return Config::get().mainTurtle()->isPenSizeValid(candidate);
+    });
+    Config::get().mainTurtle()->setPenSize(newSize);
+    return nothing;
 }
-
 
 /***DOC SETBACKGROUND SETBG
 SETBACKGROUND color
@@ -1091,20 +1130,18 @@ SETBG color
 
 
 COD***/
-//CMD SETBACKGROUND 1 1 1
-//CMD SETBG 1 1 1
-DatumPtr Kernel::excSetbackground(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  QColor c;
-  h.validatedDatumAtIndex(0, [&c, this](DatumPtr candidate) {
-    return colorFromDatumPtr(c, candidate);
-  });
-  Config::get().mainController()->setCanvasBackgroundColor(c);
-  return nothing;
+// CMD SETBACKGROUND 1 1 1
+// CMD SETBG 1 1 1
+DatumPtr Kernel::excSetbackground(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QColor c;
+    h.validatedDatumAtIndex(0, [&c, this](DatumPtr candidate) { return colorFromDatumPtr(c, candidate); });
+    Config::get().mainController()->setCanvasBackgroundColor(c);
+    return nothing;
 }
 
 // PEN QUERIES
-
 
 /***DOC PENDOWNP PENDOWN?
 PENDOWNP
@@ -1113,15 +1150,16 @@ PENDOWN?
     outputs TRUE if the pen is down, FALSE if it's up.
 
 COD***/
-//CMD PENDOWNP 0 0 0
-//CMD PENDOWN? 0 0 0
-DatumPtr Kernel::excPendownp(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD PENDOWNP 0 0 0
+// CMD PENDOWN? 0 0 0
+DatumPtr Kernel::excPendownp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  return h.ret(Config::get().mainTurtle()->isPenDown());
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    return h.ret(Config::get().mainTurtle()->isPenDown());
 }
-
 
 /***DOC PENMODE
 PENMODE
@@ -1130,30 +1168,32 @@ PENMODE
     the current pen mode.
 
 COD***/
-//CMD PENMODE 0 0 0
-DatumPtr Kernel::excPenmode(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD PENMODE 0 0 0
+DatumPtr Kernel::excPenmode(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  PenModeEnum pm = Config::get().mainTurtle()->getPenMode();
-  QString retval;
-  switch (pm) {
-  case penModePaint:
-    retval = QObject::tr("paint");
-    break;
-  case penModeReverse:
-    retval = QObject::tr("reverse");
-    break;
-  case penModeErase:
-    retval = QObject::tr("erase");
-    break;
-  default:
-    retval = "ERROR!!!";
-    break;
-  }
-  return h.ret(retval);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    PenModeEnum pm = Config::get().mainTurtle()->getPenMode();
+    QString retval;
+    switch (pm)
+    {
+    case penModePaint:
+        retval = QObject::tr("paint");
+        break;
+    case penModeReverse:
+        retval = QObject::tr("reverse");
+        break;
+    case penModeErase:
+        retval = QObject::tr("erase");
+        break;
+    default:
+        retval = "ERROR!!!";
+        break;
+    }
+    return h.ret(retval);
 }
-
 
 /***DOC PENCOLOR PC
 PENCOLOR
@@ -1164,16 +1204,17 @@ PC
     with the current pen color.
 
 COD***/
-//CMD PENCOLOR 0 0 0
-//CMD PC 0 0 0
-DatumPtr Kernel::excPencolor(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD PENCOLOR 0 0 0
+// CMD PC 0 0 0
+DatumPtr Kernel::excPencolor(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  const QColor &c = Config::get().mainTurtle()->getPenColor();
-  return h.ret(listFromColor(c));
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    const QColor &c = Config::get().mainTurtle()->getPenColor();
+    return h.ret(listFromColor(c));
 }
-
 
 /***DOC PALETTE
 PALETTE colornumber
@@ -1183,15 +1224,14 @@ PALETTE colornumber
     with the given number.
 
 COD***/
-//CMD PALETTE 1 1 1
-DatumPtr Kernel::excPalette(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  int colornumber = h.validatedIntegerAtIndex(0, [this](int candidate) {
-    return (candidate >= 0) && (candidate < palette.size());
-  });
-  return h.ret(listFromColor(palette[colornumber]));
+// CMD PALETTE 1 1 1
+DatumPtr Kernel::excPalette(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    int colornumber = h.validatedIntegerAtIndex(
+        0, [this](int candidate) { return (candidate >= 0) && (candidate < palette.size()); });
+    return h.ret(listFromColor(palette[colornumber]));
 }
-
 
 /***DOC PENSIZE
 PENSIZE
@@ -1200,15 +1240,16 @@ PENSIZE
     outputs a positive integer, specifying the thickness of the turtle pen.
 
 COD***/
-//CMD PENSIZE 0 0 0
-DatumPtr Kernel::excPensize(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD PENSIZE 0 0 0
+DatumPtr Kernel::excPensize(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  if ( ! Config::get().hasGUI) Error::noGraphics();
-  double retval = Config::get().mainTurtle()->getPenSize();
-  return h.ret(retval);
+    if (!Config::get().hasGUI)
+        Error::noGraphics();
+    double retval = Config::get().mainTurtle()->getPenSize();
+    return h.ret(retval);
 }
-
 
 /***DOC BACKGROUND BG
 BACKGROUND
@@ -1220,17 +1261,17 @@ BG
 
 
 COD***/
-//CMD BACKGROUND 0 0 0
-//CMD BG 0 0 0
-DatumPtr Kernel::excBackground(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  QColor c = Config::get().mainController()->getCanvasBackgroundColor();
+// CMD BACKGROUND 0 0 0
+// CMD BG 0 0 0
+DatumPtr Kernel::excBackground(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QColor c = Config::get().mainController()->getCanvasBackgroundColor();
 
-  return h.ret(listFromColor(c));
+    return h.ret(listFromColor(c));
 }
 
 // SAVING AND LOADING PICTURES
-
 
 /***DOC SAVEPICT
 SAVEPICT filename
@@ -1241,18 +1282,20 @@ SAVEPICT filename
     See SVGPICT to export Logo graphics as SVG.
 
 COD***/
-//CMD SAVEPICT 1 1 1
-DatumPtr Kernel::excSavepict(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr filenameP = h.wordAtIndex(0);
+// CMD SAVEPICT 1 1 1
+DatumPtr Kernel::excSavepict(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr filenameP = h.wordAtIndex(0);
 
-  QString filepath = filepathForFilename(filenameP);
-  QImage image = Config::get().mainController()->getCanvasImage();
-  bool isSuccessful = image.save(filepath);
-  if (!isSuccessful) {
-    return h.ret(Error::fileSystemRecoverable());
-  }
-  return nothing;
+    QString filepath = filepathForFilename(filenameP);
+    QImage image = Config::get().mainController()->getCanvasImage();
+    bool isSuccessful = image.save(filepath);
+    if (!isSuccessful)
+    {
+        return h.ret(Error::fileSystemRecoverable());
+    }
+    return nothing;
 }
 
 /***DOC LOADPICT
@@ -1266,23 +1309,28 @@ LOADPICT filename
     set as the background will be cleared.
 
 COD***/
-//CMD LOADPICT 1 1 1
-DatumPtr Kernel::excLoadpict(DatumPtr node) {
+// CMD LOADPICT 1 1 1
+DatumPtr Kernel::excLoadpict(DatumPtr node)
+{
     ProcedureHelper h(this, node);
     DatumPtr filenameP = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
         if (candidate.isList() && (candidate.listValue()->isEmpty()))
             return true;
         return candidate.isWord();
     });
-    if (filenameP.isWord()) {
+    if (filenameP.isWord())
+    {
         QString filepath = filepathForFilename(filenameP);
         QImage image = QImage(filepath);
-        if (image.isNull()) {
+        if (image.isNull())
+        {
             return h.ret(Error::fileSystemRecoverable());
         }
 
         Config::get().mainController()->setCanvasBackgroundImage(image);
-    } else {
+    }
+    else
+    {
         Config::get().mainController()->setCanvasBackgroundImage(QImage());
     }
     return nothing;
@@ -1296,8 +1344,9 @@ SVGPICT filename
     are determined by the canvas bounds.
 
 COD***/
-//CMD SVGPICT 1 1 1
-DatumPtr Kernel::excSvgpict(DatumPtr node) {
+// CMD SVGPICT 1 1 1
+DatumPtr Kernel::excSvgpict(DatumPtr node)
+{
     ProcedureHelper h(this, node);
     DatumPtr filenameP = h.wordAtIndex(0);
 
@@ -1306,7 +1355,8 @@ DatumPtr Kernel::excSvgpict(DatumPtr node) {
 
     QFile file(filepath);
     bool isSuccessful = file.open(QIODevice::WriteOnly);
-    if (!isSuccessful) {
+    if (!isSuccessful)
+    {
         return h.ret(Error::fileSystemRecoverable());
     }
 
@@ -1319,7 +1369,6 @@ DatumPtr Kernel::excSvgpict(DatumPtr node) {
 
 // MOUSE QUERIES
 
-
 /***DOC MOUSEPOS
 MOUSEPOS
 
@@ -1331,16 +1380,16 @@ MOUSEPOS
     position is returned as if the window were big enough to include it.
 
 COD***/
-//CMD MOUSEPOS 0 0 0
-DatumPtr Kernel::excMousepos(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  List *retval = new List();
-  QVector2D position = Config::get().mainController()->mousePosition();
-  retval->append(DatumPtr(position.x()));
-  retval->append(DatumPtr(position.y()));
-  return h.ret(retval);
+// CMD MOUSEPOS 0 0 0
+DatumPtr Kernel::excMousepos(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    List *retval = new List();
+    QVector2D position = Config::get().mainController()->mousePosition();
+    retval->append(DatumPtr(position.x()));
+    retval->append(DatumPtr(position.y()));
+    return h.ret(retval);
 }
-
 
 /***DOC CLICKPOS
 CLICKPOS
@@ -1350,16 +1399,16 @@ CLICKPOS
     graphics window, in turtle coordinates.
 
 COD***/
-//CMD CLICKPOS 0 0 0
-DatumPtr Kernel::excClickpos(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  List *retval = new List();
-  QVector2D position = Config::get().mainController()->lastMouseclickPosition();
-  retval->append(DatumPtr(position.x()));
-  retval->append(DatumPtr(position.y()));
-  return h.ret(retval);
+// CMD CLICKPOS 0 0 0
+DatumPtr Kernel::excClickpos(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    List *retval = new List();
+    QVector2D position = Config::get().mainController()->lastMouseclickPosition();
+    retval->append(DatumPtr(position.x()));
+    retval->append(DatumPtr(position.y()));
+    return h.ret(retval);
 }
-
 
 /***DOC BUTTONP BUTTON?
 BUTTONP
@@ -1371,13 +1420,13 @@ BUTTON?
     graphics window.
 
 COD***/
-//CMD BUTTONP 0 0 0
-//CMD BUTTON? 0 0 0
-DatumPtr Kernel::excButtonp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  return h.ret(Config::get().mainController()->getIsMouseButtonDown());
+// CMD BUTTONP 0 0 0
+// CMD BUTTON? 0 0 0
+DatumPtr Kernel::excButtonp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    return h.ret(Config::get().mainController()->getIsMouseButtonDown());
 }
-
 
 /***DOC BUTTON
 BUTTON
@@ -1390,8 +1439,9 @@ BUTTON
 
 
 COD***/
-//CMD BUTTON 0 0 0
-DatumPtr Kernel::excButton(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  return h.ret(Config::get().mainController()->getAndResetButtonID());
+// CMD BUTTON 0 0 0
+DatumPtr Kernel::excButton(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    return h.ret(Config::get().mainController()->getAndResetButtonID());
 }

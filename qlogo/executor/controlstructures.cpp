@@ -19,21 +19,25 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the Kernel class, which is the
-/// executor proper of the QLogo language.
+/// This file contains a part of the implementation of the Kernel class, which is the
+/// executor proper of the QLogo language. Specifically, this file contains the
+/// implementations for operations involving control structure commands, such as
+/// REPEAT, IF, STOP, OUTPUT, etc.
+///
+/// See README.md in this directory for information about the documentation
+/// structure for each Kernel::exc* method.
 ///
 //===----------------------------------------------------------------------===//
 
 #include "QtCore/qdatetime.h"
+#include "astnode.h"
+#include "datum.h"
 #include "error.h"
 #include "kernel.h"
 #include "parser.h"
-#include "datum.h"
-#include "astnode.h"
 #include <QObject>
 
 // CONTROL STRUCTURES
-
 
 /***DOC RUN
 RUN instructionlist
@@ -42,18 +46,16 @@ RUN instructionlist
     list; outputs if the list contains an expression that outputs.
 
 COD***/
-//CMD RUN 1 1 1
-DatumPtr Kernel::excRun(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD RUN 1 1 1
+DatumPtr Kernel::excRun(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  DatumPtr instructionList = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
-    return candidate.isWord() || candidate.isList();
-  });
+    DatumPtr instructionList =
+        h.validatedDatumAtIndex(0, [](DatumPtr candidate) { return candidate.isWord() || candidate.isList(); });
 
-  return h.ret(runList(instructionList));
+    return h.ret(runList(instructionList));
 }
-
-
 
 /***DOC TIME
 TIME instructionlist
@@ -63,23 +65,22 @@ TIME instructionlist
     if the list contains an expression that outputs.
 
 COD***/
-//CMD TIME 1 1 1
-DatumPtr Kernel::excTime(DatumPtr node) {
+// CMD TIME 1 1 1
+DatumPtr Kernel::excTime(DatumPtr node)
+{
     ProcedureHelper h(this, node);
 
-    DatumPtr instructionList = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
-        return candidate.isWord() || candidate.isList();
-    });
+    DatumPtr instructionList =
+        h.validatedDatumAtIndex(0, [](DatumPtr candidate) { return candidate.isWord() || candidate.isList(); });
 
     qint64 startTime = QDateTime::currentMSecsSinceEpoch();
     DatumPtr retval = runList(instructionList);
     qint64 endTime = QDateTime::currentMSecsSinceEpoch();
-    double timeInSeconds = ((double) (endTime - startTime)) / 1000.0;
+    double timeInSeconds = ((double)(endTime - startTime)) / 1000.0;
     QString report = "Time: %1 seconds\n";
     stdPrint(report.arg(timeInSeconds));
     return h.ret(retval);
 }
-
 
 /***DOC MARK
 MARK value
@@ -96,8 +97,9 @@ MARK value
     PRINT MARK "Hello
 
 COD***/
-//CMD MARK 1 1 1
-DatumPtr Kernel::excMark(DatumPtr node) {
+// CMD MARK 1 1 1
+DatumPtr Kernel::excMark(DatumPtr node)
+{
     ProcedureHelper h(this, node);
 
     DatumPtr item = h.datumAtIndex(0);
@@ -120,28 +122,29 @@ RUNRESULT instructionlist
         output first :result
 
 COD***/
-//CMD RUNRESULT 1 1 1
-DatumPtr Kernel::excRunresult(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD RUNRESULT 1 1 1
+DatumPtr Kernel::excRunresult(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  DatumPtr instructionList = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
-    return candidate.isWord() || candidate.isList();
-  });
+    DatumPtr instructionList =
+        h.validatedDatumAtIndex(0, [](DatumPtr candidate) { return candidate.isWord() || candidate.isList(); });
 
-  List* retval = new List();
-  DatumPtr temp = runList(instructionList);
+    List *retval = new List();
+    DatumPtr temp = runList(instructionList);
 
-  if (temp.isASTNode()) {
-    temp = Error::insideRunresult(temp.astnodeValue()->nodeName);
-  }
+    if (temp.isASTNode())
+    {
+        temp = Error::insideRunresult(temp.astnodeValue()->nodeName);
+    }
 
-  if (temp != nothing) {
-    retval->append(temp);
-  }
+    if (temp != nothing)
+    {
+        retval->append(temp);
+    }
 
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC BYE
 BYE
@@ -149,15 +152,15 @@ BYE
     command.  Exits from Logo.
 
 COD***/
-//CMD BYE 0 0 0
-DatumPtr Kernel::excBye(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD BYE 0 0 0
+DatumPtr Kernel::excBye(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  Error::throwError(DatumPtr(QObject::tr("SYSTEM")), nothing);
+    Error::throwError(DatumPtr(QObject::tr("SYSTEM")), nothing);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC REPEAT
 REPEAT num instructionlist
@@ -165,33 +168,35 @@ REPEAT num instructionlist
     command.  Runs the "instructionlist" repeatedly, "num" times.
 
 COD***/
-//CMD REPEAT 2 2 2
-DatumPtr Kernel::excRepeat(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  int countValue = h.validatedIntegerAtIndex(
-      0, [](int candidate) { return candidate >= 0; });
-  DatumPtr commandList =
-      h.listAtIndex(1); // TODO: this can execute a word, too, right?
+// CMD REPEAT 2 2 2
+DatumPtr Kernel::excRepeat(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    int countValue = h.validatedIntegerAtIndex(0, [](int candidate) { return candidate >= 0; });
+    DatumPtr commandList = h.listAtIndex(1); // TODO: this can execute a word, too, right?
 
-  int tempRepcount = repcount;
-  repcount = 1;
+    int tempRepcount = repcount;
+    repcount = 1;
 
-  DatumPtr retval;
-  try {
-    while ((countValue > 0) && (retval == nothing)) {
-      retval = runList(commandList);
-      --countValue;
-      ++repcount;
+    DatumPtr retval;
+    try
+    {
+        while ((countValue > 0) && (retval == nothing))
+        {
+            retval = runList(commandList);
+            --countValue;
+            ++repcount;
+        }
     }
-  } catch (Error *e) {
-    // TODO: RAII
+    catch (Error *e)
+    {
+        // TODO: RAII
+        repcount = tempRepcount;
+        throw e;
+    }
     repcount = tempRepcount;
-    throw e;
-  }
-  repcount = tempRepcount;
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC FOREVER
 FOREVER instructionlist
@@ -200,28 +205,32 @@ FOREVER instructionlist
     inside the instructionlist (such as STOP or THROW) makes it stop.
 
 COD***/
-//CMD FOREVER 1 1 1
-DatumPtr Kernel::excForever(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr commandList = h.listAtIndex(0);
+// CMD FOREVER 1 1 1
+DatumPtr Kernel::excForever(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr commandList = h.listAtIndex(0);
 
-  int tempRepcount = repcount;
-  repcount = 1;
+    int tempRepcount = repcount;
+    repcount = 1;
 
-  DatumPtr retval;
-  try {
-    while (retval == nothing) {
-      retval = runList(commandList);
-      ++repcount;
+    DatumPtr retval;
+    try
+    {
+        while (retval == nothing)
+        {
+            retval = runList(commandList);
+            ++repcount;
+        }
     }
-  } catch (Error *e) {
+    catch (Error *e)
+    {
+        repcount = tempRepcount;
+        throw e;
+    }
     repcount = tempRepcount;
-    throw e;
-  }
-  repcount = tempRepcount;
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC REPCOUNT #
 REPCOUNT
@@ -236,13 +245,13 @@ REPCOUNT
     FOREACH, in which case # has a different meaning.
 
 COD***/
-//CMD REPCOUNT 0 0 0
-DatumPtr Kernel::excRepcount(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD REPCOUNT 0 0 0
+DatumPtr Kernel::excRepcount(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  return h.ret(repcount);
+    return h.ret(repcount);
 }
-
 
 /***DOC IF
 IF tf instructionlist
@@ -265,20 +274,23 @@ IFELSE tf instructionlist1 instructionlist2
     instructionlist contains an expression that outputs a value.
 
 COD***/
-//CMD IF 2 2 3
-//CMD IFELSE 3 3 3
-DatumPtr Kernel::excIfelse(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr retval;
-  if (h.boolAtIndex(0, true)) {
-    retval = runList(h.datumAtIndex(1));
-  } else {
-      if (h.countOfChildren() == 3)
-          retval = runList(h.datumAtIndex(2));
-  }
-  return h.ret(retval);
+// CMD IF 2 2 3
+// CMD IFELSE 3 3 3
+DatumPtr Kernel::excIfelse(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr retval;
+    if (h.boolAtIndex(0, true))
+    {
+        retval = runList(h.datumAtIndex(1));
+    }
+    else
+    {
+        if (h.countOfChildren() == 3)
+            retval = runList(h.datumAtIndex(2));
+    }
+    return h.ret(retval);
 }
-
 
 /***DOC TEST
 TEST tf
@@ -289,15 +301,15 @@ TEST tf
     IFFALSE must be in the same procedure or a subprocedure.
 
 COD***/
-//CMD TEST 1 1 1
-DatumPtr Kernel::excTest(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD TEST 1 1 1
+DatumPtr Kernel::excTest(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  bool testVal = h.boolAtIndex(0, true);
-  callStack.setTest(testVal);
-  return nothing;
+    bool testVal = h.boolAtIndex(0, true);
+    callStack.setTest(testVal);
+    return nothing;
 }
-
 
 /***DOC IFTRUE IFT
 IFTRUE instructionlist
@@ -308,19 +320,20 @@ IFT instructionlist
     superprocedure.
 
 COD***/
-//CMD IFTRUE 1 1 1
-//CMD IFT 1 1 1
-DatumPtr Kernel::excIftrue(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr retval;
-  if ( ! callStack.isTested())
-    return h.ret(Error::noTest(node.astnodeValue()->nodeName));
-  if (callStack.testedState()) {
-    retval = runList(h.datumAtIndex(0));
-  }
-  return h.ret(retval);
+// CMD IFTRUE 1 1 1
+// CMD IFT 1 1 1
+DatumPtr Kernel::excIftrue(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr retval;
+    if (!callStack.isTested())
+        return h.ret(Error::noTest(node.astnodeValue()->nodeName));
+    if (callStack.testedState())
+    {
+        retval = runList(h.datumAtIndex(0));
+    }
+    return h.ret(retval);
 }
-
 
 /***DOC IFFALSE IFF
 IFFALSE instructionlist
@@ -331,17 +344,19 @@ IFF instructionlist
     superprocedure.
 
 COD***/
-//CMD IFFALSE 1 1 1
-//CMD IFF 1 1 1
-DatumPtr Kernel::excIffalse(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr retval;
-  if ( ! callStack.isTested())
-    return h.ret(Error::noTest(node.astnodeValue()->nodeName));
-  if ( ! callStack.testedState()) {
-    retval = runList(h.datumAtIndex(0));
-  }
-  return h.ret(retval);
+// CMD IFFALSE 1 1 1
+// CMD IFF 1 1 1
+DatumPtr Kernel::excIffalse(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr retval;
+    if (!callStack.isTested())
+        return h.ret(Error::noTest(node.astnodeValue()->nodeName));
+    if (!callStack.testedState())
+    {
+        retval = runList(h.datumAtIndex(0));
+    }
+    return h.ret(retval);
 }
 
 // The commands STOP, OUTPUT, and .MAYBEOUTPUT return an ASTNode instead of a
@@ -349,7 +364,6 @@ DatumPtr Kernel::excIffalse(DatumPtr node) {
 //
 // The caller is responsible for dissecting the node and acting appropriately.
 //
-
 
 /***DOC STOP
 STOP
@@ -359,15 +373,16 @@ STOP
     invoked.  The stopped procedure does not output a value.
 
 COD***/
-//CMD STOP 0 0 1
-DatumPtr Kernel:: excStop(DatumPtr node) {
+// CMD STOP 0 0 1
+DatumPtr Kernel::excStop(DatumPtr node)
+{
     Q_ASSERT(callStack.size() > 0);
-    if (callStack.localFrame()->sourceNode.isNothing()) {
+    if (callStack.localFrame()->sourceNode.isNothing())
+    {
         Error::notInsideProcedure(node.astnodeValue()->nodeName);
     }
     return node;
 }
-
 
 /***DOC OUTPUT OP
 OUTPUT value
@@ -379,16 +394,17 @@ OP value
     but the procedure that invokes OUTPUT is an operation.
 
 COD***/
-//CMD OUTPUT 1 1 1
-//CMD OP 1 1 1
-DatumPtr Kernel::excOutput(DatumPtr node) {
+// CMD OUTPUT 1 1 1
+// CMD OP 1 1 1
+DatumPtr Kernel::excOutput(DatumPtr node)
+{
     Q_ASSERT(callStack.size() > 1);
-    if (callStack.localFrame()->sourceNode.isNothing()) {
+    if (callStack.localFrame()->sourceNode.isNothing())
+    {
         Error::notInsideProcedure(node.astnodeValue()->nodeName);
     }
     return node;
 }
-
 
 /***DOC .MAYBEOUTPUT
 .MAYBEOUTPUT value					(special form)
@@ -414,15 +430,16 @@ DatumPtr Kernel::excOutput(DatumPtr node) {
     supposed to provide an input to something doesn't have a value.)
 
 COD***/
-//CMD .MAYBEOUTPUT 1 1 1
-DatumPtr Kernel::excDotMaybeoutput(DatumPtr node) {
+// CMD .MAYBEOUTPUT 1 1 1
+DatumPtr Kernel::excDotMaybeoutput(DatumPtr node)
+{
     Q_ASSERT(callStack.size() > 0);
-    if (callStack.localFrame()->sourceNode.isNothing()) {
+    if (callStack.localFrame()->sourceNode.isNothing())
+    {
         Error::notInsideProcedure(node.astnodeValue()->nodeName);
     }
     return node;
 }
-
 
 /***DOC CATCH
 CATCH tag instructionlist
@@ -445,65 +462,80 @@ CATCH tag instructionlist
     is the list [PAUSE].)
 
 COD***/
-//CMD CATCH 2 2 2
-DatumPtr Kernel::excCatch(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  QString tag = h.wordAtIndex(0).wordValue()->keyValue();
-  DatumPtr instructionlist = h.listAtIndex(1);
-  DatumPtr retval;
-  DatumPtr tempErract = callStack.datumForName(QObject::tr("ERRACT"));
+// CMD CATCH 2 2 2
+DatumPtr Kernel::excCatch(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QString tag = h.wordAtIndex(0).wordValue()->keyValue();
+    DatumPtr instructionlist = h.listAtIndex(1);
+    DatumPtr retval;
+    DatumPtr tempErract = callStack.datumForName(QObject::tr("ERRACT"));
 
-  if (callStack.doesExist(QObject::tr("ERRACT"))) {
-    callStack.setDatumForName(nothing, QObject::tr("ERRACT"));
-  }
+    if (callStack.doesExist(QObject::tr("ERRACT")))
+    {
+        callStack.setDatumForName(nothing, QObject::tr("ERRACT"));
+    }
 
-  try {
-    retval = runList(instructionlist);
-    if (retval.isASTNode()) {
-        KernelMethod method = retval.astnodeValue()->kernel;
-        if (method == &Kernel::excStop) {
-            retval = nothing;
-          } else if ((method == &Kernel::excOutput) || (method == &Kernel::excDotMaybeoutput) ||
-                     ((method == &Kernel::excStop) && (retval.astnodeValue()->countOfChildren() > 0))) {
-            DatumPtr p = retval.astnodeValue()->childAtIndex(0);
-            KernelMethod temp_method = p.astnodeValue()->kernel;
-            DatumPtr temp_retval = (this->*temp_method)(p);
-            if ((temp_retval == nothing) && (method == &Kernel::excOutput)) {
-                Error::didntOutput(p.astnodeValue()->nodeName,
-                                   retval.astnodeValue()->nodeName);
-              }
-            if ((temp_retval != nothing) && (method == &Kernel::excStop)) {
-                Error::dontSay(retval.astnodeValue()->nodeName);
+    try
+    {
+        retval = runList(instructionlist);
+        if (retval.isASTNode())
+        {
+            KernelMethod method = retval.astnodeValue()->kernel;
+            if (method == &Kernel::excStop)
+            {
+                retval = nothing;
             }
-            retval = temp_retval;
-          } else {
-            retval = (this->*method)(retval);
-          }
-      }
-  } catch (Error *e) {
-    if (callStack.doesExist(QObject::tr("ERRACT"))) {
-      callStack.setDatumForName(tempErract, QObject::tr("ERRACT"));
+            else if ((method == &Kernel::excOutput) || (method == &Kernel::excDotMaybeoutput) ||
+                     ((method == &Kernel::excStop) && (retval.astnodeValue()->countOfChildren() > 0)))
+            {
+                DatumPtr p = retval.astnodeValue()->childAtIndex(0);
+                KernelMethod temp_method = p.astnodeValue()->kernel;
+                DatumPtr temp_retval = (this->*temp_method)(p);
+                if ((temp_retval == nothing) && (method == &Kernel::excOutput))
+                {
+                    Error::didntOutput(p.astnodeValue()->nodeName, retval.astnodeValue()->nodeName);
+                }
+                if ((temp_retval != nothing) && (method == &Kernel::excStop))
+                {
+                    Error::dontSay(retval.astnodeValue()->nodeName);
+                }
+                retval = temp_retval;
+            }
+            else
+            {
+                retval = (this->*method)(retval);
+            }
+        }
+    }
+    catch (Error *e)
+    {
+        if (callStack.doesExist(QObject::tr("ERRACT")))
+        {
+            callStack.setDatumForName(tempErract, QObject::tr("ERRACT"));
+        }
+
+        if ((tag == QObject::tr("ERROR")) &&
+            (((e->code == 14) && (e->tag.wordValue()->keyValue()) == QObject::tr("ERROR")) || (e->code != 14)))
+        {
+            ProcedureHelper::setIsErroring(false);
+            return nothing;
+        }
+        else if ((e->code == 14) && (tag == e->tag.wordValue()->keyValue()))
+        {
+            DatumPtr retval = e->output;
+            registerError(nothing);
+            return h.ret(retval);
+        }
+        throw e;
     }
 
-    if ((tag == QObject::tr("ERROR")) &&
-        (((e->code == 14) && (e->tag.wordValue()->keyValue()) == QObject::tr("ERROR")) ||
-         (e->code != 14))) {
-      ProcedureHelper::setIsErroring(false);
-      return nothing;
-    } else if ((e->code == 14) && (tag == e->tag.wordValue()->keyValue())) {
-      DatumPtr retval = e->output;
-      registerError(nothing);
-      return h.ret(retval);
+    if (callStack.doesExist(QObject::tr("ERRACT")))
+    {
+        callStack.setDatumForName(tempErract, QObject::tr("ERRACT"));
     }
-    throw e;
-  }
-
-  if (callStack.doesExist(QObject::tr("ERRACT"))) {
-    callStack.setDatumForName(tempErract, QObject::tr("ERRACT"));
-  }
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC THROW
 THROW tag
@@ -539,22 +571,23 @@ THROW tag
     deleting any editor temporary file written by EDIT.
 
 COD***/
-//CMD THROW 1 1 2
-DatumPtr Kernel::excThrow(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr tag = h.wordAtIndex(0);
-  DatumPtr value;
-  if (h.countOfChildren() > 1) {
-    value = h.datumAtIndex(1);
-    if (!value.isWord())
-      value = DatumPtr(value.printValue());
-  }
+// CMD THROW 1 1 2
+DatumPtr Kernel::excThrow(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr tag = h.wordAtIndex(0);
+    DatumPtr value;
+    if (h.countOfChildren() > 1)
+    {
+        value = h.datumAtIndex(1);
+        if (!value.isWord())
+            value = DatumPtr(value.printValue());
+    }
 
-  Error::throwError(tag, value);
+    Error::throwError(tag, value);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC ERROR
 ERROR
@@ -568,28 +601,29 @@ ERROR
     occurred.
 
 COD***/
-//CMD ERROR 0 0 0
-DatumPtr Kernel::excError(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD ERROR 0 0 0
+DatumPtr Kernel::excError(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  List *retval = new List();
-  if (currentError != nothing) {
-    Error *e = currentError.errorValue();
-    retval->append(DatumPtr(e->code));
-    retval->append(e->errorText);
-    if (e->procedure != nothing)
-      retval->append(e->procedure.astnodeValue()->nodeName);
-    else
-      retval->append(DatumPtr(new List()));
-    if (e->instructionLine != nothing)
-      retval->append(e->instructionLine);
-    else
-      retval->append(DatumPtr(new List()));
-    currentError = nothing;
-  }
-  return h.ret(retval);
+    List *retval = new List();
+    if (currentError != nothing)
+    {
+        Error *e = currentError.errorValue();
+        retval->append(DatumPtr(e->code));
+        retval->append(e->errorText);
+        if (e->procedure != nothing)
+            retval->append(e->procedure.astnodeValue()->nodeName);
+        else
+            retval->append(DatumPtr(new List()));
+        if (e->instructionLine != nothing)
+            retval->append(e->instructionLine);
+        else
+            retval->append(DatumPtr(new List()));
+        currentError = nothing;
+    }
+    return h.ret(retval);
 }
-
 
 /***DOC PAUSE
 PAUSE
@@ -605,16 +639,17 @@ PAUSE
     values of local variables at the time of the error.
 
 COD***/
-//CMD PAUSE 0 0 0
-DatumPtr Kernel::excPause(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD PAUSE 0 0 0
+DatumPtr Kernel::excPause(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
     Q_ASSERT(callStack.size() > 0);
-    if (callStack.globalFrame()->sourceNode.isNothing()) {
+    if (callStack.globalFrame()->sourceNode.isNothing())
+    {
         Error::notInsideProcedure(node.astnodeValue()->nodeName);
     }
-  return h.ret(pause());
+    return h.ret(pause());
 }
-
 
 /***DOC CONTINUE CO
 CONTINUE value
@@ -632,24 +667,26 @@ CO value
     the instruction line.
 
 COD***/
-//CMD CONTINUE 0 -1 1
-//CMD CO 0 -1 1
-DatumPtr Kernel::excContinue(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD CONTINUE 0 -1 1
+// CMD CO 0 -1 1
+DatumPtr Kernel::excContinue(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  DatumPtr retval;
-  if (h.countOfChildren() > 0) {
-    retval = h.datumAtIndex(0);
-    if (!retval.isWord()) {
-      retval = DatumPtr(retval.printValue());
+    DatumPtr retval;
+    if (h.countOfChildren() > 0)
+    {
+        retval = h.datumAtIndex(0);
+        if (!retval.isWord())
+        {
+            retval = DatumPtr(retval.printValue());
+        }
     }
-  }
 
-  Error::throwError(DatumPtr(QObject::tr("PAUSE")), retval);
+    Error::throwError(DatumPtr(QObject::tr("PAUSE")), retval);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC TAG
 TAG quoted.word
@@ -659,9 +696,11 @@ TAG quoted.word
     used by the GOTO command.
 
 COD***/
-//CMD TAG 1 1 1
-DatumPtr Kernel::excTag(DatumPtr) { return nothing; }
-
+// CMD TAG 1 1 1
+DatumPtr Kernel::excTag(DatumPtr)
+{
+    return nothing;
+}
 
 /***DOC GOTO
 GOTO word
@@ -671,28 +710,26 @@ GOTO word
     that TAG.  It is meaningless to use GOTO outside of a procedure.
 
 COD***/
-//CMD GOTO 1 1 1
-DatumPtr Kernel::excGoto(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  if (callStack.localFrame()->sourceNode.isNothing())
-    Error::notInsideProcedure(node.astnodeValue()->nodeName);
-  DatumPtr tagP = h.validatedDatumAtIndex(0, [this](DatumPtr candidate) {
-    if (!candidate.isWord())
-      return false;
-    QString tag = candidate.wordValue()->keyValue();
-    return callStack.localFrame()->sourceNode.astnodeValue()
-        ->childAtIndex(0)
-        .procedureValue()
-        ->tagToLine.contains(tag);
-  });
-  ASTNode *a = new ASTNode(QObject::tr("GOTO"));
-  a->kernel = &Kernel::excGotoToken;
-  a->addChild(tagP);
-  return DatumPtr(a);
+// CMD GOTO 1 1 1
+DatumPtr Kernel::excGoto(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    if (callStack.localFrame()->sourceNode.isNothing())
+        Error::notInsideProcedure(node.astnodeValue()->nodeName);
+    DatumPtr tagP = h.validatedDatumAtIndex(0, [this](DatumPtr candidate) {
+        if (!candidate.isWord())
+            return false;
+        QString tag = candidate.wordValue()->keyValue();
+        return callStack.localFrame()->sourceNode.astnodeValue()->childAtIndex(0).procedureValue()->tagToLine.contains(
+            tag);
+    });
+    ASTNode *a = new ASTNode(QObject::tr("GOTO"));
+    a->kernel = &Kernel::excGotoToken;
+    a->addChild(tagP);
+    return DatumPtr(a);
 }
 
 // TEMPLATE-BASED ITERATION
-
 
 /***DOC APPLY
 APPLY template inputlist
@@ -704,124 +741,139 @@ APPLY template inputlist
     is okay.  APPLY outputs what "template" outputs, if anything.
 
 COD***/
-//CMD APPLY 2 2 2
-DatumPtr Kernel::excApply(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  enum Form { explicit_slot, named_procedure, lambda, procedure };
-  Form f;
+// CMD APPLY 2 2 2
+DatumPtr Kernel::excApply(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    enum Form
+    {
+        explicit_slot,
+        named_procedure,
+        lambda,
+        procedure
+    };
+    Form f;
 
-  DatumPtr tmplate = h.validatedDatumAtIndex(0, [&f](DatumPtr candidate) {
-    if (candidate.isWord()) {
-      f = Form::named_procedure;
-      return true;
+    DatumPtr tmplate = h.validatedDatumAtIndex(0, [&f](DatumPtr candidate) {
+        if (candidate.isWord())
+        {
+            f = Form::named_procedure;
+            return true;
+        }
+        if (!candidate.isList() || candidate.listValue()->isEmpty())
+            return false;
+        DatumPtr first = candidate.listValue()->head;
+
+        if (first.isWord())
+        {
+            f = Form::explicit_slot;
+            return true;
+        }
+        if (!first.isList() || (candidate.listValue()->count() < 2))
+            return false;
+        DatumPtr butfirst = candidate.listValue()->tail;
+        DatumPtr procedureFirst = butfirst.listValue()->head;
+        if (procedureFirst.isWord())
+        {
+            f = Form::lambda;
+            return true;
+        }
+        if (procedureFirst.isList())
+        {
+            f = Form::procedure;
+            return true;
+        }
+        return false;
+    });
+    DatumPtr params = h.listAtIndex(1);
+
+    switch (f)
+    {
+    case named_procedure:
+    {
+        DatumPtr a = procedures->astnodeWithLiterals(tmplate, params);
+        KernelMethod method = a.astnodeValue()->kernel;
+        DatumPtr retval = (this->*method)(a);
+        return h.ret(retval);
     }
-    if (!candidate.isList() || candidate.listValue()->isEmpty())
-      return false;
-    DatumPtr first = candidate.listValue()->head;
-
-    if (first.isWord()) {
-      f = Form::explicit_slot;
-      return true;
+    case explicit_slot:
+    {
+        CallFrame s(&callStack, node.astnodeValue());
+        callStack.setExplicitSlotList(params);
+        DatumPtr retval = runList(tmplate);
+        return h.ret(retval);
     }
-    if (!first.isList() || (candidate.listValue()->count() < 2))
-      return false;
-    DatumPtr butfirst = candidate.listValue()->tail;
-    DatumPtr procedureFirst = butfirst.listValue()->head;
-    if (procedureFirst.isWord()) {
-      f = Form::lambda;
-      return true;
+    case lambda:
+    {
+        CallFrame s(&callStack, node.astnodeValue());
+        DatumPtr varList = tmplate.listValue()->head;
+        DatumPtr procedureList = butfirst(tmplate);
+        if (varList.listValue()->count() > params.listValue()->count())
+            Error::notEnough(tmplate);
+        if (varList.listValue()->count() < params.listValue()->count())
+            Error::tooMany(tmplate);
+
+        ListIterator nameIter = varList.listValue()->newIterator();
+        ListIterator parmIter = params.listValue()->newIterator();
+        while (nameIter.elementExists())
+        {
+            DatumPtr nameP = nameIter.element();
+            if (!nameP.isWord())
+                Error::doesntLike(node.astnodeValue()->nodeName, nameP);
+            DatumPtr param = parmIter.element();
+            QString name = nameP.wordValue()->keyValue();
+            callStack.setVarAsLocal(name);
+            callStack.setDatumForName(param, name);
+        }
+        DatumPtr retval = runList(procedureList);
+        return h.ret(retval);
     }
-    if (procedureFirst.isList()) {
-      f = Form::procedure;
-      return true;
+    case procedure:
+    {
+        DatumPtr anonyProcedure = procedures->createProcedure(node.astnodeValue()->nodeName, tmplate, nothing);
+        ASTNode *procnode = new ASTNode(node.astnodeValue()->nodeName);
+        DatumPtr procnodeP(procnode);
+        procnode->addChild(anonyProcedure);
+        if (params.listValue()->count() > anonyProcedure.procedureValue()->countOfMaxParams)
+            Error::tooMany(node.astnodeValue()->nodeName);
+        if (params.listValue()->count() < anonyProcedure.procedureValue()->countOfMinParams)
+            Error::notEnough(node.astnodeValue()->nodeName);
+
+        ListIterator paramIter = params.listValue()->newIterator();
+        while (paramIter.elementExists())
+        {
+            DatumPtr p = paramIter.element();
+            DatumPtr a = DatumPtr(new ASTNode(QObject::tr("literal")));
+            a.astnodeValue()->kernel = &Kernel::executeLiteral;
+            a.astnodeValue()->addChild(p);
+            procnode->addChild(a);
+        }
+
+        DatumPtr retval = executeProcedure(procnodeP);
+
+        return h.ret(retval);
     }
-    return false;
-  });
-  DatumPtr params = h.listAtIndex(1);
-
-  switch (f) {
-  case named_procedure: {
-    DatumPtr a = procedures->astnodeWithLiterals(tmplate, params);
-    KernelMethod method = a.astnodeValue()->kernel;
-    DatumPtr retval = (this->*method)(a);
-    return h.ret(retval);
-  }
-  case explicit_slot: {
-    CallFrame s(&callStack, node.astnodeValue());
-    callStack.setExplicitSlotList(params);
-    DatumPtr retval = runList(tmplate);
-    return h.ret(retval);
-  }
-  case lambda: {
-    CallFrame s(&callStack, node.astnodeValue());
-    DatumPtr varList = tmplate.listValue()->head;
-    DatumPtr procedureList = butfirst(tmplate);
-    if (varList.listValue()->count() > params.listValue()->count())
-      Error::notEnough(tmplate);
-    if (varList.listValue()->count() < params.listValue()->count())
-      Error::tooMany(tmplate);
-
-    ListIterator nameIter = varList.listValue()->newIterator();
-    ListIterator parmIter = params.listValue()->newIterator();
-    while (nameIter.elementExists()) {
-      DatumPtr nameP = nameIter.element();
-      if (!nameP.isWord())
-        Error::doesntLike(node.astnodeValue()->nodeName, nameP);
-      DatumPtr param = parmIter.element();
-      QString name = nameP.wordValue()->keyValue();
-      callStack.setVarAsLocal(name);
-      callStack.setDatumForName(param, name);
     }
-    DatumPtr retval = runList(procedureList);
-    return h.ret(retval);
-  }
-  case procedure: {
-    DatumPtr anonyProcedure = procedures->createProcedure(
-        node.astnodeValue()->nodeName, tmplate, nothing);
-    ASTNode *procnode = new ASTNode(node.astnodeValue()->nodeName);
-    DatumPtr procnodeP(procnode);
-    procnode->addChild(anonyProcedure);
-    if (params.listValue()->count() >
-        anonyProcedure.procedureValue()->countOfMaxParams)
-      Error::tooMany(node.astnodeValue()->nodeName);
-    if (params.listValue()->count() <
-        anonyProcedure.procedureValue()->countOfMinParams)
-      Error::notEnough(node.astnodeValue()->nodeName);
-
-    ListIterator paramIter = params.listValue()->newIterator();
-    while (paramIter.elementExists()) {
-      DatumPtr p = paramIter.element();
-      DatumPtr a = DatumPtr(new ASTNode(QObject::tr("literal")));
-      a.astnodeValue()->kernel = &Kernel::executeLiteral;
-      a.astnodeValue()->addChild(p);
-      procnode->addChild(a);
-    }
-
-    DatumPtr retval = executeProcedure(procnodeP);
-
-    return h.ret(retval);
-  }
-  }
-  return nothing;
+    return nothing;
 }
 
 // '?' operator
-//CMD ? 0 0 1
-DatumPtr Kernel::excNamedSlot(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr inputList = callStack.explicitSlotList();
-  if (!inputList.isList())
-    return Error::noApply(node.astnodeValue()->nodeName);
-  int index = 1;
-  if (h.countOfChildren() > 0) {
-    h.integerAtIndex(0);
-    index = h.validatedIntegerAtIndex(0, [&inputList, this](int candidate) {
-        return doesListHaveCountOrMore(inputList.listValue(), candidate);
-    });
-  }
-  return h.ret(inputList.listValue()->itemAtIndex(index));
+// CMD ? 0 0 1
+DatumPtr Kernel::excNamedSlot(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr inputList = callStack.explicitSlotList();
+    if (!inputList.isList())
+        return Error::noApply(node.astnodeValue()->nodeName);
+    int index = 1;
+    if (h.countOfChildren() > 0)
+    {
+        h.integerAtIndex(0);
+        index = h.validatedIntegerAtIndex(
+            0, [&inputList, this](int candidate) { return doesListHaveCountOrMore(inputList.listValue(), candidate); });
+    }
+    return h.ret(inputList.listValue()->itemAtIndex(index));
 }
-
 
 /***DOC MACROP MACRO?
 MACROP name
@@ -830,10 +882,11 @@ MACRO? name
     outputs TRUE if its input is the name of a macro.
 
 COD***/
-//CMD MACROP 1 1 1
-//CMD MACRO? 1 1 1
-DatumPtr Kernel::excMacrop(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  bool retval = procedures->isMacro(h.wordAtIndex(0).wordValue()->keyValue());
-  return h.ret(retval);
+// CMD MACROP 1 1 1
+// CMD MACRO? 1 1 1
+DatumPtr Kernel::excMacrop(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    bool retval = procedures->isMacro(h.wordAtIndex(0).wordValue()->keyValue());
+    return h.ret(retval);
 }

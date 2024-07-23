@@ -68,7 +68,7 @@ DatumPtr excIfelse(DatumPtr node);
 DatumPtr excTest(DatumPtr node);
 DatumPtr excIftrue(DatumPtr node);
 DatumPtr excIffalse(DatumPtr node);
-DatumPtr  excStop(DatumPtr node);
+DatumPtr excStop(DatumPtr node);
 DatumPtr excOutput(DatumPtr node);
 DatumPtr excDotMaybeoutput(DatumPtr node);
 DatumPtr excCatch(DatumPtr node);

@@ -19,24 +19,30 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the Kernel class, which is the
-/// executor proper of the QLogo language.
+/// This file contains a part of the implementation of the Kernel class, which is the
+/// executor proper of the QLogo language. Specifically, this file contains the
+/// implementations for operations that manage the workspace, such as variables,
+/// procedures, and property lists.
+///
+/// See README.md in this directory for information about the documentation
+/// structure for each Kernel::exc* method.
 ///
 //===----------------------------------------------------------------------===//
 
+#include "astnode.h"
+#include "controller/logocontroller.h"
+#include "datum.h"
 #include "error.h"
 #include "kernel.h"
 #include "parser.h"
-#include "datum.h"
-#include "astnode.h"
-#include "controller/logocontroller.h"
 
 
-// Extract the three components from a contents list
-void extractFromContentslist(DatumPtr contentslist,
-                             List **proceduresList,
-                             List **variablesList,
-                             List **propertiesList)
+/// @brief Extract the three components from a contents list.
+/// @param contentslist The contents list to extract from.
+/// @param proceduresList A pointer to a list to store the procedures.
+/// @param variablesList A pointer to a list to store the variables.
+/// @param propertiesList A pointer to a list to store the properties.
+void extractFromContentslist(DatumPtr contentslist, List **proceduresList, List **variablesList, List **propertiesList)
 {
     List *src = contentslist.listValue();
     *proceduresList = src->head.listValue();
@@ -46,224 +52,256 @@ void extractFromContentslist(DatumPtr contentslist,
     *propertiesList = src->head.listValue();
 }
 
+QString Kernel::executeText(const QString &text)
+{
+    QString inText = text;
+    QString outText;
 
+    QTextStream inQStream(&inText, QIODevice::ReadOnly);
+    QTextStream outQStream(&outText, QIODevice::WriteOnly);
 
-QString Kernel::executeText(const QString &text) {
-  QString inText = text;
-  QString outText;
+    TextStream inStream(&inQStream);
+    TextStream outStream(&outQStream);
 
-  QTextStream inQStream(&inText, QIODevice::ReadOnly);
-  QTextStream outQStream(&outText, QIODevice::WriteOnly);
+    Parser textParser;
 
-  TextStream inStream(&inQStream);
-  TextStream outStream(&outQStream);
+    StreamRedirect sr(&inStream, &outStream, &textParser);
 
-  Parser textParser;
-
-  StreamRedirect sr(&inStream, &outStream, &textParser);
-
-  bool shouldContinue = true;
-  while (shouldContinue) {
-    shouldContinue = getLineAndRunIt(false);
-  }
-  outStream.flush();
-  return outText;
-}
-
-void Kernel::editAndRunWorkspaceText() {
-  const QString textRetval = Config::get().mainController()->editText(workspaceText);
-  if (textRetval != workspaceText) {
-    workspaceText = textRetval;
-    QString output = executeText(textRetval);
-    if (varLOADNOISILY()) {
-      sysPrint(output);
+    bool shouldContinue = true;
+    while (shouldContinue)
+    {
+        shouldContinue = getLineAndRunIt(false);
     }
-  }
+    outStream.flush();
+    return outText;
 }
 
-void Kernel::editAndRunFile() {
-  QString filepath = filepathForFilename(editFileName);
-  QFile file(filepath);
-  if (!file.open(QIODevice::ReadWrite | QIODevice::Text)) {
-    Error::cantOpen(editFileName);
-  }
-  QTextStream in(&file);
-  QString fileText = in.readAll();
-
-  const QString textRetval = Config::get().mainController()->editText(fileText);
-  if (textRetval != "") {
-    fileText = textRetval;
-    file.seek(0);
-    file.resize(0);
-    QTextStream out(&file);
-    out << fileText;
-    QString output = executeText(fileText);
-    if (varLOADNOISILY()) {
-      sysPrint(output);
-    }
-  }
-}
-
-DatumPtr Kernel::buildContentsList(showContents_t showWhat) {
-  List *retval = new List();
-  retval->append(procedures->allProcedureNames(showWhat));
-  retval->append(callStack.allVariables(showWhat));
-  retval->append(plists.allPLists(showWhat));
-  return retval;
-}
-
-DatumPtr Kernel::contentslistFromDatumPtr(DatumPtr sourceNode) {
-  List *sublists[3];
-  DatumPtr locker[3];
-  for (int i = 0; i < 3; ++i) {
-    sublists[i] = new List();
-    locker[i] = DatumPtr(sublists[i]);
-  }
-
-  if (sourceNode.isWord()) {
-    sublists[0]->append(sourceNode);
-  } else if (sourceNode.isList()) {
-    unsigned parseLevel = 0;
-    ListIterator i = sourceNode.listValue()->newIterator();
-    while (i.elementExists()) {
-      if (parseLevel > 2)
-        return nothing;
-      DatumPtr d = i.element();
-      if (d.isWord()) {
-        sublists[parseLevel]->append(d);
-      } else if (d.isList()) {
-        ListIterator j = d.listValue()->newIterator();
-        while (j.elementExists()) {
-          DatumPtr e = j.element();
-          if (!e.isWord())
-            return nothing;
-          sublists[parseLevel]->append(e);
+void Kernel::editAndRunWorkspaceText()
+{
+    const QString textRetval = Config::get().mainController()->editText(workspaceText);
+    if (textRetval != workspaceText)
+    {
+        workspaceText = textRetval;
+        QString output = executeText(textRetval);
+        if (varLOADNOISILY())
+        {
+            sysPrint(output);
         }
-        ++parseLevel;
-      } else {
-        return nothing;
-      }
     }
-  } else {
-    return nothing;
-  }
-
-  List *retval = new List();
-  for (int i = 0; i < 3; ++i) {
-    retval->append(DatumPtr(sublists[i]));
-  }
-  return DatumPtr(retval);
 }
 
-void Kernel::processContentsListWithMethod(
-    DatumPtr contentslist, void (Workspace::*method)(const QString &)) {
-    List *proceduresList;
-    List *variablesList;
-    List *propertiesList;
-    extractFromContentslist(contentslist, &proceduresList, &variablesList, &propertiesList);
+void Kernel::editAndRunFile()
+{
+    QString filepath = filepathForFilename(editFileName);
+    QFile file(filepath);
+    if (!file.open(QIODevice::ReadWrite | QIODevice::Text))
+    {
+        Error::cantOpen(editFileName);
+    }
+    QTextStream in(&file);
+    QString fileText = in.readAll();
 
-  ListIterator i = proceduresList->newIterator();
-  while (i.elementExists()) {
-    QString procname = i.element().wordValue()->keyValue();
-    (procedures->*method)(procname);
-  }
-
-  i = variablesList->newIterator();
-  while (i.elementExists()) {
-    QString varname = i.element().wordValue()->keyValue();
-    (callStack.*method)(varname);
-  }
-
-  i = propertiesList->newIterator();
-  while (i.elementExists()) {
-    DatumPtr listnameP = i.element();
-    QString listname = listnameP.wordValue()->keyValue();
-    (plists.*method)(listname);
-  }
+    const QString textRetval = Config::get().mainController()->editText(fileText);
+    if (textRetval != "")
+    {
+        fileText = textRetval;
+        file.seek(0);
+        file.resize(0);
+        QTextStream out(&file);
+        out << fileText;
+        QString output = executeText(fileText);
+        if (varLOADNOISILY())
+        {
+            sysPrint(output);
+        }
+    }
 }
 
-DatumPtr Kernel::queryContentsListWithMethod(
-    DatumPtr contentslist,
-    bool (Workspace::*method)(const QString &))
+DatumPtr Kernel::buildContentsList(showContents_t showWhat)
+{
+    List *retval = new List();
+    retval->append(procedures->allProcedureNames(showWhat));
+    retval->append(callStack.allVariables(showWhat));
+    retval->append(plists.allPLists(showWhat));
+    return retval;
+}
+
+DatumPtr Kernel::contentslistFromDatumPtr(DatumPtr sourceNode)
+{
+    List *sublists[3];
+    DatumPtr locker[3];
+    for (int i = 0; i < 3; ++i)
+    {
+        sublists[i] = new List();
+        locker[i] = DatumPtr(sublists[i]);
+    }
+
+    if (sourceNode.isWord())
+    {
+        sublists[0]->append(sourceNode);
+    }
+    else if (sourceNode.isList())
+    {
+        unsigned parseLevel = 0;
+        ListIterator i = sourceNode.listValue()->newIterator();
+        while (i.elementExists())
+        {
+            if (parseLevel > 2)
+                return nothing;
+            DatumPtr d = i.element();
+            if (d.isWord())
+            {
+                sublists[parseLevel]->append(d);
+            }
+            else if (d.isList())
+            {
+                ListIterator j = d.listValue()->newIterator();
+                while (j.elementExists())
+                {
+                    DatumPtr e = j.element();
+                    if (!e.isWord())
+                        return nothing;
+                    sublists[parseLevel]->append(e);
+                }
+                ++parseLevel;
+            }
+            else
+            {
+                return nothing;
+            }
+        }
+    }
+    else
+    {
+        return nothing;
+    }
+
+    List *retval = new List();
+    for (int i = 0; i < 3; ++i)
+    {
+        retval->append(DatumPtr(sublists[i]));
+    }
+    return DatumPtr(retval);
+}
+
+void Kernel::processContentsListWithMethod(DatumPtr contentslist, void (Workspace::*method)(const QString &))
 {
     List *proceduresList;
     List *variablesList;
     List *propertiesList;
     extractFromContentslist(contentslist, &proceduresList, &variablesList, &propertiesList);
 
-  if ( ! proceduresList->isEmpty()) {
-        QString procname = proceduresList->head.wordValue()->keyValue();
-    return DatumPtr((procedures->*method)(procname));
-  }
+    ListIterator i = proceduresList->newIterator();
+    while (i.elementExists())
+    {
+        QString procname = i.element().wordValue()->keyValue();
+        (procedures->*method)(procname);
+    }
 
-  if ( ! variablesList->isEmpty()) {
-    QString varname = variablesList->head.wordValue()->keyValue();
-    return DatumPtr((callStack.*method)(varname));
-  }
+    i = variablesList->newIterator();
+    while (i.elementExists())
+    {
+        QString varname = i.element().wordValue()->keyValue();
+        (callStack.*method)(varname);
+    }
 
-  if (! propertiesList->isEmpty()) {
-    QString pname = propertiesList->head.wordValue()->keyValue();
-    return DatumPtr((plists.*method)(pname));
-  }
-  return nothing;
+    i = propertiesList->newIterator();
+    while (i.elementExists())
+    {
+        DatumPtr listnameP = i.element();
+        QString listname = listnameP.wordValue()->keyValue();
+        (plists.*method)(listname);
+    }
 }
 
-QString Kernel::createPrintoutFromContentsList(DatumPtr contentslist,
-                                               bool shouldValidate) {
-  QString retval("");
+DatumPtr Kernel::queryContentsListWithMethod(DatumPtr contentslist, bool (Workspace::*method)(const QString &))
+{
+    List *proceduresList;
+    List *variablesList;
+    List *propertiesList;
+    extractFromContentslist(contentslist, &proceduresList, &variablesList, &propertiesList);
+
+    if (!proceduresList->isEmpty())
+    {
+        QString procname = proceduresList->head.wordValue()->keyValue();
+        return DatumPtr((procedures->*method)(procname));
+    }
+
+    if (!variablesList->isEmpty())
+    {
+        QString varname = variablesList->head.wordValue()->keyValue();
+        return DatumPtr((callStack.*method)(varname));
+    }
+
+    if (!propertiesList->isEmpty())
+    {
+        QString pname = propertiesList->head.wordValue()->keyValue();
+        return DatumPtr((plists.*method)(pname));
+    }
+    return nothing;
+}
+
+QString Kernel::createPrintoutFromContentsList(DatumPtr contentslist, bool shouldValidate)
+{
+    QString retval("");
 
     List *proceduresList;
     List *variablesList;
     List *propertiesList;
     extractFromContentslist(contentslist, &proceduresList, &variablesList, &propertiesList);
 
-  ListIterator i = proceduresList->newIterator();
-  while (i.elementExists()) {
-    DatumPtr procedureText =
-        procedures->procedureFulltext(i.element(), shouldValidate);
-    ListIterator j = procedureText.listValue()->newIterator();
-    while (j.elementExists()) {
-      QString line = j.element().wordValue()->printValue();
-      line.append('\n');
-      retval += line;
+    ListIterator i = proceduresList->newIterator();
+    while (i.elementExists())
+    {
+        DatumPtr procedureText = procedures->procedureFulltext(i.element(), shouldValidate);
+        ListIterator j = procedureText.listValue()->newIterator();
+        while (j.elementExists())
+        {
+            QString line = j.element().wordValue()->printValue();
+            line.append('\n');
+            retval += line;
+        }
     }
-  }
 
-  i = variablesList->newIterator();
-  while (i.elementExists()) {
-    DatumPtr varnameP = i.element();
-    QString varname = varnameP.wordValue()->keyValue();
-    DatumPtr value = callStack.datumForName(varname);
-    if ((value == nothing) && shouldValidate) {
-      Error::noValue(varnameP);
-    } else {
-      QString line = QObject::tr("Make \"%1 %2\n").arg(varname,
-                                    procedures->printoutDatum(value));
-      retval += line;
+    i = variablesList->newIterator();
+    while (i.elementExists())
+    {
+        DatumPtr varnameP = i.element();
+        QString varname = varnameP.wordValue()->keyValue();
+        DatumPtr value = callStack.datumForName(varname);
+        if ((value == nothing) && shouldValidate)
+        {
+            Error::noValue(varnameP);
+        }
+        else
+        {
+            QString line = QObject::tr("Make \"%1 %2\n").arg(varname, procedures->printoutDatum(value));
+            retval += line;
+        }
     }
-  }
 
-  i = propertiesList->newIterator();
-  while (i.elementExists()) {
-    DatumPtr listnameP = i.element();
-    QString listname = listnameP.wordValue()->keyValue();
-    DatumPtr proplist = plists.getPropertyList(listname);
-    ListIterator j = proplist.listValue()->newIterator();
-    while (j.elementExists()) {
-      DatumPtr nameP = j.element();
-      DatumPtr valueP = j.element();
-      QString line = QObject::tr("Pprop %1 %2 %3\n")
-                         .arg(procedures->printoutDatum(listnameP),
-                              procedures->printoutDatum(nameP),
-                              procedures->printoutDatum(valueP));
-      retval += line;
+    i = propertiesList->newIterator();
+    while (i.elementExists())
+    {
+        DatumPtr listnameP = i.element();
+        QString listname = listnameP.wordValue()->keyValue();
+        DatumPtr proplist = plists.getPropertyList(listname);
+        ListIterator j = proplist.listValue()->newIterator();
+        while (j.elementExists())
+        {
+            DatumPtr nameP = j.element();
+            DatumPtr valueP = j.element();
+            QString line = QObject::tr("Pprop %1 %2 %3\n")
+                               .arg(procedures->printoutDatum(listnameP),
+                                    procedures->printoutDatum(nameP),
+                                    procedures->printoutDatum(valueP));
+            retval += line;
+        }
     }
-  }
-  return retval;
+    return retval;
 }
 
 // SPECIAL VARIABLES
-
 
 /***DOC LOADNOISILY
 LOADNOISILY						(variable)
@@ -273,13 +311,13 @@ LOADNOISILY						(variable)
 
 COD***/
 
-bool Kernel::varLOADNOISILY() {
-  DatumPtr retvalP = callStack.datumForName(QObject::tr("LOADNOISILY"));
-  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
-    return true;
-  return false;
+bool Kernel::varLOADNOISILY()
+{
+    DatumPtr retvalP = callStack.datumForName(QObject::tr("LOADNOISILY"));
+    if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
+        return true;
+    return false;
 }
-
 
 /***DOC ALLOWGETSET
 ALLOWGETSET						(variable)
@@ -291,13 +329,13 @@ ALLOWGETSET						(variable)
 
 COD***/
 
-bool Kernel::varALLOWGETSET() {
-  DatumPtr retvalP = callStack.datumForName(QObject::tr("ALLOWGETSET"));
-  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
-    return true;
-  return false;
+bool Kernel::varALLOWGETSET()
+{
+    DatumPtr retvalP = callStack.datumForName(QObject::tr("ALLOWGETSET"));
+    if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
+        return true;
+    return false;
 }
-
 
 /***DOC BUTTONACT
 BUTTONACT						(variable)
@@ -323,8 +361,10 @@ BUTTONACT						(variable)
 
 COD***/
 
-DatumPtr Kernel::varBUTTONACT() { return callStack.datumForName(QObject::tr("BUTTONACT")); }
-
+DatumPtr Kernel::varBUTTONACT()
+{
+    return callStack.datumForName(QObject::tr("BUTTONACT"));
+}
 
 /***DOC KEYACT
 KEYACT							(variable)
@@ -348,8 +388,10 @@ KEYACT							(variable)
 
 COD***/
 
-DatumPtr Kernel::varKEYACT() { return callStack.datumForName(QObject::tr("KEYACT")); }
-
+DatumPtr Kernel::varKEYACT()
+{
+    return callStack.datumForName(QObject::tr("KEYACT"));
+}
 
 /***DOC FULLPRINTP
 FULLPRINTP						(variable)
@@ -363,13 +405,13 @@ FULLPRINTP						(variable)
 
 COD***/
 
-bool Kernel::varFULLPRINTP() {
-  DatumPtr retvalP = callStack.datumForName(QObject::tr("FULLPRINTP"));
-  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
-    return true;
-  return false;
+bool Kernel::varFULLPRINTP()
+{
+    DatumPtr retvalP = callStack.datumForName(QObject::tr("FULLPRINTP"));
+    if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
+        return true;
+    return false;
 }
-
 
 /***DOC PRINTDEPTHLIMIT
 PRINTDEPTHLIMIT						(variable)
@@ -379,17 +421,19 @@ PRINTDEPTHLIMIT						(variable)
 
 COD***/
 
-int Kernel::varPRINTDEPTHLIMIT() {
-  DatumPtr retvalP = callStack.datumForName(QObject::tr("PRINTDEPTHLIMIT"));
-  if (retvalP.isWord()) {
-    double retval = retvalP.wordValue()->numberValue();
-      if ( ! std::isnan(retval)) {
-      return (int)retval;
+int Kernel::varPRINTDEPTHLIMIT()
+{
+    DatumPtr retvalP = callStack.datumForName(QObject::tr("PRINTDEPTHLIMIT"));
+    if (retvalP.isWord())
+    {
+        double retval = retvalP.wordValue()->numberValue();
+        if (!std::isnan(retval))
+        {
+            return (int)retval;
+        }
     }
-  }
-  return -1;
+    return -1;
 }
-
 
 /***DOC PRINTWIDTHLIMIT
 PRINTWIDTHLIMIT						(variable)
@@ -399,17 +443,19 @@ PRINTWIDTHLIMIT						(variable)
 
 COD***/
 
-int Kernel::varPRINTWIDTHLIMIT() {
-  DatumPtr retvalP = callStack.datumForName(QObject::tr("PRINTWIDTHLIMIT"));
-  if (retvalP.isWord()) {
-    double retval = retvalP.wordValue()->numberValue();
-      if ( ! std::isnan(retval)) {
-      return (int)retval;
+int Kernel::varPRINTWIDTHLIMIT()
+{
+    DatumPtr retvalP = callStack.datumForName(QObject::tr("PRINTWIDTHLIMIT"));
+    if (retvalP.isWord())
+    {
+        double retval = retvalP.wordValue()->numberValue();
+        if (!std::isnan(retval))
+        {
+            return (int)retval;
+        }
     }
-  }
-  return -1;
+    return -1;
 }
-
 
 /***DOC STARTUP
 STARTUP							(variable)
@@ -419,8 +465,10 @@ STARTUP							(variable)
 
 COD***/
 
-DatumPtr Kernel::varSTARTUP() { return callStack.datumForName(QObject::tr("STARTUP")); }
-
+DatumPtr Kernel::varSTARTUP()
+{
+    return callStack.datumForName(QObject::tr("STARTUP"));
+}
 
 /***DOC UNBURYONEDIT
 UNBURYONEDIT						(variable)
@@ -431,13 +479,13 @@ UNBURYONEDIT						(variable)
 
 COD***/
 
-bool Kernel::varUNBURYONEDIT() {
-  DatumPtr retvalP = callStack.datumForName(QObject::tr("UNBURYONEDIT"));
-  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
-    return true;
-  return false;
+bool Kernel::varUNBURYONEDIT()
+{
+    DatumPtr retvalP = callStack.datumForName(QObject::tr("UNBURYONEDIT"));
+    if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
+        return true;
+    return false;
 }
-
 
 /***DOC CASEIGNOREDP
 CASEIGNOREDP						(variable)
@@ -448,15 +496,15 @@ CASEIGNOREDP						(variable)
 
 COD***/
 
-bool Kernel::varCASEIGNOREDP() {
-  DatumPtr retvalP = callStack.datumForName(QObject::tr("CASEIGNOREDP"));
-  if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
-    return true;
-  return false;
+bool Kernel::varCASEIGNOREDP()
+{
+    DatumPtr retvalP = callStack.datumForName(QObject::tr("CASEIGNOREDP"));
+    if (retvalP.isWord() && (retvalP.wordValue()->keyValue() == QObject::tr("TRUE")))
+        return true;
+    return false;
 }
 
 // PROCEDURE DEFINITION
-
 
 /***DOC TO
 TO procname :input1 :input2 ...				(special form)
@@ -565,18 +613,19 @@ TO procname :input1 :input2 ...				(special form)
     type a line containing only the word END.
 
 COD***/
-//CMD TO -1 -1 -1
-//CMD .MACRO -1 -1 -1
-DatumPtr Kernel::excTo(DatumPtr node) {
-  // None of the children of node are ASTNode. They have to be literal so there
-  // is no procedurehelper here.
-  if ( ! callStack.localFrame()->sourceNode.isNothing()) {
-    Error::toInProc(node.astnodeValue()->nodeName);
-  }
-  parser->inputProcedure(node, systemReadStream);
-  return nothing;
+// CMD TO -1 -1 -1
+// CMD .MACRO -1 -1 -1
+DatumPtr Kernel::excTo(DatumPtr node)
+{
+    // None of the children of node are ASTNode. They have to be literal so there
+    // is no procedurehelper here.
+    if (!callStack.localFrame()->sourceNode.isNothing())
+    {
+        Error::toInProc(node.astnodeValue()->nodeName);
+    }
+    parser->inputProcedure(node, systemReadStream);
+    return nothing;
 }
-
 
 /***DOC DEFINE
 DEFINE procname text
@@ -595,27 +644,28 @@ DEFINE procname text
     It is an error to redefine a primitive procedure.
 
 COD***/
-//CMD DEFINE 2 2 2
-//CMD .DEFMACRO 2 2 2
-DatumPtr Kernel::excDefine(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr text = h.validatedListAtIndex(1, [](DatumPtr candidate) {
-    ListIterator iter = candidate.listValue()->newIterator();
-    while (iter.elementExists()) {
-      DatumPtr line = iter.element();
-      if (!line.isList())
-        return false;
-    }
-    return true;
-  });
-  DatumPtr cmd = node.astnodeValue()->nodeName;
-  DatumPtr procnameP = h.wordAtIndex(0);
+// CMD DEFINE 2 2 2
+// CMD .DEFMACRO 2 2 2
+DatumPtr Kernel::excDefine(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr text = h.validatedListAtIndex(1, [](DatumPtr candidate) {
+        ListIterator iter = candidate.listValue()->newIterator();
+        while (iter.elementExists())
+        {
+            DatumPtr line = iter.element();
+            if (!line.isList())
+                return false;
+        }
+        return true;
+    });
+    DatumPtr cmd = node.astnodeValue()->nodeName;
+    DatumPtr procnameP = h.wordAtIndex(0);
 
-  procedures->defineProcedure(cmd, procnameP, text, nothing);
+    procedures->defineProcedure(cmd, procnameP, text, nothing);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC TEXT
 TEXT procname
@@ -628,13 +678,13 @@ TEXT procname
     extra spaces.
 
 COD***/
-//CMD TEXT 1 1 1
-DatumPtr Kernel::excText(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr procnameP = h.wordAtIndex(0);
-  return h.ret(procedures->procedureText(procnameP));
+// CMD TEXT 1 1 1
+DatumPtr Kernel::excText(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr procnameP = h.wordAtIndex(0);
+    return h.ret(procedures->procedureText(procnameP));
 }
-
 
 /***DOC FULLTEXT
 FULLTEXT procname
@@ -651,13 +701,13 @@ FULLTEXT procname
     is not suitable for use as input to DEFINE!
 
 COD***/
-//CMD FULLTEXT 1 1 1
-DatumPtr Kernel::excFulltext(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr procnameP = h.wordAtIndex(0);
-  return h.ret(procedures->procedureFulltext(procnameP));
+// CMD FULLTEXT 1 1 1
+DatumPtr Kernel::excFulltext(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr procnameP = h.wordAtIndex(0);
+    return h.ret(procedures->procedureFulltext(procnameP));
 }
-
 
 /***DOC COPYDEF
 COPYDEF newname oldname
@@ -670,19 +720,19 @@ COPYDEF newname oldname
     This dialect uses "MAKE order," not "NAME order."
 
 COD***/
-//CMD COPYDEF 2 2 2
-DatumPtr Kernel::excCopydef(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr newname = h.wordAtIndex(0);
-  DatumPtr oldname = h.wordAtIndex(1);
+// CMD COPYDEF 2 2 2
+DatumPtr Kernel::excCopydef(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr newname = h.wordAtIndex(0);
+    DatumPtr oldname = h.wordAtIndex(1);
 
-  procedures->copyProcedure(newname, oldname);
+    procedures->copyProcedure(newname, oldname);
 
-  return nothing;
+    return nothing;
 }
 
 // VARIABLE DEFINITION
-
 
 /***DOC MAKE
 MAKE varname value
@@ -693,61 +743,63 @@ MAKE varname value
     variable is changed.  If not, a new global variable is created.
 
 COD***/
-//CMD MAKE 2 2 2
-DatumPtr Kernel::excMake(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD MAKE 2 2 2
+DatumPtr Kernel::excMake(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  QString lvalue = h.wordAtIndex(0).wordValue()->keyValue();
-  DatumPtr rvalue = h.datumAtIndex(1);
+    QString lvalue = h.wordAtIndex(0).wordValue()->keyValue();
+    DatumPtr rvalue = h.datumAtIndex(1);
 
-  callStack.setDatumForName(rvalue, lvalue);
+    callStack.setDatumForName(rvalue, lvalue);
 
-  if (callStack.isTraced(lvalue)) {
-    QString line = QObject::tr("Make \"%1 %2\n")
-                       .arg(h.wordAtIndex(0).wordValue()->printValue(),
-                            procedures->unreadDatum(rvalue));
-    sysPrint(line);
-  }
+    if (callStack.isTraced(lvalue))
+    {
+        QString line = QObject::tr("Make \"%1 %2\n")
+                           .arg(h.wordAtIndex(0).wordValue()->printValue(), procedures->unreadDatum(rvalue));
+        sysPrint(line);
+    }
 
-  return nothing;
+    return nothing;
 }
 
-DatumPtr Kernel::excSetfoo(DatumPtr node) {
-  ProcedureHelper h(this, node);
+DatumPtr Kernel::excSetfoo(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  DatumPtr nodeName = node.astnodeValue()->nodeName;
-  QString foo = nodeName.wordValue()->keyValue();
+    DatumPtr nodeName = node.astnodeValue()->nodeName;
+    QString foo = nodeName.wordValue()->keyValue();
 
-  QString lvalue = foo.right(foo.size() - 3);
-  DatumPtr rvalue = h.datumAtIndex(0);
+    QString lvalue = foo.right(foo.size() - 3);
+    DatumPtr rvalue = h.datumAtIndex(0);
 
-  if ( ! callStack.doesExist(lvalue)) {
-    Error::noHow(nodeName);
-  }
+    if (!callStack.doesExist(lvalue))
+    {
+        Error::noHow(nodeName);
+    }
 
-  callStack.setDatumForName(rvalue, lvalue);
+    callStack.setDatumForName(rvalue, lvalue);
 
-  if (callStack.isTraced(lvalue.toUpper())) {
-    QString line =
-        QString("%1 %2\n")
-            .arg(node.astnodeValue()->nodeName.wordValue()->printValue(),
-            procedures->unreadDatum(rvalue));
-    sysPrint(line);
-  }
+    if (callStack.isTraced(lvalue.toUpper()))
+    {
+        QString line = QString("%1 %2\n").arg(node.astnodeValue()->nodeName.wordValue()->printValue(),
+                                              procedures->unreadDatum(rvalue));
+        sysPrint(line);
+    }
 
-  return nothing;
+    return nothing;
 }
 
-DatumPtr Kernel::excFoo(DatumPtr node) {
-  DatumPtr fooP = node.astnodeValue()->nodeName;
-  QString foo = fooP.wordValue()->keyValue();
+DatumPtr Kernel::excFoo(DatumPtr node)
+{
+    DatumPtr fooP = node.astnodeValue()->nodeName;
+    QString foo = fooP.wordValue()->keyValue();
 
-  DatumPtr retval = callStack.datumForName(foo);
-  if (retval == nothing)
-    return Error::noHowRecoverable(fooP);
-  return retval;
+    DatumPtr retval = callStack.datumForName(foo);
+    if (retval == nothing)
+        return Error::noHowRecoverable(fooP);
+    return retval;
 }
-
 
 /***DOC LOCAL
 LOCAL varname
@@ -766,35 +818,41 @@ LOCAL varnamelist
 
 COD***/
 // TODO: [varname:varnamelist:etc] procedure is duplicated in excGlobal().
-//CMD LOCAL 1 1 -1
-DatumPtr Kernel::excLocal(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  for (int i = 0; i < h.countOfChildren(); ++i) {
-    DatumPtr var = h.validatedDatumAtIndex(i, [](DatumPtr candidate) {
-      if (candidate.isWord())
-        return true;
-      if (candidate.isList()) {
-        ListIterator j = candidate.listValue()->newIterator();
-        while (j.elementExists())
-          if (!j.element().isWord())
+// CMD LOCAL 1 1 -1
+DatumPtr Kernel::excLocal(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    for (int i = 0; i < h.countOfChildren(); ++i)
+    {
+        DatumPtr var = h.validatedDatumAtIndex(i, [](DatumPtr candidate) {
+            if (candidate.isWord())
+                return true;
+            if (candidate.isList())
+            {
+                ListIterator j = candidate.listValue()->newIterator();
+                while (j.elementExists())
+                    if (!j.element().isWord())
+                        return false;
+                return true;
+            }
             return false;
-        return true;
-      }
-      return false;
-    });
-    if (var.isWord()) {
-      makeVarLocal(var.wordValue()->keyValue());
-    } else {
-      ListIterator j = var.listValue()->newIterator();
-      while (j.elementExists()) {
-        DatumPtr v = j.element();
-        makeVarLocal(v.wordValue()->keyValue());
-      }
+        });
+        if (var.isWord())
+        {
+            makeVarLocal(var.wordValue()->keyValue());
+        }
+        else
+        {
+            ListIterator j = var.listValue()->newIterator();
+            while (j.elementExists())
+            {
+                DatumPtr v = j.element();
+                makeVarLocal(v.wordValue()->keyValue());
+            }
+        }
     }
-  }
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC THING
 THING varname
@@ -810,16 +868,16 @@ THING varname
     so that :FOO means THING "FOO.
 
 COD***/
-//CMD THING 1 1 1
-DatumPtr Kernel::excThing(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  QString varName = h.wordAtIndex(0).wordValue()->keyValue();
-  DatumPtr retval = h.ret(callStack.datumForName(varName));
-  if (retval == nothing)
-    return h.ret(Error::noValueRecoverable(h.datumAtIndex(0)));
-  return retval;
+// CMD THING 1 1 1
+DatumPtr Kernel::excThing(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QString varName = h.wordAtIndex(0).wordValue()->keyValue();
+    DatumPtr retval = h.ret(callStack.datumForName(varName));
+    if (retval == nothing)
+        return h.ret(Error::noValueRecoverable(h.datumAtIndex(0)));
+    return retval;
 }
-
 
 /***DOC GLOBAL
 GLOBAL varname
@@ -837,37 +895,43 @@ GLOBAL varnamelist
 
 
 COD***/
-//CMD GLOBAL 1 1 -1
-DatumPtr Kernel::excGlobal(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  for (int i = 0; i < h.countOfChildren(); ++i) {
-    DatumPtr var = h.validatedDatumAtIndex(i, [](DatumPtr candidate) {
-      if (candidate.isWord())
-        return true;
-      if (candidate.isList()) {
-        ListIterator j = candidate.listValue()->newIterator();
-        while (j.elementExists())
-          if (!j.element().isWord())
+// CMD GLOBAL 1 1 -1
+DatumPtr Kernel::excGlobal(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    for (int i = 0; i < h.countOfChildren(); ++i)
+    {
+        DatumPtr var = h.validatedDatumAtIndex(i, [](DatumPtr candidate) {
+            if (candidate.isWord())
+                return true;
+            if (candidate.isList())
+            {
+                ListIterator j = candidate.listValue()->newIterator();
+                while (j.elementExists())
+                    if (!j.element().isWord())
+                        return false;
+                return true;
+            }
             return false;
-        return true;
-      }
-      return false;
-    });
-    if (var.isWord()) {
-      callStack.setVarAsGlobal(var.wordValue()->keyValue());
-    } else {
-      ListIterator j = var.listValue()->newIterator();
-      while (j.elementExists()) {
-        DatumPtr v = j.element();
-        callStack.setVarAsGlobal(v.wordValue()->keyValue());
-      }
+        });
+        if (var.isWord())
+        {
+            callStack.setVarAsGlobal(var.wordValue()->keyValue());
+        }
+        else
+        {
+            ListIterator j = var.listValue()->newIterator();
+            while (j.elementExists())
+            {
+                DatumPtr v = j.element();
+                callStack.setVarAsGlobal(v.wordValue()->keyValue());
+            }
+        }
     }
-  }
-  return nothing;
+    return nothing;
 }
 
 // PROPERTY LISTS
-
 
 /***DOC PPROP
 PPROP plistname propname value
@@ -876,23 +940,24 @@ PPROP plistname propname value
     with name "propname" and value "value".
 
 COD***/
-//CMD PPROP 3 3 3
-DatumPtr Kernel::excPprop(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  QString plistname = h.wordAtIndex(0).wordValue()->keyValue();
-  QString propname = h.wordAtIndex(1).wordValue()->keyValue();
-  DatumPtr value = h.datumAtIndex(2);
-  plists.addProperty(plistname, propname, value);
-  if (plists.isTraced(plistname)) {
-    QString line = QObject::tr("Pprop %1 %2 %3\n")
-                       .arg(procedures->unreadDatum(h.datumAtIndex(0)),
-                            procedures->unreadDatum(h.datumAtIndex(1)),
-                            procedures->unreadDatum(value));
-    sysPrint(line);
-  }
-  return nothing;
+// CMD PPROP 3 3 3
+DatumPtr Kernel::excPprop(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QString plistname = h.wordAtIndex(0).wordValue()->keyValue();
+    QString propname = h.wordAtIndex(1).wordValue()->keyValue();
+    DatumPtr value = h.datumAtIndex(2);
+    plists.addProperty(plistname, propname, value);
+    if (plists.isTraced(plistname))
+    {
+        QString line = QObject::tr("Pprop %1 %2 %3\n")
+                           .arg(procedures->unreadDatum(h.datumAtIndex(0)),
+                                procedures->unreadDatum(h.datumAtIndex(1)),
+                                procedures->unreadDatum(value));
+        sysPrint(line);
+    }
+    return nothing;
 }
-
 
 /***DOC GPROP
 GPROP plistname propname
@@ -901,14 +966,14 @@ GPROP plistname propname
     property list, or the empty list if there is no such property.
 
 COD***/
-//CMD GPROP 2 2 2
-DatumPtr Kernel::excGprop(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  QString plistname = h.wordAtIndex(0).wordValue()->keyValue();
-  QString propname = h.wordAtIndex(1).wordValue()->keyValue();
-  return h.ret(plists.getProperty(plistname, propname));
+// CMD GPROP 2 2 2
+DatumPtr Kernel::excGprop(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QString plistname = h.wordAtIndex(0).wordValue()->keyValue();
+    QString propname = h.wordAtIndex(1).wordValue()->keyValue();
+    return h.ret(plists.getProperty(plistname, propname));
 }
-
 
 /***DOC REMPROP
 REMPROP plistname propname
@@ -917,16 +982,16 @@ REMPROP plistname propname
     property list named "plistname".
 
 COD***/
-//CMD REMPROP 2 2 2
-DatumPtr Kernel::excRemprop(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  QString plistname = h.wordAtIndex(0).wordValue()->keyValue();
-  QString propname = h.wordAtIndex(1).wordValue()->keyValue();
-  plists.removeProperty(plistname, propname);
+// CMD REMPROP 2 2 2
+DatumPtr Kernel::excRemprop(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QString plistname = h.wordAtIndex(0).wordValue()->keyValue();
+    QString propname = h.wordAtIndex(1).wordValue()->keyValue();
+    plists.removeProperty(plistname, propname);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC PLIST
 PLIST plistname
@@ -939,15 +1004,15 @@ PLIST plistname
 
 
 COD***/
-//CMD PLIST 1 1 1
-DatumPtr Kernel::excPlist(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  QString plistname = h.wordAtIndex(0).wordValue()->keyValue();
-  return h.ret(plists.getPropertyList(plistname));
+// CMD PLIST 1 1 1
+DatumPtr Kernel::excPlist(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QString plistname = h.wordAtIndex(0).wordValue()->keyValue();
+    return h.ret(plists.getPropertyList(plistname));
 }
 
 // PREDICATES
-
 
 /***DOC PROCEDUREP PROCEDURE?
 PROCEDUREP name
@@ -956,14 +1021,14 @@ PROCEDURE? name
     outputs TRUE if the input is the name of a procedure.
 
 COD***/
-//CMD PROCEDUREP 1 1 1
-//CMD PROCEDURE? 1 1 1
-DatumPtr Kernel::excProcedurep(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  bool retval = procedures->isProcedure(h.wordAtIndex(0).wordValue()->keyValue());
-  return h.ret(retval);
+// CMD PROCEDUREP 1 1 1
+// CMD PROCEDURE? 1 1 1
+DatumPtr Kernel::excProcedurep(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    bool retval = procedures->isProcedure(h.wordAtIndex(0).wordValue()->keyValue());
+    return h.ret(retval);
 }
-
 
 /***DOC PRIMITIVEP PRIMITIVE?
 PRIMITIVEP name
@@ -974,14 +1039,14 @@ PRIMITIVE? name
     described in this document are library procedures, not primitives.
 
 COD***/
-//CMD PRIMITIVEP 1 1 1
-//CMD PRIMITIVE? 1 1 1
-DatumPtr Kernel::excPrimitivep(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  bool retval = procedures->isPrimitive(h.wordAtIndex(0).wordValue()->keyValue());
-  return h.ret(retval);
+// CMD PRIMITIVEP 1 1 1
+// CMD PRIMITIVE? 1 1 1
+DatumPtr Kernel::excPrimitivep(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    bool retval = procedures->isPrimitive(h.wordAtIndex(0).wordValue()->keyValue());
+    return h.ret(retval);
 }
-
 
 /***DOC DEFINEDP DEFINED?
 DEFINEDP name
@@ -991,14 +1056,14 @@ DEFINED? name
     including a library procedure.
 
 COD***/
-//CMD DEFINEDP 1 1 1
-//CMD DEFINED? 1 1 1
-DatumPtr Kernel::excDefinedp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  bool retval = procedures->isDefined(h.wordAtIndex(0).wordValue()->keyValue());
-  return h.ret(retval);
+// CMD DEFINEDP 1 1 1
+// CMD DEFINED? 1 1 1
+DatumPtr Kernel::excDefinedp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    bool retval = procedures->isDefined(h.wordAtIndex(0).wordValue()->keyValue());
+    return h.ret(retval);
 }
-
 
 /***DOC NAMEP NAME?
 NAMEP name
@@ -1007,15 +1072,15 @@ NAME? name
     outputs TRUE if the input is the name of a variable.
 
 COD***/
-//CMD NAMEP 1 1 1
-//CMD NAME? 1 1 1
-DatumPtr Kernel::excNamep(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  QString varname = h.wordAtIndex(0).wordValue()->keyValue();
-  bool retval = (callStack.doesExist(varname));
-  return h.ret(retval);
+// CMD NAMEP 1 1 1
+// CMD NAME? 1 1 1
+DatumPtr Kernel::excNamep(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QString varname = h.wordAtIndex(0).wordValue()->keyValue();
+    bool retval = (callStack.doesExist(varname));
+    return h.ret(retval);
 }
-
 
 /***DOC PLISTP PLIST?
 PLISTP name
@@ -1028,17 +1093,17 @@ PLIST? name
 
 
 COD***/
-//CMD PLISTP 1 1 1
-//CMD PLIST? 1 1 1
-DatumPtr Kernel::excPlistp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  QString listName = h.wordAtIndex(0).wordValue()->keyValue();
-  bool retval = plists.isPropertyList(listName);
-  return h.ret(retval);
+// CMD PLISTP 1 1 1
+// CMD PLIST? 1 1 1
+DatumPtr Kernel::excPlistp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QString listName = h.wordAtIndex(0).wordValue()->keyValue();
+    bool retval = plists.isPropertyList(listName);
+    return h.ret(retval);
 }
 
 // QUERIES
-
 
 /***DOC CONTENTS
 CONTENTS
@@ -1049,12 +1114,12 @@ CONTENTS
     the workspace.
 
 COD***/
-//CMD CONTENTS 0 0 0
-DatumPtr Kernel::excContents(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  return h.ret(buildContentsList(showUnburied));
+// CMD CONTENTS 0 0 0
+DatumPtr Kernel::excContents(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    return h.ret(buildContentsList(showUnburied));
 }
-
 
 /***DOC BURIED
 BURIED
@@ -1063,12 +1128,12 @@ BURIED
     the workspace.
 
 COD***/
-//CMD BURIED 0 0 0
-DatumPtr Kernel::excBuried(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  return h.ret(buildContentsList(showBuried));
+// CMD BURIED 0 0 0
+DatumPtr Kernel::excBuried(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    return h.ret(buildContentsList(showBuried));
 }
-
 
 /***DOC TRACED
 TRACED
@@ -1077,12 +1142,12 @@ TRACED
     the workspace.
 
 COD***/
-//CMD TRACED 0 0 0
-DatumPtr Kernel::excTraced(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  return h.ret(buildContentsList(showTraced));
+// CMD TRACED 0 0 0
+DatumPtr Kernel::excTraced(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    return h.ret(buildContentsList(showTraced));
 }
-
 
 /***DOC STEPPED
 STEPPED
@@ -1091,12 +1156,12 @@ STEPPED
     the workspace.
 
 COD***/
-//CMD STEPPED 0 0 0
-DatumPtr Kernel::excStepped(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  return h.ret(buildContentsList(showStepped));
+// CMD STEPPED 0 0 0
+DatumPtr Kernel::excStepped(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    return h.ret(buildContentsList(showStepped));
 }
-
 
 /***DOC PROCEDURES
 PROCEDURES
@@ -1107,12 +1172,12 @@ PROCEDURES
     as input will accept this list.)
 
 COD***/
-//CMD PROCEDURES 0 0 0
-DatumPtr Kernel::excProcedures(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  return h.ret(procedures->allProcedureNames(showUnburied));
+// CMD PROCEDURES 0 0 0
+DatumPtr Kernel::excProcedures(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    return h.ret(procedures->allProcedureNames(showUnburied));
 }
-
 
 /***DOC PRIMITIVES
 PRIMITIVES
@@ -1123,12 +1188,12 @@ PRIMITIVES
     as input will accept this list.)
 
 COD***/
-//CMD PRIMITIVES 0 0 0
-DatumPtr Kernel::excPrimitives(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  return h.ret(procedures->allPrimitiveProcedureNames());
+// CMD PRIMITIVES 0 0 0
+DatumPtr Kernel::excPrimitives(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    return h.ret(procedures->allPrimitiveProcedureNames());
 }
-
 
 /***DOC NAMES
 NAMES
@@ -1138,15 +1203,15 @@ NAMES
     names in the workspace.
 
 COD***/
-//CMD NAMES 0 0 0
-DatumPtr Kernel::excNames(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  List *retval = new List();
-  retval->append(DatumPtr(new List()));
-  retval->append(callStack.allVariables(showUnburied));
-  return h.ret(retval);
+// CMD NAMES 0 0 0
+DatumPtr Kernel::excNames(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    List *retval = new List();
+    retval->append(DatumPtr(new List()));
+    retval->append(callStack.allVariables(showUnburied));
+    return h.ret(retval);
 }
-
 
 /***DOC PLISTS
 PLISTS
@@ -1156,16 +1221,16 @@ PLISTS
     nonempty property lists in the workspace.
 
 COD***/
-//CMD PLISTS 0 0 0
-DatumPtr Kernel::excPlists(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  List *retval = new List();
-  retval->append(DatumPtr(new List()));
-  retval->append(DatumPtr(new List()));
-  retval->append(plists.allPLists(showUnburied));
-  return h.ret(retval);
+// CMD PLISTS 0 0 0
+DatumPtr Kernel::excPlists(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    List *retval = new List();
+    retval->append(DatumPtr(new List()));
+    retval->append(DatumPtr(new List()));
+    retval->append(plists.allPLists(showUnburied));
+    return h.ret(retval);
 }
-
 
 /***DOC ARITY
 ARITY procedurename
@@ -1176,12 +1241,12 @@ ARITY procedurename
     number of inputs is unlimited.
 
 COD***/
-//CMD ARITY 1 1 1
-DatumPtr Kernel::excArity(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  return h.ret(procedures->arity(h.wordAtIndex(0)));
+// CMD ARITY 1 1 1
+DatumPtr Kernel::excArity(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    return h.ret(procedures->arity(h.wordAtIndex(0)));
 }
-
 
 /***DOC NODES
 NODES
@@ -1195,14 +1260,14 @@ NODES
 
 
 COD***/
-//CMD NODES 0 0 0
-DatumPtr Kernel::excNodes(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  return h.ret(nodes());
+// CMD NODES 0 0 0
+DatumPtr Kernel::excNodes(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    return h.ret(nodes());
 }
 
 // INSPECTION
-
 
 /***DOC PRINTOUT PO
 PRINTOUT contentslist
@@ -1213,22 +1278,22 @@ PO contentslist
     contents list.
 
 COD***/
-//CMD PRINTOUT 1 1 1
-//CMD PO 1 1 1
-DatumPtr Kernel::excPrintout(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr contentslist;
-  h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
-    contentslist = contentslistFromDatumPtr(candidate);
-    return contentslist != nothing;
-  });
+// CMD PRINTOUT 1 1 1
+// CMD PO 1 1 1
+DatumPtr Kernel::excPrintout(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr contentslist;
+    h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
+        contentslist = contentslistFromDatumPtr(candidate);
+        return contentslist != nothing;
+    });
 
-  QString output = createPrintoutFromContentsList(contentslist);
-  stdPrint(output);
+    QString output = createPrintoutFromContentsList(contentslist);
+    stdPrint(output);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC POT
 POT contentslist
@@ -1239,56 +1304,59 @@ POT contentslist
     instead of as a series of PPROP instructions as in PO.
 
 COD***/
-//CMD POT 1 1 1
-DatumPtr Kernel::excPot(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr contentslist;
-  h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
-    contentslist = contentslistFromDatumPtr(candidate);
-    return contentslist != nothing;
-  });
+// CMD POT 1 1 1
+DatumPtr Kernel::excPot(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr contentslist;
+    h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
+        contentslist = contentslistFromDatumPtr(candidate);
+        return contentslist != nothing;
+    });
 
-  List *proceduresList;
-  List *variablesList;
-  List *propertiesList;
-  extractFromContentslist(contentslist, &proceduresList, &variablesList, &propertiesList);
+    List *proceduresList;
+    List *variablesList;
+    List *propertiesList;
+    extractFromContentslist(contentslist, &proceduresList, &variablesList, &propertiesList);
 
-  ListIterator i = proceduresList->newIterator();
-  while (i.elementExists()) {
-    QString procedureTitle = procedures->procedureTitle(i.element());
-    stdPrint(procedureTitle);
-    stdPrint("\n");
-  }
-
-  i = variablesList->newIterator();
-  while (i.elementExists()) {
-    DatumPtr varnameP = i.element();
-    QString varname = varnameP.wordValue()->keyValue();
-    DatumPtr value = callStack.datumForName(varname);
-    if (value == nothing)
-      Error::noValue(varnameP);
-    QString line = QObject::tr("Make \"%1 %2\n").arg(varname, procedures->unreadDatum(value));
-    stdPrint(line);
-  }
-
-  i = propertiesList->newIterator();
-  while (i.elementExists()) {
-    DatumPtr listnameP = i.element();
-    QString listname = listnameP.wordValue()->keyValue();
-    DatumPtr proplist = plists.getPropertyList(listname);
-    if ( ! proplist.listValue()->isEmpty()) {
-      QString line = QObject::tr("Plist %1 = %2\n")
-                         .arg(procedures->unreadDatum(listnameP),
-                              procedures->unreadDatum(proplist, true));
-      stdPrint(line);
+    ListIterator i = proceduresList->newIterator();
+    while (i.elementExists())
+    {
+        QString procedureTitle = procedures->procedureTitle(i.element());
+        stdPrint(procedureTitle);
+        stdPrint("\n");
     }
-  }
 
-  return nothing;
+    i = variablesList->newIterator();
+    while (i.elementExists())
+    {
+        DatumPtr varnameP = i.element();
+        QString varname = varnameP.wordValue()->keyValue();
+        DatumPtr value = callStack.datumForName(varname);
+        if (value == nothing)
+            Error::noValue(varnameP);
+        QString line = QObject::tr("Make \"%1 %2\n").arg(varname, procedures->unreadDatum(value));
+        stdPrint(line);
+    }
+
+    i = propertiesList->newIterator();
+    while (i.elementExists())
+    {
+        DatumPtr listnameP = i.element();
+        QString listname = listnameP.wordValue()->keyValue();
+        DatumPtr proplist = plists.getPropertyList(listname);
+        if (!proplist.listValue()->isEmpty())
+        {
+            QString line = QObject::tr("Plist %1 = %2\n")
+                               .arg(procedures->unreadDatum(listnameP), procedures->unreadDatum(proplist, true));
+            stdPrint(line);
+        }
+    }
+
+    return nothing;
 }
 
 // WORKSPACE CONTROL
-
 
 /***DOC ERASE ER
 ERASE contentslist
@@ -1299,43 +1367,46 @@ ER contentslist
     not be erased.
 
 COD***/
-//CMD ERASE 1 1 1
-//CMD ER 1 1 1
-DatumPtr Kernel::excErase(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr contentslist;
-  h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
-    contentslist = contentslistFromDatumPtr(candidate);
-    return contentslist != nothing;
-  });
+// CMD ERASE 1 1 1
+// CMD ER 1 1 1
+DatumPtr Kernel::excErase(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr contentslist;
+    h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
+        contentslist = contentslistFromDatumPtr(candidate);
+        return contentslist != nothing;
+    });
 
-  List *proceduresList;
-  List *variablesList;
-  List *propertiesList;
-  extractFromContentslist(contentslist, &proceduresList, &variablesList, &propertiesList);
+    List *proceduresList;
+    List *variablesList;
+    List *propertiesList;
+    extractFromContentslist(contentslist, &proceduresList, &variablesList, &propertiesList);
 
-  ListIterator i = proceduresList->newIterator();
-  while (i.elementExists()) {
-    DatumPtr nameP = i.element();
-    procedures->eraseProcedure(nameP);
-  }
+    ListIterator i = proceduresList->newIterator();
+    while (i.elementExists())
+    {
+        DatumPtr nameP = i.element();
+        procedures->eraseProcedure(nameP);
+    }
 
-  i = variablesList->newIterator();
-  while (i.elementExists()) {
-    QString varname = i.element().wordValue()->keyValue();
-    callStack.eraseVar(varname);
-  }
+    i = variablesList->newIterator();
+    while (i.elementExists())
+    {
+        QString varname = i.element().wordValue()->keyValue();
+        callStack.eraseVar(varname);
+    }
 
-  i = propertiesList->newIterator();
-  while (i.elementExists()) {
-    DatumPtr listnameP = i.element();
-    QString listname = listnameP.wordValue()->keyValue();
-    plists.erasePropertyList(listname);
-  }
+    i = propertiesList->newIterator();
+    while (i.elementExists())
+    {
+        DatumPtr listnameP = i.element();
+        QString listname = listnameP.wordValue()->keyValue();
+        plists.erasePropertyList(listname);
+    }
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC ERALL
 ERALL
@@ -1344,16 +1415,16 @@ ERALL
     lists from the workspace.  Abbreviates ERASE CONTENTS.
 
 COD***/
-//CMD ERALL 0 0 0
-DatumPtr Kernel::excErall(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  procedures->eraseAllProcedures();
-  callStack.eraseAll();
-  plists.eraseAll();
+// CMD ERALL 0 0 0
+DatumPtr Kernel::excErall(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    procedures->eraseAllProcedures();
+    callStack.eraseAll();
+    plists.eraseAll();
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC ERPS
 ERPS
@@ -1362,14 +1433,14 @@ ERPS
     Abbreviates ERASE PROCEDURES.
 
 COD***/
-//CMD ERPS 0 0 0
-DatumPtr Kernel::excErps(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  procedures->eraseAllProcedures();
+// CMD ERPS 0 0 0
+DatumPtr Kernel::excErps(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    procedures->eraseAllProcedures();
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC ERNS
 ERNS
@@ -1378,14 +1449,14 @@ ERNS
     Abbreviates ERASE NAMES.
 
 COD***/
-//CMD ERNS 0 0 0
-DatumPtr Kernel::excErns(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  callStack.eraseAll();
+// CMD ERNS 0 0 0
+DatumPtr Kernel::excErns(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    callStack.eraseAll();
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC ERPLS
 ERPLS
@@ -1394,14 +1465,14 @@ ERPLS
     Abbreviates ERASE PLISTS.
 
 COD***/
-//CMD ERPLS 0 0 0
-DatumPtr Kernel::excErpls(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  plists.eraseAll();
+// CMD ERPLS 0 0 0
+DatumPtr Kernel::excErpls(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    plists.eraseAll();
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC BURY
 BURY contentslist
@@ -1413,20 +1484,20 @@ BURY contentslist
     things are not printed by POALL or saved by SAVE.
 
 COD***/
-//CMD BURY 1 1 1
-DatumPtr Kernel::excBury(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr contentslist;
-  h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
-    contentslist = contentslistFromDatumPtr(candidate);
-    return contentslist != nothing;
-  });
+// CMD BURY 1 1 1
+DatumPtr Kernel::excBury(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr contentslist;
+    h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
+        contentslist = contentslistFromDatumPtr(candidate);
+        return contentslist != nothing;
+    });
 
-  processContentsListWithMethod(contentslist, &Workspace::bury);
+    processContentsListWithMethod(contentslist, &Workspace::bury);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC UNBURY
 UNBURY contentslist
@@ -1436,20 +1507,20 @@ UNBURY contentslist
     view in CONTENTS, etc.
 
 COD***/
-//CMD UNBURY 1 1 1
-DatumPtr Kernel::excUnbury(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr contentslist;
-  h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
-    contentslist = contentslistFromDatumPtr(candidate);
-    return contentslist != nothing;
-  });
+// CMD UNBURY 1 1 1
+DatumPtr Kernel::excUnbury(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr contentslist;
+    h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
+        contentslist = contentslistFromDatumPtr(candidate);
+        return contentslist != nothing;
+    });
 
-  processContentsListWithMethod(contentslist, &Workspace::unbury);
+    processContentsListWithMethod(contentslist, &Workspace::unbury);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC BURIEDP BURIED?
 BURIEDP contentslist
@@ -1462,23 +1533,23 @@ BURIED? contentslist
     BURIEDP [[] [VARIABLE]] or BURIEDP [[] [] [PROPLIST]].
 
 COD***/
-//CMD BURIEDP 1 1 1
-//CMD BURIED? 1 1 1
-DatumPtr Kernel::excBuriedp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr retval;
-  h.validatedDatumAtIndex(0, [&retval, this](DatumPtr candidate) {
-    DatumPtr contentslist = contentslistFromDatumPtr(candidate);
-    if (contentslist == nothing)
-      return false;
-    retval = queryContentsListWithMethod(contentslist, &Workspace::isBuried);
+// CMD BURIEDP 1 1 1
+// CMD BURIED? 1 1 1
+DatumPtr Kernel::excBuriedp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr retval;
+    h.validatedDatumAtIndex(0, [&retval, this](DatumPtr candidate) {
+        DatumPtr contentslist = contentslistFromDatumPtr(candidate);
+        if (contentslist == nothing)
+            return false;
+        retval = queryContentsListWithMethod(contentslist, &Workspace::isBuried);
 
-    return retval != nothing;
-  });
+        return retval != nothing;
+    });
 
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC TRACE
 TRACE contentslist
@@ -1491,20 +1562,20 @@ TRACE contentslist
     is given to a traced property list using PPROP.
 
 COD***/
-//CMD TRACE 1 1 1
-DatumPtr Kernel::excTrace(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr contentslist;
-  h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
-    contentslist = contentslistFromDatumPtr(candidate);
-    return contentslist != nothing;
-  });
+// CMD TRACE 1 1 1
+DatumPtr Kernel::excTrace(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr contentslist;
+    h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
+        contentslist = contentslistFromDatumPtr(candidate);
+        return contentslist != nothing;
+    });
 
-  processContentsListWithMethod(contentslist, &Workspace::trace);
+    processContentsListWithMethod(contentslist, &Workspace::trace);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC UNTRACE
 UNTRACE contentslist
@@ -1512,20 +1583,20 @@ UNTRACE contentslist
     command.  Turns off tracing for the named items.
 
 COD***/
-//CMD UNTRACE 1 1 1
-DatumPtr Kernel::excUntrace(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr contentslist;
-  h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
-    contentslist = contentslistFromDatumPtr(candidate);
-    return contentslist != nothing;
-  });
+// CMD UNTRACE 1 1 1
+DatumPtr Kernel::excUntrace(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr contentslist;
+    h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
+        contentslist = contentslistFromDatumPtr(candidate);
+        return contentslist != nothing;
+    });
 
-  processContentsListWithMethod(contentslist, &Workspace::untrace);
+    processContentsListWithMethod(contentslist, &Workspace::untrace);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC TRACEDP TRACED?
 TRACEDP contentslist
@@ -1538,23 +1609,23 @@ TRACED? contentslist
     TRACEDP [[] [VARIABLE]] or TRACEDP [[] [] [PROPLIST]].
 
 COD***/
-//CMD TRACEDP 1 1 1
-//CMD TRACED? 1 1 1
-DatumPtr Kernel::excTracedp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr retval;
-  h.validatedDatumAtIndex(0, [&retval, this](DatumPtr candidate) {
-    DatumPtr contentslist = contentslistFromDatumPtr(candidate);
-    if (contentslist == nothing)
-      return false;
-    retval = queryContentsListWithMethod(contentslist, &Workspace::isTraced);
+// CMD TRACEDP 1 1 1
+// CMD TRACED? 1 1 1
+DatumPtr Kernel::excTracedp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr retval;
+    h.validatedDatumAtIndex(0, [&retval, this](DatumPtr candidate) {
+        DatumPtr contentslist = contentslistFromDatumPtr(candidate);
+        if (contentslist == nothing)
+            return false;
+        retval = queryContentsListWithMethod(contentslist, &Workspace::isTraced);
 
-    return retval != nothing;
-  });
+        return retval != nothing;
+    });
 
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC STEP
 STEP contentslist
@@ -1568,20 +1639,20 @@ STEP contentslist
     LOCAL command.
 
 COD***/
-//CMD STEP 1 1 1
-DatumPtr Kernel::excStep(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr contentslist;
-  h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
-    contentslist = contentslistFromDatumPtr(candidate);
-    return contentslist != nothing;
-  });
+// CMD STEP 1 1 1
+DatumPtr Kernel::excStep(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr contentslist;
+    h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
+        contentslist = contentslistFromDatumPtr(candidate);
+        return contentslist != nothing;
+    });
 
-  processContentsListWithMethod(contentslist, &Workspace::step);
+    processContentsListWithMethod(contentslist, &Workspace::step);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC UNSTEP
 UNSTEP contentslist
@@ -1589,20 +1660,20 @@ UNSTEP contentslist
     command.  Turns off stepping for the named items.
 
 COD***/
-//CMD UNSTEP 1 1 1
-DatumPtr Kernel::excUnstep(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr contentslist;
-  h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
-    contentslist = contentslistFromDatumPtr(candidate);
-    return contentslist != nothing;
-  });
+// CMD UNSTEP 1 1 1
+DatumPtr Kernel::excUnstep(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr contentslist;
+    h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
+        contentslist = contentslistFromDatumPtr(candidate);
+        return contentslist != nothing;
+    });
 
-  processContentsListWithMethod(contentslist, &Workspace::unstep);
+    processContentsListWithMethod(contentslist, &Workspace::unstep);
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC STEPPEDP STEPPED?
 STEPPEDP contentslist
@@ -1615,23 +1686,23 @@ STEPPED? contentslist
     can STEPPEDP [[] [VARIABLE]] or STEPPEDP [[] [] [PROPLIST]].
 
 COD***/
-//CMD STEPPEDP 1 1 1
-//CMD STEPPED? 1 1 1
-DatumPtr Kernel::excSteppedp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr retval;
-  h.validatedDatumAtIndex(0, [&retval, this](DatumPtr candidate) {
-    DatumPtr contentslist = contentslistFromDatumPtr(candidate);
-    if (contentslist == nothing)
-      return false;
-    retval = queryContentsListWithMethod(contentslist, &Workspace::isStepped);
+// CMD STEPPEDP 1 1 1
+// CMD STEPPED? 1 1 1
+DatumPtr Kernel::excSteppedp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr retval;
+    h.validatedDatumAtIndex(0, [&retval, this](DatumPtr candidate) {
+        DatumPtr contentslist = contentslistFromDatumPtr(candidate);
+        if (contentslist == nothing)
+            return false;
+        retval = queryContentsListWithMethod(contentslist, &Workspace::isStepped);
 
-    return retval != nothing;
-  });
+        return retval != nothing;
+    });
 
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC EDIT ED
 EDIT contentslist
@@ -1658,31 +1729,35 @@ ED contentslist
     the instruction line.
 
 COD***/
-//CMD EDIT 0 1 1
-//CMD ED 0 1 1
-DatumPtr Kernel::excEdit(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  if (h.countOfChildren() > 0) {
-    DatumPtr contentslist;
-    h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
-      contentslist = contentslistFromDatumPtr(candidate);
-      return contentslist != nothing;
-    });
+// CMD EDIT 0 1 1
+// CMD ED 0 1 1
+DatumPtr Kernel::excEdit(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    if (h.countOfChildren() > 0)
+    {
+        DatumPtr contentslist;
+        h.validatedDatumAtIndex(0, [&contentslist, this](DatumPtr candidate) {
+            contentslist = contentslistFromDatumPtr(candidate);
+            return contentslist != nothing;
+        });
 
-    workspaceText = createPrintoutFromContentsList(contentslist, false);
+        workspaceText = createPrintoutFromContentsList(contentslist, false);
 
-    editAndRunWorkspaceText();
-  } else if (editFileName.isWord() &&
-             editFileName.wordValue()->printValue() != "") {
-    editAndRunFile();
-  } else {
-      workspaceText = "";
-    editAndRunWorkspaceText();
-  }
+        editAndRunWorkspaceText();
+    }
+    else if (editFileName.isWord() && editFileName.wordValue()->printValue() != "")
+    {
+        editAndRunFile();
+    }
+    else
+    {
+        workspaceText = "";
+        editAndRunWorkspaceText();
+    }
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC EDITFILE
 EDITFILE filename
@@ -1698,14 +1773,14 @@ EDITFILE filename
     definitions appear, maintaining comments in the file, and so on.
 
 COD***/
-//CMD EDITFILE 1 1 1
-DatumPtr Kernel::excEditfile(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  editFileName = h.wordAtIndex(0);
-  editAndRunFile();
-  return nothing;
+// CMD EDITFILE 1 1 1
+DatumPtr Kernel::excEditfile(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    editFileName = h.wordAtIndex(0);
+    editAndRunFile();
+    return nothing;
 }
-
 
 /***DOC SAVE
 SAVE filename
@@ -1730,33 +1805,37 @@ SAVE filename
     is an error if there has been no previous LOAD or SAVE.)
 
 COD***/
-//CMD SAVE 1 1 1
-DatumPtr Kernel::excSave(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  if (h.countOfChildren() > 0) {
-    editFileName = h.wordAtIndex(0);
-  } else {
-    if (editFileName == nothing)
-      Error::notEnough(node.astnodeValue()->nodeName);
-  }
+// CMD SAVE 1 1 1
+DatumPtr Kernel::excSave(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    if (h.countOfChildren() > 0)
+    {
+        editFileName = h.wordAtIndex(0);
+    }
+    else
+    {
+        if (editFileName == nothing)
+            Error::notEnough(node.astnodeValue()->nodeName);
+    }
 
-  QString filepath = filepathForFilename(editFileName.wordValue());
-  QFile file(filepath);
-  if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-    Error::cantOpen(editFileName);
-  }
+    QString filepath = filepathForFilename(editFileName.wordValue());
+    QFile file(filepath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        Error::cantOpen(editFileName);
+    }
 
-  DatumPtr contentList = buildContentsList(showUnburied);
-  QString fileText = createPrintoutFromContentsList(contentList);
+    DatumPtr contentList = buildContentsList(showUnburied);
+    QString fileText = createPrintoutFromContentsList(contentList);
 
-  file.seek(0);
-  file.resize(0);
-  QTextStream out(&file);
-  out << fileText;
+    file.seek(0);
+    file.resize(0);
+    QTextStream out(&file);
+    out << fileText;
 
-  return nothing;
+    return nothing;
 }
-
 
 /***DOC LOAD
 LOAD filename
@@ -1773,33 +1852,36 @@ LOAD filename
     carried out silently.
 
 COD***/
-//CMD LOAD 1 1 1
-DatumPtr Kernel::excLoad(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  editFileName = h.wordAtIndex(0);
-  DatumPtr oldStartup = varSTARTUP();
-  DatumPtr retval;
+// CMD LOAD 1 1 1
+DatumPtr Kernel::excLoad(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    editFileName = h.wordAtIndex(0);
+    DatumPtr oldStartup = varSTARTUP();
+    DatumPtr retval;
 
-  QString filepath = filepathForFilename(editFileName.wordValue());
-  QFile file(filepath);
-  if (!file.open(QIODevice::ReadWrite | QIODevice::Text)) {
-    Error::cantOpen(editFileName);
-  }
-  QTextStream in(&file);
-  QString fileText = in.readAll();
-  QString output = executeText(fileText);
-  if (varLOADNOISILY()) {
-    sysPrint(output);
-  }
-  DatumPtr startup = varSTARTUP();
-  if (oldStartup != startup) {
-    if (startup.isWord() || startup.isList())
-      retval = runList(startup);
-  }
+    QString filepath = filepathForFilename(editFileName.wordValue());
+    QFile file(filepath);
+    if (!file.open(QIODevice::ReadWrite | QIODevice::Text))
+    {
+        Error::cantOpen(editFileName);
+    }
+    QTextStream in(&file);
+    QString fileText = in.readAll();
+    QString output = executeText(fileText);
+    if (varLOADNOISILY())
+    {
+        sysPrint(output);
+    }
+    DatumPtr startup = varSTARTUP();
+    if (oldStartup != startup)
+    {
+        if (startup.isWord() || startup.isList())
+            retval = runList(startup);
+    }
 
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC HELP
 HELP name
@@ -1821,18 +1903,23 @@ COD***/
     followed by lines from the procedure body that start with semicolon,
     stopping when a non-semicolon line is seen.
 */
-//CMD HELP 0 -1 -1
-DatumPtr Kernel::excHelp(DatumPtr node) {
-  ProcedureHelper h(this, node);
+// CMD HELP 0 -1 -1
+DatumPtr Kernel::excHelp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
 
-  if (h.countOfChildren() == 0) {
-    QStringList cmds = help.allCommands();
-    stdPrint(cmds.join(" ") + "\n");
-  } else {
-    DatumPtr cmdP = h.wordAtIndex(0);
-    QString text = help.helpText(cmdP.wordValue()->keyValue());
-    if (text.size() < 1) Error::noHow(cmdP);
-    stdPrint(text);
-  }
-  return nothing;
+    if (h.countOfChildren() == 0)
+    {
+        QStringList cmds = help.allCommands();
+        stdPrint(cmds.join(" ") + "\n");
+    }
+    else
+    {
+        DatumPtr cmdP = h.wordAtIndex(0);
+        QString text = help.helpText(cmdP.wordValue()->keyValue());
+        if (text.size() < 1)
+            Error::noHow(cmdP);
+        stdPrint(text);
+    }
+    return nothing;
 }

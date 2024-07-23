@@ -19,13 +19,17 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the Kernel class, which is the
-/// executor proper of the QLogo language.
+/// This file contains a part of the implementation of the Kernel class, which is the
+/// executor proper of the QLogo language. Specifically, this file contains the
+/// implementations of the arithmetic operations.
+///
+/// See README.md in this directory for information about the documentation
+/// structure for each Kernel::exc* method.
 ///
 //===----------------------------------------------------------------------===//
 
-#include "kernel.h"
 #include "astnode.h"
+#include "kernel.h"
 
 #include <error.h>
 #include <math.h>
@@ -36,7 +40,6 @@
 
 // NUMERIC OPERATIONS
 
-
 /***DOC SUM
 SUM num1 num2
 (SUM num1 num2 num3 ...)
@@ -45,18 +48,19 @@ num1 + num2
     outputs the sum of its inputs.
 
 COD***/
-//CMD SUM 0 2 -1
-DatumPtr Kernel::excSum(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double result = 0;
+// CMD SUM 0 2 -1
+DatumPtr Kernel::excSum(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double result = 0;
 
-  for (int i = 0; i < h.countOfChildren(); ++i) {
-    result += h.numberAtIndex(i);
-  }
+    for (int i = 0; i < h.countOfChildren(); ++i)
+    {
+        result += h.numberAtIndex(i);
+    }
 
-  return h.ret(result);
+    return h.ret(result);
 }
-
 
 /***DOC DIFFERENCE
 DIFFERENCE num1 num2
@@ -68,18 +72,18 @@ num1 - num2
     by a nonspace.  (See also MINUS.)
 
 COD***/
-//CMD DIFFERENCE 2 2 2
-DatumPtr Kernel::excDifference(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.numberAtIndex(0);
+// CMD DIFFERENCE 2 2 2
+DatumPtr Kernel::excDifference(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.numberAtIndex(0);
 
-  double b = h.numberAtIndex(1);
+    double b = h.numberAtIndex(1);
 
-  double c = a - b;
+    double c = a - b;
 
-  return h.ret(c);
+    return h.ret(c);
 }
-
 
 /***DOC MINUS
 MINUS num
@@ -94,15 +98,15 @@ MINUS num
         - 3 + 4		means	(-3)+4
 
 COD***/
-//CMD MINUS 1 1 1
-//CMD - 1 1 1
-DatumPtr Kernel::excMinus(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.numberAtIndex(0);
+// CMD MINUS 1 1 1
+// CMD - 1 1 1
+DatumPtr Kernel::excMinus(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.numberAtIndex(0);
 
-  return h.ret(-a);
+    return h.ret(-a);
 }
-
 
 /***DOC PRODUCT
 PRODUCT num1 num2
@@ -112,18 +116,19 @@ num1 * num2
     outputs the product of its inputs.
 
 COD***/
-//CMD PRODUCT 0 2 -1
-DatumPtr Kernel::excProduct(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double result = 1;
+// CMD PRODUCT 0 2 -1
+DatumPtr Kernel::excProduct(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double result = 1;
 
-  for (int i = 0; i < h.countOfChildren(); ++i) {
-    result *= h.numberAtIndex(i);
-  }
+    for (int i = 0; i < h.countOfChildren(); ++i)
+    {
+        result *= h.numberAtIndex(i);
+    }
 
-  return h.ret(result);
+    return h.ret(result);
 }
-
 
 /***DOC QUOTIENT
 QUOTIENT num1 num2
@@ -137,26 +142,27 @@ num1 / num2
     QUOTIENT outputs the reciprocal of the input.
 
 COD***/
-//CMD QUOTIENT 1 2 2
-DatumPtr Kernel::excQuotient(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a, c;
+// CMD QUOTIENT 1 2 2
+DatumPtr Kernel::excQuotient(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a, c;
 
-  if (h.countOfChildren() == 2) {
-    a = h.numberAtIndex(0);
-    double b = h.validatedNumberAtIndex(
-        1, [](double candidate) { return candidate != 0; });
+    if (h.countOfChildren() == 2)
+    {
+        a = h.numberAtIndex(0);
+        double b = h.validatedNumberAtIndex(1, [](double candidate) { return candidate != 0; });
 
-    c = a / b;
-  } else {
-    double a = h.validatedNumberAtIndex(
-        0, [](double candidate) { return candidate != 0; });
-    c = 1 / a;
-  }
+        c = a / b;
+    }
+    else
+    {
+        double a = h.validatedNumberAtIndex(0, [](double candidate) { return candidate != 0; });
+        c = 1 / a;
+    }
 
-  return h.ret(c);
+    return h.ret(c);
 }
-
 
 /***DOC REMAINDER
 REMAINDER num1 num2
@@ -165,19 +171,18 @@ REMAINDER num1 num2
     integers and the result is an integer with the same sign as num1.
 
 COD***/
-//CMD REMAINDER 2 2 2
-DatumPtr Kernel::excRemainder(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  int a = h.integerAtIndex(0);
+// CMD REMAINDER 2 2 2
+DatumPtr Kernel::excRemainder(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    int a = h.integerAtIndex(0);
 
-  int b = h.validatedIntegerAtIndex(
-      1, [](int candidate) { return candidate != 0; });
+    int b = h.validatedIntegerAtIndex(1, [](int candidate) { return candidate != 0; });
 
-  double c = a % b;
+    double c = a % b;
 
-  return h.ret(c);
+    return h.ret(c);
 }
-
 
 /***DOC MODULO
 MODULO num1 num2
@@ -186,20 +191,19 @@ MODULO num1 num2
     integers and the result is an integer with the same sign as num2.
 
 COD***/
-//CMD MODULO 2 2 2
-DatumPtr Kernel::excModulo(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  int a = h.integerAtIndex(0);
+// CMD MODULO 2 2 2
+DatumPtr Kernel::excModulo(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    int a = h.integerAtIndex(0);
 
-  int b = h.validatedIntegerAtIndex(
-      1, [](int candidate) { return candidate != 0; });
+    int b = h.validatedIntegerAtIndex(1, [](int candidate) { return candidate != 0; });
 
-  int r = a % b;
-  double c = (r * b < 0) ? r + b : r;
+    int r = a % b;
+    double c = (r * b < 0) ? r + b : r;
 
-  return h.ret(c);
+    return h.ret(c);
 }
-
 
 /***DOC INT
 INT num
@@ -210,16 +214,16 @@ INT num
     the input.
 
 COD***/
-//CMD INT 1 1 1
-DatumPtr Kernel::excInt(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.numberAtIndex(0);
+// CMD INT 1 1 1
+DatumPtr Kernel::excInt(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.numberAtIndex(0);
 
-  double b = trunc(a);
+    double b = trunc(a);
 
-  return h.ret(b);
+    return h.ret(b);
 }
-
 
 /***DOC ROUND
 ROUND num
@@ -227,16 +231,16 @@ ROUND num
     outputs the nearest integer to the input.
 
 COD***/
-//CMD ROUND 1 1 1
-DatumPtr Kernel::excRound(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.numberAtIndex(0);
+// CMD ROUND 1 1 1
+DatumPtr Kernel::excRound(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.numberAtIndex(0);
 
-  double b = round(a);
+    double b = round(a);
 
-  return h.ret(b);
+    return h.ret(b);
 }
-
 
 /***DOC SQRT
 SQRT num
@@ -244,17 +248,16 @@ SQRT num
     outputs the square root of the input, which must be nonnegative.
 
 COD***/
-//CMD SQRT 1 1 1
-DatumPtr Kernel::excSqrt(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.validatedNumberAtIndex(
-      0, [](double candidate) { return candidate >= 0; });
+// CMD SQRT 1 1 1
+DatumPtr Kernel::excSqrt(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.validatedNumberAtIndex(0, [](double candidate) { return candidate >= 0; });
 
-  double c = sqrt(a);
+    double c = sqrt(a);
 
-  return h.ret(c);
+    return h.ret(c);
 }
-
 
 /***DOC POWER
 POWER num1 num2
@@ -263,23 +266,25 @@ POWER num1 num2
     num2 must be an integer.
 
 COD***/
-//CMD POWER 2 2 2
-DatumPtr Kernel::excPower(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.numberAtIndex(0);
-  double b;
-  if (a >= 0) {
-    b = h.numberAtIndex(1);
-  } else {
-    b = h.validatedNumberAtIndex(
-        1, [](double candidate) { return candidate == trunc(candidate); });
-  }
+// CMD POWER 2 2 2
+DatumPtr Kernel::excPower(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.numberAtIndex(0);
+    double b;
+    if (a >= 0)
+    {
+        b = h.numberAtIndex(1);
+    }
+    else
+    {
+        b = h.validatedNumberAtIndex(1, [](double candidate) { return candidate == trunc(candidate); });
+    }
 
-  double c = pow(a, b);
+    double c = pow(a, b);
 
-  return h.ret(c);
+    return h.ret(c);
 }
-
 
 /***DOC EXP
 EXP num
@@ -287,16 +292,16 @@ EXP num
     outputs e (2.718281828+) to the input power.
 
 COD***/
-//CMD EXP 1 1 1
-DatumPtr Kernel::excExp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.numberAtIndex(0);
+// CMD EXP 1 1 1
+DatumPtr Kernel::excExp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.numberAtIndex(0);
 
-  double c = exp(a);
+    double c = exp(a);
 
-  return h.ret(c);
+    return h.ret(c);
 }
-
 
 /***DOC LOG10
 LOG10 num
@@ -304,17 +309,16 @@ LOG10 num
     outputs the common logarithm of the input.
 
 COD***/
-//CMD LOG10 1 1 1
-DatumPtr Kernel::excLog10(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.validatedNumberAtIndex(
-      0, [](double candidate) { return candidate >= 0; });
+// CMD LOG10 1 1 1
+DatumPtr Kernel::excLog10(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.validatedNumberAtIndex(0, [](double candidate) { return candidate >= 0; });
 
-  double c = log10(a);
+    double c = log10(a);
 
-  return h.ret(c);
+    return h.ret(c);
 }
-
 
 /***DOC LN
 LN num
@@ -322,17 +326,16 @@ LN num
     outputs the natural logarithm of the input.
 
 COD***/
-//CMD LN 1 1 1
-DatumPtr Kernel::excLn(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.validatedNumberAtIndex(
-      0, [](double candidate) { return candidate >= 0; });
+// CMD LN 1 1 1
+DatumPtr Kernel::excLn(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.validatedNumberAtIndex(0, [](double candidate) { return candidate >= 0; });
 
-  double c = log(a);
+    double c = log(a);
 
-  return h.ret(c);
+    return h.ret(c);
 }
-
 
 /***DOC SIN
 SIN degrees
@@ -340,16 +343,16 @@ SIN degrees
     outputs the sine of its input, which is taken in degrees.
 
 COD***/
-//CMD SIN 1 1 1
-DatumPtr Kernel::excSin(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.numberAtIndex(0);
+// CMD SIN 1 1 1
+DatumPtr Kernel::excSin(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.numberAtIndex(0);
 
-  double c = sin(M_PI / 180 * a);
+    double c = sin(M_PI / 180 * a);
 
-  return h.ret(c);
+    return h.ret(c);
 }
-
 
 /***DOC RADSIN
 RADSIN radians
@@ -357,16 +360,16 @@ RADSIN radians
     outputs the sine of its input, which is taken in radians.
 
 COD***/
-//CMD RADSIN 1 1 1
-DatumPtr Kernel::excRadsin(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.numberAtIndex(0);
+// CMD RADSIN 1 1 1
+DatumPtr Kernel::excRadsin(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.numberAtIndex(0);
 
-  double c = sin(a);
+    double c = sin(a);
 
-  return h.ret(c);
+    return h.ret(c);
 }
-
 
 /***DOC COS
 COS degrees
@@ -374,16 +377,16 @@ COS degrees
     outputs the cosine of its input, which is taken in degrees.
 
 COD***/
-//CMD COS 1 1 1
-DatumPtr Kernel::excCos(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.numberAtIndex(0);
+// CMD COS 1 1 1
+DatumPtr Kernel::excCos(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.numberAtIndex(0);
 
-  double c = cos(M_PI / 180 * a);
+    double c = cos(M_PI / 180 * a);
 
-  return h.ret(c);
+    return h.ret(c);
 }
-
 
 /***DOC RADCOS
 RADCOS radians
@@ -391,16 +394,16 @@ RADCOS radians
     outputs the cosine of its input, which is taken in radians.
 
 COD***/
-//CMD RADCOS 1 1 1
-DatumPtr Kernel::excRadcos(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.numberAtIndex(0);
+// CMD RADCOS 1 1 1
+DatumPtr Kernel::excRadcos(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.numberAtIndex(0);
 
-  double c = cos(a);
+    double c = cos(a);
 
-  return h.ret(c);
+    return h.ret(c);
 }
-
 
 /***DOC ARCTAN
 ARCTAN num
@@ -411,22 +414,23 @@ ARCTAN num
     90 or -90 depending on the sign of y, if x is zero.
 
 COD***/
-//CMD ARCTAN 1 1 2
-DatumPtr Kernel::excArctan(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.numberAtIndex(0);
-  if (node.astnodeValue()->countOfChildren() == 1) {
-    double c = atan(a) * 180 / M_PI;
+// CMD ARCTAN 1 1 2
+DatumPtr Kernel::excArctan(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.numberAtIndex(0);
+    if (node.astnodeValue()->countOfChildren() == 1)
+    {
+        double c = atan(a) * 180 / M_PI;
+
+        return h.ret(c);
+    }
+    double b = h.numberAtIndex(1);
+
+    double c = atan2(b, a) * 180 / M_PI;
 
     return h.ret(c);
-  }
-  double b = h.numberAtIndex(1);
-
-  double c = atan2(b, a) * 180 / M_PI;
-
-  return h.ret(c);
 }
-
 
 /***DOC RADARCTAN
 RADARCTAN num
@@ -440,24 +444,25 @@ RADARCTAN num
     value of pi.
 
 COD***/
-//CMD RADARCTAN 1 1 2
-DatumPtr Kernel::excRadarctan(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.numberAtIndex(0);
-  if (node.astnodeValue()->countOfChildren() == 1) {
-    double c = atan(a);
+// CMD RADARCTAN 1 1 2
+DatumPtr Kernel::excRadarctan(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.numberAtIndex(0);
+    if (node.astnodeValue()->countOfChildren() == 1)
+    {
+        double c = atan(a);
+
+        return h.ret(c);
+    }
+    double b = h.numberAtIndex(1);
+
+    double c = atan2(b, a);
 
     return h.ret(c);
-  }
-  double b = h.numberAtIndex(1);
-
-  double c = atan2(b, a);
-
-  return h.ret(c);
 }
 
 // PREDICATES
-
 
 /***DOC LESSP LESS?
 LESSP num1 num2
@@ -467,15 +472,15 @@ num1 < num2
     outputs TRUE if its first input is strictly less than its second.
 
 COD***/
-//CMD LESSP 2 2 2
-//CMD LESS? 2 2 2
-DatumPtr Kernel::excLessp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.numberAtIndex(0);
-  double b = h.numberAtIndex(1);
-  return h.ret(a < b);
+// CMD LESSP 2 2 2
+// CMD LESS? 2 2 2
+DatumPtr Kernel::excLessp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.numberAtIndex(0);
+    double b = h.numberAtIndex(1);
+    return h.ret(a < b);
 }
-
 
 /***DOC GREATERP GREATER?
 GREATERP num1 num2
@@ -485,15 +490,15 @@ num1 > num2
     outputs TRUE if its first input is strictly greater than its second.
 
 COD***/
-//CMD GREATERP 2 2 2
-//CMD GREATER? 2 2 2
-DatumPtr Kernel::excGreaterp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.numberAtIndex(0);
-  double b = h.numberAtIndex(1);
-  return h.ret(a > b);
+// CMD GREATERP 2 2 2
+// CMD GREATER? 2 2 2
+DatumPtr Kernel::excGreaterp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.numberAtIndex(0);
+    double b = h.numberAtIndex(1);
+    return h.ret(a > b);
 }
-
 
 /***DOC LESSEQUALP LESSEQUAL?
 LESSEQUALP num1 num2
@@ -503,15 +508,15 @@ num1 <= num2
     outputs TRUE if its first input is less than or equal to its second.
 
 COD***/
-//CMD LESSEQUALP 2 2 2
-//CMD LESSEQUAL? 2 2 2
-DatumPtr Kernel::excLessequalp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.numberAtIndex(0);
-  double b = h.numberAtIndex(1);
-  return h.ret(a <= b);
+// CMD LESSEQUALP 2 2 2
+// CMD LESSEQUAL? 2 2 2
+DatumPtr Kernel::excLessequalp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.numberAtIndex(0);
+    double b = h.numberAtIndex(1);
+    return h.ret(a <= b);
 }
-
 
 /***DOC GREATEREQUALP GREATEREQUAL?
 GREATEREQUALP num1 num2
@@ -521,17 +526,17 @@ num1 >= num2
     outputs TRUE if its first input is greater than or equal to its second.
 
 COD***/
-//CMD GREATEREQUALP 2 2 2
-//CMD GREATEREQUAL? 2 2 2
-DatumPtr Kernel::excGreaterequalp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double a = h.numberAtIndex(0);
-  double b = h.numberAtIndex(1);
-  return h.ret(a >= b);
+// CMD GREATEREQUALP 2 2 2
+// CMD GREATEREQUAL? 2 2 2
+DatumPtr Kernel::excGreaterequalp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double a = h.numberAtIndex(0);
+    double b = h.numberAtIndex(1);
+    return h.ret(a >= b);
 }
 
 // RANDOM NUMBERS
-
 
 /***DOC RANDOM
 RANDOM num
@@ -547,31 +552,29 @@ RANDOM num
     (RANDOM 3 8) is equivalent to (RANDOM 6)+3.
 
 COD***/
-//CMD RANDOM 1 1 2
-DatumPtr Kernel::excRandom(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  int start, end, result;
+// CMD RANDOM 1 1 2
+DatumPtr Kernel::excRandom(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    int start, end, result;
 
-  if (node.astnodeValue()->countOfChildren() == 1) {
-    // Generate a number between 0 (inclusive) and end (exclusive)
-    end = h.validatedIntegerAtIndex(0, [](int candidate) {
-      return (candidate > 0);
-    });
-    result = randomGenerator.bounded(end);
-  } else {
-    // Generate a number between start and end (both inclusive)
-    start = h.validatedIntegerAtIndex(0, [](int candidate) {
-        return (candidate < INT_MAX);
-    });
-    end = 1 + h.validatedIntegerAtIndex(1, [=](int candidate) {
-        return (candidate < INT_MAX) && (candidate > start);
-    });
-    result = randomGenerator.bounded(start, end);
-  }
+    if (node.astnodeValue()->countOfChildren() == 1)
+    {
+        // Generate a number between 0 (inclusive) and end (exclusive)
+        end = h.validatedIntegerAtIndex(0, [](int candidate) { return (candidate > 0); });
+        result = randomGenerator.bounded(end);
+    }
+    else
+    {
+        // Generate a number between start and end (both inclusive)
+        start = h.validatedIntegerAtIndex(0, [](int candidate) { return (candidate < INT_MAX); });
+        end = 1 +
+              h.validatedIntegerAtIndex(1, [=](int candidate) { return (candidate < INT_MAX) && (candidate > start); });
+        result = randomGenerator.bounded(start, end);
+    }
 
-  return h.ret(result);
+    return h.ret(result);
 }
-
 
 /***DOC RERANDOM
 RERANDOM
@@ -586,14 +589,18 @@ RERANDOM
     input selects a unique sequence of numbers.
 
 COD***/
-//CMD RERANDOM 0 0 1
-DatumPtr Kernel::excRerandom(DatumPtr node) {
+// CMD RERANDOM 0 0 1
+DatumPtr Kernel::excRerandom(DatumPtr node)
+{
     ProcedureHelper h(this, node);
     int seedVal;
 
-    if (node.astnodeValue()->countOfChildren() == 1) {
+    if (node.astnodeValue()->countOfChildren() == 1)
+    {
         seedVal = h.integerAtIndex(0);
-    } else {
+    }
+    else
+    {
         seedVal = (int)QRandomGenerator::global()->generate();
     }
 
@@ -601,9 +608,7 @@ DatumPtr Kernel::excRerandom(DatumPtr node) {
     return nothing;
 }
 
-
 // PRINT FORMATTING
-
 
 /***DOC FORM
 FORM num width precision
@@ -616,21 +621,20 @@ FORM num width precision
     decimal point in the output.)
 
 COD***/
-//CMD FORM 3 3 3
-DatumPtr Kernel::excForm(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  double num = h.numberAtIndex(0);
-  double width = h.integerAtIndex(1);
-  int precision = h.validatedIntegerAtIndex(
-      2, [](int candidate) { return candidate >= 0; });
+// CMD FORM 3 3 3
+DatumPtr Kernel::excForm(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    double num = h.numberAtIndex(0);
+    double width = h.integerAtIndex(1);
+    int precision = h.validatedIntegerAtIndex(2, [](int candidate) { return candidate >= 0; });
 
-  QString retval = QString("%1").arg(num, width, 'f', precision);
+    QString retval = QString("%1").arg(num, width, 'f', precision);
 
-  return h.ret(retval);
+    return h.ret(retval);
 }
 
 // BITWISE OPERATORS
-
 
 /***DOC BITAND
 BITAND num1 num2
@@ -639,19 +643,20 @@ BITAND num1 num2
     outputs the bitwise AND of its inputs, which must be integers.
 
 COD***/
-//CMD BITAND 0 2 -1
-DatumPtr Kernel::excBitand(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  int retval = -1;
+// CMD BITAND 0 2 -1
+DatumPtr Kernel::excBitand(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    int retval = -1;
 
-  for (int i = 0; i < node.astnodeValue()->countOfChildren(); ++i) {
-    int a = h.integerAtIndex(i);
-    retval &= a;
-  }
+    for (int i = 0; i < node.astnodeValue()->countOfChildren(); ++i)
+    {
+        int a = h.integerAtIndex(i);
+        retval &= a;
+    }
 
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC BITOR
 BITOR num1 num2
@@ -660,19 +665,20 @@ BITOR num1 num2
     outputs the bitwise OR of its inputs, which must be integers.
 
 COD***/
-//CMD BITOR 0 2 -1
-DatumPtr Kernel::excBitor(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  int retval = 0;
+// CMD BITOR 0 2 -1
+DatumPtr Kernel::excBitor(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    int retval = 0;
 
-  for (int i = 0; i < node.astnodeValue()->countOfChildren(); ++i) {
-    int a = h.integerAtIndex(i);
-    retval |= a;
-  }
+    for (int i = 0; i < node.astnodeValue()->countOfChildren(); ++i)
+    {
+        int a = h.integerAtIndex(i);
+        retval |= a;
+    }
 
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC BITXOR
 BITXOR num1 num2
@@ -682,19 +688,20 @@ BITXOR num1 num2
     integers.
 
 COD***/
-//CMD BITXOR 0 2 -1
-DatumPtr Kernel::excBitxor(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  int retval = 0;
+// CMD BITXOR 0 2 -1
+DatumPtr Kernel::excBitxor(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    int retval = 0;
 
-  for (int i = 0; i < node.astnodeValue()->countOfChildren(); ++i) {
-    int a = h.integerAtIndex(i);
-    retval ^= a;
-  }
+    for (int i = 0; i < node.astnodeValue()->countOfChildren(); ++i)
+    {
+        int a = h.integerAtIndex(i);
+        retval ^= a;
+    }
 
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC BITNOT
 BITNOT num
@@ -702,14 +709,14 @@ BITNOT num
     outputs the bitwise NOT of its input, which must be an integer.
 
 COD***/
-//CMD BITNOT 1 1 1
-DatumPtr Kernel::excBitnot(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  int a = h.integerAtIndex(0);
-  int retval = ~a;
-  return h.ret(retval);
+// CMD BITNOT 1 1 1
+DatumPtr Kernel::excBitnot(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    int a = h.integerAtIndex(0);
+    int retval = ~a;
+    return h.ret(retval);
 }
-
 
 /***DOC ASHIFT
 ASHIFT num1 num2
@@ -719,15 +726,15 @@ ASHIFT num1 num2
     extension.  The inputs must be integers.
 
 COD***/
-//CMD ASHIFT 2 2 2
-DatumPtr Kernel::excAshift(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  int a = h.integerAtIndex(0);
-  int e = h.integerAtIndex(1);
-  int retval = (e < 0) ? a >> -e : a << e;
-  return h.ret(retval);
+// CMD ASHIFT 2 2 2
+DatumPtr Kernel::excAshift(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    int a = h.integerAtIndex(0);
+    int e = h.integerAtIndex(1);
+    int retval = (e < 0) ? a >> -e : a << e;
+    return h.ret(retval);
 }
-
 
 /***DOC LSHIFT
 LSHIFT num1 num2
@@ -738,13 +745,14 @@ LSHIFT num1 num2
 
 
 COD***/
-//CMD LSHIFT 2 2 2
-DatumPtr Kernel::excLshift(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  unsigned int a = h.integerAtIndex(0);
-  int e = h.integerAtIndex(1);
-  unsigned int retval = (e < 0) ? a >> -e : a << e;
-  return h.ret((int)retval);
+// CMD LSHIFT 2 2 2
+DatumPtr Kernel::excLshift(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    unsigned int a = h.integerAtIndex(0);
+    int e = h.integerAtIndex(1);
+    unsigned int retval = (e < 0) ? a >> -e : a << e;
+    return h.ret((int)retval);
 }
 
 // LOGICAL OPERATIONS
@@ -766,18 +774,19 @@ AND tf1 tf2
     to avoid the division by zero if the first part is false.
 
 COD***/
-//CMD AND 0 2 -1
-DatumPtr Kernel::excAnd(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  for (int i = 0; i < h.countOfChildren(); ++i) {
-    bool a = h.boolAtIndex(i, true);
-    if (!a)
-      return h.ret(false);
-  }
+// CMD AND 0 2 -1
+DatumPtr Kernel::excAnd(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    for (int i = 0; i < h.countOfChildren(); ++i)
+    {
+        bool a = h.boolAtIndex(i, true);
+        if (!a)
+            return h.ret(false);
+    }
 
-  return h.ret(true);
+    return h.ret(true);
 }
-
 
 /***DOC OR
 OR tf1 tf2
@@ -795,18 +804,19 @@ OR tf1 tf2
     to avoid the long computation if the first condition is met.
 
 COD***/
-//CMD OR 0 2 -1
-DatumPtr Kernel::excOr(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  for (int i = 0; i < h.countOfChildren(); ++i) {
-    bool a = h.boolAtIndex(i, true);
-    if (a)
-      return h.ret(true);
-  }
+// CMD OR 0 2 -1
+DatumPtr Kernel::excOr(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    for (int i = 0; i < h.countOfChildren(); ++i)
+    {
+        bool a = h.boolAtIndex(i, true);
+        if (a)
+            return h.ret(true);
+    }
 
-  return h.ret(false);
+    return h.ret(false);
 }
-
 
 /***DOC NOT
 NOT tf
@@ -817,31 +827,29 @@ NOT tf
 
 
 COD***/
-//CMD NOT 1 1 1
-DatumPtr Kernel::excNot(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  bool a = h.boolAtIndex(0, true);
+// CMD NOT 1 1 1
+DatumPtr Kernel::excNot(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    bool a = h.boolAtIndex(0, true);
 
-  return h.ret(!a);
+    return h.ret(!a);
 }
-
 
 // Add infix entries to table. This will cause an error if they are used as
 // prefix operators.
-//CMD + 1 1 1
-//CMD * 1 1 1
-//CMD / 1 1 1
-//CMD < 1 1 1
-//CMD > 1 1 1
-//CMD = 1 1 1
-//CMD <= 1 1 1
-//CMD >= 1 1 1
-//CMD <> 1 1 1
-DatumPtr Kernel::excInfixError(DatumPtr node) {
+// CMD + 1 1 1
+// CMD * 1 1 1
+// CMD / 1 1 1
+// CMD < 1 1 1
+// CMD > 1 1 1
+// CMD = 1 1 1
+// CMD <= 1 1 1
+// CMD >= 1 1 1
+// CMD <> 1 1 1
+DatumPtr Kernel::excInfixError(DatumPtr node)
+{
     ProcedureHelper h(this, node);
     Error::notEnough(node.astnodeValue()->nodeName);
     return nothing;
 }
-
-
-

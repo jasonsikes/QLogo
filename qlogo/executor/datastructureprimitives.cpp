@@ -19,33 +19,39 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the Kernel class, which is the
-/// executor proper of the QLogo language.
+/// This file contains a part of the implementation of the Kernel class, which is the
+/// executor proper of the QLogo language. Specifically, this file contains the
+/// implementations for operations that manipulate data structures.
+///
+/// See README.md in this directory for information about the documentation
+/// structure for each Kernel::exc* method.
 ///
 //===----------------------------------------------------------------------===//
 
+#include "astnode.h"
+#include "controller/logocontroller.h"
+#include "controller/textstream.h"
+#include "datum.h"
 #include "kernel.h"
 #include "parser.h"
-#include "datum.h"
-#include "astnode.h"
-#include <QTextStream>
 #include "runparser.h"
-#include "controller/textstream.h"
-
-#include "controller/logocontroller.h"
-
+#include <QTextStream>
 
 // Recursively search the given container for thing. Returns true if thing is
 // found in container or subcontainer.
 bool Kernel::searchContainerForDatum(DatumPtr containerP, DatumPtr thingP, bool ignoreCase)
 {
-    if (containerP.isArray()) {
-        for (auto eP : containerP.arrayValue()->array) {
+    if (containerP.isArray())
+    {
+        for (auto eP : containerP.arrayValue()->array)
+        {
             if (areDatumsEqual(eP, thingP, ignoreCase))
                 return true;
-            if (eP.isArray() || eP.isList()) {
+            if (eP.isArray() || eP.isList())
+            {
                 void *e = eP.datumValue();
-                if ( ! searchedContainers.contains(e)) {
+                if (!searchedContainers.contains(e))
+                {
                     searchedContainers.insert(e);
                     if (searchContainerForDatum(eP, thingP, ignoreCase))
                         return true;
@@ -57,13 +63,16 @@ bool Kernel::searchContainerForDatum(DatumPtr containerP, DatumPtr thingP, bool 
 
     ListIterator iter = containerP.listValue()->newIterator();
 
-    while (iter.elementExists()) {
+    while (iter.elementExists())
+    {
         DatumPtr eP = iter.element();
         if (areDatumsEqual(eP, thingP, ignoreCase))
             return true;
-        if (eP.isList() || eP.isArray()) {
+        if (eP.isList() || eP.isArray())
+        {
             void *e = eP.datumValue();
-            if ( ! searchedContainers.contains(e)) {
+            if (!searchedContainers.contains(e))
+            {
                 searchedContainers.insert(e);
                 if (searchContainerForDatum(eP, thingP, ignoreCase))
                     return true;
@@ -73,7 +82,6 @@ bool Kernel::searchContainerForDatum(DatumPtr containerP, DatumPtr thingP, bool 
     return false;
 }
 
-
 bool Kernel::areDatumsEqual(DatumPtr datumP1, DatumPtr datumP2, bool ignoreCase)
 {
     if (datumP1.isa() != datumP2.isa())
@@ -81,17 +89,18 @@ bool Kernel::areDatumsEqual(DatumPtr datumP1, DatumPtr datumP2, bool ignoreCase)
     if (datumP1.datumValue() == datumP2.datumValue())
         return true;
 
-    switch (datumP1.isa()) {
+    switch (datumP1.isa())
+    {
     case Datum::wordType:
     {
         Word *word1 = datumP1.wordValue();
         Word *word2 = datumP2.wordValue();
-        if (word1->isSourceNumber() || word2->isSourceNumber()) {
+        if (word1->isSourceNumber() || word2->isSourceNumber())
+        {
             return word1->numberValue() == word2->numberValue();
         }
 
-        Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive
-                                            : Qt::CaseSensitive;
+        Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive : Qt::CaseSensitive;
 
         return word1->printValue().compare(word2->printValue(), cs) == 0;
     }
@@ -105,8 +114,7 @@ bool Kernel::areDatumsEqual(DatumPtr datumP1, DatumPtr datumP2, bool ignoreCase)
 
         // If we have searched both of these lists before, then assume we would
         // keep searching forever.
-        if (comparedContainers.contains(list1)
-            && comparedContainers.contains(list2))
+        if (comparedContainers.contains(list1) && comparedContainers.contains(list2))
             Error::stackOverflow();
         comparedContainers.insert(list1);
         comparedContainers.insert(list2);
@@ -114,10 +122,11 @@ bool Kernel::areDatumsEqual(DatumPtr datumP1, DatumPtr datumP2, bool ignoreCase)
         ListIterator iter1 = list1->newIterator();
         ListIterator iter2 = list2->newIterator();
 
-        while (iter1.elementExists()) {
+        while (iter1.elementExists())
+        {
             DatumPtr value1 = iter1.element();
             DatumPtr value2 = iter2.element();
-            if ( ! areDatumsEqual(value1, value2, ignoreCase))
+            if (!areDatumsEqual(value1, value2, ignoreCase))
                 return false;
         }
         return true;
@@ -128,27 +137,25 @@ bool Kernel::areDatumsEqual(DatumPtr datumP1, DatumPtr datumP2, bool ignoreCase)
         return false;
 
     default:
-        qDebug() <<"unknown datum type in areDatumsEqual";
+        qDebug() << "unknown datum type in areDatumsEqual";
         Q_ASSERT(false);
     }
     return false;
 }
 
-
-
 DatumPtr Kernel::butfirst(DatumPtr srcValue)
 {
-    if (srcValue.isWord()) {
+    if (srcValue.isWord())
+    {
         QString src = srcValue.wordValue()->rawValue();
         return DatumPtr(src.right(src.size() - 1));
     }
-    Q_ASSERT( ! srcValue.listValue()->head.isNothing());
+    Q_ASSERT(!srcValue.listValue()->head.isNothing());
     DatumPtr retval = srcValue.listValue()->tail;
     if (retval.isNothing())
         retval = DatumPtr(new List);
     return retval;
 }
-
 
 bool Kernel::doesListHaveCountOrMore(List *list, int count)
 {
@@ -158,7 +165,8 @@ bool Kernel::doesListHaveCountOrMore(List *list, int count)
         return false;
 
     DatumPtr walker(list);
-    while (walker.isList()) {
+    while (walker.isList())
+    {
         if (--count < 1)
             return true;
         walker = walker.listValue()->tail;
@@ -166,11 +174,7 @@ bool Kernel::doesListHaveCountOrMore(List *list, int count)
     return false;
 }
 
-
-
-
 // CONSTRUCTORS
-
 
 /***DOC WORD
 WORD word1 word2
@@ -179,17 +183,18 @@ WORD word1 word2
     outputs a word formed by concatenating its inputs.
 
 COD***/
-//CMD WORD 0 2 -1
-DatumPtr Kernel::excWord(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  QString retval = "";
-  for (int i = 0; i < h.countOfChildren(); ++i) {
-    DatumPtr value = h.wordAtIndex(i);
-    retval.append(value.wordValue()->rawValue());
-  }
-  return h.ret(retval);
+// CMD WORD 0 2 -1
+DatumPtr Kernel::excWord(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QString retval = "";
+    for (int i = 0; i < h.countOfChildren(); ++i)
+    {
+        DatumPtr value = h.wordAtIndex(i);
+        retval.append(value.wordValue()->rawValue());
+    }
+    return h.ret(retval);
 }
-
 
 /***DOC LIST
 LIST thing1 thing2
@@ -199,17 +204,18 @@ LIST thing1 thing2
     Logo datum (word, list, or array).
 
 COD***/
-//CMD LIST 0 2 -1
-DatumPtr Kernel::excList(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  List *retval = new List();
-  for (int i = 0; i < h.countOfChildren(); ++i) {
-    DatumPtr value = h.datumAtIndex(i);
-    retval->append(value);
-  }
-  return h.ret(retval);
+// CMD LIST 0 2 -1
+DatumPtr Kernel::excList(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    List *retval = new List();
+    for (int i = 0; i < h.countOfChildren(); ++i)
+    {
+        DatumPtr value = h.datumAtIndex(i);
+        retval->append(value);
+    }
+    return h.ret(retval);
 }
-
 
 /***DOC SENTENCE SE
 SENTENCE thing1 thing2
@@ -221,26 +227,31 @@ SE thing1 thing2
     not lists, or the members of its inputs, if those inputs are lists.
 
 COD***/
-//CMD SENTENCE 0 2 -1
-//CMD SE 0 2 -1
-DatumPtr Kernel::excSentence(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  List *retval = new List();
-  for (int i = 0; i < node.astnodeValue()->countOfChildren(); ++i) {
-    DatumPtr value = h.datumAtIndex(i);
-    if (value.isList()) {
-      ListIterator iter = value.listValue()->newIterator();
-      while (iter.elementExists()) {
-        DatumPtr element = iter.element();
-        retval->append(element);
-      }
-    } else {
-      retval->append(value);
+// CMD SENTENCE 0 2 -1
+// CMD SE 0 2 -1
+DatumPtr Kernel::excSentence(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    List *retval = new List();
+    for (int i = 0; i < node.astnodeValue()->countOfChildren(); ++i)
+    {
+        DatumPtr value = h.datumAtIndex(i);
+        if (value.isList())
+        {
+            ListIterator iter = value.listValue()->newIterator();
+            while (iter.elementExists())
+            {
+                DatumPtr element = iter.element();
+                retval->append(element);
+            }
+        }
+        else
+        {
+            retval->append(value);
+        }
     }
-  }
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC FPUT
 FPUT thing list
@@ -250,22 +261,24 @@ FPUT thing list
     then the first input must be a word, and FPUT is equivalent to WORD.
 
 COD***/
-//CMD FPUT 2 2 2
-DatumPtr Kernel::excFput(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr thing = h.datumAtIndex(0);
-  DatumPtr list = h.validatedDatumAtIndex(1, [&thing](DatumPtr candidate) {
-          if (candidate.isWord()) return thing.isWord();
-    return candidate.isList() || candidate.isWord();
-  });
-  if (list.isList()) {
-      return h.ret(new List(thing, list.listValue()));
-  }
-  QString retval = thing.wordValue()->rawValue();
-  retval.append(list.wordValue()->rawValue());
-  return h.ret(retval);
+// CMD FPUT 2 2 2
+DatumPtr Kernel::excFput(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr thing = h.datumAtIndex(0);
+    DatumPtr list = h.validatedDatumAtIndex(1, [&thing](DatumPtr candidate) {
+        if (candidate.isWord())
+            return thing.isWord();
+        return candidate.isList() || candidate.isWord();
+    });
+    if (list.isList())
+    {
+        return h.ret(new List(thing, list.listValue()));
+    }
+    QString retval = thing.wordValue()->rawValue();
+    retval.append(list.wordValue()->rawValue());
+    return h.ret(retval);
 }
-
 
 /***DOC LPUT
 LPUT thing list
@@ -276,29 +289,31 @@ LPUT thing list
     equivalent to WORD with its inputs in the other order.
 
 COD***/
-//CMD LPUT 2 2 2
-DatumPtr Kernel::excLput(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr thing = h.datumAtIndex(0);
-  DatumPtr list = h.validatedDatumAtIndex(1, [&thing](DatumPtr candidate) {
-    if (candidate.isWord())
-      return thing.isWord();
-    return candidate.isList();
-  });
-  if (list.isList()) {
-    List *retval = new List();
-    ListIterator iter = list.listValue()->newIterator();
-    while (iter.elementExists()) {
-      retval->append(iter.element());
+// CMD LPUT 2 2 2
+DatumPtr Kernel::excLput(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr thing = h.datumAtIndex(0);
+    DatumPtr list = h.validatedDatumAtIndex(1, [&thing](DatumPtr candidate) {
+        if (candidate.isWord())
+            return thing.isWord();
+        return candidate.isList();
+    });
+    if (list.isList())
+    {
+        List *retval = new List();
+        ListIterator iter = list.listValue()->newIterator();
+        while (iter.elementExists())
+        {
+            retval->append(iter.element());
+        }
+        retval->append(thing);
+        return h.ret(retval);
     }
-    retval->append(thing);
+    QString retval = list.wordValue()->rawValue();
+    retval.append(thing.wordValue()->rawValue());
     return h.ret(retval);
-  }
-  QString retval = list.wordValue()->rawValue();
-  retval.append(thing.wordValue()->rawValue());
-  return h.ret(retval);
 }
-
 
 /***DOC ARRAY
 ARRAY size
@@ -314,21 +329,23 @@ ARRAY size
     typed in, inside curly braces; indicate an origin with {a b c}@0.
 
 COD***/
-//CMD ARRAY 1 1 2
-DatumPtr Kernel::excArray(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  int origin = 1;
-  int size = h.integerAtIndex(0);
-  if (h.countOfChildren() > 1) {
-    origin = h.integerAtIndex(1);
-  }
-  Array *retval = new Array(origin, size);
-  for (int i = 0; i < size; ++i) {
-    retval->array.append(DatumPtr(new List()));
-  }
-  return h.ret(DatumPtr(retval));
+// CMD ARRAY 1 1 2
+DatumPtr Kernel::excArray(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    int origin = 1;
+    int size = h.integerAtIndex(0);
+    if (h.countOfChildren() > 1)
+    {
+        origin = h.integerAtIndex(1);
+    }
+    Array *retval = new Array(origin, size);
+    for (int i = 0; i < size; ++i)
+    {
+        retval->array.append(DatumPtr(new List()));
+    }
+    return h.ret(DatumPtr(retval));
 }
-
 
 /***DOC LISTTOARRAY
 LISTTOARRAY list
@@ -338,17 +355,18 @@ LISTTOARRAY list
     are the members of the input list.
 
 COD***/
-//CMD LISTTOARRAY 1 1 2
-DatumPtr Kernel::excListtoarray(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  int origin = 1;
-  DatumPtr source = h.listAtIndex(0);
-  if (h.countOfChildren() > 1) {
-    origin = h.integerAtIndex(1);
-  }
-  return h.ret(new Array(origin, source.listValue()));
+// CMD LISTTOARRAY 1 1 2
+DatumPtr Kernel::excListtoarray(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    int origin = 1;
+    DatumPtr source = h.listAtIndex(0);
+    if (h.countOfChildren() > 1)
+    {
+        origin = h.integerAtIndex(1);
+    }
+    return h.ret(new Array(origin, source.listValue()));
 }
-
 
 /***DOC ARRAYTOLIST
 ARRAYTOLIST array
@@ -358,16 +376,16 @@ ARRAYTOLIST array
     regardless of the array's origin.
 
 COD***/
-//CMD ARRAYTOLIST 1 1 1
-DatumPtr Kernel::excArraytolist(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr source = h.arrayAtIndex(0);
-  List *retval = new List(source.arrayValue());
-  return h.ret(retval);
+// CMD ARRAYTOLIST 1 1 1
+DatumPtr Kernel::excArraytolist(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr source = h.arrayAtIndex(0);
+    List *retval = new List(source.arrayValue());
+    return h.ret(retval);
 }
 
 // SELECTORS
-
 
 /***DOC FIRST
 FIRST thing
@@ -378,28 +396,30 @@ FIRST thing
     is, the INDEX OF the first member of the array).
 
 COD***/
-//CMD FIRST 1 1 1
-DatumPtr Kernel::excFirst(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr value = h.validatedDatumAtIndex(
-      0, [](DatumPtr candidate)
-      {
-          if (candidate.isWord()) return candidate.wordValue()->rawValue().size() > 0;
-          if (candidate.isArray()) return true;
-          if (candidate.isList()) return ! candidate.listValue()->isEmpty();
-          return false;
-      });
-  switch (value.isa()) {
-  case Datum::listType:
-      return h.ret(value.listValue()->head);
-  case Datum::arrayType:
-      return h.ret(value.arrayValue()->origin);
-  default:
-      Q_ASSERT(value.isWord());
-  }
-  return h.ret(value.wordValue()->rawValue().left(1));
+// CMD FIRST 1 1 1
+DatumPtr Kernel::excFirst(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr value = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
+        if (candidate.isWord())
+            return candidate.wordValue()->rawValue().size() > 0;
+        if (candidate.isArray())
+            return true;
+        if (candidate.isList())
+            return !candidate.listValue()->isEmpty();
+        return false;
+    });
+    switch (value.isa())
+    {
+    case Datum::listType:
+        return h.ret(value.listValue()->head);
+    case Datum::arrayType:
+        return h.ret(value.arrayValue()->origin);
+    default:
+        Q_ASSERT(value.isWord());
+    }
+    return h.ret(value.wordValue()->rawValue().left(1));
 }
-
 
 /***DOC FIRSTS
 FIRSTS list
@@ -416,58 +436,62 @@ FIRSTS list
     but is provided as a primitive in order to speed up the iteration
     tools MAP, MAP.SE, and FOREACH.
 COD***/
-//CMD FIRSTS 1 1 1
-DatumPtr Kernel::excFirsts(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr retvalP = h.validatedListAtIndex(0, [](DatumPtr candidate) {
-      ListIterator iter = candidate.listValue()->newIterator();
-      while (iter.elementExists()) {
-          DatumPtr item = iter.element();
-          switch (item.isa()) {
-          case Datum::wordType:
-              if (item.wordValue()->rawValue().size() < 1)
-                  return false;
-              break;
-          case Datum::arrayType:
-              if (item.arrayValue()->array.size() < 1)
-                  return false;
-              break;
-          case Datum::listType:
-              if (item.listValue()->isEmpty())
-                  return false;
-              break;
-          default:
-              Q_ASSERT(false);
-          }
-      }
-      return true;
-  });
+// CMD FIRSTS 1 1 1
+DatumPtr Kernel::excFirsts(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr retvalP = h.validatedListAtIndex(0, [](DatumPtr candidate) {
+        ListIterator iter = candidate.listValue()->newIterator();
+        while (iter.elementExists())
+        {
+            DatumPtr item = iter.element();
+            switch (item.isa())
+            {
+            case Datum::wordType:
+                if (item.wordValue()->rawValue().size() < 1)
+                    return false;
+                break;
+            case Datum::arrayType:
+                if (item.arrayValue()->array.size() < 1)
+                    return false;
+                break;
+            case Datum::listType:
+                if (item.listValue()->isEmpty())
+                    return false;
+                break;
+            default:
+                Q_ASSERT(false);
+            }
+        }
+        return true;
+    });
 
-  List *retval = new List();
+    List *retval = new List();
 
-  ListIterator iter = retvalP.listValue()->newIterator();
-  DatumPtr firstP;
-  while (iter.elementExists()) {
-      DatumPtr item = iter.element();
-      switch (item.isa()) {
-      case Datum::wordType:
-          firstP = DatumPtr(item.wordValue()->rawValue().left(1));
-          break;
-      case Datum::arrayType:
-          firstP = DatumPtr(item.arrayValue()->origin);
-          break;
-      case Datum::listType:
-          firstP = item.listValue()->head;
-          break;
-      default:
-          Q_ASSERT(false);
-      }
-      retval->append(firstP);
-  }
+    ListIterator iter = retvalP.listValue()->newIterator();
+    DatumPtr firstP;
+    while (iter.elementExists())
+    {
+        DatumPtr item = iter.element();
+        switch (item.isa())
+        {
+        case Datum::wordType:
+            firstP = DatumPtr(item.wordValue()->rawValue().left(1));
+            break;
+        case Datum::arrayType:
+            firstP = DatumPtr(item.arrayValue()->origin);
+            break;
+        case Datum::listType:
+            firstP = item.listValue()->head;
+            break;
+        default:
+            Q_ASSERT(false);
+        }
+        retval->append(firstP);
+    }
 
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC LAST
 LAST wordorlist
@@ -476,31 +500,33 @@ LAST wordorlist
     If the input is a list, outputs the last member of the list.
 
 COD***/
-//CMD LAST 1 1 1
-DatumPtr Kernel::excLast(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr value = h.validatedDatumAtIndex(
-      0, [](DatumPtr candidate)
-      {
-          if (candidate.isWord()) return candidate.wordValue()->rawValue().size() > 0;
-          if (candidate.isList()) return ! candidate.listValue()->isEmpty();
-          return false;
-      });
-  if (value.isWord()) {
-      return h.ret(value.wordValue()->rawValue().last(1));
-  }
+// CMD LAST 1 1 1
+DatumPtr Kernel::excLast(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr value = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
+        if (candidate.isWord())
+            return candidate.wordValue()->rawValue().size() > 0;
+        if (candidate.isList())
+            return !candidate.listValue()->isEmpty();
+        return false;
+    });
+    if (value.isWord())
+    {
+        return h.ret(value.wordValue()->rawValue().last(1));
+    }
 
-  DatumPtr retval;
+    DatumPtr retval;
 
-  // Run through the list until we find the last element.
-  ListIterator iter = value.listValue()->newIterator();
-  while (iter.elementExists()) {
-      retval = iter.element();
-  }
+    // Run through the list until we find the last element.
+    ListIterator iter = value.listValue()->newIterator();
+    while (iter.elementExists())
+    {
+        retval = iter.element();
+    }
 
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC BUTFIRST BF
 BUTFIRST wordorlist
@@ -511,21 +537,21 @@ BF wordorlist
     containing all but the first member of the input.
 
 COD***/
-//CMD BUTFIRST 1 1 1
-//CMD BF 1 1 1
-DatumPtr Kernel::excButfirst(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr value = h.validatedDatumAtIndex(
-      0, [](DatumPtr candidate)
-      {
-          if (candidate.isWord()) return candidate.wordValue()->rawValue().size() > 0;
-          if (candidate.isList()) return ! candidate.listValue()->isEmpty();
-          return false;
-      });
+// CMD BUTFIRST 1 1 1
+// CMD BF 1 1 1
+DatumPtr Kernel::excButfirst(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr value = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
+        if (candidate.isWord())
+            return candidate.wordValue()->rawValue().size() > 0;
+        if (candidate.isList())
+            return !candidate.listValue()->isEmpty();
+        return false;
+    });
 
-  return h.ret(butfirst(value));
+    return h.ret(butfirst(value));
 }
-
 
 /***DOC BUTFIRSTS BFS
 BUTFIRSTS list
@@ -544,37 +570,44 @@ BFS list
     tools MAP, MAP.SE, and FOREACH.
 
 COD***/
-//CMD BUTFIRSTS 1 1 1
-//CMD BFS 1 1 1
-DatumPtr Kernel::excButfirsts(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr list = h.validatedListAtIndex(0, [](DatumPtr candidate) {
-    ListIterator iter = candidate.listValue()->newIterator();
-    while (iter.elementExists()) {
-      DatumPtr item = iter.element();
-        if (item.isWord()) {
-          if (item.wordValue()->rawValue().size() < 1)
+// CMD BUTFIRSTS 1 1 1
+// CMD BFS 1 1 1
+DatumPtr Kernel::excButfirsts(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr list = h.validatedListAtIndex(0, [](DatumPtr candidate) {
+        ListIterator iter = candidate.listValue()->newIterator();
+        while (iter.elementExists())
+        {
+            DatumPtr item = iter.element();
+            if (item.isWord())
+            {
+                if (item.wordValue()->rawValue().size() < 1)
+                    return false;
+            }
+            else if (item.isList())
+            {
+                if (item.listValue()->isEmpty())
+                    return false;
+            }
+            else
+            {
                 return false;
-        } else if (item.isList()) {
-            if (item.listValue()->isEmpty())
-                return false;
-        } else {
-            return false;
+            }
         }
+        return true;
+    });
+
+    List *retval = new List();
+    ListIterator iter = list.listValue()->newIterator();
+    while (iter.elementExists())
+    {
+        DatumPtr e = iter.element();
+        retval->append(butfirst(e));
     }
-    return true;
-  });
 
-  List *retval = new List();
-  ListIterator iter = list.listValue()->newIterator();
-  while (iter.elementExists()) {
-      DatumPtr e = iter.element();
-      retval->append(butfirst(e));
-  }
-
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC BUTLAST BL
 BUTLAST wordorlist
@@ -585,20 +618,22 @@ BL wordorlist
     containing all but the last member of the input.
 
 COD***/
-//CMD BUTLAST 1 1 1
-//CMD BL 1 1 1
-DatumPtr Kernel::excButlast(DatumPtr node) {
+// CMD BUTLAST 1 1 1
+// CMD BL 1 1 1
+DatumPtr Kernel::excButlast(DatumPtr node)
+{
     ProcedureHelper h(this, node);
-    DatumPtr value = h.validatedDatumAtIndex(
-        0, [](DatumPtr candidate)
-        {
-            if (candidate.isWord()) return candidate.wordValue()->rawValue().size() > 0;
-            if (candidate.isList()) return ! candidate.listValue()->isEmpty();
-            return false;
-        });
+    DatumPtr value = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
+        if (candidate.isWord())
+            return candidate.wordValue()->rawValue().size() > 0;
+        if (candidate.isList())
+            return !candidate.listValue()->isEmpty();
+        return false;
+    });
 
     // value is either a Word or List
-    if (value.isWord()) {
+    if (value.isWord())
+    {
         QString source = value.wordValue()->rawValue();
         QString retval = source.left(source.size() - 1);
         return h.ret(retval);
@@ -609,19 +644,22 @@ DatumPtr Kernel::excButlast(DatumPtr node) {
     List *dest = retval;
 
     List *src = value.listValue();
-    while (src->tail != nothing) {
+    while (src->tail != nothing)
+    {
         dest->head = src->head;
         src = src->tail.listValue();
-        if (src->tail == nothing) {
+        if (src->tail == nothing)
+        {
             dest->tail = nothing;
-        } else {
+        }
+        else
+        {
             dest->tail = DatumPtr(new List);
             dest = dest->tail.listValue();
         }
     }
     return h.ret(retval);
 }
-
 
 /***DOC ITEM
 ITEM index thing
@@ -634,41 +672,50 @@ ITEM index thing
     created.
 
 COD***/
-//CMD ITEM 2 2 2
-DatumPtr Kernel::excItem(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr thing = h.datumAtIndex(1);
-  int index = h.validatedIntegerAtIndex(0, [&thing, this](int candidate) {
-      if (thing.isWord()) {
-          return (candidate >=1) && (candidate <= thing.wordValue()->rawValue().size());
-      }
-      if (thing.isArray()) {
-          candidate -= thing.arrayValue()->origin;
-          return (candidate >= 0) && (candidate <thing.arrayValue()->array.size());
-      }
-      Q_ASSERT(thing.isList());
-      if (thing.isList())
-          return doesListHaveCountOrMore(thing.listValue(), candidate);
-      return false;
-  });
+// CMD ITEM 2 2 2
+DatumPtr Kernel::excItem(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr thing = h.datumAtIndex(1);
+    int index = h.validatedIntegerAtIndex(0, [&thing, this](int candidate) {
+        if (thing.isWord())
+        {
+            return (candidate >= 1) && (candidate <= thing.wordValue()->rawValue().size());
+        }
+        if (thing.isArray())
+        {
+            candidate -= thing.arrayValue()->origin;
+            return (candidate >= 0) && (candidate < thing.arrayValue()->array.size());
+        }
+        Q_ASSERT(thing.isList());
+        if (thing.isList())
+            return doesListHaveCountOrMore(thing.listValue(), candidate);
+        return false;
+    });
 
-  DatumPtr retval;
-  if (thing.isArray()) {
-      Array *ary = thing.arrayValue();
-      retval = ary->array[index - ary->origin];
-  } else if (thing.isWord()) {
-      retval = DatumPtr(thing.wordValue()->rawValue().mid(index - 1, 1));
-  } else if (thing.isList()) {
-      retval = thing.listValue()->itemAtIndex((int)index);
-  } else {
-      Q_ASSERT(false);
-  }
+    DatumPtr retval;
+    if (thing.isArray())
+    {
+        Array *ary = thing.arrayValue();
+        retval = ary->array[index - ary->origin];
+    }
+    else if (thing.isWord())
+    {
+        retval = DatumPtr(thing.wordValue()->rawValue().mid(index - 1, 1));
+    }
+    else if (thing.isList())
+    {
+        retval = thing.listValue()->itemAtIndex((int)index);
+    }
+    else
+    {
+        Q_ASSERT(false);
+    }
 
-  return h.ret(retval);
+    return h.ret(retval);
 }
 
 // MUTATORS
-
 
 /***DOC SETITEM
 SETITEM index array value
@@ -678,33 +725,34 @@ SETITEM index array value
     "value" may not be a list or array that contains "array".
 
 COD***/
-//CMD SETITEM 3 3 3
-DatumPtr Kernel::excSetitem(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr aryP = h.arrayAtIndex(1);
-  Array *ary = aryP.arrayValue();
-  int index = h.validatedIntegerAtIndex(0, [&ary](int candidate) {
-      candidate -= ary->origin;
-      return (candidate >= 0) && (candidate <ary->array.size());
-  });
-  DatumPtr value = h.validatedDatumAtIndex(2, [aryP, this](DatumPtr candidate) {
-      if (candidate == aryP)
-          return false;
+// CMD SETITEM 3 3 3
+DatumPtr Kernel::excSetitem(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr aryP = h.arrayAtIndex(1);
+    Array *ary = aryP.arrayValue();
+    int index = h.validatedIntegerAtIndex(0, [&ary](int candidate) {
+        candidate -= ary->origin;
+        return (candidate >= 0) && (candidate < ary->array.size());
+    });
+    DatumPtr value = h.validatedDatumAtIndex(2, [aryP, this](DatumPtr candidate) {
+        if (candidate == aryP)
+            return false;
 
-      if (candidate.isArray() || candidate.isList()) {
-          searchedContainers.clear();
-          // Case sensitivity is not important since we aren't looking for a word.
-          if (searchContainerForDatum(candidate, aryP, false))
-              return false;
-      }
-      return true;
-  });
+        if (candidate.isArray() || candidate.isList())
+        {
+            searchedContainers.clear();
+            // Case sensitivity is not important since we aren't looking for a word.
+            if (searchContainerForDatum(candidate, aryP, false))
+                return false;
+        }
+        return true;
+    });
 
-  index -= ary->origin;
-  ary->array[index] = value;
-  return nothing;
+    index -= ary->origin;
+    ary->array[index] = value;
+    return nothing;
 }
-
 
 /***DOC .SETFIRST
 .SETFIRST list value
@@ -718,18 +766,16 @@ DatumPtr Kernel::excSetitem(DatumPtr node) {
     structures that share storage with the list being modified.
 
 COD***/
-//CMD .SETFIRST 2 2 2
-DatumPtr Kernel::excDotSetfirst(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr list = h.validatedListAtIndex(0, [](DatumPtr candidate) {
-    return ! candidate.listValue()->isEmpty();
-  });
-  DatumPtr value = h.datumAtIndex(1);
-  list.listValue()->head = value;
-  list.listValue()->astParseTimeStamp = 0;
-  return nothing;
+// CMD .SETFIRST 2 2 2
+DatumPtr Kernel::excDotSetfirst(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr list = h.validatedListAtIndex(0, [](DatumPtr candidate) { return !candidate.listValue()->isEmpty(); });
+    DatumPtr value = h.datumAtIndex(1);
+    list.listValue()->head = value;
+    list.listValue()->astParseTimeStamp = 0;
+    return nothing;
 }
-
 
 /***DOC .SETBF
 .SETBF list value
@@ -744,19 +790,17 @@ DatumPtr Kernel::excDotSetfirst(DatumPtr node) {
     coredumps if the butfirst of a list is not itself a list.
 
 COD***/
-//CMD .SETBF 2 2 2
-DatumPtr Kernel::excDotSetbf(DatumPtr node) {
+// CMD .SETBF 2 2 2
+DatumPtr Kernel::excDotSetbf(DatumPtr node)
+{
     // I'm not sure of the practicality of having list and value being anything
     // other than lists. So they must be lists.
-  ProcedureHelper h(this, node);
-  DatumPtr list = h.validatedListAtIndex(0, [](DatumPtr candidate) {
-      return ! candidate.listValue()->isEmpty();
-  });
-  DatumPtr value = h.listAtIndex(1);
-  list.listValue()->setButfirstItem(value);
-  return nothing;
+    ProcedureHelper h(this, node);
+    DatumPtr list = h.validatedListAtIndex(0, [](DatumPtr candidate) { return !candidate.listValue()->isEmpty(); });
+    DatumPtr value = h.listAtIndex(1);
+    list.listValue()->setButfirstItem(value);
+    return nothing;
 }
-
 
 /***DOC .SETITEM
 .SETITEM index array value
@@ -770,23 +814,23 @@ DatumPtr Kernel::excDotSetbf(DatumPtr node) {
     infinite loops.
 
 COD***/
-//CMD .SETITEM 3 3 3
-DatumPtr Kernel::excDotSetitem(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  Array *ary = h.arrayAtIndex(1).arrayValue();
-  int index = (int)h.validatedIntegerAtIndex(0, [ary](int candidate) {
-      candidate -= ary->origin;
-      return (candidate >= 0) && (candidate <ary->array.size());
-  });
-  DatumPtr value = h.datumAtIndex(2);
+// CMD .SETITEM 3 3 3
+DatumPtr Kernel::excDotSetitem(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    Array *ary = h.arrayAtIndex(1).arrayValue();
+    int index = (int)h.validatedIntegerAtIndex(0, [ary](int candidate) {
+        candidate -= ary->origin;
+        return (candidate >= 0) && (candidate < ary->array.size());
+    });
+    DatumPtr value = h.datumAtIndex(2);
 
-  index -= ary->origin;
-  ary->array[index] = value;
-  return nothing;
+    index -= ary->origin;
+    ary->array[index] = value;
+    return nothing;
 }
 
 // PREDICATES
-
 
 /***DOC WORDP WORD?
 WORDP thing
@@ -795,14 +839,14 @@ WORD? thing
     outputs TRUE if the input is a word, FALSE otherwise.
 
 COD***/
-//CMD WORDP 1 1 1
-//CMD WORD? 1 1 1
-DatumPtr Kernel::excWordp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr src = h.datumAtIndex(0);
-  return h.ret(src.isWord());
+// CMD WORDP 1 1 1
+// CMD WORD? 1 1 1
+DatumPtr Kernel::excWordp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr src = h.datumAtIndex(0);
+    return h.ret(src.isWord());
 }
-
 
 /***DOC LISTP LIST?
 LISTP thing
@@ -811,14 +855,14 @@ LIST? thing
     outputs TRUE if the input is a list, FALSE otherwise.
 
 COD***/
-//CMD LISTP 1 1 1
-//CMD LIST? 1 1 1
-DatumPtr Kernel::excListp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr src = h.datumAtIndex(0);
-  return h.ret(src.isList());
+// CMD LISTP 1 1 1
+// CMD LIST? 1 1 1
+DatumPtr Kernel::excListp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr src = h.datumAtIndex(0);
+    return h.ret(src.isList());
 }
-
 
 /***DOC ARRAYP ARRAY?
 ARRAYP thing
@@ -827,14 +871,14 @@ ARRAY? thing
     outputs TRUE if the input is an array, FALSE otherwise.
 
 COD***/
-//CMD ARRAYP 1 1 1
-//CMD ARRAY? 1 1 1
-DatumPtr Kernel::excArrayp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr src = h.datumAtIndex(0);
-  return h.ret(src.isArray());
+// CMD ARRAYP 1 1 1
+// CMD ARRAY? 1 1 1
+DatumPtr Kernel::excArrayp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr src = h.datumAtIndex(0);
+    return h.ret(src.isArray());
 }
-
 
 /***DOC EMPTYP EMPTY?
 EMPTYP thing
@@ -844,18 +888,20 @@ EMPTY? thing
     FALSE otherwise.
 
 COD***/
-//CMD EMPTYP 1 1 1
-//CMD EMPTY? 1 1 1
-DatumPtr Kernel::excEmptyp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr src = h.datumAtIndex(0);
-  bool retval = false;
-  if (src.isWord()) retval = (src.wordValue()->rawValue().size() == 0);
-  if (src.isList()) retval = src.listValue()->isEmpty();
+// CMD EMPTYP 1 1 1
+// CMD EMPTY? 1 1 1
+DatumPtr Kernel::excEmptyp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr src = h.datumAtIndex(0);
+    bool retval = false;
+    if (src.isWord())
+        retval = (src.wordValue()->rawValue().size() == 0);
+    if (src.isList())
+        retval = src.listValue()->isEmpty();
 
-  return h.ret(retval);
+    return h.ret(retval);
 }
-
 
 /***DOC EQUALP EQUAL?
 EQUALP thing1 thing2
@@ -876,17 +922,17 @@ thing1 = thing2
     performing SETITEM on one of them will also change the other.)
 
 COD***/
-//CMD EQUALP 2 2 2
-//CMD EQUAL? 2 2 2
-DatumPtr Kernel::excEqualp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr thing1 = h.datumAtIndex(0);
-  DatumPtr thing2 = h.datumAtIndex(1);
+// CMD EQUALP 2 2 2
+// CMD EQUAL? 2 2 2
+DatumPtr Kernel::excEqualp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr thing1 = h.datumAtIndex(0);
+    DatumPtr thing2 = h.datumAtIndex(1);
 
-  comparedContainers.clear();
-  return h.ret(areDatumsEqual(thing1, thing2, varCASEIGNOREDP()));
+    comparedContainers.clear();
+    return h.ret(areDatumsEqual(thing1, thing2, varCASEIGNOREDP()));
 }
-
 
 /***DOC NOTEQUALP NOTEQUAL?
 NOTEQUALP thing1 thing2
@@ -897,17 +943,17 @@ thing1 <> thing2
     for the meaning of equality for different data types.
 
 COD***/
-//CMD NOTEQUALP 2 2 2
-//CMD NOTEQUAL? 2 2 2
-DatumPtr Kernel::excNotequalp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr thing1 = h.datumAtIndex(0);
-  DatumPtr thing2 = h.datumAtIndex(1);
+// CMD NOTEQUALP 2 2 2
+// CMD NOTEQUAL? 2 2 2
+DatumPtr Kernel::excNotequalp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr thing1 = h.datumAtIndex(0);
+    DatumPtr thing2 = h.datumAtIndex(1);
 
-  comparedContainers.clear();
-  return h.ret( ! areDatumsEqual(thing1, thing2, varCASEIGNOREDP()));
+    comparedContainers.clear();
+    return h.ret(!areDatumsEqual(thing1, thing2, varCASEIGNOREDP()));
 }
-
 
 /***DOC BEFOREP BEFORE?
 BEFOREP word1 word2
@@ -920,16 +966,16 @@ BEFORE? word1 word2
     BEFOREP 3 12 is false because 3 collates after 1.
 
 COD***/
-//CMD BEFOREP 2 2 2
-//CMD BEFORE? 2 2 2
-DatumPtr Kernel::excBeforep(DatumPtr node) {
-  // TODO case-sensitivity?
-  ProcedureHelper h(this, node);
-  const QString &a = h.wordAtIndex(0).wordValue()->printValue();
-  const QString &b = h.wordAtIndex(1).wordValue()->printValue();
-  return h.ret(a < b);
+// CMD BEFOREP 2 2 2
+// CMD BEFORE? 2 2 2
+DatumPtr Kernel::excBeforep(DatumPtr node)
+{
+    // TODO case-sensitivity?
+    ProcedureHelper h(this, node);
+    const QString &a = h.wordAtIndex(0).wordValue()->printValue();
+    const QString &b = h.wordAtIndex(1).wordValue()->printValue();
+    return h.ret(a < b);
 }
-
 
 /***DOC .EQ
 .EQ thing1 thing2
@@ -942,14 +988,14 @@ DatumPtr Kernel::excBeforep(DatumPtr node) {
     can lead to circular data structures, infinite loops, or Logo crashes.
 
 COD***/
-//CMD .EQ 2 2 2
-DatumPtr Kernel::excDotEq(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr a = h.datumAtIndex(0);
-  DatumPtr b = h.datumAtIndex(1);
-  return h.ret(a == b);
+// CMD .EQ 2 2 2
+DatumPtr Kernel::excDotEq(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr a = h.datumAtIndex(0);
+    DatumPtr b = h.datumAtIndex(1);
+    return h.ret(a == b);
 }
-
 
 /***DOC MEMBERP MEMBER?
 MEMBERP thing1 thing2
@@ -961,38 +1007,37 @@ MEMBER? thing1 thing2
     character of "thing2", FALSE otherwise.
 
 COD***/
-//CMD MEMBERP 2 2 2
-//CMD MEMBER? 2 2 2
-DatumPtr Kernel::excMemberp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr container = h.validatedDatumAtIndex(1, [](DatumPtr candidate) {
-    return candidate.isList() || candidate.isWord() || candidate.isArray();
-  });
-  DatumPtr thing = h.validatedDatumAtIndex(0, [&container](DatumPtr candidate) {
+// CMD MEMBERP 2 2 2
+// CMD MEMBER? 2 2 2
+DatumPtr Kernel::excMemberp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr container = h.validatedDatumAtIndex(
+        1, [](DatumPtr candidate) { return candidate.isList() || candidate.isWord() || candidate.isArray(); });
+    DatumPtr thing = h.validatedDatumAtIndex(0, [&container](DatumPtr candidate) {
+        if (container.isWord())
+            return candidate.isWord();
+        return true;
+    });
+
+    bool ignoreCase = varCASEIGNOREDP();
+    Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive : Qt::CaseSensitive;
     if (container.isWord())
-      return candidate.isWord();
-    return true;
-  });
+    {
+        if (thing.wordValue()->printValue().size() != 1)
+            return h.ret(false);
+        return h.ret(container.wordValue()->printValue().contains(thing.wordValue()->printValue(), cs));
+    }
 
-  bool ignoreCase = varCASEIGNOREDP();
-  Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive
-                                      : Qt::CaseSensitive;
-  if (container.isWord()) {
-      if (thing.wordValue()->printValue().size() != 1)
-          return h.ret(false);
-      return h.ret(container.wordValue()->printValue().
-                   contains(thing.wordValue()->printValue(), cs));
-  }
-
-  if (container.isList() || container.isArray()) {
-      searchedContainers.clear();
-      return h.ret(searchContainerForDatum(container, thing, ignoreCase));
-  }
-  qDebug()<< "in excMemberp: strange container";
-  Q_ASSERT(false);
-  return nothing;
+    if (container.isList() || container.isArray())
+    {
+        searchedContainers.clear();
+        return h.ret(searchContainerForDatum(container, thing, ignoreCase));
+    }
+    qDebug() << "in excMemberp: strange container";
+    Q_ASSERT(false);
+    return nothing;
 }
-
 
 /***DOC SUBSTRINGP SUBSTRING?
 SUBSTRINGP thing1 thing2
@@ -1003,18 +1048,18 @@ SUBSTRING? thing1 thing2
     substring of "thing2", FALSE otherwise.
 
 COD***/
-//CMD SUBSTRINGP 2 2 2
-//CMD SUBSTRING? 2 2 2
-DatumPtr Kernel::excSubstringp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr thingP = h.datumAtIndex(0);
-  DatumPtr containerP = h.datumAtIndex(1);
-  if (!containerP.isWord() || !thingP.isWord())
-    return h.ret(false);
-  Qt::CaseSensitivity cs = varCASEIGNOREDP() ? Qt::CaseInsensitive : Qt::CaseSensitive;
-  return h.ret(containerP.wordValue()->printValue().contains(thingP.wordValue()->printValue(), cs));
+// CMD SUBSTRINGP 2 2 2
+// CMD SUBSTRING? 2 2 2
+DatumPtr Kernel::excSubstringp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr thingP = h.datumAtIndex(0);
+    DatumPtr containerP = h.datumAtIndex(1);
+    if (!containerP.isWord() || !thingP.isWord())
+        return h.ret(false);
+    Qt::CaseSensitivity cs = varCASEIGNOREDP() ? Qt::CaseInsensitive : Qt::CaseSensitive;
+    return h.ret(containerP.wordValue()->printValue().contains(thingP.wordValue()->printValue(), cs));
 }
-
 
 /***DOC NUMBERP NUMBER?
 NUMBERP thing
@@ -1023,16 +1068,16 @@ NUMBER? thing
     outputs TRUE if the input is a number, FALSE otherwise.
 
 COD***/
-//CMD NUMBERP 1 1 1
-//CMD NUMBER? 1 1 1
-DatumPtr Kernel::excNumberp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr thing = h.datumAtIndex(0);
-  if (!thing.isWord())
-    return h.ret(false);
-  return h.ret( ! std::isnan(thing.wordValue()->numberValue()));
+// CMD NUMBERP 1 1 1
+// CMD NUMBER? 1 1 1
+DatumPtr Kernel::excNumberp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr thing = h.datumAtIndex(0);
+    if (!thing.isWord())
+        return h.ret(false);
+    return h.ret(!std::isnan(thing.wordValue()->numberValue()));
 }
-
 
 /***DOC VBARREDP VBARRED? BACKSLASHEDP BACKSLASHED?
 VBARREDP char
@@ -1052,21 +1097,21 @@ BACKSLASHED? char                               (library procedure)
 
 
 COD***/
-//CMD VBARREDP 1 1 1
-//CMD VBARRED? 1 1 1
-DatumPtr Kernel::excVbarredp(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr thing = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
-    if (!candidate.isWord())
-      return false;
-    return candidate.wordValue()->rawValue().size() == 1;
-  });
-  QChar c = thing.wordValue()->rawValue()[0];
-  return h.ret(c != rawToChar(c));
+// CMD VBARREDP 1 1 1
+// CMD VBARRED? 1 1 1
+DatumPtr Kernel::excVbarredp(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr thing = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
+        if (!candidate.isWord())
+            return false;
+        return candidate.wordValue()->rawValue().size() == 1;
+    });
+    QChar c = thing.wordValue()->rawValue()[0];
+    return h.ret(c != rawToChar(c));
 }
 
 // QUERIES
-
 
 /***DOC COUNT
 COUNT thing
@@ -1077,19 +1122,22 @@ COUNT thing
     last member, depending on the array's origin.)
 
 COD***/
-//CMD COUNT 1 1 1
-DatumPtr Kernel::excCount(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr thing = h.datumAtIndex(0);
-  int count = -1;
-  if (thing.isWord()) count = thing.wordValue()->rawValue().size();
-  if (thing.isArray()) count = thing.arrayValue()->array.size();
-  if (thing.isList()) count = thing.listValue()->count();
+// CMD COUNT 1 1 1
+DatumPtr Kernel::excCount(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr thing = h.datumAtIndex(0);
+    int count = -1;
+    if (thing.isWord())
+        count = thing.wordValue()->rawValue().size();
+    if (thing.isArray())
+        count = thing.arrayValue()->array.size();
+    if (thing.isList())
+        count = thing.listValue()->count();
 
-  Q_ASSERT(count != -1);
-  return h.ret(count);
+    Q_ASSERT(count != -1);
+    return h.ret(count);
 }
-
 
 /***DOC ASCII
 ASCII char
@@ -1105,17 +1153,16 @@ ASCII char
     because ASCII is a proper subset of Unicode.
 
 COD***/
-//CMD ASCII 1 1 1
-DatumPtr Kernel::excAscii(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr chr = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
-    return candidate.isWord() && candidate.wordValue()->printValue().size() == 1;
-  });
-  QChar c = chr.printValue().at(0);
-  int asc = c.unicode();
-  return h.ret(asc);
+// CMD ASCII 1 1 1
+DatumPtr Kernel::excAscii(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr chr = h.validatedDatumAtIndex(
+        0, [](DatumPtr candidate) { return candidate.isWord() && candidate.wordValue()->printValue().size() == 1; });
+    QChar c = chr.printValue().at(0);
+    int asc = c.unicode();
+    return h.ret(asc);
 }
-
 
 /***DOC RAWASCII
 RAWASCII char
@@ -1128,17 +1175,16 @@ RAWASCII char
     See ASCII for discussion of Unicode characters.
 
 COD***/
-//CMD RAWASCII 1 1 1
-DatumPtr Kernel::excRawascii(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr chr = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
-    return candidate.isWord() && candidate.wordValue()->rawValue().size() == 1;
-  });
-  QChar c = chr.wordValue()->rawValue()[0];
-  int asc = c.unicode();
-  return h.ret(asc);
+// CMD RAWASCII 1 1 1
+DatumPtr Kernel::excRawascii(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr chr = h.validatedDatumAtIndex(
+        0, [](DatumPtr candidate) { return candidate.isWord() && candidate.wordValue()->rawValue().size() == 1; });
+    QChar c = chr.wordValue()->rawValue()[0];
+    int asc = c.unicode();
+    return h.ret(asc);
 }
-
 
 /***DOC CHAR
 CHAR int
@@ -1149,15 +1195,13 @@ CHAR int
     See ASCII for discussion of Unicode characters.
 
 COD***/
-//CMD CHAR 1 1 1
-DatumPtr Kernel::excChar(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  int n = h.validatedIntegerAtIndex(0, [](int candidate) {
-    return (candidate >= 0) && (candidate <= USHRT_MAX);
-  });
-  return h.ret(QString(QChar((ushort)n)));
+// CMD CHAR 1 1 1
+DatumPtr Kernel::excChar(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    int n = h.validatedIntegerAtIndex(0, [](int candidate) { return (candidate >= 0) && (candidate <= USHRT_MAX); });
+    return h.ret(QString(QChar((ushort)n)));
 }
-
 
 /***DOC MEMBER
 MEMBER thing1 thing2
@@ -1169,40 +1213,39 @@ MEMBER thing1 thing2
     for "thing2" to be an array.
 
 COD***/
-//CMD MEMBER 2 2 2
-DatumPtr Kernel::excMember(DatumPtr node) {
+// CMD MEMBER 2 2 2
+DatumPtr Kernel::excMember(DatumPtr node)
+{
     ProcedureHelper h(this, node);
-    DatumPtr containerP = h.validatedDatumAtIndex(1, [](DatumPtr candidate) {
-        return candidate.isList() || candidate.isWord();
-    });
-    DatumPtr thingP = h.validatedDatumAtIndex(0, [&containerP](DatumPtr candidate) {
-        return containerP.isList() || candidate.isWord();
-    });
+    DatumPtr containerP =
+        h.validatedDatumAtIndex(1, [](DatumPtr candidate) { return candidate.isList() || candidate.isWord(); });
+    DatumPtr thingP = h.validatedDatumAtIndex(
+        0, [&containerP](DatumPtr candidate) { return containerP.isList() || candidate.isWord(); });
 
     bool ignoreCase = varCASEIGNOREDP();
-    if (containerP.isWord()) {
+    if (containerP.isWord())
+    {
         QString container = containerP.wordValue()->printValue();
         QString thing = thingP.wordValue()->printValue();
-        Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive
-                                            : Qt::CaseSensitive;
+        Qt::CaseSensitivity cs = ignoreCase ? Qt::CaseInsensitive : Qt::CaseSensitive;
         int start = container.indexOf(thing, 0, cs);
-        QString retval = (start >= 0) ? container.last(container.size() - start)
-                                      : "";
+        QString retval = (start >= 0) ? container.last(container.size() - start) : "";
         return h.ret(retval);
     }
 
     Q_ASSERT(containerP.isList());
     comparedContainers.clear();
-    while ( ! containerP.isNothing()) {
+    while (!containerP.isNothing())
+    {
         DatumPtr e = containerP.listValue()->head;
-        if (areDatumsEqual(e,thingP, ignoreCase)) {
+        if (areDatumsEqual(e, thingP, ignoreCase))
+        {
             return h.ret(containerP);
         }
         containerP = containerP.listValue()->tail;
     }
     return h.ret(new List());
 }
-
 
 /***DOC LOWERCASE
 LOWERCASE word
@@ -1211,14 +1254,14 @@ LOWERCASE word
     changed to the corresponding lowercase letter.
 
 COD***/
-//CMD LOWERCASE 1 1 1
-DatumPtr Kernel::excLowercase(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  const QString &phrase = h.wordAtIndex(0).wordValue()->rawValue();
-  QString retval = phrase.toLower();
-  return h.ret(retval);
+// CMD LOWERCASE 1 1 1
+DatumPtr Kernel::excLowercase(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    const QString &phrase = h.wordAtIndex(0).wordValue()->rawValue();
+    QString retval = phrase.toLower();
+    return h.ret(retval);
 }
-
 
 /***DOC UPPERCASE
 UPPERCASE word
@@ -1227,14 +1270,14 @@ UPPERCASE word
     changed to the corresponding uppercase letter.
 
 COD***/
-//CMD UPPERCASE 1 1 1
-DatumPtr Kernel::excUppercase(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  const QString &phrase = h.wordAtIndex(0).wordValue()->rawValue();
-  QString retval = phrase.toUpper();
-  return h.ret(retval);
+// CMD UPPERCASE 1 1 1
+DatumPtr Kernel::excUppercase(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    const QString &phrase = h.wordAtIndex(0).wordValue()->rawValue();
+    QString retval = phrase.toUpper();
+    return h.ret(retval);
 }
-
 
 /***DOC STANDOUT
 STANDOUT thing
@@ -1247,14 +1290,14 @@ STANDOUT thing
     spaces and other formatting characters.
 
 COD***/
-//CMD STANDOUT 1 1 1
-DatumPtr Kernel::excStandout(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  const QString &phrase = h.wordAtIndex(0).wordValue()->printValue();
-  QString t = Config::get().mainController()->addStandoutToString(phrase);
-  return h.ret(t);
+// CMD STANDOUT 1 1 1
+DatumPtr Kernel::excStandout(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    const QString &phrase = h.wordAtIndex(0).wordValue()->printValue();
+    QString t = Config::get().mainController()->addStandoutToString(phrase);
+    return h.ret(t);
 }
-
 
 /***DOC PARSE
 PARSE word
@@ -1264,20 +1307,19 @@ PARSE word
     the same value as READLIST for the same characters read.
 
 COD***/
-//CMD PARSE 1 1 1
-DatumPtr Kernel::excParse(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  Parser p;
-  DatumPtr word = h.validatedDatumAtIndex(
-      0, [](DatumPtr candidate) { return candidate.isWord(); });
-  QString text = word.wordValue()->rawValue();
-  QTextStream src(&text, QIODevice::ReadOnly);
-  TextStream srcStream(&src);
+// CMD PARSE 1 1 1
+DatumPtr Kernel::excParse(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    Parser p;
+    DatumPtr word = h.validatedDatumAtIndex(0, [](DatumPtr candidate) { return candidate.isWord(); });
+    QString text = word.wordValue()->rawValue();
+    QTextStream src(&text, QIODevice::ReadOnly);
+    TextStream srcStream(&src);
 
-  // TODO: what happens if the source has multiple lines?
-  return h.ret(srcStream.readlistWithPrompt("", false));
+    // TODO: what happens if the source has multiple lines?
+    return h.ret(srcStream.readlistWithPrompt("", false));
 }
-
 
 /***DOC RUNPARSE
 RUNPARSE wordorlist
@@ -1289,11 +1331,11 @@ RUNPARSE wordorlist
 
 
 COD***/
-//CMD RUNPARSE 1 1 1
-DatumPtr Kernel::excRunparse(DatumPtr node) {
-  ProcedureHelper h(this, node);
-  DatumPtr wordOrList = h.validatedDatumAtIndex(0, [](DatumPtr candidate) {
-    return candidate.isWord() || candidate.isList();
-  });
-  return h.ret(runparse(wordOrList));
+// CMD RUNPARSE 1 1 1
+DatumPtr Kernel::excRunparse(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    DatumPtr wordOrList =
+        h.validatedDatumAtIndex(0, [](DatumPtr candidate) { return candidate.isWord() || candidate.isList(); });
+    return h.ret(runparse(wordOrList));
 }
