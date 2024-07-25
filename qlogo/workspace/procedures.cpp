@@ -72,7 +72,6 @@ void Procedures::defineProcedure(DatumPtr cmd, DatumPtr procnameP, DatumPtr text
 
 DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourceText) {
     Procedure *body = new Procedure();
-    body->init();
     DatumPtr bodyP(body);
 
     lastProcedureCreatedTimestamp = QDateTime::currentMSecsSinceEpoch();
@@ -90,19 +89,20 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
     bool isRestDefined = false;
     bool isDefaultDefined = false;
 
-    // Required Inputs :FOO
-    // Optional inputs [:BAZ 87]
-    // Rest input      [:GARPLY]
-    // default number  5
+    // Parameters are defined in the following format, and are processed in the following order:
+    // Required Inputs, e.g. :FOO
+    // Optional inputs, e.g. [:BAZ 87]
+    // Rest input, e.g. [:GARPLY]
+    // Default number, e.g. 5
 
     ListIterator paramIter = text.listValue()->head.listValue()->newIterator();
 
     while (paramIter.elementExists()) {
         DatumPtr currentParam = paramIter.element();
 
-        if (currentParam.isWord()) { // default 5 OR required :FOO
+        if (currentParam.isWord()) { // This is a default number, or a required input.
             double paramAsNumber = currentParam.wordValue()->numberValue();
-            if ( ! std::isnan(paramAsNumber)) { // default 5
+            if ( ! std::isnan(paramAsNumber)) { // This is a default number, e.g. 5
                 if (isDefaultDefined)
                     Error::doesntLike(cmd, currentParam);
                 if ((paramAsNumber != floor(paramAsNumber)) ||
@@ -112,11 +112,11 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
                     Error::doesntLike(cmd, currentParam);
                 body->countOfDefaultParams = paramAsNumber;
                 isDefaultDefined = true;
-            } else {
+            } else { // This is a required input, e.g. :FOO
                 if (isDefaultDefined || isRestDefined || isOptionalDefined)
                     Error::doesntLike(cmd, currentParam);
                 QString paramName =
-                    currentParam.wordValue()->keyValue(); // required :FOO
+                    currentParam.wordValue()->keyValue();
                 if (paramName.startsWith(':') || paramName.startsWith('"'))
                     paramName.remove(0, 1);
                 if (paramName.size() < 1)
@@ -126,13 +126,13 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
                 body->countOfMinParams += 1;
                 body->countOfMaxParams += 1;
             }
-        } else if (currentParam.isList()) { // Optional [:BAZ 87] or rest [:GARPLY]
+        } else if (currentParam.isList()) { // This is an optional input or a rest input.
             List *paramList = currentParam.listValue();
 
             if (paramList->isEmpty())
                 Error::doesntLike(cmd, currentParam);
 
-            if (paramList->count() == 1) { // rest input [:GARPLY]
+            if (paramList->count() == 1) { // This is a rest input, e.g. [:GARPLY]
                 if (isRestDefined)
                     Error::doesntLike(cmd, currentParam);
                 DatumPtr param = paramList->head;
@@ -148,7 +148,7 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
                 } else {
                     Error::doesntLike(cmd, param);
                 }
-            } else { // Optional [:BAZ 87]
+            } else { // This is an optional input, e.g. [:BAZ 87]
                 if (isRestDefined || isDefaultDefined)
                     Error::doesntLike(cmd, currentParam);
                 DatumPtr param = paramList->head;
@@ -175,6 +175,7 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
     if (body->instructionList.isNothing())
         body->instructionList = DatumPtr(new List);
 
+    // Iterate over the instruction list and add tags to the tagToLine map.
     ListIterator lineIter = body->instructionList.listValue()->newIterator();
     while (lineIter.elementExists()) {
         DatumPtr lineP = lineIter.element();
@@ -237,6 +238,7 @@ DatumPtr Procedures::procedureText(DatumPtr procnameP) {
 
     List *inputs = new List();
 
+    // Generate the parameters interface.
     for (auto &i : body->requiredInputs) {
         inputs->append(DatumPtr(i));
     }
@@ -260,6 +262,7 @@ DatumPtr Procedures::procedureText(DatumPtr procnameP) {
 
     retval->append(DatumPtr(inputs));
 
+    // Generate and append the instruction list.
     ListIterator b = body->instructionList.listValue()->newIterator();
 
     while (b.elementExists()) {
@@ -277,6 +280,7 @@ DatumPtr Procedures::procedureFulltext(DatumPtr procnameP, bool shouldValidate) 
     if (isNamedProcedure(procname)) {
         Procedure *body = procedureForName(procname).procedureValue();
 
+        // If there is no source text, generate it from the instruction list.
         if (body->sourceText == nothing) {
             List *retval = new List();
             retval->append(DatumPtr(procedureTitle(procnameP)));
@@ -296,6 +300,8 @@ DatumPtr Procedures::procedureFulltext(DatumPtr procnameP, bool shouldValidate) 
     } else if (shouldValidate) {
         Error::noHow(procnameP);
     }
+
+    // If there is no procedure by that name, generate an empty procedure.
     List *retval = new List();
     retval->append(
         DatumPtr(QObject::tr("to ") + procnameP.wordValue()->printValue()));
@@ -376,16 +382,16 @@ bool Procedures::isNamedProcedure(QString aName)
 DatumPtr Procedures::astnodeFromCommand(DatumPtr cmdP, int &minParams,
                                     int &defaultParams, int &maxParams) {
     QString cmdString = cmdP.wordValue()->keyValue();
-
     Cmd_t command;
     DatumPtr node = DatumPtr(new ASTNode(cmdP));
-    if (stringToCmd.contains(cmdString)) {
+
+    if (stringToCmd.contains(cmdString)) { // This is a primitive.
         command = stringToCmd[cmdString];
         defaultParams = command.countOfDefaultParams;
         minParams = command.countOfMinParams;
         maxParams = command.countOfMaxParams;
         node.astnodeValue()->kernel = command.method;
-    } else if (isNamedProcedure(cmdString)) {
+    } else if (isNamedProcedure(cmdString)) { // This is a procedure.
         DatumPtr procBody = procedureForName(cmdString);
         if (procBody.procedureValue()->isMacro)
             node.astnodeValue()->kernel = &Kernel::executeMacro;
@@ -396,17 +402,17 @@ DatumPtr Procedures::astnodeFromCommand(DatumPtr cmdP, int &minParams,
         minParams = procBody.procedureValue()->countOfMinParams;
         maxParams = procBody.procedureValue()->countOfMaxParams;
     } else if (cmdString.startsWith(QObject::tr("SET")) && (cmdString.size() > 3) &&
-               Config::get().mainKernel()->varALLOWGETSET()) {
+               Config::get().mainKernel()->varALLOWGETSET()) { // This is a SETFOO command.
         node.astnodeValue()->kernel = &Kernel::excSetfoo;
         defaultParams = 1;
         minParams = 1;
         maxParams = 1;
-    } else if (Config::get().mainKernel()->varALLOWGETSET()) {
+    } else if (Config::get().mainKernel()->varALLOWGETSET()) { // This is a FOO command.
         node.astnodeValue()->kernel = &Kernel::excFoo;
         defaultParams = 0;
         minParams = 0;
         maxParams = 0;
-    } else {
+    } else { // This is not a command.
         Error::noHow(cmdP);
     }
     return node;

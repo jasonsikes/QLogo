@@ -27,26 +27,58 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "workspace/workspace.h"
 #include "datum.h"
+#include "workspace/workspace.h"
 
-class PropertyLists : public Workspace {
-  QHash<QString, QHash<QString, DatumPtr>> plists;
+/// @brief A class to manage property lists.
+/// @note This is a hash table of property lists, with each property list being a hash table of property names to property values.
+class PropertyLists : public Workspace
+{
+    /// @brief The hash table of property lists.
+    QHash<QString, QHash<QString, DatumPtr>> plists;
 
-public:
-  PropertyLists();
+  public:
+    /// @brief Constructor.
+    PropertyLists();
 
-  void addProperty(const QString &plistname, const QString &propname,
-                   DatumPtr value);
-  DatumPtr getProperty(const QString &plistname, const QString &propname);
-  void removeProperty(const QString &plistname, const QString &propname);
-  DatumPtr getPropertyList(const QString &plistname);
-  void erasePropertyList(const QString &plistname);
-  void eraseAll();
+    /// @brief Add a property to a property list.
+    /// @param plistname The name of the property list.
+    /// @param propname The name of the property.
+    /// @param value The value of the property.
+    void addProperty(const QString &plistname, const QString &propname, DatumPtr value);
 
-  bool isPropertyList(const QString &plistname);
+    /// @brief Get a property from a property list.
+    /// @param plistname The name of the property list.
+    /// @param propname The name of the property.
+    /// @return The value of the property.
+    DatumPtr getProperty(const QString &plistname, const QString &propname);
 
-  DatumPtr allPLists(showContents_t showWhat);
+    /// @brief Remove a property from a property list.
+    /// @param plistname The name of the property list.
+    /// @param propname The name of the property.
+    void removeProperty(const QString &plistname, const QString &propname);
+
+    /// @brief Get a property list.
+    /// @param plistname The name of the property list.
+    /// @return The property list.
+    DatumPtr getPropertyList(const QString &plistname);
+
+    /// @brief Remove a property list.
+    /// @param plistname The name of the property list.
+    void erasePropertyList(const QString &plistname);
+
+    /// @brief Remove all property lists.
+    void eraseAll();
+
+    /// @brief Check if a property list exists.
+    /// @param plistname The name of the property list.
+    /// @return True if the property list exists, false otherwise.
+    bool isPropertyList(const QString &plistname);
+
+    /// @brief Get all property lists.
+    /// @param showWhat Whether to show the contents of the property lists.
+    /// @return A list of all property lists.
+    DatumPtr allPLists(showContents_t showWhat);
 };
 
 #endif // PROPERTYLISTS_H
