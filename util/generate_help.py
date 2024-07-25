@@ -34,7 +34,6 @@ SOURCES = [f for f in os.listdir(source_prefix) if re.match(r'.*\.cpp', f)]
 # "/***DOC FORWARD FD" where the command has two names:
 # "FORWARD" and "FD".
 # Returns list of words from header (or empty string if eof).
-
 def find_next_header(file):
     while True:
         line = file.readline()
@@ -48,7 +47,6 @@ def find_next_header(file):
 # Reads and collects text until end of documentation marker:
 # "COD***/"
 # Returns the entire help text as a string.
-
 def read_text(file):
     retval = ''
     while True:
@@ -85,11 +83,14 @@ conn = sqlite3.connect(dest_path)
 
 # Some commands have more than one name and share a help text.
 # We create at least one alias for every command name.
-# An alias may be the same as the command, e.g.:
-# FORWARD and FD both point to FORWARD. FORWARD then is the
-# key to the help text.
-# MAKE is the only alias for MAKE. MAKE is the key to the
-# help text.
+# An alias may be the same as the command. For example:
+# The FORWARD command has an alias, FD. We include both
+# FORWARD and FD in the ALIASES table which points to
+# FORWARD, which is the key to the help text.
+
+# In cases where a command has no aliases, the alias table
+# entry points to the command itself.
+
 conn.execute('''CREATE TABLE ALIASES
          (ALIAS TEXT PRIMARY KEY     NOT NULL,
          COMMAND          TEXT    NOT NULL);''')
@@ -128,7 +129,7 @@ with open(json_file_path, 'r') as json_file:
 for command, help_text_lines in help_data.items():
     help_text = '\n'.join(help_text_lines) + '\n'
     command_list = [command]
-    # One of the commands has an alternate name. For that command,
+    # A special case: one of the commands has an alternate name. For that command,
     # include the alternate name in the ALIASES table.
     if command == 'FILEP':
         command_list.append('FILE?')

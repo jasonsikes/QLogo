@@ -266,4 +266,3 @@ DatumPtr excInfixError(DatumPtr node);
 
 
 #endif // CONSTANTS_H
-
