@@ -216,6 +216,7 @@ QString Help::helpText(QString name)
         QSqlDatabase db = QSqlDatabase::database(connectionName);
         // Every command has an alias
         // even if the alias is the same as the command.
+        // Use the alias to get the command name.
         QSqlQuery query(db);
         query.prepare("SELECT COMMAND FROM ALIASES WHERE ALIAS = ?");
         query.addBindValue(name);
@@ -230,6 +231,7 @@ QString Help::helpText(QString name)
         }
         query.finish();
 
+        // Get the help text for the command name.
         query.prepare("SELECT DESCRIPTION FROM HELPTEXT WHERE COMMAND = ?");
         query.addBindValue(cmdName);
         query.exec();
