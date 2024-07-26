@@ -22,85 +22,133 @@
 ///
 /// \file
 /// This file contains the declaration of the MainWindow class, which is the
-/// main window portion of the user interface.
+/// main window of the QLogo GUI.
 ///
 //===----------------------------------------------------------------------===//
 
-#include <QMainWindow>
-#include <QtGui/QOpenGLFunctions>
-#include <QProcess>
-#include <QDataStream>
-#include <functional>
 #include "sharedconstants.h"
+#include <QDataStream>
+#include <QMainWindow>
+#include <QProcess>
+#include <QtGui/QOpenGLFunctions>
+#include <functional>
 
 class Canvas;
 class Console;
 class EditorWindow;
 
-namespace Ui {
+namespace Ui
+{
 class MainWindow;
 }
 
-class MainWindow : public QMainWindow {
-  Q_OBJECT
+/// @brief The main window of the QLogo GUI.
+///
+/// This class is the main window of the QLogo GUI. It contains the main
+/// user interface and handles user input. It also handles the communication
+/// with the QLogo process. This is similar to a terminal-based interface,
+/// but it also has a graphical canvas to display the Turtle graphics.
+///
+/// To facilitate turtle, text, mouse, and keyboard communication, this class
+/// uses a custom protocol to send and receive messages to and from the QLogo
+/// process.
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
 
-    enum windowMode_t {
+    enum windowMode_t
+    {
         windowMode_noWait,
         windowMode_waitForChar,
         windowMode_waitForRawline,
     };
 
-protected:
-    void closeEvent ( QCloseEvent * event );
+    Ui::MainWindow *ui;
+
+    QProcess *logoProcess;
+
+    windowMode_t windowMode;
+    bool hasShownCanvas = false;
+    EditorWindow *editWindow = NULL;
+
+    int startLogo();
+    void beginReadRawlineWithPrompt(const QString prompt);
+    void beginReadChar();
+    void sendConsoleCursorPosition();
+
+    void sendMessage(std::function<void(QDataStream *)> func);
+
+    void initialize();
+    void introduceCanvas();
+    void setSplitterforMode(ScreenModeEnum mode);
+    void openEditorWindow(const QString startingText);
+
+    void sendCanvasImage();
+    void sendCanvasSvg();
+
+  protected:
+    void closeEvent(QCloseEvent *event);
     QString findQlogoExe();
 
-public:
-  explicit MainWindow(QWidget *parent = 0);
-  ~MainWindow();
-  void show();
+  public:
 
-  void mouseButtonWasPressed(QVector2D position, int buttonID);
+    /// @brief Constructor.
+    ///
+    /// @param parent The Qt parent widget.
+    explicit MainWindow(QWidget *parent = 0);
 
-private:
-  Ui::MainWindow *ui;
+    /// @brief Destructor.
+    ~MainWindow();
 
-  QProcess *logoProcess;
+    /// @brief Show the main window.
+    void show();
 
-  windowMode_t windowMode;
-  bool hasShownCanvas = false;
-  EditorWindow *editWindow = NULL;
+    /// @brief Handle a mouse button being pressed.
+    ///
+    /// @param position The position of the mouse button.
+    /// @param buttonID The ID of the button.
+    void mouseButtonWasPressed(QVector2D position, int buttonID);
 
-  int startLogo();
-  void beginReadRawlineWithPrompt(const QString prompt);
-  void beginReadChar();
-  void sendConsoleCursorPosition();
+  public slots:
 
-  void sendMessage(std::function<void (QDataStream*)> func);
+    /// @brief Handle the standard output of the QLogo process.
+    void readStandardOutput();
+  
+    /// @brief Handle the standard error of the QLogo process.
+    void readStandardError();
 
-  void initialize();
-  void introduceCanvas();
-  void setSplitterforMode(ScreenModeEnum mode);
-  void openEditorWindow(const QString startingText);
+    /// @brief Handle the start of the QLogo process.
+    /// @note This is mostly for debugging to ensure the process is started
+    /// correctly.
+    void processStarted();
 
-  void sendCanvasImage();
-  void sendCanvasSvg();
+    /// @brief Handle the end of the QLogo process. Initiate shutdown of the GUI.
+    void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
-public slots:
-  void readStandardOutput();
-  void readStandardError();
-  void processStarted();
-  void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
-  void errorOccurred(QProcess::ProcessError error);
+    /// @brief Handle an error in the QLogo process.
+    /// @note This is mostly for debugging to print out a debug message.
+    void errorOccurred(QProcess::ProcessError error);
 
-  void sendRawlineSlot(const QString &line);
-  void sendCharSlot(QChar c);
-  void splitterHasMovedSlot(int, int);
-  void editingHasEndedSlot(QString text);
+    /// @brief Handle a rawline being sent to the QLogo process.
+    void sendRawlineSlot(const QString &line);
 
-  void mouseclickedSlot(QPointF QPointF, int buttonID);
-  void mousemovedSlot(QPointF position);
-  void mousereleasedSlot();
+    /// @brief Handle a character being sent to the QLogo process.
+    void sendCharSlot(QChar c);
 
+    /// @brief Handle the splitter being moved.
+    void splitterHasMovedSlot(int, int);
+
+    /// @brief Handle the editing being ended.
+    void editingHasEndedSlot(QString text);
+
+    /// @brief Handle a mouse button being clicked.
+    void mouseclickedSlot(QPointF QPointF, int buttonID);
+
+    /// @brief Handle a mouse being moved.
+    void mousemovedSlot(QPointF position);
+
+    /// @brief Handle a mouse button being released.
+    void mousereleasedSlot();
 };
 
 #endif // MAINWINDOW_H
