@@ -21,9 +21,11 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the declaration of the Parser class, which is responsible
-/// for parsing text and keeping user-defined functions.
+/// This file contains the declaration of the Runparser class, which is
+/// responsible for parsing text and generating a list of tokens.
 ///
+/// for example, `[PRINT 2+2]`, a list of two words, will be parsed into a list of
+/// four words, `[PRINT 2 + 2]`. In QLogo a token is a word, list, or array.
 //===----------------------------------------------------------------------===//
 
 #include "datum.h"
@@ -33,32 +35,32 @@ class Procedures;
 class Kernel;
 class TextStream;
 
-class Runparser {
-  List *runparseRetval;
-  QString::iterator runparseCIter;
-  QString::iterator runparseCEnd;
-  bool isRunparseSourceSpecial;
-  void runparseSpecialchars(void);
-  void runparseMinus(void);
-  DatumPtr runparseNumber(void); // returns a number if successful
-  void runparseQuotedWord();
-  void runparseString();
+class Runparser
+{
+    List *runparseRetval;
+    QString::iterator runparseCIter;
+    QString::iterator runparseCEnd;
+    bool isRunparseSourceSpecial;
+    void runparseSpecialchars(void);
+    void runparseMinus(void);
+    DatumPtr runparseNumber(void); // returns a number if successful
+    void runparseQuotedWord();
+    void runparseString();
 
-  ListIterator listIter;
+    ListIterator listIter;
 
-public:
-  DatumPtr doRunparse(DatumPtr src);
+  public:
+    /// @brief Parse a QLogo word or list into a list of tokens.
+    /// @param src A QLogo word or list to parse.
+    /// @returns A list of tokens.
+    DatumPtr doRunparse(DatumPtr src);
 };
 
-
-/*
-     * RUNPARSE wordorlist
-
-        outputs the list that would result if the input word or list were
-        entered as an instruction line; characters such as infix operators
-        and parentheses are separate members of the output.  Note that
-        sublists of a runparsed list are not themselves runparsed.
-     */
+/// @brief Parse a QLogo word or list into a list of tokens.
+/// @param src A QLogo word or list to parse.
+/// @returns A list of tokens.
+///
+/// @note This function is a wrapper around the `Runparser` class.
 DatumPtr runparse(DatumPtr src);
 
 #endif // RUNPARSER_H
