@@ -16,8 +16,8 @@
 // along with QLogo.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <QApplication>
 #include "gui/mainwindow.h"
+#include <QApplication>
 #include <QSqlDatabase>
 
 int main(int argc, char *argv[]) {
@@ -29,8 +29,8 @@ int main(int argc, char *argv[]) {
 }
 
 
-// This code isn't actually executed. It's to compel the CMake linker to link the
-// SQL stuff for the qlogo binary and include it into the MacOS bundle.
+// This code isn't actually executed. It's to compel the linker to include the
+// SQL stuff for the qlogo binary into the MacOS bundle.
 void ignoreMe(void)
 {
   QSqlDatabase *driver = new QSqlDatabase();

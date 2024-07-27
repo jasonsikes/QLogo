@@ -22,7 +22,7 @@
 ///
 /// \file
 /// This file contains constants and data structures shared between the QLogo/logo
-/// programs.
+/// programs as well as global parameters that may be used by either program.
 ///
 //===----------------------------------------------------------------------===//
 
@@ -88,6 +88,10 @@ enum messageCategory : message_t
     C_CANVAS_SET_PENMODE,           // Set canvas pen mode
 };
 
+/// @brief The configuration for the QLogo-GUI/logo programs.
+///
+/// This class is a singleton that contains global parameters that may be used by
+/// either program.
 class Config
 {
   private:
@@ -110,29 +114,40 @@ class Config
     LogoController *mLogoController = NULL;
 
   public:
+    /// @brief Get the singleton instance of the Config class.
+    /// @return The singleton instance of the Config class.
     static Config &get()
     {
         static Config instance;
         return instance;
     }
 
-    // Escape char and string are the separators between Console messages and
-    // Console control characters. Currently, the only control is switching
-    // STANDOUT modes.
+    /// The escape character is the separator between Console messages and
+    /// Console control characters. Currently, the only control is switching
+    /// STANDOUT modes.
     const QChar escapeChar = QChar(27);
+
+    /// @brief The escape string is the escape character as a string.
     const QString escapeString = QString(escapeChar);
 
+    /// @brief The initial X bound of the canvas.
     const float initialBoundX = 150;
+
+    /// @brief The initial Y bound of the canvas.
     const float initialBoundY = 150;
 
+    /// @brief The initial pen size of the canvas.
     const float initialPensize = 1;
 
+    /// @brief The initial foreground color of the canvas.
     const QColor initialCanvasForegroundColor = QColorConstants::White;
+
+    /// @brief The initial background color of the canvas.
     const QColor initialCanvasBackgroundColor = QColorConstants::Black;
 
-    // Canvas size proportions for each mode. 0.0 means Canvas is completely
-    // hidden. 0.8 means Canvas takes up 80% of available space (remaining 20%
-    // belongs to the Console).
+    // The canvas size proportions for each mode. 0.0 means Canvas is
+    // completely hidden. 0.8 means Canvas takes up 80% of available space (remaining
+    // 20% belongs to the Console).
     const float textScreenSize = 0.0;
     const float fullScreenSize = 0.8;
     const float splitScreenSize = 0.8;
@@ -191,41 +206,73 @@ class Config
 
     // ARGV initialization parameters
     QStringList ARGV;
+
+    /// @brief The path to the library database file.
     QString paramLibraryDatabaseFilepath;
+
+    /// @brief The path to the help database file.
     QString paramHelpDatabaseFilepath;
 
     // TODO: These should be set in the CMake file
+
+    /// @brief The default library database filename.
     const char *defaultLibraryDbFilename = "qlogo_library.db";
+
+    /// @brief The default help database filename.
     const char *defaultHelpDbFilename = "qlogo_help.db";
 };
 
+
 enum PenModeEnum
 {
+    /// @brief The paint pen mode, draws the current foreground color.
     penModePaint,
+
+    /// @brief The erase pen mode, draws the current background color.
     penModeErase,
+
+    /// @brief The reverse pen mode, inverts the colors already on the canvas.
     penModeReverse
 };
 
 enum TurtleModeEnum
 {
+    /// @brief The wrap turtle mode, wraps the turtle around the canvas.
     turtleWrap,
+
+    /// @brief The fence turtle mode, prevents the turtle from leaving the canvas.
     turtleFence,
+
+    /// @brief The window turtle mode, turtle can leave the canvas.
     turtleWindow
 };
 
 enum SignalsEnum_t : int
 {
     noSignal = 0,
-    systemSignal,   // CTRL-Backslash, kill logo            [ THROW "SYSTEM ]
-    toplevelSignal, // CTRL-C,         kill running script  [ THROW "TOPLEVEL ]
-    pauseSignal     // CTRL-Z,         pause running script [ PAUSE ]
+
+    /// CTRL-Backslash, kill logo [ THROW "SYSTEM ]
+    systemSignal,
+
+    /// CTRL-C, kill running script [ THROW "TOPLEVEL ]
+    toplevelSignal,
+
+    /// CTRL-Z, pause running script [ PAUSE ]
+    pauseSignal
 };
 
 enum ScreenModeEnum
 {
+    /// @brief The initial screen mode, the Console takes all available space.
     initScreenMode,
+
+    /// @brief The text screen mode, the Console takes all available space.
     textScreenMode,
+
+    /// @brief The full screen mode, the Canvas takes up 80% of available space.
     fullScreenMode,
+
+    /// @brief The split screen mode, the Canvas takes up 80% of available space.
     splitScreenMode
 };
 
