@@ -1,3 +1,32 @@
+Version 0.96 - Jason Sikes - 2024-07-27
+ * Interpreter program name changed to qlogo.
+ * GUI program name changed to QLogo-GUI.
+ * Changed the QLogo icon.
+ * Now being developed using Qt 6.5.
+ * Help text now available via SQLite database.
+ * Logo standard library now available via SQLite database.
+   (No longer integrated into the source code as a long text string.)
+ * MacOS bundle now has qlogo binary  inside along with QLogo-GUI.
+ * Added python scripts to generate SQLite database from C++ source files
+   and JSON files. (JSON files are included with the source code).
+ * Random generator is now truly random, and also can make pseudo-random
+   numbers similar to the old random number generator.
+ * Added shell script to generate icon images for different purposes from
+   a single source image.
+ * Added TIME command.
+ * Removed everything related to OpenGL. Canvas now uses QPainter.
+ * Can now save images as png, jpeg, etc.
+ * Can now save images as SVG.
+ * Can now load images onto canvas.
+ * Turtle image is now a simple arrow instead of the RGB turtle.
+ * Console text font background color is now transparent by default.
+ * MACRO tail recursion is now supported for some situations.
+ * Added COMMANDLINE variable, similar to UCBLogo's COMMANDLINE.
+ * Added MARK command to alert when Datum has lost all references to it
+   and will be destroyed. (For memory debugging.)
+ * Added 'libdb' and 'helpdb' commandline parameters.
+ * Many many bugfixes. So many.
+
 Version 0.94
  * First release of logo and QLogo
  * QLogo and logo are now separate programs.
