@@ -6,7 +6,7 @@
 
   <name>QLogo-GUI</name>
   
-  <summary>A UCBLogo-compatible interpreter using Qt and OpenGL</summary>
+  <summary>A UCBLogo-compatible interpreter using Qt</summary>
   <description>
     <p>A UCBLogo-compatible interpreter with hardware-accelerated graphics and Unicode text. It almost identically mimics
     the UCBLogo interpreter developed by Brian Harvey at U.C. Berkeley.</p>

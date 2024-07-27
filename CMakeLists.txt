@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(QLogo VERSION 0.931 LANGUAGES CXX)
+project(QLogo VERSION 0.96 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 
@@ -79,6 +79,3 @@ if (APPLE)
     )
 endif()
 
-# TODO: rm -rf ~/temp/qlogo
-# && cmake --install . --prefix ~/temp/qlogo
-# && /opt/Qt/6.5.1/macos/bin/macdeployqt /Users/jsikes/temp/qlogo/./QLogo-GUI.app -always-overwrite

@@ -1104,9 +1104,7 @@ DatumPtr Kernel::excSetpalette(DatumPtr node)
 SETPENSIZE size
 
     sets the thickness of the pen.  The input is a single positive
-    integer. Note that since QLogo uses OpenGL for drawing, the pen may either
-    be vertical or horizontal depending on the direction of the line being
-    drawn.
+    integer.
 
 COD***/
 // CMD SETPENSIZE 1 1 1

@@ -60,10 +60,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 {
     ui->setupUi(this);
 
-    // There seems to be a bug involving window Maximize with an OpenGL widget.
-    // So disable Maximize.
-    setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
-
     windowMode = windowMode_noWait;
 }
 

@@ -30,7 +30,6 @@
 #include <QDataStream>
 #include <QMainWindow>
 #include <QProcess>
-#include <QtGui/QOpenGLFunctions>
 #include <functional>
 
 class Canvas;
