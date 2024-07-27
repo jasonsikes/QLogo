@@ -25,23 +25,23 @@
 
 #define _USE_MATH_DEFINES
 
-#include "sharedconstants.h"
 #include "gui/canvas.h"
 #include "math.h"
+#include "sharedconstants.h"
+#include <QBuffer>
 #include <QColor>
 #include <QMouseEvent>
 #include <QSvgGenerator>
-#include <QBuffer>
 
 Arc::Arc(QPointF center, qreal a, qreal span, qreal radius)
 {
-    rectangle = QRectF(center.x() - radius,center.y() - radius,
-                       radius * 2,radius * 2);
+    rectangle = QRectF(center.x() - radius, center.y() - radius, radius * 2, radius * 2);
     startAngle = (a - 90) * 16;
     spanAngle = span * -16;
 }
 
-Canvas::Canvas(QWidget *parent) : QWidget(parent) {
+Canvas::Canvas(QWidget *parent) : QWidget(parent)
+{
     boundsX = Config::get().initialBoundX;
     boundsY = Config::get().initialBoundY;
     backgroundColor = Config::get().initialCanvasBackgroundColor;
@@ -56,14 +56,14 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent) {
     initTurtleImage();
 }
 
-
-void Canvas::initDrawingElementList() {
-    drawingElementList.push_back( { turtleWriteInfoID,deVariant(currentWriteInfo) } );
+void Canvas::initDrawingElementList()
+{
+    drawingElementList.push_back({turtleWriteInfoID, deVariant(currentWriteInfo)});
     if (penIsDown)
         lineGroup.push_back(pointFromTurtle());
 }
 
-
+/// @brief Initialize the turtle image.
 void Canvas::initTurtleImage()
 {
     qreal multiplier = 5;
@@ -72,22 +72,21 @@ void Canvas::initTurtleImage()
     qreal aft = -2 * multiplier * 2;      // vertical distance from origin to butt
 
     QPolygonF turtlePolygon;
-    turtlePolygon << QPointF(0,0) // Origin open
-                  << QPointF(halfwidth, aft) // Right aft
-                  << QPointF(0,height) // Head
+    turtlePolygon << QPointF(0, 0)            // Origin open
+                  << QPointF(halfwidth, aft)  // Right aft
+                  << QPointF(0, height)       // Head
                   << QPointF(-halfwidth, aft) // Left aft
-                  << QPointF(0,0) // Origin close
+                  << QPointF(0, 0)            // Origin close
         ;
 
-    turtleImage = QImage(halfwidth * 2 + multiplier * 2,
-                         height -aft + multiplier * 2,
-                         QImage::Format_ARGB32_Premultiplied);
+    turtleImage =
+        QImage(halfwidth * 2 + multiplier * 2, height - aft + multiplier * 2, QImage::Format_ARGB32_Premultiplied);
     turtleImage.fill(Qt::transparent);
 
     QPainter painter(&turtleImage);
-    painter.translate(halfwidth + multiplier, multiplier-aft);
+    painter.translate(halfwidth + multiplier, multiplier - aft);
 
-    QPen pen = QPen(Config::get().initialCanvasForegroundColor,multiplier*2);
+    QPen pen = QPen(Config::get().initialCanvasForegroundColor, multiplier * 2);
     pen.setCapStyle(Qt::RoundCap);
     pen.setJoinStyle(Qt::RoundJoin);
     painter.setPen(pen);
@@ -99,7 +98,6 @@ void Canvas::initTurtleImage()
     turtleImageMatrix.translate(-halfwidth - multiplier, aft);
 }
 
-
 void Canvas::clearScreen()
 {
     drawingElementList.clear();
@@ -108,19 +106,18 @@ void Canvas::clearScreen()
     update();
 }
 
-
 // Call this when we are about to add something to the DrawingElementList.
 // (Except LineGroup, of course.)
 void Canvas::pushLineGroup()
 {
-    if (lineGroup.size() > 1) {
-        drawingElementList.push_back( { polylineTypeID, deVariant(lineGroup) } );
+    if (lineGroup.size() > 1)
+    {
+        drawingElementList.push_back({polylineTypeID, deVariant(lineGroup)});
         lineGroup.clear();
         if (penIsDown)
             lineGroup.push_back(pointFromTurtle());
     }
 }
-
 
 void Canvas::setBounds(qreal x, qreal y)
 {
@@ -129,58 +126,60 @@ void Canvas::setBounds(qreal x, qreal y)
     update();
 }
 
-
 void Canvas::setLastWriteInfo()
 {
     Q_ASSERT(drawingElementList.size() > 0);
     int lastElementID = drawingElementList.last().eID;
     // If the last drawing element is not a TurtleWriteInfo, then create it and
     // push it onto the list.
-    if (lastElementID != turtleWriteInfoID) {
-        drawingElementList.push_back(
-            { turtleWriteInfoID, deVariant( currentWriteInfo) }
-            );
-    } else {
+    if (lastElementID != turtleWriteInfoID)
+    {
+        drawingElementList.push_back({turtleWriteInfoID, deVariant(currentWriteInfo)});
+    }
+    else
+    {
         // replace the drawing element at the end of the list.
         std::get<TurtleWriteInfo>(drawingElementList.last().element) = currentWriteInfo;
     }
 }
 
-
 void Canvas::setPenIsDown(bool aPenIsDown)
 {
-    if (aPenIsDown == penIsDown) return;
+    if (aPenIsDown == penIsDown)
+        return;
 
     penIsDown = aPenIsDown;
 
-    if (penIsDown) {
+    if (penIsDown)
+    {
         Q_ASSERT(lineGroup.size() < 2);
         lineGroup.clear();
         lineGroup.push_back(pointFromTurtle());
-    } else {
+    }
+    else
+    {
         pushLineGroup();
     }
 }
 
-
 void Canvas::setPenmode(PenModeEnum newMode)
 {
-    if (newMode == penMode) return;
+    if (newMode == penMode)
+        return;
 
     pushLineGroup();
 
     penMode = newMode;
-    currentWriteInfo.composingMode = (penMode == penModeReverse)
-                                         ? QPainter::CompositionMode_Difference
-                                         : QPainter::CompositionMode_SourceOver;
+    currentWriteInfo.composingMode =
+        (penMode == penModeReverse) ? QPainter::CompositionMode_Difference : QPainter::CompositionMode_SourceOver;
     currentWriteInfo.pen.setColor(colorForPenmode());
     setLastWriteInfo();
 }
 
-
 void Canvas::setPensize(qreal aSize)
 {
-    if (currentWriteInfo.pen.widthF() == aSize) return;
+    if (currentWriteInfo.pen.widthF() == aSize)
+        return;
 
     pushLineGroup();
 
@@ -189,8 +188,8 @@ void Canvas::setPensize(qreal aSize)
     setLastWriteInfo();
 }
 
-
-const QColor& Canvas::colorForPenmode() {
+const QColor &Canvas::colorForPenmode()
+{
     if (penMode == penModePaint)
         return foregroundColor;
     if (penMode == penModeErase)
@@ -199,21 +198,15 @@ const QColor& Canvas::colorForPenmode() {
     return QColorConstants::White;
 }
 
-
-
-
-
 void Canvas::setLabelFontName(QString name)
 {
     labelFont.setFamily(name);
 }
 
-
 void Canvas::setLabelFontSize(qreal aSize)
 {
     labelFont.setPointSizeF(aSize);
 }
-
 
 void Canvas::addLabel(QString aText)
 {
@@ -221,35 +214,36 @@ void Canvas::addLabel(QString aText)
     // drawing text. This is the most efficient place to do it.
     Label l(aText, QPointF(turtleMatrix.dx(), -turtleMatrix.dy()), labelFont);
     pushLineGroup();
-    drawingElementList.push_back( { labelTypeID, deVariant(l) } );
+    drawingElementList.push_back({labelTypeID, deVariant(l)});
     update();
 }
 
-
 void Canvas::addArc(qreal angle, qreal radius)
 {
-    if ( ! penIsDown) return;
+    if (!penIsDown)
+        return;
 
     qreal s = turtleMatrix.m21();
     qreal c = turtleMatrix.m11();
 
     qreal a = atan2(s, c) * 180 / M_PI;
 
-    if (radius < 0) {
+    if (radius < 0)
+    {
         radius *= -1;
         a = 180 - a;
     }
 
-    Arc arc(pointFromTurtle(),a, angle,radius);
+    Arc arc(pointFromTurtle(), a, angle, radius);
     pushLineGroup();
-    drawingElementList.push_back( { arcTypeID, deVariant(arc) } );
+    drawingElementList.push_back({arcTypeID, deVariant(arc)});
     update();
 }
 
-
 void Canvas::setTurtleIsVisible(bool isVisible)
 {
-    if (turtleIsVisible != isVisible) {
+    if (turtleIsVisible != isVisible)
+    {
         turtleIsVisible = isVisible;
         update();
     }
@@ -261,17 +255,16 @@ void Canvas::setTurtleMatrix(const QTransform &aTurtleMatrix)
     update();
 }
 
-
 void Canvas::setBackgroundColor(const QColor &c)
 {
     backgroundColor = c;
     update();
 }
 
-
 void Canvas::setForegroundColor(const QColor &c)
 {
-    if (foregroundColor == c) return;
+    if (foregroundColor == c)
+        return;
 
     pushLineGroup();
 
@@ -281,13 +274,11 @@ void Canvas::setForegroundColor(const QColor &c)
     setLastWriteInfo();
 }
 
-
 void Canvas::setBackgroundImage(QImage image)
 {
     backgroundImage = image;
     update();
 }
-
 
 QImage Canvas::getImage()
 {
@@ -303,7 +294,6 @@ QImage Canvas::getImage()
 
     return retval;
 }
-
 
 QByteArray Canvas::getSvg()
 {
@@ -324,7 +314,6 @@ QByteArray Canvas::getSvg()
     return retval;
 }
 
-
 void Canvas::paintEvent(QPaintEvent *event)
 {
 
@@ -335,7 +324,7 @@ void Canvas::paintEvent(QPaintEvent *event)
     QPainter eventPainter = QPainter(this);
     painter = &eventPainter;
 
-    if ( ! canvasIsBounded)
+    if (!canvasIsBounded)
         elDrawUnboundedBackground();
 
     painter->setWorldTransform(drawingMatrix);
@@ -346,15 +335,16 @@ void Canvas::paintEvent(QPaintEvent *event)
     drawCanvas();
 }
 
-
 void Canvas::drawCanvas()
 {
     painter->setRenderHint(QPainter::Antialiasing);
 
     elDrawBackgroundImage();
 
-    for (auto &drawCommand : drawingElementList) {
-        switch(drawCommand.eID) {
+    for (auto &drawCommand : drawingElementList)
+    {
+        switch (drawCommand.eID)
+        {
         case labelTypeID:
             elDrawLabel(std::get<Label>(drawCommand.element));
             break;
@@ -381,7 +371,6 @@ void Canvas::drawCanvas()
     elDrawTurtle();
 }
 
-
 void Canvas::elDrawUnboundedBackground()
 {
     painter->fillRect(rect(), backgroundColor);
@@ -389,23 +378,22 @@ void Canvas::elDrawUnboundedBackground()
 
 void Canvas::elDrawBoundedBackground()
 {
-        QRectF rect(-boundsX, -boundsY, 2*boundsX, 2*boundsY);
-        painter->setClipRect(rect);
-        painter->fillRect(rect, backgroundColor);
+    QRectF rect(-boundsX, -boundsY, 2 * boundsX, 2 * boundsY);
+    painter->setClipRect(rect);
+    painter->fillRect(rect, backgroundColor);
 }
-
 
 void Canvas::elDrawBackgroundImage()
 {
-    if (backgroundImage.isNull()) return;
+    if (backgroundImage.isNull())
+        return;
 
-    QRectF rect(-boundsX, -boundsY, 2*boundsX, 2*boundsY);
+    QRectF rect(-boundsX, -boundsY, 2 * boundsX, 2 * boundsY);
 
     painter->scale(1, -1);
     painter->drawImage(rect, backgroundImage);
     painter->scale(1, -1);
 }
-
 
 void Canvas::elDrawLabel(const Label &label)
 {
@@ -416,12 +404,10 @@ void Canvas::elDrawLabel(const Label &label)
     painter->scale(1, -1);
 }
 
-
 void Canvas::elDrawPolyline(const QPolygonF &polyLine)
 {
     painter->drawPolyline(polyLine);
 }
-
 
 void Canvas::elDrawPolygon(const Polygon &p)
 {
@@ -435,25 +421,23 @@ void Canvas::elDrawPolygon(const Polygon &p)
     painter->setPen(pen);
 }
 
-
 void Canvas::elDrawArc(const Arc &a)
 {
     painter->drawArc(a.rectangle, a.startAngle, a.spanAngle);
 }
 
-
 void Canvas::elDrawTurtle()
 {
-    if (turtleIsVisible) {
+    if (turtleIsVisible)
+    {
         painter->setCompositionMode(QPainter::CompositionMode_SourceOver);
         painter->save();
         painter->setTransform(turtleMatrix, true);
         painter->setTransform(turtleImageMatrix, true);
-        painter->drawImage(QPointF(0,0),turtleImage);
+        painter->drawImage(QPointF(0, 0), turtleImage);
         painter->restore();
     }
 }
-
 
 // The pen controls composition mode, color and size
 void Canvas::elSetWriteInfo(const TurtleWriteInfo &info)
@@ -461,7 +445,6 @@ void Canvas::elSetWriteInfo(const TurtleWriteInfo &info)
     painter->setPen(info.pen);
     painter->setCompositionMode(info.composingMode);
 }
-
 
 void Canvas::emitVertex()
 {
@@ -472,12 +455,10 @@ void Canvas::emitVertex()
     update();
 }
 
-
 QPointF Canvas::pointFromTurtle()
 {
     return QPointF(turtleMatrix.dx(), turtleMatrix.dy());
 }
-
 
 void Canvas::beginPolygon(const QColor &color)
 {
@@ -489,15 +470,14 @@ void Canvas::beginPolygon(const QColor &color)
     polygonGroup << pointFromTurtle();
 }
 
-
 void Canvas::endPolygon()
 {
     Q_ASSERT(isConstructingPolygon == true);
     // A polygon needs at least three vertices.
-    if (polygonGroup.size() >= 3) {
+    if (polygonGroup.size() >= 3)
+    {
         pushLineGroup();
-        drawingElementList.push_back(
-            { polygonTypeID, deVariant( Polygon( { polygonColor, polygonGroup})) } );
+        drawingElementList.push_back({polygonTypeID, deVariant(Polygon({polygonColor, polygonGroup}))});
     }
     polygonGroup.clear();
     isConstructingPolygon = false;
@@ -510,10 +490,13 @@ void Canvas::resizeEvent(QResizeEvent *event)
     qreal widgetHWRatio = (qreal)height() / (qreal)width();
     qreal boundsHWRatio = boundsY / boundsX;
     qreal hwRatio;
-    if (widgetHWRatio > boundsHWRatio) {
+    if (widgetHWRatio > boundsHWRatio)
+    {
         // the bounds are hugging the left and right edges
         hwRatio = width() / boundsX / 2;
-    } else {
+    }
+    else
+    {
         // the bounds are hugging the top and bottom edges
         hwRatio = height() / boundsY / 2;
     }
@@ -525,9 +508,8 @@ void Canvas::resizeEvent(QResizeEvent *event)
     inverseDrawingMatrix = drawingMatrix.inverted();
 }
 
-
-
-void Canvas::mousePressEvent(QMouseEvent *event) {
+void Canvas::mousePressEvent(QMouseEvent *event)
+{
     int buttonID = 0;
     Qt::MouseButton button = event->button();
     if (button & Qt::MiddleButton)
@@ -537,30 +519,27 @@ void Canvas::mousePressEvent(QMouseEvent *event) {
     if (button & Qt::LeftButton)
         buttonID = 1;
     QPointF mousePos = inverseDrawingMatrix.map(event->position());
-    if (  ! canvasIsBounded
-        || ((mousePos.x() <= boundsX)
-            && (mousePos.y() <= boundsY)
-            && (mousePos.x() >= -boundsX)
-            && (mousePos.y() >= -boundsY))) {
+    if (!canvasIsBounded || ((mousePos.x() <= boundsX) && (mousePos.y() <= boundsY) && (mousePos.x() >= -boundsX) &&
+                             (mousePos.y() >= -boundsY)))
+    {
         mouseButtonPressed = true;
         emit sendMouseclickedSignal(mousePos, buttonID);
     }
 }
 
-void Canvas::mouseMoveEvent(QMouseEvent *event) {
+void Canvas::mouseMoveEvent(QMouseEvent *event)
+{
     QPointF mousePos = inverseDrawingMatrix.map(event->position());
-    if (mouseButtonPressed
-        || ! canvasIsBounded
-        || ((mousePos.x() <= boundsX)
-            && (mousePos.y() <= boundsY)
-            && (mousePos.x() >= -boundsX)
-            && (mousePos.y() >= -boundsY)))
+    if (mouseButtonPressed || !canvasIsBounded ||
+        ((mousePos.x() <= boundsX) && (mousePos.y() <= boundsY) && (mousePos.x() >= -boundsX) &&
+         (mousePos.y() >= -boundsY)))
         emit sendMousemovedSignal(mousePos);
-
 }
 
-void Canvas::mouseReleaseEvent(QMouseEvent *) {
-    if (mouseButtonPressed) {
+void Canvas::mouseReleaseEvent(QMouseEvent *)
+{
+    if (mouseButtonPressed)
+    {
         mouseButtonPressed = false;
         emit sendMouseReleasedSignal();
     }
