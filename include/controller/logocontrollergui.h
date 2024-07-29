@@ -312,7 +312,7 @@ class LogoControllerGUI : public LogoController
 
     /// @brief Sets the pen size.
     /// @param aSize The new pen size.
-    void setPensize(double);
+    void setPensize(qreal);
 
     /// @brief Waits for a number of milliseconds.
     /// @param msecs The number of milliseconds to wait.

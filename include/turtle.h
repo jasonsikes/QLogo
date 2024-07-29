@@ -45,7 +45,7 @@ class Turtle
 
     PenModeEnum penMode = penModePaint;
 
-    double penSize = Config::get().initialPensize;
+    qreal penSize = Config::get().initialPensize;
 
     bool turtleIsVisible;
     bool penIsDown;
@@ -99,11 +99,11 @@ class Turtle
 
     /// @brief Rotate the turtle by a given angle.
     /// @param angle The angle to rotate the turtle by.
-    void rotate(double angle);
+    void rotate(qreal angle);
 
     /// @brief Move the turtle forward by a given number of steps.
     /// @param steps The number of steps to move the turtle forward.
-    void forward(double steps);
+    void forward(qreal steps);
 
     /// @brief Set the turtle mode.
     /// @param newMode The new turtle mode.
@@ -115,25 +115,25 @@ class Turtle
 
     /// @brief Get the turtle heading.
     /// @return The current turtle heading.
-    double getHeading();
+    qreal getHeading();
 
     /// @brief Get the turtle position.
     /// @param x The x coordinate of the turtle.
     /// @param y The y coordinate of the turtle.
-    void getxy(double &x, double &y);
+    void getxy(qreal &x, qreal &y);
 
     /// @brief Set the turtle position.
     /// @param x The new x coordinate of the turtle.
     /// @param y The new y coordinate of the turtle.
-    void setxy(double x, double y);
+    void setxy(qreal x, qreal y);
 
     /// @brief Set the x coordinate of the turtle.
     /// @param x The new x coordinate of the turtle.
-    void setx(double x);
+    void setx(qreal x);
 
     /// @brief Set the y coordinate of the turtle.
     /// @param y The new y coordinate of the turtle.
-    void sety(double y);
+    void sety(qreal y);
 
     /// @brief Set the pen color.
     /// @param c The new pen color.
@@ -141,16 +141,16 @@ class Turtle
 
     /// @brief Set the pen size.
     /// @param aPenSize The new pen size.
-    void setPenSize(double aPenSize);
+    void setPenSize(qreal aPenSize);
 
     /// @brief Check if the pen size is valid.
     /// @param aPenSize The pen size to check.
     /// @return True if the pen size is valid, false otherwise.
-    bool isPenSizeValid(double aPenSize);
+    bool isPenSizeValid(qreal aPenSize);
 
     /// @brief Get the pen size.
     /// @return The current pen size.
-    double getPenSize();
+    qreal getPenSize();
 
     /// @brief Get the pen color.
     /// @return The current pen color.
@@ -169,7 +169,7 @@ class Turtle
     /// @brief Draw an arc of a given angle and radius.
     /// @param angle The angle of the arc.
     /// @param radius The radius of the arc.
-    void drawArc(double angle, double radius);
+    void drawArc(qreal angle, qreal radius);
 
     /// @brief Begin filling with a given color.
     /// @param fillColor The color to fill with.

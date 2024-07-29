@@ -446,7 +446,7 @@ void LogoControllerGUI::setBounds(double x, double y)
     sendMessage([&](QDataStream *out) { *out << (message_t)C_CANVAS_SETBOUNDS << (qreal)xbound << (qreal)ybound; });
 }
 
-void LogoControllerGUI::setPensize(double aSize)
+void LogoControllerGUI::setPensize(qreal aSize)
 {
     if (aSize == penSize)
         return;
