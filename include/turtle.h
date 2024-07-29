@@ -34,6 +34,14 @@ class Turtle
 {
     QTransform turtlePosition;
 
+    bool wrapTurtle(qreal lineStartU,
+                    qreal lineStartV,
+                    qreal &lineEndU,
+                    qreal lineEndV,
+                    qreal boundU,
+                    qreal boundV,
+                    bool isXBoundary,
+                    qreal mult);
     void moveTurtle(const QTransform &newPosition);
     void moveTurtleWrap(const QTransform &newPosition);
     void moveTurtleFence(const QTransform &newPosition);
