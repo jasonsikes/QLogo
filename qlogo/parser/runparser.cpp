@@ -1,20 +1,11 @@
 
 //===-- runparser.cpp - Parser class implementation -------*- C++ -*-===//
 //
-// This file is part of QLogo.
+// Copyright 2017-2024 Jason Sikes
 //
-// QLogo is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// QLogo is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with QLogo.  If not, see <http://www.gnu.org/licenses/>.
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted under the conditions specified in the
+// license found in the LICENSE file in the project root.
 //
 //===----------------------------------------------------------------------===//
 ///

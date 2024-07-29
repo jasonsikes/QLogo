@@ -1,3 +1,22 @@
+//===-- qlogo/logocontrollergui.h - class definition -------*- C++ -*-===//
+//
+// Copyright 2017-2024 Jason Sikes
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted under the conditions specified in the
+// license found in the LICENSE file in the project root.
+//
+//===----------------------------------------------------------------------===//
+///
+/// \file
+/// This file contains the definition of the LogoControllerGUI class, which is
+/// responsible for handling user input and output through the QLogo-GUI
+/// terminal application. In addition to text input and output, the GUI controller
+/// also receives mouse and keyboard events from the GUI, and provides a way to
+/// communicate Turtle movements and drawing commands to the QLogo canvas.
+///
+//===----------------------------------------------------------------------===//
+
 #include "controller/logocontrollergui.h"
 #include <QApplication>
 #include <QByteArray>
@@ -5,6 +24,7 @@
 #include <QMatrix4x4>
 #include <QMessageBox>
 #include <unistd.h>
+
 #ifdef _WIN32
 // For setmode(..., O_BINARY)
 #include <fcntl.h>

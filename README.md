@@ -15,24 +15,9 @@ interpreter developed by Brian Harvey at U.C. Berkeley.
 
 Copyright (C) 2017-2024 Jason Sikes
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-***
-
-The help and library texts included in this package derive from UCBLogo under
-terms of the GNU General Public License as published by the Free
-Software Foundation, version 3.
-
-You should have received a copy of the GNU General Public License along
-with this program. If not, see https://www.gnu.org/licenses/.
+Redistribution and use in source and binary forms, with or without
+modification, are permitted under the conditions specified in the
+license found in the LICENSE file in the project root.
 
 ***
 
@@ -76,8 +61,8 @@ $ cmake -S QLogo -B build
 
 ```
 
-Then enter into your build directory and issue ```make```, and, optionally, if
-all goes well (it will) you can run ```make install```
+Then enter into your build directory and issue `make`, and, optionally, if
+all goes well (it will) you can run `make install`
 
 ```
 $ cd build

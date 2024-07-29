@@ -1,4 +1,6 @@
-Version 0.96 - Jason Sikes - 2024-07-27
+Version 0.96 - Jason Sikes - 2024-07-28
+ * License changed to BSD 3-Clause except for the help and library texts
+   which are GNU General Public License, version 3.
  * Interpreter program name changed to qlogo.
  * GUI program name changed to QLogo-GUI.
  * Changed the QLogo icon.
