@@ -105,18 +105,12 @@ int MainWindow::startLogo()
 
     logoProcess = new QProcess(this);
 
-    // TODO: maybe call setWorkingDirectory()
-
-    connect(logoProcess, &QProcess::started, this, &MainWindow::processStarted);
-
     connect(
         logoProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &MainWindow::processFinished);
 
     connect(logoProcess, &QProcess::readyReadStandardOutput, this, &MainWindow::readStandardOutput);
 
     connect(logoProcess, &QProcess::readyReadStandardError, this, &MainWindow::readStandardError);
-
-    connect(logoProcess, &QProcess::errorOccurred, this, &MainWindow::errorOccurred);
 
     connect(ui->mainConsole, &Console::sendRawlineSignal, this, &MainWindow::sendRawlineSlot);
 
@@ -206,21 +200,15 @@ void MainWindow::introduceCanvas()
     setSplitterforMode(splitScreenMode);
 }
 
-void MainWindow::processStarted()
-{
-    qDebug() << "ProcessStarted()";
-}
-
 void MainWindow::processFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    if (exitStatus == QProcess::NormalExit)
+    if (exitStatus != QProcess::NormalExit)
     {
-        QApplication::exit(0);
+        QMessageBox msgBox;
+        msgBox.setText(tr("qlogo has reached an unstable state and will be terminated."));
+        msgBox.exec();
     }
-    else
-    {
-        qDebug() << "processFinished()" << exitCode << exitStatus;
-    }
+    QApplication::exit(0);
 }
 
 // TODO: rename this. It sounds confusing.
@@ -518,11 +506,6 @@ void MainWindow::readStandardError()
 {
     QByteArray ary = logoProcess->readAllStandardError();
     qDebug() << "stderr: " << QString(ary);
-}
-
-void MainWindow::errorOccurred(QProcess::ProcessError error)
-{
-    qDebug() << "Error occurred" << error;
 }
 
 void MainWindow::beginReadRawlineWithPrompt(const QString prompt)

@@ -110,17 +110,8 @@ class MainWindow : public QMainWindow
     /// @brief Handle the standard error of the QLogo process.
     void readStandardError();
 
-    /// @brief Handle the start of the QLogo process.
-    /// @note This is mostly for debugging to ensure the process is started
-    /// correctly.
-    void processStarted();
-
     /// @brief Handle the end of the QLogo process. Initiate shutdown of the GUI.
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
-
-    /// @brief Handle an error in the QLogo process.
-    /// @note This is mostly for debugging to print out a debug message.
-    void errorOccurred(QProcess::ProcessError error);
 
     /// @brief Handle a rawline being sent to the QLogo process.
     void sendRawlineSlot(const QString &line);
