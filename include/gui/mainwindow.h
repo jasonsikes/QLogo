@@ -76,6 +76,9 @@ class MainWindow : public QMainWindow
     void sendCanvasImage();
     void sendCanvasSvg();
 
+    // Show user a file dialog modal window.
+    void fileDialogModal();
+
   protected:
     void closeEvent(QCloseEvent *event);
     QString findQlogoExe();

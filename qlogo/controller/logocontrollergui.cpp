@@ -116,6 +116,9 @@ message_t LogoControllerGUI::getMessage()
     case C_CONSOLE_CHAR_READ:
         bufferStream >> rawChar;
         break;
+    case W_FILE_DIALOG_GET_PATH:
+        bufferStream >> filePath;
+        break;
     case C_CONSOLE_END_EDIT_TEXT:
         bufferStream >> editorText;
         break;
@@ -266,6 +269,15 @@ DatumPtr LogoControllerGUI::readchar()
     waitForMessage(C_CONSOLE_CHAR_READ);
 
     return DatumPtr(rawChar);
+}
+
+QString LogoControllerGUI::fileDialogModal()
+{
+    sendMessage([&](QDataStream *out) { *out << (message_t)W_FILE_DIALOG_GET_PATH; });
+
+    waitForMessage(W_FILE_DIALOG_GET_PATH);
+
+    return filePath;
 }
 
 void LogoControllerGUI::setTurtlePos(const QTransform &newTurtlePos)

@@ -414,10 +414,30 @@ DatumPtr Kernel::excReadchars(DatumPtr node)
     return h.ret(retval);
 }
 
+/***DOC FILEDIALOG
+FILEDIALOG
+
+    GUI only. Presents a modal file dialog to the user. The user is then
+    given an opportunity to select a file. Outputs the file path of the file
+    selected by the user or an empty list if user pressed 'Cancel'.
+
+COD***/
+// CMD FILEDIALOG 0 0 0
+DatumPtr Kernel::excFiledialog(DatumPtr node)
+{
+    ProcedureHelper h(this, node);
+    QString retval = Config::get().mainController()->fileDialogModal();
+    if (retval.isEmpty())
+    {
+        return h.ret(new List);
+    }
+    return h.ret(retval);
+}
+
 /***DOC COPYRIGHT
 COPYRIGHT
 
- command.  Prints a copyright message to the current write stream.
+    command.  Prints a copyright message to the current write stream.
 
 COD***/
 // CMD COPYRIGHT 0 0 0

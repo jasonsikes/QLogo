@@ -95,6 +95,12 @@ class LogoController : public QObject
     /// @param ms The number of milliseconds to wait.
     virtual void mwait(unsigned long ms);
 
+    virtual QString fileDialogModal()
+    {
+        Error::noGraphics();
+        return QString();
+    }
+
     /// @brief Edits a text string.
     /// @param text The text to edit.
     /// @return The edited text.

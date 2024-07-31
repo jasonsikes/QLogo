@@ -28,6 +28,7 @@
 #include <QScrollBar>
 #include <QThread>
 #include <QTimer>
+#include <QFileDialog>
 
 /// This function is a wrapper around QProcess::write() to send a message to the
 /// QLogo process. It takes a function that writes the message to a QDataStream
@@ -166,6 +167,16 @@ void MainWindow::initialize()
     });
 }
 
+void MainWindow::fileDialogModal()
+{
+    QString startingDir = QDir::homePath();
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Choose file"), startingDir);
+    sendMessage([&](QDataStream *out) {
+        *out << (message_t)W_FILE_DIALOG_GET_PATH
+             << filePath;
+    });
+}
+
 void MainWindow::openEditorWindow(const QString startingText)
 {
     if (editWindow == NULL)
@@ -257,6 +268,11 @@ void MainWindow::readStandardOutput()
             ScreenModeEnum newMode;
             *dataStream >> newMode;
             setSplitterforMode(newMode);
+            break;
+        }
+        case W_FILE_DIALOG_GET_PATH:
+        {
+            fileDialogModal();
             break;
         }
         case C_CONSOLE_PRINT_STRING:

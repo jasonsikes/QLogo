@@ -112,6 +112,7 @@ stringToCmd[QObject::tr("READRAWLINE")] = {&Kernel::excReadrawline, 0, 0, 0};
 stringToCmd[QObject::tr("READCHAR")] = {&Kernel::excReadchar, 0, 0, 0};
 stringToCmd[QObject::tr("READCHARS")] = {&Kernel::excReadchars, 1, 1, 1};
 stringToCmd[QObject::tr("RCS")] = {&Kernel::excReadchars, 1, 1, 1};
+stringToCmd[QObject::tr("FILEDIALOG")] = {&Kernel::excFiledialog, 0, 0, 0};
 stringToCmd[QObject::tr("COPYRIGHT")] = {&Kernel::excCopyright, 0, 0, 0};
 stringToCmd[QObject::tr("SHELL")] = {&Kernel::excShell, 1, 1, 2};
 stringToCmd[QObject::tr("SETPREFIX")] = {&Kernel::excSetprefix, 1, 1, 1};

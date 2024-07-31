@@ -89,6 +89,7 @@ DatumPtr excReadword(DatumPtr node);
 DatumPtr excReadrawline(DatumPtr node);
 DatumPtr excReadchar(DatumPtr node);
 DatumPtr excReadchars(DatumPtr node);
+DatumPtr excFiledialog(DatumPtr node);
 DatumPtr excCopyright(DatumPtr node);
 DatumPtr excShell(DatumPtr node);
 DatumPtr excSetprefix(DatumPtr node);
