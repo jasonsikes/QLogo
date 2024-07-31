@@ -40,7 +40,8 @@ rm -rf "$destdir"
 
 # Create the icon file for Windows:
 
-dest="QLogo-GUI.ico"
+# Windows icon goes into its 'resources' directory.
+dest="../resources/QLogo-GUI.ico"
 
 convert $source -resize 16x16   -depth 32 q16-32.png
 convert $source -resize 32x32   -depth 32 q32-32.png
@@ -49,7 +50,6 @@ convert $source -resize 256x256 -depth 32 q256-32.png
 
 convert q16-32.png q32-32.png q48-32.png q256-32.png $dest
 rm q16-32.png q32-32.png q48-32.png q256-32.png
-
 
 
 # Create the icons for Linux:
