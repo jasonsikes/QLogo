@@ -34,7 +34,7 @@ class InputQueueThread : public QThread
 
   signals:
     /// @brief Signal to indicate that a message is available
-    void sendMessage();
+    void sendMessageSignal();
 };
 
 class InputQueue : public QObject
@@ -46,7 +46,7 @@ class InputQueue : public QObject
 
   private slots:
     // Connected to sendMessage signal from thread.
-    void receiveMessage();
+    void receiveMessageSlot();
 
   public:
     /// @brief Constructor

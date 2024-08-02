@@ -62,7 +62,7 @@ void InputQueueThread::run()
         queueLock.lock();
         messageQueue.enqueue(message);
         queueLock.unlock();
-        emit sendMessage();
+        emit sendMessageSignal();
     }
 }
 
@@ -72,7 +72,7 @@ InputQueue::InputQueue(QObject *parent) : QObject(parent)
 
 void InputQueue::startQueue()
 {
-    connect(&thread, SIGNAL(sendMessage()), this, SLOT(receiveMessage()), Qt::QueuedConnection);
+    connect(&thread, SIGNAL(sendMessageSignal()), this, SLOT(receiveMessageSlot()), Qt::QueuedConnection);
     thread.start();
 }
 
@@ -112,7 +112,7 @@ bool InputQueue::isMessageAvailable()
     return retval;
 }
 
-void InputQueue::receiveMessage()
+void InputQueue::receiveMessageSlot()
 {
     eventLoop.exit(0);
 }
