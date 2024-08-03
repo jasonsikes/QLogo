@@ -57,6 +57,9 @@ class MainWindow : public QMainWindow
 
     QProcess *logoProcess;
 
+    QByteArray readBuffer;
+    qint64 readBufferLen = 0;
+
     windowMode_t windowMode;
     bool hasShownCanvas = false;
     EditorWindow *editWindow = NULL;
@@ -79,12 +82,13 @@ class MainWindow : public QMainWindow
     // Show user a file dialog modal window.
     void fileDialogModal();
 
+    void processReadBuffer();
+
   protected:
     void closeEvent(QCloseEvent *event);
     QString findQlogoExe();
 
   public:
-
     /// @brief Constructor.
     ///
     /// @param parent The Qt parent widget.
@@ -106,7 +110,7 @@ class MainWindow : public QMainWindow
 
     /// @brief Handle the standard output of the QLogo process.
     void readStandardOutput();
-  
+
     /// @brief Handle the standard error of the QLogo process.
     void readStandardError();
 
