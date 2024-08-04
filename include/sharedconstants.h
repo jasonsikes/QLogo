@@ -214,7 +214,6 @@ class Config
     const char *defaultHelpDbFilename = "qlogo_help.db";
 };
 
-
 enum PenModeEnum
 {
     /// @brief The paint pen mode, draws the current foreground color.
@@ -236,7 +235,11 @@ enum TurtleModeEnum
     turtleFence,
 
     /// @brief The window turtle mode, turtle can leave the canvas.
-    turtleWindow
+    turtleWindow,
+
+    /// @brief The adaptive turtle mode, where the canvas bounds grow to accommodate the
+    /// turtle's position as needed.
+    turtleAdaptive
 };
 
 enum SignalsEnum_t : int

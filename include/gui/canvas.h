@@ -79,22 +79,23 @@ struct Arc
 /// - TurtleWriteInfo - A change in how a turtle draws.
 /// - QPolygonF - A polyline.
 /// - Arc - An arc.
-using deVariant = std::variant<Label, Polygon, TurtleWriteInfo, QPolygonF, Arc>;
+using DrawingElementVariant = std::variant<Label, Polygon, TurtleWriteInfo, QPolygonF, Arc>;
+
+/// @brief An ID for each type of drawing element.
+enum DrawingElementID
+{
+    DrawingElementIDLabel,
+    DrawingElementIDPolygon,
+    DrawingElementIDTurtle,
+    DrawingElementIDPolyline,
+    DrawingElementIDArc
+};
 
 /// The variant structure for the individual drawing elements.
 struct DrawingElement
 {
-    int eID;
-    deVariant element;
-};
-
-enum ElementID
-{
-    labelTypeID,
-    polygonTypeID,
-    turtleWriteInfoID,
-    polylineTypeID,
-    arcTypeID
+    DrawingElementID elementID;
+    DrawingElementVariant element;
 };
 
 /// @brief The canvas widget, the main widget for the turtle graphics.
@@ -151,19 +152,18 @@ class Canvas : public QWidget
     void initTurtleImage();
 
     void drawCanvas();
-    // the "el*" methods are the executors of each element of the DrawingElementList.
-    void elSetWriteInfo(const TurtleWriteInfo &info);
-    void elDrawBoundedBackground();
-    void elDrawUnboundedBackground();
-    void elDrawBackgroundImage();
-    void elDrawTurtle();
-    void elDrawPolyline(const QPolygonF &);
-    void elDrawPolygon(const Polygon &p);
-    void elDrawLabel(const Label &);
-    void elDrawArc(const Arc &a);
 
-    // Return the appropriate color for the current penMode.
-    const QColor &colorForPenmode();
+    void elementListSetWriteInfo(const TurtleWriteInfo &info);
+    void elementListDrawBoundedBackground();
+    void elementListDrawUnboundedBackground();
+    void elementListDrawBackgroundImage();
+    void elementListDrawTurtle();
+    void elementListDrawPolyline(const QPolygonF &);
+    void elementListDrawPolygon(const Polygon &p);
+    void elementListDrawLabel(const Label &);
+    void elementListDrawArc(const Arc &a);
+
+    const QColor &colorForCurrentPenmode();
 
     void updateMatrix(void);
 
@@ -341,14 +341,13 @@ class Canvas : public QWidget
     /// @param position The position of the mouse click.
     /// @param buttonID The ID of the mouse button that was clicked.
     void sendMouseclickedSignal(QPointF position, int buttonID);
-  
+
     /// @brief Send a mouse moved signal to the main window.
     /// @param position The position of the mouse move.
     void sendMousemovedSignal(QPointF position);
-  
+
     /// @brief Send a mouse released signal to the main window.
     void sendMouseReleasedSignal();
-
 };
 
 #endif // CANVAS_H

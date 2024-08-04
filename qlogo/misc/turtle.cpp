@@ -143,9 +143,29 @@ void Turtle::moveTurtleFence(const QTransform &newPosition)
 }
 
 // Move the turtle to a new position, ignoring the canvas boundaries.
-
 void Turtle::moveTurtleWindow(const QTransform &newPosition)
 {
+    turtlePosition = newPosition;
+    Config::get().mainController()->setTurtlePos(turtlePosition);
+    Config::get().mainController()->emitVertex();
+}
+
+// Move the turtle to a new position, adjusting the canvas boundaries,
+// if needed.
+void Turtle::moveTurtleAdaptive(const QTransform &newPosition)
+{
+    qreal candidateX = std::abs(newPosition.dx()) + penSize;
+    qreal candidateY = std::abs(newPosition.dy()) + penSize;
+    qreal boundX = Config::get().mainController()->boundX();
+    qreal boundY = Config::get().mainController()->boundY();
+
+    if ((candidateX > boundX) || (candidateY > boundY))
+    {
+        boundX = (candidateX > boundX) ? candidateX : boundX;
+        boundY = (candidateY > boundY) ? candidateY : boundY;
+        Config::get().mainController()->setBounds(boundX, boundY);
+    }
+
     turtlePosition = newPosition;
     Config::get().mainController()->setTurtlePos(turtlePosition);
     Config::get().mainController()->emitVertex();
@@ -163,6 +183,9 @@ void Turtle::moveTurtle(const QTransform &newPosition)
         break;
     case turtleWindow:
         moveTurtleWindow(newPosition);
+        break;
+    case turtleAdaptive:
+        moveTurtleAdaptive(newPosition);
         break;
     }
 }

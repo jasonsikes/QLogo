@@ -49,7 +49,7 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent)
 
 void Canvas::initDrawingElementList()
 {
-    drawingElementList.push_back({turtleWriteInfoID, deVariant(currentWriteInfo)});
+    drawingElementList.push_back({DrawingElementIDTurtle, DrawingElementVariant(currentWriteInfo)});
     if (penIsDown)
         lineGroup.push_back(pointFromTurtle());
 }
@@ -103,7 +103,7 @@ void Canvas::pushLineGroup()
 {
     if (lineGroup.size() > 1)
     {
-        drawingElementList.push_back({polylineTypeID, deVariant(lineGroup)});
+        drawingElementList.push_back({DrawingElementIDPolyline, DrawingElementVariant(lineGroup)});
         lineGroup.clear();
         if (penIsDown)
             lineGroup.push_back(pointFromTurtle());
@@ -114,18 +114,19 @@ void Canvas::setBounds(qreal x, qreal y)
 {
     boundsX = x;
     boundsY = y;
+    updateMatrix();
     update();
 }
 
 void Canvas::setLastWriteInfo()
 {
     Q_ASSERT(drawingElementList.size() > 0);
-    int lastElementID = drawingElementList.last().eID;
+    int lastElementID = drawingElementList.last().elementID;
     // If the last drawing element is not a TurtleWriteInfo, then create it and
     // push it onto the list.
-    if (lastElementID != turtleWriteInfoID)
+    if (lastElementID != DrawingElementIDTurtle)
     {
-        drawingElementList.push_back({turtleWriteInfoID, deVariant(currentWriteInfo)});
+        drawingElementList.push_back({DrawingElementIDTurtle, DrawingElementVariant(currentWriteInfo)});
     }
     else
     {
@@ -163,7 +164,7 @@ void Canvas::setPenmode(PenModeEnum newMode)
     penMode = newMode;
     currentWriteInfo.composingMode =
         (penMode == penModeReverse) ? QPainter::CompositionMode_Difference : QPainter::CompositionMode_SourceOver;
-    currentWriteInfo.pen.setColor(colorForPenmode());
+    currentWriteInfo.pen.setColor(colorForCurrentPenmode());
     setLastWriteInfo();
 }
 
@@ -179,7 +180,7 @@ void Canvas::setPensize(qreal aSize)
     setLastWriteInfo();
 }
 
-const QColor &Canvas::colorForPenmode()
+const QColor &Canvas::colorForCurrentPenmode()
 {
     if (penMode == penModePaint)
         return foregroundColor;
@@ -205,7 +206,7 @@ void Canvas::addLabel(QString aText)
     // drawing text. This is the most efficient place to do it.
     Label l(aText, QPointF(turtleMatrix.dx(), -turtleMatrix.dy()), labelFont);
     pushLineGroup();
-    drawingElementList.push_back({labelTypeID, deVariant(l)});
+    drawingElementList.push_back({DrawingElementIDLabel, DrawingElementVariant(l)});
     update();
 }
 
@@ -227,7 +228,7 @@ void Canvas::addArc(qreal angle, qreal radius)
 
     Arc arc(pointFromTurtle(), a, angle, radius);
     pushLineGroup();
-    drawingElementList.push_back({arcTypeID, deVariant(arc)});
+    drawingElementList.push_back({DrawingElementIDArc, DrawingElementVariant(arc)});
     update();
 }
 
@@ -260,7 +261,7 @@ void Canvas::setForegroundColor(const QColor &c)
     pushLineGroup();
 
     foregroundColor = c;
-    currentWriteInfo.pen.setColor(colorForPenmode());
+    currentWriteInfo.pen.setColor(colorForCurrentPenmode());
 
     setLastWriteInfo();
 }
@@ -316,12 +317,12 @@ void Canvas::paintEvent(QPaintEvent *event)
     painter = &eventPainter;
 
     if (!canvasIsBounded)
-        elDrawUnboundedBackground();
+        elementListDrawUnboundedBackground();
 
     painter->setWorldTransform(drawingMatrix);
 
     if (canvasIsBounded)
-        elDrawBoundedBackground();
+        elementListDrawBoundedBackground();
 
     drawCanvas();
 }
@@ -330,26 +331,26 @@ void Canvas::drawCanvas()
 {
     painter->setRenderHint(QPainter::Antialiasing);
 
-    elDrawBackgroundImage();
+    elementListDrawBackgroundImage();
 
     for (auto &drawCommand : drawingElementList)
     {
-        switch (drawCommand.eID)
+        switch (drawCommand.elementID)
         {
-        case labelTypeID:
-            elDrawLabel(std::get<Label>(drawCommand.element));
+        case DrawingElementIDLabel:
+            elementListDrawLabel(std::get<Label>(drawCommand.element));
             break;
-        case turtleWriteInfoID:
-            elSetWriteInfo(std::get<TurtleWriteInfo>(drawCommand.element));
+        case DrawingElementIDTurtle:
+            elementListSetWriteInfo(std::get<TurtleWriteInfo>(drawCommand.element));
             break;
-        case polylineTypeID:
-            elDrawPolyline(std::get<QPolygonF>(drawCommand.element));
+        case DrawingElementIDPolyline:
+            elementListDrawPolyline(std::get<QPolygonF>(drawCommand.element));
             break;
-        case polygonTypeID:
-            elDrawPolygon(std::get<Polygon>(drawCommand.element));
+        case DrawingElementIDPolygon:
+            elementListDrawPolygon(std::get<Polygon>(drawCommand.element));
             break;
-        case arcTypeID:
-            elDrawArc(std::get<Arc>(drawCommand.element));
+        case DrawingElementIDArc:
+            elementListDrawArc(std::get<Arc>(drawCommand.element));
             break;
         default:
             Q_ASSERT(false);
@@ -359,22 +360,22 @@ void Canvas::drawCanvas()
     // Draw the in-progress line group.
     painter->drawPolyline(lineGroup);
 
-    elDrawTurtle();
+    elementListDrawTurtle();
 }
 
-void Canvas::elDrawUnboundedBackground()
+void Canvas::elementListDrawUnboundedBackground()
 {
     painter->fillRect(rect(), backgroundColor);
 }
 
-void Canvas::elDrawBoundedBackground()
+void Canvas::elementListDrawBoundedBackground()
 {
     QRectF rect(-boundsX, -boundsY, 2 * boundsX, 2 * boundsY);
     painter->setClipRect(rect);
     painter->fillRect(rect, backgroundColor);
 }
 
-void Canvas::elDrawBackgroundImage()
+void Canvas::elementListDrawBackgroundImage()
 {
     if (backgroundImage.isNull())
         return;
@@ -386,7 +387,7 @@ void Canvas::elDrawBackgroundImage()
     painter->scale(1, -1);
 }
 
-void Canvas::elDrawLabel(const Label &label)
+void Canvas::elementListDrawLabel(const Label &label)
 {
     painter->setFont(label.font);
 
@@ -395,12 +396,12 @@ void Canvas::elDrawLabel(const Label &label)
     painter->scale(1, -1);
 }
 
-void Canvas::elDrawPolyline(const QPolygonF &polyLine)
+void Canvas::elementListDrawPolyline(const QPolygonF &polyLine)
 {
     painter->drawPolyline(polyLine);
 }
 
-void Canvas::elDrawPolygon(const Polygon &p)
+void Canvas::elementListDrawPolygon(const Polygon &p)
 {
     static QPen noPen = QPen();
     noPen.setStyle(Qt::NoPen);
@@ -412,12 +413,12 @@ void Canvas::elDrawPolygon(const Polygon &p)
     painter->setPen(pen);
 }
 
-void Canvas::elDrawArc(const Arc &a)
+void Canvas::elementListDrawArc(const Arc &a)
 {
     painter->drawArc(a.rectangle, a.startAngle, a.spanAngle);
 }
 
-void Canvas::elDrawTurtle()
+void Canvas::elementListDrawTurtle()
 {
     if (turtleIsVisible)
     {
@@ -431,7 +432,7 @@ void Canvas::elDrawTurtle()
 }
 
 // The pen controls composition mode, color and size
-void Canvas::elSetWriteInfo(const TurtleWriteInfo &info)
+void Canvas::elementListSetWriteInfo(const TurtleWriteInfo &info)
 {
     painter->setPen(info.pen);
     painter->setCompositionMode(info.composingMode);
@@ -444,6 +445,31 @@ void Canvas::emitVertex()
     if (isConstructingPolygon)
         polygonGroup << pointFromTurtle();
     update();
+}
+
+void Canvas::updateMatrix(void)
+{
+    // Set coordinate system so that background box fits in widget and fills
+    // without stretching.
+    qreal widgetHWRatio = (qreal)height() / (qreal)width();
+    qreal boundsHWRatio = boundsY / boundsX;
+    qreal hwRatio;
+    if (widgetHWRatio > boundsHWRatio)
+    {
+        // the bounds are hugging the left and right edges
+        hwRatio = width() / boundsX / 2;
+    }
+    else
+    {
+        // the bounds are hugging the top and bottom edges
+        hwRatio = height() / boundsY / 2;
+    }
+
+    drawingMatrix.reset();
+    drawingMatrix.translate(width() / 2.0, height() / 2.0);
+    drawingMatrix.scale(hwRatio, -hwRatio);
+
+    inverseDrawingMatrix = drawingMatrix.inverted();
 }
 
 QPointF Canvas::pointFromTurtle()
@@ -468,7 +494,8 @@ void Canvas::endPolygon()
     if (polygonGroup.size() >= 3)
     {
         pushLineGroup();
-        drawingElementList.push_back({polygonTypeID, deVariant(Polygon({polygonColor, polygonGroup}))});
+        drawingElementList.push_back(
+            {DrawingElementIDPolygon, DrawingElementVariant(Polygon({polygonColor, polygonGroup}))});
     }
     polygonGroup.clear();
     isConstructingPolygon = false;
@@ -476,27 +503,7 @@ void Canvas::endPolygon()
 
 void Canvas::resizeEvent(QResizeEvent *event)
 {
-    // Set coordinate system so that background box fits in widget and fills
-    // without stretching.
-    qreal widgetHWRatio = (qreal)height() / (qreal)width();
-    qreal boundsHWRatio = boundsY / boundsX;
-    qreal hwRatio;
-    if (widgetHWRatio > boundsHWRatio)
-    {
-        // the bounds are hugging the left and right edges
-        hwRatio = width() / boundsX / 2;
-    }
-    else
-    {
-        // the bounds are hugging the top and bottom edges
-        hwRatio = height() / boundsY / 2;
-    }
-
-    drawingMatrix.reset();
-    drawingMatrix.translate(width() / 2.0, height() / 2.0);
-    drawingMatrix.scale(hwRatio, -hwRatio);
-
-    inverseDrawingMatrix = drawingMatrix.inverted();
+    updateMatrix();
 }
 
 void Canvas::mousePressEvent(QMouseEvent *event)

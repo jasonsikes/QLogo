@@ -148,6 +148,7 @@ DatumPtr excHideturtle(DatumPtr node);
 DatumPtr excClean(DatumPtr node);
 DatumPtr excClearscreen(DatumPtr node);
 DatumPtr excWrap(DatumPtr node);
+DatumPtr excAdaptive(DatumPtr node);
 DatumPtr excWindow(DatumPtr node);
 DatumPtr excFence(DatumPtr node);
 DatumPtr excBounds(DatumPtr node);
@@ -265,6 +266,5 @@ DatumPtr excAnd(DatumPtr node);
 DatumPtr excOr(DatumPtr node);
 DatumPtr excNot(DatumPtr node);
 DatumPtr excInfixError(DatumPtr node);
-
 
 #endif // CONSTANTS_H
