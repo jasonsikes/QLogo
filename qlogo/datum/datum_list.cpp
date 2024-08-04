@@ -55,13 +55,6 @@ List::~List()
 {
 }
 
-List::List(List *source)
-{
-    astParseTimeStamp = 0;
-    head = source->head;
-    lastNode = source->lastNode;
-}
-
 Datum::DatumType List::isa()
 {
     return listType;

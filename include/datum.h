@@ -495,11 +495,6 @@ class List : public Datum
     /// @param source The source array to copy from.
     List(Array *source);
 
-    /// @brief Create a new list populated with elements of another List.
-    ///
-    /// @param source The source list to copy from.
-    List(List *source);
-
     /// @brief Create a new list by attaching item as the head of srcList.
     ///
     /// @param item The item to add to the head of the list.
