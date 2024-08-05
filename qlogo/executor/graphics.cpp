@@ -497,7 +497,7 @@ WRAP
     window.  The top edge wraps to the bottom edge, while the left
     edge wraps to the right edge.  (So the window is topologically
     equivalent to a torus.)  This is the turtle's initial mode.
-    Compare ADAPTIVE, WINDOW and FENCE.
+    Compare WINDOW and FENCE.
 
 COD***/
 // CMD WRAP 0 0 0
@@ -516,43 +516,15 @@ DatumPtr Kernel::excWrap(DatumPtr node)
     return nothing;
 }
 
-/***DOC ADAPTIVE
-ADAPTIVE
+/***DOC WINDOW
+WINDOW
 
     tells the turtle to enter adaptive mode:  From now on, if the turtle
     is asked to move past the boundary of the graphics window, the
     boundary will grow to accomodate the turtle's new position. Note
     that the lower and left boundaries are the negatives of the upper
     and right boundaries and that the origin is always in the center.
-    Compare WINDOW, WRAP and FENCE.
-
-COD***/
-// CMD ADAPTIVE 0 0 0
-DatumPtr Kernel::excAdaptive(DatumPtr node)
-{
-    ProcedureHelper h(this, node);
-    TurtleModeEnum newMode = turtleAdaptive;
-
-    if (!Config::get().hasGUI)
-        Error::noGraphics();
-    if (Config::get().mainTurtle()->getMode() != newMode)
-    {
-        Config::get().mainTurtle()->setMode(newMode);
-        Config::get().mainController()->setIsCanvasBounded(false);
-    }
-    return nothing;
-}
-
-/***DOC WINDOW
-WINDOW
-
-    tells the turtle to enter window mode:  From now on, if the turtle
-    is asked to move past the boundary of the graphics window, it
-    will move offscreen.  The visible graphics window is considered
-    as just part of an infinite graphics plane; the turtle can be
-    anywhere on the plane.  (If you lose the turtle, HOME will bring
-    it back to the center of the window.)  Compare ADAPTIVE, WRAP,
-    and FENCE.
+    Compare WRAP and FENCE.
 
 COD***/
 // CMD WINDOW 0 0 0
@@ -577,7 +549,7 @@ FENCE
     tells the turtle to enter fence mode:  From now on, if the turtle
     is asked to move past the boundary of the graphics window, it
     will move as far as it can and then stop at the edge with an
-    "out of bounds" error message.  Compare ADAPTIVE, WRAP and WINDOW.
+    "out of bounds" error message.  Compare WRAP and WINDOW.
 
 COD***/
 // CMD FENCE 0 0 0
@@ -868,9 +840,6 @@ DatumPtr Kernel::excTurtlemode(DatumPtr node)
         break;
     case turtleWindow:
         retval = QObject::tr("window");
-        break;
-    case turtleAdaptive:
-        retval = QObject::tr("adaptive");
         break;
     default:
         qDebug() << "what mode is the turtle?";

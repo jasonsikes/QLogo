@@ -184,10 +184,9 @@ stringToCmd[QObject::tr("CLEAN")] = {&Kernel::excClean, 0, 0, 0};
 stringToCmd[QObject::tr("CLEARSCREEN")] = {&Kernel::excClearscreen, 0, 0, 0};
 stringToCmd[QObject::tr("CS")] = {&Kernel::excClearscreen, 0, 0, 0};
 stringToCmd[QObject::tr("WRAP")] = {&Kernel::excWrap, 0, 0, 0};
-stringToCmd[QObject::tr("ADAPTIVE")] = {&Kernel::excAdaptive, 0, 0, 0};
 stringToCmd[QObject::tr("WINDOW")] = {&Kernel::excWindow, 0, 0, 0};
 stringToCmd[QObject::tr("FENCE")] = {&Kernel::excFence, 0, 0, 0};
-stringToCmd[QObject::tr("BOUNDS")] = {&Kernel::excBounds, 2, 2, 2};
+stringToCmd[QObject::tr("BOUNDS")] = {&Kernel::excBounds, 0, 0, 0};
 stringToCmd[QObject::tr("SETBOUNDS")] = {&Kernel::excSetbounds, 2, 2, 2};
 stringToCmd[QObject::tr("FILLED")] = {&Kernel::excFilled, 2, 2, 2};
 stringToCmd[QObject::tr("LABEL")] = {&Kernel::excLabel, 1, 1, 1};
@@ -345,5 +344,6 @@ stringToCmd[QObject::tr("=")] = {&Kernel::excInfixError, 1, 1, 1};
 stringToCmd[QObject::tr("<=")] = {&Kernel::excInfixError, 1, 1, 1};
 stringToCmd[QObject::tr(">=")] = {&Kernel::excInfixError, 1, 1, 1};
 stringToCmd[QObject::tr("<>")] = {&Kernel::excInfixError, 1, 1, 1};
+
 
 #endif // CONSTANTS_H

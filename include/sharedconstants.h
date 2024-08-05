@@ -234,12 +234,9 @@ enum TurtleModeEnum
     /// @brief The fence turtle mode, prevents the turtle from leaving the canvas.
     turtleFence,
 
-    /// @brief The window turtle mode, turtle can leave the canvas.
-    turtleWindow,
-
-    /// @brief The adaptive turtle mode, where the canvas bounds grow to accommodate the
+    /// @brief The window turtle mode, where the canvas bounds grow to accommodate the
     /// turtle's position as needed.
-    turtleAdaptive
+    turtleWindow
 };
 
 enum SignalsEnum_t : int

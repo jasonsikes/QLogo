@@ -46,7 +46,6 @@ class Turtle
     void moveTurtleWrap(const QTransform &newPosition);
     void moveTurtleFence(const QTransform &newPosition);
     void moveTurtleWindow(const QTransform &newPosition);
-    void moveTurtleAdaptive(const QTransform &newPosition);
 
     QColor penColor;
     TurtleModeEnum mode = turtleFence;
