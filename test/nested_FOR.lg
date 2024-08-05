@@ -1,0 +1,1 @@
+FOR [X 1 1 1] [FOR [Y 1 1 1] [PRINT "HI]]
