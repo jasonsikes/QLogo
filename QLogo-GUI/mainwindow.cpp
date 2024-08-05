@@ -30,22 +30,41 @@
 #include <QThread>
 #include <QTimer>
 
-/// This function is a wrapper around QProcess::write() to send a message to the
-/// QLogo process. It takes a function that writes the message to a QDataStream
-/// object and sends it to the QLogo process.
+/// @brief a pointer to the qlogo process.
+static QProcess *logoProcess;
+
+/// @brief Interface for sending messages to the qlogo process.
 ///
-/// @param func A function that writes the message to a QDataStream.
-void MainWindow::sendMessage(std::function<void(QDataStream *)> func)
+/// This class is used to send messages to the qlogo process. It presents a
+/// QDataStream interface for "<<" stream operations and then the destructor will
+/// send the message to the qlogo process.
+struct message
 {
-    qint64 datawritten;
+    message() : bufferStream(&buffer, QIODevice::WriteOnly)
+    {
+        buffer.clear();
+    }
+
+    ~message()
+    {
+        qint64 datawritten;
+        qint64 datalen = buffer.size();
+        buffer.prepend((const char *)&datalen, sizeof(qint64));
+        datawritten = logoProcess->write(buffer);
+        Q_ASSERT(datawritten == buffer.size());
+    }
+
+    template <class T>
+    message &operator<<(const T &x)
+    {
+        bufferStream << x;
+        return *this;
+    }
+
+  private:
     QByteArray buffer;
-    QDataStream bufferStream(&buffer, QIODevice::WriteOnly);
-    func(&bufferStream);
-    qint64 datalen = buffer.size();
-    buffer.prepend((const char *)&datalen, sizeof(qint64));
-    datawritten = logoProcess->write(buffer);
-    Q_ASSERT(datawritten == buffer.size());
-}
+    QDataStream bufferStream;
+};
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
@@ -135,7 +154,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     // Because when the process dies another signal will be sent to close the application.
     if (pid > 0)
     {
-        sendMessage([&](QDataStream *out) { *out << (message_t)S_SYSTEM; });
+        message() << (message_t)S_SYSTEM;
         logoProcess->closeWriteChannel();
 
         event->ignore();
@@ -155,17 +174,15 @@ void MainWindow::initialize()
     ui->mainCanvas->setLabelFontName(defaultFont.family());
     setSplitterforMode(initScreenMode);
 
-    sendMessage([&](QDataStream *out) {
-        *out << (message_t)W_INITIALIZE << QFontDatabase::families() << defaultFont.family()
-             << (double)defaultFont.pointSizeF();
-    });
+    message() << (message_t)W_INITIALIZE << QFontDatabase::families() << defaultFont.family()
+              << (double)defaultFont.pointSizeF();
 }
 
 void MainWindow::fileDialogModal()
 {
     QString startingDir = QDir::homePath();
     QString filePath = QFileDialog::getOpenFileName(this, tr("Choose file"), startingDir);
-    sendMessage([&](QDataStream *out) { *out << (message_t)W_FILE_DIALOG_GET_PATH << filePath; });
+    message() << (message_t)W_FILE_DIALOG_GET_PATH << filePath;
 }
 
 void MainWindow::openEditorWindow(const QString startingText)
@@ -186,7 +203,7 @@ void MainWindow::openEditorWindow(const QString startingText)
 
 void MainWindow::editingHasEndedSlot(QString text)
 {
-    sendMessage([&](QDataStream *out) { *out << (message_t)C_CONSOLE_END_EDIT_TEXT << text; });
+    message() << (message_t)C_CONSOLE_END_EDIT_TEXT << text;
 }
 
 void MainWindow::introduceCanvas()
@@ -534,27 +551,27 @@ void MainWindow::beginReadChar()
 
 void MainWindow::mouseclickedSlot(QPointF position, int buttonID)
 {
-    sendMessage([&](QDataStream *out) { *out << (message_t)C_CANVAS_MOUSE_BUTTON_DOWN << position << buttonID; });
+    message() << (message_t)C_CANVAS_MOUSE_BUTTON_DOWN << position << buttonID;
 }
 
 void MainWindow::mousemovedSlot(QPointF position)
 {
-    sendMessage([&](QDataStream *out) { *out << (message_t)C_CANVAS_MOUSE_MOVED << position; });
+    message() << (message_t)C_CANVAS_MOUSE_MOVED << position;
 }
 
 void MainWindow::mousereleasedSlot()
 {
-    sendMessage([&](QDataStream *out) { *out << (message_t)C_CANVAS_MOUSE_BUTTON_UP; });
+    message() << (message_t)C_CANVAS_MOUSE_BUTTON_UP;
 }
 
 void MainWindow::sendCharSlot(QChar c)
 {
-    sendMessage([&](QDataStream *out) { *out << (message_t)C_CONSOLE_CHAR_READ << c; });
+    message() << (message_t)C_CONSOLE_CHAR_READ << c;
 }
 
 void MainWindow::sendRawlineSlot(const QString &line)
 {
-    sendMessage([&](QDataStream *out) { *out << (message_t)C_CONSOLE_RAWLINE_READ << line; });
+    message() << (message_t)C_CONSOLE_RAWLINE_READ << line;
 }
 
 void MainWindow::sendConsoleCursorPosition()
@@ -562,19 +579,19 @@ void MainWindow::sendConsoleCursorPosition()
     int row = 0;
     int col = 0;
     ui->mainConsole->getCursorPos(row, col);
-    sendMessage([&](QDataStream *out) { *out << (message_t)C_CONSOLE_TEXT_CURSOR_POS << row << col; });
+    message() << (message_t)C_CONSOLE_TEXT_CURSOR_POS << row << col;
 }
 
 void MainWindow::sendCanvasImage()
 {
     QImage image(ui->mainCanvas->getImage());
-    sendMessage([&](QDataStream *out) { *out << (message_t)C_CANVAS_GET_IMAGE << image; });
+    message() << (message_t)C_CANVAS_GET_IMAGE << image;
 }
 
 void MainWindow::sendCanvasSvg()
 {
     QByteArray svg = ui->mainCanvas->getSvg();
-    sendMessage([&](QDataStream *out) { *out << (message_t)C_CANVAS_GET_SVG << svg; });
+    message() << (message_t)C_CANVAS_GET_SVG << svg;
 }
 
 void MainWindow::splitterHasMovedSlot(int, int)

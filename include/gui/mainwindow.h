@@ -21,7 +21,6 @@
 #include <QDataStream>
 #include <QMainWindow>
 #include <QProcess>
-#include <functional>
 
 class Canvas;
 class Console;
@@ -55,8 +54,6 @@ class MainWindow : public QMainWindow
 
     Ui::MainWindow *ui;
 
-    QProcess *logoProcess;
-
     QByteArray readBuffer;
     qint64 readBufferLen = 0;
 
@@ -68,8 +65,6 @@ class MainWindow : public QMainWindow
     void beginReadRawlineWithPrompt(const QString prompt);
     void beginReadChar();
     void sendConsoleCursorPosition();
-
-    void sendMessage(std::function<void(QDataStream *)> func);
 
     void initialize();
     void introduceCanvas();
