@@ -1,0 +1,7 @@
+to f
+localmake "p1 "local
+print :p1
+end
+make "p1 "global
+f
+print :p1
