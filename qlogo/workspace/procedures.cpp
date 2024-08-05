@@ -21,6 +21,7 @@
 #include "kernel.h"
 #include "error.h"
 #include "astnode.h"
+#include "workspace/callframe.h"
 #include <QDateTime>
 #include "QApplication"
 
@@ -354,6 +355,10 @@ DatumPtr Procedures::procedureForName(QString aName)
         if ( ! stdLib.allProcedureNames().contains(aName)) {
             return nothing;
         }
+        // Procedure is in our library, add it to our procedures table.
+        // Add a Frame with nothing to enable creating a procedure even if we
+        // are in a procedure.
+        CallFrame cf = CallFrame(&Config::get().mainKernel()->callStack, nothing);
         QString libraryText = stdLib.procedureText(aName);
         Q_ASSERT( ! libraryText.isEmpty());
         Config::get().mainKernel()->executeText(libraryText);

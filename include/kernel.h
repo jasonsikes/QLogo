@@ -59,8 +59,6 @@ class Kernel
 
     Help help;
 
-    CallFrameStack callStack;
-
     QHash<QString, TextStream *> fileStreams;
     QSet<TextStream *> writableStreams;
     QSet<TextStream *> readableStreams;
@@ -131,6 +129,11 @@ class Kernel
 
     /// @brief Destructor.
     ~Kernel();
+
+    /// @brief The procedure frame stack
+    ///
+    /// @todo
+    CallFrameStack callStack;
 
     /// @brief Get the next line of input and run it.
     /// @param shouldHandleError Set to true to tell the method to handle errors.
