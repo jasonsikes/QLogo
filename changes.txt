@@ -1,3 +1,10 @@
+Version 0.961 - Jason Sikes - 2024-08-05
+ * Added `FILEDIALOG` command to allow user to select a file using the system's file dialog.
+ * MainWindow can now receive large images from the qlogo process without crashing.
+ * Fixed Issue with Canvas bounds not updating unless user resizes the widget.
+ * Changed `WINDOW` turtle mode to mean that the bounds will zoom out to accommodate a turtle moving beyond the previously-defined boundary.
+ * Fixed bug that prevented loading library procedures during the execution of a procedure.
+
 Version 0.96 - Jason Sikes - 2024-07-28
  * License changed to BSD 3-Clause except for the help and library texts
    which are GNU General Public License, version 3.
