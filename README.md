@@ -101,40 +101,35 @@ the turtle and editor.
    from the X Color database found here:
    https://en.wikipedia.org/wiki/X11_color_names
    
-   5. as a hex triplet, preceded by "#"
+   5. as a hex RGB triplet, preceded by "#"
 
 
 * Changes in font properties (size, color, family) do not affect characters
   already printed. This enables multiple colors and fonts on the same console.
   
-
 * QLogo does not look for nor automatically load `STARTUP.LG`.
 
-
 * `COMMANDLINE` contains **ALL** of the parameters used to start qlogo instead
-  of just the ones that appear after a hyphen. This is because I use QCommandLineParser
-  to handle all of the command line arguments that begin with a hyphen.
-
+  of just the ones that appear after a hyphen.
 
 * If `ERRACT` is set and its size is greater than zero, then any errors execute
   `PAUSE`.
   
-
 * Garbage collection is on-the-fly, meaning that memory is freed the moment a
   word/list/array is no longer needed. `GC` and `.SETSEGMENTSIZE` are no-ops.
-
 
 * No scunching. UCBLogo provided a scrunch to compensate for older CRT screens
   with non-square pixels. This enabled turtle operations to maintain consistent
   physical height-width. The drawback is that some orientation queries are
   inaccurate. `SCRUNCH` and `SETSCRUNCH` are no-ops.
 
-
 * `SAVEPICT` saves a copy of the canvas in the format given by the filename's
   extension. For example: `SAVEPICT "MY_PICTURE.PNG` will save in PNG
   format. QLogo can save an image in the following formats: BMP, JPG/JPEG,
   PNG, PPM, XBM, and XPM
 
+* `WINDOW` no longer simply allows the turtle to run away from the canvas. `WINDOW`
+  now also allows the canvas to zoom out to accommodate the turtle's position.
 
 * There is no facility yet for translation/internationalization.
 
@@ -145,24 +140,25 @@ the turtle and editor.
 
 The original purpose of the command was to enable text to
 be visible on projectors which cut off outer boundaries of
-a computer screen. Projectors and monitors produced in the
-last few years show all of the computer screen. In addition,
+a computer screen. Projectors and monitors produced in
+recent years show all of the computer screen. In addition,
 QLogo is a windowed application so an instructor or presentor
 can move the window to a different position.
 
-
 `FILL`:
 
-Two reasons: One of the user interface principles for QLogo is that
-the canvas should be device resolution-independent. That
-means when the QLogo window is resized or the separator
-between the text and the graphics is moved the graphics
-will be redrawn with the new dimensions. The Flood Fill
-algorithm depends on specific pixels which means that the
-display can change dramatically depending on the size of
-the canvas. The other reason is that the Flood Fill
-algorithm can slow down window resizing. `FILLED` is still
-available.
+One of the user interface principles for QLogo is that
+the canvas should be device resolution-independent. When
+the QLogo window is resized or the separator between the
+text and the graphics is moved then the graphics
+will be redrawn with the new dimensions.
+
+The Flood Fill algorithm depends on specific pixels which
+means that what is filled can change dramatically depending
+on the size of the canvas.
+
+The other reason is that the Flood Fill algorithm can slow
+down window resizing. `FILLED` is still available.
 
 `EPSPICT`:
 
@@ -178,7 +174,7 @@ Not implemented yet.
 
 `SETEDITOR`:
 
-The QLogo GUI has its own built-in editor. If you run the logo program from a
+The QLogo GUI has its own built-in editor. If you run the qlogo program from a
 command line, such as in a terminal, no editor is available.
 
 `SETLIBLOC`:
@@ -286,3 +282,7 @@ X-coordinate is between -350 and 350 and its Y-coordinate is between -150 and
 
 Outputs a list of two numbers giving the maximum bounds (x,y)
 of the canvas.
+
+`FILEDIALOG`:
+
+Provides the user with a file dialog to select a file. The file name is returned as a string.
