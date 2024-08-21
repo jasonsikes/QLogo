@@ -25,11 +25,13 @@ QList<void *> otherListVisited;
 
 List::List()
 {
+    myType = listType;
     astParseTimeStamp = 0;
 }
 
 List::List(Array *source)
 {
+    myType = listType;
     for (auto &aryIter : source->array)
     {
         append(aryIter);
@@ -38,6 +40,7 @@ List::List(Array *source)
 
 List::List(DatumPtr item, List *srcList)
 {
+    myType = listType;
     head = item;
     if (!srcList->head.isNothing())
     {
@@ -53,11 +56,6 @@ List::List(DatumPtr item, List *srcList)
 
 List::~List()
 {
-}
-
-Datum::DatumType List::isa()
-{
-    return listType;
 }
 
 QString List::printValue(bool fullPrintp, int printDepthLimit, int printWidthLimit)

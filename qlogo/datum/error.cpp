@@ -23,6 +23,7 @@
 
 Error::Error()
 {
+    myType = errorType;
 }
 
 Error *Error::createError(int aNumber, const QString &aErrorText)

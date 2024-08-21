@@ -217,6 +217,7 @@ class Procedure : public Datum
     /// @brief Constructor.
     Procedure()
     {
+        myType = procedureType;
     }
 
     /// @brief The parameter names of the required inputs of the procedure.

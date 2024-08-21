@@ -19,12 +19,14 @@
 
 Array::Array(int aOrigin, int aSize)
 {
+    myType = arrayType;
     origin = aOrigin;
     array.reserve(aSize);
 }
 
 Array::Array(int aOrigin, List *source)
 {
+    myType = arrayType;
     auto iter = source->newIterator();
     origin = aOrigin;
     while (iter.elementExists())
@@ -35,11 +37,6 @@ Array::Array(int aOrigin, List *source)
 
 Array::~Array()
 {
-}
-
-Datum::DatumType Array::isa()
-{
-    return Datum::arrayType;
 }
 
 QString Array::printValue(bool fullPrintp, int printDepthLimit, int printWidthLimit)

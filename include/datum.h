@@ -59,12 +59,9 @@ class Datum
 {
     friend class ListIterator;
     friend class DatumPtr;
-    int retainCount;
-
-    /// @brief If set to 'true', DatumPtr will send qDebug message when this is deleted.
-    bool alertOnDelete = false;
 
   public:
+
     /// @brief Value returned by isa().
     enum DatumType
     {
@@ -76,6 +73,18 @@ class Datum
         procedureType,
         errorType
     };
+
+  protected:
+
+    // IMPORTANT! This must be the FIRST element of the class.
+    DatumType myType = noType;
+
+    int retainCount;
+
+    /// @brief If set to 'true', DatumPtr will send qDebug message when this is deleted.
+    bool alertOnDelete = false;
+
+  public:
 
     /// @brief Constructs a Datum
     ///
@@ -94,7 +103,10 @@ class Datum
     virtual Datum &operator=(const Datum &);
 
     /// @brief Return type of this object.
-    virtual DatumType isa();
+    inline DatumType isa()
+    {
+        return myType;
+    }
 
     /// @brief Return a string suitable for the PRINT command
     ///
@@ -225,32 +237,53 @@ class DatumPtr
     /// @brief Returns true if the referred Datum is a Word, false otherwise.
     ///
     /// @return True if the referred Datum is a Word, false otherwise.
-    bool isWord();
+    bool isWord()
+    {
+        return d->isa() == Datum::wordType;
+    }
 
     /// @brief Returns true if the referred Datum is a List, false otherwise.
     ///
     /// @return True if the referred Datum is a List, false otherwise.
-    bool isList();
+    bool isList()
+    {
+        return d->isa() == Datum::listType;
+    }
 
     /// @brief Returns true if the referred Datum is an ASTNode, false otherwise.
     ///
     /// @return True if the referred Datum is an ASTNode, false otherwise.
-    bool isASTNode();
+    bool isASTNode()
+    {
+        return d->isa() == Datum::astnodeType;
+    }
 
     /// @brief Returns true if the referred Datum is an Array, false otherwise.
     ///
     /// @return True if the referred Datum is an Array, false otherwise.
-    bool isArray();
+    bool isArray()
+    {
+        return d->isa() == Datum::arrayType;
+    }
+
 
     /// @brief Returns true if the referred Datum is an Error, false otherwise.
     ///
     /// @return True if the referred Datum is an Error, false otherwise.
-    bool isError();
+    bool isError()
+    {
+        return d->isa() == Datum::errorType;
+    }
+
 
     /// @brief Returns true if the referred Datum is a notADatum, false otherwise.
     ///
     /// @return True if the referred Datum is a notADatum, false otherwise.
-    bool isNothing();
+    bool isNothing()
+    {
+        return d->isa() == Datum::noType;
+    }
+
 
     /// @brief Reassign the pointer to refer to the other object.
     ///
@@ -307,7 +340,10 @@ class DatumPtr
     /// @brief returns a DatumType enumerated value which is the DatumType of the referenced object.
     ///
     /// @return A DatumType enumerated value which is the DatumType of the referenced object.
-    Datum::DatumType isa();
+    Datum::DatumType isa()
+    {
+        return d->isa();
+    }
 
     /// @brief Set a mark on the datum so that debug message will print when datum is
     /// destroyed.
@@ -367,9 +403,6 @@ class Word : public Datum
     /// returns NaN.
     double numberValue(void);
 
-    /// @brief returns the DatumType of this object.
-    DatumType isa();
-
     /// @brief convert encoded chars to their printable equivalents.
     ///
     /// @param fullPrintp if true print with backslashes and vertical bars
@@ -425,11 +458,6 @@ struct Array : public Datum
 
     /// @brief Destructor.
     ~Array();
-
-    /// @brief returns the DatumType of this object.
-    ///
-    /// @return The DatumType of this object.
-    DatumType isa();
 
     /// @brief Return a string suitable for the PRINT command
     ///
@@ -503,11 +531,6 @@ class List : public Datum
 
     /// @brief Destructor.
     ~List();
-
-    /// @brief returns the DatumType of this object.
-    ///
-    /// @return The DatumType of this object.
-    DatumType isa();
 
     /// @brief Return a string suitable for the PRINT command
     ///

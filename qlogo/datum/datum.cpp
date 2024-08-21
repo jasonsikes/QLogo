@@ -70,11 +70,6 @@ Datum &Datum::operator=(const Datum &)
     return *this;
 }
 
-Datum::DatumType Datum::isa()
-{
-    return noType;
-}
-
 // Values to represent no data (NULL)
 Datum notADatum;
 DatumPtr nothing(&notADatum);

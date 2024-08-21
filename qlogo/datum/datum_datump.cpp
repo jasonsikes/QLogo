@@ -138,36 +138,6 @@ bool DatumPtr::operator!=(const DatumPtr &other)
     return d != other.d;
 }
 
-bool DatumPtr::isASTNode()
-{
-    return d->isa() == Datum::astnodeType;
-}
-
-bool DatumPtr::isList()
-{
-    return d->isa() == Datum::listType;
-}
-
-bool DatumPtr::isArray()
-{
-    return d->isa() == Datum::arrayType;
-}
-
-bool DatumPtr::isWord()
-{
-    return d->isa() == Datum::wordType;
-}
-
-bool DatumPtr::isError()
-{
-    return d->isa() == Datum::errorType;
-}
-
-bool DatumPtr::isNothing()
-{
-    return d->isa() == Datum::noType;
-}
-
 Word *DatumPtr::wordValue()
 {
     Q_ASSERT(d->isa() == Datum::wordType);
@@ -202,11 +172,6 @@ Error *DatumPtr::errorValue()
 {
     Q_ASSERT(d->isa() == Datum::errorType);
     return (Error *)d;
-}
-
-Datum::DatumType DatumPtr::isa()
-{
-    return d->isa();
 }
 
 QString DatumPtr::printValue(bool fullPrintp, int printDepthLimit, int printWidthLimit)

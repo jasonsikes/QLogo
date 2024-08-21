@@ -35,6 +35,7 @@ DatumPtr ASTNode::childAtIndex(unsigned index)
 
 ASTNode::ASTNode(DatumPtr aNodeName)
 {
+    myType = astnodeType;
     children.clear();
     nodeName = aNodeName;
     kernel = NULL;
@@ -42,6 +43,7 @@ ASTNode::ASTNode(DatumPtr aNodeName)
 
 ASTNode::ASTNode(QString aNodeName)
 {
+    myType = astnodeType;
     children.clear();
     nodeName = DatumPtr(aNodeName);
     kernel = NULL;

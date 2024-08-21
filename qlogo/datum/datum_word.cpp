@@ -84,6 +84,7 @@ QChar charToRaw(const QChar &src)
 
 Word::Word()
 {
+    myType = wordType;
     number = nan("");
     rawString = QString();
     printableString = QString();
@@ -93,6 +94,7 @@ Word::Word()
 
 Word::Word(const QString other, bool aIsForeverSpecial)
 {
+    myType = wordType;
     number = nan("");
     isForeverSpecial = aIsForeverSpecial;
     rawString = other;
@@ -103,6 +105,7 @@ Word::Word(const QString other, bool aIsForeverSpecial)
 
 Word::Word(double other)
 {
+    myType = wordType;
     number = other;
     rawString = QString();
     printableString = QString();
@@ -143,11 +146,6 @@ void Word::genKeyString()
                 keyString[i] = d;
         }
     }
-}
-
-Datum::DatumType Word::isa()
-{
-    return wordType;
 }
 
 QString Word::keyValue()
