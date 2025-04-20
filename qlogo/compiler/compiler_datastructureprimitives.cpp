@@ -895,9 +895,25 @@ SETITEM index array value
     "value" may not be a list or array that contains "array".
 
 COD***/
+/***DOC .SETITEM
+.SETITEM index array value
+
+    command.  Changes the "index"th member of "array" to be "value",
+    like SETITEM, but without checking for circularity.
+
+    WARNING: Primitives whose names start with a period are DANGEROUS.
+    Their use by non-experts is not recommended.  The use of .SETITEM
+    can lead to circular arrays, which will get some Logo primitives into
+    infinite loops.
+
+COD***/
+// CMD .SETITEM 3 3 3 n
 // CMD SETITEM 3 3 3 n
 Value *Compiler::genSetitem(DatumPtr node, RequestReturnType returnType)
 {
+    QChar nodeNameFirstLetter = node.astnodeValue()->nodeName.wordValue()->keyValue().front();
+    bool isDangerous = nodeNameFirstLetter == '.';
+
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *index = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *array = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
@@ -912,12 +928,14 @@ Value *Compiler::genSetitem(DatumPtr node, RequestReturnType returnType)
 
     Value *value = generateChild(node.astnodeValue(), 2, RequestReturnDatum);
 
-    auto valueValidator = [this, array](Value *value) {
-        Value *isValid = generateCallExtern(TyBool, "isDatumContainerOrInContainer",
-                        {PaAddr(evaluator), PaAddr(array), PaAddr(value)});
-        return scaff->builder.CreateICmpEQ(isValid, CoBool(false), "isDatumInContainerCond");
-    };
-    value = generateValidationDatum(node.astnodeValue(), value, valueValidator);
+    if ( ! isDangerous) {
+        auto valueValidator = [this, array](Value *value) {
+            Value *isValid = generateCallExtern(TyBool, "isDatumContainerOrInContainer",
+                            {PaAddr(evaluator), PaAddr(array), PaAddr(value)});
+            return scaff->builder.CreateICmpEQ(isValid, CoBool(false), "isDatumInContainerCond");
+        };
+        value = generateValidationDatum(node.astnodeValue(), value, valueValidator);
+    }
 
     generateCallExtern(TyVoid, "setDatumAtIndexOfContainer", {PaAddr(evaluator), PaAddr(value), PaDouble(index), PaAddr(array)});
     return generateVoidRetval(node.astnodeValue());

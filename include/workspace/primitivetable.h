@@ -103,6 +103,7 @@ stringToCmd[QObject::tr("BF")] = {&Compiler::genButfirst, 1, 1, 1, RequestReturn
 stringToCmd[QObject::tr("BUTLAST")] = {&Compiler::genButlast, 1, 1, 1, RequestReturnD};
 stringToCmd[QObject::tr("BL")] = {&Compiler::genButlast, 1, 1, 1, RequestReturnD};
 stringToCmd[QObject::tr("ITEM")] = {&Compiler::genItem, 2, 2, 2, RequestReturnD};
+stringToCmd[QObject::tr(".SETITEM")] = {&Compiler::genSetitem, 3, 3, 3, RequestReturnN};
 stringToCmd[QObject::tr("SETITEM")] = {&Compiler::genSetitem, 3, 3, 3, RequestReturnN};
 stringToCmd[QObject::tr("FORWARD")] = {&Compiler::genForward, 1, 1, 1, RequestReturnN};
 stringToCmd[QObject::tr("FD")] = {&Compiler::genForward, 1, 1, 1, RequestReturnN};
