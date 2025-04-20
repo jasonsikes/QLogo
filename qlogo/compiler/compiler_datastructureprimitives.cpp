@@ -1,0 +1,972 @@
+//===-- qlogo/datastructureprimitives.cpp - Data structure implementations -------*- C++ -*-===//
+//
+// Copyright 2017-2024 Jason Sikes
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted under the conditions specified in the
+// license found in the LICENSE file in the project root.
+//
+//===----------------------------------------------------------------------===//
+///
+/// \file
+/// This file contains the implementation of the data structure methods of the
+/// Compiler class.
+///
+//===----------------------------------------------------------------------===//
+
+#include "compiler_private.h"
+#include "astnode.h"
+#include "compiler.h"
+#include "sharedconstants.h"
+#include "workspace/callframe.h"
+#include "kernel.h"
+
+using namespace llvm;
+using namespace llvm::orc;
+
+/// Compare a Datum with a bool.
+/// @param d a Datum
+/// @param b a bool
+/// @returns true iff d is a bool that equals b
+EXPORTC bool cmpDatumToBool(addr_t d, bool b)
+{
+    Datum *dD = reinterpret_cast<Datum*>(d);
+    if (dD->isa != Datum::typeWord)
+        return false;
+    Word *dW = reinterpret_cast<Word*>(dD);
+    bool dB = dW->boolValue();
+    if (!dW->boolIsValid)
+        return false;
+    return dB == b;
+}
+
+/// Compare a Datum with a double.
+/// @param d a Datum
+/// @param n a number
+/// @returns true iff d is a number that equals n
+EXPORTC bool cmpDatumToDouble(addr_t d, double n)
+{
+    Datum *dD = reinterpret_cast<Datum*>(d);
+    if (dD->isa != Datum::typeWord)
+        return false;
+    Word *dW = reinterpret_cast<Word*>(dD);
+    double dN = dW->numberValue();
+    if (!dW->numberIsValid)
+        return false;
+    return dN == n;
+}
+
+/// Compare a Datum with a Datum.
+/// @param d1 a Datum
+/// @param d2 a Datum
+/// @returns true iff d1 is equal to d2 according to the help text of EQUALP
+EXPORTC bool cmpDatumToDatum(addr_t d1, addr_t d2)
+{
+    Datum *dD1 = reinterpret_cast<Datum*>(d1);
+    Datum *dD2 = reinterpret_cast<Datum*>(d2);
+    return Config::get().mainKernel()->areDatumsEqual(dD1, dD2);
+}
+
+
+EXPORTC addr_t concatWord(addr_t eAddr, addr_t aryAddr, uint32_t count)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Word **wordAry = reinterpret_cast<Word**>(aryAddr);
+    QString retval = "";
+    for (int i = 0; i < count; ++i)
+    {
+        Word *w = *(wordAry + i);
+        retval += w->rawValue();
+    }
+    return reinterpret_cast<addr_t >(e->watch(new Word(retval)));
+}
+
+Value *Compiler::generateNotEmptyWordOrListFromDatum(ASTNode *parent, Value *src)
+{
+    auto validator = [this](Value *wordorlist) {
+        BasicBlock *startBB = scaff->builder.GetInsertBlock();
+        Function *theFunction = startBB->getParent();
+
+        BasicBlock *wordOrListBB = BasicBlock::Create(*scaff->theContext, "wordOrListBlock", theFunction);
+        BasicBlock *endBB = BasicBlock::Create(*scaff->theContext, "endBlock", theFunction);
+
+        Value *wordOrListType = generateGetDatumIsa(wordorlist);
+        Value *maskCalc = scaff->builder.CreateAnd(wordOrListType, CoInt32(Datum::typeWord | Datum::typeList), "maskCalc");
+        Value *wordOrListCond = scaff->builder.CreateICmpNE(maskCalc, CoInt32(0), "wordOrListCond");
+        scaff->builder.CreateCondBr(wordOrListCond, wordOrListBB, endBB);
+
+        // Word or List block
+        scaff->builder.SetInsertPoint(wordOrListBB);
+        Value *isEmpty = generateCallExtern(TyBool, "isDatumEmpty", {PaAddr(evaluator), PaAddr(wordorlist)});
+        Value *isEmptyCond = scaff->builder.CreateICmpEQ(isEmpty, CoBool(false), "isDatumEmptyCond");
+        scaff->builder.CreateBr(endBB);
+
+        // Merge block
+        scaff->builder.SetInsertPoint(endBB);
+        PHINode *phi = scaff->builder.CreatePHI(wordOrListCond->getType(), 2, "lastOfDatumResult");
+        phi->addIncoming(isEmptyCond, wordOrListBB);
+        phi->addIncoming(wordOrListCond, startBB);
+        return phi;
+    };
+    return generateValidationDatum(parent, src, validator);
+}
+
+EXPORTC bool isDatumEmpty(addr_t eAddr, addr_t dAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *d = reinterpret_cast<Datum*>(dAddr);
+    switch (d->isa)
+    {
+        case Datum::typeWord:
+        {
+            Word *w = reinterpret_cast<Word*>(d);
+            return w->rawValue().isEmpty();
+        }
+        case Datum::typeList:
+        {
+            List *l = reinterpret_cast<List*>(d);
+            return l->isEmpty();
+        }
+        case Datum::typeArray:
+        {
+            return false;
+        }
+        default:
+            Q_ASSERT(false);
+    }
+     return false;
+}
+
+/***DOC EQUALP EQUAL?
+EQUALP thing1 thing2
+EQUAL? thing1 thing2
+thing1 = thing2
+
+ outputs TRUE if the inputs are equal, FALSE otherwise.  Two numbers
+ are equal if they have the same numeric value.  Two non-numeric words
+ are equal if they contain the same characters in the same order.  If
+ there is a variable named CASEIGNOREDP whose value is TRUE, then an
+ upper case letter is considered the same as the corresponding lower
+ case letter.  (This is the case by default.)  Two lists are equal if
+ their members are equal.  An array is only equal to itself; two
+ separately created arrays are never equal even if their members are
+ equal.  (It is important to be able to know if two expressions have
+ the same array as their value because arrays are mutable; if, for
+ example, two variables have the same array as their values then
+ performing SETITEM on one of them will also change the other.)
+
+COD***/
+// CMD EQUALP 2 2 2 b
+// CMD EQUAL? 2 2 2 b
+Value *Compiler::genEqualp(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnBool);
+    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnRDB);
+
+    Type *t0 = children[0]->getType();
+    Type *t1 = children[1]->getType();
+
+    // If one is bool and other is double, then they can't be equal.
+    if ((t0->isIntegerTy(1) && t1->isDoubleTy()) ||(t1->isIntegerTy(1) && t0->isDoubleTy()))
+    {
+        return CoBool(false);
+    }
+
+    // Both double? Compare them
+    if (t0->isDoubleTy() && t1->isDoubleTy())
+    {
+        return scaff->builder.CreateFCmpUEQ(children[0], children[1], "Fequalp");
+    }
+
+    // Both bool? Compare them
+    if (t0->isIntegerTy(1) && t1->isIntegerTy(1))
+    {
+        return scaff->builder.CreateICmpEQ(children[0], children[1], "Bequalp");
+    }
+
+    // At this point we know at least one of the inputs is a Datum.
+    // For simplicity, make the first child the Datum
+    if (!t0->isPointerTy())
+    {
+        Value *t = children[0];
+        children[0] = children[1];
+        children[1] = t;
+        t1 = children[1]->getType();
+    }
+
+    // If second child is bool:
+    if (t1->isIntegerTy(1))
+    {
+        return generateCallExtern(TyBool, "cmpDatumToBool", {PaAddr(children[0]), PaBool(children[1])});
+    }
+
+    // If second child is number:
+    if (t1->isDoubleTy())
+    {
+        return generateCallExtern(TyBool, "cmpDatumToDouble", {PaAddr(children[0]), PaDouble(children[1])});
+    }
+
+    // Both must be Datums
+    Q_ASSERT(t1->isPointerTy());
+    return generateCallExtern(TyBool, "cmpDatumToDatum", {PaAddr(children[0]), PaAddr(children[1])});
+}
+
+
+/***DOC NOTEQUALP NOTEQUAL?
+NOTEQUALP thing1 thing2
+NOTEQUAL? thing1 thing2
+thing1 <> thing2
+
+ outputs FALSE if the inputs are equal, TRUE otherwise.  See EQUALP
+ for the meaning of equality for different data types.
+
+COD***/
+// CMD NOTEQUALP 2 2 2 b
+// CMD NOTEQUAL? 2 2 2 b
+Value *Compiler::genNotequalp(DatumPtr node, RequestReturnType returnType)
+{
+    Value *eq = genEqualp(node, returnType);
+    return scaff->builder.CreateSub(CoBool(1), eq, "noteq");
+}
+
+
+// CONSTRUCTORS
+
+/***DOC WORD
+WORD word1 word2
+(WORD word1 word2 word3 ...)
+
+    outputs a word formed by concatenating its inputs.
+
+COD***/
+// CMD WORD 0 2 -1 d
+Value *Compiler::genWord(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, "wordAry");
+    return generateCallExtern(TyAddr, "concatWord", {PaAddr(evaluator), PaAddr(ary), PaInt32(ary->getArraySize())});
+}
+
+/***DOC LIST
+LIST thing1 thing2
+(LIST thing1 thing2 thing3 ...)
+
+    outputs a list whose members are its inputs, which can be any
+    Logo datum (word, list, or array).
+
+COD***/
+// CMD LIST 0 2 -1 d
+Value *Compiler::genList(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, "listAry");
+    return generateCallExtern(TyAddr, "createList", {PaAddr(evaluator), PaAddr(ary), PaInt32(ary->getArraySize())});
+}
+
+EXPORTC addr_t createList(addr_t eAddr, addr_t aryAddr, uint32_t count)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum **ary = reinterpret_cast<Datum**>(aryAddr);
+    List *retval = new List();
+    ListBuilder builder(retval);
+    for (int i = 0; i < count; ++i)
+    {
+        DatumPtr d = DatumPtr(ary[i]);
+        builder.append(d);
+    }
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
+}
+
+
+/***DOC SENTENCE SE
+SENTENCE thing1 thing2
+SE thing1 thing2
+(SENTENCE thing1 thing2 thing3 ...)
+(SE thing1 thing2 thing3 ...)
+
+    outputs a list whose members are its inputs, if those inputs are
+    not lists, or the members of its inputs, if those inputs are lists.
+
+COD***/
+// CMD SENTENCE 0 2 -1 d
+// CMD SE 0 2 -1 d
+Value *Compiler::genSentence(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, "sentenceAry");
+    return generateCallExtern(TyAddr, "createSentence", {PaAddr(evaluator), PaAddr(ary), PaInt32(ary->getArraySize())});
+}
+
+EXPORTC addr_t createSentence(addr_t eAddr, addr_t aryAddr, uint32_t count)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum **ary = reinterpret_cast<Datum**>(aryAddr);
+    List *retval = new List();
+    ListBuilder builder(retval);
+    for (int i = 0; i < count; ++i)
+    {
+        DatumPtr d = DatumPtr(ary[i]);
+        if (d.isList())
+        {
+            ListIterator it = d.listValue()->newIterator();
+            while (it.elementExists())
+            {
+                builder.append(it.element());
+            }
+        }
+        else
+        {
+            builder.append(d);
+        }
+    }
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
+}
+
+
+/***DOC FPUT
+FPUT thing list
+
+    outputs a list equal to its second input with one extra member,
+    the first input, at the beginning.  If the second input is a word,
+    then the first input must be a word, and FPUT is equivalent to WORD.
+
+COD***/
+/***DOC LPUT
+LPUT thing list
+
+    outputs a list equal to its second input with one extra member,
+    the first input, at the end.  If the second input is a word,
+    then the first input must be a one-letter word, and LPUT is
+    equivalent to WORD with its inputs in the other order.
+
+COD***/
+// CMD LPUT 2 2 2 d
+// CMD FPUT 2 2 2 d
+Value *Compiler::genFputlput(DatumPtr node, RequestReturnType returnType)
+{
+    QChar nodeNameFirstLetter = node.astnodeValue()->nodeName.wordValue()->keyValue().front();
+    bool isLput = nodeNameFirstLetter == 'L';
+
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    Value *list = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
+    Value *listWordTest = nullptr;
+
+    auto wordVector = isLput ? std::vector<Value*>{list, thing} : std::vector<Value*>{thing, list};
+    const char* listFunctionName = isLput ? "lputList" : "fputList";
+
+    auto validator = [this, thing, &listWordTest](Value *list) {
+        Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
+        BasicBlock *wordBB = BasicBlock::Create(*scaff->theContext, "isWordBlock", theFunction);
+        BasicBlock *listBB = BasicBlock::Create(*scaff->theContext, "isListBlock", theFunction);
+        BasicBlock *endBB = BasicBlock::Create(*scaff->theContext, "endBlock", theFunction);
+
+        Value *listType = generateGetDatumIsa(list);
+        listWordTest = scaff->builder.CreateICmpEQ(listType, CoInt32(Datum::typeWord), "listWordTest");
+        scaff->builder.CreateCondBr(listWordTest, wordBB, listBB);
+
+        // Word block
+        scaff->builder.SetInsertPoint(wordBB);
+        Value *thingType = generateGetDatumIsa(thing);
+        Value *thingWordTest = scaff->builder.CreateICmpEQ(thingType, CoInt32(Datum::typeWord), "thingWordTest");
+        scaff->builder.CreateBr(endBB);
+
+        // List block
+        scaff->builder.SetInsertPoint(listBB);
+        Value *listListTest = scaff->builder.CreateICmpEQ(listType, CoInt32(Datum::typeList), "listListTest");
+        scaff->builder.CreateBr(endBB);
+
+        scaff->builder.SetInsertPoint(endBB);
+        PHINode *phi = scaff->builder.CreatePHI(listListTest->getType(), 2, "putResult");
+        phi->addIncoming(listListTest, listBB);
+        phi->addIncoming(thingWordTest, wordBB);
+        return phi;
+    };
+    list = generateValidationDatum(node.astnodeValue(), list, validator);
+
+    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
+    BasicBlock *wordBB = BasicBlock::Create(*scaff->theContext, "isWordBB", theFunction);
+    BasicBlock *listBB = BasicBlock::Create(*scaff->theContext, "isListBB", theFunction);
+    BasicBlock *mergeBB = BasicBlock::Create(*scaff->theContext, "mergeBB", theFunction);
+
+    scaff->builder.CreateCondBr(listWordTest, wordBB, listBB);
+
+    scaff->builder.SetInsertPoint(wordBB);
+    AllocaInst *ary = generateAllocaAry(wordVector, "wordAry");
+    Value *wordRetval = generateCallExtern(TyAddr, "concatWord", {PaAddr(evaluator), PaAddr(ary), PaInt32(ary->getArraySize())});
+    scaff->builder.CreateBr(mergeBB);
+
+    scaff->builder.SetInsertPoint(listBB);
+    Value *listRetval = generateCallExtern(TyAddr, listFunctionName, {PaAddr(evaluator), PaAddr(thing), PaAddr(list)});
+    scaff->builder.CreateBr(mergeBB);
+
+    scaff->builder.SetInsertPoint(mergeBB);
+    PHINode *phi = scaff->builder.CreatePHI(list->getType(), 2, "putRetval");
+    phi->addIncoming(listRetval, listBB);
+    phi->addIncoming(wordRetval, wordBB);
+    return phi;
+}
+
+EXPORTC addr_t fputList(addr_t eAddr, addr_t thingAddr, addr_t listAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *thing = reinterpret_cast<Datum*>(thingAddr);
+    List *list = reinterpret_cast<List*>(listAddr);
+
+    List *retval = new List(DatumPtr(thing), list);
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
+}
+
+EXPORTC addr_t lputList(addr_t eAddr, addr_t thingAddr, addr_t listAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *thing = reinterpret_cast<Datum*>(thingAddr);
+    List *list = reinterpret_cast<List*>(listAddr);
+
+    List *retval = new List();
+    ListBuilder builder(retval);
+    ListIterator it = list->newIterator();
+
+    while (it.elementExists())
+    {
+        builder.append(it.element());
+    }
+    builder.append(DatumPtr(thing));
+
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
+}
+
+
+
+/***DOC ARRAY
+ARRAY size
+(ARRAY size origin)
+
+    outputs an array of "size" members (must be a positive integer),
+    each of which initially is an empty list.  Array members can be
+    selected with ITEM and changed with SETITEM.  The first member of
+    the array is member number 1 unless an "origin" input (must be an
+    integer) is given, in which case the first member of the array has
+    that number as its index.  (Typically 0 is used as the origin if
+    anything.)  Arrays are printed by PRINT and friends, and can be
+    typed in, inside curly braces; indicate an origin with {a b c}@0.
+
+COD***/
+// CMD ARRAY 1 1 2 d
+Value *Compiler::genArray(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *size = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Value *origin = nullptr;
+    if (node.astnodeValue()->countOfChildren() == 2)
+    {
+        origin = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+        origin = generateInt32FromDouble(node.astnodeValue(), origin, true);
+    } else {
+        origin = CoInt32(1);
+    }
+
+    size = generateNotNegativeFromDouble(node.astnodeValue(), size);
+    size = generateInt32FromDouble(node.astnodeValue(), size, true);
+
+
+    return generateCallExtern(TyAddr, "createArray", {PaAddr(evaluator), PaInt32(size), PaInt32(origin)});
+}
+
+EXPORTC addr_t createArray(addr_t eAddr, int32_t size, int32_t origin)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Array *retval = new Array(origin, size);
+    for (int i = 0; i < size; ++i)
+    {
+        retval->array.append(DatumPtr(new List()));
+    }
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
+}
+
+
+
+/***DOC LISTTOARRAY
+LISTTOARRAY list
+(LISTTOARRAY list origin)
+
+    outputs an array of the same size as the input list, whose members
+    are the members of the input list.
+
+COD***/
+// CMD LISTTOARRAY 1 1 2 d
+Value *Compiler::genListtoarray(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *list = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    list = generateListFromDatum(node.astnodeValue(), list);
+    Value *origin = nullptr;
+    if (node.astnodeValue()->countOfChildren() == 2)
+    {
+        origin = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+        origin = generateInt32FromDouble(node.astnodeValue(), origin, true);
+    } else {
+        origin = CoInt32(1);
+    }
+
+    return generateCallExtern(TyAddr, "listToArray", {PaAddr(evaluator), PaAddr(list), PaInt32(origin)});
+}
+
+EXPORTC addr_t listToArray(addr_t eAddr, addr_t listAddr, int32_t origin)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    List *list = reinterpret_cast<List*>(listAddr);
+    Array *retval = new Array(origin, list->count());
+    ListIterator it = list->newIterator();
+    while (it.elementExists())
+    {
+        retval->array.append(it.element());
+    }
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
+}
+
+
+/***DOC ARRAYTOLIST
+ARRAYTOLIST array
+
+    outputs a list whose members are the members of the input array.
+    The first member of the output is the first member of the array,
+    regardless of the array's origin.
+
+COD***/
+// CMD ARRAYTOLIST 1 1 1 d
+Value *Compiler::genArraytolist(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *array = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    array = generateArrayFromDatum(node.astnodeValue(), array);
+    return generateCallExtern(TyAddr, "arrayToList", {PaAddr(evaluator), PaAddr(array)});
+}
+
+EXPORTC addr_t arrayToList(addr_t eAddr, addr_t arrayAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Array *array = reinterpret_cast<Array*>(arrayAddr);
+    List *retval = new List();
+    ListBuilder builder(retval);
+    for (int i = 0; i < array->array.size(); ++i)
+    {
+        builder.append(array->array[i]);
+    }
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
+}
+
+/***DOC FIRST
+FIRST thing
+
+    if the input is a word, outputs the first character of the word.
+    If the input is a list, outputs the first member of the list.
+    If the input is an array, outputs the origin of the array (that
+    is, the INDEX OF the first member of the array).
+
+COD***/
+// CMD FIRST 1 1 1 d
+Value *Compiler::genFirst(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    
+    auto validator = [this](Value *thing) {
+        Value *isEmpty = generateCallExtern(TyBool, "isDatumEmpty", {PaAddr(evaluator), PaAddr(thing)});
+        return scaff->builder.CreateICmpEQ(isEmpty, CoBool(false), "isDatumEmptyCond");
+    };
+    thing = generateValidationDatum(node.astnodeValue(), thing, validator);
+
+    return generateCallExtern(TyAddr, "firstOfDatum", {PaAddr(evaluator), PaAddr(thing)});
+}
+
+EXPORTC addr_t firstOfDatum(addr_t eAddr, addr_t thingAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *thing = reinterpret_cast<Datum*>(thingAddr);
+    Datum *retval = nullptr;
+    switch (thing->isa)
+    {
+        case Datum::typeWord:
+        {
+            Word *w = reinterpret_cast<Word*>(thing);
+            retval = new Word(w->rawValue().left(1));
+            break;
+        }
+        case Datum::typeList:
+        {
+            List *l = reinterpret_cast<List*>(thing);
+            retval = l->head.datumValue();
+            break;
+        }
+        case Datum::typeArray:
+        {
+            Array *a = reinterpret_cast<Array*>(thing);
+            retval = new Word(QString::number(a->origin));
+            break;
+        }
+        default:
+            Q_ASSERT(false);
+    }
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
+}
+
+
+/***DOC LAST
+LAST wordorlist
+
+    if the input is a word, outputs the last character of the word.
+    If the input is a list, outputs the last member of the list.
+
+COD***/
+// CMD LAST 1 1 1 d
+Value *Compiler::genLast(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *wordorlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    
+    wordorlist = generateNotEmptyWordOrListFromDatum(node.astnodeValue(), wordorlist);
+    
+    return generateCallExtern(TyAddr, "lastOfDatum", {PaAddr(evaluator), PaAddr(wordorlist)});
+}
+
+EXPORTC addr_t lastOfDatum(addr_t eAddr, addr_t thingAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *thing = reinterpret_cast<Datum*>(thingAddr);
+    Datum *retval = nullptr;
+    switch (thing->isa)
+    {
+        case Datum::typeWord:
+        {
+            Word *w = reinterpret_cast<Word*>(thing);
+            retval = new Word(w->rawValue().right(1));
+            break;
+        }
+        case Datum::typeList:
+        {
+            List *l = reinterpret_cast<List*>(thing);
+            ListIterator iter = l->newIterator();
+            DatumPtr lastElement;
+            while (iter.elementExists())
+            {
+                lastElement = iter.element();
+            }
+            retval = lastElement.datumValue();
+            break;
+        }
+        default:
+            Q_ASSERT(false);
+    }
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
+}
+
+
+/***DOC BUTFIRST BF
+BUTFIRST wordorlist
+BF wordorlist
+
+    if the input is a word, outputs a word containing all but the first
+    character of the input.  If the input is a list, outputs a list
+    containing all but the first member of the input.
+
+COD***/
+// CMD BUTFIRST 1 1 1 d
+// CMD BF 1 1 1 d
+Value *Compiler::genButfirst(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *wordorlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+
+    wordorlist = generateNotEmptyWordOrListFromDatum(node.astnodeValue(), wordorlist);
+    
+    return generateCallExtern(TyAddr, "butFirstOfDatum", {PaAddr(evaluator), PaAddr(wordorlist)});
+}
+
+EXPORTC addr_t butFirstOfDatum(addr_t eAddr, addr_t thingAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *thing = reinterpret_cast<Datum*>(thingAddr);
+    Datum *retval = nullptr;
+    switch (thing->isa)
+    {
+        case Datum::typeWord:
+        {
+            Word *w = reinterpret_cast<Word*>(thing);
+            QString rawValue = w->rawValue();
+            retval = new Word(rawValue.sliced(1, rawValue.size() - 1));
+            break;
+        }
+        case Datum::typeList:
+        {
+            List *l = reinterpret_cast<List*>(thing);
+            retval = l->tail.datumValue();
+            break;
+        }
+        default:
+            Q_ASSERT(false);
+    }
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
+}
+
+
+
+/***DOC BUTLAST BL
+BUTLAST wordorlist
+BL wordorlist
+
+    if the input is a word, outputs a word containing all but the last
+    character of the input.  If the input is a list, outputs a list
+    containing all but the last member of the input.
+
+COD***/
+// CMD BUTLAST 1 1 1 d
+// CMD BL 1 1 1 d
+Value *Compiler::genButlast(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *wordorlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+
+    wordorlist = generateNotEmptyWordOrListFromDatum(node.astnodeValue(), wordorlist);
+
+    return generateCallExtern(TyAddr, "butLastOfDatum", {PaAddr(evaluator), PaAddr(wordorlist)});
+}
+
+EXPORTC addr_t butLastOfDatum(addr_t eAddr, addr_t thingAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *thing = reinterpret_cast<Datum*>(thingAddr);
+    Datum *retval = nullptr;
+    switch (thing->isa)
+    {
+        case Datum::typeWord:
+        {
+            Word *w = reinterpret_cast<Word*>(thing);
+            QString rawValue = w->rawValue();
+            retval = new Word(rawValue.sliced(0, rawValue.size() - 1));
+            break;
+        }
+        case Datum::typeList:
+        {
+            List *l = reinterpret_cast<List*>(thing);
+            ListIterator iter = l->newIterator();
+            retval = new List();
+            ListBuilder builder(reinterpret_cast<List*>(retval));
+            while (iter.elementExists())
+            {
+                DatumPtr element = iter.element();
+                if (iter.elementExists())
+                {
+                    builder.append(element);
+                }
+            }
+            break;
+        }
+        default:
+            Q_ASSERT(false);
+    }
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
+}
+
+
+/***DOC ITEM
+ITEM index thing
+
+    if the "thing" is a word, outputs the "index"th character of the
+    word.  If the "thing" is a list, outputs the "index"th member of
+    the list.  If the "thing" is an array, outputs the "index"th
+    member of the array.  "Index" starts at 1 for words and lists;
+    the starting index of an array is specified when the array is
+    created.
+
+COD***/
+// CMD ITEM 2 2 2 d
+Value *Compiler::genItem(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *index = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Value *thing = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
+
+    // Instead of iterating a list twice, we'll save the list item if we find it when counting.
+    Datum *listItem = nullptr;
+    Datum **listItemPtr = &listItem;
+
+    auto validator = [this, listItemPtr, thing](Value *index) {
+        Value *isValid = generateCallExtern(TyBool, "isDatumIndexValid",
+                        {PaAddr(evaluator), PaAddr(thing), PaDouble(index), PaAddr(CoAddr(listItemPtr))});
+        return scaff->builder.CreateICmpEQ(isValid, CoBool(true), "isDatumIndexValidCond");
+    };
+    index = generateValidationDouble(node.astnodeValue(), index, validator);
+
+    return generateCallExtern(TyAddr, "itemOfDatum", {PaAddr(evaluator), PaAddr(thing), PaDouble(index), PaAddr(CoAddr(listItemPtr))});
+}
+
+EXPORTC bool isDatumIndexValid(addr_t eAddr, addr_t thingAddr, double dIndex, addr_t listItemPtrAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *thing = reinterpret_cast<Datum*>(thingAddr);
+    Datum **listItemPtr = reinterpret_cast<Datum**>(listItemPtrAddr);
+    qsizetype index = static_cast<qsizetype>(dIndex);
+    if (index != dIndex) return false;
+
+    switch (thing->isa) {
+        case Datum::typeWord:
+        {
+            Word *w = reinterpret_cast<Word*>(thing);
+            QString rawValue = w->rawValue();
+            return (index >= 1) && (index <= rawValue.size());
+        }
+        case Datum::typeList:
+        {
+            List *l = reinterpret_cast<List*>(thing);
+            if (index < 1) return false;
+            ListIterator iter = l->newIterator();
+            while (iter.elementExists()) {
+                *listItemPtr = iter.element().datumValue();
+                index--;
+                if (index == 0) return true;
+            }
+            return false;
+        }
+        case Datum::typeArray:
+        {
+            Array *a = reinterpret_cast<Array*>(thing);
+            int32_t size = static_cast<int32_t>(a->array.size());
+            index = index - a->origin;
+            return (index >= 0) && (index < size);
+        }
+        default:
+            Q_ASSERT(false);
+    }
+    return false;
+}
+
+EXPORTC addr_t itemOfDatum(addr_t eAddr, addr_t thingAddr, double dIndex, addr_t listItemPtrAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *thing = reinterpret_cast<Datum*>(thingAddr);
+    Datum *retval = nullptr;
+    qsizetype index = static_cast<qsizetype>(dIndex);
+
+    switch (thing->isa) {
+        case Datum::typeWord:
+        {
+            Word *w = reinterpret_cast<Word*>(thing);
+            QString rawValue = w->rawValue();
+            retval = new Word(rawValue[index - 1]);
+            break;
+        }
+        case Datum::typeList:
+        {
+            Datum **retvalPtr = reinterpret_cast<Datum**>(listItemPtrAddr);
+            retval = *retvalPtr;
+            break;
+        }
+        case Datum::typeArray:
+        {
+            Array *a = reinterpret_cast<Array*>(thing);
+            index = index - a->origin;
+            retval = a->array[index].datumValue();
+            break;
+        }
+        default:
+            Q_ASSERT(false);
+    }
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
+}
+
+/***DOC SETITEM
+SETITEM index array value
+
+    command.  Replaces the "index"th member of "array" with the new
+    "value".  Ensures that the resulting array is not circular, i.e.,
+    "value" may not be a list or array that contains "array".
+
+COD***/
+// CMD SETITEM 3 3 3 n
+Value *Compiler::genSetitem(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *index = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Value *array = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
+    array = generateArrayFromDatum(node.astnodeValue(), array);
+    
+    auto indexValidator = [this, array](Value *index) {
+        Value *isValid = generateCallExtern(TyBool, "isDatumIndexValid",
+                        {PaAddr(evaluator), PaAddr(array), PaDouble(index), PaAddr(CoAddr(0))});
+        return scaff->builder.CreateICmpEQ(isValid, CoBool(true), "isDatumIndexValidCond");
+    };
+    index = generateValidationDouble(node.astnodeValue(), index, indexValidator);
+
+    Value *value = generateChild(node.astnodeValue(), 2, RequestReturnDatum);
+
+    auto valueValidator = [this, array](Value *value) {
+        Value *isValid = generateCallExtern(TyBool, "isDatumContainerOrInContainer",
+                        {PaAddr(evaluator), PaAddr(array), PaAddr(value)});
+        return scaff->builder.CreateICmpEQ(isValid, CoBool(false), "isDatumInContainerCond");
+    };
+    value = generateValidationDatum(node.astnodeValue(), value, valueValidator);
+
+    generateCallExtern(TyVoid, "setDatumAtIndexOfContainer", {PaAddr(evaluator), PaAddr(value), PaDouble(index), PaAddr(array)});
+    return generateVoidRetval(node.astnodeValue());
+}
+
+EXPORTC bool isDatumContainerOrInContainer(addr_t eAddr, addr_t valueAddr, addr_t containerAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *value = reinterpret_cast<Datum*>(valueAddr);
+    Datum *container = reinterpret_cast<Datum*>(containerAddr);
+
+    // If not a container then there's no container to search.
+    if (container->isa == Datum::typeWord)
+        return false;
+
+    // If value and container are the same then it's in the container.
+    if (value == container)
+        return true;
+
+    return Config::get().mainKernel()->isDatumInContainer(value, container);
+}
+
+EXPORTC void setDatumAtIndexOfContainer(addr_t eAddr, addr_t valueAddr, double dIndex, addr_t containerAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *container = reinterpret_cast<Datum*>(containerAddr);
+    DatumPtr value(reinterpret_cast<Datum*>(valueAddr));
+    qsizetype index = static_cast<qsizetype>(dIndex);
+
+    switch (container->isa) {
+        case Datum::typeList:
+        {
+            List *l = reinterpret_cast<List*>(container);
+            for (qsizetype i = 1; i < index; ++i) {
+                l = l->tail.listValue();
+            }
+            l->head = value;
+            break;
+        }
+        case Datum::typeArray:
+        {
+            Array *a = reinterpret_cast<Array*>(container);
+            a->array[index - a->origin] = value;
+            break;
+        }
+        default:
+            Q_ASSERT(false);
+    }
+}
+
+
+

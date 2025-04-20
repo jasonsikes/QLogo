@@ -4,46 +4,75 @@
 # by Jason Sikes
 
 # To use:
-# generate_command_table.py <source_dir> <dest_header_file> <dest_body_file>
+# generate_command_table.py 
 #
-# e.g. on my machine:
-# $ cd Projects/QLogo
-# $ util/generate_command_table.py qlogo/executor include/primitives.h include/workspace/primitivetable.h
-
-# Within the .cpp code in the qlogo/executor subdirectory are lines that start with "//CMD".
+# Within the .cpp code in the qlogo/compiler subdirectory are lines that start with "//CMD".
 # One or more of these lines can precede the implementation method of a Logo primitive.
 #
 # The "// CMD" lines must immediately precede the implementation method. NO GAPS!
 #
 # The format is:
 #
-# // CMD <command-name> <arity-min> <arity-default> <arity-max>
+# // CMD <command-name> <arity-min> <arity-default> <arity-max> <output-type(s)>
 #
 # For example:
 #
-# // CMD PRINT 0 1 -1
+# // CMD PRINT 0 1 -1 n
 # 
 # means that the command is named "PRINT", the minimum number of inputs it will accept is zero,
-# the default number of inputs is one, and the maximum number of inputs is "-1".
+# the default number of inputs is one, the maximum number of inputs is "-1", and it will
+# output a"nothing" data type.
 # (See below for the meaning of special values.)
 #
-# Multiple "// CMD" lines may precede an implementation. In those cases multiple entries will be
-# added to the primitives table.
+# Multiple "// CMD" lines may precede an implementation. The must be contiguous. In those cases
+# multiple entries will be added to the primitives table.
+#
+# For example:
+#
+# // CMD PRINT 0 1 -1 n
+# // CMD PR 0 1 -1 n
+#
+# will add two entries to the primitives table: PRINT and PR.
 #
 # The arity list may contain special values:
-#  min     = -1 -> The command and all inputs are read as a list without running,
+#  arity-min     = -1 -> The command and all inputs are read as a list without executing,
 #                  e.g. "TO PROC :P1" becomes [TO PROC :P1]. QLogo will not attempt
 #                  to execute PROC nor attempt to lookup the variable :P1
-#  default = -1 -> All parameters are consumed until end of line
-#  max     = -1 -> All parameters are consumed within parens
+#  arity-default = -1 -> All parameters are consumed until end of line
+#  arity-max     = -1 -> All parameters are consumed within parens
+#
+# The output types are as follows:
+# b -> Boolean
+# d -> Double
+# w -> Word
+# l -> List
+# a -> Array
+# n -> Nothing
+#
+# Some of the types may be combined. For example, the RUN command may output any of Word, List,
+# Array, or Nothing. So its output-type is listed as 'nwla' (order of letters is not important,
+# nor is capitalization).
 
 
 
 import os, errno, sys, re
 
-source_prefix = sys.argv[1]
-dest_header = sys.argv[2]
-dest_table = sys.argv[3]
+ret_type_dict = {
+"n" : "RequestReturnNothing",
+"d" : "RequestReturnDatum",
+"b" : "RequestReturnBool",
+"r" : "RequestReturnReal"
+}
+
+# Get the directory this script is located in.
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Get the parent directory of the script directory.
+project_root = os.path.dirname(script_dir)
+
+source_prefix = os.path.join(project_root, "qlogo/compiler")
+dest_header = os.path.join(project_root, "include/primitives.h")
+dest_table = os.path.join(project_root, "include/workspace/primitivetable.h")
 
 print("opening '%s'" % (dest_header))
 header_file = open(dest_header, 'w')
@@ -52,13 +81,13 @@ table_file = open(dest_table, 'w')
 
 
 SOURCES = [f for f in os.listdir(source_prefix) if re.match(r'.*\.cpp', f)]
-
+SOURCES.sort()
 # Return TRUE iff the given line is a command entry.
 def is_command_entry(line):
     return line.lstrip().startswith("// CMD")
 
 # Extract the elements of a command entry line
-# The elements are: [NAME, min_params, default_params, max_params]
+# The elements are: [NAME, min_params, default_params, max_params, return_type]
 # The first two elements of the result are "// CMD" and are discarded.
 def extract_command_elements(line):
     return line.strip().split()[2:]
@@ -72,23 +101,34 @@ def find_next_command(file):
         if is_command_entry(line):
             return line
 
-# Return True if the given line is a Kernel method definition
-def is_kernel_define(line):
-    return line.lstrip().startswith("DatumPtr Kernel::")
+# Return True if the given line is a Compiler method definition
+def is_compiler_define(line):
+    return line.lstrip().startswith("Value *Compiler::")
 
-# Return the name of the Kernel method given by line.
+# Return the name of the Compiler method given by line.
 def method_name(line):
     # Remove the part before "::"
     sans_prefix = line.strip().split("::")[1]
     # Return the part before the "("
     return sans_prefix.split("(")[0]
 
+# Return the CPP enum representation of the output_type string
+def string_to_enum(str):
+    retval = 'RequestReturn'
+    s = str.upper()
+    for c in 'RDBN':
+        if c in s:
+            retval += c
+    return retval
+
+
 # Write out the entry
 def insert(entries, method):
     for entry in entries:
-        [name, min_params, default_params, max_params] = entry
-        table_file.write("stringToCmd[QObject::tr(\"%s\")] = {&Kernel::%s, %s, %s, %s};\n" % (name,method,min_params,default_params,max_params))
-    header_file.write("DatumPtr %s(DatumPtr node);\n" % (method))
+        [name, min_params, default_params, max_params, return_type] = entry
+        return_type_ext = string_to_enum(return_type)
+        table_file.write("stringToCmd[QObject::tr(\"%s\")] = {&Compiler::%s, %s, %s, %s, %s};\n" % (name,method,min_params,default_params,max_params,return_type_ext))
+    header_file.write("llvm::Value *%s(DatumPtr node, RequestReturnType returnType);\n" % (method))
 
 
 # Header and footer are the same for both the command table file and the method declaration files.
@@ -98,13 +138,10 @@ header = """
 // It was generated by generate_command_table. Any edits to this file will
 // not survive long.
 
-#ifdef CONSTANTS_H
-
 """
 
 footer = """
 
-#endif // CONSTANTS_H
 """
 
 table_file.write(header)
@@ -128,8 +165,8 @@ for source in SOURCES:
             line = file.readline()
             if not is_command_entry(line):
                 break
-        # The current line should be the Kernel method definition.
-        if is_kernel_define(line):
+        # The current line should be the Compiler method definition.
+        if is_compiler_define(line):
             method = method_name(line)
             insert(entries,method)
             entry_count += 1

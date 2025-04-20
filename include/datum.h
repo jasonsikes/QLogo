@@ -17,22 +17,84 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "QDebug"
+// Qt #defines "emit". llvm uses "emit" as a function name.
+#ifdef emit
+#undef emit
+#endif
+
+#include <llvm/IR/Value.h>
+#include <llvm/ExecutionEngine/Orc/Core.h>
+
+#include <QDebug>
 #include <QChar>
 #include <QStack>
 
-class ASTNode;
+class Datum;
 class Word;
 class List;
 class Array;
-class Error;
-class DatumPtr;
+
+class FlowControl;
+class FCError;
+
+class Unbound;
+class ASTNode;
 class Procedure;
 
+class DatumPtr;
 class ListIterator;
 
 class Kernel;
-typedef DatumPtr (Kernel::*KernelMethod)(DatumPtr);
+class Compiler;
+
+typedef uint64_t* addr_t;
+
+// Compiled function signature
+typedef Datum* (*CompiledFunctionPtr)(addr_t, int32_t);
+
+
+
+// The information to store the generated function and to destroy later
+struct CompiledText
+{
+    llvm::orc::ResourceTrackerSP rt;
+
+    CompiledFunctionPtr functionPtr = nullptr;
+
+    ~CompiledText();
+};
+
+
+
+/// @brief Expression generator request type.
+///
+/// Request that the generator generate code that produces this output type.
+enum RequestReturnType : int
+{
+    RequestReturnVoid    = 0x00,
+    RequestReturnNothing = 0x01,
+    RequestReturnN       = 0x01, // N
+    RequestReturnBool    = 0x02, // B
+    RequestReturnB       = 0x02,
+    RequestReturnBN      = 0x03,
+    RequestReturnDatum   = 0x04, // D
+    RequestReturnD       = 0x04,
+    RequestReturnDN      = 0x05,
+    RequestReturnDB      = 0x06,
+    RequestReturnDBN     = 0x07,
+    RequestReturnReal    = 0x08, // R
+    RequestReturnR       = 0x08,
+    RequestReturnRN      = 0x09,
+    RequestReturnRB      = 0x0A,
+    RequestReturnRBN     = 0x0B,
+    RequestReturnRD      = 0x0C,
+    RequestReturnRDN     = 0x0D,
+    RequestReturnRDB     = 0x0E,
+    RequestReturnRDBN    = 0x0F,
+};
+
+/// Signature of method that generates IR code for a given node.
+typedef llvm::Value * (Compiler::*Generator)(DatumPtr, RequestReturnType);
 
 /// Convert "raw" encoding to Char encoding.
 QChar rawToChar(const QChar &src);
@@ -59,32 +121,50 @@ class Datum
 {
     friend class ListIterator;
     friend class DatumPtr;
+    friend class Evaluator;
+
+  private:
+    Datum &operator=(const Datum &) = delete;
+    Datum &operator=(Datum &&) = delete;
+    Datum &operator=(Datum *) = delete;
 
   public:
 
-    /// @brief Value returned by isa().
-    enum DatumType
+    /// @brief Value stored in isa.
+    enum DatumType : uint32_t
     {
-        noType,
-        wordType,
-        listType,
-        arrayType,
-        astnodeType,
-        procedureType,
-        errorType
+        // These are the three data types that are made available to the user.
+        typeWord            = 0x00000001,
+        typeList            = 0x00000002,
+        typeArray           = 0x00000004,
+
+        typeDataMask        = 0x00000007, // Word + List + Array
+
+        // These are the types that control the flow of the program.
+        typeError           = 0x00000010,
+        typeGoto            = 0x00000020,
+        typeContinuation    = 0x00000040,
+        typeReturn          = 0x00000080,
+
+        typeFlowControlMask = 0x000000F0,
+
+        // These are the types that are used internally by QLogo.
+        typeNothing         = 0x00000100,
+        typeASTNode         = 0x00000200,
+        typeProcedure       = 0x00000400,
+
+        // "Unbound" can have two forms:
+        // 1. "nothing" (typeNothing) - nothing, and no ASTNode blame info
+        // 2. "ASTNode" (typeASTNode) - ASTNode, which can be interpreted as "nothing" with blame info
+        typeUnboundMask     = 0x00000300, // typeASTNode + typeProcedure
     };
 
-  protected:
-
-    // IMPORTANT! This must be the FIRST element of the class.
-    DatumType myType = noType;
+    DatumType isa = typeNothing;
 
     int retainCount;
 
     /// @brief If set to 'true', DatumPtr will send qDebug message when this is deleted.
     bool alertOnDelete = false;
-
-  public:
 
     /// @brief Constructs a Datum
     ///
@@ -95,18 +175,7 @@ class Datum
     /// @brief Destructor.
     virtual ~Datum();
 
-    /// @brief Assignment operator.
-    ///
-    /// @details This is a virtual assignment operator. It is implemented by subclasses.
-    /// @param other The Datum to assign to this.
-    /// @return A reference to this.
-    virtual Datum &operator=(const Datum &);
 
-    /// @brief Return type of this object.
-    inline DatumType isa()
-    {
-        return myType;
-    }
 
     /// @brief Return a string suitable for the PRINT command
     ///
@@ -229,17 +298,22 @@ class DatumPtr
     /// @return A pointer to the referred Datum as an Array.
     Array *arrayValue();
 
-    /// @brief Returns a pointer to the referred Datum as an Error.
+    /// @brief Returns a pointer to the referred Datum as a FlowControl.
     ///
-    /// @return A pointer to the referred Datum as an Error.
-    Error *errorValue();
+    /// @return A pointer to the referred Datum as a FlowControl.
+    FlowControl *flowControlValue();
+
+    /// @brief Returns a pointer to the referred Datum as an Err.
+    ///
+    /// @return A pointer to the referred Datum as an Err.
+    FCError *errValue();
 
     /// @brief Returns true if the referred Datum is a Word, false otherwise.
     ///
     /// @return True if the referred Datum is a Word, false otherwise.
     bool isWord()
     {
-        return d->isa() == Datum::wordType;
+        return d->isa == Datum::typeWord;
     }
 
     /// @brief Returns true if the referred Datum is a List, false otherwise.
@@ -247,7 +321,7 @@ class DatumPtr
     /// @return True if the referred Datum is a List, false otherwise.
     bool isList()
     {
-        return d->isa() == Datum::listType;
+        return d->isa == Datum::typeList;
     }
 
     /// @brief Returns true if the referred Datum is an ASTNode, false otherwise.
@@ -255,7 +329,7 @@ class DatumPtr
     /// @return True if the referred Datum is an ASTNode, false otherwise.
     bool isASTNode()
     {
-        return d->isa() == Datum::astnodeType;
+        return d->isa == Datum::typeASTNode;
     }
 
     /// @brief Returns true if the referred Datum is an Array, false otherwise.
@@ -263,16 +337,16 @@ class DatumPtr
     /// @return True if the referred Datum is an Array, false otherwise.
     bool isArray()
     {
-        return d->isa() == Datum::arrayType;
+        return d->isa == Datum::typeArray;
     }
 
 
-    /// @brief Returns true if the referred Datum is an Error, false otherwise.
+    /// @brief Returns true if the referred Datum is an Err, false otherwise.
     ///
-    /// @return True if the referred Datum is an Error, false otherwise.
-    bool isError()
+    /// @return True if the referred Datum is an Err, false otherwise.
+    bool isErr()
     {
-        return d->isa() == Datum::errorType;
+        return d->isa == Datum::typeError;
     }
 
 
@@ -281,7 +355,15 @@ class DatumPtr
     /// @return True if the referred Datum is a notADatum, false otherwise.
     bool isNothing()
     {
-        return d->isa() == Datum::noType;
+        return (d->isa & Datum::typeUnboundMask) != 0;
+    }
+
+    /// @brief Returns true if the referred Datum is a FlowControl, false otherwise.
+    ///
+    /// @return True if the referred Datum is a FlowControl, false otherwise.
+    bool isFlowControl()
+    {
+        return (d->isa & Datum::typeFlowControlMask) != 0;
     }
 
 
@@ -337,12 +419,12 @@ class DatumPtr
     /// @return A string suitable for the SHOW command
     QString showValue(bool fullPrintp = false, int printDepthLimit = -1, int printWidthLimit = -1);
 
-    /// @brief returns a DatumType enumerated value which is the DatumType of the referenced object.
+    /// @brief returns the DatumType of the referenced object.
     ///
-    /// @return A DatumType enumerated value which is the DatumType of the referenced object.
+    /// @return The DatumType of the referenced object.
     Datum::DatumType isa()
     {
-        return d->isa();
+        return d->isa;
     }
 
     /// @brief Set a mark on the datum so that debug message will print when datum is
@@ -375,6 +457,7 @@ class Word : public Datum
     QString keyString;
     QString printableString;
     double number;
+    bool boolean;
     bool sourceIsNumber;
 
     void genRawString();
@@ -385,6 +468,14 @@ class Word : public Datum
     /// @brief Set to true if the word was created with vertical bars as delimiters.
     /// Words created this way will not be separated during parsing or runparsing.
     bool isForeverSpecial;
+
+    /// @brief True if a number was calculated/given AND the number is valid
+    /// @note Read this AFTER calling numberValue()
+    bool numberIsValid = false;
+
+    /// @brief True if the word is either "true" or "false".
+    /// @note Read this AFTER calling boolValue()
+    bool boolIsValid = false;
 
     /// @brief Create a Word object that is invalid.
     Word();
@@ -399,9 +490,15 @@ class Word : public Datum
     /// @brief Create a Word object with a number.
     Word(double other);
 
-    /// @brief returns the number representation of the Word, if possible. Otherwise,
-    /// returns NaN.
+    ~Word();
+
+    /// @brief returns the number representation of the Word, if possible.
+    /// @note check numberIsValid to determine validity after calling this.
     double numberValue(void);
+
+    /// @brief returns the boolean representation of the Word, if possible.
+    /// @note check boolIsValid to determine validity after calling this.
+    bool boolValue(void);
 
     /// @brief convert encoded chars to their printable equivalents.
     ///
@@ -419,7 +516,7 @@ class Word : public Datum
     /// @return A string suitable for the SHOW command
     QString showValue(bool fullPrintp = false, int printDepthLimit = -1, int printWidthLimit = -1);
 
-    /// @brief Returns a string that can be used as a key for an assiciative container.
+    /// @brief Returns a string that can be used as a key for an associative container.
     ///
     /// @return A string that can be used as the name of a procedure, variable, or property list.
     QString keyValue();
@@ -481,21 +578,21 @@ struct Array : public Datum
 
 /// @brief The general container for data. The QLogo List is implemented as a linked list.
 ///
-/// @details The List class is a linked list of DatumPtrs. The head of the list is the first
-/// element and the tail is the remainder of the list after the head. The lastNode is only
-/// used during list initialization and should not be accessed by the user.
+/// @details The List class is a linked list of DatumPtrs. The head of the list contains a
+/// DatumPtr to a Word, List, or Array. The tail of the list is a DatumPtr which must point to
+/// a List.
+/// 
+/// Alternatively, the head can contain nothing, in which case the list is empty. The empty list
+/// is the only list that can have a tail of nothing.
 class List : public Datum
 {
     friend class ListIterator;
-    friend class Parser; // Parser needs access to astList
-
-    /// @brief If this list is parsed into an AST, this is the list of ASTNode roots.
-    QList<DatumPtr> astList;
+    friend class Compiler;
 
   public:
     /// @brief The head of the list, also called the 'element'.
     ///
-    /// @details The head of the list. Must not be nothing
+    /// @details The head of the list.
     DatumPtr head;
 
     /// @brief The remainder of the list after the head. Must be either a list or nothing.
@@ -503,25 +600,22 @@ class List : public Datum
 
     /// @brief The last node of the list.
     ///
-    /// @details Only use as a shortcut during list initialization. Should not be directly
-    /// accessible to user. It should not be used after list has been made available to the
-    /// user.
-    DatumPtr lastNode;
+    /// @details Only use as a shortcut during list initialization. It should not be used after
+    /// list has been made available to the user.
+    List *lastNode;
 
     /// @brief The time, as returned by QDateTime::currentMSecsSinceEpoch().
     ///
     /// @details This is used to determine if the list needs to be reparsed.
     /// Set when the most recent ASTList is generated from this list. Reset this
     /// to zero when the list is modified to trigger reparsing, if needed.
+    ///
+    /// @todo It's difficult to know when the list is modified. We should consider
+    /// removing this.
     qint64 astParseTimeStamp;
 
     /// @brief Create an empty List.
     List();
-
-    /// @brief Create a new list populated with elements of Array.
-    ///
-    /// @param source The source array to copy from.
-    List(Array *source);
 
     /// @brief Create a new list by attaching item as the head of srcList.
     ///
@@ -550,12 +644,6 @@ class List : public Datum
 
     /// @brief Empty the List
     void clear();
-
-    /// @brief Add an element to the end of the list.
-    /// @details DO NOT USE after the List has been modified by any other method. This is
-    /// only to be used during initial contruction of the list. It should not be available
-    /// to the user.
-    void append(DatumPtr element);
 
     /// @brief Returns the count of elements in the List.
     ///
@@ -613,6 +701,27 @@ class ListIterator
 
     /// @brief Returns true if pointer references a valid element.
     bool elementExists();
+};
+
+
+/// @brief A class that allows quickly building a list.
+///
+/// @details This class is used to build a list quickly by appending elements to the end of the list.
+/// @note This class should only be used internally, such as when reading a list. It should not be
+/// available to the user.
+class ListBuilder
+{
+    List *lastNode;
+  public:
+    ListBuilder(List *srcList) : lastNode(srcList) {}
+
+    void append(DatumPtr element)
+    {
+        List *newNode = new List();
+        lastNode->head = element;
+        lastNode->tail = DatumPtr(newNode);
+        lastNode = newNode;
+    }
 };
 
 /// @brief A datum that has no value.

@@ -84,40 +84,49 @@ QChar charToRaw(const QChar &src)
 
 Word::Word()
 {
-    myType = wordType;
+    isa = Datum::typeWord;
     number = nan("");
     rawString = QString();
     printableString = QString();
     keyString = QString();
     sourceIsNumber = false;
+    //qDebug() <<this << " new++ word";
 }
 
 Word::Word(const QString other, bool aIsForeverSpecial)
 {
-    myType = wordType;
+    isa = Datum::typeWord;
     number = nan("");
     isForeverSpecial = aIsForeverSpecial;
     rawString = other;
     printableString = QString();
     keyString = QString();
     sourceIsNumber = false;
+    //qDebug() <<this << " new++ word: " <<other;
 }
 
 Word::Word(double other)
 {
-    myType = wordType;
+    isa = Datum::typeWord;
+    numberIsValid = !std::isnan(other);
     number = other;
     rawString = QString();
     printableString = QString();
     keyString = QString();
     sourceIsNumber = true;
+    //qDebug() <<this << " new++ word: " <<other;
+}
+
+Word::~Word()
+{
+    //qDebug() <<this << " --del word";
 }
 
 void Word::genRawString()
 {
     if (rawString.isNull())
     {
-        Q_ASSERT(!std::isnan(number));
+        Q_ASSERT(numberIsValid);
         rawString.setNum(number);
     }
 }
@@ -162,15 +171,26 @@ QString Word::rawValue()
 
 double Word::numberValue()
 {
-    if (std::isnan(number))
+    if (!numberIsValid)
     {
-        bool numberIsValid;
         genPrintString();
         number = printableString.toDouble(&numberIsValid);
-        if (!numberIsValid)
-            number = nan("");
     }
     return number;
+}
+
+bool Word::boolValue()
+{
+    if (!boolIsValid)
+    {
+        genKeyString();
+        if ((keyString == "TRUE") || (keyString == "FALSE"))
+        {
+            boolIsValid = true;
+            boolean = (keyString == "TRUE");
+        }
+    }
+    return boolean;
 }
 
 QString Word::printValue(bool fullPrintp, int printDepthLimit, int printWidthLimit)

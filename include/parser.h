@@ -31,17 +31,18 @@ class Parser
 {
     DatumPtr currentToken;
 
+    static QHash<List *, QList<QList<DatumPtr>>> astListTable;
+
     void advanceToken();
     ListIterator listIter;
 
+    DatumPtr parseRootExp();
     DatumPtr parseExp();
     DatumPtr parseSumexp();
     DatumPtr parseMulexp();
     DatumPtr parseminusexp();
     DatumPtr parseTermexp();
     DatumPtr parseCommand(bool isVararg);
-    DatumPtr parseStopIfExists(DatumPtr command);
-    DatumPtr astnodeFromCommand(DatumPtr command, int &minParams, int &defaultParams, int &maxParams);
 
   public:
 
@@ -51,16 +52,22 @@ class Parser
     /// @note A QLogo list may hold multiple trees. For example,
     /// `[HOME FORWARD 100]` is a list containing two trees, one for the `HOME`
     /// command and one for the `FORWARD` command.
-    QList<DatumPtr> *astFromList(List *aList);
+    QList<QList<DatumPtr>> astFromList(List *aList);
 
     /// @brief Read a user-defined procedure from a text stream.
-    /// @param nodeP An AST node that contains the first line of the procedure.
+    /// @param node An AST node that contains the first line of the procedure.
     /// @param readStream The text stream to read the procedure from.
-    /// @note The first line will have already been read and assigned to the children nodes of `nodeP`.
+    /// @note The first line will have already been read and assigned to the children nodes of `node`.
     /// The procedure is read until the end of the text stream or until a line
     /// starting with `END` is encountered, and the text is read into the body of
     /// the procedure.
-    void inputProcedure(DatumPtr nodeP, TextStream *readStream);
+    void inputProcedure(ASTNode *node, TextStream *readStream);
+
+    /// @brief Destroy the AST built from a list, if it exists.
+    /// @param aList The list to destroy the AST for.
+    /// @note This should only be called by a list destructor.
+    /// @note This will, in turn, destroy the compiled function for the AST.
+    static void destroyAstForList(List *aList);
 };
 
 #endif // PARSER_H

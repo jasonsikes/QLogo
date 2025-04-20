@@ -57,3 +57,4 @@ logo_autogen
 CMakeCache.txt
 QLogo_autogen
 cmake_install.cmake
+.cache/

@@ -22,41 +22,43 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "QtGui/qtransform.h"
-#include "datum.h"
+#define _USE_MATH_DEFINES
+
+#include <cmath>
 #include "sharedconstants.h"
+#include "controller/logocontroller.h"
 #include <QColor>
-#include <QMatrix4x4>
+
 
 /// @brief The Turtle class is responsible for maintaining the state of the turtle,
 /// including its position, orientation, and pen state.
 class Turtle
 {
-    QTransform turtlePosition;
-
-    bool wrapTurtle(qreal lineStartU,
-                    qreal lineStartV,
-                    qreal &lineEndU,
-                    qreal lineEndV,
-                    qreal boundU,
-                    qreal boundV,
-                    bool isXBoundary,
-                    qreal mult);
-    void moveTurtle(const QTransform &newPosition);
-    void moveTurtleWrap(const QTransform &newPosition);
-    void moveTurtleFence(const QTransform &newPosition);
-    void moveTurtleWindow(const QTransform &newPosition);
+    Transform turtlePosition;
 
     QColor penColor;
-    TurtleModeEnum mode = turtleFence;
-    bool isFilling = false;
+    TurtleModeEnum mode = turtleWindow;
 
     PenModeEnum penMode = penModePaint;
 
-    qreal penSize = Config::get().initialPensize;
+    double penSize = Config::get().initialPensize;
 
     bool turtleIsVisible;
     bool penIsDown;
+    bool isFilling = false;
+
+    bool wrapTurtle(double lineStartU,
+                    double lineStartV,
+                    double &lineEndU,
+                    double lineEndV,
+                    double boundU,
+                    double boundV,
+                    bool isXBoundary,
+                    double mult);
+    void moveTurtle(const Transform &newPosition);
+    void moveTurtleWrap(const Transform &newPosition);
+    void moveTurtleFence(const Transform &newPosition);
+    void moveTurtleWindow(const Transform &newPosition);
 
   public:
     /// @brief Constructor for the Turtle class.
@@ -67,7 +69,7 @@ class Turtle
 
     /// @brief Get the current turtle position and orientation.
     /// @return The current turtle position and orientation.
-    const QTransform &getMatrix(void)
+    const Transform &getMatrix(void)
     {
         return turtlePosition;
     }
@@ -84,6 +86,7 @@ class Turtle
     void setIsTurtleVisible(bool aIsVisible)
     {
         turtleIsVisible = aIsVisible;
+        Config::get().mainController()->setTurtleIsVisible(aIsVisible);
     }
 
     /// @brief Check if the pen is down.
@@ -107,11 +110,11 @@ class Turtle
 
     /// @brief Rotate the turtle by a given angle.
     /// @param angle The angle to rotate the turtle by.
-    void rotate(qreal angle);
+    void rotate(double angle);
 
     /// @brief Move the turtle forward by a given number of steps.
     /// @param steps The number of steps to move the turtle forward.
-    void forward(qreal steps);
+    void forward(double steps);
 
     /// @brief Set the turtle mode.
     /// @param newMode The new turtle mode.
@@ -123,25 +126,25 @@ class Turtle
 
     /// @brief Get the turtle heading.
     /// @return The current turtle heading.
-    qreal getHeading();
+    double getHeading();
 
     /// @brief Get the turtle position.
     /// @param x The x coordinate of the turtle.
     /// @param y The y coordinate of the turtle.
-    void getxy(qreal &x, qreal &y);
+    void getxy(double &x, double &y);
 
     /// @brief Set the turtle position.
     /// @param x The new x coordinate of the turtle.
     /// @param y The new y coordinate of the turtle.
-    void setxy(qreal x, qreal y);
+    void setxy(double x, double y);
 
     /// @brief Set the x coordinate of the turtle.
     /// @param x The new x coordinate of the turtle.
-    void setx(qreal x);
+    void setx(double x);
 
     /// @brief Set the y coordinate of the turtle.
     /// @param y The new y coordinate of the turtle.
-    void sety(qreal y);
+    void sety(double y);
 
     /// @brief Set the pen color.
     /// @param c The new pen color.
@@ -149,16 +152,16 @@ class Turtle
 
     /// @brief Set the pen size.
     /// @param aPenSize The new pen size.
-    void setPenSize(qreal aPenSize);
+    void setPenSize(double aPenSize);
 
     /// @brief Check if the pen size is valid.
     /// @param aPenSize The pen size to check.
     /// @return True if the pen size is valid, false otherwise.
-    bool isPenSizeValid(qreal aPenSize);
+    bool isPenSizeValid(double aPenSize);
 
     /// @brief Get the pen size.
     /// @return The current pen size.
-    qreal getPenSize();
+    double getPenSize();
 
     /// @brief Get the pen color.
     /// @return The current pen color.
@@ -177,7 +180,7 @@ class Turtle
     /// @brief Draw an arc of a given angle and radius.
     /// @param angle The angle of the arc.
     /// @param radius The radius of the arc.
-    void drawArc(qreal angle, qreal radius);
+    void drawArc(double angle, double radius);
 
     /// @brief Begin filling with a given color.
     /// @param fillColor The color to fill with.

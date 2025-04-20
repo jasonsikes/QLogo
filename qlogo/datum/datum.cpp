@@ -19,6 +19,7 @@
 #include <QObject>
 #include <qdebug.h>
 #include <unistd.h>
+#include "sharedconstants.h"
 
 /// @brief The number of Datum objects in use.
 int countOfNodes = 0;
@@ -37,8 +38,8 @@ DatumPtr nodes()
     maxCountOfNodes = countOfNodes;
 
     List *retval = new List();
-    retval->append(DatumPtr(a));
-    retval->append(DatumPtr(b));
+    retval = new List(DatumPtr(b), retval);
+    retval = new List(DatumPtr(a), retval);
     return DatumPtr(retval);
 }
 
@@ -47,11 +48,15 @@ Datum::Datum() : retainCount(0)
     ++countOfNodes;
     if (countOfNodes > maxCountOfNodes)
         maxCountOfNodes = countOfNodes;
+    if (Config::get().showCON)
+        qDebug() <<this << " con++: " << countOfNodes;
 }
 
 Datum::~Datum()
 {
     --countOfNodes;
+    if (Config::get().showCON)
+        qDebug() <<this << " --con: " << countOfNodes;
 }
 
 QString Datum::printValue(bool, int, int)
@@ -64,12 +69,6 @@ QString Datum::showValue(bool, int, int)
     return printValue();
 }
 
-Datum &Datum::operator=(const Datum &)
-{
-    Q_ASSERT(false);
-    return *this;
-}
-
-// Values to represent no data (NULL)
+// Values to represent no data (nullptr)
 Datum notADatum;
 DatumPtr nothing(&notADatum);

@@ -32,7 +32,7 @@ class TextStream
     // Clear the recent Line History.
     void clearLineHistory();
 
-    // The stream source/destination. If NULL then use standard Input and Output.
+    // The stream source/destination. If nullptr then use standard Input and Output.
     QTextStream *stream;
 
     // The work of List/Array reading is done here. Will call itself to process
@@ -45,7 +45,7 @@ class TextStream
 
   public:
     /// @brief Create a TextStream object using a QTextStream as source/destination.
-    /// @param aStream The QTextStream to use. Use NULL for the standardIO streams.
+    /// @param aStream The QTextStream to use. Use nullptr for the standardIO streams.
     TextStream(QTextStream *aStream);
 
     /// @brief Returns the exact string of characters as they appear
@@ -97,11 +97,11 @@ class TextStream
     /// @param text The text to print.
     void lprint(QString text);
 
-    /// @brief Return the underlying device (NULL if there isn't a device).
+    /// @brief Return the underlying device (nullptr if there isn't a device).
     /// @return The QIODevice.
     QIODevice *device();
 
-    /// @brief Return the underlying string buffer (NULL if there isn't one).
+    /// @brief Return the underlying string buffer (nullptr if there isn't one).
     /// @return The string buffer.
     QString *string();
 };

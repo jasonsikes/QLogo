@@ -1,4 +1,3 @@
-
 //===-- parser.cpp - Parser class implementation -------*- C++ -*-===//
 //
 // Copyright 2017-2024 Jason Sikes
@@ -15,55 +14,65 @@
 ///
 //===----------------------------------------------------------------------===//
 
+#include "compiler.h"
 #include "parser.h"
 #include "astnode.h"
 #include "controller/logocontroller.h"
 #include "datum.h"
-#include "error.h"
+#include "flowcontrol.h"
 #include "kernel.h"
 #include "runparser.h"
 #include <qdatetime.h>
 #include <qdebug.h>
-
+#include "workspace/procedures.h"
+#include "controller/textstream.h"
 // TODO: we could reimplement this into something a little faster.
 const QString specialChars("+-()*%/<>=");
 
-void Parser::inputProcedure(DatumPtr nodeP, TextStream *readStream)
-{
-    ASTNode *node = nodeP.astnodeValue();
+QHash<List*, QList<QList<DatumPtr>>> Parser::astListTable;
 
+bool isTag(DatumPtr node)
+{
+    return node.astnodeValue()->genExpression == &Compiler::genTag;
+}
+
+void Parser::inputProcedure(ASTNode *node, TextStream *readStream)
+{
     // to is the command name that initiated inputProcedure(), it is the first
     // word in the input line, 'TO' or '.MACRO'.
     DatumPtr to = node->nodeName;
     if (node->countOfChildren() == 0)
-        Error::notEnough(to);
+        throw FCError::notEnoughInputs(to);
 
     // procnameP is the name of the procedure, the second word in the input line,
     // following 'TO' or '.MACRO'.
     DatumPtr procnameP = node->childAtIndex(0);
     if (!procnameP.isWord())
-        Error::doesntLike(to, procnameP);
+        throw FCError::doesntLike(to, procnameP);
 
-    if (!std::isnan(procnameP.wordValue()->numberValue()))
-        Error::doesntLike(to, procnameP);
+    procnameP.wordValue()->numberValue();
+    if (procnameP.wordValue()->numberIsValid)
+        throw FCError::doesntLike(to, procnameP);
 
     QString procname = procnameP.wordValue()->keyValue();
 
     QChar firstChar = (procname)[0];
     if ((firstChar == '"') || (firstChar == ':') || (firstChar == '(') || (firstChar == ')'))
-        Error::doesntLike(to, procnameP);
+        throw FCError::doesntLike(to, procnameP);
 
     if (Config::get().mainProcedures()->isProcedure(procname))
-        Error::procDefined(procnameP);
+        throw FCError::procDefined(procnameP);
 
     // Assign the procedure's parameter names and default values.
     DatumPtr textP = DatumPtr(new List());
+    ListBuilder textBuilder(textP.listValue());
     DatumPtr firstLine = DatumPtr(new List());
+    ListBuilder firstLineBuilder(firstLine.listValue());
     for (int i = 1; i < node->countOfChildren(); ++i)
     {
-        firstLine.listValue()->append(node->childAtIndex(i));
+        firstLineBuilder.append(node->childAtIndex(i));
     }
-    textP.listValue()->append(firstLine);
+    textBuilder.append(firstLine);
 
     // Now read in the body
     forever
@@ -80,7 +89,7 @@ void Parser::inputProcedure(DatumPtr nodeP, TextStream *readStream)
             if (firstWord == QObject::tr("END"))
                 break;
         }
-        textP.listValue()->append(line);
+        textBuilder.append(line);
     }
 
     // The sourcetext is the raw text from which the procedure was defined.
@@ -92,8 +101,9 @@ void Parser::inputProcedure(DatumPtr nodeP, TextStream *readStream)
     Config::get().mainKernel()->sysPrint(QObject::tr(" defined\n"));
 }
 
-QList<DatumPtr> *Parser::astFromList(List *aList)
+QList<QList<DatumPtr>> Parser::astFromList(List *aList)
 {
+    QList<QList<DatumPtr>> &retval = astListTable[aList];
     if (aList->astParseTimeStamp <= Config::get().mainProcedures()->timeOfLastProcedureCreation())
     {
         aList->astParseTimeStamp = QDateTime::currentMSecsSinceEpoch();
@@ -101,33 +111,85 @@ QList<DatumPtr> *Parser::astFromList(List *aList)
         DatumPtr runParsedList = runparse(aList);
 
         listIter = runParsedList.listValue()->newIterator();
-        aList->astList.clear();
+        retval.clear();
+        QList<DatumPtr> astFlatList;
+
         advanceToken();
 
         try
         {
             while (currentToken != nothing)
             {
-                aList->astList.push_back(parseExp());
+                astFlatList.push_back(parseRootExp());
             }
         }
-        catch (Error *e)
+        catch (FCError *e)
         {
-            // The AST is invalid, so clear it and rethrow the error.
-            aList->astList.clear();
+            // The AST is invalid, so destroy it and rethrow the error.
+            destroyAstForList(aList);
             aList->astParseTimeStamp = 0;
             throw e;
         }
+        // If the last ASTNode is a tag, generate a NOOP expression at the end
+        // to ensure that there is an instruction to jump to.
+        if (astFlatList.last().astnodeValue()->genExpression == &Compiler::genTag) {
+            ASTNode *noopNode = new ASTNode(DatumPtr("noop"));
+            noopNode->genExpression = &Compiler::genNoop;
+            noopNode->returnType = RequestReturnNothing;
+            astFlatList.append(DatumPtr(noopNode));
+        }
+
+        // Now create AST sublists for tag/block pairs.
+        QList<DatumPtr> currentBlock;
+        for (auto &node : astFlatList)
+        {
+            if (currentBlock.isEmpty())
+                currentBlock.append(node);
+            else 
+            {
+                if (isTag(node) == isTag(currentBlock.last()))
+                    currentBlock.append(node);
+                else
+                {
+                    retval.append(currentBlock);
+                    currentBlock = {node};
+                }
+            }
+        }
+        retval.append(currentBlock);
+
     }
-    return &aList->astList;
+    return retval;
+}
+
+void Parser::destroyAstForList(List *aList)
+{
+    astListTable.remove(aList);
 }
 
 // The remaining methods parse into AST nodes.
 
+
+
+DatumPtr Parser::parseRootExp()
+{
+    DatumPtr node = parseExp();
+    if ((currentToken.isa() == Datum::typeWord) && (currentToken.wordValue()->keyValue() == "STOP"))
+    {
+        DatumPtr newNode = DatumPtr(new ASTNode(currentToken));
+        newNode.astnodeValue()->genExpression = &Compiler::genProcedureExit;
+        newNode.astnodeValue()->returnType = RequestReturnNothing;
+        newNode.astnodeValue()->addChild(node);
+        node = newNode;
+        advanceToken();
+    }
+    return node;
+}
+
 DatumPtr Parser::parseExp()
 {
     DatumPtr left = parseSumexp();
-    while ((currentToken.isa() == Datum::wordType) &&
+    while ((currentToken.isa() == Datum::typeWord) &&
            ((currentToken.wordValue()->printValue() == "=") || (currentToken.wordValue()->printValue() == "<>") ||
             (currentToken.wordValue()->printValue() == ">") || (currentToken.wordValue()->printValue() == "<") ||
             (currentToken.wordValue()->printValue() == ">=") || (currentToken.wordValue()->printValue() == "<=")))
@@ -138,31 +200,37 @@ DatumPtr Parser::parseExp()
 
         DatumPtr node = DatumPtr(new ASTNode(op));
         if (right == nothing)
-            Error::notEnough(op);
+            throw FCError::notEnoughInputs(op);
 
         if (op.wordValue()->printValue() == "=")
         {
-            node.astnodeValue()->kernel = &Kernel::excEqualp;
+            node.astnodeValue()->genExpression = &Compiler::genEqualp;
+            node.astnodeValue()->returnType = RequestReturnBool;
         }
         else if (op.wordValue()->printValue() == "<>")
         {
-            node.astnodeValue()->kernel = &Kernel::excNotequalp;
+            node.astnodeValue()->genExpression = &Compiler::genNotequalp;
+            node.astnodeValue()->returnType = RequestReturnBool;
         }
         else if (op.wordValue()->printValue() == "<")
         {
-            node.astnodeValue()->kernel = &Kernel::excLessp;
+            node.astnodeValue()->genExpression = &Compiler::genLessp;
+            node.astnodeValue()->returnType = RequestReturnBool;
         }
         else if (op.wordValue()->printValue() == ">")
         {
-            node.astnodeValue()->kernel = &Kernel::excGreaterp;
+            node.astnodeValue()->genExpression = &Compiler::genGreaterp;
+            node.astnodeValue()->returnType = RequestReturnBool;
         }
         else if (op.wordValue()->printValue() == "<=")
         {
-            node.astnodeValue()->kernel = &Kernel::excLessequalp;
+            node.astnodeValue()->genExpression = &Compiler::genLessequalp;
+            node.astnodeValue()->returnType = RequestReturnBool;
         }
         else
         {
-            node.astnodeValue()->kernel = &Kernel::excGreaterequalp;
+            node.astnodeValue()->genExpression = &Compiler::genGreaterequalp;
+            node.astnodeValue()->returnType = RequestReturnBool;
         }
         node.astnodeValue()->addChild(left);
         node.astnodeValue()->addChild(right);
@@ -174,7 +242,7 @@ DatumPtr Parser::parseExp()
 DatumPtr Parser::parseSumexp()
 {
     DatumPtr left = parseMulexp();
-    while ((currentToken.isa() == Datum::wordType) &&
+    while ((currentToken.isa() == Datum::typeWord) &&
            ((currentToken.wordValue()->printValue() == "+") || (currentToken.wordValue()->printValue() == "-")))
     {
         DatumPtr op = currentToken;
@@ -183,15 +251,17 @@ DatumPtr Parser::parseSumexp()
 
         DatumPtr node = DatumPtr(new ASTNode(op));
         if (right == nothing)
-            Error::notEnough(op);
+            throw FCError::notEnoughInputs(op);
 
         if (op.wordValue()->printValue() == "+")
         {
-            node.astnodeValue()->kernel = &Kernel::excSum;
+            node.astnodeValue()->genExpression = &Compiler::genSum;
+            node.astnodeValue()->returnType = RequestReturnReal;
         }
         else
         {
-            node.astnodeValue()->kernel = &Kernel::excDifference;
+            node.astnodeValue()->genExpression = &Compiler::genDifference;
+            node.astnodeValue()->returnType = RequestReturnReal;
         }
         node.astnodeValue()->addChild(left);
         node.astnodeValue()->addChild(right);
@@ -203,7 +273,7 @@ DatumPtr Parser::parseSumexp()
 DatumPtr Parser::parseMulexp()
 {
     DatumPtr left = parseminusexp();
-    while ((currentToken.isa() == Datum::wordType) &&
+    while ((currentToken.isa() == Datum::typeWord) &&
            ((currentToken.wordValue()->printValue() == "*") || (currentToken.wordValue()->printValue() == "/") ||
             (currentToken.wordValue()->printValue() == "%")))
     {
@@ -213,19 +283,22 @@ DatumPtr Parser::parseMulexp()
 
         DatumPtr node = DatumPtr(new ASTNode(op));
         if (right == nothing)
-            Error::notEnough(op);
+            throw FCError::notEnoughInputs(op);
 
         if (op.wordValue()->printValue() == "*")
         {
-            node.astnodeValue()->kernel = &Kernel::excProduct;
+            node.astnodeValue()->genExpression = &Compiler::genProduct;
+            node.astnodeValue()->returnType = RequestReturnReal;
         }
         else if (op.wordValue()->printValue() == "/")
         {
-            node.astnodeValue()->kernel = &Kernel::excQuotient;
+            node.astnodeValue()->genExpression = &Compiler::genQuotient;
+            node.astnodeValue()->returnType = RequestReturnReal;
         }
         else
         {
-            node.astnodeValue()->kernel = &Kernel::excRemainder;
+            node.astnodeValue()->genExpression = &Compiler::genRemainder;
+            node.astnodeValue()->returnType = RequestReturnReal;
         }
         node.astnodeValue()->addChild(left);
         node.astnodeValue()->addChild(right);
@@ -237,7 +310,7 @@ DatumPtr Parser::parseMulexp()
 DatumPtr Parser::parseminusexp()
 {
     DatumPtr left = parseTermexp();
-    while ((currentToken.isa() == Datum::wordType) && ((currentToken.wordValue()->printValue() == "--")))
+    while ((currentToken.isa() == Datum::typeWord) && ((currentToken.wordValue()->printValue() == "--")))
     {
         DatumPtr op = currentToken;
         advanceToken();
@@ -245,9 +318,9 @@ DatumPtr Parser::parseminusexp()
 
         DatumPtr node = DatumPtr(new ASTNode(op));
         if (right == nothing)
-            Error::notEnough(op);
-
-        node.astnodeValue()->kernel = &Kernel::excDifference;
+            throw FCError::notEnoughInputs(op);
+        
+        node.astnodeValue()->genExpression = &Compiler::genDifference;
         node.astnodeValue()->addChild(left);
         node.astnodeValue()->addChild(right);
         left = node;
@@ -260,25 +333,27 @@ DatumPtr Parser::parseTermexp()
     if (currentToken == nothing)
         return nothing;
 
-    if (currentToken.isa() == Datum::listType)
+    if (currentToken.isa() == Datum::typeList)
     {
-        DatumPtr node(new ASTNode(QObject::tr("Word")));
-        node.astnodeValue()->kernel = &Kernel::executeLiteral;
+        DatumPtr node(new ASTNode(QObject::tr("List")));
+        node.astnodeValue()->genExpression = &Compiler::genLiteral;
+        node.astnodeValue()->returnType = RequestReturnDatum;
         node.astnodeValue()->addChild(currentToken);
         advanceToken();
         return node;
     }
 
-    if (currentToken.isa() == Datum::arrayType)
+    if (currentToken.isa() == Datum::typeArray)
     {
         DatumPtr node(new ASTNode(QObject::tr("Array")));
-        node.astnodeValue()->kernel = &Kernel::executeLiteral;
+        node.astnodeValue()->genExpression = &Compiler::genLiteral;
+        node.astnodeValue()->returnType = RequestReturnDatum;
         node.astnodeValue()->addChild(currentToken);
         advanceToken();
         return node;
     }
 
-    Q_ASSERT(currentToken.isa() == Datum::wordType);
+    Q_ASSERT(currentToken.isa() == Datum::typeWord);
 
     // See if it's an open paren
     if (currentToken.wordValue()->printValue() == "(")
@@ -310,11 +385,10 @@ DatumPtr Parser::parseTermexp()
         if ((!currentToken.isWord()) || (currentToken.wordValue()->printValue() != ")"))
         {
 
-            Error::parenNf();
+            throw FCError::parenNf();
         }
 
         advanceToken();
-        retval = parseStopIfExists(retval);
         return retval;
     }
 
@@ -328,8 +402,9 @@ DatumPtr Parser::parseTermexp()
         }
         if (firstChar == '"')
         {
-            DatumPtr node(new ASTNode(QObject::tr("QuotedName")));
-            node.astnodeValue()->kernel = &Kernel::executeLiteral;
+            DatumPtr node(new ASTNode(QObject::tr("QuotedWord")));
+            node.astnodeValue()->genExpression = &Compiler::genLiteral;
+            node.astnodeValue()->returnType = RequestReturnDatum;
             node.astnodeValue()->addChild(DatumPtr(DatumPtr(name, currentToken.wordValue()->isForeverSpecial)));
             advanceToken();
             return node;
@@ -337,7 +412,8 @@ DatumPtr Parser::parseTermexp()
         else
         {
             DatumPtr node(new ASTNode(QObject::tr("ValueOf")));
-            node.astnodeValue()->kernel = &Kernel::executeValueOf;
+            node.astnodeValue()->genExpression = &Compiler::genValueOf;
+            node.astnodeValue()->returnType = RequestReturnDatum;
             node.astnodeValue()->addChild(DatumPtr(name));
             advanceToken();
             return node;
@@ -346,33 +422,18 @@ DatumPtr Parser::parseTermexp()
 
     // See if it's a number
     double number = currentToken.wordValue()->numberValue();
-    if (!std::isnan(number))
+    if (currentToken.wordValue()->numberIsValid)
     {
         DatumPtr node(new ASTNode(QObject::tr("number")));
-        node.astnodeValue()->kernel = &Kernel::executeLiteral;
+        node.astnodeValue()->genExpression = &Compiler::genLiteral;
+        node.astnodeValue()->returnType = RequestReturnDatum;
         node.astnodeValue()->addChild(DatumPtr(number));
         advanceToken();
         return node;
     }
 
     // If all else fails, it must be a function with the default number of params
-    return parseStopIfExists(parseCommand(false));
-}
-
-// First, check to see that the next token is indeed the STOP command.
-// If it is, create a new node for STOP, and add the command node
-// as a child to the STOP node.
-DatumPtr Parser::parseStopIfExists(DatumPtr command)
-{
-    if ((currentToken != nothing) && currentToken.isWord() &&
-        (currentToken.wordValue()->keyValue() == QObject::tr("STOP")))
-    {
-        // Consume and create the STOP node
-        DatumPtr stopCmd = parseCommand(false);
-        stopCmd.astnodeValue()->addChild(command);
-        return stopCmd;
-    }
-    return command;
+    return  parseCommand(false);
 }
 
 DatumPtr Parser::parseCommand(bool isVararg)
@@ -383,7 +444,7 @@ DatumPtr Parser::parseCommand(bool isVararg)
     QString cmdString = cmdP.wordValue()->keyValue();
 
     if (cmdString == ")")
-        Error::unexpectedCloseParen();
+        throw FCError::unexpectedCloseParen();
 
     int defaultParams = 0;
     int minParams = 0;
@@ -437,7 +498,7 @@ DatumPtr Parser::parseCommand(bool isVararg)
         for (int i = defaultParams; i > 0; --i)
         {
             if (currentToken == nothing)
-                Error::notEnough(cmdP);
+                throw FCError::notEnoughInputs(cmdP);
             DatumPtr child = parseExp();
             node.astnodeValue()->addChild(child);
             ++countOfChildren;
@@ -445,9 +506,9 @@ DatumPtr Parser::parseCommand(bool isVararg)
     }
 
     if (countOfChildren < minParams)
-        Error::notEnough(node.astnodeValue()->nodeName);
+        throw FCError::notEnoughInputs(node.astnodeValue()->nodeName);
     if ((countOfChildren > maxParams) && (maxParams > -1))
-        Error::tooMany(node.astnodeValue()->nodeName);
+        throw FCError::tooManyInputs(node.astnodeValue()->nodeName);
 
     return node;
 }

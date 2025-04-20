@@ -17,23 +17,30 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "controller/textstream.h"
 #include "datum.h"
-#include "procedurehelper.h"
-#include "sharedconstants.h"
 #include "workspace/callframe.h"
-#include "workspace/procedures.h"
+#include "library.h"
 #include "workspace/propertylists.h"
 #include <QColor>
-#include <QFile>
-#include <QFont>
-#include <QRandomGenerator>
 #include <QSet>
 #include <QVector>
 
 class Parser;
 class Turtle;
 class ProcedureScope;
+class Compiler;
+class TextStream;
+
+
+/// @brief Special variables.
+/// @note These are variable names that are used to store special values.
+enum SpecialNames
+{
+    ERRACT
+};
+
+
+
 
 /// @brief The Kernel class does most of the work for the QLogo interpreter.
 /// @details The Kernel class is the core of the QLogo interpreter. It is the evaluator of the QLogo
@@ -42,20 +49,13 @@ class ProcedureScope;
 /// the turtle. 
 class Kernel
 {
-    friend class ProcedureHelper;
-    friend class StreamRedirect;
-    Parser *parser;
     Procedures *procedures;
+    Compiler *theCompiler;
     DatumPtr filePrefix;
-    int repcount = -1;
-    int pauseLevel = 0;
-    bool isPausing = false;
 
     Turtle *turtle;
 
-    QVector<QColor> palette;
     PropertyLists plists;
-    QRandomGenerator randomGenerator;
 
     Help help;
 
@@ -68,64 +68,51 @@ class Kernel
     TextStream *systemWriteStream;
     TextStream *stdioStream;
 
-    DatumPtr currentError;
     DatumPtr currentLine;
     DatumPtr editFileName;
     QString workspaceText;
 
     // Recursive searches need to make sure we don't get caught in infinite loops.
     // Remember what we searched so we don't search it again.
-    QSet<void *> searchedContainers;
-    QSet<void *> comparedContainers;
+    QSet<Datum *> searchedContainers;
+    QSet<Datum *> comparedContainers;
 
-    ASTNode *astnodeValue(DatumPtr caller, DatumPtr value);
-    bool numbersFromList(QVector<double> &retval, DatumPtr l);
-    DatumPtr contentslistFromDatumPtr(DatumPtr sourceNode);
-    void processContentsListWithMethod(DatumPtr contentsList, void (Workspace::*method)(const QString &aName));
-    DatumPtr queryContentsListWithMethod(DatumPtr contentslist, bool (Workspace::*method)(const QString &aName));
-    void makeVarLocal(const QString &varname);
-    DatumPtr executeProcedureCore(DatumPtr node);
+    // Left-side and right side List containers.
+    QSet<List *> comparedListsLHS;
+    QSet<List *> comparedListsRHS;
+
     void inputProcedure(DatumPtr nodeP);
 
-    bool colorFromDatumPtr(QColor &retval, DatumPtr colorP);
-
-    QString filepathForFilename(DatumPtr filenameP);
-    TextStream *openFileStream(DatumPtr filenameP, QIODevice::OpenMode mode);
-    TextStream *createStringStream(DatumPtr filenameP, QIODevice::OpenMode mode);
-    TextStream *getStream(ProcedureHelper &h);
-    TextStream *open(ProcedureHelper &h, QIODevice::OpenMode openFlags);
-    void close(const QString &filename);
     void closeAll();
-    void editAndRunFile();
-    void editAndRunWorkspaceText();
 
     void initPalette(void);
 
     /// Initialize LOGO system variables
     void initVariables(void);
 
-    DatumPtr buildContentsList(showContents_t showWhat);
-    QString createPrintoutFromContentsList(DatumPtr contentslist, bool shouldValidate = true);
+    // Compare two datums for equality recursive call.
+    bool areDatumsEqualRecurse(Datum *datum1, Datum *datum2);
 
-    /// Check for interrupts and handle them accordingly.
-    SignalsEnum_t interruptCheck();
+    // Check if a datum is in a container, recurse.
+    bool isDatumInContainerRecurse(Datum *value, Datum *container);
 
-    bool searchContainerForDatum(DatumPtr containerP, DatumPtr thingP, bool ignoreCase);
-
-    // Compare two datums, return true iff equal.
-    bool areDatumsEqual(DatumPtr datumP1, DatumPtr datumP2, bool ignoreCase);
-
-    // Return the butfirst of a word or list
-    DatumPtr butfirst(DatumPtr srcValue);
-
-    // Determine if the given list contains at least as many items as the
-    // integer given.
-    bool doesListHaveCountOrMore(List *list, int count);
 
   public:
 
+    /// @brief Parser.
+    Parser *parser;
+
+
+    /// @brief The current error, if any.
+    DatumPtr currentError;
+
     /// @brief Constructor.
     Kernel();
+
+    Kernel(const Kernel &) = delete;
+    Kernel(Kernel &&) = delete;
+    Kernel &operator=(const Kernel &) = delete;
+    Kernel &operator=(Kernel &&) = delete;
 
     /// @brief Destructor.
     ~Kernel();
@@ -135,15 +122,24 @@ class Kernel
     /// @todo
     CallFrameStack callStack;
 
-    /// @brief Get the next line of input and run it.
-    /// @param shouldHandleError Set to true to tell the method to handle errors.
-    /// @return True if line was read and executed successfully, false otherwise.
-    bool getLineAndRunIt(bool shouldHandleError = true);
 
-    /// @brief Execute text. Can be any number of lines of text.
-    /// @param text The text to execute.
-    /// @return The result of the execution.
-    QString executeText(const QString &text);
+    /// @brief The palette of colors.
+    /// @details The first 16 colors [0-15] are the standard Logo colors. The first 8
+    /// are immutable. The rest [8-100] are user-assignable.
+    QVector<QColor> palette;
+
+    /// @brief READ a line of input, EVALUATE it, PRINT the result, LOOP.
+    /// @param isPausing Whether we are in a PAUSE loop.
+    /// @param prompt The prompt to display to the user.
+    /// @return The result of the last expression entered.
+    /// @note The return value is useful only in the case of PAUSE.
+    DatumPtr readEvalPrintLoop(bool isPausing, const QString &prompt = QString());
+
+
+    /// @brief Input the body of a procedure.
+    /// @param node the ASTNode that holds the command, the procedure name and parameters.
+    /// @return the given node on success or Error on error.
+    Datum *inputProcedure(ASTNode *node);
 
     /// @brief Print a string to the standard output.
     /// @param text The text to print.
@@ -153,25 +149,7 @@ class Kernel
 
     /// @brief Print a string to the system output.
     /// @param text The text to print.
-    /// @details This method prints a string to the system output. The system
-    /// output is the console, except in the case of executing text from a file,
-    /// where the output is also a file.
     void sysPrint(const QString &text);
-
-    /// @brief Register an error.
-    /// @param anError The error to register.
-    /// @param allowErract Set to true to allow the error to be recovered.
-    /// @param allowRecovery Set to true to allow the error to be recovered.
-    /// @return The error that was registered.
-    DatumPtr registerError(DatumPtr anError, bool allowErract = false, bool allowRecovery = false);
-
-    /// @brief Pause execution. Enable the user to interact with the execution environment.
-    /// @return The result of the pause if user provided a parameter with the continue command.
-    DatumPtr pause();
-
-    /// @brief Return true if input is something other than standard input.
-    /// @return false if input is standard input; true otherwise.
-    bool isInputRedirected();
 
     /// @brief Run a list.
     /// @param listP The list to run.
@@ -179,132 +157,41 @@ class Kernel
     /// @return The result of the last expression in the list.
     DatumPtr runList(DatumPtr listP, QString startTag = QString());
 
-    /// @brief NOOP
-    /// @details This is a no-op. It is a token that gets passed when GOTO is used.
-    DatumPtr excGotoToken(DatumPtr);
+    /// @brief Compare two datums, return true iff they are equal.
+    /// @param datum1 a datum to compare
+    /// @param datum2 a datum to compare
+    /// @details See helptext for EQUALP for definition of equality.
+    bool areDatumsEqual(Datum *datum1, Datum *datum2);
 
-    /// @brief Execute a procedure.
-    /// @param node The procedure to execute.
-    /// @return The output of the procedure.
-    DatumPtr executeProcedure(DatumPtr node);
+    /// @brief Recursively check if a datum is in a container.
+    /// @param container The container to check.
+    /// @param value The value to check for.
+    /// @return True if the value is in the container, false otherwise.
+    bool isDatumInContainer(Datum *container, Datum *value);
 
-    /// @brief Execute a macro.
-    /// @param node The macro to execute.
-    /// @return The result of the macro.
-    /// @details The macro is a procedure that outputs a list. The list is run in the caller's stack frame
-    /// after the procedure's stack frame is torn down.
-    DatumPtr executeMacro(DatumPtr node);
+    /// @brief Convert a Datum to a QColor.
+    /// @param colorP The Datum to convert.
+    /// @return The QColor.
+    /// @details This method converts a Datum to a QColor. The Datum can be a
+    /// color number, color name, an RGB list or an RGBA list.
+    bool colorFromDatumPtr(QColor &retval, DatumPtr colorP);
 
-    /// @brief Simply return a literal.
-    /// @param node The literal.
-    /// @return The literal.
-    DatumPtr executeLiteral(DatumPtr node);
+    /// @brief Convert a Datum to a QVector<double>.
+    /// @param v The Datum to convert.
+    /// @return The QVector<double>.
+    bool numbersFromList(QVector<double> &retval, DatumPtr listP);
 
-    /// @brief Return the value of a variable.
-    /// @param node The variable to return the value of.
-    /// @return The value of the variable.
-    DatumPtr executeValueOf(DatumPtr node);
-
-    /// @brief Set the value of a variable.
-    /// @param node The variable to set the value of.
-    /// @return The new value of the variable.
-    DatumPtr excSetfoo(DatumPtr node);
-
-    /// @brief Return the value of a variable.
-    /// @param node The variable to return the value of.
-    /// @return The value of the variable.
-    DatumPtr excFoo(DatumPtr node);
-
-// Since every primitive requires a declaration, a help file entry, a function definition, and an entry in the pimitives table.
-// It is far easier to include all the information about a primitive in one place. In QLogo, all the information about
-// every primitive can be found in its implimentation file. Various scripts extract the relevant information.
-// The python script, 'generate_command_table.py', generates the declarations for the primitives and places them in
-// the 'primitives.h' file.
-#include "primitives.h"
-
-    /// @brief No operation.
-    /// @param node Dummy value.
-    /// @return Nothing.
-    /// @details This is a no-op. Some UCBLogo commands have no action in QLogo.
-    DatumPtr excNoop(DatumPtr node);
-
-    /// @brief Throw an error because the GUI is not available.
-    /// @param node Dummy value.
-    /// @return Nothing.
-    /// @details In environments that do not support the GUI, this primitive throws an error.
-    DatumPtr excErrorNoGui(DatumPtr node);
+    /// @brief Get the filepath for a filename.
+    /// @param filenameP The filename to get the filepath for.
+    /// @return The filepath for the filename with the current file prefix.
+    QString filepathForFilename(DatumPtr filenameP);
 
     // SPECIAL VARIABLES
+    Datum* specialVar(SpecialNames name);
 
-
-    /// if TRUE, prints the names of procedures defined when loading
-	  /// from a file (including the temporary file made by EDIT).
-    bool varLOADNOISILY();
-
-    /// if TRUE, indicates that an attempt to use a procedure that doesn't
-    /// exist should be taken as an implicit getter or setter procedure
-    /// (setter if the first three letters of the name are SET) for a variable
-    /// of the same name (without the SET if appropriate).
-    bool varALLOWGETSET();
-
-    /// if nonempty, should be an instruction list that will be evaluated
-    /// whenever a mouse button is pressed.  Note that the user may have
-    DatumPtr varBUTTONACT();
-
-    /// if nonempty, should be an instruction list that will be evaluated
-    /// whenever a key is pressed.
-    DatumPtr varKEYACT();
-
-    /// if TRUE, any output will be printed in a manner suitable for re-reading
-    /// by QLogo to produce the same value.
-    bool varFULLPRINTP();
-
-    /// indicates the maximum depth of sublist structure that will be printed.
-    int varPRINTDEPTHLIMIT();
-
-    /// indicates the maximum number of members in any one list that will be printed.
-    int varPRINTWIDTHLIMIT();
-
-    /// if assigned a list value in a file loaded by LOAD, that value is
-    /// run as an instructionlist after loading.
-    DatumPtr varSTARTUP();
-
-    /// if TRUE, causes any procedure defined during EDIT or LOAD to be
-    /// unburied when editing a file.
-    bool varUNBURYONEDIT();
-
-    /// if TRUE, indicates that lower case and upper case letters should be
-    /// considered equal by EQUALP, BEFOREP, MEMBERP, etc.
-    bool varCASEIGNOREDP();
-};
-
-/// @brief Redirects the standard input and output streams.
-/// @details This class redirects the standard input and output streams to a
-/// new stream for RAII. When the redirection is done, the original streams are
-/// saved so they can be restored later when the object is deallocated.
-class StreamRedirect
-{
-    TextStream *originalWriteStream;
-    TextStream *originalSystemWriteStream;
-    TextStream *originalReadStream;
-    TextStream *originalSystemReadStream;
-
-    Parser *originalParser;
-
-  public:
-
-    /// @brief Constructor.
-    /// @param newReadStream The new read stream.
-    /// @param newWriteStream The new write stream.
-    /// @param newParser The new parser.
-    /// @details The constructor redirects the standard input and output streams
-    /// to a new stream.
-    StreamRedirect(TextStream *newReadStream, TextStream *newWriteStream, Parser *newParser);
-
-    /// @brief Destructor.
-    /// @details The destructor restores the original standard input and output
-    /// streams.
-    ~StreamRedirect();
+    /// @brief Perform pause, essentially a REPL loop.
+    /// @return The value passed to CONTINUE, if any.
+    DatumPtr pause();
 };
 
 #endif // EXECUTOR_H

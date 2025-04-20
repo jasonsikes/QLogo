@@ -1,5 +1,5 @@
 # Technically, the qlogo resource files belong to the qlogo binary,
-# but on MacOS I want to put them into the QLogo-GUI bundle.
+# but on MacOS I want to put them into the QLOGO_GUI bundle.
 set(RESOURCE_FILES
   ../../share/qlogo_help.db
   ../../share/qlogo_lib.db

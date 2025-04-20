@@ -39,8 +39,15 @@ class ASTNode : public Datum
     /// @brief A human-readable string. Usually the command name.
     DatumPtr nodeName;
 
-    /// @brief A pointer to the kernel method that should be called when executing this node.
-    KernelMethod kernel;
+    /// @brief A pointer to the procedure that this node represents.
+    /// @note IFF this node represents a procedure, this will be a pointer to the procedure.
+    DatumPtr procedure;
+
+    /// @brief A pointer to the Compiler method that generates code to execute this node.
+    Generator genExpression;
+
+    /// @brief a bitfield containing the type(s) of value that this function is expected to return.
+    RequestReturnType returnType;
 
     /// @brief Add a child to the node. Child will be added to the end of the children list.
     /// @param aChild The child to add.
@@ -62,10 +69,6 @@ class ASTNode : public Datum
 
     /// @brief Destructor.
     ~ASTNode();
-
-    /// @brief Returns the type of this node.
-    /// @return The type of this node.
-    DatumType isa();
 
     /// @brief For debugging. To be used when printing out the AST. Parameters are ignored.
     /// @return A string representation of this node.

@@ -17,6 +17,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum.h"
+#include "parser.h"
+#include "compiler.h"
 #include <QObject>
 #include <qdebug.h>
 
@@ -25,61 +27,50 @@ QList<void *> otherListVisited;
 
 List::List()
 {
-    myType = listType;
+    isa = Datum::typeList;
     astParseTimeStamp = 0;
-}
-
-List::List(Array *source)
-{
-    myType = listType;
-    for (auto &aryIter : source->array)
-    {
-        append(aryIter);
-    }
+    lastNode = this;
+    //qDebug() <<this << " new++ list";
 }
 
 List::List(DatumPtr item, List *srcList)
 {
-    myType = listType;
+    isa = Datum::typeList;
     head = item;
-    if (!srcList->head.isNothing())
-    {
-        tail = DatumPtr(srcList);
-        lastNode = srcList->lastNode;
-    }
-    else
-    {
-        lastNode = DatumPtr(this);
-    }
+    tail = DatumPtr(srcList);
+    lastNode = srcList->lastNode;
     astParseTimeStamp = 0;
+    //qDebug() <<this << " new++ list";
 }
 
 List::~List()
 {
+    clear();
+    //qDebug() <<this << " --del list";
 }
 
 QString List::printValue(bool fullPrintp, int printDepthLimit, int printWidthLimit)
 {
     if (head.isNothing())
         return "";
-    DatumPtr iter = DatumPtr(this);
     if ((printDepthLimit == 0) || (printWidthLimit == 0))
     {
         return "...";
     }
     int printWidth = printWidthLimit - 1;
-    QString retval = iter.listValue()->head.showValue(fullPrintp, printDepthLimit - 1, printWidthLimit);
-    while (iter.listValue()->tail != nothing)
+    QString retval = head.showValue(fullPrintp, printDepthLimit - 1, printWidthLimit);
+    List* iter = tail.listValue();
+    while ( ! iter->head.isNothing())
     {
-        iter = iter.listValue()->tail;
         retval.append(' ');
         if (printWidth == 0)
         {
             retval.append("...");
             break;
         }
-        retval.append(iter.listValue()->head.showValue(fullPrintp, printDepthLimit - 1, printWidthLimit));
+        retval.append(iter->head.showValue(fullPrintp, printDepthLimit - 1, printWidthLimit));
         --printWidth;
+        iter = iter->tail.listValue();
     }
     return retval;
 }
@@ -127,50 +118,18 @@ void List::clear()
 {
     head = nothing;
     tail = nothing;
-    lastNode = nothing;
-    astList.clear();
+    Parser::destroyAstForList(this);
     astParseTimeStamp = 0;
-}
-
-// This should only be used when initializing a list. It should not be used
-// after list has been made available to the user.
-void List::append(DatumPtr element)
-{
-    astParseTimeStamp = 0;
-
-    if (head == nothing)
-    {
-        head = element;
-        tail = nothing;
-        lastNode = nothing;
-        return;
-    }
-
-    List *l = new List();
-    l->head = element;
-    l->tail = nothing;
-    l->lastNode = nothing;
-    DatumPtr lP(l);
-
-    if (tail == nothing)
-    {
-        tail = lP;
-        lastNode = tail;
-        return;
-    }
-
-    lastNode.listValue()->tail = lP;
-    lastNode = lP;
 }
 
 int List::count()
 {
     int retval = 0;
-    DatumPtr ptr(this);
-    while (ptr.isList() && (!ptr.listValue()->head.isNothing()))
+    List* iter = this;
+    while ( ! iter->head.isNothing())
     {
         ++retval;
-        ptr = ptr.listValue()->tail;
+        iter = iter->tail.listValue();
     }
     return retval;
 }

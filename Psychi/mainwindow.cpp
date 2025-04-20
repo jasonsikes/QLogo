@@ -49,7 +49,7 @@ struct message
     {
         qint64 datawritten;
         qint64 datalen = buffer.size();
-        buffer.prepend((const char *)&datalen, sizeof(qint64));
+        buffer.prepend(reinterpret_cast<const char *>(&datalen), sizeof(qint64));
         datawritten = logoProcess->write(buffer);
         Q_ASSERT(datawritten == buffer.size());
     }
@@ -120,7 +120,7 @@ int MainWindow::startLogo()
     QString command = findQlogoExe();
 
     QStringList arguments;
-    arguments << "--QLogoGUI";
+    arguments << "--Psychi";
 
     logoProcess = new QProcess(this);
 
@@ -187,7 +187,7 @@ void MainWindow::fileDialogModal()
 
 void MainWindow::openEditorWindow(const QString startingText)
 {
-    if (editWindow == NULL)
+    if (editWindow == nullptr)
     {
         editWindow = new EditorWindow;
 
@@ -235,7 +235,7 @@ void MainWindow::readStandardOutput()
         // and we can start a new one.
         if (readBuffer.size() == readBufferLen)
         {
-            int readResult = logoProcess->read((char *)&datalen, sizeof(qint64));
+            int readResult = logoProcess->read(reinterpret_cast<char *>(&datalen), sizeof(qint64));
             if (readResult != sizeof(qint64))
                 return;
             readBufferLen = datalen;

@@ -17,6 +17,9 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum.h"
+#include "workspace/procedures.h"
+#include "astnode.h"
+#include "err.h"
 #include <QObject>
 #include <qdebug.h>
 
@@ -140,38 +143,44 @@ bool DatumPtr::operator!=(const DatumPtr &other)
 
 Word *DatumPtr::wordValue()
 {
-    Q_ASSERT(d->isa() == Datum::wordType);
-    return (Word *)d;
+    Q_ASSERT(d->isa == Datum::typeWord);
+    return static_cast<Word *>(d);
 }
 
 List *DatumPtr::listValue()
 {
-    Q_ASSERT(d->isa() == Datum::listType);
-    return (List *)d;
+    Q_ASSERT(d->isa == Datum::typeList);
+    return static_cast<List *>(d);
 }
 
 Array *DatumPtr::arrayValue()
 {
-    Q_ASSERT(d->isa() == Datum::arrayType);
-    return (Array *)d;
+    Q_ASSERT(d->isa == Datum::typeArray);
+    return static_cast<Array *>(d);
+}
+
+FlowControl *DatumPtr::flowControlValue()
+{
+    Q_ASSERT((d->isa & Datum::typeFlowControlMask) != 0);
+    return reinterpret_cast<FlowControl *>(d);
 }
 
 Procedure *DatumPtr::procedureValue()
 {
-    Q_ASSERT(d->isa() == Datum::procedureType);
-    return (Procedure *)d;
+    Q_ASSERT(d->isa == Datum::typeProcedure);
+    return static_cast<Procedure *>(d);
 }
 
 ASTNode *DatumPtr::astnodeValue()
 {
-    Q_ASSERT(d->isa() == Datum::astnodeType);
-    return (ASTNode *)d;
+    Q_ASSERT(d->isa == Datum::typeASTNode);
+    return static_cast<ASTNode *>(d);
 }
 
-Error *DatumPtr::errorValue()
+FCError *DatumPtr::errValue()
 {
-    Q_ASSERT(d->isa() == Datum::errorType);
-    return (Error *)d;
+    Q_ASSERT(d->isa == Datum::typeError);
+    return reinterpret_cast<FCError *>(d);
 }
 
 QString DatumPtr::printValue(bool fullPrintp, int printDepthLimit, int printWidthLimit)

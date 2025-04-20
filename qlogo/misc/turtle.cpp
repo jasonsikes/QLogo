@@ -19,26 +19,21 @@
 
 #include "turtle.h"
 #include "controller/logocontroller.h"
-#include "error.h"
+#include "flowcontrol.h"
 #include <math.h>
 
 // Some support functions for moving the turtle.
 
-QTransform matrixWithNewXY(const QTransform &src, qreal x, qreal y)
-{
-    return QTransform(src.m11(), src.m12(), src.m13(), src.m21(), src.m22(), src.m23(), x, y, src.m33());
-}
-
-Turtle::Turtle() : turtlePosition(QTransform()), turtleIsVisible(true), penIsDown(true)
+Turtle::Turtle() : turtlePosition(Transform()), turtleIsVisible(true), penIsDown(true)
 {
     Config::get().setMainTurtle(this);
     penColor = Config::get().initialCanvasForegroundColor;
-    mode = turtleWrap;
+    mode = turtleWindow;
 }
 
 Turtle::~Turtle()
 {
-    Config::get().setMainTurtle(NULL);
+    Config::get().setMainTurtle(nullptr);
 }
 
 void Turtle::setPenIsDown(bool aIsPenDown)
@@ -48,26 +43,44 @@ void Turtle::setPenIsDown(bool aIsPenDown)
 }
 
 // Move the turtle. If over a boundary, wrap.
-bool Turtle::wrapTurtle(qreal lineStartU,
-                        qreal lineStartV,
-                        qreal &lineEndU,
-                        qreal lineEndV,
-                        qreal boundU,
-                        qreal boundV,
+bool Turtle::wrapTurtle(double lineStartU,
+                        double lineStartV,
+                        double &lineEndU,
+                        double lineEndV,
+                        double boundU,
+                        double boundV,
                         bool isXBoundary,
-                        qreal mult)
+                        double mult)
 {
-    qreal crossV = lineStartV + (mult * boundU - lineStartU) * (lineEndV - lineStartV) / (lineEndU - lineStartU);
+    double crossV = lineStartV + (mult * boundU - lineStartU) * (lineEndV - lineStartV) / (lineEndU - lineStartU);
     if ((crossV >= -boundV) && (crossV <= boundV))
     {
-        QTransform tempTurtlePos = isXBoundary ? matrixWithNewXY(turtlePosition, mult * boundU, crossV)
-                                               : matrixWithNewXY(turtlePosition, crossV, mult * boundU);
+        Transform tempTurtlePos = turtlePosition;
+        if (isXBoundary)
+        {
+            tempTurtlePos.m[6] = mult * boundU;
+            tempTurtlePos.m[7] = crossV;
+        }
+        else
+        {
+            tempTurtlePos.m[6] = crossV;
+            tempTurtlePos.m[7] = mult * boundU;
+        }
         Config::get().mainController()->setTurtlePos(tempTurtlePos);
         Config::get().mainController()->emitVertex();
         if (penIsDown)
             Config::get().mainController()->setPenIsDown(false);
-        turtlePosition = isXBoundary ? matrixWithNewXY(turtlePosition, -mult * boundU, crossV)
-                                     : matrixWithNewXY(turtlePosition, crossV, -mult * boundU);
+
+        if (isXBoundary)
+        {
+            turtlePosition.m[6] = -mult * boundU;
+            turtlePosition.m[7] = crossV;
+        }
+        else
+        {
+            turtlePosition.m[6] = crossV;
+            turtlePosition.m[7] = -mult * boundU;
+        }
         Config::get().mainController()->setTurtlePos(turtlePosition);
         Config::get().mainController()->emitVertex();
         if (penIsDown)
@@ -81,17 +94,17 @@ bool Turtle::wrapTurtle(qreal lineStartU,
 // Move the turtle to a new position, wrapping around the edges of the canvas if
 // the new position is outside the canvas.
 
-void Turtle::moveTurtleWrap(const QTransform &newPosition)
+void Turtle::moveTurtleWrap(const Transform &newPosition)
 {
-    qreal lineEndX = newPosition.dx();
-    qreal lineEndY = newPosition.dy();
-    qreal boundX = Config::get().mainController()->boundX();
-    qreal boundY = Config::get().mainController()->boundY();
+    double lineEndX = newPosition.m[6];
+    double lineEndY = newPosition.m[7];
+    double boundX = Config::get().mainController()->boundX();
+    double boundY = Config::get().mainController()->boundY();
 
     while ((lineEndX < -boundX) || (lineEndX > boundX) || (lineEndY < -boundY) || (lineEndY > boundY))
     {
-        qreal lineStartX = turtlePosition.dx();
-        qreal lineStartY = turtlePosition.dy();
+        double lineStartX = turtlePosition.m[6];
+        double lineStartY = turtlePosition.m[7];
 
         if (lineEndX > boundX)
         {
@@ -118,7 +131,9 @@ void Turtle::moveTurtleWrap(const QTransform &newPosition)
         }
     }
 
-    turtlePosition = matrixWithNewXY(newPosition, lineEndX, lineEndY);
+    turtlePosition = newPosition;
+    turtlePosition.m[6] = lineEndX;
+    turtlePosition.m[7] = lineEndY;
     Config::get().mainController()->setTurtlePos(turtlePosition);
     Config::get().mainController()->emitVertex();
 }
@@ -126,16 +141,16 @@ void Turtle::moveTurtleWrap(const QTransform &newPosition)
 // Move the turtle to a new position, but only if the new position is within the
 // canvas. If the new position is outside the canvas, an error is thrown.
 
-void Turtle::moveTurtleFence(const QTransform &newPosition)
+void Turtle::moveTurtleFence(const Transform &newPosition)
 {
-    qreal lineEndX = newPosition.dx();
-    qreal lineEndY = newPosition.dy();
-    qreal boundX = Config::get().mainController()->boundX();
-    qreal boundY = Config::get().mainController()->boundY();
+    double lineEndX = newPosition.m[6];
+    double lineEndY = newPosition.m[7];
+    double boundX = Config::get().mainController()->boundX();
+    double boundY = Config::get().mainController()->boundY();
 
     if ((lineEndX < -boundX) || (lineEndX > boundX) || (lineEndY < -boundY) || (lineEndY > boundY))
     {
-        Error::turtleOutOfBounds();
+        throw FCError::turtleOutOfBounds();
     }
     turtlePosition = newPosition;
     Config::get().mainController()->setTurtlePos(turtlePosition);
@@ -144,12 +159,12 @@ void Turtle::moveTurtleFence(const QTransform &newPosition)
 
 // Move the turtle to a new position, adjusting the canvas boundaries,
 // if needed.
-void Turtle::moveTurtleWindow(const QTransform &newPosition)
+void Turtle::moveTurtleWindow(const Transform &newPosition)
 {
-    qreal candidateX = std::abs(newPosition.dx()) + penSize;
-    qreal candidateY = std::abs(newPosition.dy()) + penSize;
-    qreal boundX = Config::get().mainController()->boundX();
-    qreal boundY = Config::get().mainController()->boundY();
+    double candidateX = std::abs(newPosition.m[6]) + penSize;
+    double candidateY = std::abs(newPosition.m[7]) + penSize;
+    double boundX = Config::get().mainController()->boundX();
+    double boundY = Config::get().mainController()->boundY();
 
     if ((candidateX > boundX) || (candidateY > boundY))
     {
@@ -163,7 +178,7 @@ void Turtle::moveTurtleWindow(const QTransform &newPosition)
     Config::get().mainController()->emitVertex();
 }
 
-void Turtle::moveTurtle(const QTransform &newPosition)
+void Turtle::moveTurtle(const Transform &newPosition)
 {
     switch (mode)
     {
@@ -179,28 +194,41 @@ void Turtle::moveTurtle(const QTransform &newPosition)
     }
 }
 
-void Turtle::drawArc(qreal angle, qreal radius)
+void Turtle::drawArc(double angle, double radius)
 {
     Config::get().mainController()->drawArc(angle, radius);
 }
 
-void Turtle::forward(qreal steps)
+void Turtle::forward(double steps)
 {
-    QTransform newPos = turtlePosition;
-    newPos.translate(0, steps);
+    Transform newPos = turtlePosition;
+    newPos.m[6] += steps * turtlePosition.m[3];
+    newPos.m[7] += steps * turtlePosition.m[4];
     moveTurtle(newPos);
 }
 
-void Turtle::rotate(qreal angle)
+void Turtle::rotate(double angle)
 {
-    turtlePosition.rotate(angle, Qt::ZAxis);
+    double rad = angle * M_PI / 180.0;
+    double sina = std::sin(rad);
+    double cosa = std::cos(rad);
+
+    double m11 = turtlePosition.m[0];
+    double m12 = turtlePosition.m[1];
+    double m21 = turtlePosition.m[3];
+    double m22 = turtlePosition.m[4];
+
+    turtlePosition.m[0] = cosa * m11 - sina * m21;
+    turtlePosition.m[1] = cosa * m12 - sina * m22;
+    turtlePosition.m[3] = sina * m11 + cosa * m21;
+    turtlePosition.m[4] = sina * m12 + cosa * m22;
     Config::get().mainController()->setTurtlePos(turtlePosition);
 }
 
-void Turtle::getxy(qreal &x, qreal &y)
+void Turtle::getxy(double &x, double &y)
 {
-    x = turtlePosition.dx();
-    y = turtlePosition.dy();
+    x = turtlePosition.m[6];
+    y = turtlePosition.m[7];
 }
 
 void Turtle::setMode(TurtleModeEnum newMode)
@@ -208,13 +236,13 @@ void Turtle::setMode(TurtleModeEnum newMode)
     mode = newMode;
     if (mode != turtleWindow)
     {
-        qreal boundX = Config::get().mainController()->boundX();
-        qreal boundY = Config::get().mainController()->boundY();
-        qreal posX = turtlePosition.dx();
-        qreal posY = turtlePosition.dy();
+        double boundX = Config::get().mainController()->boundX();
+        double boundY = Config::get().mainController()->boundY();
+        double posX = turtlePosition.m[6];
+        double posY = turtlePosition.m[7];
         if ((posX < -boundX) || (posX > boundX) || (posY < -boundY) || (posY > boundY))
         {
-            moveTurtle(QTransform());
+            moveTurtle(Transform());
         }
     }
 }
@@ -224,38 +252,40 @@ TurtleModeEnum Turtle::getMode()
     return mode;
 }
 
-qreal Turtle::getHeading()
+double Turtle::getHeading()
 {
-    qreal s = turtlePosition.m12();
-    qreal c = turtlePosition.m11();
+    double s = turtlePosition.m[1];
+    double c = turtlePosition.m[0];
 
-    qreal retval = atan2(s, c) * 180 / M_PI;
+    double retval = atan2(s, c) * 180 / M_PI;
     if (retval < 0)
         retval += 360;
     return retval;
 }
 
-void Turtle::setxy(qreal x, qreal y)
+void Turtle::setxy(double x, double y)
 {
-    QTransform newPosition(matrixWithNewXY(turtlePosition, x, y));
+    Transform newPosition(turtlePosition);
+    newPosition.m[6] = x;
+    newPosition.m[7] = y;
     moveTurtle(newPosition);
 }
 
-void Turtle::setx(qreal x)
+void Turtle::setx(double x)
 {
-    qreal y = turtlePosition.dy();
+    double y = turtlePosition.m[7];
     setxy(x, y);
 }
 
-void Turtle::sety(qreal y)
+void Turtle::sety(double y)
 {
-    qreal x = turtlePosition.dx();
+    double x = turtlePosition.m[6];
     setxy(x, y);
 }
 
 void Turtle::moveToHome()
 {
-    moveTurtle(QTransform());
+    moveTurtle(Transform());
 }
 
 void Turtle::setPenColor(const QColor &c)
@@ -283,18 +313,18 @@ PenModeEnum Turtle::getPenMode()
     return penMode;
 }
 
-void Turtle::setPenSize(qreal aPenSize)
+void Turtle::setPenSize(double aPenSize)
 {
     penSize = aPenSize;
     Config::get().mainController()->setPensize(penSize);
 }
 
-bool Turtle::isPenSizeValid(qreal aPenSize)
+bool Turtle::isPenSizeValid(double aPenSize)
 {
     return Config::get().mainController()->isPenSizeValid(aPenSize);
 }
 
-qreal Turtle::getPenSize()
+double Turtle::getPenSize()
 {
     return penSize;
 }
@@ -303,7 +333,7 @@ void Turtle::beginFillWithColor(const QColor &fillColor)
 {
     if (isFilling)
     {
-        Error::alreadyFilling();
+        throw FCError::alreadyFilling();
     }
     isFilling = true;
 
@@ -321,15 +351,15 @@ DatumPtr Turtle::print()
     QString s = QString("%1 %2 %3\n"
                         "%4 %5 %6\n"
                         "%7 %8 %9\n")
-                    .arg(turtlePosition.m11())
-                    .arg(turtlePosition.m12())
-                    .arg(turtlePosition.m13())
-                    .arg(turtlePosition.m21())
-                    .arg(turtlePosition.m22())
-                    .arg(turtlePosition.m23())
-                    .arg(turtlePosition.m31())
-                    .arg(turtlePosition.m32())
-                    .arg(turtlePosition.m33());
+                    .arg(turtlePosition.m[0])
+                    .arg(turtlePosition.m[1])
+                    .arg(turtlePosition.m[2])
+                    .arg(turtlePosition.m[3])
+                    .arg(turtlePosition.m[4])
+                    .arg(turtlePosition.m[5])
+                    .arg(turtlePosition.m[6])
+                    .arg(turtlePosition.m[7])
+                    .arg(turtlePosition.m[8]);
 
     return DatumPtr(s);
 }

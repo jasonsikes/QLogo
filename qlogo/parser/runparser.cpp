@@ -40,7 +40,7 @@ void Runparser::runparseSpecialchars(void)
             ++runparseCIter;
         }
     }
-    runparseRetval->append(DatumPtr(retval));
+    runparseBuilder->append(DatumPtr(retval));
 }
 
 void Runparser::runparseString()
@@ -54,10 +54,10 @@ void Runparser::runparseString()
         DatumPtr number = runparseNumber();
         if (number != nothing)
         {
-            runparseRetval->append(DatumPtr(QString("(")));
-            runparseRetval->append(DatumPtr(QString("?")));
-            runparseRetval->append(number);
-            runparseRetval->append(DatumPtr(QString(")")));
+            runparseBuilder->append(DatumPtr(QString("(")));
+            runparseBuilder->append(DatumPtr(QString("?")));
+            runparseBuilder->append(number);
+            runparseBuilder->append(DatumPtr(QString(")")));
             return;
         }
     }
@@ -67,7 +67,7 @@ void Runparser::runparseString()
         retval += *runparseCIter;
         ++runparseCIter;
     }
-    runparseRetval->append(DatumPtr(retval, isRunparseSourceSpecial));
+    runparseBuilder->append(DatumPtr(retval, isRunparseSourceSpecial));
 }
 
 void Runparser::runparseMinus()
@@ -83,13 +83,13 @@ void Runparser::runparseMinus()
     DatumPtr number = runparseNumber();
     if (number != nothing)
     {
-        runparseRetval->append(number);
+        runparseBuilder->append(number);
         return;
     }
 
     // This is a minus function
-    runparseRetval->append(DatumPtr(QString("0")));
-    runparseRetval->append(DatumPtr(QString("--")));
+    runparseBuilder->append(DatumPtr(QString("0")));
+    runparseBuilder->append(DatumPtr(QString("--")));
     // discard the minus
     ++runparseCIter;
 }
@@ -195,7 +195,7 @@ void Runparser::runparseQuotedWord()
         retval += *runparseCIter;
         ++runparseCIter;
     }
-    runparseRetval->append(DatumPtr(retval, isRunparseSourceSpecial));
+    runparseBuilder->append(DatumPtr(retval, isRunparseSourceSpecial));
 }
 
 DatumPtr Runparser::doRunparse(DatumPtr src)
@@ -209,7 +209,19 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
         TextStream stream(&srcStream);
         src = stream.readlistWithPrompt("", false);
     }
+
     runparseRetval = new List();
+
+    if (src.isNothing()) {
+        return runparseRetval;
+    }
+
+    if (runparseBuilder)
+    {
+        delete runparseBuilder;
+    }
+    runparseBuilder = new ListBuilder(runparseRetval);
+
     ListIterator iter = src.listValue()->newIterator();
 
     while (iter.elementExists())
@@ -246,14 +258,14 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
                 }
                 else
                 {
-                    runparseRetval->append(number);
+                    runparseBuilder->append(number);
                 }
             } // while (cIter != oldWord.end())
         }
         else
         {
             // Do not parse arrays or sublists. Just append them as is.
-            runparseRetval->append(element);
+            runparseBuilder->append(element);
         }
     }
     return DatumPtr(runparseRetval);

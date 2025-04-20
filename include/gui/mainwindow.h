@@ -59,7 +59,7 @@ class MainWindow : public QMainWindow
 
     windowMode_t windowMode;
     bool hasShownCanvas = false;
-    EditorWindow *editWindow = NULL;
+    EditorWindow *editWindow = nullptr;
 
     int startLogo();
     void beginReadRawlineWithPrompt(const QString prompt);

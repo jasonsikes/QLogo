@@ -15,7 +15,14 @@
 //===----------------------------------------------------------------------===//
 
 #include "workspace/callframe.h"
-
+#include "sharedconstants.h"
+#include "compiler.h"
+#include "flowcontrol.h"
+#include "astnode.h"
+#include "workspace/procedures.h"
+#include "kernel.h"
+#include "parser.h"
+#include "runparser.h"
 
 void CallFrameStack::setDatumForName(DatumPtr &aDatum, const QString &name) {
     for (auto frame : stack) {
@@ -74,6 +81,7 @@ bool CallFrameStack::doesExist(QString name) {
 
 DatumPtr CallFrameStack::allVariables(showContents_t showWhat) {
     List *retval = new List();
+    ListBuilder builder(retval);
     QSet<QString> seenVars;
 
     for (auto frame : stack) {
@@ -83,7 +91,7 @@ DatumPtr CallFrameStack::allVariables(showContents_t showWhat) {
                 seenVars.insert(varname);
 
                 if (shouldInclude(showWhat, varname))
-                    retval->append(DatumPtr(varname));
+                    builder.append(DatumPtr(varname));
             }
         }
     }
@@ -155,3 +163,259 @@ bool CallFrameStack::testedState() {
     return false;
 }
 
+
+void CallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount) {
+    Procedure *proc = sourceNode.astnodeValue()->procedure.procedureValue();
+
+    QStringList &requiredInputs = proc->requiredInputs;
+    QStringList &optionalInputs = proc->optionalInputs;
+    QList<DatumPtr> &optionalDefaults = proc->optionalDefaults;
+
+    // Assign the given name/value pairs to the local variables.
+    QStringList names;
+    QList<DatumPtr> values;
+
+
+    size_t paramIndex = 0;
+    for (auto &input : requiredInputs) {
+        Q_ASSERT(paramIndex < paramCount);
+        names.append(input);
+        values.append(DatumPtr(*(paramAry + paramIndex)));
+        paramIndex++;
+    }
+
+    // Handle optional inputs as name/value pairs.
+    // Note that optionalInputs are lists with the tail being the default expression.
+    // The head is the name of the optional input, but we saved it earlier in a key form.
+    // We retain the whole expression in optionalDefaults in case there is an error.
+    for (int i = 0; i < optionalInputs.size(); i++) {
+        QString name = optionalInputs[i];
+        DatumPtr value;
+        if (paramIndex < paramCount) {
+            value = *(paramAry + paramIndex);
+        } else {
+            value = optionalDefaults[i].listValue()->tail;
+            // TODO: ensure that the generated ASTList has one root node.
+            Evaluator e(value, evalStack);
+            value = e.exec();
+        }
+        names.append(name);
+        values.append(value);
+        paramIndex++;
+    }
+
+
+    // Finally, take in the remainder (if any) as a list.
+    if (proc->restInput != "") {
+        QString name = proc->restInput;
+        List *restList = new List();
+        ListBuilder builder(restList);
+        while (paramIndex < paramCount) {
+            builder.append(*(paramAry + paramIndex));
+            paramIndex++;
+        }
+        names.append(name);
+        values.append(DatumPtr(restList));
+    }
+
+    createLocalVars(names, values);
+
+}
+
+
+Datum *CallFrame::exec(Datum **paramAry, uint32_t paramCount) {
+    applyProcedureParams(paramAry, paramCount);
+
+    Datum *retval = bodyExec();
+
+    // If the result is "nothing", replace the result with the ASTNode of the procedure.
+    // TODO: Should we test for typeUnboundMask here instead?
+    if (retval->isa == Datum::typeASTNode) {
+        retval = sourceNode.astnodeValue();
+    }
+
+
+    return retval;
+}
+
+void CallFrame::applyContinuation(DatumPtr newNode, QList<DatumPtr> paramAry)
+{
+    sourceNode = newNode;
+    Datum *newParamAry[paramAry.size()];
+    for (int i = 0; i < paramAry.size(); i++) {
+        newParamAry[i] = paramAry[i].datumValue();
+    }
+
+    applyProcedureParams(newParamAry, paramAry.size());
+}
+
+Datum *CallFrame::applyGoto(DatumPtr tag)
+{
+    Datum *procedure = sourceNode.astnodeValue()->procedure.datumValue();
+    DatumPtr runningSourceListSnapshot;
+
+    // Have we seen this tag already?
+    Procedure *proc = static_cast<Procedure *>(procedure);
+    auto blockIdIterator = proc->tagToBlockId.find(tag.wordValue()->keyValue());
+    if (blockIdIterator != proc->tagToBlockId.end()) {
+        goto foundTag;
+    }
+
+    // If not, then search through the remaining lines in the procedure.
+
+    // Save our running state in case we need to restore it later.
+    runningSourceListSnapshot = runningSourceList;
+
+    // TODO: What if compilation results in an error?
+    while (runningSourceList.isList() && runningSourceList.listValue()->isEmpty() == false) {
+        List* list = runningSourceList.listValue()->head.listValue();
+        Config::get().mainCompiler()->functionPtrFromList(list);
+        blockIdIterator = proc->tagToBlockId.find(tag.wordValue()->keyValue());
+        if (blockIdIterator != proc->tagToBlockId.end()) {
+            goto foundTag;
+        }
+        runningSourceList = runningSourceList.listValue()->tail;
+    }
+
+    // If we still didn't find the tag, return an error.
+    runningSourceList = runningSourceListSnapshot;
+    // TODO: need the GOTO node passed in here.
+    return FCError::doesntLike(tag, tag);
+
+foundTag:
+    // Now, we need to jump to the block that contains the tag.
+    runningSourceList = proc->tagToLine[tag.wordValue()->keyValue()];
+    jumpLocation = blockIdIterator.value();
+    return nullptr;
+}
+
+Datum *CallFrame::bodyExec()
+{
+    jumpLocation = 0;
+beginBody:
+    Datum *retval = nullptr;
+    DatumPtr retvalPtr;
+    runningSourceList = sourceNode.astnodeValue()->procedure.procedureValue()->instructionList;
+continueBody:
+    while ((runningSourceList.isList()) && (runningSourceList.listValue()->isEmpty() == false)) {
+        if (retval != nullptr) {
+            retvalPtr = DatumPtr(retval);
+        }
+        DatumPtr instruction = runningSourceList.listValue()->head;
+
+        Evaluator e = Evaluator(instruction, evalStack);
+        retval = e.exec(jumpLocation);
+        jumpLocation = 0;
+
+        // Do we need to halt execution for some reason?
+        if((retval->isa & Datum::typeUnboundMask) == 0)
+        {
+            switch (retval->isa)
+            {
+                // ERROR and RETURN simply return the error/return value.
+                case Datum::typeError:
+                case Datum::typeReturn:
+                    return retval;
+                case Datum::typeGoto:
+                    retval = applyGoto(static_cast<FCGoto *>(retval)->tag());
+                    if (retval == nullptr) {
+                        goto continueBody;
+                    }
+                    Q_ASSERT(retval->isa == Datum::typeError);
+                    return retval;
+                case Datum::typeContinuation:
+                {
+                    FCContinuation *fc = static_cast<FCContinuation *>(retval);
+                    applyContinuation(fc->procedure(), fc->params());
+                    goto beginBody;
+                }
+                default:
+                    Q_ASSERT(false);
+            }
+        }
+        runningSourceList = runningSourceList.listValue()->tail;
+    }
+
+    return retval;
+}
+
+
+Evaluator::Evaluator(DatumPtr aList, QList<Evaluator *> &anEvalStack) : evalStack(anEvalStack), list(aList)
+{
+    evalStack.push_front(this);
+}
+
+
+Evaluator::~Evaluator()
+{
+    Q_ASSERT(evalStack.first() == this);
+
+    //qDebug() << "draining pool";
+    for (auto &d : releasePool)
+    {
+        (d->retainCount)--;
+        if ((d != retval) && (d->retainCount < 1))
+            delete d;
+    }
+
+    //qDebug() << "drained pool";
+    evalStack.removeFirst();
+}
+
+
+Datum *Evaluator::exec(int32_t jumpLocation)
+{
+    if (list.listValue()->isEmpty()) {
+        return &notADatum;
+    }
+    fn = Config::get().mainCompiler()->functionPtrFromList(list.listValue());
+    retval = static_cast<Datum *>(fn((addr_t)this, jumpLocation));
+
+    return retval;
+}
+
+
+Datum *Evaluator::subExec(Datum *aList)
+{
+    Datum *retval;
+
+    try
+    {
+        if (aList->isa == Datum::typeWord) {
+            DatumPtr runparsedList = runparse(DatumPtr(aList));
+            aList = runparsedList.datumValue();
+            watch(aList);
+        }
+        if (aList->isa != Datum::typeList) {
+            FCError *err = FCError::noHow(DatumPtr(aList));
+            watch(err);
+            return err;
+        }
+        if (reinterpret_cast<List *>(aList)->isEmpty()) {
+            return &notADatum;
+        }
+        Evaluator e(aList, evalStack);
+            retval = e.exec();
+    } catch (FCError *err)
+    {
+        retval = err;
+    }
+    return retval;
+}
+
+
+Datum *Evaluator::procedureExec(ASTNode *node, Datum **paramAry, uint32_t paramCount)
+{
+    CallFrameStack *frameStack = &Config::get().mainKernel()->callStack;
+    CallFrame frame(frameStack, DatumPtr(node));
+
+    return frame.exec(paramAry, paramCount);
+}
+
+
+Datum *Evaluator::watch(Datum *d)
+{
+    (d->retainCount)++;
+    releasePool.push_back(d);
+    return d;
+}

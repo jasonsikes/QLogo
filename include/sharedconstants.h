@@ -20,6 +20,7 @@
 #include <QChar>
 #include <QColor>
 #include <QDebug>
+#include <QDataStream>
 
 using message_t = quint8;
 
@@ -27,6 +28,7 @@ class Turtle;
 class Kernel;
 class Procedures;
 class LogoController;
+class Compiler;
 
 enum messageCategory : message_t
 {
@@ -80,7 +82,7 @@ enum messageCategory : message_t
     C_CANVAS_SET_PENMODE,           // Set canvas pen mode
 };
 
-/// @brief The configuration for the QLogo-GUI/logo programs.
+/// @brief The configuration for the qlgog/Psychi programs.
 ///
 /// This class is a singleton that contains global parameters that may be used by
 /// either program.
@@ -94,16 +96,18 @@ class Config
     Config &operator=(const Config &);
     ~Config()
     {
-        Q_ASSERT(mTurtle == NULL);
-        Q_ASSERT(mKernel == NULL);
-        Q_ASSERT(mProcedures == NULL);
-        Q_ASSERT(mLogoController == NULL);
+        Q_ASSERT(mTurtle == nullptr);
+        Q_ASSERT(mKernel == nullptr);
+        Q_ASSERT(mProcedures == nullptr);
+        Q_ASSERT(mLogoController == nullptr);
+        Q_ASSERT(mCompiler == nullptr);
     }
 
-    Turtle *mTurtle = NULL;
-    Kernel *mKernel = NULL;
-    Procedures *mProcedures = NULL;
-    LogoController *mLogoController = NULL;
+    Turtle *mTurtle = nullptr;
+    Kernel *mKernel = nullptr;
+    Procedures *mProcedures = nullptr;
+    LogoController *mLogoController = nullptr;
+    Compiler *mCompiler = nullptr;
 
   public:
     /// @brief Get the singleton instance of the Config class.
@@ -147,54 +151,80 @@ class Config
 
     Turtle *mainTurtle()
     {
-        Q_ASSERT(mTurtle != NULL);
+        Q_ASSERT(mTurtle != nullptr);
         return mTurtle;
     }
 
     Kernel *mainKernel()
     {
-        Q_ASSERT(mKernel != NULL);
+        Q_ASSERT(mKernel != nullptr);
         return mKernel;
     }
 
     Procedures *mainProcedures()
     {
-        Q_ASSERT(mProcedures != NULL);
+        Q_ASSERT(mProcedures != nullptr);
         return mProcedures;
     }
 
     LogoController *mainController()
     {
-        Q_ASSERT(mLogoController != NULL);
+        Q_ASSERT(mLogoController != nullptr);
         return mLogoController;
+    }
+
+    Compiler *mainCompiler()
+    {
+        Q_ASSERT(mCompiler != nullptr);
+        return mCompiler;
     }
 
     void setMainTurtle(Turtle *aTurtle)
     {
-        Q_ASSERT((mTurtle == NULL) || (aTurtle == NULL));
+        Q_ASSERT((mTurtle == nullptr) || (aTurtle == nullptr));
         mTurtle = aTurtle;
     }
 
     void setMainKernel(Kernel *aKernel)
     {
-        Q_ASSERT((mKernel == NULL) || (aKernel == NULL));
+        Q_ASSERT((mKernel == nullptr) || (aKernel == nullptr));
         mKernel = aKernel;
     }
 
     void setMainProcedures(Procedures *aProcedures)
     {
-        Q_ASSERT((mProcedures == NULL) || (aProcedures == NULL));
+        Q_ASSERT((mProcedures == nullptr) || (aProcedures == nullptr));
         mProcedures = aProcedures;
     }
 
     void setMainLogoController(LogoController *aLogoController)
     {
-        Q_ASSERT((mLogoController == NULL) || (aLogoController == NULL));
+        Q_ASSERT((mLogoController == nullptr) || (aLogoController == nullptr));
         mLogoController = aLogoController;
     }
 
-    // Set to true iff qlogo is communicating with QLogo-GUI.
+    void setMainCompiler(Compiler *aCompiler)
+    {
+        Q_ASSERT((mCompiler == nullptr) || (aCompiler == nullptr));
+        mCompiler = aCompiler;
+    }
+
+    // Set to true iff qlogo is communicating with Psychi.
     bool hasGUI = false;
+
+    // Set to true iff compiler should show IR code.
+    bool showIR = false;
+
+    // Set to true iff compiler should show the CFG view.
+    bool showCFG = false;
+
+    // Set to true if Compiler should verify the generated functions.
+    // Use for development. Compiler may generate bad code in unreachable
+    // sections, i.e. when handling parsing errors.
+    bool verifyIR = false;
+
+    // Set to true iff compiler should show the CFG view.
+    bool showCON = false;
 
     // ARGV initialization parameters
     QStringList ARGV;
@@ -213,6 +243,69 @@ class Config
     /// @brief The default help database filename.
     const char *defaultHelpDbFilename = "qlogo_help.db";
 };
+
+struct Transform {
+    double m[9];
+
+    Transform() {
+        m[0] = 1.0; m[1] = 0.0; m[2] = 0.0;
+        m[3] = 0.0; m[4] = 1.0; m[5] = 0.0;
+        m[6] = 0.0; m[7] = 0.0; m[8] = 1.0;
+    }
+
+    Transform(double a0, double a1, double a2,
+              double a3, double a4, double a5,
+              double a6, double a7, double a8)
+    {
+        m[0] = a0;
+        m[1] = a1;
+        m[2] = a2;
+        m[3] = a3;
+        m[4] = a4;
+        m[5] = a5;
+        m[6] = a6;
+        m[7] = a7;
+        m[8] = a8;
+    }
+
+    Transform(const Transform& other) {
+        std::copy(other.m, other.m + 9, m);
+    }
+
+    Transform& operator=(const Transform& other) {
+        if (this != &other) {
+            std::copy(other.m, other.m + 9, m);
+        }
+        return *this;
+    }
+
+    Transform(Transform&& other) noexcept {
+        std::copy(other.m, other.m + 9, m);
+    }
+
+    Transform& operator=(Transform&& other) noexcept {
+        if (this != &other) {
+            std::copy(other.m, other.m + 9, m);
+        }
+        return *this;
+    }
+
+    ~Transform() = default;
+};
+
+inline QDataStream& operator<<(QDataStream& out, const Transform& transform) {
+    for (int i = 0; i < 9; ++i) {
+        out << transform.m[i];
+    }
+    return out;
+}
+
+inline QDataStream& operator>>(QDataStream& in, Transform& transform) {
+    for (int i = 0; i < 9; ++i) {
+        in >> transform.m[i];
+    }
+    return in;
+}
 
 enum PenModeEnum
 {
@@ -237,20 +330,6 @@ enum TurtleModeEnum
     /// @brief The window turtle mode, where the canvas bounds grow to accommodate the
     /// turtle's position as needed.
     turtleWindow
-};
-
-enum SignalsEnum_t : int
-{
-    noSignal = 0,
-
-    /// CTRL-Backslash, kill logo [ THROW "SYSTEM ]
-    systemSignal,
-
-    /// CTRL-C, kill running script [ THROW "TOPLEVEL ]
-    toplevelSignal,
-
-    /// CTRL-Z, pause running script [ PAUSE ]
-    pauseSignal
 };
 
 enum ScreenModeEnum

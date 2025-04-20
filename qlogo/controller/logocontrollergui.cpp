@@ -10,7 +10,7 @@
 ///
 /// \file
 /// This file contains the definition of the LogoControllerGUI class, which is
-/// responsible for handling user input and output through the QLogo-GUI
+/// responsible for handling user input and output through Psychi, the QLogo-GUI
 /// terminal application. In addition to text input and output, the GUI controller
 /// also receives mouse and keyboard events from the GUI, and provides a way to
 /// communicate Turtle movements and drawing commands to the QLogo canvas.
@@ -118,17 +118,17 @@ message_t LogoControllerGUI::getMessage()
     {
         bufferStream >> allFontNames >> textFontName >> textFontSize;
         labelFontName = textFontName;
+        labelFontSize = textFontSize;
         break;
     }
     case S_SYSTEM:
-        Error::throwError(DatumPtr(tr("SYSTEM")), nothing);
+        throw FCError::custom(DatumPtr(QObject::tr("SYSTEM")));
         break;
     case S_TOPLEVEL:
-        qDebug() << "TOPLEVEL triggered";
-        Error::throwError(DatumPtr(tr("TOPLEVEL")), nothing);
+        throw FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")));
         break;
     case S_PAUSE:
-        Error::throwError(DatumPtr(tr("PAUSE")), nothing);
+        throw FCError::custom(DatumPtr(QObject::tr("PAUSE")));
         break;
     case C_CONSOLE_RAWLINE_READ:
         bufferStream >> rawLine;
@@ -299,7 +299,7 @@ QString LogoControllerGUI::fileDialogModal()
     return filePath;
 }
 
-void LogoControllerGUI::setTurtlePos(const QTransform &newTurtlePos)
+void LogoControllerGUI::setTurtlePos(const Transform &newTurtlePos)
 {
     message() << (message_t)C_CANVAS_UPDATE_TURTLE_POS << newTurtlePos;
 }
@@ -333,9 +333,9 @@ bool LogoControllerGUI::isCanvasBounded()
     return canvasIsBounded;
 }
 
-void LogoControllerGUI::setTurtleIsVisible(bool isVisible)
+void LogoControllerGUI::setTurtleIsVisible(int isVisible)
 {
-    message() << (message_t)C_CANVAS_SET_TURTLE_IS_VISIBLE << isVisible;
+    message() << (message_t)C_CANVAS_SET_TURTLE_IS_VISIBLE << (bool)isVisible;
 }
 
 void LogoControllerGUI::setPenIsDown(bool penIsDown)

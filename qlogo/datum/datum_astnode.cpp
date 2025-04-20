@@ -35,27 +35,24 @@ DatumPtr ASTNode::childAtIndex(unsigned index)
 
 ASTNode::ASTNode(DatumPtr aNodeName)
 {
-    myType = astnodeType;
+    isa = Datum::typeASTNode;
     children.clear();
     nodeName = aNodeName;
-    kernel = NULL;
+    genExpression = nullptr;
+    returnType = RequestReturnVoid;
 }
 
 ASTNode::ASTNode(QString aNodeName)
 {
-    myType = astnodeType;
+    isa = Datum::typeASTNode;
     children.clear();
     nodeName = DatumPtr(aNodeName);
-    kernel = NULL;
+    genExpression = nullptr;
+    returnType = RequestReturnVoid;
 }
 
 ASTNode::~ASTNode()
 {
-}
-
-Datum::DatumType ASTNode::isa()
-{
-    return astnodeType;
 }
 
 // For debugging. Parameters are ignored.

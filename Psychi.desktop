@@ -1,9 +1,9 @@
 [Desktop Entry]
 Type=Application
-Name=QLogo-GUI
+Name=Psychi
 GenericName=UCBLogo Programming Environment
-Exec=QLogo-GUI
-Icon=QLogo-GUI
+Exec=Psychi
+Icon=Psychi
 Comment=A UCBLogo-compatible interpreter using Qt
 Categories=Development;IDE;
 Keywords=logo;qlogo;turtle;ucblogo;

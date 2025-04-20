@@ -23,12 +23,12 @@
 #include <QHash>
 
 /// @brief A structure to hold a command's details for the parser.
-/// @note This is used to map a command name to its method, minimum, default, and maximum
-/// parameter counts.
+/// @note This is used to map a command name to its method, minimum, default, maximum
+/// parameter counts, and return data type.
 struct Cmd_t
 {
-    /// @brief The method to call for this command.
-    KernelMethod method;
+    /// @brief The compiler method to call for this command.
+    Generator method;
 
     /// @brief The minimum number of parameters this command expects.
     int countOfMinParams;
@@ -38,6 +38,9 @@ struct Cmd_t
 
     /// @brief The maximum number of parameters this command expects.
     int countOfMaxParams;
+
+    /// @brief The data type(s) that this procedure is expected to return.
+    RequestReturnType returnType;
 };
 
 /// @brief The procedures class.
@@ -107,6 +110,23 @@ class Procedures : public Workspace
 
     /// @brief Erase all procedures.
     void eraseAllProcedures();
+
+    /// @brief Get an AST node from a procedure.
+    /// @param cmdP The name of the procedure to search for.
+    /// @param minParams The minimum number of parameters this procedure expects.
+    /// @param defaultParams The number of default parameters this procedure expects.
+    /// @param maxParams The maximum number of parameters this procedure expects.
+    /// @return A pointer to the created AST node.
+    DatumPtr astnodeFromProcedure(DatumPtr cmdP, int &minParams, int &defaultParams, int &maxParams);
+
+    /// @brief Get an AST node from a primitive command.
+    /// @param cmdP The name of the command to search for.
+    /// @param minParams The minimum number of parameters this command expects.
+    /// @param defaultParams The number of default parameters this command expects.
+    /// @param maxParams The maximum number of parameters this command expects.
+    /// @return A pointer to the created AST node.
+    /// @note The primitive name should be tested to be in the stringToCmd hash table.
+    DatumPtr astnodeFromPrimitive(DatumPtr cmdP, int &minParams, int &defaultParams, int &maxParams);
 
     /// @brief Get an AST node from a command, either a primitive or user-defined procedure.
     /// @param command The name of the command to search for.
@@ -217,7 +237,7 @@ class Procedure : public Datum
     /// @brief Constructor.
     Procedure()
     {
-        myType = procedureType;
+        isa = typeProcedure;
     }
 
     /// @brief The parameter names of the required inputs of the procedure.
@@ -240,28 +260,26 @@ class Procedure : public Datum
     int countOfMaxParams = -1;
 
     /// @brief A hash table to map tag names to the lines in the source text.
-    /// @note for GOTO.
     QHash<const QString, DatumPtr> tagToLine;
+
+    /// @brief A hash table to map tag names to the block ID for efficient execution.
+    QHash<const QString, int32_t> tagToBlockId;
 
     /// @brief Whether this procedure is a macro.
     bool isMacro = false;
 
     /// @brief The source text of the procedure.
     /// @note This is a list of sublists, with each sublist representing a line of the
-    /// source text. The source text begins with the word 'TO' or 'MACRO' and ends with
+    /// source text. The source text begins with the word 'TO' or '.MACRO' and ends with
     /// the word 'END'.
+    // TODO: Should this be a list of words, since each line is a word?
     DatumPtr sourceText;
 
     /// @brief The instruction list of the procedure.
     /// @note This is a list of lists, with each sublist representing a line of instruction.
+    /// @TODO This should be a deep copy of the source lists, to prevent direct modification.
     DatumPtr instructionList;
 
-    /// @brief Return the type of the datum.
-    /// @return The type of the datum.
-    DatumType isa()
-    {
-        return Datum::procedureType;
-    }
 };
 
 #endif // PROCEDURES_H

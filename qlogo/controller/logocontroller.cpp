@@ -20,7 +20,7 @@
 #include <QApplication>
 #include <QIODevice>
 #include <signal.h>
-
+#include <QFile>
 /// @brief The most recent signal that was received.
 /// The value of this variable is set by the handle_signal function. When the latestSignal
 /// method is called, the value is reset to noSignal.
@@ -81,7 +81,7 @@ static void restoreSignals()
 
 LogoController::LogoController(QObject *parent)
 {
-    dribbleStream = NULL;
+    dribbleStream = nullptr;
     Config::get().setMainLogoController(this);
     kernel = new Kernel;
 
@@ -95,7 +95,7 @@ LogoController::~LogoController()
     delete inStream;
     delete outStream;
     delete kernel;
-    Config::get().setMainLogoController(NULL);
+    Config::get().setMainLogoController(nullptr);
 }
 
 void LogoController::printToConsole(QString s)
@@ -161,7 +161,7 @@ bool LogoController::setDribble(QString filePath)
             file->close();
             delete file;
         }
-        dribbleStream = NULL;
+        dribbleStream = nullptr;
         return true;
     }
     QFile *file = new QFile(filePath);
@@ -174,7 +174,7 @@ bool LogoController::setDribble(QString filePath)
 
 bool LogoController::isDribbling()
 {
-    return dribbleStream != NULL;
+    return dribbleStream != nullptr;
 }
 
 SignalsEnum_t LogoController::latestSignal()
@@ -190,11 +190,7 @@ int LogoController::run(void)
 
     initSignals();
 
-    bool shouldContinue = true;
-    while (shouldContinue)
-    {
-        shouldContinue = Config::get().mainKernel()->getLineAndRunIt();
-    }
+    Config::get().mainKernel()->readEvalPrintLoop(false);
 
     restoreSignals();
 

@@ -1,0 +1,500 @@
+
+//===-- qlogo/kernel.cpp - Kernel class implementation -------*- C++ -*-===//
+//
+// Copyright 2017-2024 Jason Sikes
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted under the conditions specified in the
+// license found in the LICENSE file in the project root.
+//
+//===----------------------------------------------------------------------===//
+///
+/// \file
+/// This file contains a part of the implementation of the Kernel class, which is the
+/// executor proper of the QLogo language. Specifically, this file contains the
+/// kernel methods that support and maintain the state of QLogo execution.
+///
+/// See README.md in this directory for information about the documentation
+/// structure for each Kernel::exc* method.
+///
+//===----------------------------------------------------------------------===//
+
+#include "compiler.h"
+#include "sharedconstants.h"
+#include "kernel.h"
+#include "astnode.h"
+#include "datum.h"
+#include "parser.h"
+#include "controller/textstream.h"
+#include "workspace/procedures.h"
+#include <QApplication> // quit()
+#include <QColor>
+#include <QFont>
+#include <QImage>
+#include <QDir>
+#include <qassert.h>
+#include <stdlib.h> // arc4random_uniform()
+
+#include "err.h"
+#include "runparser.h"
+#include "turtle.h"
+
+#include "controller/logocontroller.h"
+
+// The maximum depth of procedure iterations before error is thrown.
+const int maxIterationDepth = 1000;
+
+bool Kernel::numbersFromList(QVector<double> &retval, DatumPtr listP)
+{
+    if (!listP.isList())
+        return false;
+    ListIterator iter = listP.listValue()->newIterator();
+
+    retval.clear();
+    while (iter.elementExists())
+    {
+        DatumPtr n = iter.element();
+        if (!n.isWord())
+            return false;
+        double v = n.wordValue()->numberValue();
+        if (std::isnan(v))
+            return false;
+        retval.push_back(v);
+    }
+    return true;
+}
+
+bool Kernel::colorFromDatumPtr(QColor &retval, DatumPtr colorP)
+{
+    if (colorP.isWord())
+    {
+        double colorNum = colorP.wordValue()->numberValue();
+        if (colorP.wordValue()->numberIsValid)
+        {
+            if ((colorNum != round(colorNum)) || (colorNum < 0) || (colorNum >= palette.size()))
+                return false;
+            retval = palette[colorNum];
+            if (!retval.isValid())
+                retval = palette[0];
+            return true;
+        }
+        retval = QColor(colorP.wordValue()->printValue().toLower());
+        return retval.isValid();
+    }
+    else if (colorP.isList())
+    {
+        QVector<double> v;
+        if (!numbersFromList(v, colorP.listValue()))
+            return false;
+        if ((v.size() != 3) && (v.size() != 4))
+            return false;
+        for (int i = 0; i < v.size(); ++i)
+        {
+            if ((v[i] < 0) || (v[i] > 100))
+                return false;
+            v[i] *= 255.0 / 100;
+        }
+        double alpha = (v.size() == 4) ? v[3] : 255;
+        retval = QColor(v[0], v[1], v[2], alpha);
+        return true;
+    }
+    return false;
+}
+
+DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
+{
+    QString localPrompt = prompt + "? ";
+    forever {
+        DatumPtr result;
+        try {
+            DatumPtr line = systemReadStream->readlistWithPrompt(localPrompt, true);
+            if (line.isNothing()) // EOF
+                return nothing;
+            result = runList(line);
+        } catch (FCError *e) {
+            sysPrint(e->message().printValue());
+            sysPrint("\n");
+            continue;
+        }
+        if ((result.datumValue()->isa & Datum::typeUnboundMask) != 0)
+            continue;
+        if (result.isErr())
+        {
+            FCError *e = result.errValue();
+            if (e->tag().isWord() && (e->code == ErrCode::ERR_NO_CATCH))
+            {
+                if (e->tag().wordValue()->keyValue() == QObject::tr("TOPLEVEL"))
+                {
+                    sysPrint("\n");
+                    continue;
+                }
+                if (e->tag().wordValue()->keyValue() == QObject::tr("SYSTEM"))
+                {
+                    sysPrint("\n");
+                    Config::get().mainController()->systemStop();
+                    return result;
+                }
+                if (e->tag().wordValue()->keyValue() == QObject::tr("PAUSE") && isPausing)
+                {
+                    return e->output();
+                }
+            }
+            sysPrint(e->message().printValue());
+            sysPrint("\n");
+            continue;
+        }
+
+        if (result.isFlowControl())
+        {
+            // The other flow control types are OUTPUT/STOP and GOTO,
+            // which are not allowed here.
+            result = DatumPtr(FCError::notInsideProcedure(result.flowControlValue()->sourceNode));
+        }
+
+        // If we are here that means something was output, but not handled.
+        sysPrint(QString("You don't say what to do with %1\n").arg(result.showValue()));
+    }
+}
+Datum* Kernel::inputProcedure(ASTNode *node)
+{
+    Datum *retval = node;
+    try {
+        parser->inputProcedure(node, systemReadStream);
+    } catch (FCError *err) {
+        retval = err;
+    }
+    return retval;
+}
+
+/***DOC ERRACT
+ERRACT							(variable)
+
+    When set to a value that is not "False"false" nor an empty list,
+    the command interpreter will execute PAUSE to enable the user to
+    inspect the state of the program.
+
+
+COD***/
+
+void Kernel::initPalette()
+{
+    const int paletteSize = 101;
+    palette.clear();
+    palette.reserve(paletteSize);
+    palette.push_back(QColor(QStringLiteral("black")));       // 0
+    palette.push_back(QColor(QStringLiteral("blue")));        // 1
+    palette.push_back(QColor(QStringLiteral("green")));       // 2
+    palette.push_back(QColor(QStringLiteral("cyan")));        // 3
+    palette.push_back(QColor(QStringLiteral("red")));         // 4
+    palette.push_back(QColor(QStringLiteral("magenta")));     // 5
+    palette.push_back(QColor(QStringLiteral("yellow")));      // 6
+    palette.push_back(QColor(QStringLiteral("white")));       // 7
+    palette.push_back(QColor(QStringLiteral("brown")));       // 8
+    palette.push_back(QColor(QStringLiteral("tan")));         // 9
+    palette.push_back(QColor(QStringLiteral("forestgreen"))); // 10
+    palette.push_back(QColor(QStringLiteral("aqua")));        // 11
+    palette.push_back(QColor(QStringLiteral("salmon")));      // 12
+    palette.push_back(QColor(QStringLiteral("purple")));      // 13
+    palette.push_back(QColor(QStringLiteral("orange")));      // 14
+    palette.push_back(QColor(QStringLiteral("grey")));        // 15
+    palette.resize(paletteSize);
+}
+
+// Some Logo vars are set here and not used anywhere else.
+// Documentation is here because it doesn't fit anywhere else.
+
+/***DOC LOGOPLATFORM
+LOGOPLATFORM						(variable)
+
+    one of the following words: OSX, WINDOWS, or UNIX.
+
+
+COD***/
+
+/***DOC LOGOVERSION
+LOGOVERSION						(variable)
+
+    a real number indicating the Logo version number, e.g., 5.5
+
+COD***/
+
+/***DOC COMMANDLINE
+COMMANDLINE						(variable)
+
+    contains all text on the command line used to start Logo.
+
+COD***/
+
+void Kernel::initVariables(void)
+{
+    DatumPtr platform(LOGOPLATFORM);
+    DatumPtr version(LOGOVERSION);
+    DatumPtr trueDatumPtr(QObject::tr("true"));
+
+    callStack.setDatumForName(platform, QObject::tr("LOGOPLATFORM"));
+    callStack.setDatumForName(version, QObject::tr("LOGOVERSION"));
+    callStack.setDatumForName(trueDatumPtr, QObject::tr("ALLOWGETSET"));
+    callStack.bury(QObject::tr("LOGOPLATFORM"));
+    callStack.bury(QObject::tr("LOGOVERSION"));
+    callStack.bury(QObject::tr("ALLOWGETSET"));
+
+    List *argv = new List;
+    ListBuilder builder(argv);
+    for (auto &arg : Config::get().ARGV)
+    {
+        builder.append(DatumPtr(arg));
+    }
+    DatumPtr commandLine(argv);
+    callStack.setDatumForName(commandLine, QObject::tr("COMMANDLINE"));
+    callStack.bury(QObject::tr("COMMANDLINE"));
+}
+
+Kernel::Kernel()
+{
+    Config::get().setMainKernel(this);
+    stdioStream = new TextStream(nullptr);
+    readStream = stdioStream;
+    systemReadStream = stdioStream;
+    writeStream = stdioStream;
+    systemWriteStream = stdioStream;
+
+    turtle = new Turtle;
+    procedures = new Procedures;
+    parser = new Parser;
+    theCompiler = new Compiler();
+
+    // callStack holds a pointer to the new frame so it will be deleted when this
+    // Kernel is deleted.
+    new CallFrame(&callStack);
+
+    initVariables();
+    initPalette();
+
+    filePrefix = new List();
+}
+
+Kernel::~Kernel()
+{
+    closeAll();
+    delete theCompiler;
+    delete parser;
+    delete procedures;
+    delete turtle;
+
+    Q_ASSERT(callStack.size() == 1);
+    callStack.stack.removeLast();
+    Config::get().setMainKernel(nullptr);
+}
+
+
+DatumPtr Kernel::runList(DatumPtr listP, QString startTag)
+{
+    DatumPtr retval;
+
+    Q_ASSERT(callStack.size() > 0);
+    Evaluator e(listP, callStack.localFrame()->evalStack);
+
+    retval = e.exec(0);
+
+    return retval;
+}
+
+Datum* Kernel::specialVar(SpecialNames name)
+{
+    switch (name)
+    {
+        case ERRACT:
+        {
+            static DatumPtr erract = DatumPtr(new Word("ERRACT"));
+            return erract.datumValue();
+        }
+        default:
+            return nullptr;
+    }
+}
+
+
+DatumPtr Kernel::pause()
+{
+    static bool isPausing = false;
+    if (isPausing)
+    {
+        sysPrint(QObject::tr("Already Pausing"));
+        return nothing;
+    }
+
+    isPausing = true;
+    DatumPtr sourceNode = callStack.localFrame()->sourceNode;
+    QString sourceNodeName;
+    if (sourceNode.isASTNode()) {
+        sourceNodeName = sourceNode.astnodeValue()->nodeName.printValue();
+    }
+
+    CallFrame frame(&callStack, nothing);
+
+    sysPrint(QObject::tr("Pausing...\n"));
+
+    DatumPtr result = readEvalPrintLoop(true,sourceNodeName);
+
+    isPausing = false;
+    return result;
+}
+
+
+QString Kernel::filepathForFilename(DatumPtr filenameP)
+{
+    QString filename = filenameP.wordValue()->printValue();
+
+    if (filePrefix.isWord())
+    {
+        QString prefix = filePrefix.wordValue()->printValue();
+        return prefix + QDir::separator() + filename;
+    }
+    return filename;
+}
+
+void Kernel::closeAll()
+{
+    QStringList names = fileStreams.keys();
+    for (auto &iter : names)
+    {
+        // close(iter);
+    }
+}
+
+void Kernel::stdPrint(const QString &text)
+{
+    writeStream->lprint(text);
+}
+
+void Kernel::sysPrint(const QString &text)
+{
+    systemWriteStream->lprint(text);
+}
+
+
+bool Kernel::areDatumsEqual(Datum *datum1, Datum *datum2)
+{
+    // TODO: varCASEIGNOREDP
+    comparedListsLHS.clear();
+    comparedListsRHS.clear();
+    return areDatumsEqualRecurse(datum1, datum2);
+}
+
+bool Kernel::areDatumsEqualRecurse(Datum *datum1, Datum *datum2)
+{
+    if (datum1 == datum2)
+        return true;
+    if (datum1->isa != datum2->isa)
+        return false;
+
+    switch (datum1->isa)
+    {
+    case Datum::typeWord:
+    {
+        Word *word1 = static_cast<Word*>(datum1);
+        Word *word2 = static_cast<Word*>(datum2);
+        if (word1->isSourceNumber() || word2->isSourceNumber())
+            return word1->numberValue() == word2->numberValue();
+
+        Qt::CaseSensitivity cs = Qt::CaseInsensitive;
+
+        return word1->printValue().compare(word2->printValue(), cs) == 0;
+    }
+    case Datum::typeList:
+    {
+        List *list1 = static_cast<List*>(datum1);
+        List *list2 = static_cast<List*>(datum2);
+
+        if (list1->count() != list2->count())
+            return false;
+
+               // If we have searched both of these lists before, then assume we would
+               // keep searching forever.
+        if (comparedListsLHS.contains(list1) && comparedListsRHS.contains(list2))
+            return false;
+        comparedListsLHS.insert(list1);
+        comparedListsRHS.insert(list2);
+
+        // Search the contents of each list.
+        ListIterator iter1 = list1->newIterator();
+        ListIterator iter2 = list2->newIterator();
+        while (iter1.elementExists())
+        {
+            Datum *value1 = iter1.element().datumValue();
+            Datum *value2 = iter2.element().datumValue();
+            if (!areDatumsEqual(value1, value2))
+                return false;
+        }
+        return true;
+    }
+    case Datum::typeArray:
+        // Arrays are equal iff they are the same array, which would have
+        // passed the "datum1 == datum2" test at the beginning.
+        return false;
+
+    default:
+        qDebug() << "unknown datum type in areDatumsEqualRecurse";
+        Q_ASSERT(false);
+    }
+    return false;
+}
+
+bool Kernel::isDatumInContainer(Datum *value, Datum *container)
+{
+    searchedContainers.clear();
+    return isDatumInContainerRecurse(value, container);
+}
+
+bool Kernel::isDatumInContainerRecurse(Datum *value, Datum *container)
+{
+    if (searchedContainers.contains(container)) return false;
+    searchedContainers.insert(container);
+
+    switch (container->isa) {
+        case Datum::typeArray:
+        {
+            Array *array = reinterpret_cast<Array*>(container);
+            for (auto &item : array->array) {
+                Datum *itemPtr = item.datumValue();
+                if (areDatumsEqual(itemPtr, value))
+                    return true;
+                if ((itemPtr->isa & (Datum::typeArray | Datum::typeList)) != 0)
+                {
+                    if ( ! searchedContainers.contains(itemPtr))
+                    {
+                        searchedContainers.insert(itemPtr);
+                        if (isDatumInContainerRecurse(itemPtr, value))
+                            return true;
+                    }
+                }
+            }
+            break;
+        }
+        case Datum::typeList:
+        {
+            List *list = reinterpret_cast<List*>(container);
+            ListIterator iter = list->newIterator();
+            while (iter.elementExists())
+            {
+                Datum *itemPtr = iter.element().datumValue();
+                if (areDatumsEqual(itemPtr, value))
+                    return true;
+                if ((itemPtr->isa & (Datum::typeArray | Datum::typeList)) != 0)
+                {
+                    if ( ! searchedContainers.contains(itemPtr))
+                    {
+                        searchedContainers.insert(itemPtr);
+                        if (isDatumInContainerRecurse(itemPtr, value))
+                            return true;
+                    }
+                }
+            }
+            break;
+        }
+        default:
+            Q_ASSERT(false);
+            break;
+    }
+    return false;
+}

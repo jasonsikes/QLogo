@@ -12,15 +12,15 @@
 /// \file
 /// This file contains the declaration of the LogoController class, which is responsible for
 /// handling user interaction through standard input and output with no special control characters.
-/// This class can be subclassed for different types of user interaction, such as the QLogo-GUI
-/// interface or smarter Curses-type interface.
+/// This class can be subclassed for different types of user interaction, such as the Psychi
+/// interface or a Curses-type interface.
 ///
 //===----------------------------------------------------------------------===//
 
 #ifndef LOGOCONTROLLER_H
 #define LOGOCONTROLLER_H
 
-#include "error.h"
+#include "flowcontrol.h"
 #include "sharedconstants.h"
 #include <QColor>
 #include <QFont>
@@ -31,6 +31,22 @@
 
 class Kernel;
 class QTextStream;
+
+
+enum SignalsEnum_t : int
+{
+    noSignal = 0,
+
+    /// CTRL-Backslash, kill logo [ THROW "SYSTEM ]
+    systemSignal,
+
+    /// CTRL-C, kill running script [ THROW "TOPLEVEL ]
+    toplevelSignal,
+
+    /// CTRL-Z, pause running script [ PAUSE ]
+    pauseSignal
+};
+
 
 /// @brief The LogoController class is the superclass for all controllers that handle user interaction.
 /// It provides a set of common methods that are used by all controllers. It also implements
@@ -97,7 +113,7 @@ class LogoController : public QObject
 
     virtual QString fileDialogModal()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return QString();
     }
 
@@ -108,7 +124,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to edit the text.
     virtual QString editText(QString text)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return QString();
     }
 
@@ -116,9 +132,9 @@ class LogoController : public QObject
     /// @param newTurtlePos The new position of the turtle.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to set the turtle position.
-    virtual void setTurtlePos(const QTransform &newTurtlePos)
+    virtual void setTurtlePos(const Transform &newTurtlePos)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Emits a vertex to the graphics system.
@@ -126,7 +142,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to emit a vertex. A vertex can be part of a polygon or a polyline or both.
     virtual void emitVertex()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Begins a polygon.
@@ -135,7 +151,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to begin a polygon.
     virtual void beginPolygon(const QColor &color)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Ends a polygon.
@@ -143,7 +159,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to end a polygon.
     virtual void endPolygon()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Clears the canvas.
@@ -151,7 +167,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to clear the canvas.
     virtual void clearCanvas(void)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Draws a label to the canvas.
@@ -160,7 +176,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to draw a label.
     virtual void drawLabel(QString text)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Draws an arc to the canvas.
@@ -170,7 +186,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to draw an arc.
     virtual void drawArc(double angle, double radius)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Sets the label font name.
@@ -179,7 +195,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to set the label font name.
     virtual void setLabelFontName(QString fontName)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Adds the standout control characters to the given string.
@@ -214,7 +230,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to set the bounds of the canvas.
     virtual void setBounds(double x, double y)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Returns the x coordinate of the upper right corner of the canvas.
@@ -223,7 +239,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return the x coordinate of the upper right corner of the canvas.
     virtual double boundX()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return 0;
     }
 
@@ -233,7 +249,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return the y coordinate of the upper right corner of the canvas.
     virtual double boundY()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return 0;
     }
 
@@ -243,7 +259,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to set the foreground color of the canvas.
     virtual void setCanvasForegroundColor(const QColor &color)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Sets the background color of the canvas.
@@ -252,7 +268,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to set the background color of the canvas.
     virtual void setCanvasBackgroundColor(const QColor &color)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Sets the background image of the canvas.
@@ -261,7 +277,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to set the background image of the canvas.
     virtual void setCanvasBackgroundImage(QImage image)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Returns the current background color of the canvas.
@@ -270,7 +286,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return the background color of the canvas.
     virtual const QColor getCanvasBackgroundColor(void)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return QColor();
     }
 
@@ -280,7 +296,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return the image of the canvas.
     virtual QImage getCanvasImage()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return QImage();
     }
 
@@ -290,7 +306,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return the state of the canvas as an SVG.
     virtual QByteArray getSvgImage()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return QByteArray();
     }
 
@@ -300,7 +316,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return the state of a mouse button.
     virtual bool getIsMouseButtonDown()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return false;
     }
 
@@ -310,7 +326,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return the ID of the mouse button that was pressed and reset the button.
     virtual int getAndResetButtonID()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return 0;
     }
 
@@ -320,7 +336,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return the position of the last mouse click.
     virtual QVector2D lastMouseclickPosition()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return QVector2D();
     }
 
@@ -330,7 +346,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return the current position of the mouse.
     virtual QVector2D mousePosition()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return QVector2D();
     }
 
@@ -339,7 +355,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to clear the text on the screen.
     virtual void clearScreenText()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Sets the cursor position.
@@ -349,7 +365,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to set the cursor position.
     virtual void setTextCursorPos(int x, int y)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Returns the cursor position.
@@ -359,7 +375,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return the cursor position.
     virtual void getTextCursorPos(int &x, int &y)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Sets the text color.
@@ -369,7 +385,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to set the text color.
     virtual void setTextColor(const QColor &text, const QColor &background)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Sets the text font size.
@@ -378,7 +394,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to set the text font size.
     virtual void setTextFontSize(double size)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Returns the text font size.
@@ -387,7 +403,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return the text font size.
     virtual double getTextFontSize()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return 12;
     }
 
@@ -397,7 +413,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return the text font name.
     virtual QString getTextFontName()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return QString();
     }
 
@@ -407,7 +423,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to set the text font name.
     virtual void setTextFontName(QString name)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Returns all the font names.
@@ -416,7 +432,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return all the font names.
     virtual QStringList getAllFontNames()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return QStringList();
     }
 
@@ -426,7 +442,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to set the cursor overwrite mode.
     virtual void setCursorOverwriteMode(bool mode)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Returns if the cursor is in overwrite mode.
@@ -435,7 +451,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return if the cursor is in overwrite mode.
     virtual bool cursorOverwriteMode()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return false;
     }
 
@@ -445,7 +461,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to set the label font size.
     virtual void setLabelFontSize(double size)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Returns the label font size.
@@ -454,7 +470,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return the label font size.
     virtual double getLabelFontSize()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return 12;
     }
 
@@ -464,7 +480,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return the label font name.
     virtual QString getLabelFontName()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return QString();
     }
 
@@ -474,16 +490,16 @@ class LogoController : public QObject
     /// perform the necessary tasks to set the label font name.
     virtual void setLabelFontName(QString &name)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Sets if the turtle is visible.
     /// @param visible True if the turtle should be drawn, false means the turtle should not be drawn.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to set if the turtle is visible.
-    virtual void setTurtleIsVisible(bool visible)
+    virtual void setTurtleIsVisible(int visible)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Sets the pen mode.
@@ -492,7 +508,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to set the pen mode.
     virtual void setPenmode(PenModeEnum mode)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Sets if the pen is down.
@@ -501,7 +517,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to set if the pen is down.
     virtual void setPenIsDown(bool down)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Sets the screen mode.
@@ -510,7 +526,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to set the screen mode.
     virtual void setScreenMode(ScreenModeEnum mode)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Returns the screen mode.
@@ -519,7 +535,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return the screen mode.
     virtual ScreenModeEnum getScreenMode()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return textScreenMode;
     }
 
@@ -529,7 +545,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to set the pen size.
     virtual void setPensize(double size)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Queries the graphics engine if the pen size is valid.
@@ -539,7 +555,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return if the pen size is valid.
     virtual bool isPenSizeValid(double size)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return false;
     }
 
@@ -549,7 +565,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to set if the canvas is bounded.
     virtual void setIsCanvasBounded(bool bounded)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief Returns true if the canvas is bounded.
@@ -558,7 +574,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to return if the canvas is bounded.
     virtual bool isCanvasBounded()
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
         return false;
     }
 
@@ -569,7 +585,7 @@ class LogoController : public QObject
     /// perform the necessary tasks to set the splitter size ratios.
     virtual void setSplitterSizeRatios(float ratio1, float ratio2)
     {
-        Error::noGraphics();
+        throw FCError::noGraphics();
     }
 
     /// @brief The kernel.

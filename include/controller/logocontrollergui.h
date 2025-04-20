@@ -11,7 +11,7 @@
 ///
 /// \file
 /// This file contains the declaration of the LogoControllerGUI class, which is
-/// responsible for handling user input and output through the QLogo-GUI
+/// responsible for handling user input and output through Psychi, the QLogo-GUI
 /// terminal application. In addition to text input and output, the GUI controller
 /// also receives mouse and keyboard events from the GUI, and provides a way to
 /// communicate Turtle movements and drawing commands to the QLogo canvas.
@@ -21,17 +21,16 @@
 #ifndef LOGOCONTROLLERGUI_H
 #define LOGOCONTROLLERGUI_H
 
-#include "controller/inputqueue.h"
 #include "controller/logocontroller.h"
-#include "datum.h"
+#include "controller/inputqueue.h"
 #include "sharedconstants.h"
 #include <QDataStream>
 #include <QFile>
 #include <QFont>
 
 /// @brief  The LogoControllerGUI class is a subclass of the LogoController class.
-/// It provides a way to communicate user input and output through the QLogo-GUI
-/// terminal application.
+/// It provides a way to communicate user input and output through Psychi, the
+/// QLogo-GUI terminal application.
 class LogoControllerGUI : public LogoController
 {
     InputQueue messageQueue;
@@ -120,11 +119,11 @@ class LogoControllerGUI : public LogoController
 
     /// @brief Sets the turtle position.
     /// @param newTurtlePos The new turtle position.
-    void setTurtlePos(const QTransform &newTurtlePos);
+    void setTurtlePos(const Transform &newTurtlePos);
 
     /// @brief Sets the turtle visibility.
     /// @param isVisible True if the turtle is visible, false otherwise.
-    void setTurtleIsVisible(bool isVisible);
+    void setTurtleIsVisible(int isVisible);
 
     /// @brief Sets the pen mode.
     /// @param aMode The new pen mode.

@@ -19,14 +19,14 @@
 
 Array::Array(int aOrigin, int aSize)
 {
-    myType = arrayType;
+    isa = Datum::typeArray;
     origin = aOrigin;
     array.reserve(aSize);
 }
 
 Array::Array(int aOrigin, List *source)
 {
-    myType = arrayType;
+    isa = Datum::typeArray;
     auto iter = source->newIterator();
     origin = aOrigin;
     while (iter.elementExists())

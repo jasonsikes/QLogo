@@ -45,6 +45,7 @@ void TextStream::clearLineHistory()
     recentLineHistory = DatumPtr(new List());
 }
 
+// TODO: This is huge. Break it up.
 DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
                                             bool isBaseLevel,
                                             bool makeArray,
@@ -63,6 +64,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
         listSourceWordIter = listSourceWord.begin();
     }
     List *retval = new List();
+    ListBuilder builder(retval);
     DatumPtr retvalP(retval);
     QString currentWord = "";
 
@@ -135,26 +137,26 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
                 // This is a delimiter
                 if (currentWord.size() > 0)
                 {
-                    retval->append(DatumPtr(currentWord, isCurrentWordVbarred));
+                    builder.append(DatumPtr(currentWord, isCurrentWordVbarred));
                     currentWord = "";
                     isCurrentWordVbarred = false;
                 }
                 switch (c)
                 {
                 case '[':
-                    retval->append(tokenizeListWithPrompt("", false, false, shouldRemoveComments));
+                    builder.append(tokenizeListWithPrompt("", false, false, shouldRemoveComments));
                     break;
                 case ']':
                     if ((isBaseLevel) || makeArray)
                     {
-                        Error::unexpectedCloseSquare();
+                        throw FCError::unexpectedCloseSquare();
                     }
                     return retvalP;
                 case '}':
                 {
                     if ((isBaseLevel) || !makeArray)
                     {
-                        Error::unexpectedCloseBrace();
+                        throw FCError::unexpectedCloseBrace();
                     }
                     int origin = 1;
                     // See if array has a custom origin
@@ -173,7 +175,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
                     return DatumPtr(ary);
                 }
                 case '{':
-                    retval->append(tokenizeListWithPrompt("", false, true, shouldRemoveComments));
+                    builder.append(tokenizeListWithPrompt("", false, true, shouldRemoveComments));
                     break;
                 default:
                     break;
@@ -187,13 +189,13 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
         // This is the end of the read. Add the last word to the list.
         if (currentWord.size() > 0)
         {
-            retval->append(DatumPtr(currentWord, isCurrentWordVbarred));
+            builder.append(DatumPtr(currentWord, isCurrentWordVbarred));
             currentWord = "";
         }
 
         // If this is the base-level list then we can just return
         if (isBaseLevel)
-            return DatumPtr(retval);
+            return retvalP;
 
         // Get some more source material if we can
         if (makeArray)
@@ -219,7 +221,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
 DatumPtr TextStream::readrawlineWithPrompt(const QString &prompt, bool shouldSavePreviousLines)
 {
     QString retval;
-    if (stream == NULL)
+    if (stream == nullptr)
     {
         retval = Config::get().mainController()->inputRawlineWithPrompt(prompt);
         if (retval.isNull())
@@ -233,7 +235,7 @@ DatumPtr TextStream::readrawlineWithPrompt(const QString &prompt, bool shouldSav
         }
         retval = stream->readLine();
         if (stream->status() != QTextStream::Ok)
-            Error::fileSystem();
+            throw FCError::fileSystem();
     }
     DatumPtr retvalPtr(retval);
 
@@ -241,7 +243,8 @@ DatumPtr TextStream::readrawlineWithPrompt(const QString &prompt, bool shouldSav
     {
         clearLineHistory();
     }
-    recentLineHistory.listValue()->append(retvalPtr);
+    // TODO: How to save input when running `TO`?
+    //recentLineHistory.listValue()->append(retvalPtr);
 
     return retvalPtr;
 }
@@ -322,7 +325,7 @@ DatumPtr TextStream::readlistWithPrompt(const QString &prompt, bool shouldRemove
 
 DatumPtr TextStream::readChar()
 {
-    if (stream == NULL)
+    if (stream == nullptr)
     {
         return Config::get().mainController()->readchar();
     }
@@ -331,7 +334,7 @@ DatumPtr TextStream::readChar()
         return DatumPtr(new List());
     QString line = stream->read(1);
     if (stream->status() != QTextStream::Ok)
-        Error::fileSystem();
+        throw FCError::fileSystem();
     return DatumPtr(line);
 }
 
@@ -362,7 +365,7 @@ void TextStream::flush()
 
 void TextStream::lprint(QString text)
 {
-    if (stream == NULL)
+    if (stream == nullptr)
     {
         Config::get().mainController()->printToConsole(text);
     }
@@ -370,7 +373,7 @@ void TextStream::lprint(QString text)
     {
         *stream << text;
         if (stream->status() != QTextStream::Ok)
-            Error::fileSystem();
+            throw FCError::fileSystem();
     }
 }
 

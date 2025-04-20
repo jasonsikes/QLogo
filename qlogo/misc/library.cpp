@@ -19,7 +19,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "library.h"
-#include "error.h"
+#include "flowcontrol.h"
 #include "sharedconstants.h"
 #include <QCoreApplication>
 #include <QDir>
@@ -190,7 +190,7 @@ QStringList Help::allCommands()
     }
     else
     {
-        Error::fileSystem();
+        throw FCError::fileSystem();
     }
     return retval;
 }
