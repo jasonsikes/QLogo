@@ -111,6 +111,37 @@ Value *Compiler::generateNotEmptyWordOrListFromDatum(ASTNode *parent, Value *src
     return generateValidationDatum(parent, src, validator);
 }
 
+// TODO: This is a near duplicate of generateNotEmptyWordOrListFromDatum. Refactor.
+Value *Compiler::generateNotEmptyListFromDatum(ASTNode *parent, Value *src)
+{
+    auto validator = [this](Value *wordorlist) {
+        BasicBlock *startBB = scaff->builder.GetInsertBlock();
+        Function *theFunction = startBB->getParent();
+
+        BasicBlock *listBB = BasicBlock::Create(*scaff->theContext, "listBlock", theFunction);
+        BasicBlock *endBB = BasicBlock::Create(*scaff->theContext, "endBlock", theFunction);
+
+        Value *wordOrListType = generateGetDatumIsa(wordorlist);
+        Value *maskCalc = scaff->builder.CreateAnd(wordOrListType, CoInt32(Datum::typeList), "maskCalc");
+        Value *wordOrListCond = scaff->builder.CreateICmpNE(maskCalc, CoInt32(0), "listCond");
+        scaff->builder.CreateCondBr(wordOrListCond, listBB, endBB);
+
+        // Word or List block
+        scaff->builder.SetInsertPoint(listBB);
+        Value *isEmpty = generateCallExtern(TyBool, "isDatumEmpty", {PaAddr(evaluator), PaAddr(wordorlist)});
+        Value *isEmptyCond = scaff->builder.CreateICmpEQ(isEmpty, CoBool(false), "isDatumEmptyCond");
+        scaff->builder.CreateBr(endBB);
+
+        // Merge block
+        scaff->builder.SetInsertPoint(endBB);
+        PHINode *phi = scaff->builder.CreatePHI(wordOrListCond->getType(), 2, "lastOfDatumResult");
+        phi->addIncoming(isEmptyCond, listBB);
+        phi->addIncoming(wordOrListCond, startBB);
+        return phi;
+    };
+    return generateValidationDatum(parent, src, validator);
+}
+
 EXPORTC bool isDatumEmpty(addr_t eAddr, addr_t dAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
@@ -1006,7 +1037,7 @@ Value *Compiler::genDotSetfirst(DatumPtr node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *list = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *value = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
-    list = generateListFromDatum(node.astnodeValue(), list);
+    list = generateNotEmptyListFromDatum(node.astnodeValue(), list);
     generateCallExtern(TyVoid, "setFirstOfList", {PaAddr(evaluator), PaAddr(list), PaAddr(value)});
     return generateVoidRetval(node.astnodeValue());
 }
@@ -1017,3 +1048,38 @@ EXPORTC void setFirstOfList(addr_t eAddr, addr_t listAddr, addr_t valueAddr)
     List *l = reinterpret_cast<List*>(listAddr);
     l->head = DatumPtr(reinterpret_cast<Datum*>(valueAddr));
 }
+
+
+
+/***DOC .SETBF
+.SETBF list value
+
+    command.  Changes the butfirst of "list" to be "value".
+
+    WARNING: Primitives whose names start with a period are DANGEROUS.
+    Their use by non-experts is not recommended.  The use of .SETBF can
+    lead to circular list structures, which will get some Logo primitives
+    into infinite loops; unexpected changes to other data structures that
+    share storage with the list being modified; or to Logo crashes and
+    coredumps if the butfirst of a list is not itself a list.
+
+COD***/
+// CMD .SETBF 2 2 2 n
+Value *Compiler::genDotSetbf(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *list = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    Value *value = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
+    list = generateNotEmptyListFromDatum(node.astnodeValue(), list);
+    value = generateListFromDatum(node.astnodeValue(), value);
+    generateCallExtern(TyVoid, "setButfirstOfList", {PaAddr(evaluator), PaAddr(list), PaAddr(value)});
+    return generateVoidRetval(node.astnodeValue());
+}
+
+EXPORTC void setButfirstOfList(addr_t eAddr, addr_t listAddr, addr_t valueAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    List *l = reinterpret_cast<List*>(listAddr);
+    l->tail = DatumPtr(reinterpret_cast<Datum*>(valueAddr));
+}
+

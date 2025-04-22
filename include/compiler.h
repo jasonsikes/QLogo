@@ -172,6 +172,10 @@ class Compiler
     // it is not empty.
     llvm::Value *generateNotEmptyWordOrListFromDatum(ASTNode *parent, llvm::Value *src);
 
+    // Ensure that Datum is a List, AND
+    // it is not empty.
+    llvm::Value *generateNotEmptyListFromDatum(ASTNode *parent, llvm::Value *src);
+
     // Ensure that the Datum is NOT nothing (NOT ASTNode).
     // Emit return "didn't output" error if not.
     llvm::Value *generateNotNothingFromDatum(ASTNode *parent, llvm::Value *src);
