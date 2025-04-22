@@ -48,7 +48,7 @@ The following table contains all the commands in UCBLogo. The commands that are 
 | OP                 | HEADING        | COS           | *TODO* OPENREAD        | BL                        | *TODO* PRIMITIVEP      |
 | .MAYBEOUTPUT       | TOWARDS        | RADCOS        | *TODO* OPENWRITE       | ITEM                      | *TODO* PRIMITIVE?      |
 | CATCH              | SCRUNCH        | ARCTAN        | *TODO* OPENAPPEND      | SETITEM                   | *TODO* DEFINEDP        |
-| THROW              | SHOWTURTLE     | RADARCTAN     | *TODO* OPENUPDATE      | *TODO* .SETFIRST            | *TODO* DEFINED?        |
+| THROW              | SHOWTURTLE     | RADARCTAN     | *TODO* OPENUPDATE      | .SETFIRST                 | *TODO* DEFINED?        |
 | ERROR              | ST             | LESSP         | *TODO* CLOSE           | *TODO* .SETBF               | *TODO* NAMEP           |
 | PAUSE              | HIDETURTLE     | LESS?         | *TODO* ALLOPEN         | .SETITEM                  | *TODO* NAME?           |
 | CONTINUE           | HT             | GREATERP      | *TODO* CLOSEALL        | *TODO* WORDP                | *TODO* PLISTP          |

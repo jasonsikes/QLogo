@@ -988,3 +988,32 @@ EXPORTC void setDatumAtIndexOfContainer(addr_t eAddr, addr_t valueAddr, double d
 
 
 
+/***DOC .SETFIRST
+.SETFIRST list value
+
+    command.  Changes the first member of "list" to be "value".
+
+    WARNING:  Primitives whose names start with a period are DANGEROUS.
+    Their use by non-experts is not recommended.  The use of .SETFIRST can
+    lead to circular list structures, which will get some Logo primitives
+    into infinite loops, and to unexpected changes to other data
+    structures that share storage with the list being modified.
+
+COD***/
+// CMD .SETFIRST 2 2 2 n
+Value *Compiler::genDotSetfirst(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *list = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    Value *value = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
+    list = generateListFromDatum(node.astnodeValue(), list);
+    generateCallExtern(TyVoid, "setFirstOfList", {PaAddr(evaluator), PaAddr(list), PaAddr(value)});
+    return generateVoidRetval(node.astnodeValue());
+}
+
+EXPORTC void setFirstOfList(addr_t eAddr, addr_t listAddr, addr_t valueAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    List *l = reinterpret_cast<List*>(listAddr);
+    l->head = DatumPtr(reinterpret_cast<Datum*>(valueAddr));
+}

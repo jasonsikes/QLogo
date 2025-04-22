@@ -76,6 +76,7 @@ llvm::Value *genButfirst(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genButlast(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genItem(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genSetitem(DatumPtr node, RequestReturnType returnType);
+llvm::Value *genDotSetfirst(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genForward(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genBack(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genLeft(DatumPtr node, RequestReturnType returnType);
