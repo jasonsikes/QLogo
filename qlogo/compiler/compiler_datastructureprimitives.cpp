@@ -1083,3 +1083,57 @@ EXPORTC void setButfirstOfList(addr_t eAddr, addr_t listAddr, addr_t valueAddr)
     l->tail = DatumPtr(reinterpret_cast<Datum*>(valueAddr));
 }
 
+
+
+/***DOC WORDP WORD?
+WORDP thing
+WORD? thing
+
+    outputs TRUE if the input is a word, FALSE otherwise.
+
+COD***/
+/***DOC LISTP LIST?
+LISTP thing
+LIST? thing
+
+    outputs TRUE if the input is a list, FALSE otherwise.
+
+COD***/
+/***DOC ARRAYP ARRAY?
+ARRAYP thing
+ARRAY? thing
+
+    outputs TRUE if the input is an array, FALSE otherwise.
+
+COD***/
+// CMD ARRAYP 1 1 1 b
+// CMD ARRAY? 1 1 1 b
+// CMD LISTP 1 1 1 b
+// CMD LIST? 1 1 1 b
+// CMD WORDP 1 1 1 b
+// CMD WORD? 1 1 1 b
+Value *Compiler::genWordListArrayp(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+
+    int nodeNameFirstLetter = static_cast<int>(node.astnodeValue()->nodeName.wordValue()->keyValue().front().unicode());
+    Datum::DatumType type;
+    switch (nodeNameFirstLetter) {
+        case 'W':
+            type = Datum::typeWord;
+            break;
+        case 'L':
+            type = Datum::typeList;
+            break;
+        case 'A':
+            type = Datum::typeArray;
+            break;
+        default:
+            Q_ASSERT(false);
+    }
+
+    Value *thingType = generateGetDatumIsa(thing);
+    Value *isType = scaff->builder.CreateICmpEQ(thingType, CoInt32(type), "isDatumTypeCond");
+    return scaff->builder.CreateSelect(isType, CoBool(true), CoBool(false), "isDatumTypeResult");
+}

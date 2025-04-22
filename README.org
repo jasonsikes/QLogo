@@ -51,14 +51,14 @@ The following table contains all the commands in UCBLogo. The commands that are 
 | THROW              | SHOWTURTLE     | RADARCTAN     | *TODO* OPENUPDATE      | .SETFIRST                 | *TODO* DEFINED?        |
 | ERROR              | ST             | LESSP         | *TODO* CLOSE           | .SETBF                    | *TODO* NAMEP           |
 | PAUSE              | HIDETURTLE     | LESS?         | *TODO* ALLOPEN         | .SETITEM                  | *TODO* NAME?           |
-| CONTINUE           | HT             | GREATERP      | *TODO* CLOSEALL        | *TODO* WORDP                | *TODO* PLISTP          |
-| CO                 | CLEAN          | GREATER?      | *TODO* ERASEFILE       | *TODO* WORD?                | *TODO* PLIST?          |
-| TAG                | CLEARSCREEN    | LESSEQUALP    | *TODO* ERF             | *TODO* LISTP                | *TODO* CONTENTS        |
-| GOTO               | CS             | LESSEQUAL?    | *TODO* DRIBBLE         | *TODO* LIST?                | *TODO* BURIED          |
-| *TODO* APPLY         | WRAP           | GREATEREQUALP | *TODO* NODRIBBLE       | *TODO* ARRAYP               | *TODO* TRACED          |
-| *TODO* ?             | WINDOW         | GREATEREQUAL? | *TODO* SETREAD         | *TODO* ARRAY?               | *TODO* STEPPED         |
-| *TODO* MACROP        | FENCE          | RANDOM        | *TODO* SETWRITE        | *TODO* EMPTYP               | *TODO* PROCEDURES      |
-| *TODO* MACRO?        | BOUNDS         | RERANDOM      | *TODO* READER          | *TODO* EMPTY?               | *TODO* PRIMITIVES      |
+| CONTINUE           | HT             | GREATERP      | *TODO* CLOSEALL        | WORDP                     | *TODO* PLISTP          |
+| CO                 | CLEAN          | GREATER?      | *TODO* ERASEFILE       | WORD?                     | *TODO* PLIST?          |
+| TAG                | CLEARSCREEN    | LESSEQUALP    | *TODO* ERF             | LISTP                     | *TODO* CONTENTS        |
+| GOTO               | CS             | LESSEQUAL?    | *TODO* DRIBBLE         | LIST?                     | *TODO* BURIED          |
+| *TODO* APPLY         | WRAP           | GREATEREQUALP | *TODO* NODRIBBLE       | ARRAYP                    | *TODO* TRACED          |
+| *TODO* ?             | WINDOW         | GREATEREQUAL? | *TODO* SETREAD         | ARRAY?                    | *TODO* STEPPED         |
+| *TODO* MACROP        | FENCE          | RANDOM        | *TODO* SETWRITE        | EMPTYP                    | *TODO* PROCEDURES      |
+| *TODO* MACRO?        | BOUNDS         | RERANDOM      | *TODO* READER          | EMPTY?                    | *TODO* PRIMITIVES      |
 |                    | SETBOUNDS      | FORM          | *TODO* WRITER          | EQUALP                    | *TODO* NAMES           |
 |                    | FILLED         | BITAND        | *TODO* SETREADPOS      | EQUAL?                    | *TODO* PLISTS          |
 |                    | LABEL          | BITOR         | *TODO* SETWRITEPOS     | NOTEQUALP                 | *TODO* ARITY           |
