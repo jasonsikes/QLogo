@@ -26,6 +26,8 @@ I am no longer testing on MS Windows as I no longer have nor use a Windows compu
 
 The following table contains all the commands in UCBLogo. The commands that are incomplete are marked by *"TODO"*.
 
+Table summary: GRAPHICS is complete. ARITHMETIC is complete. CONTROL STRUCTURES is almost complete.
+
 | CONTROL STRUCTURES | GRAPHICS       | ARITHMETIC    | COMMUNICATION        | DATA STRUCTURE PRIMITIVES | WORKSPACE MANAGEMENT |
 |--------------------+----------------+---------------+----------------------+---------------------------+----------------------|
 | RUN                | FORWARD        | SUM           | PRINT                | WORD                      | TO                   |
