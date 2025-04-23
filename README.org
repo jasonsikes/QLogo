@@ -220,6 +220,15 @@ cQLogo can save an image in the following formats: BMP, JPG/JPEG, PNG, PPM, XBM,
 
 All the strings used in cQLogo source code can be translated, but no translations have been made.
 
+*** QLogo supports Unicode characters.
+
+The ~CHAR~ command can take a Unicode character as a parameter. Similarly, the ~ASCII~ command and ~RAWASCII~ command can report the Unicode value of a character.
+
+Unicode values are stored as 16-bit integers. Thus, the maximum value that ~CHAR~ can take is 65535.
+
+Since ASCII is a subset of Unicode, the behavior of ~CHAR~, ~ASCII~ and ~RAWASCII~ are the same as in UCBLogo for ASCII characters.
+
+
 *** The following commands are not implemented:
 
 **** ~SETMARGINS~:
