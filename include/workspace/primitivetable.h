@@ -124,6 +124,7 @@ stringToCmd[QObject::tr("NUMBERP")] = {&Compiler::genNumberp, 1, 1, 1, RequestRe
 stringToCmd[QObject::tr("NUMBER?")] = {&Compiler::genNumberp, 1, 1, 1, RequestReturnB};
 stringToCmd[QObject::tr("VBARREDP")] = {&Compiler::genVbarredp, 1, 1, 1, RequestReturnB};
 stringToCmd[QObject::tr("VBARRED?")] = {&Compiler::genVbarredp, 1, 1, 1, RequestReturnB};
+stringToCmd[QObject::tr("COUNT")] = {&Compiler::genCount, 1, 1, 1, RequestReturnN};
 stringToCmd[QObject::tr("FORWARD")] = {&Compiler::genForward, 1, 1, 1, RequestReturnN};
 stringToCmd[QObject::tr("FD")] = {&Compiler::genForward, 1, 1, 1, RequestReturnN};
 stringToCmd[QObject::tr("BACK")] = {&Compiler::genBack, 1, 1, 1, RequestReturnN};

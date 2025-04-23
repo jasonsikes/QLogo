@@ -1389,3 +1389,48 @@ EXPORTC bool isVbarred(addr_t eAddr, addr_t cAddr)
     char16_t c = word->printValue().front().unicode();
     return rawC != c;
 }
+
+
+/***DOC COUNT
+COUNT thing
+
+    outputs the number of characters in the input, if the input is a word;
+    outputs the number of members in the input, if it is a list
+    or an array.  (For an array, this may or may not be the index of the
+    last member, depending on the array's origin.)
+
+COD***/
+// CMD COUNT 1 1 1 n
+Value *Compiler::genCount(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    return generateCallExtern(TyDouble, "count", {PaAddr(evaluator), PaAddr(thing)});
+}
+
+EXPORTC double count(addr_t eAddr, addr_t thingAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *thing = reinterpret_cast<Datum*>(thingAddr);
+    switch (thing->isa) {
+        case Datum::typeWord:
+        {
+            Word *word = reinterpret_cast<Word*>(thing);
+            return word->rawValue().length();
+        }
+        case Datum::typeList:
+        {
+            List *list = reinterpret_cast<List*>(thing);
+            return list->count();
+        }
+        case Datum::typeArray:
+        {
+            Array *array = reinterpret_cast<Array*>(thing);
+            return array->array.size();
+        }
+        default:
+            Q_ASSERT(false);
+    }
+    Q_ASSERT(false);
+    return 0;
+}

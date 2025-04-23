@@ -76,7 +76,7 @@ Table summary: GRAPHICS is complete. ARITHMETIC is complete. CONTROL STRUCTURES 
 |                    | SHOWN?         | /             | *TODO* CURSOR          | NUMBER?                   | *TODO* ERPLS           |
 |                    | SCREENMODE     | <             | *TODO* SETTEXTCOLOR    | VBARREDP                  | *TODO* BURY            |
 |                    | TURTLEMODE     | >             | *TODO* SETTC           | VBARRED?                  | *TODO* UNBURY          |
-|                    | LABELSIZE      | =             | *TODO* INCREASEFONT    | *TODO* COUNT                | *TODO* BURIEDP         |
+|                    | LABELSIZE      | =             | *TODO* INCREASEFONT    | COUNT                     | *TODO* BURIEDP         |
 |                    | *NO* MATRIX      | <=            | *TODO* DECREASEFONT    | *TODO* ASCII                | *TODO* BURIED?         |
 |                    | PENDOWN        | >=            | *TODO* SETTEXTSIZE     | *TODO* RAWASCII             | *TODO* TRACE           |
 |                    | PD             | <>            | *TODO* TEXTSIZE        | *TODO* CHAR                 | *TODO* UNTRACE         |
