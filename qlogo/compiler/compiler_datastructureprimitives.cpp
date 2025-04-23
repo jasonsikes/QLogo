@@ -1332,3 +1332,60 @@ EXPORTC bool isNumber(addr_t eAddr, addr_t thingAddr)
     return word->numberIsValid;
 }
 
+
+
+/***DOC VBARREDP VBARRED? BACKSLASHEDP BACKSLASHED?
+VBARREDP char
+VBARRED? char
+BACKSLASHEDP char                               (library procedure)
+BACKSLASHED? char                               (library procedure)
+
+    outputs TRUE if the input character was originally entered into Logo
+    within vertical bars (|) to prevent its usual special syntactic
+    meaning, FALSE otherwise.  (Outputs TRUE only if the character is a
+    backslashed space, tab, newline, or one of ()[]+-/=*<>":;\~?| )
+
+    The names BACKSLASHEDP and BACKSLASHED? are included in the Logo
+    library for backward compatibility with the former names of this
+    primitive, although it does *not* output TRUE for characters
+    originally entered with backslashes.
+
+
+COD***/
+// CMD VBARREDP 1 1 1 b
+// CMD VBARRED? 1 1 1 b
+Value *Compiler::genVbarredp(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *c = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+
+    auto validator = [this](Value *candidate) {
+        Value *isGoodChar = generateCallExtern(TyBool, "isSingleCharWord", {PaAddr(evaluator), PaAddr(candidate)});
+        return scaff->builder.CreateICmpEQ(isGoodChar, CoBool(true), "isGoodCond");
+    };
+    c = generateValidationDatum(node.astnodeValue(), c, validator);
+
+    return generateCallExtern(TyBool, "isVbarred", {PaAddr(evaluator), PaAddr(c)});
+}
+
+EXPORTC bool isSingleCharWord(addr_t eAddr, addr_t candidateAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *candidate = reinterpret_cast<Datum*>(candidateAddr);
+    if (candidate->isa != Datum::typeWord) {
+        return false;
+    }
+    Word *word = reinterpret_cast<Word*>(candidate);
+    return word->keyValue().length() == 1;
+}
+
+EXPORTC bool isVbarred(addr_t eAddr, addr_t cAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Word *word = reinterpret_cast<Word*>(cAddr);
+
+    // A character is vbarred IFF it's print value is different from its raw value.
+    char16_t rawC = word->rawValue().front().unicode();
+    char16_t c = word->printValue().front().unicode();
+    return rawC != c;
+}
