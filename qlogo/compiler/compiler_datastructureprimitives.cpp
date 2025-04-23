@@ -1194,3 +1194,75 @@ Value *Compiler::genDotEq(DatumPtr node, RequestReturnType returnType)
     Value *isEqualCond = scaff->builder.CreateICmpEQ(thing1, thing2, "isEqualCond");
     return scaff->builder.CreateSelect(isEqualCond, CoBool(true), CoBool(false), "isEqualResult");
 }
+
+
+/***DOC MEMBERP MEMBER?
+MEMBERP thing1 thing2
+MEMBER? thing1 thing2
+
+    if "thing2" is a list or an array, outputs TRUE if "thing1" is EQUALP
+    to a member of "thing2", FALSE otherwise.  If "thing2" is
+    a word, outputs TRUE if "thing1" is a one-character word EQUALP to a
+    character of "thing2", FALSE otherwise.
+
+COD***/
+// CMD MEMBERP 2 2 2 b
+// CMD MEMBER? 2 2 2 b
+Value *Compiler::genMemberp(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *thing1 = generateChild(node.astnodeValue(), 0, RequestReturnDatum); // thing
+    Value *thing2 = generateChild(node.astnodeValue(), 1, RequestReturnDatum); // container
+    return generateCallExtern(TyBool, "isMember", {PaAddr(evaluator), PaAddr(thing1), PaAddr(thing2)});
+}
+
+EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *thing = reinterpret_cast<Datum*>(thingAddr);
+    Datum *container = reinterpret_cast<Datum*>(containerAddr);
+
+    switch (container->isa) {
+        case Datum::typeWord:
+        {
+            Word *word = reinterpret_cast<Word*>(container);
+            QString containerString = word->keyValue();
+            if (thing->isa == Datum::typeWord) {
+                Word *word = reinterpret_cast<Word*>(thing);
+                QString thingString = word->keyValue();
+                if (thingString.length() != 1) {
+                    return false;
+                }
+                return containerString.contains(thingString);
+            }
+            return false;
+        }
+        case Datum::typeList:
+        {
+            List *list = reinterpret_cast<List*>(container);
+            ListIterator iter(list);
+            while (iter.elementExists()) {
+                Datum *item = iter.element().datumValue();
+                addr_t itemAddr = reinterpret_cast<addr_t>(item);
+                if (cmpDatumToDatum(thingAddr, itemAddr)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        case Datum::typeArray:
+        {
+            Array *array = reinterpret_cast<Array*>(container);
+            for (auto item : array->array) {
+                if (cmpDatumToDatum(thingAddr, reinterpret_cast<addr_t>(item.datumValue()))) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        default:
+            Q_ASSERT(false);
+    }
+    Q_ASSERT(false);
+    return false;
+}
