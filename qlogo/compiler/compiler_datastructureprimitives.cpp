@@ -1137,3 +1137,39 @@ Value *Compiler::genWordListArrayp(DatumPtr node, RequestReturnType returnType)
     Value *isType = scaff->builder.CreateICmpEQ(thingType, CoInt32(type), "isDatumTypeCond");
     return scaff->builder.CreateSelect(isType, CoBool(true), CoBool(false), "isDatumTypeResult");
 }
+
+
+/***DOC BEFOREP BEFORE?
+BEFOREP word1 word2
+BEFORE? word1 word2
+
+    outputs TRUE if word1 comes before word2 in ASCII collating sequence
+    (for words of letters, in alphabetical order).  Case-sensitivity is
+    determined by the value of CASEIGNOREDP.  Note that if the inputs are
+    numbers, the result may not be the same as with LESSP; for example,
+    BEFOREP 3 12 is false because 3 collates after 1.
+
+COD***/
+// CMD BEFOREP 2 2 2 b
+// CMD BEFORE? 2 2 2 b
+Value *Compiler::genBeforep(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *word1 = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    Value *word2 = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
+    word1 = generateWordFromDatum(node.astnodeValue(), word1);
+    word2 = generateWordFromDatum(node.astnodeValue(), word2);
+    return generateCallExtern(TyBool, "isBefore", {PaAddr(evaluator), PaAddr(word1), PaAddr(word2)});
+}
+
+EXPORTC bool isBefore(addr_t eAddr, addr_t word1Addr, addr_t word2Addr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Word *word1 = reinterpret_cast<Word*>(word1Addr);
+    Word *word2 = reinterpret_cast<Word*>(word2Addr);
+
+    QString value1 = word1->keyValue();
+    QString value2 = word2->keyValue();
+    return value1 < value2;
+}
+
