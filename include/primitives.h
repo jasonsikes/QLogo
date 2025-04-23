@@ -86,6 +86,8 @@ llvm::Value *genSubstringp(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genNumberp(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genVbarredp(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genCount(DatumPtr node, RequestReturnType returnType);
+llvm::Value *genAscii(DatumPtr node, RequestReturnType returnType);
+llvm::Value *genRawascii(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genForward(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genBack(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genLeft(DatumPtr node, RequestReturnType returnType);

@@ -1434,3 +1434,75 @@ EXPORTC double count(addr_t eAddr, addr_t thingAddr)
     Q_ASSERT(false);
     return 0;
 }
+
+
+/***DOC ASCII
+ASCII char
+
+    outputs the integer (between 0 and 65535) that represents the input
+    character in Unicode.  Interprets control characters as
+    representing vbarred punctuation, and returns the character code
+    for the corresponding punctuation character without vertical bars.
+    (Compare RAWASCII.)
+
+    Even though QLogo uses Unicode instead of ASCII, the primitives ASCII,
+    RAWASCII, and CHAR are maintained for compatibility with UCBLogo and
+    because ASCII is a proper subset of Unicode.
+
+COD***/
+// CMD ASCII 1 1 1 n
+Value *Compiler::genAscii(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *c = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+
+    auto validator = [this](Value *candidate) {
+        Value *isGoodChar = generateCallExtern(TyBool, "isSingleCharWord", {PaAddr(evaluator), PaAddr(candidate)});
+        return scaff->builder.CreateICmpEQ(isGoodChar, CoBool(true), "isGoodCond");
+    };
+    c = generateValidationDatum(node.astnodeValue(), c, validator);
+
+    return generateCallExtern(TyDouble, "ascii", {PaAddr(evaluator), PaAddr(c)});
+}
+
+EXPORTC double ascii(addr_t eAddr, addr_t cAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Word *word = reinterpret_cast<Word*>(cAddr);
+    return word->printValue().front().unicode();
+}
+
+
+
+/***DOC RAWASCII
+RAWASCII char
+
+    outputs the integer (between 0 and 65535) that represents the input
+    character in Unicode.  Interprets control characters as
+    representing themselves.  To find out the Unicode value of an arbitrary
+    keystroke, use RAWASCII RC.
+
+    See ASCII for discussion of Unicode characters.
+
+COD***/
+// CMD RAWASCII 1 1 1 n
+Value *Compiler::genRawascii(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *c = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+
+    auto validator = [this](Value *candidate) {
+        Value *isGoodChar = generateCallExtern(TyBool, "isSingleCharWord", {PaAddr(evaluator), PaAddr(candidate)});
+        return scaff->builder.CreateICmpEQ(isGoodChar, CoBool(true), "isGoodCond");
+    };
+    c = generateValidationDatum(node.astnodeValue(), c, validator);
+
+    return generateCallExtern(TyDouble, "rawascii", {PaAddr(evaluator), PaAddr(c)});
+}
+
+EXPORTC double rawascii(addr_t eAddr, addr_t cAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Word *word = reinterpret_cast<Word*>(cAddr);
+    return word->rawValue().front().unicode();
+}
