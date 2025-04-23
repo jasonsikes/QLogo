@@ -70,8 +70,8 @@ Table summary: GRAPHICS is complete. ARITHMETIC is complete. CONTROL STRUCTURES 
 |                    | FULLSCREEN     | LSHIFT        | *TODO* EOF?            | .EQ                       | *TODO* POT             |
 |                    | FS             | AND           | *TODO* KEYP            | MEMBERP                   | *TODO* ERASE           |
 |                    | SPLITSCREEN    | OR            | *TODO* KEY?            | MEMBER?                   | *TODO* ER              |
-|                    | SS             | NOT           | *TODO* CLEARTEXT       | *TODO* SUBSTRINGP           | *TODO* ERALL           |
-|                    | SETSCRUNCH     | +             | *TODO* CT              | *TODO* SUBSTRING?           | *TODO* ERPS            |
+|                    | SS             | NOT           | *TODO* CLEARTEXT       | SUBSTRINGP                | *TODO* ERALL           |
+|                    | SETSCRUNCH     | +             | *TODO* CT              | SUBSTRING?                | *TODO* ERPS            |
 |                    | SHOWNP         | *             | *TODO* SETCURSOR       | *TODO* NUMBERP              | *TODO* ERNS            |
 |                    | SHOWN?         | /             | *TODO* CURSOR          | *TODO* NUMBER?              | *TODO* ERPLS           |
 |                    | SCREENMODE     | <             | *TODO* SETTEXTCOLOR    | *TODO* VBARREDP             | *TODO* BURY            |

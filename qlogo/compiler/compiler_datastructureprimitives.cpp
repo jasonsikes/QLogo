@@ -1266,3 +1266,39 @@ EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
     Q_ASSERT(false);
     return false;
 }
+
+
+/***DOC SUBSTRINGP SUBSTRING?
+SUBSTRINGP thing1 thing2
+SUBSTRING? thing1 thing2
+
+    if "thing1" or "thing2" is a list or an array, outputs FALSE.  If
+    "thing2" is a word, outputs TRUE if "thing1" is EQUALP to a
+    substring of "thing2", FALSE otherwise.
+
+COD***/
+// CMD SUBSTRINGP 2 2 2 b
+// CMD SUBSTRING? 2 2 2 b
+Value *Compiler::genSubstringp(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *thing1 = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    Value *thing2 = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
+    return generateCallExtern(TyBool, "isSubstring", {PaAddr(evaluator), PaAddr(thing1), PaAddr(thing2)});
+}
+
+EXPORTC bool isSubstring(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *thing1 = reinterpret_cast<Datum*>(thing1Addr);
+    Datum *thing2 = reinterpret_cast<Datum*>(thing2Addr);
+
+    if (thing1->isa == Datum::typeWord && thing2->isa == Datum::typeWord) {
+        Word *word1 = reinterpret_cast<Word*>(thing1);
+        Word *word2 = reinterpret_cast<Word*>(thing2);
+        QString string1 = word1->keyValue();
+        QString string2 = word2->keyValue();
+        return string2.contains(string1);
+    }
+    return false;
+}
