@@ -72,8 +72,8 @@ Table summary: GRAPHICS is complete. ARITHMETIC is complete. CONTROL STRUCTURES 
 |                    | SPLITSCREEN    | OR            | *TODO* KEY?            | MEMBER?                   | *TODO* ER              |
 |                    | SS             | NOT           | *TODO* CLEARTEXT       | SUBSTRINGP                | *TODO* ERALL           |
 |                    | SETSCRUNCH     | +             | *TODO* CT              | SUBSTRING?                | *TODO* ERPS            |
-|                    | SHOWNP         | *             | *TODO* SETCURSOR       | *TODO* NUMBERP              | *TODO* ERNS            |
-|                    | SHOWN?         | /             | *TODO* CURSOR          | *TODO* NUMBER?              | *TODO* ERPLS           |
+|                    | SHOWNP         | *             | *TODO* SETCURSOR       | NUMBERP                   | *TODO* ERNS            |
+|                    | SHOWN?         | /             | *TODO* CURSOR          | NUMBER?                   | *TODO* ERPLS           |
 |                    | SCREENMODE     | <             | *TODO* SETTEXTCOLOR    | *TODO* VBARREDP             | *TODO* BURY            |
 |                    | TURTLEMODE     | >             | *TODO* SETTC           | *TODO* VBARRED?             | *TODO* UNBURY          |
 |                    | LABELSIZE      | =             | *TODO* INCREASEFONT    | *TODO* COUNT                | *TODO* BURIEDP         |

@@ -1302,3 +1302,33 @@ EXPORTC bool isSubstring(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
     }
     return false;
 }
+
+
+/***DOC NUMBERP NUMBER?
+NUMBERP thing
+NUMBER? thing
+
+    outputs TRUE if the input is a number, FALSE otherwise.
+
+COD***/
+// CMD NUMBERP 1 1 1 b
+// CMD NUMBER? 1 1 1 b
+Value *Compiler::genNumberp(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    return generateCallExtern(TyBool, "isNumber", {PaAddr(evaluator), PaAddr(thing)});
+}
+
+EXPORTC bool isNumber(addr_t eAddr, addr_t thingAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *thing = reinterpret_cast<Datum*>(thingAddr);
+    if (thing->isa != Datum::typeWord) {
+        return false;
+    }
+    Word *word = reinterpret_cast<Word*>(thing);
+    word->numberValue();
+    return word->numberIsValid;
+}
+
