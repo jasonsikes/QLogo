@@ -127,6 +127,7 @@ stringToCmd[QObject::tr("VBARRED?")] = {&Compiler::genVbarredp, 1, 1, 1, Request
 stringToCmd[QObject::tr("COUNT")] = {&Compiler::genCount, 1, 1, 1, RequestReturnN};
 stringToCmd[QObject::tr("ASCII")] = {&Compiler::genAscii, 1, 1, 1, RequestReturnN};
 stringToCmd[QObject::tr("RAWASCII")] = {&Compiler::genRawascii, 1, 1, 1, RequestReturnN};
+stringToCmd[QObject::tr("CHAR")] = {&Compiler::genChar, 1, 1, 1, RequestReturnD};
 stringToCmd[QObject::tr("FORWARD")] = {&Compiler::genForward, 1, 1, 1, RequestReturnN};
 stringToCmd[QObject::tr("FD")] = {&Compiler::genForward, 1, 1, 1, RequestReturnN};
 stringToCmd[QObject::tr("BACK")] = {&Compiler::genBack, 1, 1, 1, RequestReturnN};
