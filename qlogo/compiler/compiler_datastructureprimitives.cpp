@@ -1173,3 +1173,24 @@ EXPORTC bool isBefore(addr_t eAddr, addr_t word1Addr, addr_t word2Addr)
     return value1 < value2;
 }
 
+
+/***DOC .EQ
+.EQ thing1 thing2
+
+    outputs TRUE if its two inputs are the same datum, so that applying a
+    mutator to one will change the other as well.  Outputs FALSE otherwise,
+    even if the inputs are equal in value.
+    WARNING: Primitives whose names start with a period are DANGEROUS.
+    Their use by non-experts is not recommended.  The use of mutators
+    can lead to circular data structures, infinite loops, or Logo crashes.
+
+COD***/
+// CMD .EQ 2 2 2 b
+Value *Compiler::genDotEq(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *thing1 = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    Value *thing2 = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
+    Value *isEqualCond = scaff->builder.CreateICmpEQ(thing1, thing2, "isEqualCond");
+    return scaff->builder.CreateSelect(isEqualCond, CoBool(true), CoBool(false), "isEqualResult");
+}

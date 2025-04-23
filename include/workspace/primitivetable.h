@@ -115,6 +115,7 @@ stringToCmd[QObject::tr("WORDP")] = {&Compiler::genWordListArrayp, 1, 1, 1, Requ
 stringToCmd[QObject::tr("WORD?")] = {&Compiler::genWordListArrayp, 1, 1, 1, RequestReturnB};
 stringToCmd[QObject::tr("BEFOREP")] = {&Compiler::genBeforep, 2, 2, 2, RequestReturnB};
 stringToCmd[QObject::tr("BEFORE?")] = {&Compiler::genBeforep, 2, 2, 2, RequestReturnB};
+stringToCmd[QObject::tr(".EQ")] = {&Compiler::genDotEq, 2, 2, 2, RequestReturnB};
 stringToCmd[QObject::tr("FORWARD")] = {&Compiler::genForward, 1, 1, 1, RequestReturnN};
 stringToCmd[QObject::tr("FD")] = {&Compiler::genForward, 1, 1, 1, RequestReturnN};
 stringToCmd[QObject::tr("BACK")] = {&Compiler::genBack, 1, 1, 1, RequestReturnN};

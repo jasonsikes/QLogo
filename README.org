@@ -67,7 +67,7 @@ Table summary: GRAPHICS is complete. ARITHMETIC is complete. CONTROL STRUCTURES 
 |                    | SETLABELHEIGHT | BITXOR        | *TODO* READPOS         | NOTEQUAL?                 | *TODO* NODES           |
 |                    | TEXTSCREEN     | BITNOT        | *TODO* WRITEPOS        | BEFOREP                   | *TODO* PRINTOUT        |
 |                    | TS             | ASHIFT        | *TODO* EOFP            | BEFORE?                   | *TODO* PO              |
-|                    | FULLSCREEN     | LSHIFT        | *TODO* EOF?            | *TODO* .EQ                  | *TODO* POT             |
+|                    | FULLSCREEN     | LSHIFT        | *TODO* EOF?            | .EQ                       | *TODO* POT             |
 |                    | FS             | AND           | *TODO* KEYP            | *TODO* MEMBERP              | *TODO* ERASE           |
 |                    | SPLITSCREEN    | OR            | *TODO* KEY?            | *TODO* MEMBER?              | *TODO* ER              |
 |                    | SS             | NOT           | *TODO* CLEARTEXT       | *TODO* SUBSTRINGP           | *TODO* ERALL           |
