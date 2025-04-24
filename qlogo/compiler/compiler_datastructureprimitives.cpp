@@ -1644,3 +1644,57 @@ EXPORTC addr_t member(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
     return nullptr;
 }
 
+
+
+/***DOC LOWERCASE
+LOWERCASE word
+
+    outputs a copy of the input word, but with all uppercase letters
+    changed to the corresponding lowercase letter.
+
+COD***/
+// CMD LOWERCASE 1 1 1 d
+Value *Compiler::genLowercase(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *word = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    word = generateFromDatum(Datum::typeWord, node.astnodeValue(), word);
+    return generateCallExtern(TyAddr, "lowercase", {PaAddr(evaluator), PaAddr(word)});
+}
+
+EXPORTC addr_t lowercase(addr_t eAddr, addr_t wordAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Word *word = reinterpret_cast<Word*>(wordAddr);
+    QString retval = word->rawValue().toLower();
+    Word *retvalWord = new Word(retval);
+    e->watch(retvalWord);
+    return reinterpret_cast<addr_t>(retvalWord);
+}
+
+
+/***DOC UPPERCASE
+UPPERCASE word
+
+    outputs a copy of the input word, but with all lowercase letters
+    changed to the corresponding uppercase letter.
+
+COD***/
+// CMD UPPERCASE 1 1 1 d
+Value *Compiler::genUppercase(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *word = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    word = generateFromDatum(Datum::typeWord, node.astnodeValue(), word);
+    return generateCallExtern(TyAddr, "uppercase", {PaAddr(evaluator), PaAddr(word), PaBool(CoBool(false))});
+}
+
+EXPORTC addr_t uppercase(addr_t eAddr, addr_t wordAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Word *word = reinterpret_cast<Word*>(wordAddr);
+    QString retval = word->rawValue().toUpper();
+    Word *retvalWord = new Word(retval);
+    e->watch(retvalWord);
+    return reinterpret_cast<addr_t>(retvalWord);
+}

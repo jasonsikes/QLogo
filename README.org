@@ -81,8 +81,8 @@ Table summary: GRAPHICS is complete. ARITHMETIC is complete. CONTROL STRUCTURES 
 |                    | PENDOWN        | >=            | *TODO* SETTEXTSIZE     | RAWASCII                  | *TODO* TRACE           |
 |                    | PD             | <>            | *TODO* TEXTSIZE        | CHAR                      | *TODO* UNTRACE         |
 |                    | PENUP          |               | *TODO* SETTEXTFONT     | MEMBER                    | *TODO* TRACEDP         |
-|                    | PU             |               | *TODO* FONT            | *TODO* LOWERCASE            | *TODO* TRACED?         |
-|                    | PENPAINT       |               | *TODO* ALLFONTS        | *TODO* UPPERCASE            | *TODO* STEP            |
+|                    | PU             |               | *TODO* FONT            | LOWERCASE                 | *TODO* TRACED?         |
+|                    | PENPAINT       |               | *TODO* ALLFONTS        | UPPERCASE                 | *TODO* STEP            |
 |                    | PPT            |               | *TODO* CURSORINSERT    | *TODO* STANDOUT             | *TODO* UNSTEP          |
 |                    | PENERASE       |               | *TODO* CURSOROVERWRITE | *TODO* PARSE                | *TODO* STEPPEDP        |
 |                    | PE             |               | *TODO* CURSORMODE      | *TODO* RUNPARSE             | *TODO* STEPPED?        |
