@@ -21,6 +21,8 @@
 #include "workspace/callframe.h"
 #include "kernel.h"
 #include "controller/logocontroller.h"
+#include "controller/textstream.h"
+#include <QIODevice>
 
 using namespace llvm;
 using namespace llvm::orc;
@@ -1729,4 +1731,35 @@ EXPORTC addr_t standout(addr_t eAddr, addr_t thingAddr)
     Word *retvalWord = new Word(retval);
     e->watch(retvalWord);
     return reinterpret_cast<addr_t>(retvalWord);
+}
+
+
+/***DOC PARSE
+PARSE word
+
+    outputs the list that would result if the input word were entered
+    in response to a READLIST operation.  That is, PARSE READWORD has
+    the same value as READLIST for the same characters read.
+
+COD***/
+// CMD PARSE 1 1 1 d
+Value *Compiler::genParse(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *word = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    word = generateFromDatum(Datum::typeWord, node.astnodeValue(), word);
+    return generateCallExtern(TyAddr, "parse", {PaAddr(evaluator), PaAddr(word)});
+}
+
+EXPORTC addr_t parse(addr_t eAddr, addr_t wordAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Word *word = reinterpret_cast<Word*>(wordAddr);
+    QString phrase = word->rawValue();
+    QTextStream stream(&phrase, QIODevice::ReadOnly);
+    TextStream ts(&stream);
+    DatumPtr retvalPtr = ts.readlistWithPrompt("", false);
+    List *retval = retvalPtr.listValue();
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
 }

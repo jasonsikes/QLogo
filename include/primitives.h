@@ -93,6 +93,7 @@ llvm::Value *genMember(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genLowercase(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genUppercase(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genStandout(DatumPtr node, RequestReturnType returnType);
+llvm::Value *genParse(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genForward(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genBack(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genLeft(DatumPtr node, RequestReturnType returnType);

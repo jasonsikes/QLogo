@@ -84,7 +84,7 @@ Table summary: GRAPHICS is complete. ARITHMETIC is complete. CONTROL STRUCTURES 
 |                    | PU             |               | *TODO* FONT            | LOWERCASE                 | *TODO* TRACED?         |
 |                    | PENPAINT       |               | *TODO* ALLFONTS        | UPPERCASE                 | *TODO* STEP            |
 |                    | PPT            |               | *TODO* CURSORINSERT    | STANDOUT                  | *TODO* UNSTEP          |
-|                    | PENERASE       |               | *TODO* CURSOROVERWRITE | *TODO* PARSE                | *TODO* STEPPEDP        |
+|                    | PENERASE       |               | *TODO* CURSOROVERWRITE | PARSE                     | *TODO* STEPPEDP        |
 |                    | PE             |               | *TODO* CURSORMODE      | *TODO* RUNPARSE             | *TODO* STEPPED?        |
 |                    | PENREVERSE     |               | *TODO* WAIT            |                           | *TODO* EDIT            |
 |                    | PX             |               |                      |                           | *TODO* ED              |
