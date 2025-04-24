@@ -20,6 +20,7 @@
 #include "sharedconstants.h"
 #include "workspace/callframe.h"
 #include "kernel.h"
+#include "controller/logocontroller.h"
 
 using namespace llvm;
 using namespace llvm::orc;
@@ -1694,6 +1695,37 @@ EXPORTC addr_t uppercase(addr_t eAddr, addr_t wordAddr)
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Word *word = reinterpret_cast<Word*>(wordAddr);
     QString retval = word->rawValue().toUpper();
+    Word *retvalWord = new Word(retval);
+    e->watch(retvalWord);
+    return reinterpret_cast<addr_t>(retvalWord);
+}
+
+
+/***DOC STANDOUT
+STANDOUT thing
+
+    outputs a word that, when printed, will appear like the input but
+    displayed in standout mode (reverse video).  The word contains
+    magic characters at the beginning and end; in between is the printed
+    form (as if displayed using TYPE) of the input.  The output is always
+    a word, even if the input is of some other type, but it may include
+    spaces and other formatting characters.
+
+COD***/
+// CMD STANDOUT 1 1 1 d
+Value *Compiler::genStandout(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    return generateCallExtern(TyAddr, "standout", {PaAddr(evaluator), PaAddr(thing)});
+}
+
+EXPORTC addr_t standout(addr_t eAddr, addr_t thingAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *thing = reinterpret_cast<Datum*>(thingAddr);
+    QString phrase = thing->printValue();
+    QString retval = Config::get().mainController()->addStandoutToString(phrase);
     Word *retvalWord = new Word(retval);
     e->watch(retvalWord);
     return reinterpret_cast<addr_t>(retvalWord);

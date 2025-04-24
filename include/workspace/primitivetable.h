@@ -131,6 +131,7 @@ stringToCmd[QObject::tr("CHAR")] = {&Compiler::genChar, 1, 1, 1, RequestReturnD}
 stringToCmd[QObject::tr("MEMBER")] = {&Compiler::genMember, 2, 2, 2, RequestReturnD};
 stringToCmd[QObject::tr("LOWERCASE")] = {&Compiler::genLowercase, 1, 1, 1, RequestReturnD};
 stringToCmd[QObject::tr("UPPERCASE")] = {&Compiler::genUppercase, 1, 1, 1, RequestReturnD};
+stringToCmd[QObject::tr("STANDOUT")] = {&Compiler::genStandout, 1, 1, 1, RequestReturnD};
 stringToCmd[QObject::tr("FORWARD")] = {&Compiler::genForward, 1, 1, 1, RequestReturnN};
 stringToCmd[QObject::tr("FD")] = {&Compiler::genForward, 1, 1, 1, RequestReturnN};
 stringToCmd[QObject::tr("BACK")] = {&Compiler::genBack, 1, 1, 1, RequestReturnN};
