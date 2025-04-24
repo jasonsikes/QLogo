@@ -22,6 +22,7 @@
 #include "kernel.h"
 #include "controller/logocontroller.h"
 #include "controller/textstream.h"
+#include "runparser.h"
 #include <QIODevice>
 
 using namespace llvm;
@@ -1759,6 +1760,37 @@ EXPORTC addr_t parse(addr_t eAddr, addr_t wordAddr)
     QTextStream stream(&phrase, QIODevice::ReadOnly);
     TextStream ts(&stream);
     DatumPtr retvalPtr = ts.readlistWithPrompt("", false);
+    List *retval = retvalPtr.listValue();
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
+}
+
+
+/***DOC RUNPARSE
+RUNPARSE wordorlist
+
+    outputs the list that would result if the input word or list were
+    entered as an instruction line; characters such as infix operators
+    and parentheses are separate members of the output.  Note that
+    sublists of a runparsed list are not themselves runparsed.
+
+
+COD***/
+// CMD RUNPARSE 1 1 1 d
+Value *Compiler::genRunparse(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *wordorlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    wordorlist = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), wordorlist);
+    return generateCallExtern(TyAddr, "runparse", {PaAddr(evaluator), PaAddr(wordorlist)});
+}
+
+EXPORTC addr_t runparse(addr_t eAddr, addr_t wordorlistAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    DatumPtr wordorlist = DatumPtr(reinterpret_cast<Datum*>(wordorlistAddr));
+
+    DatumPtr retvalPtr = runparse(wordorlist);
     List *retval = retvalPtr.listValue();
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
