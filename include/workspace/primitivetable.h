@@ -128,6 +128,7 @@ stringToCmd[QObject::tr("COUNT")] = {&Compiler::genCount, 1, 1, 1, RequestReturn
 stringToCmd[QObject::tr("ASCII")] = {&Compiler::genAscii, 1, 1, 1, RequestReturnN};
 stringToCmd[QObject::tr("RAWASCII")] = {&Compiler::genRawascii, 1, 1, 1, RequestReturnN};
 stringToCmd[QObject::tr("CHAR")] = {&Compiler::genChar, 1, 1, 1, RequestReturnD};
+stringToCmd[QObject::tr("MEMBER")] = {&Compiler::genMember, 2, 2, 2, RequestReturnD};
 stringToCmd[QObject::tr("FORWARD")] = {&Compiler::genForward, 1, 1, 1, RequestReturnN};
 stringToCmd[QObject::tr("FD")] = {&Compiler::genForward, 1, 1, 1, RequestReturnN};
 stringToCmd[QObject::tr("BACK")] = {&Compiler::genBack, 1, 1, 1, RequestReturnN};

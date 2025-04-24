@@ -139,6 +139,7 @@ class Datum
         typeArray           = 0x00000004,
 
         typeDataMask        = 0x00000007, // Word + List + Array
+        typeWordOrListMask  = 0x00000003, // Word + List
 
         // These are the types that control the flow of the program.
         typeError           = 0x00000010,

@@ -437,7 +437,9 @@ Value *Compiler::generateFromDatum(Datum::DatumType t, ASTNode *parent, Value *s
 {
     auto typeTest = [this, t](Value *src) {
         Value *dType = generateGetDatumIsa(src);
-        return scaff->builder.CreateICmpEQ(dType, CoInt32(t), "typeTest");
+        Value *mask = scaff->builder.CreateAnd(dType, CoInt32(t), "dataTypeMask");
+        Value *cond = scaff->builder.CreateICmpNE(mask, CoInt32(0), "typeTest");
+        return cond;
     };
     return generateValidationDatum(parent, src, typeTest);
 }

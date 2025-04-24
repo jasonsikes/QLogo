@@ -1574,3 +1574,73 @@ EXPORTC addr_t chr(addr_t eAddr, double c)
     return reinterpret_cast<addr_t>(retval);
 }
 
+
+/***DOC MEMBER
+MEMBER thing1 thing2
+
+    if "thing2" is a word or list and if MEMBERP with these inputs would
+    output TRUE, outputs the portion of "thing2" from the first instance
+    of "thing1" to the end.  If MEMBERP would output FALSE, outputs the
+    empty word or list according to the type of "thing2".  It is an error
+    for "thing2" to be an array.
+
+COD***/
+// CMD MEMBER 2 2 2 d
+Value *Compiler::genMember(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *thing1 = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    Value *thing2 = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
+
+    thing2 = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), thing2);
+    return generateCallExtern(TyAddr, "member", {PaAddr(evaluator), PaAddr(thing1), PaAddr(thing2)});
+}
+
+EXPORTC addr_t member(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *thing1 = reinterpret_cast<Datum*>(thing1Addr);
+    Datum *thing2 = reinterpret_cast<Datum*>(thing2Addr);
+    switch (thing2->isa) {
+        case Datum::typeWord:
+        {
+            Word *word1 = reinterpret_cast<Word*>(thing1);
+            Word *word2 = reinterpret_cast<Word*>(thing2);
+            QString retval = "";
+            if (word1->isa == Datum::typeWord) {
+                QString thing2Str = word2->rawValue();
+                QString thing1Str = reinterpret_cast<Word*>(thing1)->rawValue();
+                if ( ! thing1Str.isEmpty()) {
+                    int index = thing2Str.indexOf(thing1Str);
+                    if (index != -1) {
+                        retval = thing2Str.sliced(index);
+                    }
+                }
+            }
+            Word *retvalWord = new Word(retval);
+            e->watch(retvalWord);
+            return reinterpret_cast<addr_t>(retvalWord);
+        }
+        case Datum::typeList:
+        {
+            List *list = reinterpret_cast<List*>(thing2);
+            while ( ! list->isEmpty()) {
+                addr_t listAddr = reinterpret_cast<addr_t>(list->head.datumValue());
+                if (cmpDatumToDatum(listAddr,  thing1Addr)) {
+                    return reinterpret_cast<addr_t>(list);
+                }
+                list = list->tail.listValue();
+            }
+            // If we get here, thing1 was not found in thing2.
+            // Return an empty list.
+            List *retval = new List();
+            e->watch(retval);
+            return reinterpret_cast<addr_t>(retval);
+        }
+        default:
+            Q_ASSERT(false);
+    }
+    Q_ASSERT(false);
+    return nullptr;
+}
+

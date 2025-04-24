@@ -80,7 +80,7 @@ Table summary: GRAPHICS is complete. ARITHMETIC is complete. CONTROL STRUCTURES 
 |                    | *NO* MATRIX      | <=            | *TODO* DECREASEFONT    | ASCII                     | *TODO* BURIED?         |
 |                    | PENDOWN        | >=            | *TODO* SETTEXTSIZE     | RAWASCII                  | *TODO* TRACE           |
 |                    | PD             | <>            | *TODO* TEXTSIZE        | CHAR                      | *TODO* UNTRACE         |
-|                    | PENUP          |               | *TODO* SETTEXTFONT     | *TODO* MEMBER               | *TODO* TRACEDP         |
+|                    | PENUP          |               | *TODO* SETTEXTFONT     | MEMBER                    | *TODO* TRACEDP         |
 |                    | PU             |               | *TODO* FONT            | *TODO* LOWERCASE            | *TODO* TRACED?         |
 |                    | PENPAINT       |               | *TODO* ALLFONTS        | *TODO* UPPERCASE            | *TODO* STEP            |
 |                    | PPT            |               | *TODO* CURSORINSERT    | *TODO* STANDOUT             | *TODO* UNSTEP          |
