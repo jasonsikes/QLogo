@@ -72,15 +72,6 @@ class Kernel
     DatumPtr editFileName;
     QString workspaceText;
 
-    // Recursive searches need to make sure we don't get caught in infinite loops.
-    // Remember what we searched so we don't search it again.
-    QSet<Datum *> searchedContainers;
-    QSet<Datum *> comparedContainers;
-
-    // Left-side and right side List containers.
-    QSet<List *> comparedListsLHS;
-    QSet<List *> comparedListsRHS;
-
     void inputProcedure(DatumPtr nodeP);
 
     void closeAll();
@@ -89,12 +80,6 @@ class Kernel
 
     /// Initialize LOGO system variables
     void initVariables(void);
-
-    // Compare two datums for equality recursive call.
-    bool areDatumsEqualRecurse(Datum *datum1, Datum *datum2);
-
-    // Check if a datum is in a container, recurse.
-    bool isDatumInContainerRecurse(Datum *value, Datum *container);
 
 
   public:
@@ -156,18 +141,6 @@ class Kernel
     /// @param startTag If not null, search for the tag in the list and run from there.
     /// @return The result of the last expression in the list.
     DatumPtr runList(DatumPtr listP, QString startTag = QString());
-
-    /// @brief Compare two datums, return true iff they are equal.
-    /// @param datum1 a datum to compare
-    /// @param datum2 a datum to compare
-    /// @details See helptext for EQUALP for definition of equality.
-    bool areDatumsEqual(Datum *datum1, Datum *datum2);
-
-    /// @brief Recursively check if a datum is in a container.
-    /// @param container The container to check.
-    /// @param value The value to check for.
-    /// @return True if the value is in the container, false otherwise.
-    bool isDatumInContainer(Datum *container, Datum *value);
 
     /// @brief Convert a Datum to a QColor.
     /// @param colorP The Datum to convert.

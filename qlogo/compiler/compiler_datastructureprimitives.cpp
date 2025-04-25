@@ -61,14 +61,17 @@ EXPORTC bool cmpDatumToDouble(addr_t d, double n)
 }
 
 /// Compare a Datum with a Datum.
+/// @param eAddr The address of the Evaluator.
 /// @param d1 a Datum
 /// @param d2 a Datum
 /// @returns true iff d1 is equal to d2 according to the help text of EQUALP
-EXPORTC bool cmpDatumToDatum(addr_t d1, addr_t d2)
+EXPORTC bool cmpDatumToDatum(addr_t eAddr, addr_t d1, addr_t d2)
 {
     Datum *dD1 = reinterpret_cast<Datum*>(d1);
     Datum *dD2 = reinterpret_cast<Datum*>(d2);
-    return Config::get().mainKernel()->areDatumsEqual(dD1, dD2);
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Qt::CaseSensitivity cs = e->varCASEIGNOREDP() ? Qt::CaseInsensitive : Qt::CaseSensitive;
+    return e->areDatumsEqual(dD1, dD2, cs);
 }
 
 
@@ -243,7 +246,7 @@ Value *Compiler::genEqualp(DatumPtr node, RequestReturnType returnType)
 
     // Both must be Datums
     Q_ASSERT(t1->isPointerTy());
-    return generateCallExtern(TyBool, "cmpDatumToDatum", {PaAddr(children[0]), PaAddr(children[1])});
+    return generateCallExtern(TyBool, "cmpDatumToDatum", {PaAddr(evaluator), PaAddr(children[0]), PaAddr(children[1])});
 }
 
 
@@ -990,7 +993,9 @@ EXPORTC bool isDatumContainerOrInContainer(addr_t eAddr, addr_t valueAddr, addr_
     if (value == container)
         return true;
 
-    return Config::get().mainKernel()->isDatumInContainer(value, container);
+    Qt::CaseSensitivity cs = e->varCASEIGNOREDP() ? Qt::CaseInsensitive : Qt::CaseSensitive;
+
+    return e->isDatumInContainer(value, container, cs);
 }
 
 EXPORTC void setDatumAtIndexOfContainer(addr_t eAddr, addr_t valueAddr, double dIndex, addr_t containerAddr)
@@ -1172,9 +1177,11 @@ EXPORTC bool isBefore(addr_t eAddr, addr_t word1Addr, addr_t word2Addr)
     Word *word1 = reinterpret_cast<Word*>(word1Addr);
     Word *word2 = reinterpret_cast<Word*>(word2Addr);
 
-    QString value1 = word1->keyValue();
-    QString value2 = word2->keyValue();
-    return value1 < value2;
+    Qt::CaseSensitivity cs = e->varCASEIGNOREDP() ? Qt::CaseInsensitive : Qt::CaseSensitive;
+
+    QString value1 = word1->printValue();
+    QString value2 = word2->printValue();
+    return value1.compare(value2, cs) < 0;
 }
 
 
@@ -1248,7 +1255,7 @@ EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
             while (iter.elementExists()) {
                 Datum *item = iter.element().datumValue();
                 addr_t itemAddr = reinterpret_cast<addr_t>(item);
-                if (cmpDatumToDatum(thingAddr, itemAddr)) {
+                if (cmpDatumToDatum(eAddr, thingAddr, itemAddr)) {
                     return true;
                 }
             }
@@ -1258,7 +1265,7 @@ EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
         {
             Array *array = reinterpret_cast<Array*>(container);
             for (auto item : array->array) {
-                if (cmpDatumToDatum(thingAddr, reinterpret_cast<addr_t>(item.datumValue()))) {
+                if (cmpDatumToDatum(eAddr, thingAddr, reinterpret_cast<addr_t>(item.datumValue()))) {
                     return true;
                 }
             }
@@ -1630,7 +1637,7 @@ EXPORTC addr_t member(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
             List *list = reinterpret_cast<List*>(thing2);
             while ( ! list->isEmpty()) {
                 addr_t listAddr = reinterpret_cast<addr_t>(list->head.datumValue());
-                if (cmpDatumToDatum(listAddr,  thing1Addr)) {
+                if (cmpDatumToDatum(eAddr, listAddr, thing1Addr)) {
                     return reinterpret_cast<addr_t>(list);
                 }
                 list = list->tail.listValue();
