@@ -132,7 +132,7 @@ The differences between QLogo and UCBLogo are described in the *nuances* section
 
 There have been *significant* changes to QLogo since I last tried building on MacOS or Windows. The instructions provided below were known to work *before* QLogo became QLogo, before I started using LLVM. I doubt they will work now.
 
-Building QLogo requires LLVM, Qt6.5, and CMake.
+Building QLogo requires LLVM 19, Qt 6.5, and CMake.
 
 *** To build in MacOS and Windows:
 
