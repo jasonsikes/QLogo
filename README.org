@@ -1,4 +1,4 @@
-* This is the README for cQLogo and Psychi.
+* This is the README for QLogo and Psychi.
 
 [[./qlogo_logo.png]]
 
@@ -8,11 +8,11 @@ Redistribution and use in source and binary forms, with or without modification,
 
 
 
-*cQLogo* is a compiler for the UCBLogo language written in C++ using Qt and LLVM. It is a fork of the QLogo project, which is an interpreter for the UCBLogo language.
+*QLogo* is a compiler for the UCBLogo language written in C++ using Qt and LLVM. It is a fork of the QLogo project, which is an interpreter for the UCBLogo language.
 
-*Psychi* is the graphical user interface for cQLogo. Psychi provides a command line, a simple text editor, and a turtle graphics window.
+*Psychi* is the graphical user interface for QLogo. Psychi provides a command line, a simple text editor, and a turtle graphics window.
 
-cQLogo is _incomplete_. For an *actual working* UCBLogo interpreter see either:
+QLogo is _incomplete_. For an *actual working* UCBLogo interpreter see either:
 
 https://github.com/jasonsikes/QLogo
 
@@ -20,15 +20,14 @@ or
 
 https://github.com/jrincayc/ucblogo-code
 
-At this time I am developing cQLogo on Linux (Fedora 41 on ARM64).
+At this time I am developing QLogo on Linux (Fedora 41 on ARM64).
 
-I am no longer testing on MS Windows as I no longer have nor use a Windows computer. I haven't been able to build on MacOS using LLVM provided by Homebrew. (I'm not saying it's not possible; I just decided to focus on development instead.)
+I am no longer testing on MS Windows as I no longer use Windows. I haven't been able to build on MacOS using LLVM provided by Homebrew. (I'm not saying it's not possible; I just decided to focus on development instead.)
 
 The following table contains all the commands in UCBLogo. The commands that are incomplete are marked by *"TODO"*.
 
-Table summary: GRAPHICS is complete. ARITHMETIC is complete. CONTROL STRUCTURES is almost complete.
-
 | CONTROL STRUCTURES | GRAPHICS       | ARITHMETIC    | COMMUNICATION        | DATA STRUCTURE PRIMITIVES | WORKSPACE MANAGEMENT |
+|                    | /COMPLETE/       | /COMPLETE/      |                      | /COMPLETE/                  |                      |
 |--------------------+----------------+---------------+----------------------+---------------------------+----------------------|
 | RUN                | FORWARD        | SUM           | PRINT                | WORD                      | TO                   |
 | *TODO* TIME          | FD             | DIFFERENCE    | PR                   | LIST                      | .MACRO               |
@@ -47,53 +46,53 @@ Table summary: GRAPHICS is complete. ARITHMETIC is complete. CONTROL STRUCTURES 
 | IFF                | HOME           | LN            | *TODO* SHELL           | *LIBRARY* BUTFIRSTS         | *TODO* PLIST           |
 | STOP               | ARC            | SIN           | *TODO* SETPREFIX       | *LIBRARY* BFS               | *TODO* PROCEDUREP      |
 | OUTPUT             | POS            | RADSIN        | *TODO* PREFIX          | BUTLAST                   | *TODO* PROCEDURE?      |
-| OP                 | HEADING        | COS           | *TODO* OPENREAD        | BL                        | *TODO* PRIMITIVEP      |
-| .MAYBEOUTPUT       | TOWARDS        | RADCOS        | *TODO* OPENWRITE       | ITEM                      | *TODO* PRIMITIVE?      |
-| CATCH              | SCRUNCH        | ARCTAN        | *TODO* OPENAPPEND      | SETITEM                   | *TODO* DEFINEDP        |
-| THROW              | SHOWTURTLE     | RADARCTAN     | *TODO* OPENUPDATE      | .SETFIRST                 | *TODO* DEFINED?        |
-| ERROR              | ST             | LESSP         | *TODO* CLOSE           | .SETBF                    | *TODO* NAMEP           |
-| PAUSE              | HIDETURTLE     | LESS?         | *TODO* ALLOPEN         | .SETITEM                  | *TODO* NAME?           |
-| CONTINUE           | HT             | GREATERP      | *TODO* CLOSEALL        | WORDP                     | *TODO* PLISTP          |
-| CO                 | CLEAN          | GREATER?      | *TODO* ERASEFILE       | WORD?                     | *TODO* PLIST?          |
-| TAG                | CLEARSCREEN    | LESSEQUALP    | *TODO* ERF             | LISTP                     | *TODO* CONTENTS        |
-| GOTO               | CS             | LESSEQUAL?    | *TODO* DRIBBLE         | LIST?                     | *TODO* BURIED          |
-| *TODO* APPLY         | WRAP           | GREATEREQUALP | *TODO* NODRIBBLE       | ARRAYP                    | *TODO* TRACED          |
-| *TODO* ?             | WINDOW         | GREATEREQUAL? | *TODO* SETREAD         | ARRAY?                    | *TODO* STEPPED         |
-| *TODO* MACROP        | FENCE          | RANDOM        | *TODO* SETWRITE        | EMPTYP                    | *TODO* PROCEDURES      |
-| *TODO* MACRO?        | BOUNDS         | RERANDOM      | *TODO* READER          | EMPTY?                    | *TODO* PRIMITIVES      |
-|                    | SETBOUNDS      | FORM          | *TODO* WRITER          | EQUALP                    | *TODO* NAMES           |
-|                    | FILLED         | BITAND        | *TODO* SETREADPOS      | EQUAL?                    | *TODO* PLISTS          |
-|                    | LABEL          | BITOR         | *TODO* SETWRITEPOS     | NOTEQUALP                 | *TODO* ARITY           |
-|                    | SETLABELHEIGHT | BITXOR        | *TODO* READPOS         | NOTEQUAL?                 | *TODO* NODES           |
-|                    | TEXTSCREEN     | BITNOT        | *TODO* WRITEPOS        | BEFOREP                   | *TODO* PRINTOUT        |
-|                    | TS             | ASHIFT        | *TODO* EOFP            | BEFORE?                   | *TODO* PO              |
-|                    | FULLSCREEN     | LSHIFT        | *TODO* EOF?            | .EQ                       | *TODO* POT             |
-|                    | FS             | AND           | *TODO* KEYP            | MEMBERP                   | *TODO* ERASE           |
-|                    | SPLITSCREEN    | OR            | *TODO* KEY?            | MEMBER?                   | *TODO* ER              |
-|                    | SS             | NOT           | *TODO* CLEARTEXT       | SUBSTRINGP                | *TODO* ERALL           |
-|                    | SETSCRUNCH     | +             | *TODO* CT              | SUBSTRING?                | *TODO* ERPS            |
-|                    | SHOWNP         | *             | *TODO* SETCURSOR       | NUMBERP                   | *TODO* ERNS            |
-|                    | SHOWN?         | /             | *TODO* CURSOR          | NUMBER?                   | *TODO* ERPLS           |
-|                    | SCREENMODE     | <             | *TODO* SETTEXTCOLOR    | VBARREDP                  | *TODO* BURY            |
-|                    | TURTLEMODE     | >             | *TODO* SETTC           | VBARRED?                  | *TODO* UNBURY          |
-|                    | LABELSIZE      | =             | *TODO* INCREASEFONT    | COUNT                     | *TODO* BURIEDP         |
-|                    | *NO* MATRIX      | <=            | *TODO* DECREASEFONT    | ASCII                     | *TODO* BURIED?         |
-|                    | PENDOWN        | >=            | *TODO* SETTEXTSIZE     | RAWASCII                  | *TODO* TRACE           |
-|                    | PD             | <>            | *TODO* TEXTSIZE        | CHAR                      | *TODO* UNTRACE         |
-|                    | PENUP          |               | *TODO* SETTEXTFONT     | MEMBER                    | *TODO* TRACEDP         |
-|                    | PU             |               | *TODO* FONT            | LOWERCASE                 | *TODO* TRACED?         |
-|                    | PENPAINT       |               | *TODO* ALLFONTS        | UPPERCASE                 | *TODO* STEP            |
-|                    | PPT            |               | *TODO* CURSORINSERT    | STANDOUT                  | *TODO* UNSTEP          |
-|                    | PENERASE       |               | *TODO* CURSOROVERWRITE | PARSE                     | *TODO* STEPPEDP        |
-|                    | PE             |               | *TODO* CURSORMODE      | RUNPARSE                  | *TODO* STEPPED?        |
-|                    | PENREVERSE     |               | *TODO* WAIT            |                           | *TODO* EDIT            |
-|                    | PX             |               |                      |                           | *TODO* ED              |
-|                    | SETPENCOLOR    |               |                      |                           | *TODO* EDITFILE        |
-|                    | SETPC          |               |                      |                           | *TODO* SAVE            |
-|                    | ALLCOLORS      |               |                      |                           | *TODO* LOAD            |
-|                    | SETPALETTE     |               |                      |                           | *TODO* HELP            |
-|                    | SETPENSIZE     |               |                      |                           |                      |
-|                    | SETBACKGROUND  |               |                      |                           |                      |
+| OP                 | HEADING        | COS           | *TODO* OPENREAD        | BL                        | *TODO* MACROP          |
+| .MAYBEOUTPUT       | TOWARDS        | RADCOS        | *TODO* OPENWRITE       | ITEM                      | *TODO* MACRO?          |
+| CATCH              | SCRUNCH        | ARCTAN        | *TODO* OPENAPPEND      | SETITEM                   | *TODO* PRIMITIVEP      |
+| THROW              | SHOWTURTLE     | RADARCTAN     | *TODO* OPENUPDATE      | .SETFIRST                 | *TODO* PRIMITIVE?      |
+| ERROR              | ST             | LESSP         | *TODO* CLOSE           | .SETBF                    | *TODO* DEFINEDP        |
+| PAUSE              | HIDETURTLE     | LESS?         | *TODO* ALLOPEN         | .SETITEM                  | *TODO* DEFINED?        |
+| CONTINUE           | HT             | GREATERP      | *TODO* CLOSEALL        | WORDP                     | *TODO* NAMEP           |
+| CO                 | CLEAN          | GREATER?      | *TODO* ERASEFILE       | WORD?                     | *TODO* NAME?           |
+| TAG                | CLEARSCREEN    | LESSEQUALP    | *TODO* ERF             | LISTP                     | *TODO* PLISTP          |
+| GOTO               | CS             | LESSEQUAL?    | *TODO* DRIBBLE         | LIST?                     | *TODO* PLIST?          |
+| *TODO* APPLY         | WRAP           | GREATEREQUALP | *TODO* NODRIBBLE       | ARRAYP                    | *TODO* CONTENTS        |
+| *TODO* ?             | WINDOW         | GREATEREQUAL? | *TODO* SETREAD         | ARRAY?                    | *TODO* BURIED          |
+|                    | FENCE          | RANDOM        | *TODO* SETWRITE        | EMPTYP                    | *TODO* TRACED          |
+|                    | BOUNDS         | RERANDOM      | *TODO* READER          | EMPTY?                    | *TODO* STEPPED         |
+|                    | SETBOUNDS      | FORM          | *TODO* WRITER          | EQUALP                    | *TODO* PROCEDURES      |
+|                    | FILLED         | BITAND        | *TODO* SETREADPOS      | EQUAL?                    | *TODO* PRIMITIVES      |
+|                    | LABEL          | BITOR         | *TODO* SETWRITEPOS     | NOTEQUALP                 | *TODO* NAMES           |
+|                    | SETLABELHEIGHT | BITXOR        | *TODO* READPOS         | NOTEQUAL?                 | *TODO* PLISTS          |
+|                    | TEXTSCREEN     | BITNOT        | *TODO* WRITEPOS        | BEFOREP                   | *TODO* ARITY           |
+|                    | TS             | ASHIFT        | *TODO* EOFP            | BEFORE?                   | *TODO* NODES           |
+|                    | FULLSCREEN     | LSHIFT        | *TODO* EOF?            | .EQ                       | *TODO* PRINTOUT        |
+|                    | FS             | AND           | *TODO* KEYP            | MEMBERP                   | *TODO* PO              |
+|                    | SPLITSCREEN    | OR            | *TODO* KEY?            | MEMBER?                   | *TODO* POT             |
+|                    | SS             | NOT           | *TODO* CLEARTEXT       | SUBSTRINGP                | *TODO* ERASE           |
+|                    | SETSCRUNCH     | +             | *TODO* CT              | SUBSTRING?                | *TODO* ER              |
+|                    | SHOWNP         | *             | *TODO* SETCURSOR       | NUMBERP                   | *TODO* ERALL           |
+|                    | SHOWN?         | /             | *TODO* CURSOR          | NUMBER?                   | *TODO* ERPS            |
+|                    | SCREENMODE     | <             | *TODO* SETTEXTCOLOR    | VBARREDP                  | *TODO* ERNS            |
+|                    | TURTLEMODE     | >             | *TODO* SETTC           | VBARRED?                  | *TODO* ERPLS           |
+|                    | LABELSIZE      | =             | *TODO* INCREASEFONT    | COUNT                     | *TODO* BURY            |
+|                    | *NO* MATRIX      | <=            | *TODO* DECREASEFONT    | ASCII                     | *TODO* UNBURY          |
+|                    | PENDOWN        | >=            | *TODO* SETTEXTSIZE     | RAWASCII                  | *TODO* BURIEDP         |
+|                    | PD             | <>            | *TODO* TEXTSIZE        | CHAR                      | *TODO* BURIED?         |
+|                    | PENUP          |               | *TODO* SETTEXTFONT     | MEMBER                    | *TODO* TRACE           |
+|                    | PU             |               | *TODO* FONT            | LOWERCASE                 | *TODO* UNTRACE         |
+|                    | PENPAINT       |               | *TODO* ALLFONTS        | UPPERCASE                 | *TODO* TRACEDP         |
+|                    | PPT            |               | *TODO* CURSORINSERT    | STANDOUT                  | *TODO* TRACED?         |
+|                    | PENERASE       |               | *TODO* CURSOROVERWRITE | PARSE                     | *TODO* STEP            |
+|                    | PE             |               | *TODO* CURSORMODE      | RUNPARSE                  | *TODO* UNSTEP          |
+|                    | PENREVERSE     |               | *TODO* WAIT            |                           | *TODO* STEPPEDP        |
+|                    | PX             |               |                      |                           | *TODO* STEPPED?        |
+|                    | SETPENCOLOR    |               |                      |                           | *TODO* EDIT            |
+|                    | SETPC          |               |                      |                           | *TODO* ED              |
+|                    | ALLCOLORS      |               |                      |                           | *TODO* EDITFILE        |
+|                    | SETPALETTE     |               |                      |                           | *TODO* SAVE            |
+|                    | SETPENSIZE     |               |                      |                           | *TODO* LOAD            |
+|                    | SETBACKGROUND  |               |                      |                           | *TODO* HELP            |
 |                    | SETBG          |               |                      |                           |                      |
 |                    | PENDOWNP       |               |                      |                           |                      |
 |                    | PENDOWN?       |               |                      |                           |                      |
@@ -117,7 +116,7 @@ Table summary: GRAPHICS is complete. ARITHMETIC is complete. CONTROL STRUCTURES 
 
 * README for the original QLogo interpreter.
 
-/QLogo is an interpreter for the UCBLogo language. What follows is the README for that interpreter. You should be aware that LOTS of functionality is not yet implemented in cQLogo./
+/QLogo is an interpreter for the UCBLogo language. What follows is the README for that interpreter. You should be aware that LOTS of functionality is not yet implemented in QLogo./
 
 It mimics the UCBLogo interpreter developed by Brian Harvey at U.C. Berkeley.
 
@@ -125,15 +124,15 @@ You can find the UCBLogo Manual here:
 
 http://people.eecs.berkeley.edu/~bh/usermanual
 
-The differences between cQLogo and UCBLogo are described in the *nuances* section below. There aren't many.
+The differences between QLogo and UCBLogo are described in the *nuances* section below. There aren't many.
 
 ** Compiling
 
 *** Note:
 
-There have been *significant* changes to cQLogo since I last tried building on MacOS or Windows. The instructions provided below were known to work *before* QLogo became cQLogo, before I started using LLVM. I doubt they will work now.
+There have been *significant* changes to QLogo since I last tried building on MacOS or Windows. The instructions provided below were known to work *before* QLogo became QLogo, before I started using LLVM. I doubt they will work now.
 
-Building cQLogo requires LLVM, Qt6.5, and CMake.
+Building QLogo requires LLVM, Qt6.5, and CMake.
 
 *** To build in MacOS and Windows:
 
@@ -143,12 +142,12 @@ Simply open the ~CMakeLists.txt~ file in QtCreator and build within there.
 
 If you have qtcreator, you can use qtcreator in Linux in the same manner as in Windows and MacOS described above.
 
-Otherwise, you can follow the standard CMake build procedure. First, create a build directory somewhere. I place the build directory inside the cQLogo source directory.
+Otherwise, you can follow the standard CMake build procedure. First, create a build directory somewhere. I place the build directory inside the QLogo source directory.
 
 Then have CMake create the build structure.
 
 #+BEGIN_SRC shell
-cd cQLogo
+cd QLogo
 mkdir build
 cmake -S . -B build
 #+END_SRC
@@ -192,7 +191,7 @@ This will give you two executables and supporting files:
 
 This enables multiple colors and fonts on the same console.
   
-*** cQLogo does not look for nor automatically load ~STARTUP.LG~.
+*** QLogo does not look for nor automatically load ~STARTUP.LG~.
 
 *** ~COMMANDLINE~ contains **ALL** of the parameters used to start qlogo instead of just the ones that appear after a hyphen.
 
@@ -210,7 +209,7 @@ UCBLogo provided a scrunch to compensate for older CRT screens with non-square p
 
 For example: ~SAVEPICT "MY_PICTURE.PNG~ will save in PNG format.
 
-cQLogo can save an image in the following formats: BMP, JPG/JPEG, PNG, PPM, XBM, and XPM
+QLogo can save an image in the following formats: BMP, JPG/JPEG, PNG, PPM, XBM, and XPM
 
 *** ~WINDOW~ no longer simply allows the turtle to run away from the canvas.
 
@@ -218,7 +217,7 @@ cQLogo can save an image in the following formats: BMP, JPG/JPEG, PNG, PPM, XBM,
 
 *** There is no facility yet for translation/internationalization.
 
-All the strings used in cQLogo source code can be translated, but no translations have been made.
+All the strings used in QLogo source code can be translated, but no translations have been made.
 
 *** QLogo supports Unicode characters.
 
@@ -233,11 +232,11 @@ Since ASCII is a subset of Unicode, the behavior of ~CHAR~, ~ASCII~ and ~RAWASCI
 
 **** ~SETMARGINS~:
 
-The original purpose of the command was to enable text to be visible on projectors which cut off outer boundaries of a computer screen. Projectors and monitors produced in recent years show all of the computer screen. In addition, cQLogo is a windowed application so an instructor or presentor can move the window to a different position.
+The original purpose of the command was to enable text to be visible on projectors which cut off outer boundaries of a computer screen. Projectors and monitors produced in recent years show all of the computer screen. In addition, QLogo is a windowed application so an instructor or presentor can move the window to a different position.
 
 **** ~FILL~:
 
-One of the user interface principles for cQLogo is that the canvas should be device resolution-independent. When the cQLogo window is resized or the separator between the text and the graphics is moved then the graphics will be redrawn with the new dimensions.
+One of the user interface principles for QLogo is that the canvas should be device resolution-independent. When the QLogo window is resized or the separator between the text and the graphics is moved then the graphics will be redrawn with the new dimensions.
 
 The Flood Fill algorithm depends on specific pixels which means that what is filled can change dramatically depending on the size of the canvas.
 
@@ -261,19 +260,19 @@ Psychi has its own built-in editor. If you run the qlogo program from a command 
 
 **** ~SETLIBLOC~:
 
-Not implemented. cQLogo uses a SQLite database to store its standard library. You can use the ~setlibloc~ command line parameter to tell qlogo where to find the SQLite database if it is in a different location than where qlogo expects it.
+Not implemented. QLogo uses a SQLite database to store its standard library. You can use the ~setlibloc~ command line parameter to tell qlogo where to find the SQLite database if it is in a different location than where qlogo expects it.
 
 **** ~SETHELPLOC~:
 
-Not implemented. cQLogo uses a SQLite database to store its help text. You can use the ~sethelploc~ command line parameter to tell qlogo where to find the SQLite database if it is in a different location than where qlogo expects it.
+Not implemented. QLogo uses a SQLite database to store its help text. You can use the ~sethelploc~ command line parameter to tell qlogo where to find the SQLite database if it is in a different location than where qlogo expects it.
 
 **** ~SETTEMPLOC~:
 
-cQLogo doesn't create temporary files.
+QLogo doesn't create temporary files.
 
 **** ~NOREFRESH~ and ~REFRESH~:
 
-cQLogo is designed from the ground up to have a very responsive user interface. The canvas will always redraw itself whenever the window is resized.
+QLogo is designed from the ground up to have a very responsive user interface. The canvas will always redraw itself whenever the window is resized.
 
 **** ~SETPENPATTERN~ and ~PENPATTERN~:
 
@@ -284,11 +283,11 @@ This isn't implemented yet because I haven't yet decided what kinds of patterns 
 
 **** ~REDEFP~:
 
-Qt has strong support for internationalization, but in cQLogo it is only partially implemented. Internationalization will be supported soon.
+Qt has strong support for internationalization, but in QLogo it is only partially implemented. Internationalization will be supported soon.
 
 **** ~USEALTERNATENAMES~:
 
-Qt has strong support for internationalization, but in cQLogo it is only partially implemented. Internationalization will be supported soon.
+Qt has strong support for internationalization, but in QLogo it is only partially implemented. Internationalization will be supported soon.
 
 
 *** The following commands are NEW:
@@ -303,7 +302,7 @@ Returns a list of all the fonts available on your system.
 
 **** ~ALLCOLORS~:
 
-Returns a list of all the named colors that cQLogo knows about.
+Returns a list of all the named colors that QLogo knows about.
 
 **** ~TIME~:
 
@@ -327,11 +326,11 @@ Outputs either ~INSERT~ or ~OVERWRITE~.
 
 **** ~STANDOUT~:
 
-This works in the cQLogo GUI by switching the font's foreground and background colors. It isn't implemented for text terminals.
+This works in the QLogo GUI by switching the font's foreground and background colors. It isn't implemented for text terminals.
 
 **** ~SETBOUNDS~:
 
-The drawing canvas in Psychi is designed to be resolution independent. The user can stretch and resize the GUI window and its components without needing interaction or permission from the cQLogo program. Therefore, the best way for the programmer to have control and the GUI to have responsiveness is to set the bounds programatically. The GUI then can squeeze or stretch the canvas to fit the window as needed.
+The drawing canvas in Psychi is designed to be resolution independent. The user can stretch and resize the GUI window and its components without needing interaction or permission from the QLogo program. Therefore, the best way for the programmer to have control and the GUI to have responsiveness is to set the bounds programatically. The GUI then can squeeze or stretch the canvas to fit the window as needed.
 
 The coordinate system of the drawing canvas is Cartesian: the Origin ~[0,0]~ is always in the center. The range of the X-coordinate is between ~-boundX~ and ~boundX~. The range of the Y-coordinate is between ~-boundY~ and ~boundY~. For example, a bound set at ~[350 150]~ means that the turtle is visible if its X-coordinate is between -350 and 350 and its Y-coordinate is between -150 and 150. See also ~BOUNDS~.
 
