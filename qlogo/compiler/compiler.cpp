@@ -778,22 +778,74 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, DatumPtr srcPt
 
 Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, validatorFunction validator)
 {
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
+    BasicBlock *srcBB = scaff->builder.GetInsertBlock();
+    Function *theFunction = srcBB->getParent();
 
-    BasicBlock *notGoodBB = BasicBlock::Create(*scaff->theContext, "notGood", theFunction);
-    BasicBlock *isGoodBB = BasicBlock::Create(*scaff->theContext, "isGood", theFunction);
+    BasicBlock *validateBB = BasicBlock::Create(*scaff->theContext, "validate", theFunction);
+    BasicBlock *convertBB = BasicBlock::Create(*scaff->theContext, "convert", theFunction);
+    BasicBlock *erractBB = BasicBlock::Create(*scaff->theContext, "errorAction", theFunction);
+    BasicBlock *wordCheckBB = BasicBlock::Create(*scaff->theContext, "wordCheck", theFunction);
+    BasicBlock *doubleCheckBB = BasicBlock::Create(*scaff->theContext, "doubleCheck", theFunction);
+    BasicBlock *notDatumBB = BasicBlock::Create(*scaff->theContext, "notDatum", theFunction);
+    BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, "bailout", theFunction);
+    BasicBlock *acceptBB = BasicBlock::Create(*scaff->theContext, "accept", theFunction);
 
-    Value *cond = validator(src);
-    scaff->builder.CreateCondBr(cond, isGoodBB, notGoodBB);
+    scaff->builder.CreateBr(validateBB);
 
-    scaff->builder.SetInsertPoint(notGoodBB);
-    Value *errWhat = generateWordFromDouble(src);
-    Value *errObj = generateErrorNoLike(parent, errWhat);
+    // Validate the number.
+    scaff->builder.SetInsertPoint(validateBB);
+    PHINode *candidate = scaff->builder.CreatePHI(TyDouble, 2, "candidate");
+    candidate->addIncoming(src, srcBB);
+    Value *isValidCond = validator(candidate);
+    scaff->builder.CreateCondBr(isValidCond, acceptBB, convertBB);
+
+    // The number is bad. Convert it to a word, and then decide what to do with it.
+    scaff->builder.SetInsertPoint(convertBB);
+    Value *badWord = generateWordFromDouble(candidate);
+    Value *varErroract = generateCallExtern(TyBool, "getvarErroract", {PaAddr(evaluator)});
+    Value *isTrueCond = scaff->builder.CreateICmpEQ(varErroract, CoBool(true), "isTrueCond");
+    scaff->builder.CreateCondBr(isTrueCond, erractBB, bailoutBB);
+
+    // Perform ERRACT (PAUSE)
+    scaff->builder.SetInsertPoint(erractBB);
+    PHINode *badValue = scaff->builder.CreatePHI(TyAddr, 3, "badValue");
+    badValue->addIncoming(badWord, convertBB);
+    Value *errmsg = generateErrorNoLike(parent, badValue);
+    generateCallExtern(TyVoid, "stdWriteDatum", {PaAddr(errmsg), PaBool(CoBool(true))});
+    Value *newCandidate = generateCallExtern(TyAddr, "callPause", {PaAddr(evaluator)});
+    Value *datamIsa = generateGetDatumIsa(newCandidate);
+    Value *isDatumMasked = scaff->builder.CreateAnd(datamIsa, CoInt32(Datum::typeDataMask), "isDatumMasked");
+    Value *isDatumCond = scaff->builder.CreateICmpNE(isDatumMasked, CoInt32(0), "isDatumCond");
+    scaff->builder.CreateCondBr(isDatumCond, wordCheckBB, notDatumBB);
+
+    // Check if the new candidate is a word.    
+    scaff->builder.SetInsertPoint(wordCheckBB);
+    badValue->addIncoming(newCandidate, wordCheckBB);
+    Value *isWordCond = scaff->builder.CreateICmpEQ(datamIsa, CoInt32(Datum::typeWord), "isWordCond");
+    scaff->builder.CreateCondBr(isWordCond, doubleCheckBB, erractBB);
+
+    // Check if the new candidate is a double.
+    scaff->builder.SetInsertPoint(doubleCheckBB);
+    Value *dVal = generateCallExtern(TyDouble, "getDoubleForWord", {PaAddr(evaluator), PaAddr(newCandidate)});
+    badValue->addIncoming(newCandidate, doubleCheckBB);
+    candidate->addIncoming(dVal, doubleCheckBB);
+    Value *dType = generateCallExtern(TyBool, "getValidityOfDoubleForWord", {PaAddr(evaluator), PaAddr(newCandidate)});
+    Value *isDoubleCond = scaff->builder.CreateICmpEQ(dType, CoBool(true), "isDoubleCond");
+    scaff->builder.CreateCondBr(isDoubleCond, validateBB, erractBB);
+
+    // The new candidate is not a datum. Return it.
+    scaff->builder.SetInsertPoint(notDatumBB);
+    // TODO: Should this be THROW "TOPLEVEL?"
+    scaff->builder.CreateRet(newCandidate);
+
+    // The number is bad, and ERRACT is not set. Return an error.
+    scaff->builder.SetInsertPoint(bailoutBB);
+    Value *errObj = generateErrorNoLike(parent, badWord);
     scaff->builder.CreateRet(errObj);
 
-    scaff->builder.SetInsertPoint(isGoodBB);
-
-    return src;
+    // The number is good. Run with it.
+    scaff->builder.SetInsertPoint(acceptBB);
+    return candidate;
 }
 
 Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, validatorFunction validator)
