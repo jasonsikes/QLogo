@@ -80,28 +80,17 @@ EXPORTC addr_t getFormForNumber(addr_t eAddr, double num, uint32_t width, int32_
 using namespace llvm;
 using namespace llvm::orc;
 
-// TODO: Use generateValidationDouble()
 Value *Compiler::generateInt32FromDouble(ASTNode *parent, Value *src, bool isSigned)
 {
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-
-    BasicBlock *notIntBB = BasicBlock::Create(*scaff->theContext, "notInt", theFunction);
-    BasicBlock *isIntBB = BasicBlock::Create(*scaff->theContext, "isInt", theFunction);
-
-    Value *retval = isSigned ? scaff->builder.CreateFPToSI(src, TyInt32, "FpToInt")
-                             : scaff->builder.CreateFPToUI(src, TyInt32, "FpToInt");
-    Value *retvalCheck = isSigned ? scaff->builder.CreateSIToFP(retval, TyDouble, "FpToIntCheck")
-                                  : scaff->builder.CreateUIToFP(retval, TyDouble, "FpToIntCheck");
-    Value *cond = scaff->builder.CreateFCmpOEQ(src, retvalCheck, "isValidTest");
-    scaff->builder.CreateCondBr(cond, isIntBB, notIntBB);
-
-    scaff->builder.SetInsertPoint(notIntBB);
-    Value *errWhat = generateWordFromDouble(src);
-    Value *errObj = generateErrorNoLike(parent, errWhat);
-    scaff->builder.CreateRet(errObj);
-
-    scaff->builder.SetInsertPoint(isIntBB);
-
+    Value *retval = nullptr;
+    auto validator = [this, isSigned, &retval](Value *candidate) {
+        retval = isSigned ? scaff->builder.CreateFPToSI(candidate, TyInt32, "FpToInt")
+                          : scaff->builder.CreateFPToUI(candidate, TyInt32, "FpToInt");
+        Value *retvalCheck = isSigned ? scaff->builder.CreateSIToFP(retval, TyDouble, "FpToIntCheck")
+                                      : scaff->builder.CreateUIToFP(retval, TyDouble, "FpToIntCheck");
+        return scaff->builder.CreateFCmpOEQ(candidate, retvalCheck, "isValidTest");
+    };
+    generateValidationDouble(parent, src, validator);
     return retval;
 }
 
