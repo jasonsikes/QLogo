@@ -42,16 +42,13 @@
 #  arity-max     = -1 -> All parameters are consumed within parens
 #
 # The output types are as follows:
-# b -> Boolean
-# d -> Double
-# w -> Word
-# l -> List
-# a -> Array
 # n -> Nothing
+# d -> Datum
+# b -> Boolean
+# r -> Real
 #
-# Some of the types may be combined. For example, the RUN command may output any of Word, List,
-# Array, or Nothing. So its output-type is listed as 'nwla' (order of letters is not important,
-# nor is capitalization).
+# Some of the types may be combined. For example, the RUN command may output a Datum or Nothing.
+# So its output-type is listed as 'dn' (order of letters is not important, nor is capitalization).
 
 
 
