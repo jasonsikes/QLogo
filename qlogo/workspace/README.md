@@ -4,14 +4,9 @@ This directory contains the Supporting components of the QLogo workspace functio
 
 ## Files
 
-### workspace.cpp
-
-Defines the `Workspace` class, which is the superclass for classes that need QLogo language workspace functionality (Variables, PropertyLists, Procedures).
- It provides methods for burying, stepping, and tracing workspace items.
-
 ### callframe.h
 
-Contains the definitions for `CallFrame` and `Evaluator` structures. These are for managing the execution stack and evaluation stack of QLogo procedures. The CallFrame class maintains the state of variables and their scope, and therefore is a subclass of Workspace.
+Contains the definitions for `CallFrame` and `Evaluator` structures. These are for managing the execution stack and evaluation stack of QLogo procedures. The CallFrame class maintains the state of variables and their scope.
 
 ### procedures.h
 

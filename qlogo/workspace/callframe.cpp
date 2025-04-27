@@ -25,56 +25,21 @@
 #include "runparser.h"
 
 void CallFrameStack::setDatumForName(DatumPtr &aDatum, const QString &name) {
-    for (auto frame : stack) {
-        if (frame->localVars.contains(name)) {
-            frame->localVars[name] = aDatum;
-            return;
-        }
-    }
-    stack.last()->localVars.insert(name, aDatum);
+    variables.insert(name, aDatum);
 }
 
 
 DatumPtr CallFrameStack::datumForName(QString name) {
-    for (auto frame : stack) {
-        auto result = frame->localVars.find(name);
-        if (result != frame->localVars.end()) {
-            return *result;
-        }
+    auto result = variables.find(name);
+    if (result != variables.end()) {
+        return *result;
     }
     return nothing;
 }
 
 
-
-void CallFrameStack::setVarAsLocal(QString name) {
-    if ( ! stack.first()->localVars.contains(name))
-        stack.first()->localVars.insert(name, nothing);
-}
-
-
-void CallFrameStack::setVarAsGlobal(QString name) {
-    if ( ! stack.last()->localVars.contains(name))
-        stack.last()->localVars.insert(name, nothing);
-}
-
-
-
-
-bool CallFrameStack::isVarGlobal(QString name)
-{
-    return stack.last()->localVars.contains(name);
-}
-
-
-
-
 bool CallFrameStack::doesExist(QString name) {
-    for (auto frame : stack) {
-        if (frame->localVars.contains(name))
-            return true;
-    }
-    return false;
+    return variables.contains(name);
 }
 
 
@@ -82,28 +47,16 @@ bool CallFrameStack::doesExist(QString name) {
 DatumPtr CallFrameStack::allVariables() {
     List *retval = new List();
     ListBuilder builder(retval);
-    QSet<QString> seenVars;
-
-    for (auto frame : stack) {
-        QStringList varnames = frame->localVars.keys();
-        for (auto &varname : varnames) {
-            if (!seenVars.contains(varname)) {
-                seenVars.insert(varname);
-                builder.append(DatumPtr(varname));
-            }
-        }
+    for (auto &varname : variables.keys()) {
+        builder.append(DatumPtr(varname));
     }
-
     return DatumPtr(retval);
 }
 
 
 
 void CallFrameStack::eraseVar(QString name) {
-    for (auto frame : stack) {
-        if (frame->localVars.remove(name) > 0)
-            return;
-    }
+    variables.remove(name);
 }
 
 
@@ -123,6 +76,14 @@ bool CallFrameStack::isTested() {
     return false;
 }
 
+bool CallFrameStack::testedState() {
+    for (auto frame : stack) {
+        if (frame->isTested)
+            return frame->testResult;
+    }
+    Q_ASSERT(false);
+    return false;
+}
 
 
 
@@ -139,15 +100,32 @@ DatumPtr CallFrameStack::explicitSlotList()
 }
 
 
+// CallFrame methods
 
-bool CallFrameStack::testedState() {
-    for (auto frame : stack) {
-        if (frame->isTested)
-            return frame->testResult;
+CallFrame::~CallFrame() {
+    Q_ASSERT(frameStack->stack.first() == this);
+    for (auto iter = localVars.begin(); iter != localVars.end(); ++iter) {
+        DatumPtr value = iter.value();
+        if (value.isa() == Datum::typeNothing) {
+            frameStack->eraseVar(iter.key());
+        } else {
+            frameStack->setDatumForName(value, iter.key());
+        }
     }
-    Q_ASSERT(false);
-    return false;
+    frameStack->stack.pop_front();
 }
+
+void CallFrame::setVarAsLocal(QString name) {
+    DatumPtr originalValue = frameStack->datumForName(name);
+    localVars.insert(name, originalValue);
+    frameStack->setDatumForName(nothing, name);
+}
+
+
+void CallFrame::setValueForName(DatumPtr value, QString name) {
+    frameStack->setDatumForName(value, name);
+}
+
 
 
 void CallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount) {
@@ -158,15 +136,12 @@ void CallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount) {
     QList<DatumPtr> &optionalDefaults = proc->optionalDefaults;
 
     // Assign the given name/value pairs to the local variables.
-    QStringList names;
-    QList<DatumPtr> values;
-
 
     size_t paramIndex = 0;
     for (auto &input : requiredInputs) {
         Q_ASSERT(paramIndex < paramCount);
-        names.append(input);
-        values.append(DatumPtr(*(paramAry + paramIndex)));
+        setVarAsLocal(input);
+        setValueForName(DatumPtr(*(paramAry + paramIndex)), input);
         paramIndex++;
     }
 
@@ -185,8 +160,8 @@ void CallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount) {
             Evaluator e(value, evalStack);
             value = e.exec();
         }
-        names.append(name);
-        values.append(value);
+        setVarAsLocal(name);
+        setValueForName(value, name);
         paramIndex++;
     }
 
@@ -200,12 +175,9 @@ void CallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount) {
             builder.append(*(paramAry + paramIndex));
             paramIndex++;
         }
-        names.append(name);
-        values.append(DatumPtr(restList));
+        setVarAsLocal(name);
+        setValueForName(DatumPtr(restList), name);
     }
-
-    createLocalVars(names, values);
-
 }
 
 

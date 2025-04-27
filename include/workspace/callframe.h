@@ -35,38 +35,28 @@ struct CallFrameStack
     /// @brief The call frame stack.
     QList<CallFrame *> stack;
 
+    /// @brief The variables hash.
+    QHash<QString, DatumPtr> variables;
+
     /// @brief Repcount is for use in looping functions (e.g. REPEAT)
     double repcount = -1;
 
-    /// @brief Search downward through the variable stack for the first occurrence of
-    /// 'name'.
+    /// @brief Return the value of a variable.
     /// @param name The name of the variable to search for.
-    /// @return The stored value associated with 'name'.
+    /// @return The stored value associated with 'name' or 'nothing' if the variable is not found.
     DatumPtr datumForName(QString name);
 
-    /// @brief Search downward through the variable stack for the first occurrence of
-    /// 'name'. Replace the stored value with aDatum. If 'name' is not found,
-    /// store value at the bottom of the stack.
+    /// @brief Set a value for a variable.
     /// @param aDatum The value to store.
-    /// @param name The name of the variable to search for.
+    /// @param name The name of the variable to set.
     void setDatumForName(DatumPtr &aDatum, const QString &name);
 
-    /// @brief Insert an entry for 'name' at the top of the variable stack. Store
-    /// 'nothing' for the entry if name wasn't already present.
-    /// @param name The name of the variable to insert.
-    void setVarAsLocal(QString name);
-
-    /// @brief Insert an entry for 'name' at the bottom of the variable stack. Store
-    /// 'nothing' for the entry if name wasn't already present.
-    /// @param name The name of the variable to insert.
-    void setVarAsGlobal(QString name);
-
-    /// @brief Return true if value keyed by name exists somewhere in the stack.
+    /// @brief Return true if value keyed by name exists in the variables hash.
     /// @param name The name of the variable to search for.
     /// @return True if the variable exists, false otherwise.
     bool doesExist(QString name);
 
-    /// @brief Erase every occurrence of name from the variable stack.
+    /// @brief Erase name and its value from the variables hash.
     /// @param name The name of the variable to erase.
     void eraseVar(QString name);
 
@@ -91,11 +81,6 @@ struct CallFrameStack
     /// @return True if the highest registered test state is true, false otherwise.
     /// @note This is for the commands TEST, IFTRUE, and IFFALSE.
     bool testedState();
-
-    /// @brief Returns true if the named variable exists in the lowest stack frame.
-    /// @param name The name of the variable to search for.
-    /// @return True if the variable exists, false otherwise.
-    bool isVarGlobal(QString name);
 
     /// @brief Return a list of all variables defined.
     /// @return A list of all variables defined.
@@ -167,15 +152,15 @@ struct CallFrame
     /// @note This is for the "explicit slot" APPLY command.
     DatumPtr explicitSlotList;
 
-    /// @brief Variables held in this scope.
+    /// @brief Variable names held in this scope and the values held outside of this scope.
     QHash<QString, DatumPtr> localVars;
 
     /// @brief The evaluation stack, maintains the stack of currently-executing lists and
     /// sublists.
     /// @note When a list is executed, a new Evaluator is created and pushed onto the stack.
     /// It will stay on the stack as long as it is executing. When it is done, it is popped
-    /// from the stack. A list may call a sublist for execution (e.g. IF or REPEAT), which will
-    /// also create an Evaluator and push it onto the stack.
+    /// from the stack. A list may call a sublist for execution (e.g. RUN, IF, or REPEAT), which
+    /// will also create an Evaluator and push it onto the stack.
     QList<Evaluator *> evalStack;
 
     /// @brief Return the topmost Evaluator object.
@@ -185,17 +170,16 @@ struct CallFrame
         return evalStack.first();
     }
 
-    /// @brief Create local variables from the given names and values.
-    /// @param names The names of the local variables.
-    /// @param values The values to assign to the local variables.
-    /// @note the size of the names and values must be the same so that each name
-    /// is paired with its corresponding value.
-    void createLocalVars(QStringList names, QList<DatumPtr> values)
-    {
-    for (int i = 0; i < names.size(); i++) {
-            localVars[names[i]] = values[i];
-        }
-    }
+    /// @brief Insert an entry for 'name' in the variables hash. Save the previous value
+    /// of the variable in the localVars hash. Store 'nothing' for the entry if name wasn't
+    /// already present.
+    /// @param name The name of the variable to insert.
+    void setVarAsLocal(QString name);
+
+    /// @brief Set the value of a variable.
+    /// @param value The value to set the variable to.
+    /// @param name The name of the variable to set.
+    void setValueForName(DatumPtr value, QString name);
 
     /// @brief Apply the given parameters to the procedure.
     /// @param paramAry The parameters to apply.
@@ -233,13 +217,10 @@ struct CallFrame
         frameStack->stack.push_front(this);
     }
 
-    /// @brief Destructor.
-    /// @note This will remove this frame from the stack.
-    ~CallFrame()
-    {
-        Q_ASSERT(frameStack->stack.first() == this);
-        frameStack->stack.pop_front();
-    }
+    /// @brief Destructor. Removes local variables from the frame stack variables hash,
+    /// and restores the original values of the variables.
+    /// @note This frame will be removed from the stack.
+    ~CallFrame();
 };
 
 /// @brief  The evaluator.
