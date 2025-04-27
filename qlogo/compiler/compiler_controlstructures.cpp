@@ -278,6 +278,12 @@ OP value
     but the procedure that invokes OUTPUT is an operation.
 
 COD***/
+// CMD OUTPUT 1 1 1 n
+// CMD OP 1 1 1 n
+Value *Compiler::genOutput(DatumPtr node, RequestReturnType returnType)
+{
+    return generateProcedureExit(node, returnType, RequestReturnDatum);
+}
 
 /***DOC STOP
 STOP
@@ -287,6 +293,11 @@ STOP
     invoked.  The stopped procedure does not output a value.
 
 COD***/
+// CMD STOP 0 0 1 n
+Value *Compiler::genStop(DatumPtr node, RequestReturnType returnType)
+{
+    return generateProcedureExit(node, returnType, RequestReturnNothing);
+}
 
 /***DOC .MAYBEOUTPUT
 .MAYBEOUTPUT value                  (special form)
@@ -312,12 +323,13 @@ COD***/
     supposed to provide an input to something doesn't have a value.)
 
 COD***/
-
-// CMD OUTPUT 1 1 1 n
-// CMD OP 1 1 1 n
-// CMD STOP 0 0 1 n
 // CMD .MAYBEOUTPUT 1 1 1 n
-Value *Compiler::genProcedureExit(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genMaybeoutput(DatumPtr node, RequestReturnType returnType)
+{
+    return generateProcedureExit(node, returnType, RequestReturnDN);
+}
+
+Value *Compiler::generateProcedureExit(DatumPtr node, RequestReturnType returnType, RequestReturnType paramRequestType)
 {
     // If the parser attached an output value to the node, then we need to process that.
     if (node.astnodeValue()->countOfChildren() > 0) {
@@ -326,14 +338,6 @@ Value *Compiler::genProcedureExit(DatumPtr node, RequestReturnType returnType)
         if (proc.isNothing()) {
             // It's not a procedure. Generate a call to it.
             // Then generate a return of the value.
-
-            RequestReturnType paramRequestType = RequestReturnDatum;
-            if (node.astnodeValue()->nodeName.wordValue()->keyValue() == "STOP") {
-                paramRequestType = RequestReturnNothing;
-            }
-            if (node.astnodeValue()->nodeName.wordValue()->keyValue() == ".MAYBEOUTPUT") {
-                paramRequestType = RequestReturnDN;
-            }
             Value *retval = generateChild(node.astnodeValue(), child, paramRequestType);
 
             retval = generateCallExtern(TyAddr, "getCtrlReturn", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval)});
@@ -341,6 +345,8 @@ Value *Compiler::genProcedureExit(DatumPtr node, RequestReturnType returnType)
         }
         // Else it's a procedure. Generate a tail call to it.
         Value *childAddr = CoAddr(child.astnodeValue());
+
+        // TODO: Instead of RequestReturnDatum, should we use paramRequestType?
         AllocaInst *ary = generateChildrenAlloca(child.astnodeValue(), RequestReturnDatum, "childAry");
         Value *retObj = generateCallExtern(TyAddr, "getCtrlContinuation", {PaAddr(evaluator), PaAddr(childAddr), PaAddr(ary), PaInt32(ary->getArraySize())});
         return retObj;
@@ -766,6 +772,12 @@ IFT instructionlist
     superprocedure.
 
 COD***/
+// CMD IFTRUE 1 1 1 dn
+// CMD IFT 1 1 1 dn
+Value *Compiler::generateIftrue(DatumPtr node, RequestReturnType returnType)
+{
+    return generateIftruefalse(node, returnType, true);
+}
 
 /***DOC IFFALSE IFF
 IFFALSE instructionlist
@@ -776,16 +788,15 @@ IFF instructionlist
     superprocedure.
 
 COD***/
-
-// CMD IFTRUE 1 1 1 dn
-// CMD IFT 1 1 1 dn
 // CMD IFFALSE 1 1 1 dn
 // CMD IFF 1 1 1 dn
-Value *Compiler::genIftruefalse(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::generateIffalse(DatumPtr node, RequestReturnType returnType)
 {
-    QString nodeName = node.astnodeValue()->nodeName.wordValue()->keyValue().left(3);
-    int rhs = nodeName == "IFT" ? 1 : 0;
+    return generateIftruefalse(node, returnType, false);
+}
 
+Value *Compiler::generateIftruefalse(DatumPtr node, RequestReturnType returnType, bool testForTrue)
+{
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     BasicBlock *notTestedBB = BasicBlock::Create(*scaff->theContext, "notTested", theFunction);
     BasicBlock *isTestedBB = BasicBlock::Create(*scaff->theContext, "isTested", theFunction);
@@ -804,7 +815,7 @@ Value *Compiler::genIftruefalse(DatumPtr node, RequestReturnType returnType)
 
     scaff->builder.SetInsertPoint(isTestedBB);
     testResult = generateCallExtern(TyBool, "getTestResult", {PaAddr(evaluator)});
-    cond = scaff->builder.CreateICmpEQ(testResult, CoBool(rhs), "testResult");
+    cond = scaff->builder.CreateICmpEQ(testResult, CoBool(testForTrue), "testResult");
     scaff->builder.CreateCondBr(cond, runListBB, noRunListBB);
 
     scaff->builder.SetInsertPoint(runListBB);

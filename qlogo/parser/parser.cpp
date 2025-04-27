@@ -177,7 +177,7 @@ DatumPtr Parser::parseRootExp()
     if ((currentToken.isa() == Datum::typeWord) && (currentToken.wordValue()->keyValue() == "STOP"))
     {
         DatumPtr newNode = DatumPtr(new ASTNode(currentToken));
-        newNode.astnodeValue()->genExpression = &Compiler::genProcedureExit;
+        newNode.astnodeValue()->genExpression = &Compiler::genStop;
         newNode.astnodeValue()->returnType = RequestReturnNothing;
         newNode.astnodeValue()->addChild(node);
         node = newNode;

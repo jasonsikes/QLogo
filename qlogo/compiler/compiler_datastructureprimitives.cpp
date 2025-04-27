@@ -373,6 +373,14 @@ FPUT thing list
     then the first input must be a word, and FPUT is equivalent to WORD.
 
 COD***/
+// CMD FPUT 2 2 2 d
+Value *Compiler::genFput(DatumPtr node, RequestReturnType returnType)
+{
+    return generateFputlput(node, returnType, false);
+}
+
+
+
 /***DOC LPUT
 LPUT thing list
 
@@ -383,12 +391,14 @@ LPUT thing list
 
 COD***/
 // CMD LPUT 2 2 2 d
-// CMD FPUT 2 2 2 d
-Value *Compiler::genFputlput(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genLput(DatumPtr node, RequestReturnType returnType)
 {
-    QChar nodeNameFirstLetter = node.astnodeValue()->nodeName.wordValue()->keyValue().front();
-    bool isLput = nodeNameFirstLetter == 'L';
+    return generateFputlput(node, returnType, true);
+}
 
+
+Value *Compiler::generateFputlput(DatumPtr node, RequestReturnType returnType, bool isLput)
+{
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *list = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
@@ -935,6 +945,12 @@ SETITEM index array value
     "value" may not be a list or array that contains "array".
 
 COD***/
+// CMD SETITEM 3 3 3 n
+Value *Compiler::genSetitem(DatumPtr node, RequestReturnType returnType)
+{
+    return generateSetitem(node, returnType, false);
+}
+
 /***DOC .SETITEM
 .SETITEM index array value
 
@@ -948,12 +964,14 @@ COD***/
 
 COD***/
 // CMD .SETITEM 3 3 3 n
-// CMD SETITEM 3 3 3 n
-Value *Compiler::genSetitem(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genDotSetitem(DatumPtr node, RequestReturnType returnType)
 {
-    QChar nodeNameFirstLetter = node.astnodeValue()->nodeName.wordValue()->keyValue().front();
-    bool isDangerous = nodeNameFirstLetter == '.';
+    return generateSetitem(node, returnType, true);
+}
 
+
+Value *Compiler::generateSetitem(DatumPtr node, RequestReturnType returnType, bool isDangerous)
+{
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *index = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *array = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
@@ -1103,13 +1121,18 @@ WORD? thing
     outputs TRUE if the input is a word, FALSE otherwise.
 
 COD***/
-/***DOC LISTP LIST?
-LISTP thing
-LIST? thing
+// CMD WORDP 1 1 1 b
+// CMD WORD? 1 1 1 b
+Value *Compiler::genWordp(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    Value *thingType = generateGetDatumIsa(thing);
+    Value *isType = scaff->builder.CreateICmpEQ(thingType, CoInt32(Datum::typeWord), "isDatumTypeCond");
+    return scaff->builder.CreateSelect(isType, CoBool(true), CoBool(false), "isDatumTypeResult");
+}
 
-    outputs TRUE if the input is a list, FALSE otherwise.
 
-COD***/
 /***DOC ARRAYP ARRAY?
 ARRAYP thing
 ARRAY? thing
@@ -1119,36 +1142,33 @@ ARRAY? thing
 COD***/
 // CMD ARRAYP 1 1 1 b
 // CMD ARRAY? 1 1 1 b
-// CMD LISTP 1 1 1 b
-// CMD LIST? 1 1 1 b
-// CMD WORDP 1 1 1 b
-// CMD WORD? 1 1 1 b
-Value *Compiler::genWordListArrayp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genArrayp(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-
-    int nodeNameFirstLetter = static_cast<int>(node.astnodeValue()->nodeName.wordValue()->keyValue().front().unicode());
-    Datum::DatumType type;
-    switch (nodeNameFirstLetter) {
-        case 'W':
-            type = Datum::typeWord;
-            break;
-        case 'L':
-            type = Datum::typeList;
-            break;
-        case 'A':
-            type = Datum::typeArray;
-            break;
-        default:
-            Q_ASSERT(false);
-    }
-
     Value *thingType = generateGetDatumIsa(thing);
-    Value *isType = scaff->builder.CreateICmpEQ(thingType, CoInt32(type), "isDatumTypeCond");
+    Value *isType = scaff->builder.CreateICmpEQ(thingType, CoInt32(Datum::typeArray), "isDatumTypeCond");
     return scaff->builder.CreateSelect(isType, CoBool(true), CoBool(false), "isDatumTypeResult");
 }
 
+
+/***DOC LISTP LIST?
+LISTP thing
+LIST? thing
+
+    outputs TRUE if the input is a list, FALSE otherwise.
+
+COD***/
+// CMD LISTP 1 1 1 b
+// CMD LIST? 1 1 1 b
+Value *Compiler::genListp(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    Value *thingType = generateGetDatumIsa(thing);
+    Value *isType = scaff->builder.CreateICmpEQ(thingType, CoInt32(Datum::typeList), "isDatumTypeCond");
+    return scaff->builder.CreateSelect(isType, CoBool(true), CoBool(false), "isDatumTypeResult");
+}
 
 /***DOC BEFOREP BEFORE?
 BEFOREP word1 word2

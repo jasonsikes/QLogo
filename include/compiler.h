@@ -235,6 +235,17 @@ class Compiler
     // Generate a noop expression.
     llvm::Value *genNoop(DatumPtr node, RequestReturnType returnType);
 
+    // generate the common code for IFTRUE and IFFALSE.
+    llvm::Value *generateIftruefalse(DatumPtr node, RequestReturnType returnType, bool testForTrue);
+
+    // generate the common code for FPUT and LPUT.
+    llvm::Value *generateFputlput(DatumPtr node, RequestReturnType returnType, bool isLput);
+
+    // generate the common code for SETITEM.
+    llvm::Value *generateSetitem(DatumPtr node, RequestReturnType returnType, bool isDangerous);
+
+    // generate the common code for OUTPUT, STOP, and .MAYBEOUTPUT.
+    llvm::Value *generateProcedureExit(DatumPtr node, RequestReturnType returnType, RequestReturnType paramRequestType);
 
     llvm::Value *genValueOf(DatumPtr node, RequestReturnType returnType);
     llvm::Value *genLiteral(DatumPtr node, RequestReturnType returnType);
