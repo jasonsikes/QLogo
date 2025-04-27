@@ -472,24 +472,13 @@ bool Procedures::isDefined(QString procname) {
     return (procedures.contains(procname));
 }
 
-DatumPtr Procedures::allProcedureNames(showContents_t showWhat) {
+DatumPtr Procedures::allProcedureNames() {
     List *retval = new List();
     ListBuilder retvalBuilder(retval);
     for (const auto &iter : procedures.asKeyValueRange()) {
-
-        if (shouldInclude(showWhat, iter.first))
-            retvalBuilder.append(DatumPtr(iter.first));
+        retvalBuilder.append(DatumPtr(iter.first));
     }
     return DatumPtr(retval);
-}
-
-void Procedures::eraseAllProcedures() {
-    QStringList names = procedures.keys();
-    for (auto &iter : names) {
-        if (!isBuried(iter)) {
-            procedures.remove(iter);
-        }
-    }
 }
 
 DatumPtr Procedures::allPrimitiveProcedureNames() {

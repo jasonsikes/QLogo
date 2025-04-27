@@ -20,7 +20,6 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum.h"
-#include "workspace/workspace.h"
 
 struct CallFrame;
 struct Evaluator;
@@ -31,7 +30,7 @@ struct Evaluator;
 /// of a procedure. The first of the list is the 'top' call frame. That is,
 /// new frames are pushed to the front of the stack, and the oldest, 'global'
 /// frame is the last element of the list.
-struct CallFrameStack : public Workspace
+struct CallFrameStack
 {
     /// @brief The call frame stack.
     QList<CallFrame *> stack;
@@ -71,9 +70,6 @@ struct CallFrameStack : public Workspace
     /// @param name The name of the variable to erase.
     void eraseVar(QString name);
 
-    /// @brief Erase every unburied variable from the variable stack.
-    void eraseAll();
-
     /// @brief Returns the size of the stack, i.e. the number of stack frames.
     /// @return The size of the stack.
     int size()
@@ -101,11 +97,9 @@ struct CallFrameStack : public Workspace
     /// @return True if the variable exists, false otherwise.
     bool isVarGlobal(QString name);
 
-    /// @brief Return a list of all variables defined and buried/unburied (determined by
-    /// 'showWhat'.)
-    /// @param showWhat The type of variables to show (buried or unburied).
-    /// @return A list of all variables defined and buried/unburied.
-    DatumPtr allVariables(showContents_t showWhat);
+    /// @brief Return a list of all variables defined.
+    /// @return A list of all variables defined.
+    DatumPtr allVariables();
 
     /// @brief In "explicit slot" APPLY command, sets the list of values of the explicit
     /// slot variables ("?1", "?2", etc.)

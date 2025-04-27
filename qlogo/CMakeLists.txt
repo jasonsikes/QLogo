@@ -29,7 +29,6 @@ set(QLOGO_SOURCES
   workspace/callframe.cpp
   workspace/procedures.cpp
   workspace/propertylists.cpp
-  workspace/workspace.cpp
 
   ../include/sharedconstants.h
   ../include/compiler.h
@@ -51,7 +50,6 @@ set(QLOGO_SOURCES
   ../include/workspace/primitivetable.h
   ../include/workspace/procedures.h
   ../include/workspace/propertylists.h
-  ../include/workspace/workspace.h
 )
 
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)

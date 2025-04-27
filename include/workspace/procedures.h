@@ -19,7 +19,6 @@
 
 #include "datum.h"
 #include "library.h"
-#include "workspace/workspace.h"
 #include <QHash>
 
 /// @brief A structure to hold a command's details for the parser.
@@ -46,7 +45,7 @@ struct Cmd_t
 /// @brief The procedures class.
 /// @note This is the main class for managing procedures in QLogo. It holds all
 /// user-defined and library procedures.
-class Procedures : public Workspace
+class Procedures
 {
     QHash<QString, Cmd_t> stringToCmd;
 
@@ -107,9 +106,6 @@ class Procedures : public Workspace
     /// @brief Erase a procedure.
     /// @param procnameP The name of the procedure to erase.
     void eraseProcedure(DatumPtr procnameP);
-
-    /// @brief Erase all procedures.
-    void eraseAllProcedures();
 
     /// @brief Get an AST node from a procedure.
     /// @param cmdP The name of the procedure to search for.
@@ -175,9 +171,8 @@ class Procedures : public Workspace
     bool isDefined(QString procname);
 
     /// @brief Get all procedure names.
-    /// @param showWhat Whether to show buried or unburied procedures.
     /// @return A pointer to a list of all procedure names.
-    DatumPtr allProcedureNames(showContents_t showWhat);
+    DatumPtr allProcedureNames();
 
     /// @brief Get all primitive procedure names.
     /// @return A pointer to a list of all primitive procedure names.

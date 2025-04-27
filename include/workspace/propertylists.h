@@ -18,11 +18,10 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum.h"
-#include "workspace/workspace.h"
 
 /// @brief A class to manage property lists.
 /// @note This is a hash table of property lists, with each property list being a hash table of property names to property values.
-class PropertyLists : public Workspace
+class PropertyLists
 {
     /// @brief The hash table of property lists.
     QHash<QString, QHash<QString, DatumPtr>> plists;
@@ -57,18 +56,14 @@ class PropertyLists : public Workspace
     /// @param plistname The name of the property list.
     void erasePropertyList(const QString &plistname);
 
-    /// @brief Remove all property lists.
-    void eraseAll();
-
     /// @brief Check if a property list exists.
     /// @param plistname The name of the property list.
     /// @return True if the property list exists, false otherwise.
     bool isPropertyList(const QString &plistname);
 
     /// @brief Get all property lists.
-    /// @param showWhat Whether to show the contents of the property lists.
     /// @return A list of all property lists.
-    DatumPtr allPLists(showContents_t showWhat);
+    DatumPtr allPLists();
 };
 
 #endif // PROPERTYLISTS_H

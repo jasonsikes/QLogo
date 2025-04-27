@@ -79,7 +79,7 @@ bool CallFrameStack::doesExist(QString name) {
 
 
 
-DatumPtr CallFrameStack::allVariables(showContents_t showWhat) {
+DatumPtr CallFrameStack::allVariables() {
     List *retval = new List();
     ListBuilder builder(retval);
     QSet<QString> seenVars;
@@ -89,26 +89,12 @@ DatumPtr CallFrameStack::allVariables(showContents_t showWhat) {
         for (auto &varname : varnames) {
             if (!seenVars.contains(varname)) {
                 seenVars.insert(varname);
-
-                if (shouldInclude(showWhat, varname))
-                    builder.append(DatumPtr(varname));
+                builder.append(DatumPtr(varname));
             }
         }
     }
 
     return DatumPtr(retval);
-}
-
-
-
-void CallFrameStack::eraseAll() {
-    for (auto frame : stack) {
-        QStringList varnames = frame->localVars.keys();
-        for (auto &varname : varnames) {
-            if (!isBuried(varname))
-                frame->localVars.remove(varname);
-        }
-    }
 }
 
 

@@ -200,8 +200,9 @@ void Kernel::initPalette()
     palette.resize(paletteSize);
 }
 
-// Some Logo vars are set here and not used anywhere else.
 // Documentation is here because it doesn't fit anywhere else.
+
+// TODO: move documentation to Compiler class
 
 /***DOC LOGOPLATFORM
 LOGOPLATFORM						(variable)
@@ -227,26 +228,28 @@ COD***/
 
 void Kernel::initVariables(void)
 {
-    DatumPtr platform(LOGOPLATFORM);
-    DatumPtr version(LOGOVERSION);
-    DatumPtr trueDatumPtr(QObject::tr("true"));
-
-    callStack.setDatumForName(platform, QObject::tr("LOGOPLATFORM"));
-    callStack.setDatumForName(version, QObject::tr("LOGOVERSION"));
-    callStack.setDatumForName(trueDatumPtr, QObject::tr("ALLOWGETSET"));
-    callStack.bury(QObject::tr("LOGOPLATFORM"));
-    callStack.bury(QObject::tr("LOGOVERSION"));
-    callStack.bury(QObject::tr("ALLOWGETSET"));
-
     List *argv = new List;
     ListBuilder builder(argv);
     for (auto &arg : Config::get().ARGV)
     {
         builder.append(DatumPtr(arg));
     }
+
+    DatumPtr platform(LOGOPLATFORM);
+    DatumPtr version(LOGOVERSION);
+    DatumPtr trueDatumPtr(QObject::tr("true"));
     DatumPtr commandLine(argv);
+
     callStack.setDatumForName(commandLine, QObject::tr("COMMANDLINE"));
-    callStack.bury(QObject::tr("COMMANDLINE"));
+    callStack.setDatumForName(platform, QObject::tr("LOGOPLATFORM"));
+    callStack.setDatumForName(version, QObject::tr("LOGOVERSION"));
+    callStack.setDatumForName(trueDatumPtr, QObject::tr("ALLOWGETSET"));
+    // TODO: Bury these variables:
+    // "LOGOPLATFORM"
+    // "LOGOVERSION"
+    // "ALLOWGETSET"
+    // "COMMANDLINE"
+
 }
 
 Kernel::Kernel()

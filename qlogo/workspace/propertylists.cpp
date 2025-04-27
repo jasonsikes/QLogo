@@ -69,22 +69,11 @@ bool PropertyLists::isPropertyList(const QString &plistname) {
   return plists.contains(plistname);
 }
 
-DatumPtr PropertyLists::allPLists(showContents_t showWhat) {
+DatumPtr PropertyLists::allPLists() {
   List *retval = new List();
   ListBuilder builder(retval);
   for (auto name : plists.asKeyValueRange()) {
-    if (shouldInclude(showWhat, name.first))
       builder.append(DatumPtr(name.first));
   }
   return DatumPtr(retval);
-}
-
-void PropertyLists::eraseAll() {
-  QStringList listnames = plists.keys();
-
-  for (auto &name : listnames) {
-    if (!isBuried(name)) {
-      plists.remove(name);
-    }
-  }
 }
