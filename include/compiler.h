@@ -139,7 +139,7 @@ class Compiler
 
     // Convert a Datum pointer to a boolean.
     // Emit return "doesn't like" error if conversion not possible.
-    llvm::Value *generateBoolFromWord(ASTNode *parent, llvm::Value *src);
+    llvm::Value *generateBoolFromDatum(ASTNode *parent, llvm::Value *src);
 
     // Validate that given double is not zero.
     // Emit return "doesn't like" error if not.

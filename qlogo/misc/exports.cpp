@@ -52,25 +52,29 @@ EXPORTC bool getValidityOfDoubleForWord(addr_t eAddr, addr_t wordAddr)
 
 /// Lookup the var name and return the value as a bool
 /// @param eAddr a pointer to the Evaluator object
-/// @param wordAddr a pointer to a Word object which contains the name of the variable
+/// @param datumAddr a pointer to a Datum object which contains the name of the variable
 /// @return the stored value as a bool
-EXPORTC bool getBoolForWord(addr_t eAddr, addr_t wordAddr)
+EXPORTC bool getBoolForDatum(addr_t eAddr, addr_t datumAddr)
 {
-    Word *w = reinterpret_cast<Word *>(wordAddr);
-    Q_ASSERT(w->isa == Datum::typeWord);
-    return w->boolValue();
+    Word *w = reinterpret_cast<Word *>(datumAddr);
+    if(w->isa == Datum::typeWord) {
+        return w->boolValue();
+    }
+    return false;
 }
 
 /// Query whether the recent boolean value retrieved is valid.
 /// @param eAddr a pointer to the Evaluator object
-/// @param wordAddr a pointer to a Word object
+/// @param datumAddr a pointer to a Datum object
 /// @return true iff the number retrieved is valid
 /// @note the caller should getDoubleForWord before querying validity.
-EXPORTC bool getValidityOfBoolForWord(addr_t eAddr, addr_t wordAddr)
+EXPORTC bool getValidityOfBoolForDatum(addr_t eAddr, addr_t datumAddr)
 {
-    Word *w = reinterpret_cast<Word *>(wordAddr);
-    Q_ASSERT(w->isa == Datum::typeWord);
-    return w->boolIsValid;
+    Word *w = reinterpret_cast<Word *>(datumAddr);
+    if(w->isa == Datum::typeWord) {
+        return w->boolIsValid;
+    }
+    return false;
 }
 
 /// Lookup the var name and return the value as a QLogo object (Word, List, etc)

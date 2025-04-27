@@ -1121,8 +1121,7 @@ Value *Compiler::generateAndOr(DatumPtr node, RequestReturnType returnType, bool
             isWordPhi->addIncoming(listRunResult, isListBB);
             isWordPhi->addIncoming(c, listTestBB);
 
-            c = generateWordFromDatum(node.astnodeValue(), isWordPhi);
-            c = generateBoolFromWord(node.astnodeValue(), c);
+            c = generateBoolFromDatum(node.astnodeValue(), isWordPhi);
             // bool continues.
         }
         if (c->getType()->isIntegerTy(1))

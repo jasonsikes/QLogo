@@ -315,18 +315,6 @@ Value *Compiler::generateCast(Value *src, ASTNode *parent, DatumPtr node, Reques
     if (srcReturnType == destReturnType)
         return src;
 
-    // // If the parent requested Nothing, return an error.
-    // if (destReturnType == RequestReturnNothing)
-    // {
-    //     return generateImmediateReturn(generateErrorNoSay(generateWordFromDouble(src)));
-    // }
-
-    // // If the child returned Nothing, return an error.
-    // if (srcReturnType == RequestReturnNothing)
-    // {
-    //     return generateImmediateReturn(generateErrorNoOutput(CoAddr(node.astnodeValue()), parent));
-    // }
-
     // If src is a number(REAL)
     if (src->getType()->isDoubleTy())
     {
@@ -363,7 +351,7 @@ Value *Compiler::generateCast(Value *src, ASTNode *parent, DatumPtr node, Reques
         if (destReturnType & RequestReturnDatum)
             return src;
         if (destReturnType & RequestReturnBool)
-            return generateBoolFromWord(parent, generateFromDatum(Datum::typeWord, parent, src));
+            return generateBoolFromDatum(parent, src);
         if (destReturnType & RequestReturnReal)
             return generateDoubleFromWord(parent, generateFromDatum(Datum::typeWord, parent, src));
         if (destReturnType & RequestReturnNothing)
@@ -389,7 +377,7 @@ Value *Compiler::generateCast(Value *src, ASTNode *parent, DatumPtr node, Reques
         if (destReturnType == RequestReturnReal)
             return generateDoubleFromWord(parent, generateFromDatum(Datum::typeWord, parent, src));
         if (destReturnType == RequestReturnBool)
-            return generateBoolFromWord(parent, generateFromDatum(Datum::typeWord, parent, src));
+            return generateBoolFromDatum(parent, src);
         Q_ASSERT(false);
     }
 
@@ -420,12 +408,12 @@ Value *Compiler::generateDoubleFromWord(ASTNode *parent, Value *src)
     return retval;
 }
 
-Value *Compiler::generateBoolFromWord(ASTNode *parent, Value *src)
+Value *Compiler::generateBoolFromDatum(ASTNode *parent, Value *src)
 {
     Value *retval = nullptr;
     auto boolTest = [this, &retval](Value *src) {
-        retval = generateCallExtern(TyBool, "getBoolForWord", {PaAddr(evaluator), PaAddr(src)});
-        Value *dType = generateCallExtern(TyBool, "getValidityOfBoolForWord", {PaAddr(evaluator), PaAddr(src)});
+        retval = generateCallExtern(TyBool, "getBoolForDatum", {PaAddr(evaluator), PaAddr(src)});
+        Value *dType = generateCallExtern(TyBool, "getValidityOfBoolForDatum", {PaAddr(evaluator), PaAddr(src)});
         return scaff->builder.CreateICmpEQ(dType, CoBool(true), "isValidTest");
     };
     generateValidationDatum(parent, src, boolTest);
