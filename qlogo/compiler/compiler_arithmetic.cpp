@@ -442,7 +442,7 @@ Value *Compiler::genSqrt(DatumPtr node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
 
-    generateNotNegativeFromDouble(node.astnodeValue(), num);
+    num = generateNotNegativeFromDouble(node.astnodeValue(), num);
     return generateCallExtern(TyDouble, "sqrt", {PaDouble(num)});
 }
 
@@ -460,21 +460,31 @@ Value *Compiler::genPower(DatumPtr node, RequestReturnType returnType)
     Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *num2 = generateChild(node.astnodeValue(), 1, RequestReturnReal);
 
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
+    BasicBlock *startBB = scaff->builder.GetInsertBlock();
+    Function *theFunction = startBB->getParent();
 
     BasicBlock *isNegativeBB = BasicBlock::Create(*scaff->theContext, "isNegative", theFunction);
-    BasicBlock *notNegativeBB = BasicBlock::Create(*scaff->theContext, "notNegative", theFunction);
+    BasicBlock *notNegativeBB = BasicBlock::Create(*scaff->theContext, "notNegative");
 
     Value *cond = scaff->builder.CreateFCmpOGE(num1, CoDouble(0.0), "isNegativeTest");
     scaff->builder.CreateCondBr(cond, notNegativeBB, isNegativeBB);
 
     scaff->builder.SetInsertPoint(isNegativeBB);
-    generateInt32FromDouble(node.astnodeValue(), num2, true);
+    auto validator = [this](Value *candidate) {
+        Value *candidateInt = scaff->builder.CreateFPToSI(candidate, TyInt32, "FpToInt");
+        Value *candidateCheck = scaff->builder.CreateSIToFP(candidateInt, TyDouble, "FpToIntCheck");
+        return scaff->builder.CreateFCmpOEQ(candidate, candidateCheck, "isValidTest");
+    };
+    Value *num2Int = generateValidationDouble(node.astnodeValue(), num2, validator);
+    BasicBlock *postNegativeBB = scaff->builder.GetInsertBlock();
     scaff->builder.CreateBr(notNegativeBB);
 
+    theFunction->insert(theFunction->end(), notNegativeBB);
     scaff->builder.SetInsertPoint(notNegativeBB);
-
-    return generateCallExtern(TyDouble, "pow", {PaDouble(num1), PaDouble(num2)});
+    PHINode *num2Phi = scaff->builder.CreatePHI(TyDouble, 2, "num2Phi");
+    num2Phi->addIncoming(num2, startBB);
+    num2Phi->addIncoming(num2Int, postNegativeBB);
+    return generateCallExtern(TyDouble, "pow", {PaDouble(num1), PaDouble(num2Phi)});
 }
 
 /***DOC MINUS
@@ -705,7 +715,7 @@ Value *Compiler::genLog10(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    generateGTZeroFromDouble(node.astnodeValue(), num);
+    num = generateGTZeroFromDouble(node.astnodeValue(), num);
     return generateCallExtern(TyDouble, "log10", {PaDouble(num)});
 }
 
@@ -721,7 +731,7 @@ Value *Compiler::genLn(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    generateGTZeroFromDouble(node.astnodeValue(), num);
+    num = generateGTZeroFromDouble(node.astnodeValue(), num);
     return generateCallExtern(TyDouble, "log", {PaDouble(num)});
 }
 
@@ -914,7 +924,7 @@ Value *Compiler::genRandom(DatumPtr node, RequestReturnType returnType)
 
     if (children.size() == 1)
     {
-        generateNotZeroFromDouble(node.astnodeValue(), children[0]);
+        children[0] = generateNotZeroFromDouble(node.astnodeValue(), children[0]);
     }
 
     for (int i = 0; i < children.size(); ++i)

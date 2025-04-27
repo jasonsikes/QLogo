@@ -805,6 +805,7 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, validator
     Value *isDatumCond = scaff->builder.CreateICmpNE(isDatumMasked, CoInt32(0), "isDatumCond");
     scaff->builder.CreateCondBr(isDatumCond, wordCheckBB, notDatumBB);
 
+    // TODO: getDoubleForDatum() makes this redundant.
     // Check if the new candidate is a word.    
     scaff->builder.SetInsertPoint(wordCheckBB);
     badValue->addIncoming(newCandidate, wordCheckBB);
