@@ -97,9 +97,11 @@ void Parser::inputProcedure(ASTNode *node, TextStream *readStream)
     DatumPtr sourceText = readStream->recentHistory();
     Config::get().mainProcedures()->defineProcedure(to, procnameP, textP, sourceText);
 
-    Config::get().mainKernel()->sysPrint(procnameP.wordValue()->printValue());
-    Config::get().mainKernel()->sysPrint(QObject::tr(" defined\n"));
+    QString message = QObject::tr("%1 defined\n");
+    message = message.arg(procnameP.wordValue()->printValue());
+    Config::get().mainKernel()->sysPrint(message);
 }
+
 
 QList<QList<DatumPtr>> Parser::astFromList(List *aList)
 {
@@ -133,7 +135,7 @@ QList<QList<DatumPtr>> Parser::astFromList(List *aList)
         // If the last ASTNode is a tag, generate a NOOP expression at the end
         // to ensure that there is an instruction to jump to.
         if (astFlatList.last().astnodeValue()->genExpression == &Compiler::genTag) {
-            ASTNode *noopNode = new ASTNode(DatumPtr("noop"));
+            ASTNode *noopNode = new ASTNode(DatumPtr(QObject::tr("NOOP")));
             noopNode->genExpression = &Compiler::genNoop;
             noopNode->returnType = RequestReturnNothing;
             astFlatList.append(DatumPtr(noopNode));
@@ -174,7 +176,8 @@ void Parser::destroyAstForList(List *aList)
 DatumPtr Parser::parseRootExp()
 {
     DatumPtr node = parseExp();
-    if ((currentToken.isa() == Datum::typeWord) && (currentToken.wordValue()->keyValue() == "STOP"))
+    if ((currentToken.isa() == Datum::typeWord)
+     && (currentToken.wordValue()->keyValue() == QObject::tr("STOP")))
     {
         DatumPtr newNode = DatumPtr(new ASTNode(currentToken));
         newNode.astnodeValue()->genExpression = &Compiler::genStop;
