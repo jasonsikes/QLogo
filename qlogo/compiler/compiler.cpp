@@ -353,7 +353,7 @@ Value *Compiler::generateCast(Value *src, ASTNode *parent, DatumPtr node, Reques
         if (destReturnType & RequestReturnBool)
             return generateBoolFromDatum(parent, src);
         if (destReturnType & RequestReturnReal)
-            return generateDoubleFromWord(parent, generateFromDatum(Datum::typeWord, parent, src));
+            return generateDoubleFromDatum(parent, src);
         if (destReturnType & RequestReturnNothing)
             return generateImmediateReturn(generateErrorNoSay(src));
         Q_ASSERT(false);
@@ -375,7 +375,7 @@ Value *Compiler::generateCast(Value *src, ASTNode *parent, DatumPtr node, Reques
         if (destReturnType == RequestReturnDatum)
             return generateNotNothingFromDatum(parent, src);
         if (destReturnType == RequestReturnReal)
-            return generateDoubleFromWord(parent, generateFromDatum(Datum::typeWord, parent, src));
+            return generateDoubleFromDatum(parent, src);
         if (destReturnType == RequestReturnBool)
             return generateBoolFromDatum(parent, src);
         Q_ASSERT(false);
@@ -396,12 +396,12 @@ Value *Compiler::generateChild(ASTNode *parent, unsigned int index, RequestRetur
     return generateChild(parent, node, returnType);
 }
 
-Value *Compiler::generateDoubleFromWord(ASTNode *parent, Value *src)
+Value *Compiler::generateDoubleFromDatum(ASTNode *parent, Value *src)
 {
     Value *retval = nullptr;
     auto realTest = [this, &retval](Value *src) {
-        retval = generateCallExtern(TyDouble, "getDoubleForWord", {PaAddr(evaluator), PaAddr(src)});
-        Value *dType = generateCallExtern(TyBool, "getValidityOfDoubleForWord", {PaAddr(evaluator), PaAddr(src)});
+        retval = generateCallExtern(TyDouble, "getDoubleForDatum", {PaAddr(evaluator), PaAddr(src)});
+        Value *dType = generateCallExtern(TyBool, "getValidityOfDoubleForDatum", {PaAddr(evaluator), PaAddr(src)});
         return scaff->builder.CreateICmpEQ(dType, CoBool(true), "isValidTest");
     };
     generateValidationDatum(parent, src, realTest);
@@ -813,10 +813,10 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, validator
 
     // Check if the new candidate is a double.
     scaff->builder.SetInsertPoint(doubleCheckBB);
-    Value *dVal = generateCallExtern(TyDouble, "getDoubleForWord", {PaAddr(evaluator), PaAddr(newCandidate)});
+    Value *dVal = generateCallExtern(TyDouble, "getDoubleForDatum", {PaAddr(evaluator), PaAddr(newCandidate)});
     badValue->addIncoming(newCandidate, doubleCheckBB);
     candidate->addIncoming(dVal, doubleCheckBB);
-    Value *dType = generateCallExtern(TyBool, "getValidityOfDoubleForWord", {PaAddr(evaluator), PaAddr(newCandidate)});
+    Value *dType = generateCallExtern(TyBool, "getValidityOfDoubleForDatum", {PaAddr(evaluator), PaAddr(newCandidate)});
     Value *isDoubleCond = scaff->builder.CreateICmpEQ(dType, CoBool(true), "isDoubleCond");
     scaff->builder.CreateCondBr(isDoubleCond, validateBB, erractBB);
 

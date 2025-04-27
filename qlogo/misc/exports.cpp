@@ -28,26 +28,30 @@ EXPORTC void printInt(int32_t p)
 
 /// Return the double value of a word object.
 /// @param eAddr a pointer to the Evaluator object
-/// @param wordAddr a pointer to a Word object
+/// @param datumAddr a pointer to a Datum object
 /// @return the stored value as a double
-/// @note the caller should check getValidityOfDoubleForWord() afterward.
-EXPORTC double getDoubleForWord(addr_t eAddr, addr_t wordAddr)
+/// @note the caller should check getValidityOfDoubleForDatum() afterward.
+EXPORTC double getDoubleForDatum(addr_t eAddr, addr_t datumAddr)
 {
-    Word *w = reinterpret_cast<Word *>(wordAddr);
-    Q_ASSERT(w->isa == Datum::typeWord);
-    return w->numberValue();
+    Word *w = reinterpret_cast<Word *>(datumAddr);
+    if(w->isa == Datum::typeWord) {
+        return w->numberValue();
+    }
+    return 0.0;
 }
 
 /// Query whether the recent number retrieved is valid.
 /// @param eAddr a pointer to the Evaluator object
-/// @param wordAddr a pointer to a Word object
+/// @param datumAddr a pointer to a Datum object
 /// @return true iff the number retrieved is valid
-/// @note the caller should getDoubleForWord before querying validity.
-EXPORTC bool getValidityOfDoubleForWord(addr_t eAddr, addr_t wordAddr)
+/// @note the caller should getDoubleForDatum before querying validity.
+EXPORTC bool getValidityOfDoubleForDatum(addr_t eAddr, addr_t datumAddr)
 {
-    Word *w = reinterpret_cast<Word *>(wordAddr);
-    Q_ASSERT(w->isa == Datum::typeWord);
-    return w->numberIsValid;
+    Word *w = reinterpret_cast<Word *>(datumAddr);
+    if(w->isa == Datum::typeWord) {
+        return w->numberIsValid;
+    }
+    return false;
 }
 
 /// Lookup the var name and return the value as a bool
@@ -67,7 +71,7 @@ EXPORTC bool getBoolForDatum(addr_t eAddr, addr_t datumAddr)
 /// @param eAddr a pointer to the Evaluator object
 /// @param datumAddr a pointer to a Datum object
 /// @return true iff the number retrieved is valid
-/// @note the caller should getDoubleForWord before querying validity.
+/// @note the caller should getBoolForDatum before querying validity.
 EXPORTC bool getValidityOfBoolForDatum(addr_t eAddr, addr_t datumAddr)
 {
     Word *w = reinterpret_cast<Word *>(datumAddr);

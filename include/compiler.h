@@ -131,7 +131,7 @@ class Compiler
 
     // Convert a Datum pointer to a number.
     // Emit return "doesn't like" error if conversion not possible.
-    llvm::Value *generateDoubleFromWord(ASTNode *parent, llvm::Value *src);
+    llvm::Value *generateDoubleFromDatum(ASTNode *parent, llvm::Value *src);
 
     // Convert a double to an int32.
     // Emit return "doesn't like" error if conversion not possible.
