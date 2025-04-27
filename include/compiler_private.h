@@ -137,6 +137,7 @@ struct Scaffold
 
 // Data types
 #define TyVoid (Type::getVoidTy(*scaff->theContext))
+#define TyInt16 (Type::getInt16Ty(*scaff->theContext))
 #define TyInt32 (Type::getInt32Ty(*scaff->theContext))
 #define TyInt64 (Type::getInt64Ty(*scaff->theContext))
 #define TyDouble (Type::getDoubleTy(*scaff->theContext))
@@ -144,6 +145,7 @@ struct Scaffold
 #define TyBool (Type::getInt1Ty(*scaff->theContext))
 
 // Data value constants
+#define CoInt16(VAL) (ConstantInt::get(*scaff->theContext, APInt(16, (uint16_t)(VAL))))
 #define CoInt32(VAL) (ConstantInt::get(*scaff->theContext, APInt(32, (uint32_t)(VAL))))
 #define CoInt64(VAL) (ConstantInt::get(*scaff->theContext, APInt(64, (uint64_t)(VAL))))
 #define CoDouble(VAL) (ConstantFP::get(*scaff->theContext, APFloat((VAL))))
@@ -151,6 +153,7 @@ struct Scaffold
 #define CoBool(VAL) (ConstantInt::get(*scaff->theContext, APInt(1, VAL)))
 
 // Parameter combinations
+#define PaInt16(VAL) {TyInt16, (VAL)}
 #define PaInt32(VAL) {TyInt32, (VAL)}
 #define PaInt64(VAL) {TyInt64, (VAL)}
 #define PaDouble(VAL) {TyDouble, (VAL)}

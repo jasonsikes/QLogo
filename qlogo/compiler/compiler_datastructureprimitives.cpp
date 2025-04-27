@@ -1536,52 +1536,21 @@ Value *Compiler::genChar(DatumPtr node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *c = generateChild(node.astnodeValue(), 0, RequestReturnReal);
 
-    auto validator = [this](Value *candidate) {
-        BasicBlock *startBB = scaff->builder.GetInsertBlock();
-        Function *theFunction = startBB->getParent();
-
-        BasicBlock *geZeroBB = BasicBlock::Create(*scaff->theContext, "geZero", theFunction);
-        BasicBlock *isIntBB = BasicBlock::Create(*scaff->theContext, "isInt", theFunction);
-        BasicBlock *leMaxBB = BasicBlock::Create(*scaff->theContext, "leMax", theFunction);
-        BasicBlock *endBB = BasicBlock::Create(*scaff->theContext, "end", theFunction);
-
-        // Check if >= 0
-        Value *geZero = scaff->builder.CreateFCmpOGE(candidate, CoDouble(0.0), "geZero");
-        scaff->builder.CreateCondBr(geZero, geZeroBB, endBB);
-
-        // Check if it's an integer (equals its floor)
-        scaff->builder.SetInsertPoint(geZeroBB);
-        Value *floor = generateCallExtern(TyDouble, "floor", {PaDouble(candidate)});
-        Value *isInt = scaff->builder.CreateFCmpOEQ(candidate, floor, "isInt");
-        scaff->builder.CreateCondBr(isInt, isIntBB, endBB);
-
-        // Check if <= 65535
-        scaff->builder.SetInsertPoint(isIntBB);
-        Value *leMax = scaff->builder.CreateFCmpOLE(candidate, CoDouble((double)UINT16_MAX), "leMax");
-        scaff->builder.CreateCondBr(leMax, leMaxBB, endBB);
-
-        // If both checks pass, return true
-        scaff->builder.SetInsertPoint(leMaxBB);
-        scaff->builder.CreateBr(endBB);
-
-        // Merge block
-        scaff->builder.SetInsertPoint(endBB);
-        PHINode *phi = scaff->builder.CreatePHI(Type::getInt1Ty(*scaff->theContext), 4, "isValid");
-        phi->addIncoming(CoBool(false), startBB);
-        phi->addIncoming(CoBool(false), geZeroBB);
-        phi->addIncoming(CoBool(false), isIntBB);
-        phi->addIncoming(CoBool(true), leMaxBB);
-        return phi;
+    Value *retval = nullptr;
+    auto validator = [this, &retval](Value *candidate) {
+        retval = scaff->builder.CreateFPToUI(candidate, TyInt32, "FpToInt");
+        retval = scaff->builder.CreateAnd(retval, CoInt32(65535), "intMask");
+        Value *retvalCheck = scaff->builder.CreateUIToFP(retval, TyDouble, "FpToIntCheck");
+        return scaff->builder.CreateFCmpOEQ(candidate, retvalCheck, "isValidTest");
     };
-    c = generateValidationDouble(node.astnodeValue(), c, validator);
-    return generateCallExtern(TyAddr, "chr", {PaAddr(evaluator), PaDouble(c)});
+    generateValidationDouble(node.astnodeValue(), c, validator);
+    return generateCallExtern(TyAddr, "chr", {PaAddr(evaluator), PaInt16(retval)});
 }
 
-EXPORTC addr_t chr(addr_t eAddr, double c)
+EXPORTC addr_t chr(addr_t eAddr, uint16_t c)
 {
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
-    QChar qc = QChar(static_cast<uint16_t>(c));
-    QString qstr = QString(qc);
+    QString qstr = QString(QChar(c));
     Word *retval = new Word(qstr);
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
