@@ -110,6 +110,35 @@ Value *Compiler::generateNotNegativeInt32FromDouble(ASTNode *parent, Value *src)
         scaff->builder.CreateCondBr(isIntCond, zeroTestBB, resumeBB);
 
         scaff->builder.SetInsertPoint(zeroTestBB);
+        Value *isZeroCond = scaff->builder.CreateICmpSGE(retvalInt, CoInt32(0), "isZeroCond");
+        scaff->builder.CreateBr(resumeBB);
+
+        scaff->builder.SetInsertPoint(resumeBB);
+        PHINode *retval = scaff->builder.CreatePHI(isIntCond->getType(), 2, "retval");
+        retval->addIncoming(isIntCond, intTestBB);
+        retval->addIncoming(isZeroCond, zeroTestBB);
+        return retval;
+    };
+    generateValidationDouble(parent, src, validator);
+    return retvalInt;
+}
+
+Value *Compiler::generateNotZeroInt32FromDouble(ASTNode *parent, Value *src)
+{
+    Value *retvalInt = nullptr;
+    auto validator = [this, &retvalInt](Value *candidate) {
+        BasicBlock *intTestBB = scaff->builder.GetInsertBlock();
+        Function *theFunction = intTestBB->getParent(); 
+
+        BasicBlock *zeroTestBB = BasicBlock::Create(*scaff->theContext, "zeroTestBB", theFunction);
+        BasicBlock *resumeBB = BasicBlock::Create(*scaff->theContext, "resumeBB", theFunction);
+
+        retvalInt = scaff->builder.CreateFPToSI(candidate, TyInt32, "FpToInt");
+        Value *retvalIntCheck = scaff->builder.CreateSIToFP(retvalInt, TyDouble, "FpToIntCheck");
+        Value *isIntCond = scaff->builder.CreateFCmpOEQ(candidate, retvalIntCheck, "isIntCond");
+        scaff->builder.CreateCondBr(isIntCond, zeroTestBB, resumeBB);
+
+        scaff->builder.SetInsertPoint(zeroTestBB);
         Value *isZeroCond = scaff->builder.CreateICmpNE(retvalInt, CoInt32(0), "isZeroCond");
         scaff->builder.CreateBr(resumeBB);
 
@@ -392,10 +421,10 @@ Value *Compiler::genModulo(DatumPtr node, RequestReturnType returnType)
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *denom = generateChild(node.astnodeValue(), 1, RequestReturnReal);
 
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-
     num = generateInt32FromDouble(node.astnodeValue(), num, true);
-    denom = generateNotNegativeInt32FromDouble(node.astnodeValue(), denom);
+    denom = generateNotZeroInt32FromDouble(node.astnodeValue(), denom);
+
+    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
 
     Value *retvalLoc = scaff->builder.CreateAlloca(TyInt32, CoInt32(1), "retvalLoc");
 
@@ -635,8 +664,7 @@ Value *Compiler::genRemainder(DatumPtr node, RequestReturnType returnType)
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *denom = generateChild(node.astnodeValue(), 1, RequestReturnReal);
     num = generateInt32FromDouble(node.astnodeValue(), num, true);
-    denom = generateNotZeroFromDouble(node.astnodeValue(), denom);
-    denom = generateInt32FromDouble(node.astnodeValue(), denom, true);
+    denom = generateNotZeroInt32FromDouble(node.astnodeValue(), denom);
     Value *retval = scaff->builder.CreateSRem(num, denom, "remainder");
     return scaff->builder.CreateSIToFP(retval, TyDouble, "IntToFP");
 }

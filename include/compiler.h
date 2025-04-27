@@ -153,6 +153,10 @@ class Compiler
     // Emit return "doesn't like" error if not.
     llvm::Value *generateNotNegativeInt32FromDouble(ASTNode *parent, llvm::Value *src);
 
+    // Convert a double to an int32 and validate that it is not equal to zero.
+    // Emit return "doesn't like" error if not.
+    llvm::Value *generateNotZeroInt32FromDouble(ASTNode *parent, llvm::Value *src);
+
     // Validate that given double is greater than zero.
     // Emit return "doesn't like" error if not.
     llvm::Value *generateGTZeroFromDouble(ASTNode *parent, llvm::Value *src);
