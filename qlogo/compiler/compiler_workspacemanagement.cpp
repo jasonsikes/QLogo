@@ -178,10 +178,9 @@ Value *Compiler::genMake(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnNothing);
 
-    std::vector<RequestReturnType> returnTypeAry = {RequestReturnDatum, RequestReturnDatum};
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), returnTypeAry);
-    Value *varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), children[0]);
-    Value *value = children[1];
+    Value *varname = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    Value *value = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
+    varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
 
     generateCallExtern(TyVoid, "setDatumForWord", {PaAddr(value), PaAddr(varname)});
     return generateVoidRetval(node);

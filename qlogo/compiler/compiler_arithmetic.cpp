@@ -94,6 +94,35 @@ Value *Compiler::generateInt32FromDouble(ASTNode *parent, Value *src, bool isSig
     return retval;
 }
 
+Value *Compiler::generateNotNegativeInt32FromDouble(ASTNode *parent, Value *src)
+{
+    Value *retvalInt = nullptr;
+    auto validator = [this, &retvalInt](Value *candidate) {
+        BasicBlock *intTestBB = scaff->builder.GetInsertBlock();
+        Function *theFunction = intTestBB->getParent(); 
+
+        BasicBlock *zeroTestBB = BasicBlock::Create(*scaff->theContext, "zeroTestBB", theFunction);
+        BasicBlock *resumeBB = BasicBlock::Create(*scaff->theContext, "resumeBB", theFunction);
+
+        retvalInt = scaff->builder.CreateFPToSI(candidate, TyInt32, "FpToInt");
+        Value *retvalIntCheck = scaff->builder.CreateSIToFP(retvalInt, TyDouble, "FpToIntCheck");
+        Value *isIntCond = scaff->builder.CreateFCmpOEQ(candidate, retvalIntCheck, "isIntCond");
+        scaff->builder.CreateCondBr(isIntCond, zeroTestBB, resumeBB);
+
+        scaff->builder.SetInsertPoint(zeroTestBB);
+        Value *isZeroCond = scaff->builder.CreateICmpNE(retvalInt, CoInt32(0), "isZeroCond");
+        scaff->builder.CreateBr(resumeBB);
+
+        scaff->builder.SetInsertPoint(resumeBB);
+        PHINode *retval = scaff->builder.CreatePHI(isIntCond->getType(), 2, "retval");
+        retval->addIncoming(isIntCond, intTestBB);
+        retval->addIncoming(isZeroCond, zeroTestBB);
+        return retval;
+    };
+    generateValidationDouble(parent, src, validator);
+    return retvalInt;
+}
+
 Value *Compiler::generateNotZeroFromDouble(ASTNode *parent, Value *src)
 {
     return generateValidationDouble(parent, src, [this](Value *val) {
@@ -158,10 +187,11 @@ COD***/
 Value *Compiler::genAshift(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Value *num2 = generateChild(node.astnodeValue(), 1, RequestReturnReal);
 
-    Value *num1 = generateInt32FromDouble(node.astnodeValue(), children[0], true);
-    Value *num2 = generateInt32FromDouble(node.astnodeValue(), children[1], true);
+    num1 = generateInt32FromDouble(node.astnodeValue(), num1, true);
+    num2 = generateInt32FromDouble(node.astnodeValue(), num2, true);
     Value *retval = scaff->builder.CreateAlloca(TyInt32, CoInt32(1), "ashiftAlloca");
 
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
@@ -201,10 +231,11 @@ COD***/
 Value *Compiler::genLshift(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Value *num2 = generateChild(node.astnodeValue(), 1, RequestReturnReal);
 
-    Value *num1 = generateInt32FromDouble(node.astnodeValue(), children[0], true);
-    Value *num2 = generateInt32FromDouble(node.astnodeValue(), children[1], true);
+    num1 = generateInt32FromDouble(node.astnodeValue(), num1, true);
+    num2 = generateInt32FromDouble(node.astnodeValue(), num2, true);
     Value *retval = scaff->builder.CreateAlloca(TyInt32, CoInt32(1), "lshiftAlloca");
 
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
@@ -339,9 +370,9 @@ COD***/
 Value *Compiler::genBitnot(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
 
-    Value *num = generateInt32FromDouble(node.astnodeValue(), children[0], true);
+    num = generateInt32FromDouble(node.astnodeValue(), num, true);
     num = scaff->builder.CreateXor(num, CoInt32(-1), "bitNOT");
 
     return scaff->builder.CreateSIToFP(num, TyDouble, "IntToFP");
@@ -358,15 +389,13 @@ COD***/
 Value *Compiler::genModulo(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Value *denom = generateChild(node.astnodeValue(), 1, RequestReturnReal);
 
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
 
-    generateNotZeroFromDouble(node.astnodeValue(), children[1]);
-    for (int i = 0; i < children.size(); ++i)
-    {
-        children[i] = generateInt32FromDouble(node.astnodeValue(), children[i], true);
-    }
+    num = generateInt32FromDouble(node.astnodeValue(), num, true);
+    denom = generateNotNegativeInt32FromDouble(node.astnodeValue(), denom);
 
     Value *retvalLoc = scaff->builder.CreateAlloca(TyInt32, CoInt32(1), "retvalLoc");
 
@@ -375,8 +404,6 @@ Value *Compiler::genModulo(DatumPtr node, RequestReturnType returnType)
     BasicBlock *addbBB = BasicBlock::Create(*scaff->theContext, "addbBB", theFunction);
     BasicBlock *contBB = BasicBlock::Create(*scaff->theContext, "contBB", theFunction);
 
-    Value *num = children[0];
-    Value *denom = children[1];
     Value *r = scaff->builder.CreateSRem(num, denom, "remainder");
     scaff->builder.CreateStore(r, retvalLoc);
 
@@ -398,6 +425,7 @@ Value *Compiler::genModulo(DatumPtr node, RequestReturnType returnType)
 
     scaff->builder.SetInsertPoint(contBB);
 
+    // TODO: Do we need load and store here?
     r = scaff->builder.CreateLoad(TyInt32, retvalLoc);
     return scaff->builder.CreateSIToFP(r, TyDouble, "IntToFP");
 }
@@ -412,9 +440,7 @@ COD***/
 Value *Compiler::genSqrt(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
-
-    Value *num = children[0];
+    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
 
     generateNotNegativeFromDouble(node.astnodeValue(), num);
     return generateCallExtern(TyDouble, "sqrt", {PaDouble(num)});
@@ -431,10 +457,8 @@ COD***/
 Value *Compiler::genPower(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
-
-    Value *num1 = children[0];
-    Value *num2 = children[1];
+    Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Value *num2 = generateChild(node.astnodeValue(), 1, RequestReturnReal);
 
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
 
@@ -471,9 +495,9 @@ COD***/
 Value *Compiler::genMinus(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
 
-    return scaff->builder.CreateFNeg(children[0], "negtmp");
+    return scaff->builder.CreateFNeg(num, "negtmp");
 }
 
 /***DOC PRODUCT
@@ -544,9 +568,10 @@ COD***/
 Value *Compiler::genDifference(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Value *num2 = generateChild(node.astnodeValue(), 1, RequestReturnReal);
 
-    return scaff->builder.CreateFSub(children[0], children[1], "subtmp");
+    return scaff->builder.CreateFSub(num1, num2, "subtmp");
 }
 
 /***DOC QUOTIENT
@@ -597,9 +622,10 @@ COD***/
 Value *Compiler::genRemainder(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
-    Value *num = generateInt32FromDouble(node.astnodeValue(), children[0], true);
-    Value *denom = generateNotZeroFromDouble(node.astnodeValue(), children[1]);
+    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Value *denom = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+    num = generateInt32FromDouble(node.astnodeValue(), num, true);
+    denom = generateNotZeroFromDouble(node.astnodeValue(), denom);
     denom = generateInt32FromDouble(node.astnodeValue(), denom, true);
     Value *retval = scaff->builder.CreateSRem(num, denom, "remainder");
     return scaff->builder.CreateSIToFP(retval, TyDouble, "IntToFP");
@@ -615,10 +641,10 @@ COD***/
 Value *Compiler::genSin(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
 
     Value *degToRad = CoDouble(M_PI / 180);
-    Value *theta = scaff->builder.CreateFMul(children[0], degToRad, "theta");
+    Value *theta = scaff->builder.CreateFMul(num, degToRad, "theta");
     return generateCallExtern(TyDouble, "sin", {PaDouble(theta)});
 }
 
@@ -635,8 +661,8 @@ COD***/
 Value *Compiler::genInt(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
-    return generateCallExtern(TyDouble, "trunc", {PaDouble(children[0])});
+    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    return generateCallExtern(TyDouble, "trunc", {PaDouble(num)});
 }
 
 /***DOC ROUND
@@ -649,8 +675,8 @@ COD***/
 Value *Compiler::genRound(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
-    return generateCallExtern(TyDouble, "round", {PaDouble(children[0])});
+    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    return generateCallExtern(TyDouble, "round", {PaDouble(num)});
 }
 
 /***DOC EXP
@@ -663,8 +689,8 @@ COD***/
 Value *Compiler::genExp(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
-    return generateCallExtern(TyDouble, "exp", {PaDouble(children[0])});
+    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    return generateCallExtern(TyDouble, "exp", {PaDouble(num)});
 }
 
 /***DOC LOG10
@@ -678,9 +704,9 @@ COD***/
 Value *Compiler::genLog10(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
-    generateGTZeroFromDouble(node.astnodeValue(), children[0]);
-    return generateCallExtern(TyDouble, "log10", {PaDouble(children[0])});
+    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    generateGTZeroFromDouble(node.astnodeValue(), num);
+    return generateCallExtern(TyDouble, "log10", {PaDouble(num)});
 }
 
 /***DOC LN
@@ -694,9 +720,9 @@ COD***/
 Value *Compiler::genLn(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
-    generateGTZeroFromDouble(node.astnodeValue(), children[0]);
-    return generateCallExtern(TyDouble, "log", {PaDouble(children[0])});
+    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    generateGTZeroFromDouble(node.astnodeValue(), num);
+    return generateCallExtern(TyDouble, "log", {PaDouble(num)});
 }
 
 /***DOC RADSIN
@@ -709,8 +735,8 @@ COD***/
 Value *Compiler::genRadsin(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
-    return generateCallExtern(TyDouble, "sin", {PaDouble(children[0])});
+    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    return generateCallExtern(TyDouble, "sin", {PaDouble(num)});
 }
 
 /***DOC RADCOS
@@ -723,8 +749,8 @@ COD***/
 Value *Compiler::genRadcos(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
-    return generateCallExtern(TyDouble, "cos", {PaDouble(children[0])});
+    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    return generateCallExtern(TyDouble, "cos", {PaDouble(num)});
 }
 
 /***DOC RADARCTAN
@@ -769,10 +795,10 @@ COD***/
 Value *Compiler::genCos(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
 
     Value *degToRad = CoDouble(M_PI / 180);
-    Value *theta = scaff->builder.CreateFMul(children[0], degToRad, "theta");
+    Value *theta = scaff->builder.CreateFMul(num, degToRad, "theta");
     return generateCallExtern(TyDouble, "cos", {PaDouble(theta)});
 }
 
@@ -789,9 +815,9 @@ COD***/
 Value *Compiler::genLessp(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
-
-    return scaff->builder.CreateFCmpULT(children[0], children[1], "lessp");
+    Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Value *num2 = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+    return scaff->builder.CreateFCmpULT(num1, num2, "lessp");
 }
 
 /***DOC GREATERP GREATER?
@@ -807,9 +833,9 @@ COD***/
 Value *Compiler::genGreaterp(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
-
-    return scaff->builder.CreateFCmpUGT(children[0], children[1], "greaterp");
+    Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Value *num2 = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+    return scaff->builder.CreateFCmpUGT(num1, num2, "greaterp");
 }
 
 /***DOC LESSEQUALP LESSEQUAL?
@@ -825,9 +851,9 @@ COD***/
 Value *Compiler::genLessequalp(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
-
-    return scaff->builder.CreateFCmpULE(children[0], children[1], "lessp");
+    Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Value *num2 = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+    return scaff->builder.CreateFCmpULE(num1, num2, "lessp");
 }
 
 /***DOC GREATEREQUALP GREATEREQUAL?
@@ -843,9 +869,9 @@ COD***/
 Value *Compiler::genGreaterequalp(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
-
-    return scaff->builder.CreateFCmpUGE(children[0], children[1], "greaterp");
+    Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Value *num2 = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+    return scaff->builder.CreateFCmpUGE(num1, num2, "greaterp");
 }
 
 /***DOC NOT
@@ -861,9 +887,8 @@ COD***/
 Value *Compiler::genNot(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnBool);
-
-    return scaff->builder.CreateSub(CoBool(1), children[0], "not");
+    Value *tf = generateChild(node.astnodeValue(), 0, RequestReturnBool);
+    return scaff->builder.CreateSub(CoBool(1), tf, "not");
 }
 
 /***DOC RANDOM
@@ -969,10 +994,11 @@ COD***/
 Value *Compiler::genForm(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
-    Value *num = children[0];
-    Value *width = generateInt32FromDouble(node.astnodeValue(), children[1], true);
-    Value *precision = generateNotNegativeFromDouble(node.astnodeValue(), children[2]);
+    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Value *width = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+    Value *precision = generateChild(node.astnodeValue(), 2, RequestReturnReal);
+    width = generateInt32FromDouble(node.astnodeValue(), width, true);
+    precision = generateNotNegativeFromDouble(node.astnodeValue(), precision);
     precision = generateInt32FromDouble(node.astnodeValue(), precision, true);
     return generateCallExtern(
         TyAddr, "getFormForNumber", {PaAddr(evaluator), PaDouble(num), PaInt32(width), PaInt32(precision)});
@@ -992,7 +1018,7 @@ Value *Compiler::genForm(DatumPtr node, RequestReturnType returnType)
 Value *Compiler::genInfixError(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnDatum);
+    generateChild(node.astnodeValue(), 0, RequestReturnDatum);
 
     Value *err = generateErrorNotEnoughInputs(node.astnodeValue());
     return generateImmediateReturn(err);

@@ -405,8 +405,7 @@ Value *Compiler::generateChild(ASTNode *parent, DatumPtr node, RequestReturnType
 Value *Compiler::generateChild(ASTNode *parent, unsigned int index, RequestReturnType returnType)
 {
     DatumPtr node = parent->childAtIndex(index);
-    Value *child = generateChild(parent, node, returnType);
-    return generateCast(child, parent, node, returnType);
+    return generateChild(parent, node, returnType);
 }
 
 Value *Compiler::generateDoubleFromWord(ASTNode *parent, Value *src)

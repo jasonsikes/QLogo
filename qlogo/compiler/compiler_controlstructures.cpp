@@ -125,10 +125,7 @@ COD***/
 // CMD RUN 1 1 1 dn
 Value *Compiler::genRun(DatumPtr node, RequestReturnType returnType)
 {
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnDatum);
-
-    Value *list = children[0];
-
+    Value *list = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     return generateCallList(list, returnType);
 }
 
@@ -161,11 +158,9 @@ Value *Compiler::genRepeat(DatumPtr node, RequestReturnType returnType)
     return result
     */
 
-    std::vector<RequestReturnType> returnTypeAry = {RequestReturnReal, RequestReturnDatum};
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), returnTypeAry);
+    Value *count = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Value *list = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
 
-    Value *count = children[0];
-    Value *list = children[1];
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
 
     // Get the current value of repcount since we are shadowing it.
@@ -385,8 +380,7 @@ COD***/
 Value *Compiler::genGoto(DatumPtr node, RequestReturnType returnType)
 {
     Value *nodeAddr = CoAddr(node.astnodeValue());
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnDatum);
-    Value *tag = children[0];
+    Value *tag = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *retObj = generateCallExtern(TyAddr, "getCtrlGoto", {PaAddr(evaluator), PaAddr(nodeAddr), PaAddr(tag)});
     return retObj;
 }

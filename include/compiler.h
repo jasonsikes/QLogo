@@ -126,7 +126,7 @@ class Compiler
     // Generate a call to convert a double to a Word object
     llvm::Value *generateWordFromDouble(llvm::Value *val);
 
-    // Generate a call to convert a double to a Word object
+    // Generate a call to convert a boolean to a Word object
     llvm::Value *generateWordFromBool(llvm::Value *val);
 
     // Convert a Datum pointer to a number.
@@ -148,6 +148,10 @@ class Compiler
     // Validate that given double is greater than or equal to zero.
     // Emit return "doesn't like" error if not.
     llvm::Value *generateNotNegativeFromDouble(ASTNode *parent, llvm::Value *src);
+
+    // Convert a double to an int32 and validate that it is greater than or equal to zero.
+    // Emit return "doesn't like" error if not.
+    llvm::Value *generateNotNegativeInt32FromDouble(ASTNode *parent, llvm::Value *src);
 
     // Validate that given double is greater than zero.
     // Emit return "doesn't like" error if not.

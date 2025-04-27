@@ -199,54 +199,56 @@ COD***/
 Value *Compiler::genEqualp(DatumPtr node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnRDB);
 
-    Type *t0 = children[0]->getType();
-    Type *t1 = children[1]->getType();
+    Value *thing1 = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    Value *thing2 = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
+
+    Type *typeOfThing1 = thing1->getType();
+    Type *typeOfThing2 = thing2->getType();
 
     // If one is bool and other is double, then they can't be equal.
-    if ((t0->isIntegerTy(1) && t1->isDoubleTy()) ||(t1->isIntegerTy(1) && t0->isDoubleTy()))
+    if ((typeOfThing1->isIntegerTy(1) && typeOfThing2->isDoubleTy()) ||(typeOfThing2->isIntegerTy(1) && typeOfThing1->isDoubleTy()))
     {
         return CoBool(false);
     }
 
     // Both double? Compare them
-    if (t0->isDoubleTy() && t1->isDoubleTy())
+    if (typeOfThing1->isDoubleTy() && typeOfThing2->isDoubleTy())
     {
-        return scaff->builder.CreateFCmpUEQ(children[0], children[1], "Fequalp");
+        return scaff->builder.CreateFCmpUEQ(thing1, thing2, "Fequalp");
     }
 
     // Both bool? Compare them
-    if (t0->isIntegerTy(1) && t1->isIntegerTy(1))
+    if (typeOfThing1->isIntegerTy(1) && typeOfThing2->isIntegerTy(1))
     {
-        return scaff->builder.CreateICmpEQ(children[0], children[1], "Bequalp");
+        return scaff->builder.CreateICmpEQ(thing1, thing2, "Bequalp");
     }
 
     // At this point we know at least one of the inputs is a Datum.
-    // For simplicity, make the first child the Datum
-    if (!t0->isPointerTy())
+    // For simplicity, make thing1 the Datum, and thing2 can be whatever the other type was.
+    if (!typeOfThing1->isPointerTy())
     {
-        Value *t = children[0];
-        children[0] = children[1];
-        children[1] = t;
-        t1 = children[1]->getType();
+        Value *t = thing1;
+        thing1 = thing2;
+        thing2 = t;
+        typeOfThing2 = thing2->getType();
     }
 
     // If second child is bool:
-    if (t1->isIntegerTy(1))
+    if (typeOfThing2->isIntegerTy(1))
     {
-        return generateCallExtern(TyBool, "cmpDatumToBool", {PaAddr(children[0]), PaBool(children[1])});
+        return generateCallExtern(TyBool, "cmpDatumToBool", {PaAddr(evaluator), PaAddr(thing1), PaBool(thing2)});
     }
 
     // If second child is number:
-    if (t1->isDoubleTy())
+    if (typeOfThing2->isDoubleTy())
     {
-        return generateCallExtern(TyBool, "cmpDatumToDouble", {PaAddr(children[0]), PaDouble(children[1])});
+        return generateCallExtern(TyBool, "cmpDatumToDouble", {PaAddr(evaluator), PaAddr(thing1), PaDouble(thing2)});
     }
 
     // Both must be Datums
-    Q_ASSERT(t1->isPointerTy());
-    return generateCallExtern(TyBool, "cmpDatumToDatum", {PaAddr(evaluator), PaAddr(children[0]), PaAddr(children[1])});
+    Q_ASSERT(typeOfThing2->isPointerTy());
+    return generateCallExtern(TyBool, "cmpDatumToDatum", {PaAddr(evaluator), PaAddr(thing1), PaAddr(thing2)});
 }
 
 
