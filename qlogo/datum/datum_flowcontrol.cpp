@@ -134,7 +134,7 @@ FCError* FCError::didntOutput(DatumPtr x, DatumPtr y)
 
 FCError* FCError::tooManyInputs(DatumPtr x)
 {
-    QString message = QObject::tr("Too many inputs to %1").arg(x.showValue());
+    QString message = QObject::tr("too many inputs to %1").arg(x.showValue());
     return new FCError(ERR_TOO_MANY_INPUTS, message);
 }
 
