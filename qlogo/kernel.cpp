@@ -112,7 +112,7 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
                 return nothing;
             result = runList(line);
         } catch (FCError *e) {
-            sysPrint(e->message().printValue());
+            sysPrint(e->printValue());
             sysPrint("\n");
             continue;
         }
@@ -139,7 +139,7 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
                     return e->output();
                 }
             }
-            sysPrint(e->message().printValue());
+            sysPrint(e->printValue());
             sysPrint("\n");
             continue;
         }

@@ -26,14 +26,10 @@ void FCError::commonInit()
 {
     Kernel *k = Config::get().mainKernel();
     CallFrame *cf = k->callStack.localFrame();
-    procedure() = cf->sourceNode;
-    if ( ! cf->evalStack.isEmpty())
+    if ( cf->sourceNode.isASTNode())
     {
-        List *l = cf->localEvaluator()->list.listValue();
-        if ( ! l->isEmpty() )
-        {
-            line() = l->head;
-        }
+        procedure() = cf->sourceNode.astnodeValue()->nodeName;
+        line() = cf->localEvaluator()->list;
     }
     k->currentError = DatumPtr(this);
 }
@@ -181,6 +177,10 @@ FCError* FCError::isPrimitive(DatumPtr x)
 
 QString FCError::printValue(bool , int , int )
 {
-    // For right now, simply return the message.
-    return message().wordValue()->printValue();
+    QString retval = message().wordValue()->printValue();
+    if ( ! procedure().isNothing())
+    {
+        retval = QString("%1 in %2\n%3").arg(retval, procedure().wordValue()->printValue(), line().showValue());
+    }
+    return retval;
 }

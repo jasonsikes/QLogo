@@ -173,7 +173,8 @@ public:
     }
 
     /// @brief The output of the error.
-    /// @details This is used to store the output of the error. The Logo library uses the throw/catch mechanism as a means of passing execution control.
+    /// @details This is used to store the output of the error. The Logo library uses the
+    /// throw/catch mechanism as a means of passing execution control.
     /// The output is the value that is thrown to and used by the catch block.
     DatumPtr& output()
     {
