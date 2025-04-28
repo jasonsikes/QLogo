@@ -23,6 +23,7 @@
 
 struct CallFrame;
 struct Evaluator;
+struct FCGoto;
 
 /// @brief  The call frame stack.
 ///
@@ -193,9 +194,9 @@ struct CallFrame
     void applyContinuation(DatumPtr newNode, QList<DatumPtr> paramAry);
 
     /// @brief Jump to the line in the procedure containing the given tag.
-    /// @param tag The tag to jump to.
+    /// @param node The FCGoto node.
     /// @returns Err if the tag is not found (or nothing if the tag is found).
-    Datum *applyGoto(DatumPtr tag);
+    Datum *applyGoto(FCGoto *node);
 
     /// @brief Execute procedure referenced in the source node.
     /// @param paramAry The parameters to apply.

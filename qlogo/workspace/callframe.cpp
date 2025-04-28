@@ -207,8 +207,9 @@ void CallFrame::applyContinuation(DatumPtr newNode, QList<DatumPtr> paramAry)
     applyProcedureParams(newParamAry, paramAry.size());
 }
 
-Datum *CallFrame::applyGoto(DatumPtr tag)
+Datum *CallFrame::applyGoto(FCGoto* node)
 {
+    DatumPtr tag = node->tag();
     Datum *procedure = sourceNode.astnodeValue()->procedure.datumValue();
     DatumPtr runningSourceListSnapshot;
 
@@ -238,7 +239,7 @@ Datum *CallFrame::applyGoto(DatumPtr tag)
     // If we still didn't find the tag, return an error.
     runningSourceList = runningSourceListSnapshot;
     // TODO: need the GOTO node passed in here.
-    return FCError::doesntLike(tag, tag);
+    return FCError::doesntLike(node->sourceNode.astnodeValue()->nodeName, tag);
 
 foundTag:
     // Now, we need to jump to the block that contains the tag.
@@ -275,7 +276,7 @@ continueBody:
                 case Datum::typeReturn:
                     return retval;
                 case Datum::typeGoto:
-                    retval = applyGoto(static_cast<FCGoto *>(retval)->tag());
+                    retval = applyGoto(static_cast<FCGoto *>(retval));
                     if (retval == nullptr) {
                         goto continueBody;
                     }
