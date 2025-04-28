@@ -86,6 +86,7 @@ llvm::Value *genDotSetbf(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genWordp(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genArrayp(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genListp(DatumPtr node, RequestReturnType returnType);
+llvm::Value *genEmptyp(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genBeforep(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genDotEq(DatumPtr node, RequestReturnType returnType);
 llvm::Value *genMemberp(DatumPtr node, RequestReturnType returnType);

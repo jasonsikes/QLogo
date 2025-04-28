@@ -1170,6 +1170,42 @@ Value *Compiler::genListp(DatumPtr node, RequestReturnType returnType)
     return scaff->builder.CreateSelect(isType, CoBool(true), CoBool(false), "isDatumTypeResult");
 }
 
+
+/***DOC EMPTYP EMPTY?
+EMPTYP thing
+EMPTY? thing
+
+    outputs TRUE if the input is the empty word or the empty list,
+    FALSE otherwise.
+
+COD***/
+// CMD EMPTYP 1 1 1 b
+// CMD EMPTY? 1 1 1 b
+Value *Compiler::genEmptyp(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnDatum);
+    Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    return generateCallExtern(TyBool, "isEmpty", {PaAddr(evaluator), PaAddr(thing)});
+}
+
+
+EXPORTC bool isEmpty(addr_t eAddr, addr_t thingAddr)
+{
+    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    Datum *thing = reinterpret_cast<Datum*>(thingAddr);
+    if (thing->isa == Datum::typeWord) {
+        Word *word = reinterpret_cast<Word*>(thing);
+        return word->rawValue().isEmpty();
+    }
+    if (thing->isa == Datum::typeList) {
+        List *list = reinterpret_cast<List*>(thing);
+        return list->isEmpty();
+    }
+    return false;
+}
+
+
+
 /***DOC BEFOREP BEFORE?
 BEFOREP word1 word2
 BEFORE? word1 word2
