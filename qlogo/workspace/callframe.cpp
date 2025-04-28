@@ -128,7 +128,7 @@ void CallFrame::setValueForName(DatumPtr value, QString name) {
 
 
 
-void CallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount) {
+Datum *CallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount) {
     Procedure *proc = sourceNode.astnodeValue()->procedure.procedureValue();
 
     QStringList &requiredInputs = proc->requiredInputs;
@@ -155,10 +155,13 @@ void CallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount) {
         if (paramIndex < paramCount) {
             value = *(paramAry + paramIndex);
         } else {
-            value = optionalDefaults[i].listValue()->tail;
+            DatumPtr optExpression = optionalDefaults[i].listValue()->tail;
             // TODO: ensure that the generated ASTList has one root node.
-            Evaluator e(value, evalStack);
+            Evaluator e(optExpression, evalStack);
             value = e.exec();
+            if (value.isa() == Datum::typeError) {
+                return FCError::badDefault(optionalDefaults[i]);
+            }
         }
         setVarAsLocal(name);
         setValueForName(value, name);
@@ -178,17 +181,21 @@ void CallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount) {
         setVarAsLocal(name);
         setValueForName(DatumPtr(restList), name);
     }
+    return nullptr;
 }
 
 
 Datum *CallFrame::exec(Datum **paramAry, uint32_t paramCount) {
-    applyProcedureParams(paramAry, paramCount);
+    Datum* retval = applyProcedureParams(paramAry, paramCount);
+    if (retval != nullptr) {
+        return retval;
+    }
 
-    Datum *retval = bodyExec();
+    retval = bodyExec();
 
     // If the result is "nothing", replace the result with the ASTNode of the procedure.
     // TODO: Should we test for typeUnboundMask here instead?
-    if (retval->isa == Datum::typeASTNode) {
+    if ((retval == nullptr) || (retval->isa == Datum::typeASTNode)) {
         retval = sourceNode.astnodeValue();
     }
 
@@ -196,7 +203,7 @@ Datum *CallFrame::exec(Datum **paramAry, uint32_t paramCount) {
     return retval;
 }
 
-void CallFrame::applyContinuation(DatumPtr newNode, QList<DatumPtr> paramAry)
+Datum *CallFrame::applyContinuation(DatumPtr newNode, QList<DatumPtr> paramAry)
 {
     sourceNode = newNode;
     Datum *newParamAry[paramAry.size()];
@@ -204,7 +211,7 @@ void CallFrame::applyContinuation(DatumPtr newNode, QList<DatumPtr> paramAry)
         newParamAry[i] = paramAry[i].datumValue();
     }
 
-    applyProcedureParams(newParamAry, paramAry.size());
+    return applyProcedureParams(newParamAry, paramAry.size());
 }
 
 Datum *CallFrame::applyGoto(FCGoto* node)
@@ -238,7 +245,6 @@ Datum *CallFrame::applyGoto(FCGoto* node)
 
     // If we still didn't find the tag, return an error.
     runningSourceList = runningSourceListSnapshot;
-    // TODO: need the GOTO node passed in here.
     return FCError::doesntLike(node->sourceNode.astnodeValue()->nodeName, tag);
 
 foundTag:
@@ -285,7 +291,10 @@ continueBody:
                 case Datum::typeContinuation:
                 {
                     FCContinuation *fc = static_cast<FCContinuation *>(retval);
-                    applyContinuation(fc->procedure(), fc->params());
+                    Datum* continuationStatus = applyContinuation(fc->procedure(), fc->params());
+                    if (continuationStatus != nullptr) {
+                        return continuationStatus;
+                    }
                     goto beginBody;
                 }
                 default:

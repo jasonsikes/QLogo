@@ -25,11 +25,17 @@
 void FCError::commonInit()
 {
     Kernel *k = Config::get().mainKernel();
-    CallFrame *cf = k->callStack.localFrame();
-    if ( cf->sourceNode.isASTNode())
+
+    // If the error is a bad default expression, don't report the procedure
+    // or line.
+    if (code != ERR_BAD_DEFAULT_EXPRESSION)
     {
-        procedure() = cf->sourceNode.astnodeValue()->nodeName;
-        line() = cf->localEvaluator()->list;
+        CallFrame *cf = k->callStack.localFrame();
+        if ( cf->sourceNode.isASTNode())
+        {
+            procedure() = cf->sourceNode.astnodeValue()->nodeName;
+            line() = cf->localEvaluator()->list;
+        }
     }
     k->currentError = DatumPtr(this);
 }
@@ -160,6 +166,12 @@ FCError* FCError::procDefined(DatumPtr x)
 {
     QString message = QObject::tr("%1 is already defined").arg(x.showValue());
     return new FCError(ERR_ALREADY_DEFINED, message);
+}
+
+FCError* FCError::badDefault(DatumPtr x)
+{
+    QString message = QObject::tr("Bad default expression for optional input: %1").arg(x.showValue());
+    return new FCError(ERR_BAD_DEFAULT_EXPRESSION, message);
 }
 
 FCError* FCError::parenNf()

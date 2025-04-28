@@ -307,6 +307,10 @@ public:
     /// @param x The procedure that is already defined.
     static FCError* procDefined(DatumPtr x);
 
+    /// @brief Create an error object for a bad default expression for an optional input.
+    /// @param x The bad default expression.
+    static FCError* badDefault(DatumPtr x);
+
     /// @brief Create an error object for a closing parenthesis not found when expected during parsing.
     static FCError* parenNf();
 

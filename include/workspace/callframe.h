@@ -185,13 +185,15 @@ struct CallFrame
     /// @brief Apply the given parameters to the procedure.
     /// @param paramAry The parameters to apply.
     /// @param paramCount The number of parameters to apply.
-    void applyProcedureParams(Datum **paramAry, uint32_t paramCount);
+    /// @returns nothing if successful, or an error if not.
+    Datum* applyProcedureParams(Datum **paramAry, uint32_t paramCount);
 
 
     /// @brief End the current procedure by continuing with the given node and parameters.
     /// @param newNode The ASTNode of the new procedure to continue with.
     /// @param paramAry The parameters to apply to the new node.
-    void applyContinuation(DatumPtr newNode, QList<DatumPtr> paramAry);
+    /// @returns nothing if successful, or an error if not.
+    Datum* applyContinuation(DatumPtr newNode, QList<DatumPtr> paramAry);
 
     /// @brief Jump to the line in the procedure containing the given tag.
     /// @param node The FCGoto node.
