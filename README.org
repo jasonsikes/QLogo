@@ -93,8 +93,8 @@ The following table contains all the commands in UCBLogo. The commands that are 
 |                    | SETPALETTE     |               |                      |                           | *TODO* SAVE            |
 |                    | SETPENSIZE     |               |                      |                           | *TODO* LOAD            |
 |                    | SETBACKGROUND  |               |                      |                           | *TODO* HELP            |
-|                    | SETBG          |               |                      |                           |                      |
-|                    | PENDOWNP       |               |                      |                           |                      |
+|                    | SETBG          |               |                      |                           | *TODO* FOO             |
+|                    | PENDOWNP       |               |                      |                           | *TODO* SETFOO          |
 |                    | PENDOWN?       |               |                      |                           |                      |
 |                    | PENMODE        |               |                      |                           |                      |
 |                    | PENCOLOR       |               |                      |                           |                      |
