@@ -30,10 +30,11 @@ EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
     ASTNode *node = reinterpret_cast<ASTNode*>(nodeAddr);
-    DatumPtr currentProc = Config::get().mainKernel()->callStack.localFrame()->sourceNode;
-    if (!currentProc.isNothing())
+    CallFrame *currentFrame = Config::get().mainKernel()->callStack.localFrame();
+    DatumPtr currentProc = currentFrame->sourceNode;
+    if (currentProc.isASTNode())
     {
-        FCError *err = FCError::toInProc(node);
+        FCError *err = FCError::toInProc(node->nodeName);
         e->watch(err);
         return reinterpret_cast<addr_t>(err);
     }
