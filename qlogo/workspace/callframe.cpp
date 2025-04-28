@@ -277,10 +277,12 @@ continueBody:
         {
             switch (retval->isa)
             {
-                // ERROR and RETURN simply return the error/return value.
                 case Datum::typeError:
-                case Datum::typeReturn:
+                // ERROR simply returns the error/return value.
                     return retval;
+                case Datum::typeReturn:
+                    // RETURN returns the data in the return value.
+                    return reinterpret_cast<FCReturn *>(retval)->returnValue().datumValue();
                 case Datum::typeGoto:
                     retval = applyGoto(static_cast<FCGoto *>(retval));
                     if (retval == nullptr) {

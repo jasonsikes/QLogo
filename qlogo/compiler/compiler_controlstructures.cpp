@@ -336,7 +336,7 @@ Value *Compiler::generateProcedureExit(DatumPtr node, RequestReturnType returnTy
         DatumPtr child = node.astnodeValue()->childAtIndex(0);
         DatumPtr proc = child.astnodeValue()->procedure;
         if (proc.isNothing()) {
-            // It's not a procedure. Generate a call to it.
+            // It's a primitive, not a procedure. Generate a call to it.
             // Then generate a return of the value.
             Value *retval = generateChild(node.astnodeValue(), child, paramRequestType);
 
