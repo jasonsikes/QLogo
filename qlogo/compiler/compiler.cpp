@@ -254,7 +254,7 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     {
         theFunction->viewCFG();
     }
-    scaff->builder.CreateIntToPtr(CoInt64(65536), TyAddr);
+
     // Create a ResourceTracker to track JIT'd memory allocated to our
     // anonymous expression -- that way we can free it with the source list.
     compiledText->rt = mainCompilerContext->getMainJITDylib().createResourceTracker();

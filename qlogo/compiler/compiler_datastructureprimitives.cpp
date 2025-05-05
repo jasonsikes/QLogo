@@ -1076,6 +1076,7 @@ EXPORTC void setFirstOfList(addr_t eAddr, addr_t listAddr, addr_t valueAddr)
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     List *l = reinterpret_cast<List*>(listAddr);
     l->head = DatumPtr(reinterpret_cast<Datum*>(valueAddr));
+    l->astParseTimeStamp = 0;
 }
 
 
@@ -1110,6 +1111,7 @@ EXPORTC void setButfirstOfList(addr_t eAddr, addr_t listAddr, addr_t valueAddr)
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     List *l = reinterpret_cast<List*>(listAddr);
     l->tail = DatumPtr(reinterpret_cast<Datum*>(valueAddr));
+    l->astParseTimeStamp = 0;
 }
 
 
