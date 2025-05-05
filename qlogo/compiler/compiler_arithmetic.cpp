@@ -1113,7 +1113,7 @@ Value *Compiler::generateAndOr(DatumPtr node, RequestReturnType returnType, bool
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
 
     Q_ASSERT(returnType && RequestReturnBool);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnDatum);
+    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnDB);
 
     // If there are no children, simply return isAnd
     if (children.size() == 0)
