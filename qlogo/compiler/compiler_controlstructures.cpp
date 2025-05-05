@@ -64,7 +64,7 @@ COD***/
 // CMD IFELSE 3 3 3 dn
 Value *Compiler::genIfelse(DatumPtr node, RequestReturnType returnType)
 {
-    std::vector<RequestReturnType> returnTypeAry = {RequestReturnBool, returnType};
+    std::vector<RequestReturnType> returnTypeAry = {RequestReturnDB, returnType};
     if (node.astnodeValue()->countOfChildren() == 3)
     {
         returnTypeAry.push_back(returnType);
@@ -80,6 +80,15 @@ Value *Compiler::genIfelse(DatumPtr node, RequestReturnType returnType)
     Value *cond = children[0];
     Value *ift;
     Value *iff;
+
+    // If input is a Datum type (can be word or list)
+    if (cond->getType()->isPointerTy())
+    {
+        cond = generateListExecIfList(node.astnodeValue(), cond);
+        cond = generateBoolFromDatum(node.astnodeValue(), cond);
+        // bool continues.
+    }
+
 
     cond = scaff->builder.CreateICmpEQ(cond, CoBool(1), "ifcond");
     scaff->builder.CreateCondBr(cond, thenBB, elseBB);
