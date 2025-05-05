@@ -1130,36 +1130,8 @@ Value *Compiler::generateAndOr(DatumPtr node, RequestReturnType returnType, bool
         // If input is a Datum type (can be word or list)
         if (c->getType()->isPointerTy())
         {
-            // Test that this is a List object
-            BasicBlock *isListBB = BasicBlock::Create(*scaff->theContext, "isList", theFunction);
-            BasicBlock *isNothingBB = BasicBlock::Create(*scaff->theContext, "isNothing", theFunction);
-            BasicBlock *notListBB = BasicBlock::Create(*scaff->theContext, "notList", theFunction);
-
-            BasicBlock *listTestBB = scaff->builder.GetInsertBlock();
-            Value *dType = generateGetDatumIsa(c);
-            Value *cond = scaff->builder.CreateICmpEQ(dType, CoInt32(Datum::typeList), "typeTest");
-            scaff->builder.CreateCondBr(cond, isListBB, notListBB);
-
-            scaff->builder.SetInsertPoint(isListBB);
-            // The list gets executed.
-            Value *listRunResult = generateCallList(c, RequestReturnDatum);
-            Value *listRunResultType = generateGetDatumIsa(listRunResult);
-            Value *listRunResultCond = scaff->builder.CreateICmpEQ(
-                listRunResultType, CoInt32(Datum::typeASTNode), "listRunResultTypeTest");
-            scaff->builder.CreateCondBr(listRunResultCond, isNothingBB, notListBB);
-
-            // List execution resulted in nothing.
-            scaff->builder.SetInsertPoint(isNothingBB);
-            Value *errNoOutput = generateErrorNoOutput(c, node.astnodeValue());
-            scaff->builder.CreateRet(errNoOutput);
-
-            // Here we need to be sure we have a word, and subsequently, a bool.
-            scaff->builder.SetInsertPoint(notListBB);
-            PHINode *isWordPhi = scaff->builder.CreatePHI(TyAddr, 2, "isWordPhi");
-            isWordPhi->addIncoming(listRunResult, isListBB);
-            isWordPhi->addIncoming(c, listTestBB);
-
-            c = generateBoolFromDatum(node.astnodeValue(), isWordPhi);
+            c = generateListExecIfList(node.astnodeValue(), c);
+            c = generateBoolFromDatum(node.astnodeValue(), c);
             // bool continues.
         }
         if (c->getType()->isIntegerTy(1))
@@ -1195,4 +1167,40 @@ Value *Compiler::generateAndOr(DatumPtr node, RequestReturnType returnType, bool
     phiNode->addIncoming(CoBool(!isAnd), exitNoContBB);
     phiNode->addIncoming(CoBool(isAnd), exitMayContBB);
     return phiNode;
+}
+
+
+Value *Compiler::generateListExecIfList(ASTNode *parent, Value *c)
+{
+    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
+
+    // Test that this is a List object
+    BasicBlock *isListBB = BasicBlock::Create(*scaff->theContext, "isList", theFunction);
+    BasicBlock *isNothingBB = BasicBlock::Create(*scaff->theContext, "isNothing", theFunction);
+    BasicBlock *notListBB = BasicBlock::Create(*scaff->theContext, "notList", theFunction);
+
+    BasicBlock *listTestBB = scaff->builder.GetInsertBlock();
+    Value *dType = generateGetDatumIsa(c);
+    Value *cond = scaff->builder.CreateICmpEQ(dType, CoInt32(Datum::typeList), "typeTest");
+    scaff->builder.CreateCondBr(cond, isListBB, notListBB);
+
+    scaff->builder.SetInsertPoint(isListBB);
+    // The list gets executed.
+    Value *listRunResult = generateCallList(c, RequestReturnDatum);
+    Value *listRunResultType = generateGetDatumIsa(listRunResult);
+    Value *listRunResultCond = scaff->builder.CreateICmpEQ(
+        listRunResultType, CoInt32(Datum::typeASTNode), "listRunResultTypeTest");
+    scaff->builder.CreateCondBr(listRunResultCond, isNothingBB, notListBB);
+
+    // List execution resulted in nothing.
+    scaff->builder.SetInsertPoint(isNothingBB);
+    Value *errNoOutput = generateErrorNoOutput(c, parent);
+    scaff->builder.CreateRet(errNoOutput);
+
+    scaff->builder.SetInsertPoint(notListBB);
+    PHINode *retval = scaff->builder.CreatePHI(TyAddr, 2, "isWordPhi");
+    retval->addIncoming(listRunResult, isListBB);
+    retval->addIncoming(c, listTestBB);
+
+    return retval;
 }

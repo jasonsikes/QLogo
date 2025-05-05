@@ -141,6 +141,10 @@ class Compiler
     // Emit return "doesn't like" error if conversion not possible.
     llvm::Value *generateBoolFromDatum(ASTNode *parent, llvm::Value *src);
 
+    // If the given Datum is a list, execute it and return the result.
+    // Otherwise, simply pass through the Datum.
+    llvm::Value *generateListExecIfList(ASTNode *parent, llvm::Value *src);
+
     // Validate that given double is not zero.
     // Emit return "doesn't like" error if not.
     llvm::Value *generateNotZeroFromDouble(ASTNode *parent, llvm::Value *src);
