@@ -347,8 +347,6 @@ Datum *Evaluator::exec(int32_t jumpLocation)
 
 Datum *Evaluator::subExec(Datum *aList)
 {
-    Datum *retval;
-
     try
     {
         if (aList->isa == Datum::typeWord) {
