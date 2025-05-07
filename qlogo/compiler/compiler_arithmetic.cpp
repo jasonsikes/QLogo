@@ -1036,6 +1036,8 @@ Value *Compiler::genForm(DatumPtr node, RequestReturnType returnType)
     Value *width = generateChild(node.astnodeValue(), 1, RequestReturnReal);
     Value *precision = generateChild(node.astnodeValue(), 2, RequestReturnReal);
     width = generateInt32FromDouble(node.astnodeValue(), width, true);
+
+    // TODO: Combine into one validation function.
     precision = generateNotNegativeFromDouble(node.astnodeValue(), precision);
     precision = generateInt32FromDouble(node.astnodeValue(), precision, true);
     return generateCallExtern(

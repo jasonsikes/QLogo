@@ -798,7 +798,7 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, validator
     PHINode *badValue = scaff->builder.CreatePHI(TyAddr, 3, "badValue");
     badValue->addIncoming(badWord, convertBB);
     Value *errmsg = generateErrorNoLike(parent, badValue);
-    generateCallExtern(TyVoid, "stdWriteDatum", {PaAddr(errmsg), PaBool(CoBool(true))});
+    generateCallExtern(TyAddr, "stdWriteDatum", {PaAddr(errmsg), PaBool(CoBool(true))});
     Value *newCandidate = generateCallExtern(TyAddr, "callPause", {PaAddr(evaluator)});
     Value *datamIsa = generateGetDatumIsa(newCandidate);
     Value *isDatumMasked = scaff->builder.CreateAnd(datamIsa, CoInt32(Datum::typeDataMask), "isDatumMasked");
@@ -863,7 +863,7 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, validatorF
 
     scaff->builder.SetInsertPoint(errorActionBB);
     Value *errmsg = generateErrorNoLike(parent, src);
-    generateCallExtern(TyVoid, "stdWriteDatum", {PaAddr(errmsg), PaBool(CoBool(true))});
+    generateCallExtern(TyAddr, "stdWriteDatum", {PaAddr(errmsg), PaBool(CoBool(true))});
     Value *newCandidate = generateCallExtern(TyAddr, "callPause", {PaAddr(evaluator)});
     Value *datamIsa = generateGetDatumIsa(newCandidate);
     Value *isDatumMasked = scaff->builder.CreateAnd(datamIsa, CoInt32(Datum::typeDataMask), "isDatumMasked");
