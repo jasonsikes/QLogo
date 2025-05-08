@@ -728,7 +728,10 @@ Value *Compiler::generateCallExtern(Type *returnType,
 
     Q_ASSERT(calleeF->arg_size() == argsV.size());
 
-    return scaff->builder.CreateCall(calleeF, argsV, name + "_result");
+    if (returnType->isVoidTy())
+        return scaff->builder.CreateCall(calleeF, argsV);
+    else
+        return scaff->builder.CreateCall(calleeF, argsV, name + "_result");
 }
 
 AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, DatumPtr srcPtr, int32_t size)
