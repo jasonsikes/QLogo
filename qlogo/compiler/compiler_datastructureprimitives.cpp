@@ -1602,13 +1602,13 @@ Value *Compiler::genChar(DatumPtr node, RequestReturnType returnType)
         return scaff->builder.CreateFCmpOEQ(candidate, retvalCheck, "isValidTest");
     };
     generateValidationDouble(node.astnodeValue(), c, validator);
-    return generateCallExtern(TyAddr, "chr", {PaAddr(evaluator), PaInt16(retval)});
+    return generateCallExtern(TyAddr, "chr", {PaAddr(evaluator), PaInt32(retval)});
 }
 
-EXPORTC addr_t chr(addr_t eAddr, uint16_t c)
+EXPORTC addr_t chr(addr_t eAddr, uint32_t c)
 {
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
-    QString qstr = QString(QChar(c));
+    QString qstr = QString(QChar(static_cast<uint16_t>(c)));
     Word *retval = new Word(qstr);
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
