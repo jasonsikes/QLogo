@@ -690,6 +690,8 @@ COD***/
 Value *Compiler::genForever(DatumPtr node, RequestReturnType returnType)
 {
     Value *list = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    list = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), list);
+
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
 
     // Get the current value of repcount since we are shadowing it.
@@ -698,46 +700,45 @@ Value *Compiler::genForever(DatumPtr node, RequestReturnType returnType)
 
     scaff->builder.CreateStore(CoDouble(1.0), repcountAddr);
 
-    BasicBlock *loopBB = BasicBlock::Create(*scaff->theContext, "loop", theFunction);
-    BasicBlock *notNothingBB = BasicBlock::Create(*scaff->theContext, "notNothing", theFunction);
-    BasicBlock *isErrorBB = BasicBlock::Create(*scaff->theContext, "loopContinue", theFunction);
-    BasicBlock *notErrorBB = BasicBlock::Create(*scaff->theContext, "notErrorNode", theFunction);
-    BasicBlock *loopContinueBB = BasicBlock::Create(*scaff->theContext, "loopContinue", theFunction);
-    BasicBlock *exitBB = BasicBlock::Create(*scaff->theContext, "exit", theFunction);
-    scaff->builder.CreateBr(loopBB);
+    BasicBlock *whileBB = BasicBlock::Create(*scaff->theContext, "while", theFunction);
+    BasicBlock *datumCheckBB = BasicBlock::Create(*scaff->theContext, "datumCheck", theFunction);
+    BasicBlock *loopNextBB = BasicBlock::Create(*scaff->theContext, "loopNext", theFunction);
+    BasicBlock *noSayErrorBB = BasicBlock::Create(*scaff->theContext, "noSayError", theFunction);
+    BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, "bailout", theFunction);
+    BasicBlock *throwawayBB = BasicBlock::Create(*scaff->theContext, "throwaway", theFunction);
+    scaff->builder.CreateBr(whileBB);
 
-    // Execute list; check return value type.
-    scaff->builder.SetInsertPoint(loopBB);
+    scaff->builder.SetInsertPoint(whileBB);
     Value *result = generateCallList(list, RequestReturnDatum);
-    Value *dType = generateGetDatumIsa(result);
-    Value *mask = scaff->builder.CreateAnd(dType, CoInt32(Datum::typeDataMask), "dataTypeMask");
-    Value *cond = scaff->builder.CreateICmpEQ(mask, CoInt32(0), "typeTest");
-    scaff->builder.CreateCondBr(cond, loopContinueBB, notNothingBB);
+    Value *resultType = generateGetDatumIsa(result);
+    Value *mask = scaff->builder.CreateAnd(resultType, CoInt32(Datum::typeFlowControlMask), "flowControlMask");
+    Value *cond = scaff->builder.CreateICmpEQ(mask, CoInt32(0), "flowControlCond");
+    scaff->builder.CreateCondBr(cond, datumCheckBB, bailoutBB);
 
-    // List execution returned a value; restore shadowed repcount; is retval a control structure?
-    scaff->builder.SetInsertPoint(notNothingBB);
-    scaff->builder.CreateStore(shadowedRepcount, repcountAddr);
-    cond = scaff->builder.CreateICmpEQ(dType, CoInt32(Datum::typeError), "isErrorTest");
-    scaff->builder.CreateCondBr(cond, isErrorBB, notErrorBB);
+    scaff->builder.SetInsertPoint(datumCheckBB);
+    Value *isDatum = scaff->builder.CreateAnd(resultType, CoInt32(Datum::typeDataMask), "isDatumMask");
+    Value *isDatumCond = scaff->builder.CreateICmpEQ(isDatum, CoInt32(0), "isDatumCond");
+    scaff->builder.CreateCondBr(isDatumCond, loopNextBB, noSayErrorBB);
 
-    // Error: hard return.
-    scaff->builder.SetInsertPoint(isErrorBB);
-    scaff->builder.CreateRet(result);
-
-    // retval is not an error. Make one anyway. Hard return error: "don't say"
-    scaff->builder.SetInsertPoint(notErrorBB);
-    Value *errVal = generateErrorNoSay(result);
-    scaff->builder.CreateRet(errVal);
-
-    // Continue loop. increment repcount.
-    scaff->builder.SetInsertPoint(loopContinueBB);
+    scaff->builder.SetInsertPoint(loopNextBB);
     Value *repcount = scaff->builder.CreateLoad(TyDouble, repcountAddr, "repcount");
-    repcount = scaff->builder.CreateFAdd(repcount, CoDouble(1.0), "incr");
-    scaff->builder.CreateStore(repcount, repcountAddr);
-    scaff->builder.CreateBr(loopBB);
+    Value *incrRepcount = scaff->builder.CreateFAdd(repcount, CoDouble(1.0), "incrRepcount");
+    scaff->builder.CreateStore(incrRepcount, repcountAddr);
+    scaff->builder.CreateBr(whileBB);
 
-    // End. We'll never reach here, but we need this so that compilation may continue.
-    scaff->builder.SetInsertPoint(exitBB);
+    scaff->builder.SetInsertPoint(noSayErrorBB);
+    Value *errNoSay = generateErrorNoSay(result);
+    scaff->builder.CreateBr(bailoutBB);
+
+    scaff->builder.SetInsertPoint(bailoutBB);
+    PHINode *phiError = scaff->builder.CreatePHI(TyAddr, 2, "errVal");
+    phiError->addIncoming(errNoSay, noSayErrorBB);
+    phiError->addIncoming(result, whileBB);
+    scaff->builder.CreateStore(shadowedRepcount, repcountAddr);
+    scaff->builder.CreateRet(phiError);
+
+    // We will never reach here, but the compiler requires a current block and a return value.
+    scaff->builder.SetInsertPoint(throwawayBB);
     return generateVoidRetval(node);
 }
 
