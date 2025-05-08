@@ -356,7 +356,8 @@ Value *Compiler::generateProcedureExit(DatumPtr node, RequestReturnType returnTy
         return retObj;
     }
     // There is no child. Return nothing.
-    return generateVoidRetval(node);
+    Value *retval = generateVoidRetval(node);
+    return generateCallExtern(TyAddr, "getCtrlReturn", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval)});
 }
 
 
