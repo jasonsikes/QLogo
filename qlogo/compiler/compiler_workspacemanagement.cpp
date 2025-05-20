@@ -186,3 +186,42 @@ Value *Compiler::genMake(DatumPtr node, RequestReturnType returnType)
     generateCallExtern(TyVoid, "setDatumForWord", {PaAddr(value), PaAddr(varname)});
     return generateVoidRetval(node);
 }
+
+
+
+/***DOC LOCAL
+LOCAL varname
+LOCAL varnamelist
+(LOCAL varname1 varname2 ...)
+
+    command.  Accepts as inputs one or more words, or a list of
+    words.  A variable is created for each of these words, with
+    that word as its name.  The variables are local to the
+    currently running procedure.  Logo variables follow dynamic
+    scope rules; a variable that is local to a procedure is
+    available to any subprocedure invoked by that procedure.
+    The variables created by LOCAL have no initial value; they
+    must be assigned a value (e.g., with MAKE) before the procedure
+    attempts to read their value.
+
+COD***/
+// TODO: [varname:varnamelist:etc] procedure is duplicated in excGlobal().
+// CMD LOCAL 1 1 -1 n
+Value *Compiler::genLocal(DatumPtr node, RequestReturnType returnType)
+{
+    Q_ASSERT(returnType && RequestReturnNothing);
+
+    Value *varname = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
+    generateCallExtern(TyVoid, "setVarAsLocal", {PaAddr(varname)});
+
+    return generateVoidRetval(node);
+}
+
+EXPORTC void setVarAsLocal(addr_t varname)
+{
+    Word* varName = reinterpret_cast<Word*>(varname);
+    QString varNameStr = varName->keyValue();
+    CallFrame *currentFrame = Config::get().mainKernel()->callStack.localFrame();
+    currentFrame->setVarAsLocal(varNameStr);
+}
