@@ -21,6 +21,8 @@
 #include "kernel.h"
 #include "flowcontrol.h"
 
+#include <QObject>
+
 /// @brief return the address of the repcount variable.
 EXPORTC addr_t repcountAddr(void)
 {

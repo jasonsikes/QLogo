@@ -24,6 +24,8 @@
 #include "parser.h"
 #include "runparser.h"
 
+#include <QObject>
+
 void CallFrameStack::setDatumForName(DatumPtr &aDatum, const QString &name) {
     variables.insert(name, aDatum);
 }

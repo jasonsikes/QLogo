@@ -19,6 +19,8 @@
 #include "sharedconstants.h"
 #include "kernel.h"
 
+#include <QObject>
+
 using namespace llvm;
 using namespace llvm::orc;
 
