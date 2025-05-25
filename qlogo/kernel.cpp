@@ -32,7 +32,7 @@
 #include <QFont>
 #include <QImage>
 #include <QDir>
-#include <qassert.h>
+#include <QDebug>
 #include <stdlib.h> // arc4random_uniform()
 
 #include "err.h"

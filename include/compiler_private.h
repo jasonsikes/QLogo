@@ -17,7 +17,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include <QtAssert>
+#include <QDebug>
 
 // Qt #defines "emit". llvm uses "emit" as a function name.
 #ifdef emit

@@ -18,7 +18,7 @@
 #include "compiler_private.h"
 #include "astnode.h"
 #include <iostream>
-#include <qassert.h>
+#include <QDebug>
 #include "controller/logocontroller.h"
 #include "workspace/callframe.h"
 #include "workspace/procedures.h"
