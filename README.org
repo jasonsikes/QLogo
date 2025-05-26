@@ -8,11 +8,11 @@ Redistribution and use in source and binary forms, with or without modification,
 
 
 
-*QLogo* is a compiler for the UCBLogo language written in C++ using Qt and LLVM. It is a fork of the QLogo project, which is an interpreter for the UCBLogo language.
+This *QLogo* is a compiler for the UCBLogo language written in C++ using Qt and LLVM. It is a fork of the QLogo interpreter for the UCBLogo language.
 
-*Psychi* is the graphical user interface for QLogo. Psychi provides a command line, a simple text editor, and a turtle graphics window.
+*Psychi* is the graphical user interface for QLogo. Psychi provides a command line, a text editor, and a turtle graphics window.
 
-QLogo is _incomplete_. For an *actual working* UCBLogo interpreter see either:
+The QLogo compiler is _incomplete_. For an *actual working* UCBLogo interpreter see either:
 
 https://github.com/jasonsikes/QLogo
 
@@ -20,9 +20,9 @@ or
 
 https://github.com/jrincayc/ucblogo-code
 
-At this time I am developing QLogo on Linux (Fedora 41 on ARM64).
+At this time I am developing QLogo on Linux (Debian 13 on x86_64) and MacOS (Sequoia on Silicon, using LLVM provided by MacPorts).
 
-I am no longer testing on MS Windows as I no longer use Windows. I haven't been able to build on MacOS using LLVM provided by Homebrew. (I'm not saying it's not possible; I just decided to focus on development instead.)
+I am no longer testing on MS Windows as I no longer have a Windows machine.
 
 The following table contains all the commands in UCBLogo. The commands that are incomplete are marked by *"TODO"*.
 
