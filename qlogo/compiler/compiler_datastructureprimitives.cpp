@@ -80,7 +80,7 @@ EXPORTC addr_t concatWord(addr_t eAddr, addr_t aryAddr, uint32_t count)
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Word **wordAry = reinterpret_cast<Word**>(aryAddr);
     QString retval = "";
-    for (int i = 0; i < count; ++i)
+    for (uint32_t i = 0; i < count; ++i)
     {
         Word *w = *(wordAry + i);
         retval += w->rawValue();
@@ -309,7 +309,7 @@ EXPORTC addr_t createList(addr_t eAddr, addr_t aryAddr, uint32_t count)
     Datum **ary = reinterpret_cast<Datum**>(aryAddr);
     List *retval = new List();
     ListBuilder builder(retval);
-    for (int i = 0; i < count; ++i)
+    for (uint32_t i = 0; i < count; ++i)
     {
         DatumPtr d = DatumPtr(ary[i]);
         builder.append(d);
@@ -344,7 +344,7 @@ EXPORTC addr_t createSentence(addr_t eAddr, addr_t aryAddr, uint32_t count)
     Datum **ary = reinterpret_cast<Datum**>(aryAddr);
     List *retval = new List();
     ListBuilder builder(retval);
-    for (int i = 0; i < count; ++i)
+    for (uint32_t i = 0; i < count; ++i)
     {
         DatumPtr d = DatumPtr(ary[i]);
         if (d.isList())

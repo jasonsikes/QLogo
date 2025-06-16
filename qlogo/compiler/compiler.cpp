@@ -382,6 +382,7 @@ Value *Compiler::generateCast(Value *src, ASTNode *parent, DatumPtr node, Reques
     }
 
     Q_ASSERT(false);
+    return nullptr;
 }
 
 Value *Compiler::generateChild(ASTNode *parent, DatumPtr node, RequestReturnType returnType)

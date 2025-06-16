@@ -19,7 +19,6 @@
 #include "datum.h"
 #include "workspace/procedures.h"
 #include "astnode.h"
-#include "err.h"
 #include <QObject>
 #include <qdebug.h>
 

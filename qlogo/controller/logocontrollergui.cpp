@@ -23,7 +23,10 @@
 #include <QDataStream>
 #include <QMatrix4x4>
 #include <QMessageBox>
+
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #ifdef _WIN32
 // For setmode(..., O_BINARY)

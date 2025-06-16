@@ -90,6 +90,13 @@ target_link_libraries("${QLOGO_BIN}" PRIVATE
     -Xlinker
     ${llvm_libs}
 )
+elseif(WIN32)
+  target_link_libraries("${QLOGO_BIN}" PRIVATE
+      Qt${QT_VERSION_MAJOR}::Core
+      Qt${QT_VERSION_MAJOR}::Widgets
+      Qt${QT_VERSION_MAJOR}::Sql
+      ${llvm_libs}
+  )
 else()
   target_link_libraries("${QLOGO_BIN}" PRIVATE
       Qt${QT_VERSION_MAJOR}::Core

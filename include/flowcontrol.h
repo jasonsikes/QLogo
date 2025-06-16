@@ -22,10 +22,10 @@
 
 // The subclasses of FlowControl have a FC prefix because "goto", "return", and "continue"
 // are reserved words in C++, and because "Error" is a LLVM class name.
-class FCError;
-class FCGoto;
-class FCReturn;
-class FCContinuation;
+struct FCError;
+struct FCGoto;
+struct FCReturn;
+struct FCContinuation;
 
 
 /// @brief The flow control instruction.
@@ -148,8 +148,9 @@ enum ErrCode : int
 };
 
 /// @brief An error object.
-class FCError : public FlowControl
+struct FCError : public FlowControl
 {
+private:
     /// @brief Initialize the error object with information from the kernel object.
     void commonInit();
 

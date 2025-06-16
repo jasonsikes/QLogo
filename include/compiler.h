@@ -22,7 +22,7 @@
 #include "llvm/Transforms/Scalar/Reassociate.h"
 #include "datum.h"
 
-class Scaffold;
+struct Scaffold;
 
 namespace llvm
 {

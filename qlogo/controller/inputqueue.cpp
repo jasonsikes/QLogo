@@ -19,7 +19,11 @@
 #include <QDebug>
 #include <QMutex>
 #include <QQueue>
+
+
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 /// @brief The mutex for the message queue
 QMutex queueLock;

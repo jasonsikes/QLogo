@@ -144,9 +144,9 @@ class Config
     // The canvas size proportions for each mode. 0.0 means Canvas is
     // completely hidden. 0.8 means Canvas takes up 80% of available space (remaining
     // 20% belongs to the Console).
-    const float textScreenSize = 0.0;
-    const float fullScreenSize = 0.8;
-    const float splitScreenSize = 0.8;
+    const float textScreenSize = 0.0f;
+    const float fullScreenSize = 0.8f;
+    const float splitScreenSize = 0.8f;
     const float initScreenSize = textScreenSize;
 
     Turtle *mainTurtle()

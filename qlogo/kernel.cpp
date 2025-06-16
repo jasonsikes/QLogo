@@ -35,7 +35,6 @@
 #include <QDebug>
 #include <stdlib.h> // arc4random_uniform()
 
-#include "err.h"
 #include "runparser.h"
 #include "turtle.h"
 

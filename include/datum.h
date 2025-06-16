@@ -32,10 +32,10 @@
 class Datum;
 class Word;
 class List;
-class Array;
+struct Array;
 
-class FlowControl;
-class FCError;
+struct FlowControl;
+struct FCError;
 
 class Unbound;
 class ASTNode;
@@ -121,7 +121,7 @@ class Datum
 {
     friend class ListIterator;
     friend class DatumPtr;
-    friend class Evaluator;
+    friend struct Evaluator;
 
   private:
     Datum &operator=(const Datum &) = delete;
