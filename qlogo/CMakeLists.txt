@@ -1,3 +1,29 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(QLogo VERSION 0.961 LANGUAGES CXX C)
+
+include(GNUInstallDirs)
+
+set(QLOGO_BIN qlogo)
+set(QLOGO_GUI Psychi)
+set(QLOGO_HELP qlogo_help.db)
+set(QLOGO_LIB qlogo_library.db)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+if (CMAKE_BUILD_TYPE)
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
+    endif()
+endif()
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 set(QLOGO_SOURCES
   compiler/compiler.cpp
   compiler/compiler_arithmetic.cpp
@@ -52,13 +78,11 @@ set(QLOGO_SOURCES
   ../include/workspace/propertylists.h
 )
 
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)
+find_package(Qt6 REQUIRED COMPONENTS Sql)
 find_package(LLVM REQUIRED CONFIG)
 
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
-
-include_directories(${LLVM_INCLUDE_DIRS})
 
 qt_add_executable("${QLOGO_BIN}"
   ${QLOGO_SOURCES}
@@ -66,49 +90,53 @@ qt_add_executable("${QLOGO_BIN}"
 
 target_include_directories("${QLOGO_BIN}" PUBLIC
   "${CMAKE_SOURCE_DIR}/include"
+  ${LLVM_INCLUDE_DIRS}
 )
 
-add_definitions(${LLVM_DEFINITIONS})
-
-add_definitions(-DLOGOVERSION="${PROJECT_VERSION}")
+target_compile_definitions("${QLOGO_BIN}" PRIVATE
+  ${LLVM_DEFINITIONS}
+  LOGOVERSION="${PROJECT_VERSION}"
+)
 
 if(APPLE)
-  add_definitions(-DLOGOPLATFORM="OSX")
+  target_compile_definitions("${QLOGO_BIN}" PRIVATE LOGOPLATFORM="OSX")
 elseif(WIN32 OR MINGW OR MSYS OR CYGWIN)
-  add_definitions(-DLOGOPLATFORM="WINDOWS")
+  target_compile_definitions("${QLOGO_BIN}" PRIVATE LOGOPLATFORM="WINDOWS")
 else()
-  add_definitions(-DLOGOPLATFORM="UNIX")
+  target_compile_definitions("${QLOGO_BIN}" PRIVATE LOGOPLATFORM="UNIX")
 endif()
 
 llvm_config("${QLOGO_BIN}" USE_SHARED support core orcjit native irreader)
 
 if(APPLE)
-target_link_libraries("${QLOGO_BIN}" PRIVATE
-    Qt${QT_VERSION_MAJOR}::Core
-    Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::Sql
-    -Xlinker
-    ${llvm_libs}
-)
+  target_link_libraries("${QLOGO_BIN}" PRIVATE
+      Qt6::Core
+      Qt6::Widgets
+      Qt6::Sql
+      -Xlinker
+      ${llvm_libs}
+  )
 elseif(WIN32)
   target_link_libraries("${QLOGO_BIN}" PRIVATE
-      Qt${QT_VERSION_MAJOR}::Core
-      Qt${QT_VERSION_MAJOR}::Widgets
-      Qt${QT_VERSION_MAJOR}::Sql
+      Qt6::Core
+      Qt6::Widgets
+      Qt6::Sql
       ${llvm_libs}
   )
 else()
   target_link_libraries("${QLOGO_BIN}" PRIVATE
-      Qt${QT_VERSION_MAJOR}::Core
-      Qt${QT_VERSION_MAJOR}::Widgets
-      Qt${QT_VERSION_MAJOR}::Sql
+      Qt6::Core
+      Qt6::Widgets
+      Qt6::Sql
       -Xlinker --export-dynamic
       ${llvm_libs}
   )
 endif()
 
-set_target_properties("${QLOGO_BIN}" PROPERTIES
-  WIN32_EXECUTABLE TRUE
-)
+if(WIN32)
+  set_target_properties("${QLOGO_BIN}" PROPERTIES
+    WIN32_EXECUTABLE TRUE
+  )
+endif()
 
 

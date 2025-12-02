@@ -1,8 +1,8 @@
 # Technically, the qlogo resource files belong to the qlogo binary,
 # but on MacOS I want to put them into the QLOGO_GUI bundle.
 set(RESOURCE_FILES
-  ../../share/qlogo_help.db
-  ../../share/qlogo_lib.db
+  ${CMAKE_SOURCE_DIR}/share/qlogo_help.db
+  ${CMAKE_SOURCE_DIR}/share/qlogo_lib.db
 )
 set(GUI_SOURCES
   canvas.cpp
@@ -21,7 +21,7 @@ set(GUI_SOURCES
   mainwindow.ui
 )
 
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)
+find_package(Qt6 REQUIRED COMPONENTS Sql)
 
 set(MACOSX_BUNDLE_ICON_FILE "${QLOGO_GUI}.icns")
 
@@ -54,9 +54,9 @@ target_include_directories("${QLOGO_GUI}" PUBLIC
 
 
 target_link_libraries("${QLOGO_GUI}" PRIVATE
-    Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::Svg
-    Qt${QT_VERSION_MAJOR}::Sql
+    Qt6::Widgets
+    Qt6::Svg
+    Qt6::Sql
 )
 
 set_target_properties("${QLOGO_GUI}" PROPERTIES
