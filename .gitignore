@@ -34,6 +34,8 @@
 
 # Emacs temp files
 *~
+.#*
+\#*
 
 Qt user files
 *.pro.user*
@@ -58,3 +60,6 @@ CMakeCache.txt
 QLogo_autogen
 cmake_install.cmake
 .cache/
+
+# Added by jason
+TODO.org
