@@ -57,7 +57,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
     {
         lineP = readwordWithPrompt(prompt, true);
 
-        if (lineP == nothing)
+        if (lineP.isNothing())
             return nothing;
 
         listSourceWord = lineP.wordValue()->rawValue();
@@ -202,7 +202,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
             lineP = readwordWithPrompt("{ ", true);
         else
             lineP = readwordWithPrompt("[ ", true);
-        if (lineP != nothing)
+        if ( ! lineP.isNothing())
         {
             listSourceWord = lineP.wordValue()->rawValue();
             listSourceWordIter = listSourceWord.begin();
@@ -256,12 +256,12 @@ DatumPtr TextStream::readwordWithPrompt(const QString &prompt, bool shouldSavePr
     bool isEscaped = false;
 
     DatumPtr line = readrawlineWithPrompt(prompt, shouldSavePreviousLines);
-    if (line == nothing)
+    if (line.isNothing())
         return nothing;
 
     forever
     {
-        if (line == nothing)
+        if (line.isNothing())
             return DatumPtr(retval);
 
         const QString &t = line.wordValue()->rawValue();

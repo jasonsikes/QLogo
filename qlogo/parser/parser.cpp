@@ -120,7 +120,7 @@ QList<QList<DatumPtr>> Parser::astFromList(List *aList)
 
         try
         {
-            while (currentToken != nothing)
+            while ( ! currentToken.isNothing())
             {
                 astFlatList.push_back(parseRootExp());
             }
@@ -202,7 +202,7 @@ DatumPtr Parser::parseExp()
         DatumPtr right = parseSumexp();
 
         DatumPtr node = DatumPtr(new ASTNode(op));
-        if (right == nothing)
+        if (right.isNothing())
             throw FCError::notEnoughInputs(op);
 
         if (op.wordValue()->printValue() == "=")
@@ -253,7 +253,7 @@ DatumPtr Parser::parseSumexp()
         DatumPtr right = parseMulexp();
 
         DatumPtr node = DatumPtr(new ASTNode(op));
-        if (right == nothing)
+        if (right.isNothing())
             throw FCError::notEnoughInputs(op);
 
         if (op.wordValue()->printValue() == "+")
@@ -285,7 +285,7 @@ DatumPtr Parser::parseMulexp()
         DatumPtr right = parseminusexp();
 
         DatumPtr node = DatumPtr(new ASTNode(op));
-        if (right == nothing)
+        if (right.isNothing())
             throw FCError::notEnoughInputs(op);
 
         if (op.wordValue()->printValue() == "*")
@@ -320,7 +320,7 @@ DatumPtr Parser::parseminusexp()
         DatumPtr right = parseTermexp();
 
         DatumPtr node = DatumPtr(new ASTNode(op));
-        if (right == nothing)
+        if (right.isNothing())
             throw FCError::notEnoughInputs(op);
         
         node.astnodeValue()->genExpression = &Compiler::genDifference;
@@ -333,7 +333,7 @@ DatumPtr Parser::parseminusexp()
 
 DatumPtr Parser::parseTermexp()
 {
-    if (currentToken == nothing)
+    if (currentToken.isNothing())
         return nothing;
 
     if (currentToken.isa() == Datum::typeList)
@@ -365,7 +365,7 @@ DatumPtr Parser::parseTermexp()
         DatumPtr retval;
 
         advanceToken();
-        if ((currentToken != nothing) && currentToken.isWord())
+        if (( ! currentToken.isNothing()) && currentToken.isWord())
         {
             QString cmdString = currentToken.wordValue()->keyValue();
             QChar firstChar = (cmdString)[0];
@@ -441,7 +441,7 @@ DatumPtr Parser::parseTermexp()
 
 DatumPtr Parser::parseCommand(bool isVararg)
 {
-    if (currentToken == nothing)
+    if (currentToken.isNothing())
         return nothing;
     DatumPtr cmdP = currentToken;
     QString cmdString = cmdP.wordValue()->keyValue();
@@ -461,7 +461,7 @@ DatumPtr Parser::parseCommand(bool isVararg)
     // isVararg: read all parameters until ')'
     if (isVararg)
     {
-        while ((currentToken != nothing) &&
+        while (( ! currentToken.isNothing()) &&
                ((!currentToken.isWord()) || (currentToken.wordValue()->printValue() != ")")))
         {
             DatumPtr child;
@@ -480,7 +480,7 @@ DatumPtr Parser::parseCommand(bool isVararg)
     }
     else if (defaultParams < 0)
     { // "Special form": read all parameters until EOL
-        while (currentToken != nothing)
+        while ( ! currentToken.isNothing())
         {
             DatumPtr child;
             if (minParams < 0)
@@ -500,7 +500,7 @@ DatumPtr Parser::parseCommand(bool isVararg)
     { // Read in the default number of params
         for (int i = defaultParams; i > 0; --i)
         {
-            if (currentToken == nothing)
+            if (currentToken.isNothing())
                 throw FCError::notEnoughInputs(cmdP);
             DatumPtr child = parseExp();
             node.astnodeValue()->addChild(child);

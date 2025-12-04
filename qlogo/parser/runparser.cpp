@@ -52,7 +52,7 @@ void Runparser::runparseString()
         retval = "?";
         ++runparseCIter;
         DatumPtr number = runparseNumber();
-        if (number != nothing)
+        if ( ! number.isNothing())
         {
             runparseBuilder->append(DatumPtr(QString("(")));
             runparseBuilder->append(DatumPtr(QString("?")));
@@ -81,7 +81,7 @@ void Runparser::runparseMinus()
     }
 
     DatumPtr number = runparseNumber();
-    if (number != nothing)
+    if ( ! number.isNothing())
     {
         runparseBuilder->append(number);
         return;
@@ -252,7 +252,7 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
                 }
 
                 DatumPtr number = runparseNumber();
-                if (number == nothing)
+                if (number.isNothing())
                 {
                     runparseString();
                 }

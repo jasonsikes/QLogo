@@ -280,7 +280,7 @@ DatumPtr Procedures::procedureFulltext(DatumPtr procnameP, bool shouldValidate) 
         Procedure *body = procedureForName(procname).procedureValue();
 
         // If there is no source text, generate it from the instruction list.
-        if (body->sourceText == nothing) {
+        if (body->sourceText.isNothing()) {
             List *retval = new List();
             ListBuilder retvalBuilder(retval);
             retvalBuilder.append(DatumPtr(procedureTitle(procnameP)));

@@ -96,7 +96,7 @@ bool List::isEmpty()
 
 void List::setButfirstItem(DatumPtr aValue)
 {
-    Q_ASSERT(head != nothing);
+    Q_ASSERT(! head.isNothing());
     Q_ASSERT(aValue.isList());
     tail = aValue;
     lastNode = aValue.listValue()->lastNode;
