@@ -1,29 +1,3 @@
-cmake_minimum_required(VERSION 3.16)
-
-project(QLogo VERSION 0.961 LANGUAGES CXX C)
-
-include(GNUInstallDirs)
-
-set(QLOGO_BIN qlogo)
-set(QLOGO_GUI Psychi)
-set(QLOGO_HELP qlogo_help.db)
-set(QLOGO_LIB qlogo_library.db)
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-if (CMAKE_BUILD_TYPE)
-    if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
-    endif()
-endif()
-
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTORCC ON)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 set(QLOGO_SOURCES
   compiler/compiler.cpp
   compiler/compiler_arithmetic.cpp
