@@ -58,6 +58,12 @@ find_package(LLVM REQUIRED CONFIG)
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
+set(LLVM_DEFINITIONS_CLEANED)
+foreach(def ${LLVM_DEFINITIONS})
+  string(REGEX REPLACE "^-D" "" cleaned_def "${def}")
+  list(APPEND LLVM_DEFINITIONS_CLEANED "${cleaned_def}")
+endforeach()
+
 qt_add_executable("${QLOGO_BIN}"
   ${QLOGO_SOURCES}
 )
@@ -67,17 +73,20 @@ target_include_directories("${QLOGO_BIN}" PUBLIC
   ${LLVM_INCLUDE_DIRS}
 )
 
+# For string literal macros, use target_compile_definitions() which correctly
+# handles quoting for preprocessor definitions. The escaped quotes in the
+# definition value will be preserved and passed to the compiler as -DLOGOVERSION="0.961"
 target_compile_definitions("${QLOGO_BIN}" PRIVATE
-  ${LLVM_DEFINITIONS}
-  LOGOVERSION="${PROJECT_VERSION}"
+  ${LLVM_DEFINITIONS_CLEANED}
+  "LOGOVERSION=\"${PROJECT_VERSION}\""
 )
 
 if(APPLE)
-  target_compile_definitions("${QLOGO_BIN}" PRIVATE LOGOPLATFORM="OSX")
+  target_compile_definitions("${QLOGO_BIN}" PRIVATE "LOGOPLATFORM=\"OSX\"")
 elseif(WIN32 OR MINGW OR MSYS OR CYGWIN)
-  target_compile_definitions("${QLOGO_BIN}" PRIVATE LOGOPLATFORM="WINDOWS")
+  target_compile_definitions("${QLOGO_BIN}" PRIVATE "LOGOPLATFORM=\"WINDOWS\"")
 else()
-  target_compile_definitions("${QLOGO_BIN}" PRIVATE LOGOPLATFORM="UNIX")
+  target_compile_definitions("${QLOGO_BIN}" PRIVATE "LOGOPLATFORM=\"UNIX\"")
 endif()
 
 llvm_config("${QLOGO_BIN}" USE_SHARED support core orcjit native irreader)
