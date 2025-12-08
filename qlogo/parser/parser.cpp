@@ -365,7 +365,7 @@ DatumPtr Parser::parseTermexp()
         DatumPtr retval;
 
         advanceToken();
-        if (( ! currentToken.isNothing()) && currentToken.isWord())
+        if (currentToken.isWord())
         {
             QString cmdString = currentToken.wordValue()->keyValue();
             QChar firstChar = (cmdString)[0];
