@@ -202,7 +202,7 @@ DatumPtr Parser::parseExp()
         DatumPtr right = parseSumexp();
 
         DatumPtr node = DatumPtr(new ASTNode(op));
-        if (right.isNothing())
+        if ( ! right.isASTNode())
             throw FCError::notEnoughInputs(op);
 
         if (op.wordValue()->printValue() == "=")
@@ -253,7 +253,7 @@ DatumPtr Parser::parseSumexp()
         DatumPtr right = parseMulexp();
 
         DatumPtr node = DatumPtr(new ASTNode(op));
-        if (right.isNothing())
+        if ( ! right.isASTNode())
             throw FCError::notEnoughInputs(op);
 
         if (op.wordValue()->printValue() == "+")
@@ -285,7 +285,7 @@ DatumPtr Parser::parseMulexp()
         DatumPtr right = parseminusexp();
 
         DatumPtr node = DatumPtr(new ASTNode(op));
-        if (right.isNothing())
+        if ( ! right.isASTNode())
             throw FCError::notEnoughInputs(op);
 
         if (op.wordValue()->printValue() == "*")
@@ -320,7 +320,7 @@ DatumPtr Parser::parseminusexp()
         DatumPtr right = parseTermexp();
 
         DatumPtr node = DatumPtr(new ASTNode(op));
-        if (right.isNothing())
+        if ( ! right.isASTNode())
             throw FCError::notEnoughInputs(op);
         
         node.astnodeValue()->genExpression = &Compiler::genDifference;
