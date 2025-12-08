@@ -29,7 +29,7 @@ DatumPtr::DatumPtr() : d(&notADatum)
 DatumPtr::DatumPtr(Datum *other)
 {
     d = other;
-    if (d)
+    if (d && d != &notADatum)
     {
         ++(d->retainCount);
     }
@@ -38,7 +38,7 @@ DatumPtr::DatumPtr(Datum *other)
 DatumPtr::DatumPtr(const DatumPtr &other) noexcept
 {
     d = other.d;
-    if (d)
+    if (d && d != &notADatum)
     {
         ++(d->retainCount);
     }
@@ -101,7 +101,7 @@ DatumPtr &DatumPtr::operator=(const DatumPtr &other) noexcept
     {
         destroy();
         d = other.d;
-        if (d)
+        if (d && d != &notADatum)
         {
             ++(d->retainCount);
         }
@@ -115,7 +115,10 @@ DatumPtr &DatumPtr::operator=(DatumPtr *other) noexcept
     {
         destroy();
         d = other->d;
-        ++(d->retainCount);
+        if (d && d != &notADatum)
+        {
+            ++(d->retainCount);
+        }
     }
     return *this;
 }

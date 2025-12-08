@@ -70,5 +70,6 @@ QString Datum::showValue(bool, int, int)
 }
 
 // Values to represent no data (nullptr)
+// notADatum must be initialized before nothing (order is guaranteed within same translation unit)
 Datum notADatum;
 DatumPtr nothing(&notADatum);
