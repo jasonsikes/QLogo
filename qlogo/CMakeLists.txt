@@ -24,6 +24,7 @@ set(QLOGO_SOURCES
   misc/library.cpp
   misc/turtle.cpp
   misc/exports.cpp
+  misc/visited.cpp
   parser/parser.cpp
   parser/runparser.cpp
   workspace/callframe.cpp
@@ -46,6 +47,7 @@ set(QLOGO_SOURCES
   ../include/turtle.h
   ../include/parser.h
   ../include/runparser.h
+  ../include/visited.h
   ../include/workspace/callframe.h
   ../include/workspace/primitivetable.h
   ../include/workspace/procedures.h
