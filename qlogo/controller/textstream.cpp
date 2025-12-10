@@ -42,7 +42,7 @@ TextStream::TextStream(QTextStream *aStream)
 
 void TextStream::clearLineHistory()
 {
-    recentLineHistory = DatumPtr(new List());
+    recentLineHistory = emptyList;
 }
 
 // TODO: This is huge. Break it up.
@@ -63,9 +63,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
         listSourceWord = lineP.wordValue()->rawValue();
         listSourceWordIter = listSourceWord.begin();
     }
-    List *retval = new List();
-    ListBuilder builder(retval);
-    DatumPtr retvalP(retval);
+    ListBuilder builder;
     QString currentWord = "";
 
     forever
@@ -151,7 +149,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
                     {
                         throw FCError::unexpectedCloseSquare();
                     }
-                    return retvalP;
+                    return builder.finishedList();
                 case '}':
                 {
                     if ((isBaseLevel) || !makeArray)
@@ -171,7 +169,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
                         }
                         origin = originStr.toInt();
                     }
-                    Array *ary = new Array(origin, retval);
+                    Array *ary = new Array(origin, builder.finishedList().listValue());
                     return DatumPtr(ary);
                 }
                 case '{':
@@ -195,7 +193,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
 
         // If this is the base-level list then we can just return
         if (isBaseLevel)
-            return retvalP;
+            return builder.finishedList();
 
         // Get some more source material if we can
         if (makeArray)
@@ -211,10 +209,10 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
         // We have exhausted our source. Return what we have.
         if (makeArray)
         {
-            Array *ary = new Array(1, retval);
+            Array *ary = new Array(1, builder.finishedList().listValue());
             return DatumPtr(ary);
         }
-        return retvalP;
+        return builder.finishedList();
     } // /forever
 }
 
@@ -331,7 +329,7 @@ DatumPtr TextStream::readChar()
     }
 
     if (stream->atEnd())
-        return DatumPtr(new List());
+        return emptyList;
     QString line = stream->read(1);
     if (stream->status() != QTextStream::Ok)
         throw FCError::fileSystem();

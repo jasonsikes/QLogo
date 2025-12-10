@@ -40,6 +40,7 @@ struct FCError;
 class Unbound;
 class ASTNode;
 class Procedure;
+class EmptyList;
 
 class DatumPtr;
 class ListIterator;
@@ -579,12 +580,9 @@ struct Array : public Datum
 
 /// @brief The general container for data. The QLogo List is implemented as a linked list.
 ///
-/// @details The List class is a linked list of DatumPtrs. The head of the list contains a
+/// @details The List class is a linked list of DatumPtrs. The head of the list must contain a
 /// DatumPtr to a Word, List, or Array. The tail of the list is a DatumPtr which must point to
-/// a List.
-/// 
-/// Alternatively, the head can contain nothing, in which case the list is empty. The empty list
-/// is the only list that can have a tail of nothing.
+/// a List or EmptyList.
 class List : public Datum
 {
     friend class ListIterator;
@@ -596,14 +594,8 @@ class List : public Datum
     /// @details The head of the list.
     DatumPtr head;
 
-    /// @brief The remainder of the list after the head. Must be either a list or nothing.
+    /// @brief The remainder of the list after the head. Must be either List or EmptyList.
     DatumPtr tail;
-
-    /// @brief The last node of the list.
-    ///
-    /// @details Only use as a shortcut during list initialization. It should not be used after
-    /// list has been made available to the user.
-    List *lastNode;
 
     /// @brief The time, as returned by QDateTime::currentMSecsSinceEpoch().
     ///
@@ -614,9 +606,6 @@ class List : public Datum
     /// @todo It's difficult to know when the list is modified. We should consider
     /// removing this.
     qint64 astParseTimeStamp;
-
-    /// @brief Create an empty List.
-    List();
 
     /// @brief Create a new list by attaching item as the head of srcList.
     ///
@@ -676,6 +665,43 @@ class List : public Datum
     ListIterator newIterator();
 };
 
+/// @brief A singleton class that represents an empty list.
+///
+/// @details EmptyList is an immutable singleton. There can only be one instance
+/// of EmptyList in the entire program. All empty lists should reference this
+/// single instance. The list cannot be modified after creation.
+class EmptyList : public List
+{
+  private:
+    /// @brief Private constructor to enforce singleton pattern.
+    EmptyList();
+
+    /// @brief Deleted copy constructor to prevent copying.
+    EmptyList(const EmptyList &) = delete;
+
+    /// @brief Deleted assignment operator to prevent assignment.
+    EmptyList &operator=(const EmptyList &) = delete;
+
+    /// @brief Deleted move constructor to prevent moving.
+    EmptyList(EmptyList &&) = delete;
+
+    /// @brief Deleted move assignment operator to prevent move assignment.
+    EmptyList &operator=(EmptyList &&) = delete;
+
+    /// @brief Static instance pointer.
+    static EmptyList *instance_;
+
+    
+    void clear();
+    void setButfirstItem(DatumPtr aValue);
+
+  public:
+    /// @brief Get the singleton instance of EmptyList.
+    ///
+    /// @return A pointer to the singleton EmptyList instance.
+    static EmptyList *instance();
+};
+
 /// @brief A class that simplifies iterating through a list.
 ///
 /// @details This class is used to iterate through a list. Unlike the c++ STL iterator,
@@ -708,20 +734,42 @@ class ListIterator
 /// @brief A class that allows quickly building a list.
 ///
 /// @details This class is used to build a list quickly by appending elements to the end of the list.
-/// @note This class should only be used internally, such as when reading a list. It should not be
-/// available to the user.
+/// @note This class should only be used internally. It should not be available to the user.
 class ListBuilder
 {
-    List *lastNode;
-  public:
-    ListBuilder(List *srcList) : lastNode(srcList) {}
+  private:
+    DatumPtr finishedList_;
 
+public:
+    List *firstNode;
+    List *lastNode;
+
+    ListBuilder() : firstNode(EmptyList::instance()), lastNode(EmptyList::instance())
+    {
+        finishedList_ = DatumPtr(firstNode);
+    }
+
+    /// @brief Append an element to the end of the list.
+    /// @param element The element to append to the end of the list.
     void append(DatumPtr element)
     {
-        List *newNode = new List();
-        lastNode->head = element;
-        lastNode->tail = DatumPtr(newNode);
-        lastNode = newNode;
+        List *newList = new List(element, EmptyList::instance());
+        if (firstNode == EmptyList::instance())
+        {
+            firstNode = newList;
+            lastNode = newList;
+            finishedList_ = DatumPtr(firstNode);
+        } else {
+            lastNode->tail = DatumPtr(newList);
+            lastNode = newList;
+        }
+    }
+
+    /// @brief Return the finished list.
+    /// @return The finished list.
+    DatumPtr finishedList() const
+    {
+        return finishedList_;
     }
 };
 
@@ -730,5 +778,8 @@ extern Datum notADatum;
 
 /// @brief A pointer to notADatum, like NULL.
 extern DatumPtr nothing;
+
+/// @brief A pointer to an empty list.
+extern DatumPtr emptyList;
 
 #endif // DATUM_H

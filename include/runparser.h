@@ -27,7 +27,6 @@ class TextStream;
 
 class Runparser
 {
-    List *runparseRetval;
     ListBuilder *runparseBuilder = nullptr;
     QString::iterator runparseCIter;
     QString::iterator runparseCEnd;

@@ -27,11 +27,11 @@ using namespace llvm::orc;
 
 List* listFromColor(const QColor &c)
 {
-    List *retval = new List();
-    retval = new List(DatumPtr(round(c.blueF() * 100)), retval);
-    retval = new List(DatumPtr(round(c.greenF() * 100)), retval);
-    retval = new List(DatumPtr(round(c.redF() * 100)), retval);
-    return retval;
+    ListBuilder retvalBuilder;
+    retvalBuilder.append(DatumPtr(round(c.redF() * 100)));
+    retvalBuilder.append(DatumPtr(round(c.greenF() * 100)));
+    retvalBuilder.append(DatumPtr(round(c.blueF() * 100)));
+    return retvalBuilder.finishedList().listValue();
 }
 
 // TURTLE MOTION
@@ -320,9 +320,10 @@ EXPORTC addr_t getTurtlePos(addr_t eAddr)
     Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
     double x = 0, y = 0;
     Config::get().mainTurtle()->getxy(x, y);
-    List *retval = new List();
-    retval = new List(DatumPtr(y), retval);
-    retval = new List(DatumPtr(x), retval);
+    ListBuilder retvalBuilder;
+    retvalBuilder.append(DatumPtr(x));
+    retvalBuilder.append(DatumPtr(y));
+    Datum* retval = retvalBuilder.finishedList().datumValue();
     e->watch(retval);
     return reinterpret_cast<addr_t >(retval);
 }
@@ -414,9 +415,10 @@ Value *Compiler::genScrunch(DatumPtr node, RequestReturnType returnType)
 EXPORTC addr_t getScrunch(addr_t eAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    List *retval = new List();
-    retval = new List(DatumPtr(1), retval);
-    retval = new List(DatumPtr(1), retval);
+    ListBuilder retvalBuilder;
+    retvalBuilder.append(DatumPtr(1));
+    retvalBuilder.append(DatumPtr(1));
+    Datum* retval = retvalBuilder.finishedList().datumValue();
     e->watch(retval);
     return reinterpret_cast<addr_t >(retval);
 }
@@ -590,9 +592,10 @@ EXPORTC addr_t getBounds(addr_t eAddr)
     double x = Config::get().mainController()->boundX();
     double y = Config::get().mainController()->boundY();
 
-    List *retval = new List();
-    retval = new List(DatumPtr(y), retval);
-    retval = new List(DatumPtr(x), retval);
+    ListBuilder retvalBuilder;
+    retvalBuilder.append(DatumPtr(x));
+    retvalBuilder.append(DatumPtr(y));
+    Datum* retval = retvalBuilder.finishedList().datumValue();
     e->watch(retval);
     return reinterpret_cast<addr_t >(retval);
 }
@@ -928,9 +931,10 @@ EXPORTC addr_t getLabelSize(addr_t eAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
     double height = Config::get().mainController()->getLabelFontSize();
-    List *retval = new List();
-    retval = new List(DatumPtr(height), retval);
-    retval = new List(DatumPtr(height), retval);
+    ListBuilder retvalBuilder;
+    retvalBuilder.append(DatumPtr(height));
+    retvalBuilder.append(DatumPtr(height));
+    Datum* retval = retvalBuilder.finishedList().datumValue();
     e->watch(retval);
     return reinterpret_cast<addr_t >(retval);
 }
@@ -1119,15 +1123,15 @@ Value *Compiler::genAllcolors(DatumPtr node, RequestReturnType returnType)
 EXPORTC addr_t getAllColors(addr_t eAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    List *retval = new List();
-    ListBuilder lb(retval);
+    ListBuilder lb;
     QStringList colors = QColor::colorNames();
     for (const QString &i : colors)
     {
         lb.append(DatumPtr(new Word(i)));
     }
+    DatumPtr retval = lb.finishedList();
     e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
+    return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
 
@@ -1588,9 +1592,10 @@ EXPORTC addr_t getMousePos(addr_t eAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
     QVector2D position = Config::get().mainController()->mousePosition();
-    List *retval = new List();
-    retval = new List(DatumPtr(position.y()), retval);
-    retval = new List(DatumPtr(position.x()), retval);
+    ListBuilder retvalBuilder;
+    retvalBuilder.append(DatumPtr(position.x()));
+    retvalBuilder.append(DatumPtr(position.y()));
+    Datum* retval = retvalBuilder.finishedList().datumValue();
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
 }
@@ -1614,9 +1619,10 @@ EXPORTC addr_t getClickPos(addr_t eAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
     QVector2D position = Config::get().mainController()->lastMouseclickPosition();
-    List *retval = new List();
-    retval = new List(DatumPtr(position.y()), retval);
-    retval = new List(DatumPtr(position.x()), retval);
+    ListBuilder retvalBuilder;
+    retvalBuilder.append(DatumPtr(position.x()));
+    retvalBuilder.append(DatumPtr(position.y()));
+    Datum* retval = retvalBuilder.finishedList().datumValue();
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
 }

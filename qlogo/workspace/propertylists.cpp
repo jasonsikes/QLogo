@@ -33,7 +33,7 @@ DatumPtr PropertyLists::getProperty(const QString &plistname,
                                   const QString &propname) {
   if (plists.contains(plistname) && plists[plistname].contains(propname))
     return plists[plistname][propname];
-  return DatumPtr(new List());
+  return emptyList;
 }
 
 void PropertyLists::removeProperty(const QString &plistname,
@@ -46,8 +46,7 @@ void PropertyLists::removeProperty(const QString &plistname,
 }
 
 DatumPtr PropertyLists::getPropertyList(const QString &plistname) {
-  List *retval = new List();
-  ListBuilder builder(retval);
+  ListBuilder builder;
   if (plists.contains(plistname)) {
     QList<QString> keys = plists[plistname].keys();
     QList<DatumPtr> values = plists[plistname].values();
@@ -58,7 +57,7 @@ DatumPtr PropertyLists::getPropertyList(const QString &plistname) {
       ++kIter;
     }
   }
-  return DatumPtr(retval);
+  return builder.finishedList();
 }
 
 void PropertyLists::erasePropertyList(const QString &plistname) {
@@ -70,10 +69,9 @@ bool PropertyLists::isPropertyList(const QString &plistname) {
 }
 
 DatumPtr PropertyLists::allPLists() {
-  List *retval = new List();
-  ListBuilder builder(retval);
+  ListBuilder builder;
   for (auto name : plists.asKeyValueRange()) {
       builder.append(DatumPtr(name.first));
   }
-  return DatumPtr(retval);
+  return builder.finishedList();
 }
