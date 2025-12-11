@@ -47,12 +47,11 @@ bool CallFrameStack::doesExist(QString name) {
 
 
 DatumPtr CallFrameStack::allVariables() {
-    List *retval = new List();
-    ListBuilder builder(retval);
+    ListBuilder builder;
     for (auto &varname : variables.keys()) {
         builder.append(DatumPtr(varname));
     }
-    return DatumPtr(retval);
+    return builder.finishedList();
 }
 
 
@@ -174,14 +173,14 @@ Datum *CallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount) {
     // Finally, take in the remainder (if any) as a list.
     if (proc->restInput != "") {
         QString name = proc->restInput;
-        List *restList = new List();
-        ListBuilder builder(restList);
+        ListBuilder builder;
         while (paramIndex < paramCount) {
             builder.append(*(paramAry + paramIndex));
             paramIndex++;
         }
         setVarAsLocal(name);
-        setValueForName(DatumPtr(restList), name);
+        DatumPtr restList = builder.finishedList();
+        setValueForName(restList, name);
     }
     return nullptr;
 }
@@ -382,6 +381,11 @@ Datum *Evaluator::procedureExec(ASTNode *node, Datum **paramAry, uint32_t paramC
     return frame.exec(paramAry, paramCount);
 }
 
+
+Datum *Evaluator::watch(DatumPtr d)
+{
+    return watch(d.datumValue());
+}
 
 Datum *Evaluator::watch(Datum *d)
 {
