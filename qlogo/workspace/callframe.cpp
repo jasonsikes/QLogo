@@ -338,7 +338,7 @@ Evaluator::~Evaluator()
 Datum *Evaluator::exec(int32_t jumpLocation)
 {
     if (list.listValue()->isEmpty()) {
-        return &notADatum;
+        return Datum::getInstance();
     }
     fn = Config::get().mainCompiler()->functionPtrFromList(list.listValue());
     retval = static_cast<Datum *>(fn((addr_t)this, jumpLocation));
@@ -362,7 +362,7 @@ Datum *Evaluator::subExec(Datum *aList)
             return err;
         }
         if (reinterpret_cast<List *>(aList)->isEmpty()) {
-            return &notADatum;
+            return Datum::getInstance();
         }
         Evaluator e(aList, evalStack);
             retval = e.exec();

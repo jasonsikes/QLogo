@@ -27,7 +27,7 @@ bool isNotPersistent(Datum *d)
     return (d != nullptr) && ((d->isa & Datum::typePersistentMask) == 0);
 }
 
-DatumPtr::DatumPtr() : d(&notADatum)
+DatumPtr::DatumPtr() : d(Datum::getInstance())
 {
 }
 
@@ -81,7 +81,7 @@ DatumPtr::DatumPtr(const char *n)
 
 void DatumPtr::destroy()
 {
-    if (d != &notADatum)
+    if (isNotPersistent(d))
     {
         --(d->retainCount);
         if (d->retainCount <= 0)

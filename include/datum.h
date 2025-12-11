@@ -123,10 +123,23 @@ class Datum
     friend class DatumPtr;
     friend struct Evaluator;
 
-  private:
+  protected:
     Datum &operator=(const Datum &) = delete;
     Datum &operator=(Datum &&) = delete;
     Datum &operator=(Datum *) = delete;
+
+    /// @brief Protected constructor to prevent direct instantiation.
+    ///
+    /// @details The Datum class uses the singleton pattern. Only one instance
+    /// of Datum can exist (accessed via getInstance()). Subclasses can still
+    /// be instantiated multiple times because they can call this protected constructor.
+    Datum();
+
+    /// @brief Protected copy constructor to prevent copying.
+    Datum(const Datum &) = delete;
+
+    /// @brief Protected move constructor to prevent moving.
+    Datum(Datum &&) = delete;
 
   public:
 
@@ -165,11 +178,14 @@ class Datum
     /// @brief If set to 'true', DatumPtr will send qDebug message when this is deleted.
     bool alertOnDelete = false;
 
-    /// @brief Constructs a Datum
+    /// @brief Get the singleton instance of Datum.
     ///
-    /// @details The Datum class is the superclass for all data. The Datum superclass
-    /// maintains retain counts (retain counts are manipulated by the DatumPtr class).
-    Datum();
+    /// @details Returns the single instance of Datum. This instance represents
+    /// "nothing" (similar to nullptr). Subclasses like Word, List, Array, etc.
+    /// can still be instantiated multiple times.
+    ///
+    /// @return A pointer to the singleton Datum instance.
+    static Datum *getInstance();
 
     /// @brief Destructor.
     virtual ~Datum();
@@ -216,12 +232,12 @@ class DatumPtr
     /// Copy constructor. Increases retain count of the referred object.
     DatumPtr(const DatumPtr &other) noexcept;
 
-    /// Default constructor. Points to notADatum (like NULL)
+    /// Default constructor. Creates a pointer to the singleton Datum instance.
     DatumPtr();
 
     /// @brief Creates a pointer to a Datum object. Begins reference counting.
     ///
-    /// Creates a pointer to the referenced object and increases its retain count.
+    /// Creates a pointer to the specified Datum object and increases its retain count.
     /// The referred object will be destroyed when the last object referring to it
     /// is destroyed.
     DatumPtr(Datum *);
@@ -349,12 +365,11 @@ class DatumPtr
     }
 
 
-    /// @brief Returns true if the referred Datum is a notADatum, false otherwise.
+    /// @brief Returns true if the referred Datum is the singleton Datum instance, false otherwise.
     ///
-    /// @return True if the referred Datum is a notADatum, false otherwise.
-    bool isNothing()
-    {
-        return (d->isa & Datum::typeUnboundMask) != 0;
+    /// @return True if the referred Datum is the singleton Datum instance, false otherwise.
+    bool isNothing() {
+        return d == Datum::getInstance();
     }
 
     /// @brief Returns true if the referred Datum is a FlowControl, false otherwise.
@@ -723,10 +738,8 @@ class ListBuilder
     }
 };
 
-/// @brief A datum that has no value.
-extern Datum notADatum;
 
-/// @brief A pointer to notADatum, like NULL.
+/// @brief A pointer to the singleton Datum instance.
 extern DatumPtr nothing;
 
 #endif // DATUM_H
