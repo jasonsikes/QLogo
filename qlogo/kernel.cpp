@@ -227,7 +227,8 @@ COD***/
 
 void Kernel::initVariables(void)
 {
-    ListBuilder builder;
+    List *argv = new List;
+    ListBuilder builder(argv);
     for (auto &arg : Config::get().ARGV)
     {
         builder.append(DatumPtr(arg));
@@ -236,7 +237,7 @@ void Kernel::initVariables(void)
     DatumPtr platform(LOGOPLATFORM);
     DatumPtr version(LOGOVERSION);
     DatumPtr trueDatumPtr(QObject::tr("true"));
-    DatumPtr commandLine = builder.finishedList();
+    DatumPtr commandLine(argv);
 
     callStack.setDatumForName(commandLine, QObject::tr("COMMANDLINE"));
     callStack.setDatumForName(platform, QObject::tr("LOGOPLATFORM"));
@@ -271,7 +272,7 @@ Kernel::Kernel()
     initVariables();
     initPalette();
 
-    filePrefix = emptyList;
+    filePrefix = new List();
 }
 
 Kernel::~Kernel()

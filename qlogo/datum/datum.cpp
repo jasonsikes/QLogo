@@ -32,13 +32,15 @@ int maxCountOfNodes = 0;
 /// second contains the maximum number of Datum objects that have ever been in use.
 DatumPtr nodes()
 {
-    ListBuilder lb;
-    lb.append(DatumPtr(countOfNodes));
-    lb.append(DatumPtr(maxCountOfNodes));
+    int a = countOfNodes;
+    int b = maxCountOfNodes;
 
     maxCountOfNodes = countOfNodes;
 
-    return lb.finishedList();
+    List *retval = new List();
+    retval = new List(DatumPtr(b), retval);
+    retval = new List(DatumPtr(a), retval);
+    return DatumPtr(retval);
 }
 
 Datum::Datum() : retainCount(0)
@@ -71,4 +73,3 @@ QString Datum::showValue(bool, int, int)
 // notADatum must be initialized before nothing (order is guaranteed within same translation unit)
 Datum notADatum;
 DatumPtr nothing(&notADatum);
-DatumPtr emptyList(EmptyList::instance());

@@ -64,13 +64,14 @@ void Parser::inputProcedure(ASTNode *node, TextStream *readStream)
         throw FCError::procDefined(procnameP);
 
     // Assign the procedure's parameter names and default values.
-    ListBuilder firstLineBuilder;
+    DatumPtr textP = DatumPtr(new List());
+    ListBuilder textBuilder(textP.listValue());
+    DatumPtr firstLine = DatumPtr(new List());
+    ListBuilder firstLineBuilder(firstLine.listValue());
     for (int i = 1; i < node->countOfChildren(); ++i)
     {
         firstLineBuilder.append(node->childAtIndex(i));
     }
-    DatumPtr firstLine = firstLineBuilder.finishedList();
-    ListBuilder textBuilder;
     textBuilder.append(firstLine);
 
     // Now read in the body
@@ -90,7 +91,6 @@ void Parser::inputProcedure(ASTNode *node, TextStream *readStream)
         }
         textBuilder.append(line);
     }
-    DatumPtr textP = textBuilder.finishedList();
 
     // The sourcetext is the raw text from which the procedure was defined.
     // We save it in case user executes `FULLTEXT`.

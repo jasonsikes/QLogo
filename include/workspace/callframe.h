@@ -275,10 +275,6 @@ struct Evaluator
     /// @returns the given pointer (pass-through).
     Datum *watch(Datum *);
 
-    /// @brief Add a Datum to the release pool
-    /// @returns the given pointer (pass-through).
-    Datum *watch(DatumPtr);
-
     /// @brief Determine if the given Datums are equal, according to `EQUALP` help text.
     /// @param datum1 The first Datum to compare.
     /// @param datum2 The second Datum to compare.

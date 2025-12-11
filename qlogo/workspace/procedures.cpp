@@ -170,7 +170,7 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
 
     body->instructionList = text.listValue()->tail;
     if (body->instructionList.isNothing())
-        body->instructionList = emptyList;
+        body->instructionList = DatumPtr(new List);
 
     // Iterate over the instruction list and add tags to the tagToLine map.
     ListIterator lineIter = body->instructionList.listValue()->newIterator();
@@ -231,8 +231,11 @@ DatumPtr Procedures::procedureText(DatumPtr procnameP) {
         throw FCError::noHow(procnameP);
     Procedure *body = procedureForName(procname).procedureValue();
 
-    ListBuilder retvalBuilder;
-    ListBuilder inputsBuilder;
+    List *retval = new List();
+    ListBuilder retvalBuilder(retval);
+
+    List *inputs = new List();
+    ListBuilder inputsBuilder(inputs);
 
     // Generate the parameters interface.
     for (auto &i : body->requiredInputs) {
@@ -247,7 +250,8 @@ DatumPtr Procedures::procedureText(DatumPtr procnameP) {
     }
 
     if (body->restInput != "") {
-        List *restInput = new List(DatumPtr(body->restInput), EmptyList::instance());
+        List *restInput = new List();
+        restInput = new List(DatumPtr(body->restInput), restInput);
         inputsBuilder.append(DatumPtr(restInput));
     }
 
@@ -255,7 +259,7 @@ DatumPtr Procedures::procedureText(DatumPtr procnameP) {
         inputsBuilder.append(DatumPtr(body->countOfDefaultParams));
     }
 
-    retvalBuilder.append(inputsBuilder.finishedList());
+    retvalBuilder.append(DatumPtr(inputs));
 
     // Generate and append the instruction list.
     ListIterator b = body->instructionList.listValue()->newIterator();
@@ -264,7 +268,7 @@ DatumPtr Procedures::procedureText(DatumPtr procnameP) {
         retvalBuilder.append(b.element());
     }
 
-    return retvalBuilder.finishedList();
+    return DatumPtr(retval);
 }
 
 DatumPtr Procedures::procedureFulltext(DatumPtr procnameP, bool shouldValidate) {
@@ -277,7 +281,8 @@ DatumPtr Procedures::procedureFulltext(DatumPtr procnameP, bool shouldValidate) 
 
         // If there is no source text, generate it from the instruction list.
         if (body->sourceText.isNothing()) {
-            ListBuilder retvalBuilder;
+            List *retval = new List();
+            ListBuilder retvalBuilder(retval);
             retvalBuilder.append(DatumPtr(procedureTitle(procnameP)));
 
             ListIterator b = body->instructionList.listValue()->newIterator();
@@ -288,7 +293,7 @@ DatumPtr Procedures::procedureFulltext(DatumPtr procnameP, bool shouldValidate) 
 
             DatumPtr end(QObject::tr("END"));
             retvalBuilder.append(end);
-            return retvalBuilder.finishedList();
+            return DatumPtr(retval);
         } else {
             return body->sourceText;
         }
@@ -297,11 +302,12 @@ DatumPtr Procedures::procedureFulltext(DatumPtr procnameP, bool shouldValidate) 
     }
 
     // If there is no procedure by that name, generate an empty procedure.
-    ListBuilder retvalBuilder;
+    List *retval = new List();
+    ListBuilder retvalBuilder(retval);
     retvalBuilder.append(
         DatumPtr(QObject::tr("to ") + procnameP.wordValue()->printValue()));
     retvalBuilder.append(DatumPtr(QObject::tr("END")));
-    return retvalBuilder.finishedList();
+    return DatumPtr(retval);
 }
 
 QString Procedures::procedureTitle(DatumPtr procnameP) {
@@ -314,7 +320,10 @@ QString Procedures::procedureTitle(DatumPtr procnameP) {
 
     Procedure *body = procedureForName(procname).procedureValue();
 
-    ListBuilder firstLineBuilder;
+    DatumPtr firstlineP = DatumPtr(new List());
+
+    List *firstLine = firstlineP.listValue();
+    ListBuilder firstLineBuilder(firstLine);
 
     if (body->isMacro)
         firstLineBuilder.append(DatumPtr(QObject::tr(".macro")));
@@ -337,15 +346,16 @@ QString Procedures::procedureTitle(DatumPtr procnameP) {
     paramName = body->restInput;
     if (paramName != "") {
         paramName.push_front(':');
-        DatumPtr restInput = new List(DatumPtr(paramName), EmptyList::instance());
-        firstLineBuilder.append(restInput);
+        List *restInput = new List();
+        restInput = new List(DatumPtr(paramName), restInput);
+        firstLineBuilder.append(DatumPtr(restInput));
     }
 
     if (body->countOfDefaultParams != body->requiredInputs.size()) {
         firstLineBuilder.append(DatumPtr(body->countOfDefaultParams));
     }
 
-    QString retval = unreadList(firstLineBuilder.finishedList().listValue(), false);
+    QString retval = unreadList(firstLine, false);
     return retval;
 }
 
@@ -463,19 +473,21 @@ bool Procedures::isDefined(QString procname) {
 }
 
 DatumPtr Procedures::allProcedureNames() {
-    ListBuilder retvalBuilder;
+    List *retval = new List();
+    ListBuilder retvalBuilder(retval);
     for (const auto &iter : procedures.asKeyValueRange()) {
         retvalBuilder.append(DatumPtr(iter.first));
     }
-    return retvalBuilder.finishedList();
+    return DatumPtr(retval);
 }
 
 DatumPtr Procedures::allPrimitiveProcedureNames() {
-    ListBuilder retvalBuilder;
+    List *retval = new List();
+    ListBuilder retvalBuilder(retval);
     for (const auto &iter : stringToCmd.asKeyValueRange()) {
         retvalBuilder.append(DatumPtr(iter.first));
     }
-    return retvalBuilder.finishedList();
+    return DatumPtr(retval);
 }
 
 DatumPtr Procedures::arity(DatumPtr nameP) {
@@ -497,11 +509,12 @@ DatumPtr Procedures::arity(DatumPtr nameP) {
         return nothing;
     }
 
-    ListBuilder retvalBuilder;
+    List *retval = new List();
+    ListBuilder retvalBuilder(retval);
     retvalBuilder.append(DatumPtr(minParams));
     retvalBuilder.append(DatumPtr(defParams));
     retvalBuilder.append(DatumPtr(maxParams));
-    return retvalBuilder.finishedList();
+    return DatumPtr(retval);
 }
 
 QString Procedures::unreadDatum(DatumPtr aDatum, bool isInList) {

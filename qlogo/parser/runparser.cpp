@@ -200,7 +200,7 @@ void Runparser::runparseQuotedWord()
 
 DatumPtr Runparser::doRunparse(DatumPtr src)
 {
-    // Runparse operates on a list. If the source is a word, then parse it into a list
+    // Runparse operates on a list. If the source is a word, then parse it as a list
     // first.
     if (src.isWord())
     {
@@ -210,15 +210,17 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
         src = stream.readlistWithPrompt("", false);
     }
 
+    runparseRetval = new List();
+
     if (src.isNothing()) {
-        return emptyList;
+        return runparseRetval;
     }
 
     if (runparseBuilder)
     {
         delete runparseBuilder;
     }
-    runparseBuilder = new ListBuilder();
+    runparseBuilder = new ListBuilder(runparseRetval);
 
     ListIterator iter = src.listValue()->newIterator();
 
@@ -266,7 +268,7 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
             runparseBuilder->append(element);
         }
     }
-    return runparseBuilder->finishedList();
+    return DatumPtr(runparseRetval);
 }
 
 /// @brief Parse a QLogo word or list into a list of tokens.

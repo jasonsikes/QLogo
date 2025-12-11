@@ -22,6 +22,11 @@
 #include <QObject>
 #include <qdebug.h>
 
+bool isNotPersistent(Datum *d)
+{
+    return (d != nullptr) && ((d->isa & Datum::typePersistentMask) == 0);
+}
+
 DatumPtr::DatumPtr() : d(&notADatum)
 {
 }
@@ -29,7 +34,7 @@ DatumPtr::DatumPtr() : d(&notADatum)
 DatumPtr::DatumPtr(Datum *other)
 {
     d = other;
-    if (d && d != &notADatum)
+    if (isNotPersistent(d))
     {
         ++(d->retainCount);
     }
@@ -38,7 +43,7 @@ DatumPtr::DatumPtr(Datum *other)
 DatumPtr::DatumPtr(const DatumPtr &other) noexcept
 {
     d = other.d;
-    if (d && d != &notADatum)
+    if (isNotPersistent(d))
     {
         ++(d->retainCount);
     }
@@ -101,7 +106,7 @@ DatumPtr &DatumPtr::operator=(const DatumPtr &other) noexcept
     {
         destroy();
         d = other.d;
-        if (d && d != &notADatum)
+        if (isNotPersistent(d))
         {
             ++(d->retainCount);
         }
@@ -115,7 +120,7 @@ DatumPtr &DatumPtr::operator=(DatumPtr *other) noexcept
     {
         destroy();
         d = other->d;
-        if (d && d != &notADatum)
+        if (isNotPersistent(d))
         {
             ++(d->retainCount);
         }

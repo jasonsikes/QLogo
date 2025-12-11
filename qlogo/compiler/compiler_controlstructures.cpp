@@ -559,15 +559,14 @@ EXPORTC addr_t getCurrentError(addr_t eAddr)
     Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr errPtr = Config::get().mainKernel()->currentError;
 
-    ListBuilder retvalBuilder;
+    List *retval = new List();
     if ( ! errPtr.isNothing()) {
         FCError *err = reinterpret_cast<FCError *>(errPtr.datumValue());
-        retvalBuilder.append(DatumPtr(err->code));
-        retvalBuilder.append(err->message());
-        retvalBuilder.append(err->procedure());
-        retvalBuilder.append(err->line());
+        retval = new List(err->line(), retval);
+        retval = new List(err->procedure(), retval);
+        retval = new List(err->message(), retval);
+        retval = new List(DatumPtr(err->code), retval);
     }
-    Datum *retval = retvalBuilder.finishedList().datumValue();
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
 }
@@ -669,10 +668,10 @@ EXPORTC addr_t processRunresult(addr_t eAddr, addr_t resultAddr)
     Datum *retval;
 
     if ((result->isa & Datum::typeDataMask) != 0) {
-        retval = new List(result, EmptyList::instance());
+        retval = new List(result, new List());
     }
     else if ((result->isa & Datum::typeUnboundMask) != 0) {
-        retval = EmptyList::instance();
+        retval = new List();
     }
     else {
         // Pass through whatever we got because it's not good.

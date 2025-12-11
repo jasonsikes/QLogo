@@ -307,15 +307,15 @@ EXPORTC addr_t createList(addr_t eAddr, addr_t aryAddr, uint32_t count)
 {
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Datum **ary = reinterpret_cast<Datum**>(aryAddr);
-    ListBuilder builder;
+    List *retval = new List();
+    ListBuilder builder(retval);
     for (uint32_t i = 0; i < count; ++i)
     {
         DatumPtr d = DatumPtr(ary[i]);
         builder.append(d);
     }
-    DatumPtr retval = builder.finishedList();
     e->watch(retval);
-    return reinterpret_cast<addr_t>(retval.datumValue());
+    return reinterpret_cast<addr_t>(retval);
 }
 
 
@@ -342,7 +342,8 @@ EXPORTC addr_t createSentence(addr_t eAddr, addr_t aryAddr, uint32_t count)
 {
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Datum **ary = reinterpret_cast<Datum**>(aryAddr);
-    ListBuilder builder;
+    List *retval = new List();
+    ListBuilder builder(retval);
     for (uint32_t i = 0; i < count; ++i)
     {
         DatumPtr d = DatumPtr(ary[i]);
@@ -359,9 +360,8 @@ EXPORTC addr_t createSentence(addr_t eAddr, addr_t aryAddr, uint32_t count)
             builder.append(d);
         }
     }
-    DatumPtr retval = builder.finishedList();
     e->watch(retval);
-    return reinterpret_cast<addr_t>(retval.datumValue());
+    return reinterpret_cast<addr_t>(retval);
 }
 
 
@@ -476,7 +476,8 @@ EXPORTC addr_t lputList(addr_t eAddr, addr_t thingAddr, addr_t listAddr)
     Datum *thing = reinterpret_cast<Datum*>(thingAddr);
     List *list = reinterpret_cast<List*>(listAddr);
 
-    ListBuilder builder;
+    List *retval = new List();
+    ListBuilder builder(retval);
     ListIterator it = list->newIterator();
 
     while (it.elementExists())
@@ -485,9 +486,8 @@ EXPORTC addr_t lputList(addr_t eAddr, addr_t thingAddr, addr_t listAddr)
     }
     builder.append(DatumPtr(thing));
 
-    DatumPtr retval = builder.finishedList();
     e->watch(retval);
-    return reinterpret_cast<addr_t>(retval.datumValue());
+    return reinterpret_cast<addr_t>(retval);
 }
 
 
@@ -533,7 +533,7 @@ EXPORTC addr_t createArray(addr_t eAddr, int32_t size, int32_t origin)
     Array *retval = new Array(origin, size);
     for (int i = 0; i < size; ++i)
     {
-        retval->array.append(emptyList);
+        retval->array.append(DatumPtr(new List()));
     }
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
@@ -603,14 +603,14 @@ EXPORTC addr_t arrayToList(addr_t eAddr, addr_t arrayAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Array *array = reinterpret_cast<Array*>(arrayAddr);
-    ListBuilder builder;
+    List *retval = new List();
+    ListBuilder builder(retval);
     for (int i = 0; i < array->array.size(); ++i)
     {
         builder.append(array->array[i]);
     }
-    DatumPtr retval = builder.finishedList();
     e->watch(retval);
-    return reinterpret_cast<addr_t>(retval.datumValue());
+    return reinterpret_cast<addr_t>(retval);
 }
 
 /***DOC FIRST
@@ -796,22 +796,22 @@ EXPORTC addr_t butLastOfDatum(addr_t eAddr, addr_t thingAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Datum *thing = reinterpret_cast<Datum*>(thingAddr);
-
+    Datum *retval = nullptr;
     switch (thing->isa)
     {
         case Datum::typeWord:
         {
             Word *w = reinterpret_cast<Word*>(thing);
             QString rawValue = w->rawValue();
-            Datum *retval = new Word(rawValue.sliced(0, rawValue.size() - 1));
-            e->watch(retval);
-            return reinterpret_cast<addr_t>(retval);
+            retval = new Word(rawValue.sliced(0, rawValue.size() - 1));
+            break;
         }
         case Datum::typeList:
         {
             List *l = reinterpret_cast<List*>(thing);
             ListIterator iter = l->newIterator();
-            ListBuilder builder;
+            retval = new List();
+            ListBuilder builder(reinterpret_cast<List*>(retval));
             while (iter.elementExists())
             {
                 DatumPtr element = iter.element();
@@ -820,15 +820,13 @@ EXPORTC addr_t butLastOfDatum(addr_t eAddr, addr_t thingAddr)
                     builder.append(element);
                 }
             }
-            DatumPtr retval = builder.finishedList();
-            e->watch(retval);
-            return reinterpret_cast<addr_t>(retval.datumValue());
+            break;
         }
         default:
             Q_ASSERT(false);
     }
-    Q_ASSERT(false);
-    return nullptr;
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
 }
 
 
@@ -1675,7 +1673,7 @@ EXPORTC addr_t member(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
             }
             // If we get here, thing1 was not found in thing2.
             // Return an empty list.
-            List *retval = EmptyList::instance();
+            List *retval = new List();
             e->watch(retval);
             return reinterpret_cast<addr_t>(retval);
         }
