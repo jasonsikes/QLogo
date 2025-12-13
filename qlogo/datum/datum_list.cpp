@@ -82,12 +82,12 @@ QString List::showValue(bool fullPrintp, int printDepthLimit, int printWidthLimi
 
 bool List::isEmpty()
 {
-    return head.isNothing();
+    return this == EmptyList::instance();
 }
 
 void List::setButfirstItem(DatumPtr aValue)
 {
-    Q_ASSERT(! head.isNothing());
+    Q_ASSERT(! isEmpty());
     Q_ASSERT(aValue.isList());
     tail = aValue;
     astParseTimeStamp = 0;
@@ -116,7 +116,7 @@ int List::count()
 {
     int retval = 0;
     List* iter = this;
-    while ( ! iter->head.isNothing())
+    while ( ! iter->isEmpty())
     {
         ++retval;
         iter = iter->tail.listValue();
@@ -133,12 +133,9 @@ ListIterator List::newIterator()
 EmptyList *EmptyList::instance_ = nullptr;
 
 EmptyList::EmptyList()
-    : List(nothing, this)
+    : List(nothing, nullptr)
 {
-    isa = Datum::typeList;
-    head = nothing;
-    tail = nothing;
-    astParseTimeStamp = 0;
+    isa = (DatumType)(Datum::typeList | Datum::typePersistentMask);
 }
 
 EmptyList *EmptyList::instance()
@@ -160,3 +157,6 @@ void EmptyList::setButfirstItem(DatumPtr /* aValue */)
 {
     Q_ASSERT(false && "Attempted to modify immutable EmptyList");
 }
+
+// Value to represent an empty list
+DatumPtr emptyList(EmptyList::instance());

@@ -156,7 +156,7 @@ Word *DatumPtr::wordValue()
 
 List *DatumPtr::listValue()
 {
-    Q_ASSERT(d->isa == Datum::typeList);
+    Q_ASSERT(d && (d->isa & Datum::typeList) != 0);
     return static_cast<List *>(d);
 }
 

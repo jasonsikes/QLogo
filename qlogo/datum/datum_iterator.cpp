@@ -36,5 +36,5 @@ DatumPtr ListIterator::element()
 
 bool ListIterator::elementExists()
 {
-    return ( ! ptr.listValue()->head.isNothing());
+    return ! ptr.listValue()->isEmpty();
 }

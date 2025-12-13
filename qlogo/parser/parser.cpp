@@ -336,7 +336,7 @@ DatumPtr Parser::parseTermexp()
     if (currentToken.isNothing())
         return nothing;
 
-    if (currentToken.isa() == Datum::typeList)
+    if (currentToken.isList())
     {
         DatumPtr node(new ASTNode(QObject::tr("List")));
         node.astnodeValue()->genExpression = &Compiler::genLiteral;

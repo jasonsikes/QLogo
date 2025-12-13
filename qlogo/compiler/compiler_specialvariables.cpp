@@ -46,12 +46,12 @@ EXPORTC bool getvarErroract(addr_t eAddr)
 {
     QString name = QObject::tr("ERRACT");
     DatumPtr val = Config::get().mainKernel()->callStack.datumForName(name);
-    if (val.isa() == Datum::typeWord)
+    if (val.isWord())
     {
         QString word = val.wordValue()->keyValue();
         return (word != "FALSE") && (word != "");
     }
-    if (val.isa() == Datum::typeList)
+    if (val.isList())
     {
         return ! val.listValue()->isEmpty();
     }

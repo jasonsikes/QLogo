@@ -1183,7 +1183,8 @@ Value *Compiler::generateListExecIfList(ASTNode *parent, Value *c)
 
     BasicBlock *listTestBB = scaff->builder.GetInsertBlock();
     Value *dType = generateGetDatumIsa(c);
-    Value *cond = scaff->builder.CreateICmpEQ(dType, CoInt32(Datum::typeList), "typeTest");
+    Value *mask = scaff->builder.CreateAnd(dType, CoInt32(Datum::typeList), "dataTypeMask");
+    Value *cond = scaff->builder.CreateICmpNE(mask, CoInt32(0), "dataTypeMaskTest");
     scaff->builder.CreateCondBr(cond, isListBB, notListBB);
 
     scaff->builder.SetInsertPoint(isListBB);

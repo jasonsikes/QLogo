@@ -1556,8 +1556,8 @@ EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
         Config::get().mainController()->setCanvasBackgroundImage(image);
         goto done;
     }
-    if (dFilename->isa == Datum::typeList) {
-        if (reinterpret_cast<List *>(dFilename)->isEmpty()) {
+    if (dFilename->isList()) {
+        if (dFilename->listValue()->isEmpty()) {
             Config::get().mainController()->setCanvasBackgroundImage(QImage());
             goto done;
         }

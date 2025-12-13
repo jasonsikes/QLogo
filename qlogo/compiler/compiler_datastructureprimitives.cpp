@@ -153,26 +153,23 @@ EXPORTC bool isDatumEmpty(addr_t eAddr, addr_t dAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Datum *d = reinterpret_cast<Datum*>(dAddr);
-    switch (d->isa)
+    if (d->isWord())
     {
-        case Datum::typeWord:
-        {
-            Word *w = reinterpret_cast<Word*>(d);
-            return w->rawValue().isEmpty();
-        }
-        case Datum::typeList:
-        {
-            List *l = reinterpret_cast<List*>(d);
-            return l->isEmpty();
-        }
-        case Datum::typeArray:
-        {
-            return false;
-        }
-        default:
-            Q_ASSERT(false);
+        return d->wordValue()->rawValue().isEmpty();
     }
-     return false;
+    else if (d->isList())
+    {
+        return d->listValue()->isEmpty();
+    }
+    else if (d->isArray())
+    {
+        return false;
+    }
+    else
+    {
+        Q_ASSERT(false);
+    }
+    return false;
 }
 
 /***DOC EQUALP EQUAL?
@@ -425,7 +422,8 @@ Value *Compiler::generateFputlput(DatumPtr node, RequestReturnType returnType, b
 
         // List block
         scaff->builder.SetInsertPoint(listBB);
-        Value *listListTest = scaff->builder.CreateICmpEQ(listType, CoInt32(Datum::typeList), "listListTest");
+        Value *mask = scaff->builder.CreateAnd(listType, CoInt32(Datum::typeList), "dataTypeMask");
+        Value *listListTest = scaff->builder.CreateICmpNE(mask, CoInt32(0), "dataTypeMaskTest");
         scaff->builder.CreateBr(endBB);
 
         scaff->builder.SetInsertPoint(endBB);
@@ -642,28 +640,24 @@ EXPORTC addr_t firstOfDatum(addr_t eAddr, addr_t thingAddr)
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Datum *thing = reinterpret_cast<Datum*>(thingAddr);
     Datum *retval = nullptr;
-    switch (thing->isa)
+    if (thing->isWord())
     {
-        case Datum::typeWord:
-        {
-            Word *w = reinterpret_cast<Word*>(thing);
-            retval = new Word(w->rawValue().left(1));
-            break;
-        }
-        case Datum::typeList:
-        {
-            List *l = reinterpret_cast<List*>(thing);
-            retval = l->head.datumValue();
-            break;
-        }
-        case Datum::typeArray:
-        {
-            Array *a = reinterpret_cast<Array*>(thing);
-            retval = new Word(QString::number(a->origin));
-            break;
-        }
-        default:
-            Q_ASSERT(false);
+        Word *w = thing->wordValue();
+        retval = new Word(w->rawValue().left(1));
+    }
+    else if (thing->isList())
+    {
+        List *l = thing->listValue();
+        retval = l->head.datumValue();
+    }
+    else if (thing->isArray())
+    {
+        Array *a = thing->arrayValue();
+        retval = new Word(QString::number(a->origin));
+    }
+    else
+    {
+        Q_ASSERT(false);
     }
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
@@ -693,17 +687,14 @@ EXPORTC addr_t lastOfDatum(addr_t eAddr, addr_t thingAddr)
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Datum *thing = reinterpret_cast<Datum*>(thingAddr);
     Datum *retval = nullptr;
-    switch (thing->isa)
-    {
-        case Datum::typeWord:
+    if (thing->isWord())
         {
-            Word *w = reinterpret_cast<Word*>(thing);
+            Word *w = thing->wordValue();
             retval = new Word(w->rawValue().right(1));
-            break;
         }
-        case Datum::typeList:
+    else if (thing->isList())
         {
-            List *l = reinterpret_cast<List*>(thing);
+            List *l = thing->listValue();
             ListIterator iter = l->newIterator();
             DatumPtr lastElement;
             while (iter.elementExists())
@@ -711,10 +702,15 @@ EXPORTC addr_t lastOfDatum(addr_t eAddr, addr_t thingAddr)
                 lastElement = iter.element();
             }
             retval = lastElement.datumValue();
-            break;
-        }
-        default:
-            Q_ASSERT(false);
+    }
+    else if (thing->isArray())
+    {
+        Array *a = thing->arrayValue();
+        retval = new Word(a->origin);
+    }
+    else
+    {
+        Q_ASSERT(false);
     }
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
@@ -747,23 +743,20 @@ EXPORTC addr_t butFirstOfDatum(addr_t eAddr, addr_t thingAddr)
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Datum *thing = reinterpret_cast<Datum*>(thingAddr);
     Datum *retval = nullptr;
-    switch (thing->isa)
+    if (thing->isWord())
     {
-        case Datum::typeWord:
-        {
-            Word *w = reinterpret_cast<Word*>(thing);
-            QString rawValue = w->rawValue();
-            retval = new Word(rawValue.sliced(1, rawValue.size() - 1));
-            break;
-        }
-        case Datum::typeList:
-        {
-            List *l = reinterpret_cast<List*>(thing);
-            retval = l->tail.datumValue();
-            break;
-        }
-        default:
-            Q_ASSERT(false);
+        Word *w = thing->wordValue();
+        QString rawValue = w->rawValue();
+        retval = new Word(rawValue.sliced(1, rawValue.size() - 1));
+    }
+    else if (thing->isList())
+    {
+        List *l = thing->listValue();
+        retval = l->tail.datumValue();
+    }
+    else
+    {
+        Q_ASSERT(false);
     }
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
@@ -797,19 +790,17 @@ EXPORTC addr_t butLastOfDatum(addr_t eAddr, addr_t thingAddr)
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Datum *thing = reinterpret_cast<Datum*>(thingAddr);
 
-    switch (thing->isa)
-    {
-        case Datum::typeWord:
+    if (thing->isWord())
         {
-            Word *w = reinterpret_cast<Word*>(thing);
+            Word *w = thing->wordValue();
             QString rawValue = w->rawValue();
             Datum *retval = new Word(rawValue.sliced(0, rawValue.size() - 1));
             e->watch(retval);
             return reinterpret_cast<addr_t>(retval);
         }
-        case Datum::typeList:
+    else if (thing->isList())
         {
-            List *l = reinterpret_cast<List*>(thing);
+            List *l = thing->listValue();
             ListIterator iter = l->newIterator();
             ListBuilder builder;
             while (iter.elementExists())
@@ -824,8 +815,9 @@ EXPORTC addr_t butLastOfDatum(addr_t eAddr, addr_t thingAddr)
             e->watch(retval);
             return reinterpret_cast<addr_t>(retval.datumValue());
         }
-        default:
-            Q_ASSERT(false);
+    else
+    {
+        Q_ASSERT(false);
     }
     Q_ASSERT(false);
     return nullptr;
@@ -872,16 +864,15 @@ EXPORTC bool isDatumIndexValid(addr_t eAddr, addr_t thingAddr, double dIndex, ad
     qsizetype index = static_cast<qsizetype>(dIndex);
     if (index != dIndex) return false;
 
-    switch (thing->isa) {
-        case Datum::typeWord:
+    if (thing->isWord())
         {
-            Word *w = reinterpret_cast<Word*>(thing);
+            Word *w = thing->wordValue();
             QString rawValue = w->rawValue();
             return (index >= 1) && (index <= rawValue.size());
         }
-        case Datum::typeList:
+    else if (thing->isList())
         {
-            List *l = reinterpret_cast<List*>(thing);
+            List *l = thing->listValue();
             if (index < 1) return false;
             ListIterator iter = l->newIterator();
             while (iter.elementExists()) {
@@ -891,14 +882,15 @@ EXPORTC bool isDatumIndexValid(addr_t eAddr, addr_t thingAddr, double dIndex, ad
             }
             return false;
         }
-        case Datum::typeArray:
+    else if (thing->isArray())
         {
-            Array *a = reinterpret_cast<Array*>(thing);
+            Array *a = thing->arrayValue();
             int32_t size = static_cast<int32_t>(a->array.size());
             index = index - a->origin;
             return (index >= 0) && (index < size);
         }
-        default:
+    else
+    {
             Q_ASSERT(false);
     }
     return false;
@@ -911,28 +903,25 @@ EXPORTC addr_t itemOfDatum(addr_t eAddr, addr_t thingAddr, double dIndex, addr_t
     Datum *retval = nullptr;
     qsizetype index = static_cast<qsizetype>(dIndex);
 
-    switch (thing->isa) {
-        case Datum::typeWord:
-        {
-            Word *w = reinterpret_cast<Word*>(thing);
-            QString rawValue = w->rawValue();
-            retval = new Word(rawValue[index - 1]);
-            break;
-        }
-        case Datum::typeList:
-        {
+    if (thing->isWord())
+    {
+        Word *w = thing->wordValue();
+        QString rawValue = w->rawValue();
+        retval = new Word(rawValue[index - 1]);
+    }
+    else if (thing->isList())
+    {
             Datum **retvalPtr = reinterpret_cast<Datum**>(listItemPtrAddr);
             retval = *retvalPtr;
-            break;
         }
-        case Datum::typeArray:
+    else if (thing->isArray())
         {
-            Array *a = reinterpret_cast<Array*>(thing);
+            Array *a = thing->arrayValue();
             index = index - a->origin;
             retval = a->array[index].datumValue();
-            break;
         }
-        default:
+    else
+    {
             Q_ASSERT(false);
     }
     e->watch(retval);
@@ -1027,23 +1016,21 @@ EXPORTC void setDatumAtIndexOfContainer(addr_t eAddr, addr_t valueAddr, double d
     DatumPtr value(reinterpret_cast<Datum*>(valueAddr));
     qsizetype index = static_cast<qsizetype>(dIndex);
 
-    switch (container->isa) {
-        case Datum::typeList:
-        {
-            List *l = reinterpret_cast<List*>(container);
+    if (container->isList())
+    {
+        List *l = container->listValue();
             for (qsizetype i = 1; i < index; ++i) {
                 l = l->tail.listValue();
             }
             l->head = value;
-            break;
         }
-        case Datum::typeArray:
+    else if (container->isArray())
         {
-            Array *a = reinterpret_cast<Array*>(container);
+            Array *a = container->arrayValue();
             a->array[index - a->origin] = value;
-            break;
         }
-        default:
+    else
+    {
             Q_ASSERT(false);
     }
 }
@@ -1170,8 +1157,9 @@ Value *Compiler::genListp(DatumPtr node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *thingType = generateGetDatumIsa(thing);
-    Value *isType = scaff->builder.CreateICmpEQ(thingType, CoInt32(Datum::typeList), "isDatumTypeCond");
-    return scaff->builder.CreateSelect(isType, CoBool(true), CoBool(false), "isDatumTypeResult");
+    Value *mask = scaff->builder.CreateAnd(thingType, CoInt32(Datum::typeList), "dataTypeMask");
+    Value *cond = scaff->builder.CreateICmpNE(mask, CoInt32(0), "typeTest");
+    return scaff->builder.CreateSelect(cond, CoBool(true), CoBool(false), "isDatumTypeResult");
 }
 
 
@@ -1197,12 +1185,12 @@ EXPORTC bool isEmpty(addr_t eAddr, addr_t thingAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Datum *thing = reinterpret_cast<Datum*>(thingAddr);
-    if (thing->isa == Datum::typeWord) {
-        Word *word = reinterpret_cast<Word*>(thing);
+    if (thing->isWord()) {
+        Word *word = thing->wordValue();
         return word->rawValue().isEmpty();
     }
-    if (thing->isa == Datum::typeList) {
-        List *list = reinterpret_cast<List*>(thing);
+    else if (thing->isList()) {
+        List *list = thing->listValue();
         return list->isEmpty();
     }
     return false;
@@ -1295,13 +1283,12 @@ EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
     Datum *thing = reinterpret_cast<Datum*>(thingAddr);
     Datum *container = reinterpret_cast<Datum*>(containerAddr);
 
-    switch (container->isa) {
-        case Datum::typeWord:
-        {
-            Word *word = reinterpret_cast<Word*>(container);
+    if (container->isWord())
+    {
+        Word *word = container->wordValue();
             QString containerString = word->keyValue();
-            if (thing->isa == Datum::typeWord) {
-                Word *word = reinterpret_cast<Word*>(thing);
+            if (thing->isWord()) {
+                Word *word = thing->wordValue();
                 QString thingString = word->keyValue();
                 if (thingString.length() != 1) {
                     return false;
@@ -1310,9 +1297,9 @@ EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
             }
             return false;
         }
-        case Datum::typeList:
+    else if (container->isList())
         {
-            List *list = reinterpret_cast<List*>(container);
+            List *list = container->listValue();
             ListIterator iter(list);
             while (iter.elementExists()) {
                 Datum *item = iter.element().datumValue();
@@ -1323,9 +1310,9 @@ EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
             }
             return false;
         }
-        case Datum::typeArray:
+    else if (container->isArray())
         {
-            Array *array = reinterpret_cast<Array*>(container);
+            Array *array = container->arrayValue();
             for (auto item : array->array) {
                 if (cmpDatumToDatum(eAddr, thingAddr, reinterpret_cast<addr_t>(item.datumValue()))) {
                     return true;
@@ -1333,7 +1320,8 @@ EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
             }
             return false;
         }
-        default:
+    else
+    {
             Q_ASSERT(false);
     }
     Q_ASSERT(false);
@@ -1485,24 +1473,20 @@ EXPORTC double count(addr_t eAddr, addr_t thingAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Datum *thing = reinterpret_cast<Datum*>(thingAddr);
-    switch (thing->isa) {
-        case Datum::typeWord:
-        {
-            Word *word = reinterpret_cast<Word*>(thing);
-            return word->rawValue().length();
-        }
-        case Datum::typeList:
-        {
-            List *list = reinterpret_cast<List*>(thing);
-            return list->count();
-        }
-        case Datum::typeArray:
-        {
-            Array *array = reinterpret_cast<Array*>(thing);
-            return array->array.size();
-        }
-        default:
-            Q_ASSERT(false);
+    if (thing->isWord())
+    {
+        Word *word = thing->wordValue();
+        return word->rawValue().length();
+    }
+    else if (thing->isList())
+    {
+        List *list = thing->listValue();
+        return list->count();
+    }
+    else if (thing->isArray())
+    {
+        Array *array = thing->arrayValue();
+        return array->array.size();
     }
     Q_ASSERT(false);
     return 0;
@@ -1643,15 +1627,14 @@ EXPORTC addr_t member(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Datum *thing1 = reinterpret_cast<Datum*>(thing1Addr);
     Datum *thing2 = reinterpret_cast<Datum*>(thing2Addr);
-    switch (thing2->isa) {
-        case Datum::typeWord:
+    if (thing2->isWord())
         {
-            Word *word1 = reinterpret_cast<Word*>(thing1);
-            Word *word2 = reinterpret_cast<Word*>(thing2);
+            Word *word1 = thing1->wordValue();
+            Word *word2 = thing2->wordValue();
             QString retval = "";
-            if (word1->isa == Datum::typeWord) {
+            if (thing1->isWord()) {
                 QString thing2Str = word2->rawValue();
-                QString thing1Str = reinterpret_cast<Word*>(thing1)->rawValue();
+                QString thing1Str = word1->rawValue();
                 if ( ! thing1Str.isEmpty()) {
                     int index = thing2Str.indexOf(thing1Str);
                     if (index != -1) {
@@ -1663,9 +1646,9 @@ EXPORTC addr_t member(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
             e->watch(retvalWord);
             return reinterpret_cast<addr_t>(retvalWord);
         }
-        case Datum::typeList:
+    else if (thing2->isList())
         {
-            List *list = reinterpret_cast<List*>(thing2);
+            List *list = thing2->listValue();
             while ( ! list->isEmpty()) {
                 addr_t listAddr = reinterpret_cast<addr_t>(list->head.datumValue());
                 if (cmpDatumToDatum(eAddr, listAddr, thing1Addr)) {
@@ -1679,7 +1662,8 @@ EXPORTC addr_t member(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
             e->watch(retval);
             return reinterpret_cast<addr_t>(retval);
         }
-        default:
+    else
+    {
             Q_ASSERT(false);
     }
     Q_ASSERT(false);

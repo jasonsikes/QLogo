@@ -505,15 +505,20 @@ DatumPtr Procedures::arity(DatumPtr nameP) {
 }
 
 QString Procedures::unreadDatum(DatumPtr aDatum, bool isInList) {
-    switch (aDatum.isa()) {
-    case Datum::typeWord:
+    if (aDatum.isWord())
+    {
         return unreadWord(aDatum.wordValue(), isInList);
-        break;
-    case Datum::typeList:
+    }
+    else if (aDatum.isList())
+    {
         return unreadList(aDatum.listValue(), isInList);
-    case Datum::typeArray:
+    }
+    else if (aDatum.isArray())
+    {
         return unreadArray(aDatum.arrayValue());
-    default:
+    }
+    else
+    {
         Q_ASSERT(false);
     }
     return "";
@@ -587,15 +592,20 @@ QString Procedures::unreadWord(Word *aWord, bool isInList) {
 }
 
 QString Procedures::printoutDatum(DatumPtr aDatum) {
-    switch (aDatum.isa()) {
-    case Datum::typeWord:
+    if (aDatum.isWord())
+    {
         return unreadWord(aDatum.wordValue());
-        break;
-    case Datum::typeList:
+    }
+    else if (aDatum.isList())
+    {
         return unreadList(aDatum.listValue(), true);
-    case Datum::typeArray:
+    }
+    else if (aDatum.isArray())
+    {
         return unreadArray(aDatum.arrayValue());
-    default:
+    }
+    else
+    {
         Q_ASSERT(false);
     }
     return "";

@@ -382,7 +382,7 @@ EXPORTC int32_t getNumberAryFromList(addr_t eAddr, addr_t listAddr, addr_t destA
     DatumPtr list = DatumPtr(reinterpret_cast<Datum *>(listAddr));
     double *dest = reinterpret_cast<double *>(destAddr);
     // Presumably, getCountOfList() has already been called so the destination size is correct.
-    while ((list.datumValue()->isa == Datum::typeList) && ! list.listValue()->isEmpty())
+    while ((list.isList()) && ! list.listValue()->isEmpty())
     {
         DatumPtr d = list.listValue()->head;
         if ( ! d.isWord())
