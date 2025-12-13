@@ -14,7 +14,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "visitedset.h"
+#include "visited.h"
 
 
 // VisitedSet implementation
