@@ -279,42 +279,8 @@ struct Evaluator
     /// @returns the given pointer (pass-through).
     Datum *watch(DatumPtr);
 
-    /// @brief Determine if the given Datums are equal, according to `EQUALP` help text.
-    /// @param datum1 The first Datum to compare.
-    /// @param datum2 The second Datum to compare.
-    /// @param cs The case sensitivity to use for the comparison.
-    /// @returns true if the Datums are equal, false otherwise.
-    bool areDatumsEqual(Datum *datum1, Datum *datum2, Qt::CaseSensitivity cs);
-
-    /// @brief Recursively check if a datum is in a container.
-    /// @param container The container to check.
-    /// @param value The value to check for.
-    /// @param cs The case sensitivity to use for the comparison.
-    /// @return True if the value is in the container, false otherwise.
-    bool isDatumInContainer(Datum *container, Datum *value, Qt::CaseSensitivity cs);
-
     /// @brief Returns TRUE if CASEIGNOREDP is "TRUE, "true, or any combination of the two.
     bool varCASEIGNOREDP();
-
-protected:
-
-    // Recursive searches need to make sure we don't get caught in infinite loops.
-    // Remember what we searched so we don't search it again.
-    QSet<Datum *> searchedContainers;
-
-    // Left-side and right side List containers.
-    QSet<List *> comparedListsLHS;
-    QSet<List *> comparedListsRHS;
-
-    /// @brief Determine if the given Datums are equal, according to `EQUALP` help text.
-    /// @param datum1 The first Datum to compare.
-    /// @param datum2 The second Datum to compare.
-    /// @param cs The case sensitivity to use for the comparison.
-    /// @returns true if the Datums are equal, false otherwise.
-    bool areDatumsEqualRecurse(Datum *datum1, Datum *datum2, Qt::CaseSensitivity cs);
-
-    // Check if a datum is in a container, recurse.
-    bool isDatumInContainerRecurse(Datum *value, Datum *container, Qt::CaseSensitivity cs);
 };
 
 #endif // CALLFRAME_H
