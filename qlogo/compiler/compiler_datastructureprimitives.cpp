@@ -61,7 +61,13 @@ EXPORTC bool cmpDatumToDouble(addr_t d, double n)
     return dN == n;
 }
 
-bool areDatumsEqual(VisitedMap &visited, Datum *d1, Datum *d2, Qt::CaseSensitivity cs)
+    /// @brief Determine if the given Datums are equal, according to `EQUALP` help text.
+    /// @param visited The set of visited nodes.
+    /// @param d1 The first Datum to compare.
+    /// @param d2 The second Datum to compare.
+    /// @param cs The case sensitivity to use for the comparison.
+    /// @returns true if the Datums are equal, false otherwise.
+    bool areDatumsEqual(VisitedMap &visited, Datum *d1, Datum *d2, Qt::CaseSensitivity cs)
 {
     if (d1 == d2)
         return true;
@@ -1044,7 +1050,13 @@ Value *Compiler::generateSetitem(DatumPtr node, RequestReturnType returnType, bo
     return generateVoidRetval(node.astnodeValue());
 }
 
-bool isDatumInContainer(VisitedSet &visited, Datum *value, Datum *container, Qt::CaseSensitivity cs)
+    /// @brief Recursively check if a datum is in a container.
+    /// @param visited The set of visited nodes.
+    /// @param value The value to check for.
+    /// @param container The container to check.
+    /// @param cs The case sensitivity to use for the comparison.
+    /// @return True if the value is in the container, false otherwise.
+    bool isDatumInContainer(VisitedSet &visited, Datum *value, Datum *container, Qt::CaseSensitivity cs)
 {
     if (visited.contains(container))
         return false;
