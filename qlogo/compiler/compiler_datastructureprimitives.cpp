@@ -1044,6 +1044,62 @@ Value *Compiler::generateSetitem(DatumPtr node, RequestReturnType returnType, bo
     return generateVoidRetval(node.astnodeValue());
 }
 
+bool isDatumInContainer(VisitedSet &visited, Datum *value, Datum *container, Qt::CaseSensitivity cs)
+{
+    if (visited.contains(container))
+        return false;
+    visited.add(container);
+
+    VisitedMap searched;
+    
+    if (container->isArray())
+    {
+        Array *a = container->arrayValue();
+        for (auto &item : a->array)
+        {
+            searched.clear();
+            Datum *itemPtr = item.datumValue();
+            if (areDatumsEqual(searched, itemPtr, value, cs))
+                return true;
+            if (itemPtr->isArray() || itemPtr->isList())
+            {
+                if (visited.contains(itemPtr))
+                {
+                    visited.add(itemPtr);
+                    if (isDatumInContainer(visited, itemPtr, value, cs))
+                        return true;
+                }
+            }
+        }
+    }
+    else if (container->isList())
+    {
+        List *l = container->listValue();
+        while (l != EmptyList::instance())
+        {
+            Datum* itemPtr = l->head.datumValue();
+            searched.clear();
+            if (areDatumsEqual(searched, itemPtr, value, cs))
+                return true;
+            if (itemPtr->isArray() || itemPtr->isList())
+            {
+                if ( ! visited.contains(itemPtr))
+                {
+                    visited.add(itemPtr);
+                    if (isDatumInContainer(visited, itemPtr, value, cs))
+                        return true;
+                }
+            }
+            l = l->tail.listValue();
+        }
+    }
+    else
+    {
+        Q_ASSERT(false);
+    }
+    return false;
+}
+
 EXPORTC bool isDatumContainerOrInContainer(addr_t eAddr, addr_t valueAddr, addr_t containerAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
@@ -1059,8 +1115,9 @@ EXPORTC bool isDatumContainerOrInContainer(addr_t eAddr, addr_t valueAddr, addr_
         return true;
 
     Qt::CaseSensitivity cs = e->varCASEIGNOREDP() ? Qt::CaseInsensitive : Qt::CaseSensitive;
+    VisitedSet visited;
 
-    return e->isDatumInContainer(value, container, cs);
+    return isDatumInContainer(visited, value, container, cs);
 }
 
 EXPORTC void setDatumAtIndexOfContainer(addr_t eAddr, addr_t valueAddr, double dIndex, addr_t containerAddr)
