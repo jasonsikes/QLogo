@@ -19,6 +19,7 @@
 #include "datum.h"
 #include "parser.h"
 #include "compiler.h"
+#include "visited.h"
 #include <QObject>
 #include <qdebug.h>
 
@@ -116,9 +117,16 @@ int List::count()
 {
     int retval = 0;
     List* iter = this;
+    VisitedSet visited;
     while ( ! iter->isEmpty())
     {
         ++retval;
+        if (visited.contains(iter))
+        {
+            // TODO: How should we report a cycle? -1? MAX_INT?
+            return retval;
+        }
+        visited.add(iter);
         iter = iter->tail.listValue();
     }
     return retval;
