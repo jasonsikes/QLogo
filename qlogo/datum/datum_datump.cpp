@@ -151,19 +151,19 @@ bool DatumPtr::operator!=(const DatumPtr &other)
 Word *DatumPtr::wordValue()
 {
     Q_ASSERT(d->isa == Datum::typeWord);
-    return static_cast<Word *>(d);
+    return reinterpret_cast<Word *>(d);
 }
 
 List *DatumPtr::listValue()
 {
     Q_ASSERT(d && (d->isa & Datum::typeList) != 0);
-    return static_cast<List *>(d);
+    return reinterpret_cast<List *>(d);
 }
 
 Array *DatumPtr::arrayValue()
 {
     Q_ASSERT(d->isa == Datum::typeArray);
-    return static_cast<Array *>(d);
+    return reinterpret_cast<Array *>(d);
 }
 
 FlowControl *DatumPtr::flowControlValue()
@@ -175,13 +175,13 @@ FlowControl *DatumPtr::flowControlValue()
 Procedure *DatumPtr::procedureValue()
 {
     Q_ASSERT(d->isa == Datum::typeProcedure);
-    return static_cast<Procedure *>(d);
+    return reinterpret_cast<Procedure *>(d);
 }
 
 ASTNode *DatumPtr::astnodeValue()
 {
     Q_ASSERT(d->isa == Datum::typeASTNode);
-    return static_cast<ASTNode *>(d);
+    return reinterpret_cast<ASTNode *>(d);
 }
 
 FCError *DatumPtr::errValue()

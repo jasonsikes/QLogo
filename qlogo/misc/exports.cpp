@@ -263,7 +263,7 @@ EXPORTC addr_t getErrorNoOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr)
     // If the thing that didn't output is an ASTNode, use the name of the ASTNode.
     if (x->isa == Datum::typeASTNode)
     {
-        x = static_cast<ASTNode *>(x)->nodeName.datumValue();
+        x = reinterpret_cast<ASTNode *>(x)->nodeName.datumValue();
     }
     FCError *err = FCError::didntOutput(DatumPtr(x->toString(Datum::ToStringFlags_Show)), DatumPtr(y->toString(Datum::ToStringFlags_Show)));
     e->watch(err);
