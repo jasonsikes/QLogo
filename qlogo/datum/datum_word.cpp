@@ -27,9 +27,30 @@
 /// Otherwise, a mapping is used to convert the raw character to a printable character.
 QChar rawToChar(const QChar &src)
 {
-    const ushort rawToAsciiMap[] = {2,  58, 3,  32, 4,  9,  5,  10, 6,  40,  11, 63,  14, 43, 15, 126,
-                                    16, 41, 17, 91, 18, 93, 19, 45, 20, 42,  21, 47,  22, 61, 23, 60,
-                                    24, 62, 25, 34, 26, 92, 28, 59, 29, 124, 30, 123, 31, 125};
+    const ushort rawToAsciiMap[] = {3,  32, // ' ' (space)
+                                    4,  9,  // \t (tab)
+                                    5,  10, // \n (newline)
+                                    6,  40, // ( (left parenthesis)
+                                    11, 63, // ? (question mark)
+                                    14, 43, // + (plus)
+                                    15, 126,// ~ (tilde)
+                                    16, 41, // ) (right parenthesis)
+                                    17, 91, // [ (left bracket)
+                                    18, 93, // ] (right bracket)
+                                    19, 45, // - (minus)
+                                    20, 42, // * (asterisk)
+                                    21, 47, // / (slash)
+                                    22, 61, // = (equals)
+                                    23, 60, // < (less than)
+                                    24, 62, // > (greater than)
+                                    25, 34, // " (quote)
+                                    26, 92, // \ (backslash)
+                                    27, 58, // : (colon)
+                                    28, 59, // ; (semicolon)
+                                    29, 124,// | (vertical bar)
+                                    30, 123,// { (left brace)
+                                    31, 125 // } (right brace)
+                                };
     ushort v = src.unicode();
     if (v >= 32)
         return src;
@@ -68,9 +89,30 @@ void rawToChar(QString &src)
 /// Otherwise, a mapping is used to convert the printable character to a raw character.
 QChar charToRaw(const QChar &src)
 {
-    const ushort asciiToRawMap[] = {126, 15, 125, 31, 124, 29, 123, 30, 93, 18, 92, 26, 91, 17, 63, 11,
-                                    62,  24, 61,  22, 60,  23, 59,  28, 58, 2,  47, 21, 45, 19, 43, 14,
-                                    42,  20, 41,  16, 40,  6,  34,  25, 32, 3,  10, 5,  9,  4,  0,  0};
+    const ushort asciiToRawMap[] = {126, 15, // ~ (tilde)
+                                    125, 31, // } (right brace)
+                                    124, 29, // | (vertical bar)
+                                    123, 30, // { (left brace)
+                                    93, 18,  // ] (right bracket)
+                                    92, 26,  // \ (backslash)
+                                    91, 17,  // [ (left bracket)
+                                    63, 11,  // ? (question mark)
+                                    62, 24,  // > (greater than)
+                                    61, 22,  // = (equals)
+                                    60, 23,  // < (less than)
+                                    59, 28,  // ; (semicolon)
+                                    58, 27,  // : (colon)
+                                    47, 21,  // / (slash)
+                                    45, 19,  // - (minus)
+                                    43, 14,  // + (plus)
+                                    42, 20,  // * (asterisk)
+                                    41, 16,  // ) (right parenthesis)
+                                    40,  6,  // ( (left parenthesis)
+                                    34,  25, // " (quote)
+                                    32,  3,  // ' ' (space)
+                                    10,  5,  // \n (newline)
+                                    9,  4,   // \t (tab)
+                                    0,  0};
     ushort v = src.unicode();
     for (const ushort *i = asciiToRawMap; *i >= v; i += 2)
     {
