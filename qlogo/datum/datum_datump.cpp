@@ -114,19 +114,9 @@ DatumPtr &DatumPtr::operator=(const DatumPtr &other) noexcept
     return *this;
 }
 
-bool DatumPtr::operator==(DatumPtr *other)
-{
-    return d == other->d;
-}
-
 bool DatumPtr::operator==(const DatumPtr &other)
 {
     return d == other.d;
-}
-
-bool DatumPtr::operator!=(DatumPtr *other)
-{
-    return d != other->d;
 }
 
 bool DatumPtr::operator!=(const DatumPtr &other)

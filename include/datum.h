@@ -438,19 +438,7 @@ class DatumPtr
     ///
     /// @param other The DatumPtr to compare to this.
     /// @return True if and only if other points to the same object as this.
-    bool operator==(DatumPtr *other);
-
-    /// @brief Return true if and only if other points to the same object as this.
-    ///
-    /// @param other The DatumPtr to compare to this.
-    /// @return True if and only if other points to the same object as this.
     bool operator==(const DatumPtr &other);
-
-    /// @brief Return true if and only if other does not point to the same object as this.
-    ///
-    /// @param other The DatumPtr to compare to this.
-    /// @return True if and only if other does not point to the same object as this.
-    bool operator!=(DatumPtr *other);
 
     /// @brief Return true if and only if other does not point to the same object as this.
     ///
