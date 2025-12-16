@@ -1,4 +1,4 @@
-//===-- qlogo/datum_err.cpp - Err class implementation -------*- C++ -*-===//
+//===-- qlogo/datum_flowcontrol.cpp - FlowControl subclasses implementation -------*- C++ -*-===//
 //
 // Copyright 2017-2024 Jason Sikes
 //
@@ -9,9 +9,12 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the List class, which is the general
-/// container of sequence data. A list may contain words, lists or arrays.
-/// Is is implemented by using a linked list.
+/// This file contains the implementation of the FlowControl subclasses, which are the general
+/// container of flow control data. The subclasses are as follows:
+/// - FCError: An error object.
+/// - FCGoto: A goto object.
+/// - FCReturn: A return object.
+/// - FCContinuation: A continuation object.
 ///
 //===----------------------------------------------------------------------===//
 
