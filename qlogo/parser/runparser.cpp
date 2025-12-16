@@ -204,7 +204,7 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
     // first.
     if (src.isWord())
     {
-        QString text = src.wordValue()->rawValue();
+        QString text = src.wordValue()->toString(Datum::ToStringFlags_Raw);
         QTextStream srcStream(&text, QIODevice::ReadOnly);
         TextStream stream(&srcStream);
         src = stream.readlistWithPrompt("", false);
@@ -227,7 +227,7 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
         DatumPtr element = iter.element();
         if (element.isWord())
         {
-            QString oldWord = element.wordValue()->rawValue();
+            QString oldWord = element.wordValue()->toString(Datum::ToStringFlags_Raw);
             isRunparseSourceSpecial = element.wordValue()->isForeverSpecial;
 
             runparseCIter = oldWord.begin();

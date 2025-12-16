@@ -88,7 +88,7 @@ void DatumPtr::destroy()
         {
             if (d->alertOnDelete)
             {
-                qDebug() << "DELETING: " << d << " " << d->showValue();
+                qDebug() << "DELETING: " << d << " " << d->toString(Datum::ToStringFlags_Show);
             }
             delete d;
         }
@@ -190,12 +190,7 @@ FCError *DatumPtr::errValue()
     return reinterpret_cast<FCError *>(d);
 }
 
-QString DatumPtr::printValue(bool fullPrintp, int printDepthLimit, int printWidthLimit)
+QString DatumPtr::toString( Datum::ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited)
 {
-    return d->printValue(fullPrintp, printDepthLimit, printWidthLimit);
-}
-
-QString DatumPtr::showValue(bool fullPrintp, int printDepthLimit, int printWidthLimit)
-{
-    return d->showValue(fullPrintp, printDepthLimit, printWidthLimit);
+    return d->toString(flags, printDepthLimit, printWidthLimit, visited);
 }

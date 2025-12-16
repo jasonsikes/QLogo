@@ -77,7 +77,7 @@ bool Kernel::colorFromDatumPtr(QColor &retval, DatumPtr colorP)
                 retval = palette[0];
             return true;
         }
-        retval = QColor(colorP.wordValue()->printValue().toLower());
+        retval = QColor(colorP.wordValue()->toString().toLower());
         return retval.isValid();
     }
     else if (colorP.isList())
@@ -111,7 +111,7 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
                 return nothing;
             result = runList(line);
         } catch (FCError *e) {
-            sysPrint(e->printValue());
+            sysPrint(e->toString());
             sysPrint("\n");
             continue;
         }
@@ -122,23 +122,23 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
             FCError *e = result.errValue();
             if (e->tag().isWord() && (e->code == ErrCode::ERR_NO_CATCH))
             {
-                if (e->tag().wordValue()->keyValue() == QObject::tr("TOPLEVEL"))
+                if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("TOPLEVEL"))
                 {
                     sysPrint("\n");
                     continue;
                 }
-                if (e->tag().wordValue()->keyValue() == QObject::tr("SYSTEM"))
+                if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("SYSTEM"))
                 {
                     sysPrint("\n");
                     Config::get().mainController()->systemStop();
                     return result;
                 }
-                if (e->tag().wordValue()->keyValue() == QObject::tr("PAUSE") && isPausing)
+                if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("PAUSE") && isPausing)
                 {
                     return e->output();
                 }
             }
-            sysPrint(e->printValue());
+            sysPrint(e->toString());
             sysPrint("\n");
             continue;
         }
@@ -151,7 +151,7 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
         }
 
         // If we are here that means something was output, but not handled.
-        sysPrint(QString("You don't say what to do with %1\n").arg(result.showValue()));
+        sysPrint(QString("You don't say what to do with %1\n").arg(result.toString(Datum::ToStringFlags_Show)));
     }
 }
 Datum* Kernel::inputProcedure(ASTNode *node)
@@ -328,7 +328,7 @@ DatumPtr Kernel::pause()
     DatumPtr sourceNode = callStack.localFrame()->sourceNode;
     QString sourceNodeName;
     if (sourceNode.isASTNode()) {
-        sourceNodeName = sourceNode.astnodeValue()->nodeName.printValue();
+        sourceNodeName = sourceNode.astnodeValue()->nodeName.toString();
     }
 
     CallFrame frame(&callStack, nothing);
@@ -344,11 +344,11 @@ DatumPtr Kernel::pause()
 
 QString Kernel::filepathForFilename(DatumPtr filenameP)
 {
-    QString filename = filenameP.wordValue()->printValue();
+    QString filename = filenameP.wordValue()->toString();
 
     if (filePrefix.isWord())
     {
-        QString prefix = filePrefix.wordValue()->printValue();
+        QString prefix = filePrefix.wordValue()->toString();
         return prefix + QDir::separator() + filename;
     }
     return filename;

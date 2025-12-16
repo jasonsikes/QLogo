@@ -48,7 +48,7 @@ EXPORTC bool getvarErroract(addr_t eAddr)
     DatumPtr val = Config::get().mainKernel()->callStack.datumForName(name);
     if (val.isWord())
     {
-        QString word = val.wordValue()->keyValue();
+        QString word = val.toString(Datum::ToStringFlags_Key);
         return (word != "FALSE") && (word != "");
     }
     if (val.isList())

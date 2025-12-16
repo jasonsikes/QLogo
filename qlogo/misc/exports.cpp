@@ -86,7 +86,7 @@ EXPORTC bool getValidityOfBoolForDatum(addr_t eAddr, addr_t datumAddr)
 /// @return the stored value as a QLogo object
 EXPORTC addr_t getDatumForVarname(addr_t wordAddr)
 {
-    QString name = reinterpret_cast<Word *>(wordAddr)->keyValue();
+    QString name = reinterpret_cast<Word *>(wordAddr)->toString(Datum::ToStringFlags_Key);
     Datum *val = Config::get().mainKernel()->callStack.datumForName(name).datumValue();
 
     return reinterpret_cast<addr_t >(val);
@@ -98,9 +98,9 @@ EXPORTC addr_t getDatumForVarname(addr_t wordAddr)
 /// @param useShow set to true to generate output for SHOW, false for PRINT
 EXPORTC addr_t stdWriteDatum(addr_t datumAddr, bool useShow)
 {
-    auto writeMethod = useShow ? &Datum::showValue : &Datum::printValue;
+    Datum::ToStringFlags writeFlags = useShow ? Datum::ToStringFlags_Show : Datum::ToStringFlags_None;
     Datum *d = reinterpret_cast<Datum *>(datumAddr);
-    QString output = (d->*writeMethod)(false, -1, -1) + "\n";
+    QString output = d->toString(writeFlags) + "\n";
     Config::get().mainKernel()->stdPrint(output);
     return nullptr;
 }
@@ -112,7 +112,7 @@ EXPORTC addr_t stdWriteDatum(addr_t datumAddr, bool useShow)
 /// @param addWhitespace set to true to add a newline to the end of the output and spaces between datums.
 EXPORTC addr_t stdWriteDatumAry(addr_t datumAddr, uint32_t count, bool useShow, bool addWhitespace)
 {
-    auto writeMethod = useShow ? &Datum::showValue : &Datum::printValue;
+    Datum::ToStringFlags writeFlags = useShow ? Datum::ToStringFlags_Show : Datum::ToStringFlags_None;
     int countOfWords = (int)count;
     Datum **datumAry = reinterpret_cast<Datum **>(datumAddr);
     QString output = "";
@@ -121,7 +121,7 @@ EXPORTC addr_t stdWriteDatumAry(addr_t datumAddr, uint32_t count, bool useShow, 
         Datum *d = *(datumAry + i);
         if ((i != 0) && addWhitespace)
             output += " ";
-        output += (d->*writeMethod)(false, -1, -1);
+        output += d->toString(writeFlags);
     }
     if (addWhitespace)
         output += "\n";
@@ -163,7 +163,7 @@ EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr)
 {
     DatumPtr d = DatumPtr(reinterpret_cast<Datum *>(datumAddr));
     Word *w = reinterpret_cast<Word *>(wordAddr);
-    Config::get().mainKernel()->callStack.setDatumForName(d, w->keyValue());
+    Config::get().mainKernel()->callStack.setDatumForName(d, w->toString(Datum::ToStringFlags_Key));
 }
 
 
@@ -232,7 +232,7 @@ EXPORTC addr_t getErrorNoSay(addr_t eAddr, addr_t whatAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
     Datum *what = reinterpret_cast<Datum *>(whatAddr);
-    FCError *err = FCError::dontSay(DatumPtr(what->showValue()));
+    FCError *err = FCError::dontSay(DatumPtr(what->toString(Datum::ToStringFlags_Show)));
     e->watch(err);
     return reinterpret_cast<addr_t >(err);
 }
@@ -245,7 +245,7 @@ EXPORTC addr_t getErrorNoTest(addr_t eAddr, addr_t whoAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
     Datum *who = reinterpret_cast<Datum *>(whoAddr);
-    FCError *err = FCError::noTest(DatumPtr(who->showValue()));
+    FCError *err = FCError::noTest(DatumPtr(who->toString(Datum::ToStringFlags_Show)));
     e->watch(err);
     return reinterpret_cast<addr_t >(err);
 }
@@ -265,7 +265,7 @@ EXPORTC addr_t getErrorNoOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr)
     {
         x = static_cast<ASTNode *>(x)->nodeName.datumValue();
     }
-    FCError *err = FCError::didntOutput(DatumPtr(x->showValue()), DatumPtr(y->showValue()));
+    FCError *err = FCError::didntOutput(DatumPtr(x->toString(Datum::ToStringFlags_Show)), DatumPtr(y->toString(Datum::ToStringFlags_Show)));
     e->watch(err);
     return reinterpret_cast<addr_t >(err);
 }
@@ -278,7 +278,7 @@ EXPORTC addr_t getErrorNotEnoughInputs(addr_t eAddr, addr_t xAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
     Datum *x = reinterpret_cast<Datum *>(xAddr);
-    FCError *err = FCError::notEnoughInputs(DatumPtr(x->showValue()));
+    FCError *err = FCError::notEnoughInputs(DatumPtr(x->toString(Datum::ToStringFlags_Show)));
     e->watch(err);
     return reinterpret_cast<addr_t >(err);
 }
@@ -291,7 +291,7 @@ EXPORTC addr_t getErrorNoValue(addr_t eAddr, addr_t whatAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
     Datum *what = reinterpret_cast<Datum *>(whatAddr);
-    FCError *err = FCError::noValue(DatumPtr(what->showValue()));
+    FCError *err = FCError::noValue(DatumPtr(what->toString(Datum::ToStringFlags_Show)));
     e->watch(err);
     return reinterpret_cast<addr_t >(err);
 }

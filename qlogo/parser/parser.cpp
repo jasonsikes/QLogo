@@ -54,7 +54,7 @@ void Parser::inputProcedure(ASTNode *node, TextStream *readStream)
     if (procnameP.wordValue()->numberIsValid)
         throw FCError::doesntLike(to, procnameP);
 
-    QString procname = procnameP.wordValue()->keyValue();
+    QString procname = procnameP.toString(Datum::ToStringFlags_Key);
 
     QChar firstChar = (procname)[0];
     if ((firstChar == '"') || (firstChar == ':') || (firstChar == '(') || (firstChar == ')'))
@@ -84,7 +84,7 @@ void Parser::inputProcedure(ASTNode *node, TextStream *readStream)
         DatumPtr first = line.listValue()->head;
         if (first.isWord())
         {
-            QString firstWord = first.wordValue()->keyValue();
+            QString firstWord = first.toString(Datum::ToStringFlags_Key);
             if (firstWord == QObject::tr("END"))
                 break;
         }
@@ -98,7 +98,7 @@ void Parser::inputProcedure(ASTNode *node, TextStream *readStream)
     Config::get().mainProcedures()->defineProcedure(to, procnameP, textP, sourceText);
 
     QString message = QObject::tr("%1 defined\n");
-    message = message.arg(procnameP.wordValue()->printValue());
+    message = message.arg(procnameP.toString());
     Config::get().mainKernel()->sysPrint(message);
 }
 
@@ -177,7 +177,7 @@ DatumPtr Parser::parseRootExp()
 {
     DatumPtr node = parseExp();
     if ((currentToken.isa() == Datum::typeWord)
-     && (currentToken.wordValue()->keyValue() == QObject::tr("STOP")))
+     && (currentToken.toString(Datum::ToStringFlags_Key) == QObject::tr("STOP")))
     {
         DatumPtr newNode = DatumPtr(new ASTNode(currentToken));
         newNode.astnodeValue()->genExpression = &Compiler::genStop;
@@ -193,9 +193,9 @@ DatumPtr Parser::parseExp()
 {
     DatumPtr left = parseSumexp();
     while ((currentToken.isa() == Datum::typeWord) &&
-           ((currentToken.wordValue()->printValue() == "=") || (currentToken.wordValue()->printValue() == "<>") ||
-            (currentToken.wordValue()->printValue() == ">") || (currentToken.wordValue()->printValue() == "<") ||
-            (currentToken.wordValue()->printValue() == ">=") || (currentToken.wordValue()->printValue() == "<=")))
+           ((currentToken.toString() == "=") || (currentToken.toString() == "<>") ||
+            (currentToken.toString() == ">") || (currentToken.toString() == "<") ||
+            (currentToken.toString() == ">=") || (currentToken.toString() == "<=")))
     {
         DatumPtr op = currentToken;
         advanceToken();
@@ -205,27 +205,27 @@ DatumPtr Parser::parseExp()
         if ( ! right.isASTNode())
             throw FCError::notEnoughInputs(op);
 
-        if (op.wordValue()->printValue() == "=")
+        if (op.toString() == "=")
         {
             node.astnodeValue()->genExpression = &Compiler::genEqualp;
             node.astnodeValue()->returnType = RequestReturnBool;
         }
-        else if (op.wordValue()->printValue() == "<>")
+        else if (op.toString() == "<>")
         {
             node.astnodeValue()->genExpression = &Compiler::genNotequalp;
             node.astnodeValue()->returnType = RequestReturnBool;
         }
-        else if (op.wordValue()->printValue() == "<")
+        else if (op.toString() == "<")
         {
             node.astnodeValue()->genExpression = &Compiler::genLessp;
             node.astnodeValue()->returnType = RequestReturnBool;
         }
-        else if (op.wordValue()->printValue() == ">")
+        else if (op.toString() == ">")
         {
             node.astnodeValue()->genExpression = &Compiler::genGreaterp;
             node.astnodeValue()->returnType = RequestReturnBool;
         }
-        else if (op.wordValue()->printValue() == "<=")
+        else if (op.toString() == "<=")
         {
             node.astnodeValue()->genExpression = &Compiler::genLessequalp;
             node.astnodeValue()->returnType = RequestReturnBool;
@@ -246,7 +246,7 @@ DatumPtr Parser::parseSumexp()
 {
     DatumPtr left = parseMulexp();
     while ((currentToken.isa() == Datum::typeWord) &&
-           ((currentToken.wordValue()->printValue() == "+") || (currentToken.wordValue()->printValue() == "-")))
+           ((currentToken.toString() == "+") || (currentToken.toString() == "-")))
     {
         DatumPtr op = currentToken;
         advanceToken();
@@ -256,7 +256,7 @@ DatumPtr Parser::parseSumexp()
         if ( ! right.isASTNode())
             throw FCError::notEnoughInputs(op);
 
-        if (op.wordValue()->printValue() == "+")
+        if (op.toString() == "+")
         {
             node.astnodeValue()->genExpression = &Compiler::genSum;
             node.astnodeValue()->returnType = RequestReturnReal;
@@ -277,8 +277,8 @@ DatumPtr Parser::parseMulexp()
 {
     DatumPtr left = parseminusexp();
     while ((currentToken.isa() == Datum::typeWord) &&
-           ((currentToken.wordValue()->printValue() == "*") || (currentToken.wordValue()->printValue() == "/") ||
-            (currentToken.wordValue()->printValue() == "%")))
+           ((currentToken.toString() == "*") || (currentToken.toString() == "/") ||
+            (currentToken.toString() == "%")))
     {
         DatumPtr op = currentToken;
         advanceToken();
@@ -288,12 +288,12 @@ DatumPtr Parser::parseMulexp()
         if ( ! right.isASTNode())
             throw FCError::notEnoughInputs(op);
 
-        if (op.wordValue()->printValue() == "*")
+        if (op.toString() == "*")
         {
             node.astnodeValue()->genExpression = &Compiler::genProduct;
             node.astnodeValue()->returnType = RequestReturnReal;
         }
-        else if (op.wordValue()->printValue() == "/")
+        else if (op.toString() == "/")
         {
             node.astnodeValue()->genExpression = &Compiler::genQuotient;
             node.astnodeValue()->returnType = RequestReturnReal;
@@ -313,7 +313,7 @@ DatumPtr Parser::parseMulexp()
 DatumPtr Parser::parseminusexp()
 {
     DatumPtr left = parseTermexp();
-    while ((currentToken.isa() == Datum::typeWord) && ((currentToken.wordValue()->printValue() == "--")))
+    while ((currentToken.isa() == Datum::typeWord) && ((currentToken.toString() == "--")))
     {
         DatumPtr op = currentToken;
         advanceToken();
@@ -359,7 +359,7 @@ DatumPtr Parser::parseTermexp()
     Q_ASSERT(currentToken.isa() == Datum::typeWord);
 
     // See if it's an open paren
-    if (currentToken.wordValue()->printValue() == "(")
+    if (currentToken.toString() == "(")
     {
         // This may be an expression or a vararg function
         DatumPtr retval;
@@ -367,7 +367,7 @@ DatumPtr Parser::parseTermexp()
         advanceToken();
         if (currentToken.isWord())
         {
-            QString cmdString = currentToken.wordValue()->keyValue();
+            QString cmdString = currentToken.toString(Datum::ToStringFlags_Key);
             QChar firstChar = (cmdString)[0];
             if ((firstChar != '"') && (firstChar != ':') && ((firstChar < '0') || (firstChar > '9')) &&
                 !specialChars.contains(firstChar))
@@ -385,7 +385,7 @@ DatumPtr Parser::parseTermexp()
         }
 
         // Make sure there is a closing paren
-        if ((!currentToken.isWord()) || (currentToken.wordValue()->printValue() != ")"))
+        if ((!currentToken.isWord()) || (currentToken.toString() != ")"))
         {
 
             throw FCError::parenNf();
@@ -395,10 +395,10 @@ DatumPtr Parser::parseTermexp()
         return retval;
     }
 
-    QChar firstChar = currentToken.wordValue()->rawValue().at(0);
+    QChar firstChar = currentToken.toString(Datum::ToStringFlags_Raw).at(0);
     if ((firstChar == '"') || (firstChar == ':'))
     {
-        QString name = currentToken.wordValue()->rawValue().right(currentToken.wordValue()->rawValue().size() - 1);
+        QString name = currentToken.toString(Datum::ToStringFlags_Raw).right(currentToken.toString(Datum::ToStringFlags_Raw).size() - 1);
         if (!currentToken.wordValue()->isForeverSpecial)
         {
             rawToChar(name);
@@ -444,7 +444,7 @@ DatumPtr Parser::parseCommand(bool isVararg)
     if (currentToken.isNothing())
         return nothing;
     DatumPtr cmdP = currentToken;
-    QString cmdString = cmdP.wordValue()->keyValue();
+    QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
 
     if (cmdString == ")")
         throw FCError::unexpectedCloseParen();
@@ -462,7 +462,7 @@ DatumPtr Parser::parseCommand(bool isVararg)
     if (isVararg)
     {
         while (( ! currentToken.isNothing()) &&
-               ((!currentToken.isWord()) || (currentToken.wordValue()->printValue() != ")")))
+               ((!currentToken.isWord()) || (currentToken.toString() != ")")))
         {
             DatumPtr child;
             if (minParams < 0)

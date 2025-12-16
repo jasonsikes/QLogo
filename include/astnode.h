@@ -72,11 +72,8 @@ class ASTNode : public Datum
 
     /// @brief For debugging. To be used when printing out the AST. Parameters are ignored.
     /// @return A string representation of this node.
-    QString printValue(bool = false, int printDepthLimit = -1, int printWidthLimit = -1);
+    QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) override;
 
-    /// @brief For debugging. To be used when printing out the AST. Parameters are ignored.
-    /// @return A string representation of this node.
-    QString showValue(bool = false, int printDepthLimit = -1, int printWidthLimit = -1);
 };
 
 #endif // DATUM_ASTNODE_H

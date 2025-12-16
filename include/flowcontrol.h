@@ -322,11 +322,12 @@ public:
 
     /// @brief Return a string suitable for the PRINT command
     ///
-    /// @param fullPrintp if true print with backslashes and vertical bars (ignored for errors)
-    /// @param printDepthLimit limit the depth of sublists for readability. (ignored for errors)
-    /// @param printWidthLimit limit the length of a string or list for readability. (ignored for errors)
+    /// @param flags Flags to control the output. See ToStringFlags for possible values.
+    /// @param printDepthLimit Limit the depth of sublists for readability. (ignored for errors)
+    /// @param printWidthLimit Limit the length of a string or list for readability. (ignored for errors)
+    /// @param visited Set of visited nodes to prevent cycles.
     /// @return A string suitable for the PRINT command
-    QString printValue(bool = false, int printDepthLimit = -1, int printWidthLimit = -1) override;
+    QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) override;
 
 };
 

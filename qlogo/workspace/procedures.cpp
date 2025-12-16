@@ -48,7 +48,7 @@ void Procedures::defineProcedure(DatumPtr cmd, DatumPtr procnameP, DatumPtr text
     if (procnameP.wordValue()->numberIsValid)
         throw FCError::doesntLike(cmd, procnameP);
 
-    QString procname = procnameP.wordValue()->keyValue();
+    QString procname = procnameP.toString(Datum::ToStringFlags_Key);
 
     QChar firstChar = (procname)[0];
     if ((firstChar == '"') || (firstChar == ':'))
@@ -70,7 +70,7 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
 
     lastProcedureCreatedTimestamp = QDateTime::currentMSecsSinceEpoch();
 
-    QString cmdString = cmd.wordValue()->keyValue();
+    QString cmdString = cmd.toString(Datum::ToStringFlags_Key);
     bool isMacro = ((cmdString == QObject::tr(".MACRO")) || (cmdString == QObject::tr(".DEFMACRO")));
 
     body->countOfDefaultParams = 0;
@@ -113,7 +113,7 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
                 if (isDefaultDefined || isRestDefined || isOptionalDefined)
                     throw FCError::doesntLike(cmd, currentParam);
                 QString paramName =
-                    currentParam.wordValue()->keyValue();
+                    currentParam.toString(Datum::ToStringFlags_Key);
                 if (paramName.startsWith(':') || paramName.startsWith('"'))
                     paramName.remove(0, 1);
                 if (paramName.size() < 1)
@@ -134,7 +134,7 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
                     throw FCError::doesntLike(cmd, currentParam);
                 DatumPtr param = paramList->head;
                 if (param.isWord()) {
-                    QString restName = param.wordValue()->keyValue();
+                    QString restName = param.toString(Datum::ToStringFlags_Key);
                     if (restName.startsWith(':') || restName.startsWith('"'))
                         restName.remove(0, 1);
                     if (restName.size() < 1)
@@ -150,7 +150,7 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
                     throw FCError::doesntLike(cmd, currentParam);
                 DatumPtr param = paramList->head;
                 if (param.isWord()) {
-                    QString name = param.wordValue()->keyValue();
+                    QString name = param.toString(Datum::ToStringFlags_Key);
                     if (name.startsWith(':') || name.startsWith('"'))
                         name.remove(0, 1);
                     if (name.size() < 1)
@@ -179,11 +179,11 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
         ListIterator wordIter = lineP.listValue()->newIterator();
         while (wordIter.elementExists()) {
             DatumPtr d = wordIter.element();
-            if (d.isWord() && (d.wordValue()->keyValue() == QObject::tr("TAG")) &&
+            if (d.isWord() && (d.toString(Datum::ToStringFlags_Key) == QObject::tr("TAG")) &&
                 wordIter.elementExists()) {
                 DatumPtr d = wordIter.element();
                 if (d.isWord()) {
-                    QString param = d.wordValue()->keyValue();
+                    QString param = d.toString(Datum::ToStringFlags_Key);
                     if ((param.size() > 1) && (param)[0] == '"') {
                         QString tag = param.right(param.size() - 1);
                         body->tagToLine[tag] = lineP;
@@ -197,8 +197,8 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
 
 void Procedures::copyProcedure(DatumPtr newnameP, DatumPtr oldnameP) {
     lastProcedureCreatedTimestamp = QDateTime::currentMSecsSinceEpoch();
-    QString newname = newnameP.wordValue()->keyValue();
-    QString oldname = oldnameP.wordValue()->keyValue();
+    QString newname = newnameP.toString(Datum::ToStringFlags_Key);
+    QString oldname = oldnameP.toString(Datum::ToStringFlags_Key);
 
     if (stringToCmd.contains(newname))
         throw FCError::isPrimitive(newnameP);
@@ -216,14 +216,14 @@ void Procedures::copyProcedure(DatumPtr newnameP, DatumPtr oldnameP) {
 void Procedures::eraseProcedure(DatumPtr procnameP) {
     lastProcedureCreatedTimestamp = QDateTime::currentMSecsSinceEpoch();
 
-    QString procname = procnameP.wordValue()->keyValue();
+    QString procname = procnameP.toString(Datum::ToStringFlags_Key);
     if (stringToCmd.contains(procname))
         throw FCError::isPrimitive(procnameP);
     procedures.remove(procname);
 }
 
 DatumPtr Procedures::procedureText(DatumPtr procnameP) {
-    QString procname = procnameP.wordValue()->keyValue();
+    QString procname = procnameP.toString(Datum::ToStringFlags_Key);
 
     if (stringToCmd.contains(procname))
         throw FCError::isPrimitive(procnameP);
@@ -268,7 +268,7 @@ DatumPtr Procedures::procedureText(DatumPtr procnameP) {
 }
 
 DatumPtr Procedures::procedureFulltext(DatumPtr procnameP, bool shouldValidate) {
-    const QString procname = procnameP.wordValue()->keyValue();
+    const QString procname = procnameP.toString(Datum::ToStringFlags_Key);
     if (stringToCmd.contains(procname))
         throw FCError::isPrimitive(procnameP);
 
@@ -283,7 +283,7 @@ DatumPtr Procedures::procedureFulltext(DatumPtr procnameP, bool shouldValidate) 
             ListIterator b = body->instructionList.listValue()->newIterator();
 
             while (b.elementExists()) {
-                retvalBuilder.append(DatumPtr(unreadList(b.element().listValue(), false)));
+                retvalBuilder.append(DatumPtr(b.element().toString(Datum::ToStringFlags_Show)));
             }
 
             DatumPtr end(QObject::tr("END"));
@@ -299,13 +299,13 @@ DatumPtr Procedures::procedureFulltext(DatumPtr procnameP, bool shouldValidate) 
     // If there is no procedure by that name, generate an empty procedure.
     ListBuilder retvalBuilder;
     retvalBuilder.append(
-        DatumPtr(QObject::tr("to ") + procnameP.wordValue()->printValue()));
+        DatumPtr(QObject::tr("to ") + procnameP.toString()));
     retvalBuilder.append(DatumPtr(QObject::tr("END")));
     return retvalBuilder.finishedList();
 }
 
 QString Procedures::procedureTitle(DatumPtr procnameP) {
-    QString procname = procnameP.wordValue()->keyValue();
+    QString procname = procnameP.toString(Datum::ToStringFlags_Key);
 
     if (stringToCmd.contains(procname))
         throw FCError::isPrimitive(procnameP);
@@ -345,7 +345,7 @@ QString Procedures::procedureTitle(DatumPtr procnameP) {
         firstLineBuilder.append(DatumPtr(body->countOfDefaultParams));
     }
 
-    QString retval = unreadList(firstLineBuilder.finishedList().listValue(), false);
+    QString retval = firstLineBuilder.finishedList().toString(Datum::ToStringFlags_Show);
     return retval;
 }
 
@@ -370,7 +370,7 @@ bool Procedures::isNamedProcedure(QString aName)
 
 
 DatumPtr Procedures::astnodeFromPrimitive(DatumPtr cmdP, int &minParams, int &defaultParams, int &maxParams) {
-    QString cmdString = cmdP.wordValue()->keyValue();
+    QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
     DatumPtr node = DatumPtr(new ASTNode(cmdP));
     Cmd_t command = stringToCmd[cmdString];
     defaultParams = command.countOfDefaultParams;
@@ -383,7 +383,7 @@ DatumPtr Procedures::astnodeFromPrimitive(DatumPtr cmdP, int &minParams, int &de
 
 
 DatumPtr Procedures::astnodeFromProcedure(DatumPtr cmdP, int &minParams, int &defaultParams, int &maxParams) {
-    QString cmdString = cmdP.wordValue()->keyValue();
+    QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
     DatumPtr procBody = procedureForName(cmdString);
     DatumPtr node = DatumPtr(new ASTNode(cmdP));
     // if (procBody.procedureValue()->isMacro)
@@ -403,7 +403,7 @@ DatumPtr Procedures::astnodeFromProcedure(DatumPtr cmdP, int &minParams, int &de
 
 DatumPtr Procedures::astnodeFromCommand(DatumPtr cmdP, int &minParams,
                                     int &defaultParams, int &maxParams) {
-    QString cmdString = cmdP.wordValue()->keyValue();
+    QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
 
     if (stringToCmd.contains(cmdString)) { // This is a primitive.
         return astnodeFromPrimitive(cmdP, minParams, defaultParams, maxParams);
@@ -480,7 +480,7 @@ DatumPtr Procedures::allPrimitiveProcedureNames() {
 
 DatumPtr Procedures::arity(DatumPtr nameP) {
     int minParams, defParams, maxParams;
-    QString procname = nameP.wordValue()->keyValue();
+    QString procname = nameP.toString(Datum::ToStringFlags_Key);
 
     if (procedures.contains(procname)) {
         DatumPtr command = procedures[procname];
@@ -504,110 +504,4 @@ DatumPtr Procedures::arity(DatumPtr nameP) {
     return retvalBuilder.finishedList();
 }
 
-QString Procedures::unreadDatum(DatumPtr aDatum, bool isInList) {
-    if (aDatum.isWord())
-    {
-        return unreadWord(aDatum.wordValue(), isInList);
-    }
-    else if (aDatum.isList())
-    {
-        return unreadList(aDatum.listValue(), isInList);
-    }
-    else if (aDatum.isArray())
-    {
-        return unreadArray(aDatum.arrayValue());
-    }
-    else
-    {
-        Q_ASSERT(false);
-    }
-    return "";
-}
-
-QString Procedures::unreadList(List *aList, bool isInList) {
-    QString retval("");
-    if (isInList)
-        retval = "[";
-    ListIterator i = aList->newIterator();
-    while (i.elementExists()) {
-        DatumPtr e = i.element();
-        if ((retval != "[") && (retval != ""))
-            retval.append(' ');
-        retval.append(unreadDatum(e, true));
-    }
-    if (isInList)
-        retval.append(']');
-    return retval;
-}
-
-QString Procedures::unreadArray(Array *anArray) {
-    QString retval("{");
-    for (auto &i : anArray->array) {
-        if (retval.size() > 1)
-            retval.append(' ');
-        retval.append(unreadDatum(i, true));
-    }
-    retval.append('}');
-    return retval;
-}
-
-QString Procedures::unreadWord(Word *aWord, bool isInList) {
-    aWord->numberValue();
-    if (aWord->numberIsValid)
-        return aWord->showValue();
-
-    QString retval("");
-    if (!isInList)
-        retval = "\"";
-
-    const QString src = aWord->showValue();
-    if (src.size() == 0)
-        return retval + "||";
-
-    if (aWord->isForeverSpecial) {
-        retval.append('|');
-        for (auto iter = src.begin(); iter != src.end(); ++iter) {
-            QChar letter = *iter;
-            if ((iter == src.begin()) && (letter == '"')) {
-                retval = "\"|";
-            } else {
-                if (letter == '|') {
-                    retval.append('\\');
-                }
-                retval.append(letter);
-            }
-        }
-        retval.append('|');
-    } else {
-        for (auto letter : src) {
-            if ((letter == ' ') || (letter == '[') || (letter == ']') ||
-                (letter == '{') || (letter == '}') || (letter == '|') ||
-                (letter == '\n')) {
-                retval.append('\\');
-            }
-            retval.append(letter);
-        }
-    }
-    return retval;
-}
-
-QString Procedures::printoutDatum(DatumPtr aDatum) {
-    if (aDatum.isWord())
-    {
-        return unreadWord(aDatum.wordValue());
-    }
-    else if (aDatum.isList())
-    {
-        return unreadList(aDatum.listValue(), true);
-    }
-    else if (aDatum.isArray())
-    {
-        return unreadArray(aDatum.arrayValue());
-    }
-    else
-    {
-        Q_ASSERT(false);
-    }
-    return "";
-}
 

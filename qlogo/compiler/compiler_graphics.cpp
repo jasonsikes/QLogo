@@ -701,7 +701,7 @@ EXPORTC void addLabel(addr_t eAddr, addr_t textAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
     Datum *d = reinterpret_cast<Datum *>(textAddr);
-    Config::get().mainController()->drawLabel(d->printValue());
+    Config::get().mainController()->drawLabel(d->toString());
 }
 
 
@@ -1468,7 +1468,7 @@ Value *Compiler::genSavepict(DatumPtr node, RequestReturnType returnType)
 EXPORTC addr_t savePict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    QString filename = reinterpret_cast<Word *>(filenameAddr)->printValue();
+    QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
     QString filepath = Config::get().mainKernel()->filepathForFilename(DatumPtr(filename));
     QImage image = Config::get().mainController()->getCanvasImage();
     bool isSuccessful = image.save(filepath);
@@ -1501,7 +1501,7 @@ Value *Compiler::genSvgpict(DatumPtr node, RequestReturnType returnType)
 EXPORTC addr_t saveSvgpict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    QString filename = reinterpret_cast<Word *>(filenameAddr)->printValue();
+    QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
     QString filepath = Config::get().mainKernel()->filepathForFilename(DatumPtr(filename));
     QByteArray svgImage = Config::get().mainController()->getSvgImage();
 
@@ -1546,7 +1546,7 @@ EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
     Datum *dFilename = reinterpret_cast<Datum *>(filenameAddr);
     Datum *retval = reinterpret_cast<Datum *>(nodeAddr);
     if (dFilename->isa == Datum::typeWord) {
-        QString filename = reinterpret_cast<Word *>(filenameAddr)->printValue();
+        QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
         QString filepath = Config::get().mainKernel()->filepathForFilename(DatumPtr(filename));
         QImage image = QImage(filepath);
         if (image.isNull())

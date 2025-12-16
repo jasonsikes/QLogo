@@ -43,7 +43,7 @@ void FCError::commonInit()
 FCError* FCError::custom(DatumPtr tag, DatumPtr message, DatumPtr output)
 {
     ErrCode code;
-    if (tag.wordValue()->keyValue() == QObject::tr("ERROR"))
+    if (tag.toString(ToStringFlags_Key) == QObject::tr("ERROR"))
     {
         if (message.isNothing())
         {
@@ -58,7 +58,7 @@ FCError* FCError::custom(DatumPtr tag, DatumPtr message, DatumPtr output)
     else
     {
         code = ERR_NO_CATCH;
-        message = DatumPtr(QObject::tr("Can't find catch tag for %1").arg(tag.showValue()));
+        message = DatumPtr(QObject::tr("Can't find catch tag for %1").arg(tag.toString(Datum::ToStringFlags_Show)));
     }
     return new FCError(code, message, tag, output);
 }
@@ -75,7 +75,7 @@ FCError* FCError::noGraphics()
 
 FCError* FCError::toInProc(DatumPtr cmd)
 {
-    QString message = QObject::tr("can't use %1 inside a procedure").arg(cmd.showValue());
+    QString message = QObject::tr("can't use %1 inside a procedure").arg(cmd.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_TO_IN_PROC, message);
 }
 
@@ -102,57 +102,57 @@ FCError* FCError::fileSystem()
 
 FCError* FCError::notInsideProcedure(DatumPtr cmd)
 {
-    QString message = QObject::tr("Can only use %1 inside a procedure").arg(cmd.showValue());
+    QString message = QObject::tr("Can only use %1 inside a procedure").arg(cmd.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_NOT_INSIDE_PROCEDURE, message);
 }
 
 
 FCError* FCError::noHow(DatumPtr cmd)
 {
-    QString message = QObject::tr("I don't know how to %1").arg(cmd.showValue());
+    QString message = QObject::tr("I don't know how to %1").arg(cmd.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_NO_HOW, message);
 }
 
 
 FCError* FCError::doesntLike(DatumPtr x, DatumPtr y)
 {
-    QString message = QObject::tr("%1 doesn't like %2 as input").arg(x.showValue(), y.showValue());
+    QString message = QObject::tr("%1 doesn't like %2 as input").arg(x.toString(Datum::ToStringFlags_Show), y.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_DOESNT_LIKE, message);
 }
 
 FCError* FCError::dontSay(DatumPtr x)
 {
-    QString message = QObject::tr("You don't say what to do with %1").arg(x.showValue());
+    QString message = QObject::tr("You don't say what to do with %1").arg(x.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_DONT_SAY, message);
 }
 
 FCError* FCError::noTest(DatumPtr x)
 {
-    QString message = QObject::tr("%1 without TEST").arg(x.showValue());
+    QString message = QObject::tr("%1 without TEST").arg(x.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_NO_TEST, message);
 }
 
 FCError* FCError::didntOutput(DatumPtr x, DatumPtr y)
 {
-    QString message = QObject::tr("%1 didn't output to %2").arg(x.showValue(), y.showValue());
+    QString message = QObject::tr("%1 didn't output to %2").arg(x.toString(Datum::ToStringFlags_Show), y.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_DIDNT_OUTPUT, message);
 }
 
 FCError* FCError::tooManyInputs(DatumPtr x)
 {
-    QString message = QObject::tr("too many inputs to %1").arg(x.showValue());
+    QString message = QObject::tr("too many inputs to %1").arg(x.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_TOO_MANY_INPUTS, message);
 }
 
 FCError* FCError::notEnoughInputs(DatumPtr x)
 {
-    QString message = QObject::tr("not enough inputs to %1").arg(x.showValue());
+    QString message = QObject::tr("not enough inputs to %1").arg(x.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_NOT_ENOUGH_INPUTS, message);
 }
 
 FCError* FCError::noValue(DatumPtr x)
 {
-    QString message = QObject::tr("%1 has no value").arg(x.showValue());
+    QString message = QObject::tr("%1 has no value").arg(x.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_NO_VALUE, message);
 }
 
@@ -164,13 +164,13 @@ FCError* FCError::alreadyFilling()
 
 FCError* FCError::procDefined(DatumPtr x)
 {
-    QString message = QObject::tr("%1 is already defined").arg(x.showValue());
+    QString message = QObject::tr("%1 is already defined").arg(x.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_ALREADY_DEFINED, message);
 }
 
 FCError* FCError::badDefault(DatumPtr x)
 {
-    QString message = QObject::tr("Bad default expression for optional input: %1").arg(x.showValue());
+    QString message = QObject::tr("Bad default expression for optional input: %1").arg(x.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_BAD_DEFAULT_EXPRESSION, message);
 }
 
@@ -183,16 +183,16 @@ FCError* FCError::parenNf()
 
 FCError* FCError::isPrimitive(DatumPtr x)
 {
-    QString message = QObject::tr("%1 is a primitive").arg(x.showValue());
+    QString message = QObject::tr("%1 is a primitive").arg(x.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_IS_PRIMITIVE, message);
 }
 
-QString FCError::printValue(bool , int , int )
+QString FCError::toString( ToStringFlags, int, int, VisitedSet *)
 {
-    QString retval = message().wordValue()->printValue();
+    QString retval = message().toString();
     if ( ! procedure().isNothing())
     {
-        retval = QString("%1 in %2\n%3").arg(retval, procedure().wordValue()->printValue(), line().showValue());
+        retval = QString("%1 in %2\n%3").arg(retval, procedure().toString(), line().toString(ToStringFlags_Show));
     }
     return retval;
 }

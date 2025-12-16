@@ -32,53 +32,65 @@ List::List(DatumPtr item, List *srcList)
     head = item;
     tail = DatumPtr(srcList);
     astParseTimeStamp = 0;
-    //qDebug() <<this << " new++ list";
 }
 
 List::~List()
 {
     clear();
-    //qDebug() <<this << " --del list";
 }
 
-QString List::printValue(bool fullPrintp, int printDepthLimit, int printWidthLimit)
+QString List::toString( ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited)
 {
-    if (head.isNothing())
-        return "";
-    if ((printDepthLimit == 0) || (printWidthLimit == 0))
-    {
-        return "...";
-    }
+    bool shouldShowBrackets = (flags & ToStringFlags_Show) != 0;
+    QString retval = shouldShowBrackets ? "[" : "";
+    std::unique_ptr<VisitedSet> localVisited;
     int printWidth = printWidthLimit - 1;
-    QString retval = head.showValue(fullPrintp, printDepthLimit - 1, printWidthLimit);
-    List* iter = tail.listValue();
-    while ( ! iter->head.isNothing())
+    List* l = this;
+
+    if (this == EmptyList::instance())
+        goto exit;
+    if (printDepthLimit == 0)
     {
-        retval.append(' ');
-        if (printWidth == 0)
+        retval.append("...");
+        goto exit;
+    }
+
+    if (visited == nullptr)
+    {
+        localVisited = std::make_unique<VisitedSet>();
+        visited = localVisited.get();
+    }
+
+    // Any words within a collection don't need to be formatted as source code.
+    flags = (Datum::ToStringFlags)(flags & ~(Datum::ToStringFlags_Source));
+    // Any lists within a collection need to show their brackets.
+    flags = (Datum::ToStringFlags)(flags | Datum::ToStringFlags_Show);
+
+    while ( ! l->isEmpty())
+    {
+        if (l != this)
         {
-            retval.append("...");
-            break;
+            retval.append(' ');
         }
-        retval.append(iter->head.showValue(fullPrintp, printDepthLimit - 1, printWidthLimit));
+        if ( (printWidth == 0) || (visited->contains(l)))
+        {
+            // We have reached the print width limit or have a cycle, so stop traversing the list.
+            retval.append("...");
+            goto exit;
+        }
+        visited->add(l);
+        retval.append(l->head.toString(flags, printDepthLimit - 1, printWidthLimit, visited));
         --printWidth;
-        iter = iter->tail.listValue();
+        l = l->tail.listValue();
+    }
+
+exit:
+    visited->remove(this);
+    if (shouldShowBrackets)
+    {
+        retval.append(']');
     }
     return retval;
-}
-
-QString List::showValue(bool fullPrintp, int printDepthLimit, int printWidthLimit)
-{
-    if (!listVisited.contains(this))
-    {
-        listVisited.push_back(this);
-        QString retval = "[";
-        retval.append(printValue(fullPrintp, printDepthLimit, printWidthLimit));
-        retval.append(']');
-        listVisited.removeOne(this);
-        return retval;
-    }
-    return "...";
 }
 
 bool List::isEmpty()
@@ -88,7 +100,7 @@ bool List::isEmpty()
 
 void List::setButfirstItem(DatumPtr aValue)
 {
-    Q_ASSERT(! isEmpty());
+    Q_ASSERT(this != EmptyList::instance());
     Q_ASSERT(aValue.isList());
     tail = aValue;
     astParseTimeStamp = 0;
@@ -107,6 +119,7 @@ DatumPtr List::itemAtIndex(int anIndex)
 
 void List::clear()
 {
+    Q_ASSERT(this != EmptyList::instance());
     head = nothing;
     tail = nothing;
     Parser::destroyAstForList(this);
@@ -123,7 +136,8 @@ int List::count()
         ++retval;
         if (visited.contains(iter))
         {
-            // TODO: How should we report a cycle? -1? MAX_INT?
+            // TODO: How should we report a cycle? -1? 0?
+            //  Not MAX_INT because that's a positive number.
             return retval;
         }
         visited.add(iter);
@@ -164,6 +178,12 @@ void EmptyList::clear()
 void EmptyList::setButfirstItem(DatumPtr /* aValue */)
 {
     Q_ASSERT(false && "Attempted to modify immutable EmptyList");
+}
+
+QString EmptyList::toString( ToStringFlags flags, int /* printDepthLimit */, int /* printWidthLimit */, VisitedSet * /* visited */)
+{
+    bool shouldShowBrackets = (flags & ToStringFlags_Show) != 0;
+    return shouldShowBrackets ? "[]" : "";
 }
 
 // Value to represent an empty list

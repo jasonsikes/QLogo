@@ -81,7 +81,7 @@ EXPORTC bool cmpDatumToDouble(addr_t d, double n)
         if (w1->isSourceNumber() || w2->isSourceNumber())
             return w1->numberValue() == w2->numberValue();
 
-        return w1->printValue().compare(w2->printValue(), cs) == 0;
+        return w1->toString().compare(w2->toString(), cs) == 0;
     }
     else if (d1->isList())
     {
@@ -143,7 +143,7 @@ EXPORTC addr_t concatWord(addr_t eAddr, addr_t aryAddr, uint32_t count)
     for (uint32_t i = 0; i < count; ++i)
     {
         Word *w = *(wordAry + i);
-        retval += w->rawValue();
+        retval += w->toString(Datum::ToStringFlags_Raw);
     }
     return reinterpret_cast<addr_t >(e->watch(new Word(retval)));
 }
@@ -215,7 +215,7 @@ EXPORTC bool isDatumEmpty(addr_t eAddr, addr_t dAddr)
     Datum *d = reinterpret_cast<Datum*>(dAddr);
     if (d->isWord())
     {
-        return d->wordValue()->rawValue().isEmpty();
+        return d->toString(Datum::ToStringFlags_Raw).isEmpty();
     }
     else if (d->isList())
     {
@@ -703,7 +703,7 @@ EXPORTC addr_t firstOfDatum(addr_t eAddr, addr_t thingAddr)
     if (thing->isWord())
     {
         Word *w = thing->wordValue();
-        retval = new Word(w->rawValue().left(1));
+        retval = new Word(w->toString(Datum::ToStringFlags_Raw).left(1));
     }
     else if (thing->isList())
     {
@@ -750,7 +750,7 @@ EXPORTC addr_t lastOfDatum(addr_t eAddr, addr_t thingAddr)
     if (thing->isWord())
         {
             Word *w = thing->wordValue();
-            retval = new Word(w->rawValue().right(1));
+            retval = new Word(w->toString(Datum::ToStringFlags_Raw).right(1));
         }
     else if (thing->isList())
         {
@@ -806,7 +806,7 @@ EXPORTC addr_t butFirstOfDatum(addr_t eAddr, addr_t thingAddr)
     if (thing->isWord())
     {
         Word *w = thing->wordValue();
-        QString rawValue = w->rawValue();
+        QString rawValue = w->toString(Datum::ToStringFlags_Raw);
         retval = new Word(rawValue.sliced(1, rawValue.size() - 1));
     }
     else if (thing->isList())
@@ -853,7 +853,7 @@ EXPORTC addr_t butLastOfDatum(addr_t eAddr, addr_t thingAddr)
     if (thing->isWord())
         {
             Word *w = thing->wordValue();
-            QString rawValue = w->rawValue();
+            QString rawValue = w->toString(Datum::ToStringFlags_Raw);
             Datum *retval = new Word(rawValue.sliced(0, rawValue.size() - 1));
             e->watch(retval);
             return reinterpret_cast<addr_t>(retval);
@@ -927,7 +927,7 @@ EXPORTC bool isDatumIndexValid(addr_t eAddr, addr_t thingAddr, double dIndex, ad
     if (thing->isWord())
         {
             Word *w = thing->wordValue();
-            QString rawValue = w->rawValue();
+            QString rawValue = w->toString(Datum::ToStringFlags_Raw);
             return (index >= 1) && (index <= rawValue.size());
         }
     else if (thing->isList())
@@ -966,7 +966,7 @@ EXPORTC addr_t itemOfDatum(addr_t eAddr, addr_t thingAddr, double dIndex, addr_t
     if (thing->isWord())
     {
         Word *w = thing->wordValue();
-        QString rawValue = w->rawValue();
+        QString rawValue = w->toString(Datum::ToStringFlags_Raw);
         retval = new Word(rawValue[index - 1]);
     }
     else if (thing->isList())
@@ -1310,7 +1310,7 @@ EXPORTC bool isEmpty(addr_t eAddr, addr_t thingAddr)
     Datum *thing = reinterpret_cast<Datum*>(thingAddr);
     if (thing->isWord()) {
         Word *word = thing->wordValue();
-        return word->rawValue().isEmpty();
+        return word->toString(Datum::ToStringFlags_Raw).isEmpty();
     }
     else if (thing->isList()) {
         List *list = thing->listValue();
@@ -1352,8 +1352,8 @@ EXPORTC bool isBefore(addr_t eAddr, addr_t word1Addr, addr_t word2Addr)
 
     Qt::CaseSensitivity cs = e->varCASEIGNOREDP() ? Qt::CaseInsensitive : Qt::CaseSensitive;
 
-    QString value1 = word1->printValue();
-    QString value2 = word2->printValue();
+    QString value1 = word1->toString();
+    QString value2 = word2->toString();
     return value1.compare(value2, cs) < 0;
 }
 
@@ -1409,10 +1409,10 @@ EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
     if (container->isWord())
     {
         Word *word = container->wordValue();
-            QString containerString = word->keyValue();
+            QString containerString = word->toString(Datum::ToStringFlags_Key);
             if (thing->isWord()) {
                 Word *word = thing->wordValue();
-                QString thingString = word->keyValue();
+                QString thingString = word->toString(Datum::ToStringFlags_Key);
                 if (thingString.length() != 1) {
                     return false;
                 }
@@ -1480,8 +1480,8 @@ EXPORTC bool isSubstring(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
     if (thing1->isa == Datum::typeWord && thing2->isa == Datum::typeWord) {
         Word *word1 = reinterpret_cast<Word*>(thing1);
         Word *word2 = reinterpret_cast<Word*>(thing2);
-        QString string1 = word1->keyValue();
-        QString string2 = word2->keyValue();
+        QString string1 = word1->toString(Datum::ToStringFlags_Key);
+        QString string2 = word2->toString(Datum::ToStringFlags_Key);
         return string2.contains(string1);
     }
     return false;
@@ -1560,7 +1560,7 @@ EXPORTC bool isSingleCharWord(addr_t eAddr, addr_t candidateAddr)
         return false;
     }
     Word *word = reinterpret_cast<Word*>(candidate);
-    return word->keyValue().length() == 1;
+    return word->toString(Datum::ToStringFlags_Key).length() == 1;
 }
 
 EXPORTC bool isVbarred(addr_t eAddr, addr_t cAddr)
@@ -1569,8 +1569,8 @@ EXPORTC bool isVbarred(addr_t eAddr, addr_t cAddr)
     Word *word = reinterpret_cast<Word*>(cAddr);
 
     // A character is vbarred IFF it's print value is different from its raw value.
-    char16_t rawC = word->rawValue().front().unicode();
-    char16_t c = word->printValue().front().unicode();
+    char16_t rawC = word->toString(Datum::ToStringFlags_Raw).front().unicode();
+    char16_t c = word->toString().front().unicode();
     return rawC != c;
 }
 
@@ -1599,7 +1599,7 @@ EXPORTC double count(addr_t eAddr, addr_t thingAddr)
     if (thing->isWord())
     {
         Word *word = thing->wordValue();
-        return word->rawValue().length();
+        return word->toString(Datum::ToStringFlags_Raw).length();
     }
     else if (thing->isList())
     {
@@ -1649,7 +1649,7 @@ EXPORTC double ascii(addr_t eAddr, addr_t cAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Word *word = reinterpret_cast<Word*>(cAddr);
-    return word->printValue().front().unicode();
+    return word->toString().front().unicode();
 }
 
 
@@ -1684,7 +1684,7 @@ EXPORTC double rawascii(addr_t eAddr, addr_t cAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Word *word = reinterpret_cast<Word*>(cAddr);
-    return word->rawValue().front().unicode();
+    return word->toString(Datum::ToStringFlags_Raw).front().unicode();
 }
 
 
@@ -1756,8 +1756,8 @@ EXPORTC addr_t member(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
             Word *word2 = thing2->wordValue();
             QString retval = "";
             if (thing1->isWord()) {
-                QString thing2Str = word2->rawValue();
-                QString thing1Str = word1->rawValue();
+                QString thing2Str = word2->toString(Datum::ToStringFlags_Raw);
+                QString thing1Str = word1->toString(Datum::ToStringFlags_Raw);
                 if ( ! thing1Str.isEmpty()) {
                     int index = thing2Str.indexOf(thing1Str);
                     if (index != -1) {
@@ -1815,7 +1815,7 @@ EXPORTC addr_t lowercase(addr_t eAddr, addr_t wordAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Word *word = reinterpret_cast<Word*>(wordAddr);
-    QString retval = word->rawValue().toLower();
+    QString retval = word->toString(Datum::ToStringFlags_Raw).toLower();
     Word *retvalWord = new Word(retval);
     e->watch(retvalWord);
     return reinterpret_cast<addr_t>(retvalWord);
@@ -1842,7 +1842,7 @@ EXPORTC addr_t uppercase(addr_t eAddr, addr_t wordAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Word *word = reinterpret_cast<Word*>(wordAddr);
-    QString retval = word->rawValue().toUpper();
+    QString retval = word->toString(Datum::ToStringFlags_Raw).toUpper();
     Word *retvalWord = new Word(retval);
     e->watch(retvalWord);
     return reinterpret_cast<addr_t>(retvalWord);
@@ -1872,7 +1872,7 @@ EXPORTC addr_t standout(addr_t eAddr, addr_t thingAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Datum *thing = reinterpret_cast<Datum*>(thingAddr);
-    QString phrase = thing->printValue();
+    QString phrase = thing->toString();
     QString retval = Config::get().mainController()->addStandoutToString(phrase);
     Word *retvalWord = new Word(retval);
     e->watch(retvalWord);
@@ -1901,7 +1901,7 @@ EXPORTC addr_t parse(addr_t eAddr, addr_t wordAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
     Word *word = reinterpret_cast<Word*>(wordAddr);
-    QString phrase = word->rawValue();
+    QString phrase = word->toString(Datum::ToStringFlags_Raw);
     QTextStream stream(&phrase, QIODevice::ReadOnly);
     TextStream ts(&stream);
     DatumPtr retvalPtr = ts.readlistWithPrompt("", false);

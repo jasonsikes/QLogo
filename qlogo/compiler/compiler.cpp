@@ -97,7 +97,7 @@ QString Compiler::getTagNameFromNode(DatumPtr node)
     if (tagNode->genExpression == &Compiler::genLiteral) {
         DatumPtr tagNameNode = tagNode->childAtIndex(0);
         if (tagNameNode.isWord()) {
-            QString tagName = tagNameNode.wordValue()->keyValue();
+            QString tagName = tagNameNode.toString(Datum::ToStringFlags_Key);
             return tagName;
         }
     }

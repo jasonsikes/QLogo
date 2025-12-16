@@ -44,6 +44,7 @@ class EmptyList;
 
 class DatumPtr;
 class ListIterator;
+class VisitedSet;
 
 class Kernel;
 class Compiler;
@@ -125,22 +126,18 @@ class Datum
     friend struct Evaluator;
 
   protected:
-    Datum &operator=(const Datum &) = delete;
-    Datum &operator=(Datum &&) = delete;
-    Datum &operator=(Datum *) = delete;
 
-    /// @brief Protected constructor to prevent direct instantiation.
+    /// @brief Protected constructors to prevent direct instantiation.
     ///
     /// @details The Datum class uses the singleton pattern. Only one instance
     /// of Datum can exist (accessed via getInstance()). Subclasses can still
-    /// be instantiated multiple times because they can call this protected constructor.
-    Datum();
-
-    /// @brief Protected copy constructor to prevent copying.
+    /// be instantiated multiple times because they can call these protected constructors.
+    Datum &operator=(const Datum &) = delete;
+    Datum &operator=(Datum &&) = delete;
+    Datum &operator=(Datum *) = delete;
     Datum(const Datum &) = delete;
-
-    /// @brief Protected move constructor to prevent moving.
     Datum(Datum &&) = delete;
+    Datum();
 
   public:
 
@@ -169,10 +166,10 @@ class Datum
 
         typeUnboundMask     = 0x00000300, // typeASTNode + typeNothing
 
-        typePersistentMask  = 0x00010000, // OR this value to prevent the datum from deletion
+        typePersistentMask  = 0x00010000, // OR this value to prevent the datum from being destroyed
     };
 
-    DatumType isa = (DatumType)(typeNothing | typePersistentMask);
+    DatumType isa; // Subclasses must set this to a valid value.
 
     int retainCount;
 
@@ -191,31 +188,29 @@ class Datum
     /// @brief Destructor.
     virtual ~Datum();
 
+    /// @brief This enum specifies flags that can be used to affect various aspects
+    /// of the string representation of the Datum.
+    enum ToStringFlags : int
+    {
+        ToStringFlags_None = 0x00,
+        ToStringFlags_FullPrint = 0x01, // Show backslashes and vertical bars in words
+        ToStringFlags_Show = 0x02,      // Show list brackets
+        ToStringFlags_Source = 0x04,    // Format for parsing as qlogo source code
+        ToStringFlags_Key = 0x08,       // Format for use as a key in a map
+        ToStringFlags_Raw = 0x10,       // Format for use as a raw string (no special decoding of mapped characters)
+    };
 
-
-    /// @brief Return a string suitable for the PRINT command
-    ///
-    /// @param fullPrintp if true print with backslashes and vertical bars
-    /// @param printDepthLimit limit the depth of sublists for readability.
-    /// printDepthLimit = 1 means don't show sublists.
-    /// printDepthLimit = 2 means show sublists, but don't show sublist's sublist.
-    /// printDepthLimit = 0 means show '...' instead of this list.
-    /// printDepthLimit = -1 means show all sublists.
-    /// @param printWidthLimit limit the length of a string or list for readability.
-    /// @return A string suitable for the PRINT command
-    virtual QString printValue(bool = false, int printDepthLimit = -1, int printWidthLimit = -1);
-
-    /// @brief Return a string suitable for the SHOW command
-    ///
-    /// @param fullPrintp if true print with backslashes and vertical bars
-    /// @param printDepthLimit limit the depth of sublists for readability.
-    /// printDepthLimit = 1 means don't show sublists.
-    /// printDepthLimit = 2 means show sublists, but don't show sublist's sublist.
-    /// printDepthLimit = 0 means show '...' instead of this list.
-    /// printDepthLimit = -1 means show all sublists.
-    /// @param printWidthLimit limit the length of a string or list for readability.
-    /// @return A string suitable for the SHOW command
-    virtual QString showValue(bool = false, int printDepthLimit = -1, int printWidthLimit = -1);
+    /// @brief Return a string representation of the Datum.
+    /// @param flags Flags to control the output. See ToStringFlags for possible values.
+    /// @param printDepthLimit Limit the depth of sublists or arrays for readability.
+    /// printDepthLimit = 1 means don't show sublists or arrays.
+    /// printDepthLimit = 2 means show sublists or arrays, but don't show sublist's sublist or array's subarray.
+    /// printDepthLimit = 0 means show '...' instead of THIS list or array.
+    /// printDepthLimit = -1 means show all sublists or arrays.
+    /// @param printWidthLimit Limit the length of a string or list or array for readability.
+    /// @param visited Set of visited nodes to prevent cycles.
+    /// @return A string representation of the Datum.
+    virtual QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr);
 
     /// @brief Returns true if the referred Datum is a List, false otherwise.
     ///
@@ -469,21 +464,17 @@ class DatumPtr
     /// @return True if and only if other does not point to the same object as this.
     bool operator!=(const DatumPtr &other);
 
-    /// @brief Return a string suitable for the PRINT command.
-    ///
-    /// @param fullPrintp if true print with backslashes and vertical bars
-    /// @param printDepthLimit limit the depth of sublists for readability.
-    /// @param printWidthLimit limit the length of a string or list for readability.
-    /// @return A string suitable for the PRINT command
-    QString printValue(bool fullPrintp = false, int printDepthLimit = -1, int printWidthLimit = -1);
-
-    /// @brief Return a string suitable for the SHOW command.
-    ///
-    /// @param fullPrintp if true print with backslashes and vertical bars
-    /// @param printDepthLimit limit the depth of sublists for readability.
-    /// @param printWidthLimit limit the length of a string or list for readability.
-    /// @return A string suitable for the SHOW command
-    QString showValue(bool fullPrintp = false, int printDepthLimit = -1, int printWidthLimit = -1);
+    /// @brief Return a string representation of the Datum.
+    /// @param flags Flags to control the output. See ToStringFlags for possible values.
+    /// @param printDepthLimit Limit the depth of sublists or arrays for readability.
+    /// printDepthLimit = 1 means don't show sublists or arrays.
+    /// printDepthLimit = 2 means show sublists or arrays, but don't show sublist's sublist or array's subarray.
+    /// printDepthLimit = 0 means show '...' instead of THIS list or array.
+    /// printDepthLimit = -1 means show all sublists or arrays.
+    /// @param printWidthLimit Limit the length of a string or list or array for readability.
+    /// @param visited Set of visited nodes to prevent cycles.
+    /// @return A string representation of the Datum.
+    QString toString( Datum::ToStringFlags flags = Datum::ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr);
 
     /// @brief returns the DatumType of the referenced object.
     ///
@@ -500,7 +491,7 @@ class DatumPtr
     /// a mark on the datum so that a debug message will be printed when the datum is destroyed.
     void alertOnDelete()
     {
-        qDebug() << "MARKED: " << d << " " << d->showValue();
+        qDebug() << "MARKED: " << d << " " << d->toString(Datum::ToStringFlags_Show);
         d->alertOnDelete = true;
     }
 };
@@ -566,31 +557,8 @@ class Word : public Datum
     /// @note check boolIsValid to determine validity after calling this.
     bool boolValue(void);
 
-    /// @brief convert encoded chars to their printable equivalents.
-    ///
-    /// @param fullPrintp if true print with backslashes and vertical bars
-    /// @param printDepthLimit if zero print ellipsis.
-    /// @param printWidthLimit limit the length of a string or list for readability.
-    /// @return A string suitable for the PRINT command
-    QString printValue(bool fullPrintp = false, int printDepthLimit = -1, int printWidthLimit = -1);
+    virtual QString toString( Datum::ToStringFlags flags = Datum::ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) override;
 
-    /// @brief convert encoded chars to their printable equivalents for use in showValue().
-    ///
-    /// @param fullPrintp if true print with backslashes and vertical bars
-    /// @param printDepthLimit if zero print ellipsis.
-    /// @param printWidthLimit limit the length of a string or list for readability.
-    /// @return A string suitable for the SHOW command
-    QString showValue(bool fullPrintp = false, int printDepthLimit = -1, int printWidthLimit = -1);
-
-    /// @brief Returns a string that can be used as a key for an associative container.
-    ///
-    /// @return A string that can be used as the name of a procedure, variable, or property list.
-    QString keyValue();
-
-    /// @brief Returns the string with the special character encoding intact.
-    ///
-    /// @return The string with the special character encoding intact.
-    QString rawValue();
 
     /// @brief Return true iff this word was created with a number.
     ///
@@ -622,21 +590,7 @@ struct Array : public Datum
     /// @brief Destructor.
     ~Array();
 
-    /// @brief Return a string suitable for the PRINT command
-    ///
-    /// @param fullPrintp if true print with backslashes and vertical bars
-    /// @param printDepthLimit if zero print ellipsis.
-    /// @param printWidthLimit limit the length of the array for readability.
-    /// @return A string suitable for the PRINT command
-    QString printValue(bool fullPrintp = false, int printDepthLimit = -1, int printWidthLimit = -1);
-
-    /// @brief Return a string suitable for the SHOW command
-    ///
-    /// @param fullPrintp if true print with backslashes and vertical bars
-    /// @param printDepthLimit if zero print ellipsis.
-    /// @param printWidthLimit limit the length of the array for readability.
-    /// @return A string suitable for the SHOW command
-    QString showValue(bool fullPrintp = false, int printDepthLimit = -1, int printWidthLimit = -1);
+    virtual QString toString( Datum::ToStringFlags flags = Datum::ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) override;
 
     /// @brief The starting index of this Array.
     int origin = 1;
@@ -678,23 +632,9 @@ class List : public Datum
     List(DatumPtr item, List *srcList);
 
     /// @brief Destructor.
-    ~List();
+    virtual ~List();
 
-    /// @brief Return a string suitable for the PRINT command
-    ///
-    /// @param fullPrintp if true print with backslashes and vertical bars
-    /// @param printDepthLimit if zero print ellipsis.
-    /// @param printWidthLimit limit the length of the array for readability.
-    /// @return A string suitable for the PRINT command
-    QString printValue(bool fullPrintp = false, int printDepthLimit = -1, int printWidthLimit = -1);
-
-    /// @brief Return a string suitable for the SHOW command
-    ///
-    /// @param fullPrintp if true print with backslashes and vertical bars
-    /// @param printDepthLimit if zero print ellipsis.
-    /// @param printWidthLimit limit the length of the array for readability.
-    /// @return A string suitable for the SHOW command
-    QString showValue(bool fullPrintp = false, int printDepthLimit = -1, int printWidthLimit = -1);
+    virtual QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) override;
 
     /// @brief Empty the List
     void clear();
@@ -764,6 +704,8 @@ class EmptyList : public List
     ///
     /// @return A pointer to the singleton EmptyList instance.
     static EmptyList *instance();
+
+    virtual QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) override;
 };
 
 /// @brief A class that simplifies iterating through a list.

@@ -223,7 +223,7 @@ Datum *CallFrame::applyGoto(FCGoto* node)
 
     // Have we seen this tag already?
     Procedure *proc = static_cast<Procedure *>(procedure);
-    auto blockIdIterator = proc->tagToBlockId.find(tag.wordValue()->keyValue());
+    auto blockIdIterator = proc->tagToBlockId.find(tag.toString(Datum::ToStringFlags_Key));
     if (blockIdIterator != proc->tagToBlockId.end()) {
         goto foundTag;
     }
@@ -237,7 +237,7 @@ Datum *CallFrame::applyGoto(FCGoto* node)
     while (runningSourceList.isList() && runningSourceList.listValue()->isEmpty() == false) {
         List* list = runningSourceList.listValue()->head.listValue();
         Config::get().mainCompiler()->functionPtrFromList(list);
-        blockIdIterator = proc->tagToBlockId.find(tag.wordValue()->keyValue());
+        blockIdIterator = proc->tagToBlockId.find(tag.toString(Datum::ToStringFlags_Key));
         if (blockIdIterator != proc->tagToBlockId.end()) {
             goto foundTag;
         }
@@ -250,7 +250,7 @@ Datum *CallFrame::applyGoto(FCGoto* node)
 
 foundTag:
     // Now, we need to jump to the block that contains the tag.
-    runningSourceList = proc->tagToLine[tag.wordValue()->keyValue()];
+    runningSourceList = proc->tagToLine[tag.toString(Datum::ToStringFlags_Key)];
     jumpLocation = blockIdIterator.value();
     return nullptr;
 }
@@ -403,7 +403,7 @@ bool Evaluator::varCASEIGNOREDP()
     bool retval = false;
     if (val.isWord())
     {
-        QString word = val.wordValue()->keyValue();
+        QString word = val.toString(Datum::ToStringFlags_Key);
         retval = word == QObject::tr("TRUE");
     }
     return retval;

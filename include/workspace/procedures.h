@@ -191,34 +191,6 @@ class Procedures
     /// @note This creates an AST node from a command and its parameters, in a form suitable
     /// for use in the APPLY command.
     DatumPtr astnodeWithLiterals(DatumPtr cmd, DatumPtr params);
-
-    /// @brief Convert a datum to a string.
-    /// @param aDatum The datum to convert to a string.
-    /// @param isInList Whether the datum is in a list.
-    /// @return A string representation of the datum, suitable for use in a source text.
-    QString unreadDatum(DatumPtr aDatum, bool isInList = false);
-
-    /// @brief Convert a list to a string.
-    /// @param aList The list to convert to a string.
-    /// @param isInList Whether the list is inside another list.
-    /// @return A string representation of the list, suitable for use in a source text.
-    QString unreadList(List *aList, bool isInList = false);
-
-    /// @brief Convert a word to a string.
-    /// @param aWord The word to convert to a string.
-    /// @param isInList Whether the word is inside a list.
-    /// @return A string representation of the word, suitable for use in a source text.
-    QString unreadWord(Word *aWord, bool isInList = false);
-
-    /// @brief Convert an array to a string.
-    /// @param anArray The array to convert to a string.
-    /// @return A string representation of the array, suitable for use in a source text.
-    QString unreadArray(Array *anArray);
-
-    /// @brief Convert a datum to a string.
-    /// @param aDatum The datum to convert to a string.
-    /// @return A string representation of the datum, suitable for use in a source text.
-    QString printoutDatum(DatumPtr aDatum);
 };
 
 /// @brief The procedure class.

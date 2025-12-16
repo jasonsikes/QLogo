@@ -443,12 +443,12 @@ EXPORTC addr_t beginCatch(addr_t eAddr)
 {
     Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
     Word* erractWord = reinterpret_cast<Word *>(Config::get().mainKernel()->specialVar(SpecialNames::ERRACT));
-    Datum* erractValue = Config::get().mainKernel()->callStack.datumForName(erractWord->keyValue()).datumValue();
+    Datum* erractValue = Config::get().mainKernel()->callStack.datumForName(erractWord->toString(Datum::ToStringFlags_Key)).datumValue();
 
     // Save the erract value.
     if (erractValue->isa != Datum::typeNothing) {
         erractValue->retainCount++;
-        Config::get().mainKernel()->callStack.setDatumForName(nothing, erractWord->keyValue());
+        Config::get().mainKernel()->callStack.setDatumForName(nothing, erractWord->toString(Datum::ToStringFlags_Key));
     }
     return reinterpret_cast<addr_t>(erractValue);
 }
@@ -464,22 +464,22 @@ EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t
     // Restore the erract value.
     if (erractValue->isa != Datum::typeNothing) {
         DatumPtr erractValuePtr = DatumPtr(erractValue);
-        Config::get().mainKernel()->callStack.setDatumForName(erractValuePtr, erractWord->keyValue());
+        Config::get().mainKernel()->callStack.setDatumForName(erractValuePtr, erractWord->toString(Datum::ToStringFlags_Key));
         erractValue->retainCount--;
     }
 
     if (result->isa == Datum::typeError) {
         FCError* err = reinterpret_cast<FCError *>(result);
-        QString tagStr = tag->keyValue();
+        QString tagStr = tag->toString(Datum::ToStringFlags_Key);
 
         if ((tagStr == QObject::tr("ERROR")) 
         && ((err->code == ErrCode::ERR_NO_CATCH)
-        && (err->tag().wordValue()->keyValue() == QObject::tr("ERROR"))
+        && (err->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("ERROR"))
         || (err->code != ErrCode::ERR_NO_CATCH))) {
             e->watch(err);
             return nodeAddr;
         } else if ((err->code == ErrCode::ERR_NO_CATCH)
-        && (err->tag().wordValue()->keyValue() == tagStr)) {
+        && (err->tag().toString(Datum::ToStringFlags_Key) == tagStr)) {
             e->watch(err);
             addr_t retval = reinterpret_cast<addr_t>(err->output().datumValue());
             Config::get().mainKernel()->currentError = nothing;

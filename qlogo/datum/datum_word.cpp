@@ -157,18 +157,6 @@ void Word::genKeyString()
     }
 }
 
-QString Word::keyValue()
-{
-    genKeyString();
-    return keyString;
-}
-
-QString Word::rawValue()
-{
-    genRawString();
-    return rawString;
-}
-
 double Word::numberValue()
 {
     if (!numberIsValid)
@@ -193,63 +181,83 @@ bool Word::boolValue()
     return boolean;
 }
 
-QString Word::printValue(bool fullPrintp, int printDepthLimit, int printWidthLimit)
+QString Word::toString( ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited)
 {
-    genPrintString();
-    if (!fullPrintp && (printDepthLimit != 0) && (printWidthLimit < 0))
-        return printableString;
-    if (printDepthLimit == 0)
-        return "...";
-    QChar s, c;
-    if (!fullPrintp)
+    if (flags & Datum::ToStringFlags_Key)
     {
-        if ((printWidthLimit >= 0) && (printWidthLimit <= 10))
-            printWidthLimit = 10;
-        if ((printWidthLimit >= 0) && (printableString.size() > printWidthLimit))
-            return printableString.left(printWidthLimit) + "...";
-        return printableString;
+        genKeyString();
+        return keyString;
+    }
+    if (flags & Datum::ToStringFlags_Raw)
+    {
+        genRawString();
+        return rawString;
     }
 
-    QString temp = rawString;
-    QString retval;
-    if (temp.size() == 0)
-        return "||";
-    bool shouldShowBars = false;
-    for (int i = 0; i < temp.size(); ++i)
+    if (printDepthLimit == 0)
     {
-        QChar t = temp[i];
-        if (t < ' ')
+        return "...";
+    }
+
+    genPrintString();
+    bool fullPrintp = (flags & (Datum::ToStringFlags_FullPrint | Datum::ToStringFlags_Source)) != 0;
+    QString srcString = (fullPrintp) ? rawString : printableString;
+
+    if ((printWidthLimit >= 0) && (printWidthLimit <= 10))
+    {
+        printWidthLimit = 10;
+    }
+    if ((printWidthLimit > 0) && (srcString.size() > printWidthLimit))
+    {
+        srcString = srcString.left(printWidthLimit) + "...";
+    }
+
+    if ( ! fullPrintp)
+    {
+        return srcString;
+    }
+
+    QString retval = (flags & Datum::ToStringFlags_Source) != 0 ? "\"" : "";
+
+    if (srcString.size() == 0)
+    {
+        return retval + "||";
+    }
+
+    bool shouldShowBars = false;
+    for (auto c : srcString)
+    {
+        QChar t = rawToChar(c);
+        if (t != c)
         {
             shouldShowBars = true;
             break;
         }
     }
-    for (int i = 0; i < temp.size(); ++i)
+    if (shouldShowBars)
     {
-        s = temp[i];
-        if (shouldShowBars)
+        retval.append('|');
+        for (auto c : srcString)
         {
-            s = rawToChar(s);
-        }
-        else
-        {
-            c = charToRaw(s);
-            if (s != c)
+            QChar s = rawToChar(c);
+            if ((s == '\\') || (s == '|') || (s == '\n'))
             {
                 retval.append('\\');
             }
+            retval.append(s);
+        }
+        retval.append('|');
+        return retval;
+    }
+    for (auto c : srcString)
+    {
+        QChar r = charToRaw(c);
+        QChar s = rawToChar(r);
+        if (r != s)
+        {
+            retval.append('\\');
         }
         retval.append(s);
     }
-    if (shouldShowBars)
-    {
-        retval.prepend('|');
-        retval.append('|');
-    }
     return retval;
-}
-
-QString Word::showValue(bool fullPrintp, int printDepthLimit, int printWidthLimit)
-{
-    return printValue(fullPrintp, printDepthLimit, printWidthLimit);
 }

@@ -60,7 +60,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
         if (lineP.isNothing())
             return nothing;
 
-        listSourceWord = lineP.wordValue()->rawValue();
+        listSourceWord = lineP.wordValue()->toString(Datum::ToStringFlags_Raw);
         listSourceWordIter = listSourceWord.begin();
     }
     ListBuilder builder;
@@ -202,7 +202,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
             lineP = readwordWithPrompt("[ ", true);
         if ( ! lineP.isNothing())
         {
-            listSourceWord = lineP.wordValue()->rawValue();
+            listSourceWord = lineP.wordValue()->toString(Datum::ToStringFlags_Raw);
             listSourceWordIter = listSourceWord.begin();
             continue;
         }
@@ -262,7 +262,7 @@ DatumPtr TextStream::readwordWithPrompt(const QString &prompt, bool shouldSavePr
         if (line.isNothing())
             return DatumPtr(retval);
 
-        const QString &t = line.wordValue()->rawValue();
+        const QString &t = line.wordValue()->toString(Datum::ToStringFlags_Raw);
         for (auto c : t)
         {
             if (isEscaped)
@@ -306,7 +306,7 @@ DatumPtr TextStream::readwordWithPrompt(const QString &prompt, bool shouldSavePr
 
         // If (after all the work) the string we generated is the same as the rawline
         // we started with, return the original rawline.
-        if (line.wordValue()->rawValue() == retval)
+        if (line.wordValue()->toString(Datum::ToStringFlags_Raw) == retval)
             return line;
         return DatumPtr(retval);
 

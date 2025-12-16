@@ -56,19 +56,13 @@ ASTNode::~ASTNode()
 }
 
 // For debugging. Parameters are ignored.
-QString ASTNode::printValue(bool, int, int)
+QString ASTNode::toString( ToStringFlags, int, int, VisitedSet *)
 {
-    QString retval = QString("( %1").arg(nodeName.showValue());
+    QString retval = QString("( %1").arg(nodeName.toString());
     for (auto &iter : children)
     {
-        retval.append(QString(" %2").arg(iter.showValue()));
+        retval.append(QString(" %2").arg(iter.toString()));
     }
     retval.append(" )");
     return retval;
-}
-
-// For debugging. Parameters are ignored.
-QString ASTNode::showValue(bool, int, int)
-{
-    return printValue();
 }

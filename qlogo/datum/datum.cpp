@@ -41,7 +41,7 @@ DatumPtr nodes()
     return lb.finishedList();
 }
 
-Datum::Datum() : retainCount(0)
+Datum::Datum() : retainCount(0), isa(Datum::DatumType(typeNothing | typePersistentMask))
 {
     ++countOfNodes;
     if (countOfNodes > maxCountOfNodes)
@@ -63,14 +63,9 @@ Datum::~Datum()
         qDebug() <<this << " --con: " << countOfNodes;
 }
 
-QString Datum::printValue(bool, int, int)
+QString Datum::toString( ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited)
 {
     return QObject::tr("nothing");
-}
-
-QString Datum::showValue(bool, int, int)
-{
-    return printValue();
 }
 
 // Value to represent nothing (similar to nullptr)
