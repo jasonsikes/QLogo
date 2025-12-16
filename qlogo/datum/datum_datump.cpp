@@ -114,20 +114,6 @@ DatumPtr &DatumPtr::operator=(const DatumPtr &other) noexcept
     return *this;
 }
 
-DatumPtr &DatumPtr::operator=(DatumPtr *other) noexcept
-{
-    if (other != this)
-    {
-        destroy();
-        d = other->d;
-        if (isNotPersistent(d))
-        {
-            ++(d->retainCount);
-        }
-    }
-    return *this;
-}
-
 bool DatumPtr::operator==(DatumPtr *other)
 {
     return d == other->d;

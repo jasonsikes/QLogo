@@ -434,12 +434,6 @@ class DatumPtr
     /// @return A reference to this.
     DatumPtr &operator=(const DatumPtr &other) noexcept;
 
-    /// @brief Reassign the pointer to refer to the other object.
-    ///
-    /// @param other The DatumPtr to assign to this.
-    /// @return A reference to this.
-    DatumPtr &operator=(DatumPtr *other) noexcept;
-
     /// @brief Return true if and only if other points to the same object as this.
     ///
     /// @param other The DatumPtr to compare to this.
@@ -550,11 +544,13 @@ class Word : public Datum
     ~Word();
 
     /// @brief returns the number representation of the Word, if possible.
-    /// @note check numberIsValid to determine validity after calling this.
+    /// @note check numberIsValid to determine validity AFTER calling this. It may seem counterintuitive,
+    /// but it's because that is the procedure of the underlying Qt toolkit.
     double numberValue(void);
 
     /// @brief returns the boolean representation of the Word, if possible.
-    /// @note check boolIsValid to determine validity after calling this.
+    /// @note check boolIsValid to determine validity AFTER calling this. It may seem counterintuitive,
+    /// but it's because that is the procedure of the underlying Qt toolkit.
     bool boolValue(void);
 
     virtual QString toString( Datum::ToStringFlags flags = Datum::ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) override;
