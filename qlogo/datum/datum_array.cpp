@@ -28,19 +28,18 @@ Array::Array(int aOrigin, int aSize)
 Array::Array(int aOrigin, List *source)
 {
     isa = Datum::typeArray;
-    auto iter = source->newIterator();
     origin = aOrigin;
     VisitedSet visited;
-    while (iter.elementExists())
+    while (source != EmptyList::instance())
     {
-        DatumPtr item = iter.element();
-        if (visited.contains(item.datumValue()))
+        if (visited.contains(source))
         {
             // We have a cycle, so stop copying the list.
             break;
         }
-        visited.add(item.datumValue());
-        array.append(item);
+        visited.add(source);
+        array.append(source->head);
+        source = source->tail.listValue();
     }
 }
 
