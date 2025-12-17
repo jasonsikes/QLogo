@@ -40,7 +40,7 @@ qint64 ProcessMessageWriter::write(const QByteArray &buffer)
     return process->write(buffer);
 }
 
-using message = MessageTemplate<ProcessMessageWriter>;
+#define message(X) (MessageTemplate<ProcessMessageWriter>(X))
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
@@ -131,7 +131,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     // Because when the process dies another signal will be sent to close the application.
     if (pid > 0)
     {
-        message() << (message_t)S_SYSTEM;
+        message(S_SYSTEM);
         logoProcess->closeWriteChannel();
 
         event->ignore();
@@ -151,7 +151,7 @@ void MainWindow::initialize()
     ui->mainCanvas->setLabelFontName(defaultFont.family());
     setSplitterforMode(initScreenMode);
 
-    message() << (message_t)W_INITIALIZE << QFontDatabase::families() << defaultFont.family()
+    message(W_INITIALIZE) << QFontDatabase::families() << defaultFont.family()
               << (double)defaultFont.pointSizeF();
 }
 
@@ -159,7 +159,7 @@ void MainWindow::fileDialogModal()
 {
     QString startingDir = QDir::homePath();
     QString filePath = QFileDialog::getOpenFileName(this, tr("Choose file"), startingDir);
-    message() << (message_t)W_FILE_DIALOG_GET_PATH << filePath;
+    message(W_FILE_DIALOG_GET_PATH) << filePath;
 }
 
 void MainWindow::openEditorWindow(const QString startingText)
@@ -180,7 +180,7 @@ void MainWindow::openEditorWindow(const QString startingText)
 
 void MainWindow::editingHasEndedSlot(QString text)
 {
-    message() << (message_t)C_CONSOLE_END_EDIT_TEXT << text;
+    message(C_CONSOLE_END_EDIT_TEXT) << text;
 }
 
 void MainWindow::introduceCanvas()
@@ -528,27 +528,27 @@ void MainWindow::beginReadChar()
 
 void MainWindow::mouseclickedSlot(QPointF position, int buttonID)
 {
-    message() << (message_t)C_CANVAS_MOUSE_BUTTON_DOWN << position << buttonID;
+    message(C_CANVAS_MOUSE_BUTTON_DOWN) << position << buttonID;
 }
 
 void MainWindow::mousemovedSlot(QPointF position)
 {
-    message() << (message_t)C_CANVAS_MOUSE_MOVED << position;
+    message(C_CANVAS_MOUSE_MOVED) << position;
 }
 
 void MainWindow::mousereleasedSlot()
 {
-    message() << (message_t)C_CANVAS_MOUSE_BUTTON_UP;
+    message(C_CANVAS_MOUSE_BUTTON_UP);
 }
 
 void MainWindow::sendCharSlot(QChar c)
 {
-    message() << (message_t)C_CONSOLE_CHAR_READ << c;
+    message(C_CONSOLE_CHAR_READ) << c;
 }
 
 void MainWindow::sendRawlineSlot(const QString &line)
 {
-    message() << (message_t)C_CONSOLE_RAWLINE_READ << line;
+    message(C_CONSOLE_RAWLINE_READ) << line;
 }
 
 void MainWindow::sendConsoleCursorPosition()
@@ -556,19 +556,19 @@ void MainWindow::sendConsoleCursorPosition()
     int row = 0;
     int col = 0;
     ui->mainConsole->getCursorPos(row, col);
-    message() << (message_t)C_CONSOLE_TEXT_CURSOR_POS << row << col;
+    message(C_CONSOLE_TEXT_CURSOR_POS) << row << col;
 }
 
 void MainWindow::sendCanvasImage()
 {
     QImage image(ui->mainCanvas->getImage());
-    message() << (message_t)C_CANVAS_GET_IMAGE << image;
+    message(C_CANVAS_GET_IMAGE) << image;
 }
 
 void MainWindow::sendCanvasSvg()
 {
     QByteArray svg = ui->mainCanvas->getSvg();
-    message() << (message_t)C_CANVAS_GET_SVG << svg;
+    message(C_CANVAS_GET_SVG) << svg;
 }
 
 void MainWindow::splitterHasMovedSlot(int, int)

@@ -383,9 +383,10 @@ struct StdoutMessageWriter
 template <typename WriterPolicy>
 struct MessageTemplate
 {
-    MessageTemplate() : bufferStream(&buffer, QIODevice::WriteOnly)
+    MessageTemplate(message_t header) : bufferStream(&buffer, QIODevice::WriteOnly)
     {
         buffer.clear();
+        bufferStream << header;
     }
 
     ~MessageTemplate()
