@@ -33,38 +33,14 @@
 /// @brief a pointer to the qlogo process.
 static QProcess *logoProcess;
 
-/// @brief Interface for sending messages to the qlogo process.
-///
-/// This class is used to send messages to the qlogo process. It presents a
-/// QDataStream interface for "<<" stream operations and then the destructor will
-/// send the message to the qlogo process.
-struct message
+QProcess *ProcessMessageWriter::process = nullptr;
+
+qint64 ProcessMessageWriter::write(const QByteArray &buffer)
 {
-    message() : bufferStream(&buffer, QIODevice::WriteOnly)
-    {
-        buffer.clear();
-    }
+    return process->write(buffer);
+}
 
-    ~message()
-    {
-        qint64 datawritten;
-        qint64 datalen = buffer.size();
-        buffer.prepend(reinterpret_cast<const char *>(&datalen), sizeof(qint64));
-        datawritten = logoProcess->write(buffer);
-        Q_ASSERT(datawritten == buffer.size());
-    }
-
-    template <class T>
-    message &operator<<(const T &x)
-    {
-        bufferStream << x;
-        return *this;
-    }
-
-  private:
-    QByteArray buffer;
-    QDataStream bufferStream;
-};
+using message = MessageTemplate<ProcessMessageWriter>;
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
@@ -123,6 +99,7 @@ int MainWindow::startLogo()
     arguments << "--Psychi";
 
     logoProcess = new QProcess(this);
+    ProcessMessageWriter::process = logoProcess;
 
     connect(
         logoProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &MainWindow::processFinished);

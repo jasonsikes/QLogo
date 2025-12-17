@@ -33,38 +33,12 @@
 #include <fcntl.h>
 #endif
 
-/// @brief Interface for sending messages to the GUI.
-///
-/// This class is used to send messages to the GUI. It presents a QDataStream
-/// interface for "<<" stream operations and then the destructor will send the
-/// message to the GUI parent process.
-struct message
+qint64 StdoutMessageWriter::write(const QByteArray &buffer)
 {
-    message() : bufferStream(&buffer, QIODevice::WriteOnly)
-    {
-        buffer.clear();
-    }
+    return ::write(STDOUT_FILENO, buffer.constData(), buffer.size());
+}
 
-    ~message()
-    {
-        qint64 datawritten;
-        qint64 datalen = buffer.size();
-        buffer.prepend((const char *)&datalen, sizeof(qint64));
-        datawritten = write(STDOUT_FILENO, buffer.constData(), buffer.size());
-        Q_ASSERT(datawritten == buffer.size());
-    }
-
-    template <class T>
-    message &operator<<(const T &x)
-    {
-        bufferStream << x;
-        return *this;
-    }
-
-  private:
-    QByteArray buffer;
-    QDataStream bufferStream;
-};
+using message = MessageTemplate<StdoutMessageWriter>;
 
 LogoControllerGUI::LogoControllerGUI(QObject *parent) : LogoController(parent)
 {

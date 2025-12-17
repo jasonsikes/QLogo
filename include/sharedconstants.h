@@ -21,6 +21,12 @@
 #include <QColor>
 #include <QDebug>
 #include <QDataStream>
+#include <QByteArray>
+#include <QIODevice>
+
+#ifndef _WIN32
+#include <unistd.h>
+#endif
 
 using message_t = quint8;
 
@@ -345,6 +351,61 @@ enum ScreenModeEnum
 
     /// @brief The split screen mode, the Canvas takes up 80% of available space.
     splitScreenMode
+};
+
+class QProcess;
+
+/// @brief Policy class for writing messages to a QProcess.
+///
+/// The process pointer must be set before using message<ProcessMessageWriter>.
+/// Include <QProcess> where implementing write().
+struct ProcessMessageWriter
+{
+    static QProcess *process;
+    
+    static qint64 write(const QByteArray &buffer);
+};
+
+/// @brief Policy class for writing messages to stdout.
+struct StdoutMessageWriter
+{
+    static qint64 write(const QByteArray &buffer);
+};
+
+/// @brief Interface for sending messages between processes.
+///
+/// This template class is used to send messages between processes. It presents a
+/// QDataStream interface for "<<" stream operations and then the destructor will
+/// send the message using the writer policy's write method.
+///
+/// @tparam WriterPolicy A policy class with a static write() method that takes
+///                      a const QByteArray& and returns qint64.
+template <typename WriterPolicy>
+struct MessageTemplate
+{
+    MessageTemplate() : bufferStream(&buffer, QIODevice::WriteOnly)
+    {
+        buffer.clear();
+    }
+
+    ~MessageTemplate()
+    {
+        qint64 datalen = buffer.size();
+        buffer.prepend(reinterpret_cast<const char *>(&datalen), sizeof(qint64));
+        qint64 datawritten = WriterPolicy::write(buffer);
+        Q_ASSERT(datawritten == buffer.size());
+    }
+
+    template <class T>
+    MessageTemplate &operator<<(const T &x)
+    {
+        bufferStream << x;
+        return *this;
+    }
+
+  private:
+    QByteArray buffer;
+    QDataStream bufferStream;
 };
 
 #endif // CONSTANTS_H
