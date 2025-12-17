@@ -282,7 +282,7 @@ QString Word::toString( ToStringFlags flags, int printDepthLimit, int printWidth
         for (auto c : srcString)
         {
             QChar s = rawToChar(c);
-            if ((s == '\\') || (s == '|') || (s == '\n'))
+            if ((s == '\\') || (s == '|'))
             {
                 retval.append('\\');
             }
