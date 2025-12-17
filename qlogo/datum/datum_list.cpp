@@ -23,9 +23,6 @@
 #include <QObject>
 #include <qdebug.h>
 
-QList<void *> listVisited;
-QList<void *> otherListVisited;
-
 List::List(DatumPtr item, List *srcList)
 {
     isa = Datum::typeList;
