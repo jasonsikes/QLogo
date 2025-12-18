@@ -49,7 +49,7 @@ class Library
 
     /// @brief Return a list of all procedure names available in the library.
     /// @returns A list of all procedure names available in the library.
-    QStringList allProcedureNames();
+    QStringList allProcedureNames() const;
 };
 
 class Help

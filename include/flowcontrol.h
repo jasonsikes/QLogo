@@ -165,8 +165,24 @@ public:
         return dataAry[0];
     }
 
+    /// @brief The text string message of the error (const version).
+    const DatumPtr& message() const
+    {
+        Q_ASSERT(isa == Datum::typeError);
+        Q_ASSERT(dataAry.size() == 5);
+        return dataAry[0];
+    }
+
     /// @brief The error tag.
     DatumPtr& tag()
+    {
+        Q_ASSERT(isa == Datum::typeError);
+        Q_ASSERT(dataAry.size() == 5);
+        return dataAry[1];
+    }
+
+    /// @brief The error tag (const version).
+    const DatumPtr& tag() const
     {
         Q_ASSERT(isa == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
@@ -184,6 +200,14 @@ public:
         return dataAry[2];
     }
 
+    /// @brief The output of the error (const version).
+    const DatumPtr& output() const
+    {
+        Q_ASSERT(isa == Datum::typeError);
+        Q_ASSERT(dataAry.size() == 5);
+        return dataAry[2];
+    }
+
     /// @brief The line where the error occurred.
     DatumPtr& line()
     {
@@ -192,8 +216,24 @@ public:
         return dataAry[3];
     }
 
+    /// @brief The line where the error occurred (const version).
+    const DatumPtr& line() const
+    {
+        Q_ASSERT(isa == Datum::typeError);
+        Q_ASSERT(dataAry.size() == 5);
+        return dataAry[3];
+    }
+
     /// @brief The procedure where the error occurred.
     DatumPtr& procedure()
+    {
+        Q_ASSERT(isa == Datum::typeError);
+        Q_ASSERT(dataAry.size() == 5);
+        return dataAry[4];
+    }
+
+    /// @brief The procedure where the error occurred (const version).
+    const DatumPtr& procedure() const
     {
         Q_ASSERT(isa == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
@@ -327,7 +367,7 @@ public:
     /// @param printWidthLimit Limit the length of a string or list for readability. (ignored for errors)
     /// @param visited Set of visited nodes to prevent cycles.
     /// @return A string suitable for the PRINT command
-    QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) override;
+    QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) const override;
 
 };
 

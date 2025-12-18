@@ -336,7 +336,7 @@ DatumPtr TextStream::readChar()
     return DatumPtr(line);
 }
 
-DatumPtr TextStream::recentHistory()
+DatumPtr TextStream::recentHistory() const
 {
     return recentLineHistory;
 }
@@ -346,12 +346,12 @@ bool TextStream::seek(qint64 loc)
     return stream->seek(loc);
 }
 
-qint64 TextStream::pos()
+qint64 TextStream::pos() const
 {
     return stream->pos();
 }
 
-bool TextStream::atEnd()
+bool TextStream::atEnd() const
 {
     return stream->atEnd();
 }
@@ -375,12 +375,12 @@ void TextStream::lprint(QString text)
     }
 }
 
-QIODevice *TextStream::device()
+QIODevice *TextStream::device() const
 {
     return stream->device();
 }
 
-QString *TextStream::string()
+QString *TextStream::string() const
 {
     return stream->string();
 }

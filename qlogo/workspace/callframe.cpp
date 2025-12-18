@@ -31,7 +31,7 @@ void CallFrameStack::setDatumForName(DatumPtr &aDatum, const QString &name) {
 }
 
 
-DatumPtr CallFrameStack::datumForName(QString name) {
+DatumPtr CallFrameStack::datumForName(QString name) const {
     auto result = variables.find(name);
     if (result != variables.end()) {
         return *result;
@@ -40,13 +40,13 @@ DatumPtr CallFrameStack::datumForName(QString name) {
 }
 
 
-bool CallFrameStack::doesExist(QString name) {
+bool CallFrameStack::doesExist(QString name) const {
     return variables.contains(name);
 }
 
 
 
-DatumPtr CallFrameStack::allVariables() {
+DatumPtr CallFrameStack::allVariables() const {
     ListBuilder builder;
     for (auto &varname : variables.keys()) {
         builder.append(DatumPtr(varname));
@@ -69,7 +69,7 @@ void CallFrameStack::setTest(bool isTrue) {
 
 
 
-bool CallFrameStack::isTested() {
+bool CallFrameStack::isTested() const {
     for (auto frame : stack) {
         if (frame->isTested)
             return true;
@@ -77,7 +77,7 @@ bool CallFrameStack::isTested() {
     return false;
 }
 
-bool CallFrameStack::testedState() {
+bool CallFrameStack::testedState() const {
     for (auto frame : stack) {
         if (frame->isTested)
             return frame->testResult;
@@ -95,7 +95,7 @@ void CallFrameStack::setExplicitSlotList(DatumPtr aList)
 
 
 
-DatumPtr CallFrameStack::explicitSlotList()
+DatumPtr CallFrameStack::explicitSlotList() const
 {
     return stack.last()->explicitSlotList;
 }

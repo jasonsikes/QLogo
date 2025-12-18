@@ -23,12 +23,12 @@ void ASTNode::addChild(DatumPtr aChild)
     children.push_back(aChild);
 }
 
-int ASTNode::countOfChildren()
+int ASTNode::countOfChildren() const
 {
     return (int)children.size();
 }
 
-DatumPtr ASTNode::childAtIndex(unsigned index)
+DatumPtr ASTNode::childAtIndex(unsigned index) const
 {
     return children.at(index);
 }
@@ -56,7 +56,7 @@ ASTNode::~ASTNode()
 }
 
 // For debugging. Parameters are ignored.
-QString ASTNode::toString( ToStringFlags, int, int, VisitedSet *)
+QString ASTNode::toString( ToStringFlags, int, int, VisitedSet *) const
 {
     QString retval = QString("( %1").arg(nodeName.toString());
     for (auto &iter : children)

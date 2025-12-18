@@ -49,7 +49,7 @@ Datum::~Datum()
         qDebug() <<this << " --con: " << countOfNodes;
 }
 
-QString Datum::toString( ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited)
+QString Datum::toString( ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited) const
 {
     return QObject::tr("nothing");
 }

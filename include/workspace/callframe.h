@@ -46,7 +46,7 @@ struct CallFrameStack
     /// @brief Return the value of a variable.
     /// @param name The name of the variable to search for.
     /// @return The stored value associated with 'name' or 'nothing' if the variable is not found.
-    DatumPtr datumForName(QString name);
+    DatumPtr datumForName(QString name) const;
 
     /// @brief Set a value for a variable.
     /// @param aDatum The value to store.
@@ -56,7 +56,7 @@ struct CallFrameStack
     /// @brief Return true if value keyed by name exists in the variables hash.
     /// @param name The name of the variable to search for.
     /// @return True if the variable exists, false otherwise.
-    bool doesExist(QString name);
+    bool doesExist(QString name) const;
 
     /// @brief Erase name and its value from the variables hash.
     /// @param name The name of the variable to erase.
@@ -64,7 +64,7 @@ struct CallFrameStack
 
     /// @brief Returns the size of the stack, i.e. the number of stack frames.
     /// @return The size of the stack.
-    int size()
+    int size() const
     {
         return stack.size();
     }
@@ -77,16 +77,16 @@ struct CallFrameStack
     /// @brief Return true if a test state has been registered in any stack frame.
     /// @return True if a test state has been registered, false otherwise.
     /// @note This is for the commands TEST, IFTRUE, and IFFALSE.
-    bool isTested();
+    bool isTested() const;
 
     /// @brief Return true if the highest registered test state is true.
     /// @return True if the highest registered test state is true, false otherwise.
     /// @note This is for the commands TEST, IFTRUE, and IFFALSE.
-    bool testedState();
+    bool testedState() const;
 
     /// @brief Return a list of all variables defined.
     /// @return A list of all variables defined.
-    DatumPtr allVariables();
+    DatumPtr allVariables() const;
 
     /// @brief In "explicit slot" APPLY command, sets the list of values of the explicit
     /// slot variables ("?1", "?2", etc.)
@@ -96,25 +96,25 @@ struct CallFrameStack
     /// @brief In "explicit slot" APPLY command, retrieves the list of values of the
     /// explicit slot variables ("?1", "?2", etc.)
     /// @return The list of values of the explicit slot variables.
-    DatumPtr explicitSlotList();
+    DatumPtr explicitSlotList() const;
 
     /// @brief Return the global frame, i.e. the last element of the stack list.
     /// @return The global frame.
-    CallFrame *globalFrame()
+    CallFrame *globalFrame() const
     {
         return stack.last();
     }
 
     /// @brief Return the local frame, i.e. the first element of the stack list.
     /// @return The local frame.
-    CallFrame *localFrame()
+    CallFrame *localFrame() const
     {
         return stack.first();
     }
 
     /// @brief Return the parent of the local frame, i.e. the second element of the stack list.
     /// @return The parent frame.
-    CallFrame *parentFrame()
+    CallFrame *parentFrame() const
     {
         return stack[1];
     }
@@ -167,7 +167,7 @@ struct CallFrame
 
     /// @brief Return the topmost Evaluator object.
     /// @return The topmost Evaluator object.
-    Evaluator *localEvaluator()
+    Evaluator *localEvaluator() const
     {
         return evalStack.first();
     }

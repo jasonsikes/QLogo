@@ -58,11 +58,11 @@ class ASTNode : public Datum
     /// @brief Returns the child at the specified index.
     /// @param index The index of the child to return.
     /// @return The child at the specified index.
-    DatumPtr childAtIndex(unsigned index);
+    DatumPtr childAtIndex(unsigned index) const;
 
     /// @brief Returns the number of children that this node owns.
     /// @return The number of children that this node owns.
-    int countOfChildren();
+    int countOfChildren() const;
 
     /// @brief Create an invalid ASTNode.
     ASTNode()
@@ -74,7 +74,7 @@ class ASTNode : public Datum
 
     /// @brief For debugging. To be used when printing out the AST. Parameters are ignored.
     /// @return A string representation of this node.
-    QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) override;
+    QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) const override;
 
 };
 

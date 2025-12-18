@@ -91,7 +91,7 @@ Compiler::~Compiler()
     Config::get().setMainCompiler(nullptr);
 }
 
-QString Compiler::getTagNameFromNode(DatumPtr node)
+QString Compiler::getTagNameFromNode(DatumPtr node) const
 {
     Q_ASSERT(node.astnodeValue()->genExpression == &Compiler::genTag);
     ASTNode *tagNode = node.astnodeValue()->childAtIndex(0).astnodeValue();

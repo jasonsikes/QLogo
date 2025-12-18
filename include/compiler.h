@@ -211,7 +211,7 @@ class Compiler
     llvm::AllocaInst *generateNumberAryFromDatum(ASTNode *parent, DatumPtr srcPtr, int32_t size);
 
     // Get the tag name from a tag node.
-    QString getTagNameFromNode(DatumPtr node);
+    QString getTagNameFromNode(DatumPtr node) const;
 
     // Process the tags in a block of ASTNodes.
     void setTagToBlockIdInProcedure(QList<DatumPtr> tagList, int32_t blockId);

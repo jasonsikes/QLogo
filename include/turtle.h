@@ -69,14 +69,14 @@ class Turtle
 
     /// @brief Get the current turtle position and orientation.
     /// @return The current turtle position and orientation.
-    const Transform &getMatrix(void)
+    const Transform &getMatrix(void) const
     {
         return turtlePosition;
     }
 
     /// @brief Check if the turtle is visible.
     /// @return True if the turtle is visible, false otherwise.
-    bool isTurtleVisible()
+    bool isTurtleVisible() const
     {
         return turtleIsVisible;
     }
@@ -91,7 +91,7 @@ class Turtle
 
     /// @brief Check if the pen is down.
     /// @return True if the pen is down, false otherwise.
-    bool isPenDown()
+    bool isPenDown() const
     {
         return penIsDown;
     }
@@ -106,7 +106,7 @@ class Turtle
 
     /// @brief Get the pen mode.
     /// @return The current pen mode.
-    PenModeEnum getPenMode();
+    PenModeEnum getPenMode() const;
 
     /// @brief Rotate the turtle by a given angle.
     /// @param angle The angle to rotate the turtle by.
@@ -122,16 +122,16 @@ class Turtle
 
     /// @brief Get the turtle mode.
     /// @return The current turtle mode.
-    TurtleModeEnum getMode();
+    TurtleModeEnum getMode() const;
 
     /// @brief Get the turtle heading.
     /// @return The current turtle heading.
-    double getHeading();
+    double getHeading() const;
 
     /// @brief Get the turtle position.
     /// @param x The x coordinate of the turtle.
     /// @param y The y coordinate of the turtle.
-    void getxy(double &x, double &y);
+    void getxy(double &x, double &y) const;
 
     /// @brief Set the turtle position.
     /// @param x The new x coordinate of the turtle.
@@ -157,15 +157,15 @@ class Turtle
     /// @brief Check if the pen size is valid.
     /// @param aPenSize The pen size to check.
     /// @return True if the pen size is valid, false otherwise.
-    bool isPenSizeValid(double aPenSize);
+    bool isPenSizeValid(double aPenSize) const;
 
     /// @brief Get the pen size.
     /// @return The current pen size.
-    double getPenSize();
+    double getPenSize() const;
 
     /// @brief Get the pen color.
     /// @return The current pen color.
-    const QColor &getPenColor();
+    const QColor &getPenColor() const;
 
     /// @brief Move the turtle to the home position.
     void moveToHome();

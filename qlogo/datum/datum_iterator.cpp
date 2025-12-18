@@ -34,7 +34,7 @@ DatumPtr ListIterator::element()
     return retval;
 }
 
-bool ListIterator::elementExists()
+bool ListIterator::elementExists() const
 {
     return ! ptr.listValue()->isEmpty();
 }

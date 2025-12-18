@@ -31,16 +31,16 @@ void rawToChar(QString &src);
 class Word : public Datum
 {
   protected:
-    QString rawString;
-    QString keyString;
-    QString printableString;
-    double number;
-    bool boolean;
+    mutable QString rawString;
+    mutable QString keyString;
+    mutable QString printableString;
+    mutable double number;
+    mutable bool boolean;
     bool sourceIsNumber;
 
-    void genRawString();
-    void genPrintString();
-    void genKeyString();
+    void genRawString() const;
+    void genPrintString() const;
+    void genKeyString() const;
 
   public:
     /// @brief Set to true if the word was created with vertical bars as delimiters.
@@ -49,11 +49,11 @@ class Word : public Datum
 
     /// @brief True if a number was calculated/given AND the number is valid
     /// @note Read this AFTER calling numberValue()
-    bool numberIsValid = false;
+    mutable bool numberIsValid = false;
 
     /// @brief True if the word is either "true" or "false".
     /// @note Read this AFTER calling boolValue()
-    bool boolIsValid = false;
+    mutable bool boolIsValid = false;
 
     /// @brief Create a Word object that is invalid.
     Word();
@@ -73,20 +73,20 @@ class Word : public Datum
     /// @brief returns the number representation of the Word, if possible.
     /// @note check numberIsValid to determine validity AFTER calling this. It may seem counterintuitive,
     /// but it's because that is the procedure of the underlying Qt toolkit.
-    double numberValue(void);
+    double numberValue(void) const;
 
     /// @brief returns the boolean representation of the Word, if possible.
     /// @note check boolIsValid to determine validity AFTER calling this. It may seem counterintuitive,
     /// but it's because that is the procedure of the underlying Qt toolkit.
-    bool boolValue(void);
+    bool boolValue(void) const;
 
-    virtual QString toString( Datum::ToStringFlags flags = Datum::ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) override;
+    virtual QString toString( Datum::ToStringFlags flags = Datum::ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) const override;
 
 
     /// @brief Return true iff this word was created with a number.
     ///
     /// @return True iff this word was created with a number.
-    bool isSourceNumber()
+    bool isSourceNumber() const
     {
         return sourceIsNumber;
     }
@@ -113,7 +113,7 @@ struct Array : public Datum
     /// @brief Destructor.
     ~Array();
 
-    virtual QString toString( Datum::ToStringFlags flags = Datum::ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) override;
+    virtual QString toString( Datum::ToStringFlags flags = Datum::ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) const override;
 
     /// @brief The starting index of this Array.
     int origin = 1;
@@ -157,7 +157,7 @@ class List : public Datum
     /// @brief Destructor.
     virtual ~List();
 
-    virtual QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) override;
+    virtual QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) const override;
 
     /// @brief Empty the List
     void clear();
@@ -168,19 +168,19 @@ class List : public Datum
     /// the list. Consider using isEmpty().
     ///
     /// @return The count of elements in the List.
-    int count();
+    int count() const;
 
     /// @brief Returns the element pointed to by anIndex.
     ///
     /// @param anIndex The index of the element to return.
     /// @return The element at the given index, starting at 1. Ensure that the index is
     /// within the bounds of the list. Triggers an error if the index is out of bounds.
-    DatumPtr itemAtIndex(int anIndex);
+    DatumPtr itemAtIndex(int anIndex) const;
 
     /// @brief Returns true if this is an empty list.
     ///
     /// @return True if this is an empty list, false otherwise.
-    bool isEmpty();
+    bool isEmpty() const;
 
     /// @brief Replaces everything but the first item in the List with aValue.
     ///
@@ -189,7 +189,7 @@ class List : public Datum
 
     /// @brief Create a new ListIterator pointing to the head of the List.
     /// @return A new ListIterator pointing to the head of the List.
-    ListIterator newIterator();
+    ListIterator newIterator() const;
 };
 
 /// @brief A singleton class that represents an empty list.
@@ -228,7 +228,7 @@ class EmptyList : public List
     /// @return A pointer to the singleton EmptyList instance.
     static EmptyList *instance();
 
-    virtual QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) override;
+    virtual QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) const override;
 };
 
 /// @brief A class that simplifies iterating through a list.
@@ -256,7 +256,7 @@ class ListIterator
     DatumPtr element();
 
     /// @brief Returns true if pointer references a valid element.
-    bool elementExists();
+    bool elementExists() const;
 };
 
 

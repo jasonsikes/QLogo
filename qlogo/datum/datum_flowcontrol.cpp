@@ -190,7 +190,7 @@ FCError* FCError::isPrimitive(DatumPtr x)
     return new FCError(ERR_IS_PRIMITIVE, message);
 }
 
-QString FCError::toString( ToStringFlags, int, int, VisitedSet *)
+QString FCError::toString( ToStringFlags, int, int, VisitedSet *) const
 {
     QString retval = message().toString();
     if ( ! procedure().isNothing())

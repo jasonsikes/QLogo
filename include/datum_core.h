@@ -100,12 +100,12 @@ class Datum
     /// @param printWidthLimit Limit the length of a string or list or array for readability.
     /// @param visited Set of visited nodes to prevent cycles.
     /// @return A string representation of the Datum.
-    virtual QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr);
+    virtual QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) const;
 
     /// @brief Returns true if the referred Datum is a List, false otherwise.
     ///
     /// @return True if the referred Datum is a List, false otherwise.
-    bool isList()
+    bool isList() const
     {
         return (isa & Datum::typeList) != 0;
     }
@@ -113,7 +113,7 @@ class Datum
     /// @brief Returns true if the referred Datum is an Array, false otherwise.
     ///
     /// @return True if the referred Datum is an Array, false otherwise.
-    bool isArray()
+    bool isArray() const
     {
         return (isa & Datum::typeArray) != 0;
     }
@@ -121,7 +121,7 @@ class Datum
     /// @brief Returns true if the referred Datum is a Word, false otherwise.
     ///
     /// @return True if the referred Datum is a Word, false otherwise.
-    bool isWord()
+    bool isWord() const
     {
         return (isa & Datum::typeWord) != 0;
     }
@@ -129,28 +129,28 @@ class Datum
     /// @brief Performs an assertion check that the referred Datum is a Word. Returns a pointer to the referred Datum as a Word.
     ///
     /// @return A pointer to the referred Datum as a Word.
-    Word *wordValue()
+    Word *wordValue() const
     {
         Q_ASSERT(isWord());
-        return reinterpret_cast<Word *>(this);
+        return reinterpret_cast<Word *>(const_cast<Datum *>(this));
     }
 
     /// @brief Performs an assertion check that the referred Datum is a List. Returns a pointer to the referred Datum as a List.
     ///
     /// @return A pointer to the referred Datum as a List.
-    List *listValue()
+    List *listValue() const
     {
         Q_ASSERT(isList());
-        return reinterpret_cast<List *>(this);
+        return reinterpret_cast<List *>(const_cast<Datum *>(this));
     }
 
     /// @brief Performs an assertion check that the referred Datum is an Array. Returns a pointer to the referred Datum as an Array.
     ///
     /// @return A pointer to the referred Datum as an Array.
-    Array *arrayValue()
+    Array *arrayValue() const
     {
         Q_ASSERT(isArray());
-        return reinterpret_cast<Array *>(this);
+        return reinterpret_cast<Array *>(const_cast<Datum *>(this));
     }
 };
 

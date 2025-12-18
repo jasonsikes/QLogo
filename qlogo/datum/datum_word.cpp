@@ -164,7 +164,7 @@ Word::~Word()
     //qDebug() <<this << " --del word";
 }
 
-void Word::genRawString()
+void Word::genRawString() const
 {
     if (rawString.isNull())
     {
@@ -173,7 +173,7 @@ void Word::genRawString()
     }
 }
 
-void Word::genPrintString()
+void Word::genPrintString() const
 {
     if (printableString.isNull())
     {
@@ -183,7 +183,7 @@ void Word::genPrintString()
     }
 }
 
-void Word::genKeyString()
+void Word::genKeyString() const
 {
     if (keyString.isNull())
     {
@@ -199,7 +199,7 @@ void Word::genKeyString()
     }
 }
 
-double Word::numberValue()
+double Word::numberValue() const
 {
     if (!numberIsValid)
     {
@@ -209,7 +209,7 @@ double Word::numberValue()
     return number;
 }
 
-bool Word::boolValue()
+bool Word::boolValue() const
 {
     if (!boolIsValid)
     {
@@ -223,7 +223,7 @@ bool Word::boolValue()
     return boolean;
 }
 
-QString Word::toString( ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited)
+QString Word::toString( ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited) const
 {
     if (flags & Datum::ToStringFlags_Key)
     {

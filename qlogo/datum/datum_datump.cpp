@@ -114,59 +114,59 @@ DatumPtr &DatumPtr::operator=(const DatumPtr &other) noexcept
     return *this;
 }
 
-bool DatumPtr::operator==(const DatumPtr &other)
+bool DatumPtr::operator==(const DatumPtr &other) const
 {
     return d == other.d;
 }
 
-bool DatumPtr::operator!=(const DatumPtr &other)
+bool DatumPtr::operator!=(const DatumPtr &other) const
 {
     return d != other.d;
 }
 
-Word *DatumPtr::wordValue()
+Word *DatumPtr::wordValue() const
 {
     Q_ASSERT(d->isa == Datum::typeWord);
     return reinterpret_cast<Word *>(d);
 }
 
-List *DatumPtr::listValue()
+List *DatumPtr::listValue() const
 {
     Q_ASSERT(d && (d->isa & Datum::typeList) != 0);
     return reinterpret_cast<List *>(d);
 }
 
-Array *DatumPtr::arrayValue()
+Array *DatumPtr::arrayValue() const
 {
     Q_ASSERT(d->isa == Datum::typeArray);
     return reinterpret_cast<Array *>(d);
 }
 
-FlowControl *DatumPtr::flowControlValue()
+FlowControl *DatumPtr::flowControlValue() const
 {
     Q_ASSERT((d->isa & Datum::typeFlowControlMask) != 0);
     return reinterpret_cast<FlowControl *>(d);
 }
 
-Procedure *DatumPtr::procedureValue()
+Procedure *DatumPtr::procedureValue() const
 {
     Q_ASSERT(d->isa == Datum::typeProcedure);
     return reinterpret_cast<Procedure *>(d);
 }
 
-ASTNode *DatumPtr::astnodeValue()
+ASTNode *DatumPtr::astnodeValue() const
 {
     Q_ASSERT(d->isa == Datum::typeASTNode);
     return reinterpret_cast<ASTNode *>(d);
 }
 
-FCError *DatumPtr::errValue()
+FCError *DatumPtr::errValue() const
 {
     Q_ASSERT(d->isa == Datum::typeError);
     return reinterpret_cast<FCError *>(d);
 }
 
-QString DatumPtr::toString( Datum::ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited)
+QString DatumPtr::toString( Datum::ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited) const
 {
     return d->toString(flags, printDepthLimit, printWidthLimit, visited);
 }

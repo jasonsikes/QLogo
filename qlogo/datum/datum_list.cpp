@@ -46,13 +46,13 @@ List::~List()
     }
 }
 
-QString List::toString( ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited)
+QString List::toString( ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited) const
 {
     bool shouldShowBrackets = (flags & ToStringFlags_Show) != 0;
     QString retval = shouldShowBrackets ? "[" : "";
     std::unique_ptr<VisitedSet> localVisited;
     int printWidth = printWidthLimit - 1;
-    List* l = this;
+    const List* l = this;
 
     if (this == EmptyList::instance())
         goto exit;
@@ -79,20 +79,20 @@ QString List::toString( ToStringFlags flags, int printDepthLimit, int printWidth
         {
             retval.append(' ');
         }
-        if ( (printWidth == 0) || (visited->contains(l)))
+        if ( (printWidth == 0) || (visited->contains(const_cast<List *>(l))))
         {
             // We have reached the print width limit or have a cycle, so stop traversing the list.
             retval.append("...");
             goto exit;
         }
-        visited->add(l);
+        visited->add(const_cast<List *>(l));
         retval.append(l->head.toString(flags, printDepthLimit - 1, printWidthLimit, visited));
         --printWidth;
         l = l->tail.listValue();
     }
 
 exit:
-    visited->remove(this);
+    visited->remove(const_cast<List *>(this));
     if (shouldShowBrackets)
     {
         retval.append(']');
@@ -100,7 +100,7 @@ exit:
     return retval;
 }
 
-bool List::isEmpty()
+bool List::isEmpty() const
 {
     return this == EmptyList::instance();
 }
@@ -113,9 +113,9 @@ void List::setButfirstItem(DatumPtr aValue)
     astParseTimeStamp = 0;
 }
 
-DatumPtr List::itemAtIndex(int anIndex)
+DatumPtr List::itemAtIndex(int anIndex) const
 {
-    DatumPtr ptr(this);
+    DatumPtr ptr(const_cast<List *>(this));
     while (anIndex > 1)
     {
         --anIndex;
@@ -133,29 +133,29 @@ void List::clear()
     astParseTimeStamp = 0;
 }
 
-int List::count()
+int List::count() const
 {
     int retval = 0;
-    List* iter = this;
+    const List* iter = this;
     VisitedSet visited;
     while ( ! iter->isEmpty())
     {
         ++retval;
-        if (visited.contains(iter))
+        if (visited.contains(const_cast<List *>(iter)))
         {
             // TODO: How should we report a cycle? -1? 0?
             //  Not MAX_INT because that's a positive number.
             return retval;
         }
-        visited.add(iter);
+        visited.add(const_cast<List *>(iter));
         iter = iter->tail.listValue();
     }
     return retval;
 }
 
-ListIterator List::newIterator()
+ListIterator List::newIterator() const
 {
-    return ListIterator(this);
+    return ListIterator(const_cast<List *>(this));
 }
 
 // EmptyList singleton implementation
@@ -187,7 +187,7 @@ void EmptyList::setButfirstItem(DatumPtr /* aValue */)
     Q_ASSERT(false && "Attempted to modify immutable EmptyList");
 }
 
-QString EmptyList::toString( ToStringFlags flags, int /* printDepthLimit */, int /* printWidthLimit */, VisitedSet * /* visited */)
+QString EmptyList::toString( ToStringFlags flags, int /* printDepthLimit */, int /* printWidthLimit */, VisitedSet * /* visited */) const
 {
     bool shouldShowBrackets = (flags & ToStringFlags_Show) != 0;
     return shouldShowBrackets ? "[]" : "";

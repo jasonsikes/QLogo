@@ -75,7 +75,7 @@ class TextStream
 
     /// @brief Return the contents of the current line history.
     /// @return The line history as a List of RawLines.
-    DatumPtr recentHistory();
+    DatumPtr recentHistory() const;
 
     /// @brief Pass-through to the underlying QTextStream::seek()
     /// @param loc The position to seek to.
@@ -84,11 +84,11 @@ class TextStream
 
     /// @brief Pass-through to the underlying QTextStream::pos()
     /// @return The current position in the stream.
-    qint64 pos();
+    qint64 pos() const;
 
     /// @brief Pass-through to the underlying QTextStream::atEnd()
     /// @return True if the stream is at the end, false otherwise.
-    bool atEnd();
+    bool atEnd() const;
 
     /// @brief Pass-through to the underlying QTextStream::flush()
     void flush();
@@ -99,11 +99,11 @@ class TextStream
 
     /// @brief Return the underlying device (nullptr if there isn't a device).
     /// @return The QIODevice.
-    QIODevice *device();
+    QIODevice *device() const;
 
     /// @brief Return the underlying string buffer (nullptr if there isn't one).
     /// @return The string buffer.
-    QString *string();
+    QString *string() const;
 };
 
 #endif // READER_H

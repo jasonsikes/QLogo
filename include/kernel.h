@@ -147,17 +147,17 @@ class Kernel
     /// @return The QColor.
     /// @details This method converts a Datum to a QColor. The Datum can be a
     /// color number, color name, an RGB list or an RGBA list.
-    bool colorFromDatumPtr(QColor &retval, DatumPtr colorP);
+    bool colorFromDatumPtr(QColor &retval, DatumPtr colorP) const;
 
     /// @brief Convert a Datum to a QVector<double>.
     /// @param v The Datum to convert.
     /// @return The QVector<double>.
-    bool numbersFromList(QVector<double> &retval, DatumPtr listP);
+    bool numbersFromList(QVector<double> &retval, DatumPtr listP) const;
 
     /// @brief Get the filepath for a filename.
     /// @param filenameP The filename to get the filepath for.
     /// @return The filepath for the filename with the current file prefix.
-    QString filepathForFilename(DatumPtr filenameP);
+    QString filepathForFilename(DatumPtr filenameP) const;
 
     // SPECIAL VARIABLES
     Datum* specialVar(SpecialNames name);

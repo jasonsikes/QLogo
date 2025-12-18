@@ -237,12 +237,12 @@ void LogoControllerGUI::setTextFontSize(double aSize)
     message(C_CONSOLE_SET_FONT_SIZE) << textFontSize;
 }
 
-double LogoControllerGUI::getTextFontSize()
+double LogoControllerGUI::getTextFontSize() const
 {
     return textFontSize;
 }
 
-QString LogoControllerGUI::getTextFontName()
+QString LogoControllerGUI::getTextFontName() const
 {
     return textFontName;
 }
@@ -305,7 +305,7 @@ void LogoControllerGUI::setIsCanvasBounded(bool aIsBounded)
     message(C_CANVAS_SET_IS_BOUNDED) << aIsBounded;
 }
 
-bool LogoControllerGUI::isCanvasBounded()
+bool LogoControllerGUI::isCanvasBounded() const
 {
     return canvasIsBounded;
 }
@@ -391,7 +391,7 @@ void LogoControllerGUI::setCanvasBackgroundImage(QImage anImage)
     message(C_CANVAS_SET_BACKGROUND_IMAGE) << anImage;
 }
 
-const QColor LogoControllerGUI::getCanvasBackgroundColor(void)
+const QColor LogoControllerGUI::getCanvasBackgroundColor(void) const
 {
     return currentBackgroundColor;
 }

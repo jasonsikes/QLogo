@@ -49,7 +49,7 @@ Array::~Array()
 
 // TODO: Make element access protected to properly enforce origin addition and bounds checking.
 
-QString Array::toString( ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited)
+QString Array::toString( ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited) const
 {
     if (array.isEmpty())
     {
@@ -63,13 +63,13 @@ QString Array::toString( ToStringFlags flags, int printDepthLimit, int printWidt
         visited = localVisited.get();
     }
 
-    if ( (printDepthLimit == 0) || (visited->contains(this)))
+    if ( (printDepthLimit == 0) || (visited->contains(const_cast<Array *>(this))))
     {
         return "{...}";
     }
 
-    visited->add(this);
-    auto iter = array.begin();
+    visited->add(const_cast<Array *>(this));
+    auto iter = array.constBegin();
     int printWidth = printWidthLimit;
 
     // Any words within a collection don't need to be formatted as source code.
@@ -80,7 +80,7 @@ QString Array::toString( ToStringFlags flags, int printDepthLimit, int printWidt
     QString retval = "{";
     do
     {
-        if (iter != array.begin())
+        if (iter != array.constBegin())
             retval.append(' ');
         if (printWidth == 0)
         {
@@ -89,12 +89,12 @@ QString Array::toString( ToStringFlags flags, int printDepthLimit, int printWidt
         }
         retval.append(iter->toString(flags, printDepthLimit - 1, printWidthLimit, visited));
         --printWidth;
-    } while (++iter != array.end());
+    } while (++iter != array.constEnd());
     retval.append("}");
     if ((origin != 1) && ((flags & Datum::ToStringFlags_FullPrint) != 0))
     {
         retval.append("@" + QString::number(origin));
     }
-    visited->remove(this);
+    visited->remove(const_cast<Array *>(this));
     return retval;
 }

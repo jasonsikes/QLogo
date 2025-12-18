@@ -225,7 +225,7 @@ void Turtle::rotate(double angle)
     Config::get().mainController()->setTurtlePos(turtlePosition);
 }
 
-void Turtle::getxy(double &x, double &y)
+void Turtle::getxy(double &x, double &y) const
 {
     x = turtlePosition.m[6];
     y = turtlePosition.m[7];
@@ -247,12 +247,12 @@ void Turtle::setMode(TurtleModeEnum newMode)
     }
 }
 
-TurtleModeEnum Turtle::getMode()
+TurtleModeEnum Turtle::getMode() const
 {
     return mode;
 }
 
-double Turtle::getHeading()
+double Turtle::getHeading() const
 {
     double s = turtlePosition.m[1];
     double c = turtlePosition.m[0];
@@ -294,7 +294,7 @@ void Turtle::setPenColor(const QColor &c)
     Config::get().mainController()->setCanvasForegroundColor(c);
 }
 
-const QColor &Turtle::getPenColor()
+const QColor &Turtle::getPenColor() const
 {
     return penColor;
 }
@@ -308,7 +308,7 @@ void Turtle::setPenMode(PenModeEnum aPenMode)
     }
 }
 
-PenModeEnum Turtle::getPenMode()
+PenModeEnum Turtle::getPenMode() const
 {
     return penMode;
 }
@@ -319,12 +319,12 @@ void Turtle::setPenSize(double aPenSize)
     Config::get().mainController()->setPensize(penSize);
 }
 
-bool Turtle::isPenSizeValid(double aPenSize)
+bool Turtle::isPenSizeValid(double aPenSize) const
 {
     return Config::get().mainController()->isPenSizeValid(aPenSize);
 }
 
-double Turtle::getPenSize()
+double Turtle::getPenSize() const
 {
     return penSize;
 }

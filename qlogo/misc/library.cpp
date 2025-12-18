@@ -129,7 +129,7 @@ QString Library::procedureText(QString cmdName)
     return retval;
 }
 
-QStringList Library::allProcedureNames()
+QStringList Library::allProcedureNames() const
 {
     // This is disabled to prevent confusion.
     // We shouldn't read procedure names if we can't yet input procedure bodies.

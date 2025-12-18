@@ -54,8 +54,8 @@ class Procedures
     QHash<QString, DatumPtr> procedures;
     qint64 lastProcedureCreatedTimestamp;
 
-    DatumPtr procedureForName(QString aName);
-    bool isNamedProcedure(QString aName);
+    DatumPtr procedureForName(QString aName) const;
+    bool isNamedProcedure(QString aName) const;
 
     Library stdLib;
 
@@ -69,7 +69,7 @@ class Procedures
 
     /// @brief Return the timestamp of the last procedure creation.
     /// @return The timestamp of the last procedure creation.
-    qint64 timeOfLastProcedureCreation()
+    qint64 timeOfLastProcedureCreation() const
     {
         return lastProcedureCreatedTimestamp;
     }
@@ -136,55 +136,55 @@ class Procedures
     /// @brief Get the text of a procedure.
     /// @param procnameP The name of the procedure to get the text of.
     /// @return A pointer to the text of the procedure, in the form of a list of sublists.
-    DatumPtr procedureText(DatumPtr procnameP);
+    DatumPtr procedureText(DatumPtr procnameP) const;
 
     /// @brief Get the full text of a procedure.
     /// @param procnameP The name of the procedure to get the full text of.
     /// @param shouldValidate Whether to validate the procedure.
     /// @return A pointer to the full text of the procedure, in the form of a list of
     /// sublists.
-    DatumPtr procedureFulltext(DatumPtr procnameP, bool shouldValidate = true);
+    DatumPtr procedureFulltext(DatumPtr procnameP, bool shouldValidate = true) const;
 
     /// @brief Get the title of a procedure.
     /// @param procnameP The name of the procedure to get the title of.
     /// @return A string containing the title of the procedure. A title is the first line
     /// of the procedure's source text, starting with 'TO' or '>MACRO'.
-    QString procedureTitle(DatumPtr procnameP);
+    QString procedureTitle(DatumPtr procnameP) const;
 
     /// @brief Check if a name is a procedure.
     /// @param procname The name to check.
     /// @return True if the name is a procedure, false otherwise.
-    bool isProcedure(QString procname);
+    bool isProcedure(QString procname) const;
 
     /// @brief Check if a name is a macro.
     /// @param procname The name to check.
     /// @return True if the name is a macro, false otherwise.
-    bool isMacro(QString procname);
+    bool isMacro(QString procname) const;
 
     /// @brief Check if a name is a primitive.
     /// @param procname The name to check.
     /// @return True if the name is a primitive, false otherwise.
-    bool isPrimitive(QString procname);
+    bool isPrimitive(QString procname) const;
 
     /// @brief Check if a name is defined.
     /// @param procname The name to check.
     /// @return True if the name is defined, false otherwise.
     /// @note This checks both user-defined and primitive procedures.
-    bool isDefined(QString procname);
+    bool isDefined(QString procname) const;
 
     /// @brief Get all procedure names.
     /// @return A pointer to a list of all procedure names.
-    DatumPtr allProcedureNames();
+    DatumPtr allProcedureNames() const;
 
     /// @brief Get all primitive procedure names.
     /// @return A pointer to a list of all primitive procedure names.
-    DatumPtr allPrimitiveProcedureNames();
+    DatumPtr allPrimitiveProcedureNames() const;
 
     /// @brief Get the arity of a procedure.
     /// @param nameP The name of the procedure to get the arity of.
     /// @return A pointer to the arity of the procedure, in the form of a list of three
     /// integers: the minimum, default, and maximum number of parameters.
-    DatumPtr arity(DatumPtr nameP);
+    DatumPtr arity(DatumPtr nameP) const;
 
     /// @brief Create an AST node from a command and its parameters.
     /// @param cmd The command to create an AST node from.

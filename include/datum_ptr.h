@@ -78,7 +78,7 @@ class DatumPtr
     /// @brief Returns a pointer to the referred Datum or any of Datum's subclasses.
     ///
     /// @return A pointer to the referred Datum or any of Datum's subclasses.
-    Datum *datumValue()
+    Datum *datumValue() const
     {
         return d;
     }
@@ -86,42 +86,42 @@ class DatumPtr
     /// @brief Returns a pointer to the referred Datum as a Word.
     ///
     /// @return A pointer to the referred Datum as a Word.
-    Word *wordValue();
+    Word *wordValue() const;
 
     /// @brief Returns a pointer to the referred Datum as a List.
     ///
     /// @return A pointer to the referred Datum as a List.
-    List *listValue();
+    List *listValue() const;
 
     /// @brief Returns a pointer to the referred Datum as a Procedure.
     ///
     /// @return A pointer to the referred Datum as a Procedure.
-    Procedure *procedureValue();
+    Procedure *procedureValue() const;
 
     /// @brief Returns a pointer to the referred Datum as an ASTNode.
     ///
     /// @return A pointer to the referred Datum as an ASTNode.
-    ASTNode *astnodeValue();
+    ASTNode *astnodeValue() const;
 
     /// @brief Returns a pointer to the referred Datum as an Array.
     ///
     /// @return A pointer to the referred Datum as an Array.
-    Array *arrayValue();
+    Array *arrayValue() const;
 
     /// @brief Returns a pointer to the referred Datum as a FlowControl.
     ///
     /// @return A pointer to the referred Datum as a FlowControl.
-    FlowControl *flowControlValue();
+    FlowControl *flowControlValue() const;
 
     /// @brief Returns a pointer to the referred Datum as an Err.
     ///
     /// @return A pointer to the referred Datum as an Err.
-    FCError *errValue();
+    FCError *errValue() const;
 
     /// @brief Returns true if the referred Datum is a Word, false otherwise.
     ///
     /// @return True if the referred Datum is a Word, false otherwise.
-    bool isWord()
+    bool isWord() const
     {
         return d->isa == Datum::typeWord;
     }
@@ -129,7 +129,7 @@ class DatumPtr
     /// @brief Returns true if the referred Datum is a List, false otherwise.
     ///
     /// @return True if the referred Datum is a List, false otherwise.
-    bool isList()
+    bool isList() const
     {
         return (d->isa & Datum::typeList) != 0;
     }
@@ -137,7 +137,7 @@ class DatumPtr
     /// @brief Returns true if the referred Datum is an ASTNode, false otherwise.
     ///
     /// @return True if the referred Datum is an ASTNode, false otherwise.
-    bool isASTNode()
+    bool isASTNode() const
     {
         return d->isa == Datum::typeASTNode;
     }
@@ -145,7 +145,7 @@ class DatumPtr
     /// @brief Returns true if the referred Datum is an Array, false otherwise.
     ///
     /// @return True if the referred Datum is an Array, false otherwise.
-    bool isArray()
+    bool isArray() const
     {
         return d->isa == Datum::typeArray;
     }
@@ -154,7 +154,7 @@ class DatumPtr
     /// @brief Returns true if the referred Datum is an Err, false otherwise.
     ///
     /// @return True if the referred Datum is an Err, false otherwise.
-    bool isErr()
+    bool isErr() const
     {
         return d->isa == Datum::typeError;
     }
@@ -163,14 +163,14 @@ class DatumPtr
     /// @brief Returns true if the referred Datum is the singleton Datum instance, false otherwise.
     ///
     /// @return True if the referred Datum is the singleton Datum instance, false otherwise.
-    bool isNothing() {
+    bool isNothing() const {
         return d == Datum::getInstance();
     }
 
     /// @brief Returns true if the referred Datum is a FlowControl, false otherwise.
     ///
     /// @return True if the referred Datum is a FlowControl, false otherwise.
-    bool isFlowControl()
+    bool isFlowControl() const
     {
         return (d->isa & Datum::typeFlowControlMask) != 0;
     }
@@ -186,13 +186,13 @@ class DatumPtr
     ///
     /// @param other The DatumPtr to compare to this.
     /// @return True if and only if other points to the same object as this.
-    bool operator==(const DatumPtr &other);
+    bool operator==(const DatumPtr &other) const;
 
     /// @brief Return true if and only if other does not point to the same object as this.
     ///
     /// @param other The DatumPtr to compare to this.
     /// @return True if and only if other does not point to the same object as this.
-    bool operator!=(const DatumPtr &other);
+    bool operator!=(const DatumPtr &other) const;
 
     /// @brief Return a string representation of the Datum.
     /// @param flags Flags to control the output. See ToStringFlags for possible values.
@@ -204,12 +204,12 @@ class DatumPtr
     /// @param printWidthLimit Limit the length of a string or list or array for readability.
     /// @param visited Set of visited nodes to prevent cycles.
     /// @return A string representation of the Datum.
-    QString toString( Datum::ToStringFlags flags = Datum::ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr);
+    QString toString( Datum::ToStringFlags flags = Datum::ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) const;
 
     /// @brief returns the DatumType of the referenced object.
     ///
     /// @return The DatumType of the referenced object.
-    Datum::DatumType isa()
+    Datum::DatumType isa() const
     {
         return d->isa;
     }

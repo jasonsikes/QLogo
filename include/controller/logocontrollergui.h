@@ -203,21 +203,21 @@ class LogoControllerGUI : public LogoController
 
     /// @brief Gets the X coordinate of the upper-right corner of the bounding box.
     /// @return The X coordinate of the upper-right corner of the bounding box.
-    double boundX()
+    double boundX() const
     {
         return xbound;
     }
 
     /// @brief Gets the Y coordinate of the upper-right corner of the bounding box.
     /// @return The Y coordinate of the upper-right corner of the bounding box.
-    double boundY()
+    double boundY() const
     {
         return ybound;
     }
 
     /// @brief Gets the canvas background color.
     /// @return The canvas background color.
-    const QColor getCanvasBackgroundColor(void);
+    const QColor getCanvasBackgroundColor(void) const;
 
     /// @brief Sets if the canvas is bounded.
     /// @param aIsBounded True if the canvas should be bounded, false otherwise.
@@ -225,22 +225,24 @@ class LogoControllerGUI : public LogoController
 
     /// @brief Gets if the canvas is bounded.
     /// @return True if the canvas is bounded, false otherwise.
-    bool isCanvasBounded();
+    bool isCanvasBounded() const;
 
     /// @brief Checks if a candidate pen size is valid.
     /// @param candidate The candidate pen size.
     /// @return True if the candidate pen size is valid, false otherwise.
-    bool isPenSizeValid(double candidate)
+    bool isPenSizeValid(double candidate) const
     {
         return candidate >= 0;
     }
 
     /// @brief Gets the canvas image.
     /// @return The current canvas image.
+    /// @note This method modifies state (waits for message), so it cannot be const.
     QImage getCanvasImage();
 
     /// @brief Gets the canvas SVG image.
     /// @return The current canvas as a SVG image.
+    /// @note This method modifies state (waits for message), so it cannot be const.
     QByteArray getSvgImage();
 
     /// @brief Sets the text font size.
@@ -249,11 +251,11 @@ class LogoControllerGUI : public LogoController
 
     /// @brief Gets the text font size.
     /// @return The current text font size.
-    double getTextFontSize();
+    double getTextFontSize() const;
 
     /// @brief Gets the text font name.
     /// @return The current text font name.
-    QString getTextFontName();
+    QString getTextFontName() const;
 
     /// @brief Sets the text font name.
     /// @param aFontName The new font name.
@@ -261,7 +263,7 @@ class LogoControllerGUI : public LogoController
 
     /// @brief Gets all available font names.
     /// @return A list of all available font names.
-    QStringList getAllFontNames()
+    QStringList getAllFontNames() const
     {
         return allFontNames;
     }
