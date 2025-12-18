@@ -33,7 +33,17 @@ List::List(DatumPtr item, List *srcList)
 
 List::~List()
 {
-    clear();
+    try
+    {
+        clear();
+    }
+    catch (...)
+    {
+        // Destructors must not throw exceptions. Log the error and continue.
+        // The collection removal may have failed, but we still need to complete
+        // the destruction of this object.
+        qDebug() << "Exception caught in List destructor during cleanup";
+    }
 }
 
 QString List::toString( ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited)
