@@ -34,11 +34,14 @@ set(QLOGO_SOURCES
   ../include/sharedconstants.h
   ../include/compiler.h
   ../include/compiler_private.h
+  ../include/compiler_types.h
   ../include/controller/inputqueue.h
   ../include/controller/logocontroller.h
   ../include/controller/logocontrollergui.h
   ../include/controller/textstream.h
-  ../include/datum.h
+  ../include/datum_core.h
+  ../include/datum_ptr.h
+  ../include/datum_types.h
   ../include/astnode.h
   ../include/flowcontrol.h
   ../include/kernel.h
