@@ -17,7 +17,10 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_core.h"
+#include "datum_ptr.h"
+#include "compiler_types.h"
+#include <QList>
 
 /// @brief A node of QLogo's Abstract Syntax Tree.
 ///

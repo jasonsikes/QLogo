@@ -20,7 +20,9 @@
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/Transforms/Scalar/GVN.h"
 #include "llvm/Transforms/Scalar/Reassociate.h"
-#include "datum.h"
+#include "datum_core.h"
+#include "datum_ptr.h"
+#include "compiler_types.h"
 
 struct Scaffold;
 

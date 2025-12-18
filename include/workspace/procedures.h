@@ -19,6 +19,7 @@
 
 #include "datum.h"
 #include "library.h"
+#include "compiler_types.h"
 #include <QHash>
 
 /// @brief A structure to hold a command's details for the parser.
@@ -41,6 +42,7 @@ struct Cmd_t
     /// @brief The data type(s) that this procedure is expected to return.
     RequestReturnType returnType;
 };
+
 
 /// @brief The procedures class.
 /// @note This is the main class for managing procedures in QLogo. It holds all

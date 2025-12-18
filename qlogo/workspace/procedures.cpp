@@ -29,6 +29,7 @@
 #include <QObject>
 
 
+
 Procedures::Procedures() {
     Config::get().setMainProcedures(this);
     lastProcedureCreatedTimestamp = QDateTime::currentMSecsSinceEpoch();
