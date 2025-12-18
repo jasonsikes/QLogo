@@ -65,7 +65,9 @@ class CompilerContext
     {
         jitLib.addGenerator(
             cantFail(llvm::orc::DynamicLibrarySearchGenerator::GetForCurrentProcess(dl.getGlobalPrefix())));
-        if (jtmb.getTargetTriple().isOSBinFormatCOFF())
+        // Note: jtmb was moved in the initializer list, so we need to check the target triple
+        // from the ExecutionSession instead
+        if (exeSession->getExecutorProcessControl().getTargetTriple().isOSBinFormatCOFF())
         {
             objectLayer.setOverrideObjectFlagsWithResponsibilityFlags(true);
             objectLayer.setAutoClaimResponsibilityForObjectSymbols(true);
