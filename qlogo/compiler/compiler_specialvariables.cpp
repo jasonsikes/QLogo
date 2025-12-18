@@ -18,6 +18,7 @@
 #include "compiler.h"
 #include "sharedconstants.h"
 #include "kernel.h"
+#include "datum_types.h"
 
 #include <QObject>
 

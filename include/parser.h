@@ -18,7 +18,11 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_ptr.h"
+
+// TODO: Remove ListIterator below so we can remove "datum_types.h"
+#include "datum_types.h"
+
 #include <QHash>
 
 class Procedures;

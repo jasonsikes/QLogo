@@ -17,7 +17,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_ptr.h"
 
 /// @brief A class to manage property lists.
 /// @note This is a hash table of property lists, with each property list being a hash table of property names to property values.

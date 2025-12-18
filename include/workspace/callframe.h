@@ -19,7 +19,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_ptr.h"
+#include "compiler_types.h"
 
 struct CallFrame;
 struct Evaluator;

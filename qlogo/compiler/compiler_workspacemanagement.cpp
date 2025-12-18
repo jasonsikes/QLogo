@@ -21,6 +21,7 @@
 #include "workspace/callframe.h"
 #include "sharedconstants.h"
 #include "kernel.h"
+#include "datum_types.h"
 
 /// @brief input a procedure using the system read stream.
 /// @param eAddr a pointer to the Evaluator object

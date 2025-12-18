@@ -20,6 +20,7 @@
 #include "sharedconstants.h"
 #include "kernel.h"
 #include "flowcontrol.h"
+#include "datum_types.h"
 
 #include <QObject>
 

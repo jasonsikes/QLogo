@@ -19,6 +19,8 @@
 #include "workspace/callframe.h"
 #include "sharedconstants.h"
 #include "kernel.h"
+#include "datum_types.h"
+
 #include <QObject>
 
 EXPORTC void printInt(int32_t p)

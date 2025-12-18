@@ -19,7 +19,7 @@
 /// four words, `[PRINT 2 + 2]`. In QLogo a token is a word, list, or array.
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_types.h"
 
 class Procedures;
 class Kernel;

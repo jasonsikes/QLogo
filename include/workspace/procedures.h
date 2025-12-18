@@ -17,7 +17,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_ptr.h"
 #include "library.h"
 #include "compiler_types.h"
 #include <QHash>

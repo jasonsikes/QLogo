@@ -17,7 +17,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_ptr.h"
 #include "workspace/callframe.h"
 #include "library.h"
 #include "workspace/propertylists.h"

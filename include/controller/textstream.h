@@ -20,7 +20,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_ptr.h"
 #include <QTextStream>
 
 class TextStream

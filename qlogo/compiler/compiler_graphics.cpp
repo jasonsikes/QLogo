@@ -20,6 +20,8 @@
 #include "compiler.h"
 #include "workspace/callframe.h"
 #include "kernel.h"
+#include "datum_types.h"
+
 #include <QFile>
 using namespace llvm;
 using namespace llvm::orc;
