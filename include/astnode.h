@@ -17,7 +17,6 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum_core.h"
 #include "datum_ptr.h"
 #include "compiler_types.h"
 #include <QList>

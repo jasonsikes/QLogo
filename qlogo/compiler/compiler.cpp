@@ -14,6 +14,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
+#include "datum_types.h"
 #include "compiler.h"
 #include "compiler_private.h"
 #include "astnode.h"

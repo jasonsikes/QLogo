@@ -20,9 +20,6 @@
 
 #include "datum_ptr.h"
 
-// TODO: Remove ListIterator below so we can remove "datum_types.h"
-#include "datum_types.h"
-
 #include <QHash>
 
 class Procedures;
@@ -38,7 +35,7 @@ class Parser
     static QHash<List *, QList<QList<DatumPtr>>> astListTable;
 
     void advanceToken();
-    ListIterator listIter;
+    List *listIter;
 
     DatumPtr parseRootExp();
     DatumPtr parseExp();

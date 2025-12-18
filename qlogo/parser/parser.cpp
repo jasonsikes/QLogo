@@ -112,7 +112,7 @@ QList<QList<DatumPtr>> Parser::astFromList(List *aList)
 
         DatumPtr runParsedList = runparse(aList);
 
-        listIter = runParsedList.listValue()->newIterator();
+        listIter = runParsedList.listValue();
         retval.clear();
         QList<DatumPtr> astFlatList;
 
@@ -518,9 +518,10 @@ DatumPtr Parser::parseCommand(bool isVararg)
 
 void Parser::advanceToken()
 {
-    if (listIter.elementExists())
+    if (listIter != EmptyList::instance())
     {
-        currentToken = listIter.element();
+        currentToken = listIter->head;
+        listIter = listIter->tail.listValue();
     }
     else
     {
