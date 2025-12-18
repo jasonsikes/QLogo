@@ -23,7 +23,7 @@
 #include "sharedconstants.h"
 #include "kernel.h"
 #include "astnode.h"
-#include "datum.h"
+#include "datum_types.h"
 #include "parser.h"
 #include "controller/textstream.h"
 #include "workspace/procedures.h"

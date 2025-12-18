@@ -18,7 +18,7 @@
 
 #include "compiler.h"
 #include "workspace/procedures.h"
-#include "datum.h"
+#include "datum_types.h"
 #include "kernel.h"
 #include "flowcontrol.h"
 #include "astnode.h"

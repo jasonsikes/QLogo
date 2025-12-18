@@ -17,7 +17,7 @@
 
 #include "controller/textstream.h"
 #include "controller/logocontroller.h"
-#include "datum.h"
+#include "datum_types.h"
 
 /// @brief Find the last non-space character in a string
 /// @param line The string to search

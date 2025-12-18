@@ -18,7 +18,7 @@
 #include "parser.h"
 #include "astnode.h"
 #include "controller/logocontroller.h"
-#include "datum.h"
+#include "datum_types.h"
 #include "flowcontrol.h"
 #include "kernel.h"
 #include "runparser.h"

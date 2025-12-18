@@ -15,7 +15,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "compiler_private.h"
-#include "datum.h"
+#include "datum_types.h"
 #include "astnode.h"
 #include "compiler.h"
 #include "workspace/callframe.h"

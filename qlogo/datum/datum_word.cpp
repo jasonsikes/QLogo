@@ -15,7 +15,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_types.h"
 #include <QObject>
 #include <qdebug.h>
 

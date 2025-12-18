@@ -15,7 +15,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_core.h"
 #include <QObject>
 #include <qdebug.h>
 #include <unistd.h>
@@ -26,20 +26,6 @@ int countOfNodes = 0;
 /// @brief The maximum number of Datum objects that have ever been in use.
 int maxCountOfNodes = 0;
 
-/// @brief Get the number of Datum objects in use and the maximum number of Datum objects
-/// that have ever been in use.
-/// @return A List of two Words, the first contains the number of Datum objects in use and the
-/// second contains the maximum number of Datum objects that have ever been in use.
-DatumPtr nodes()
-{
-    ListBuilder lb;
-    lb.append(DatumPtr(countOfNodes));
-    lb.append(DatumPtr(maxCountOfNodes));
-
-    maxCountOfNodes = countOfNodes;
-
-    return lb.finishedList();
-}
 
 Datum::Datum() : retainCount(0), isa(Datum::DatumType(typeNothing | typePersistentMask))
 {
@@ -67,6 +53,3 @@ QString Datum::toString( ToStringFlags flags, int printDepthLimit, int printWidt
 {
     return QObject::tr("nothing");
 }
-
-// Value to represent nothing (similar to nullptr)
-DatumPtr nothing(Datum::getInstance());

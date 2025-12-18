@@ -15,7 +15,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_types.h"
 #include "visited.h"
 
 Array::Array(int aOrigin, int aSize)

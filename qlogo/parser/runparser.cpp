@@ -19,7 +19,7 @@
 #include "QtCore/qiodevice.h"
 #include "controller/logocontroller.h"
 #include "controller/textstream.h"
-#include "datum.h"
+#include "datum_types.h"
 #include <qdatetime.h>
 #include <qdebug.h>
 

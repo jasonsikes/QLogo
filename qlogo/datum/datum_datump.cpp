@@ -16,7 +16,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum.h"
+#include "datum_types.h"
 #include "workspace/procedures.h"
 #include "astnode.h"
 #include <QObject>
@@ -170,3 +170,6 @@ QString DatumPtr::toString( Datum::ToStringFlags flags, int printDepthLimit, int
 {
     return d->toString(flags, printDepthLimit, printWidthLimit, visited);
 }
+
+// Value to represent nothing (similar to nullptr)
+DatumPtr nothing(Datum::getInstance());

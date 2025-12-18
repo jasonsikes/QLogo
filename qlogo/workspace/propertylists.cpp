@@ -16,7 +16,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "workspace/propertylists.h"
-#include "datum.h"
+#include "datum_types.h"
 
 PropertyLists::PropertyLists() {}
 
