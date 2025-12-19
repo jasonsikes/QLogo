@@ -139,10 +139,11 @@ Datum *CallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount) {
     // Assign the given name/value pairs to the local variables.
 
     size_t paramIndex = 0;
-    for (auto &input : requiredInputs) {
+    for (auto &inputName : requiredInputs) {
         Q_ASSERT(paramIndex < paramCount);
-        setVarAsLocal(input);
-        setValueForName(DatumPtr(*(paramAry + paramIndex)), input);
+        setVarAsLocal(inputName);
+        DatumPtr value(*(paramAry + paramIndex));
+        setValueForName(value, inputName);
         paramIndex++;
     }
 
