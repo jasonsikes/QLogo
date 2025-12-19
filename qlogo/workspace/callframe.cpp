@@ -25,6 +25,7 @@
 #include "runparser.h"
 
 #include <QObject>
+#include <vector>
 
 void CallFrameStack::setDatumForName(DatumPtr &aDatum, const QString &name) {
     variables.insert(name, aDatum);
@@ -208,12 +209,13 @@ Datum *CallFrame::exec(Datum **paramAry, uint32_t paramCount) {
 Datum *CallFrame::applyContinuation(DatumPtr newNode, QList<DatumPtr> paramAry)
 {
     sourceNode = newNode;
-    Datum *newParamAry[paramAry.size()];
+    std::vector<Datum *> newParamAry;
+    newParamAry.reserve(paramAry.size());
     for (int i = 0; i < paramAry.size(); i++) {
-        newParamAry[i] = paramAry[i].datumValue();
+        newParamAry.push_back(paramAry[i].datumValue());
     }
 
-    return applyProcedureParams(newParamAry, paramAry.size());
+    return applyProcedureParams(newParamAry.data(), paramAry.size());
 }
 
 Datum *CallFrame::applyGoto(FCGoto* node)
