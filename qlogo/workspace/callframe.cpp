@@ -264,7 +264,7 @@ beginBody:
     DatumPtr retvalPtr;
     runningSourceList = sourceNode.astnodeValue()->procedure.procedureValue()->instructionList;
 continueBody:
-    while ((runningSourceList.isList()) && (runningSourceList.listValue()->isEmpty() == false)) {
+    while (runningSourceList.listValue() != EmptyList::instance()) {
         if (retval != nullptr) {
             retvalPtr = DatumPtr(retval);
         }
