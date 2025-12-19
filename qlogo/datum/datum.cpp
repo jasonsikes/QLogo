@@ -27,7 +27,7 @@ int countOfNodes = 0;
 int maxCountOfNodes = 0;
 
 
-Datum::Datum() : retainCount(0), isa(Datum::DatumType(typeNothing | typePersistentMask))
+Datum::Datum() : retainCount(0), isa(typeNothingPersistent)
 {
     ++countOfNodes;
     if (countOfNodes > maxCountOfNodes)

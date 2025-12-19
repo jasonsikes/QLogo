@@ -138,7 +138,7 @@ int List::count() const
     int retval = 0;
     const List* iter = this;
     VisitedSet visited;
-    while ( ! iter->isEmpty())
+    while (iter != EmptyList::instance())
     {
         ++retval;
         if (visited.contains(const_cast<List *>(iter)))
@@ -164,7 +164,7 @@ EmptyList *EmptyList::instance_ = nullptr;
 EmptyList::EmptyList()
     : List(nothing, nullptr)
 {
-    isa = (DatumType)(Datum::typeList | Datum::typePersistentMask);
+    isa = Datum::typeEmptyList;
 }
 
 EmptyList *EmptyList::instance()

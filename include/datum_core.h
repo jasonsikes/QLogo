@@ -35,28 +35,30 @@ class Datum
     enum DatumType : uint32_t
     {
         // These are the three data types that are made available to the user.
-        typeWord            = 0x00000001,
-        typeList            = 0x00000002,
-        typeArray           = 0x00000004,
+        typeWord              = 0x00000001,
+        typeList              = 0x00000002,
+        typeArray             = 0x00000004,
+        typeEmptyList         = 0x00010002, // Singleton instance of EmptyList
 
-        typeDataMask        = 0x00000007, // Word + List + Array
-        typeWordOrListMask  = 0x00000003, // Word + List
+        typeDataMask          = 0x00000007, // Word + List + Array
+        typeWordOrListMask    = 0x00000003, // Word + List
 
         // These are the types that control the flow of the program.
-        typeError           = 0x00000010,
-        typeGoto            = 0x00000020,
-        typeContinuation    = 0x00000040,
-        typeReturn          = 0x00000080,
-        typeFlowControlMask = 0x000000F0,
+        typeError             = 0x00000010,
+        typeGoto              = 0x00000020,
+        typeContinuation      = 0x00000040,
+        typeReturn            = 0x00000080,
+        typeFlowControlMask   = 0x000000F0,
 
         // These are the types that are used internally by QLogo.
-        typeNothing         = 0x00000100,
-        typeASTNode         = 0x00000200,
-        typeProcedure       = 0x00000400,
+        typeNothing           = 0x00000100,
+        typeASTNode           = 0x00000200,
+        typeProcedure         = 0x00000400,
+        typeNothingPersistent = 0x00010100, // Singleton instance of Nothing
 
-        typeUnboundMask     = 0x00000300, // typeASTNode + typeNothing
+        typeUnboundMask       = 0x00000300, // typeASTNode + typeNothing
 
-        typePersistentMask  = 0x00010000, // OR this value to prevent the datum from being destroyed
+        typePersistentMask    = 0x00010000, // OR this value to prevent the datum from being destroyed
     };
 
     DatumType isa; // Subclasses must set this to a valid value.
