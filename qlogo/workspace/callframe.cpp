@@ -325,7 +325,7 @@ Evaluator::~Evaluator()
     //qDebug() << "draining pool";
     for (auto &d : releasePool)
     {
-        if (d->isa & Datum::typePersistentMask != 0) {
+        if ((d->isa & Datum::typePersistentMask) == 0) {
             (d->retainCount)--;
             if ((d != retval) && (d->retainCount < 1))
                 delete d;
@@ -339,7 +339,7 @@ Evaluator::~Evaluator()
 
 Datum *Evaluator::exec(int32_t jumpLocation)
 {
-    if (list.listValue()->isEmpty()) {
+    if (list.listValue() == EmptyList::instance()) {
         return Datum::getInstance();
     }
     fn = Config::get().mainCompiler()->functionPtrFromList(list.listValue());
