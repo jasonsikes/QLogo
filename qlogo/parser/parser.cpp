@@ -31,7 +31,7 @@ const QString specialChars("+-()*%/<>=");
 
 QHash<List*, QList<QList<DatumPtr>>> Parser::astListTable;
 
-bool isTag(DatumPtr node)
+bool isTag(const DatumPtr &node)
 {
     return node.astnodeValue()->genExpression == &Compiler::genTag;
 }
