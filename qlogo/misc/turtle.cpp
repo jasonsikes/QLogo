@@ -15,12 +15,14 @@
 ///
 //===----------------------------------------------------------------------===//
 
+#ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
+#endif
 
 #include "turtle.h"
 #include "controller/logocontroller.h"
 #include "flowcontrol.h"
-#include <math.h>
+#include <cmath>
 
 // Some support functions for moving the turtle.
 
