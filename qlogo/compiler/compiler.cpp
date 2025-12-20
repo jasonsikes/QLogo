@@ -91,7 +91,7 @@ Compiler::~Compiler()
     Config::get().setMainCompiler(nullptr);
 }
 
-QString Compiler::getTagNameFromNode(DatumPtr node) const
+QString Compiler::getTagNameFromNode(const DatumPtr &node) const
 {
     Q_ASSERT(node.astnodeValue()->genExpression == &Compiler::genTag);
     ASTNode *tagNode = node.astnodeValue()->childAtIndex(0).astnodeValue();
@@ -106,7 +106,7 @@ QString Compiler::getTagNameFromNode(DatumPtr node) const
 }
 
 
-void Compiler::setTagToBlockIdInProcedure(QList<DatumPtr> tagList, int32_t blockId)
+void Compiler::setTagToBlockIdInProcedure(const QList<DatumPtr> &tagList, int32_t blockId)
 {
     // Get the currently-executing procedure.
     CallFrame *currentFrame = Config::get().mainKernel()->callStack.localFrame();
@@ -307,7 +307,7 @@ Value *Compiler::generateChildOfNode(ASTNode *parent, const DatumPtr &node, Requ
     return retval;
 }
 
-Value *Compiler::generateCast(Value *src, ASTNode *parent, DatumPtr node, RequestReturnType destReturnType)
+Value *Compiler::generateCast(Value *src, ASTNode *parent, const DatumPtr &node, RequestReturnType destReturnType)
 {
     Q_ASSERT(!src->getType()->isVoidTy());
     RequestReturnType srcReturnType = node.astnodeValue()->returnType;
@@ -533,7 +533,7 @@ Value * Compiler::genLiteral(const DatumPtr &node, RequestReturnType returnType)
     return nullptr;
 }
 
-Value *Compiler::generateVoidRetval(DatumPtr node)
+Value *Compiler::generateVoidRetval(const DatumPtr &node)
 {
     return CoAddr(node.astnodeValue());
 }
@@ -708,7 +708,7 @@ std::vector<Value *> Compiler::generateChildren(ASTNode *node, std::vector<Reque
 
 // Generate a call to an external function
 Value *Compiler::generateCallExtern(Type *returnType,
-                               std::string name,
+                               const std::string &name,
                                const std::vector<std::pair<Type *,Value *> >&args)
 {
     std::vector<Type *> paramTypes;
@@ -736,7 +736,7 @@ Value *Compiler::generateCallExtern(Type *returnType,
         return scaff->builder.CreateCall(calleeF, argsV, name + "_result");
 }
 
-AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, DatumPtr srcPtr, int32_t size)
+AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr &srcPtr, int32_t size)
 {
     Value *vSize = CoInt32(size);
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
@@ -768,7 +768,7 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, DatumPtr srcPt
 }
 
 
-Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, validatorFunction validator)
+Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const validatorFunction &validator)
 {
     BasicBlock *srcBB = scaff->builder.GetInsertBlock();
     Function *theFunction = srcBB->getParent();
@@ -841,7 +841,7 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, validator
     return candidate;
 }
 
-Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, validatorFunction validator)
+Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const validatorFunction &validator)
 {
     BasicBlock *srcBB = scaff->builder.GetInsertBlock();
     Function *theFunction = srcBB->getParent();

@@ -68,7 +68,7 @@ class Compiler
     llvm::AllocaInst *generateAllocaAry(const std::vector<llvm::Value *> &values, const std::string &name = "");
 
     // Glue to ensure requested data type matches the type returned from child
-    llvm::Value *generateCast(llvm::Value *child, ASTNode *parent, DatumPtr, RequestReturnType);
+    llvm::Value *generateCast(llvm::Value *child, ASTNode *parent, const DatumPtr &, RequestReturnType);
 
     // Generate code for a child node and cast it to the requested data type.
     llvm::Value *generateChild(ASTNode *parent, const DatumPtr &, RequestReturnType);
@@ -79,7 +79,7 @@ class Compiler
 
     // Generate a call to an external function
     llvm::Value *generateCallExtern(llvm::Type *returnType,
-                               std::string name,
+                               const std::string &name,
                                const std::vector<std::pair<llvm::Type *, llvm::Value *>> &args);
 
     // Generate a query to return a datum type (isa) of a given object.
@@ -89,7 +89,7 @@ class Compiler
     llvm::Value *generateChildOfNode(ASTNode *parent, const DatumPtr &, RequestReturnType);
 
     // Generate a void return value using the ASTNode to represent the source (for blame).
-    llvm::Value *generateVoidRetval(DatumPtr node);
+    llvm::Value *generateVoidRetval(const DatumPtr &node);
 
     // Generate a call to execute a list.
     llvm::Value *generateCallList(llvm::Value *list, RequestReturnType returnType);
@@ -120,9 +120,9 @@ class Compiler
 
     // Validated conversion generators
 
-    llvm::Value *generateValidationDouble(ASTNode *parent, llvm::Value *val, validatorFunction validator);
+    llvm::Value *generateValidationDouble(ASTNode *parent, llvm::Value *val, const validatorFunction &validator);
 
-    llvm::Value *generateValidationDatum(ASTNode *parent, llvm::Value *val, validatorFunction validator);
+    llvm::Value *generateValidationDatum(ASTNode *parent, llvm::Value *val, const validatorFunction &validator);
 
     // Generate a call to convert a double to a Word object
     llvm::Value *generateWordFromDouble(llvm::Value *val);
@@ -208,13 +208,13 @@ class Compiler
     llvm::AllocaInst *generateNumberAryFromDatum(ASTNode *parent, llvm::Value *src);
 
     // Generate a number array from a datum with specified size.
-    llvm::AllocaInst *generateNumberAryFromDatum(ASTNode *parent, DatumPtr srcPtr, int32_t size);
+    llvm::AllocaInst *generateNumberAryFromDatum(ASTNode *parent, const DatumPtr &srcPtr, int32_t size);
 
     // Get the tag name from a tag node.
-    QString getTagNameFromNode(DatumPtr node) const;
+    QString getTagNameFromNode(const DatumPtr &node) const;
 
     // Process the tags in a block of ASTNodes.
-    void setTagToBlockIdInProcedure(QList<DatumPtr> tagList, int32_t blockId);
+    void setTagToBlockIdInProcedure(const QList<DatumPtr> &tagList, int32_t blockId);
 
     // Generate the TagId-to-Block Table of Contents.
     llvm::BasicBlock *generateTOC(QList<llvm::BasicBlock *> blocks, llvm::Function *theFunction);
