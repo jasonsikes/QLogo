@@ -46,21 +46,21 @@ struct CallFrameStack
     /// @brief Return the value of a variable.
     /// @param name The name of the variable to search for.
     /// @return The stored value associated with 'name' or 'nothing' if the variable is not found.
-    DatumPtr datumForName(QString name) const;
+    DatumPtr datumForName(const QString &name) const;
 
     /// @brief Set a value for a variable.
     /// @param aDatum The value to store.
     /// @param name The name of the variable to set.
-    void setDatumForName(DatumPtr &aDatum, const QString &name);
+    void setDatumForName(const DatumPtr &aDatum, const QString &name);
 
     /// @brief Return true if value keyed by name exists in the variables hash.
     /// @param name The name of the variable to search for.
     /// @return True if the variable exists, false otherwise.
-    bool doesExist(QString name) const;
+    bool doesExist(const QString &name) const;
 
     /// @brief Erase name and its value from the variables hash.
     /// @param name The name of the variable to erase.
-    void eraseVar(QString name);
+    void eraseVar(const QString &name);
 
     /// @brief Returns the size of the stack, i.e. the number of stack frames.
     /// @return The size of the stack.
@@ -176,12 +176,12 @@ struct CallFrame
     /// of the variable in the localVars hash. Store 'nothing' for the entry if name wasn't
     /// already present.
     /// @param name The name of the variable to insert.
-    void setVarAsLocal(QString name);
+    void setVarAsLocal(const QString &name);
 
     /// @brief Set the value of a variable.
     /// @param value The value to set the variable to.
     /// @param name The name of the variable to set.
-    void setValueForName(DatumPtr value, QString name);
+    void setValueForName(const DatumPtr &value, const QString &name);
 
     /// @brief Apply the given parameters to the procedure.
     /// @param paramAry The parameters to apply.
@@ -194,7 +194,7 @@ struct CallFrame
     /// @param newNode The ASTNode of the new procedure to continue with.
     /// @param paramAry The parameters to apply to the new node.
     /// @returns nothing if successful, or an error if not.
-    Datum* applyContinuation(DatumPtr newNode, QList<DatumPtr> paramAry);
+    Datum* applyContinuation(const DatumPtr &newNode, QList<DatumPtr> paramAry);
 
     /// @brief Jump to the line in the procedure containing the given tag.
     /// @param node The FCGoto node.
@@ -253,7 +253,7 @@ struct Evaluator
     /// @brief Constructor.
     /// @param aList The list to evaluate.
     /// @param anEvalStack A reference to the evaluation stack.
-    Evaluator(DatumPtr aList, QList<Evaluator *> &anEvalStack);
+    Evaluator(const DatumPtr &aList, QList<Evaluator *> &anEvalStack);
 
     /// @brief Destructor.
     /// @note This will remove this evaluator from the evaluation stack and empty the releasePool.
@@ -278,7 +278,7 @@ struct Evaluator
 
     /// @brief Add a Datum to the release pool
     /// @returns the given pointer (pass-through).
-    Datum *watch(DatumPtr);
+    Datum *watch(const DatumPtr &);
 
     /// @brief Returns TRUE if CASEIGNOREDP is "TRUE, "true, or any combination of the two.
     bool varCASEIGNOREDP();

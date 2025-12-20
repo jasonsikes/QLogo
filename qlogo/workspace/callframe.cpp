@@ -27,12 +27,12 @@
 #include <QObject>
 #include <vector>
 
-void CallFrameStack::setDatumForName(DatumPtr &aDatum, const QString &name) {
+void CallFrameStack::setDatumForName(const DatumPtr &aDatum, const QString &name) {
     variables.insert(name, aDatum);
 }
 
 
-DatumPtr CallFrameStack::datumForName(QString name) const {
+DatumPtr CallFrameStack::datumForName(const QString &name) const {
     auto result = variables.find(name);
     if (result != variables.end()) {
         return *result;
@@ -41,7 +41,7 @@ DatumPtr CallFrameStack::datumForName(QString name) const {
 }
 
 
-bool CallFrameStack::doesExist(QString name) const {
+bool CallFrameStack::doesExist(const QString &name) const {
     return variables.contains(name);
 }
 
@@ -57,7 +57,7 @@ DatumPtr CallFrameStack::allVariables() const {
 
 
 
-void CallFrameStack::eraseVar(QString name) {
+void CallFrameStack::eraseVar(const QString &name) {
     variables.remove(name);
 }
 
@@ -117,14 +117,14 @@ CallFrame::~CallFrame() {
     frameStack->stack.pop_front();
 }
 
-void CallFrame::setVarAsLocal(QString name) {
+void CallFrame::setVarAsLocal(const QString &name) {
     DatumPtr originalValue = frameStack->datumForName(name);
     localVars.insert(name, originalValue);
     frameStack->setDatumForName(nothing, name);
 }
 
 
-void CallFrame::setValueForName(DatumPtr value, QString name) {
+void CallFrame::setValueForName(const DatumPtr &value, const QString &name) {
     frameStack->setDatumForName(value, name);
 }
 
@@ -206,7 +206,7 @@ Datum *CallFrame::exec(Datum **paramAry, uint32_t paramCount) {
     return retval;
 }
 
-Datum *CallFrame::applyContinuation(DatumPtr newNode, QList<DatumPtr> paramAry)
+Datum *CallFrame::applyContinuation(const DatumPtr &newNode, QList<DatumPtr> paramAry)
 {
     sourceNode = newNode;
     std::vector<Datum *> newParamAry;
@@ -314,7 +314,7 @@ continueBody:
 }
 
 
-Evaluator::Evaluator(DatumPtr aList, QList<Evaluator *> &anEvalStack) : evalStack(anEvalStack), list(aList)
+Evaluator::Evaluator(const DatumPtr &aList, QList<Evaluator *> &anEvalStack) : evalStack(anEvalStack), list(aList)
 {
     evalStack.push_front(this);
 }
@@ -387,7 +387,7 @@ Datum *Evaluator::procedureExec(ASTNode *node, Datum **paramAry, uint32_t paramC
 }
 
 
-Datum *Evaluator::watch(DatumPtr d)
+Datum *Evaluator::watch(const DatumPtr &d)
 {
     return watch(d.datumValue());
 }
