@@ -21,7 +21,7 @@
 PropertyLists::PropertyLists() {}
 
 void PropertyLists::addProperty(const QString &plistname,
-                                const QString &propname, DatumPtr value) {
+                                const QString &propname, const DatumPtr &value) {
   if (!plists.contains(plistname)) {
     plists.insert(plistname, QHash<QString, DatumPtr>());
   }

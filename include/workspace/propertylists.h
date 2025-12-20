@@ -34,7 +34,7 @@ class PropertyLists
     /// @param plistname The name of the property list.
     /// @param propname The name of the property.
     /// @param value The value of the property.
-    void addProperty(const QString &plistname, const QString &propname, DatumPtr value);
+    void addProperty(const QString &plistname, const QString &propname, const DatumPtr &value);
 
     /// @brief Get a property from a property list.
     /// @param plistname The name of the property list.
