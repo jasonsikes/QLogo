@@ -43,8 +43,8 @@ Procedures::~Procedures() {
     Config::get().setMainProcedures(nullptr);
 }
 
-void Procedures::defineProcedure(DatumPtr cmd, DatumPtr procnameP, DatumPtr text,
-                             DatumPtr sourceText) {
+void Procedures::defineProcedure(const DatumPtr &cmd, const DatumPtr &procnameP, const DatumPtr &text,
+                             const DatumPtr &sourceText) {
     procnameP.wordValue()->numberValue();
     if (procnameP.wordValue()->numberIsValid)
         throw FCError::doesntLike(cmd, procnameP);
@@ -65,7 +65,7 @@ void Procedures::defineProcedure(DatumPtr cmd, DatumPtr procnameP, DatumPtr text
     // TODO: Is this an appropriate place to unbury a procedure?
 }
 
-DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourceText) {
+DatumPtr Procedures::createProcedure(const DatumPtr &cmd, const DatumPtr &text, const DatumPtr &sourceText) {
     Procedure *body = new Procedure();
     DatumPtr bodyP(body);
 
@@ -196,7 +196,7 @@ DatumPtr Procedures::createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourc
     return bodyP;
 }
 
-void Procedures::copyProcedure(DatumPtr newnameP, DatumPtr oldnameP) {
+void Procedures::copyProcedure(const DatumPtr &newnameP, const DatumPtr &oldnameP) {
     lastProcedureCreatedTimestamp = QDateTime::currentMSecsSinceEpoch();
     QString newname = newnameP.toString(Datum::ToStringFlags_Key);
     QString oldname = oldnameP.toString(Datum::ToStringFlags_Key);
@@ -214,7 +214,7 @@ void Procedures::copyProcedure(DatumPtr newnameP, DatumPtr oldnameP) {
     throw FCError::noHow(oldnameP);
 }
 
-void Procedures::eraseProcedure(DatumPtr procnameP) {
+void Procedures::eraseProcedure(const DatumPtr &procnameP) {
     lastProcedureCreatedTimestamp = QDateTime::currentMSecsSinceEpoch();
 
     QString procname = procnameP.toString(Datum::ToStringFlags_Key);
@@ -223,7 +223,7 @@ void Procedures::eraseProcedure(DatumPtr procnameP) {
     procedures.remove(procname);
 }
 
-DatumPtr Procedures::procedureText(DatumPtr procnameP) const {
+DatumPtr Procedures::procedureText(const DatumPtr &procnameP) const {
     QString procname = procnameP.toString(Datum::ToStringFlags_Key);
 
     if (stringToCmd.contains(procname))
@@ -268,7 +268,7 @@ DatumPtr Procedures::procedureText(DatumPtr procnameP) const {
     return retvalBuilder.finishedList();
 }
 
-DatumPtr Procedures::procedureFulltext(DatumPtr procnameP, bool shouldValidate) const {
+DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldValidate) const {
     const QString procname = procnameP.toString(Datum::ToStringFlags_Key);
     if (stringToCmd.contains(procname))
         throw FCError::isPrimitive(procnameP);
@@ -305,7 +305,7 @@ DatumPtr Procedures::procedureFulltext(DatumPtr procnameP, bool shouldValidate) 
     return retvalBuilder.finishedList();
 }
 
-QString Procedures::procedureTitle(DatumPtr procnameP) const {
+QString Procedures::procedureTitle(const DatumPtr &procnameP) const {
     QString procname = procnameP.toString(Datum::ToStringFlags_Key);
 
     if (stringToCmd.contains(procname))
@@ -350,7 +350,7 @@ QString Procedures::procedureTitle(DatumPtr procnameP) const {
     return retval;
 }
 
-DatumPtr Procedures::procedureForName(QString aName) const
+DatumPtr Procedures::procedureForName(const QString &aName) const
 {
     if ( ! procedures.contains(aName)) {
         if ( ! stdLib.allProcedureNames().contains(aName)) {
@@ -363,14 +363,14 @@ DatumPtr Procedures::procedureForName(QString aName) const
 }
 
 
-bool Procedures::isNamedProcedure(QString aName) const
+bool Procedures::isNamedProcedure(const QString &aName) const
 {
     return procedures.contains(aName)
         || stdLib.allProcedureNames().contains(aName);
 }
 
 
-DatumPtr Procedures::astnodeFromPrimitive(DatumPtr cmdP, int &minParams, int &defaultParams, int &maxParams) {
+DatumPtr Procedures::astnodeFromPrimitive(const DatumPtr &cmdP, int &minParams, int &defaultParams, int &maxParams) {
     QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
     DatumPtr node = DatumPtr(new ASTNode(cmdP));
     Cmd_t command = stringToCmd[cmdString];
@@ -383,7 +383,7 @@ DatumPtr Procedures::astnodeFromPrimitive(DatumPtr cmdP, int &minParams, int &de
 }
 
 
-DatumPtr Procedures::astnodeFromProcedure(DatumPtr cmdP, int &minParams, int &defaultParams, int &maxParams) {
+DatumPtr Procedures::astnodeFromProcedure(const DatumPtr &cmdP, int &minParams, int &defaultParams, int &maxParams) {
     QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
     DatumPtr procBody = procedureForName(cmdString);
     DatumPtr node = DatumPtr(new ASTNode(cmdP));
@@ -402,7 +402,7 @@ DatumPtr Procedures::astnodeFromProcedure(DatumPtr cmdP, int &minParams, int &de
 }
 
 
-DatumPtr Procedures::astnodeFromCommand(DatumPtr cmdP, int &minParams,
+DatumPtr Procedures::astnodeFromCommand(const DatumPtr &cmdP, int &minParams,
                                     int &defaultParams, int &maxParams) {
     QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
 
@@ -418,7 +418,7 @@ DatumPtr Procedures::astnodeFromCommand(DatumPtr cmdP, int &minParams,
 }
 
 
-DatumPtr Procedures::astnodeWithLiterals(DatumPtr cmd, DatumPtr params) {
+DatumPtr Procedures::astnodeWithLiterals(const DatumPtr &cmd, const DatumPtr &params) {
     int minParams = 0, maxParams = 0, defaultParams = 0;
     DatumPtr node = astnodeFromCommand(cmd, minParams, defaultParams, maxParams);
 
@@ -440,14 +440,14 @@ DatumPtr Procedures::astnodeWithLiterals(DatumPtr cmd, DatumPtr params) {
     return node;
 }
 
-bool Procedures::isProcedure(QString procname) const {
+bool Procedures::isProcedure(const QString &procname) const {
     if (stringToCmd.contains(procname)
         || procedures.contains(procname))
         return true;
     return false;
 }
 
-bool Procedures::isMacro(QString procname) const {
+bool Procedures::isMacro(const QString &procname) const {
     if (procedures.contains(procname)) {
         DatumPtr procedure = procedures[procname];
         return procedure.procedureValue()->isMacro;
@@ -455,11 +455,11 @@ bool Procedures::isMacro(QString procname) const {
     return false;
 }
 
-bool Procedures::isPrimitive(QString procname) const {
+bool Procedures::isPrimitive(const QString &procname) const {
     return (stringToCmd.contains(procname));
 }
 
-bool Procedures::isDefined(QString procname) const {
+bool Procedures::isDefined(const QString &procname) const {
     return (procedures.contains(procname));
 }
 
@@ -479,7 +479,7 @@ DatumPtr Procedures::allPrimitiveProcedureNames() const {
     return retvalBuilder.finishedList();
 }
 
-DatumPtr Procedures::arity(DatumPtr nameP) const {
+DatumPtr Procedures::arity(const DatumPtr &nameP) const {
     int minParams, defParams, maxParams;
     QString procname = nameP.toString(Datum::ToStringFlags_Key);
 

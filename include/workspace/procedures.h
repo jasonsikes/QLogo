@@ -54,8 +54,8 @@ class Procedures
     QHash<QString, DatumPtr> procedures;
     qint64 lastProcedureCreatedTimestamp;
 
-    DatumPtr procedureForName(QString aName) const;
-    bool isNamedProcedure(QString aName) const;
+    DatumPtr procedureForName(const QString &aName) const;
+    bool isNamedProcedure(const QString &aName) const;
 
     Library stdLib;
 
@@ -89,7 +89,7 @@ class Procedures
     /// @return A pointer to the created procedure.
     /// @note This creates and returns a Procedure object from a command and its text. It
     /// does not save the procedure to the procedures hash table.
-    DatumPtr createProcedure(DatumPtr cmd, DatumPtr text, DatumPtr sourceText);
+    DatumPtr createProcedure(const DatumPtr &cmd, const DatumPtr &text, const DatumPtr &sourceText);
 
     /// @brief Define a procedure.
     /// @param cmd The command used to define the procedure (TO or .MACRO).
@@ -98,16 +98,16 @@ class Procedures
     /// @param sourceText The source text to define a procedure from, or 'nothing' if there
     /// was no source text.
     /// @note This creates a Procedure object and saves it to the procedures hash table.
-    void defineProcedure(DatumPtr cmd, DatumPtr procnameP, DatumPtr text, DatumPtr sourceText);
+    void defineProcedure(const DatumPtr &cmd, const DatumPtr &procnameP, const DatumPtr &text, const DatumPtr &sourceText);
 
     /// @brief Copy a procedure to a new name.
     /// @param newnameP The new name to copy the procedure to.
     /// @param oldnameP The name of the procedure to copy.
-    void copyProcedure(DatumPtr newnameP, DatumPtr oldnameP);
+    void copyProcedure(const DatumPtr &newnameP, const DatumPtr &oldnameP);
 
     /// @brief Erase a procedure.
     /// @param procnameP The name of the procedure to erase.
-    void eraseProcedure(DatumPtr procnameP);
+    void eraseProcedure(const DatumPtr &procnameP);
 
     /// @brief Get an AST node from a procedure.
     /// @param cmdP The name of the procedure to search for.
@@ -115,7 +115,7 @@ class Procedures
     /// @param defaultParams The number of default parameters this procedure expects.
     /// @param maxParams The maximum number of parameters this procedure expects.
     /// @return A pointer to the created AST node.
-    DatumPtr astnodeFromProcedure(DatumPtr cmdP, int &minParams, int &defaultParams, int &maxParams);
+    DatumPtr astnodeFromProcedure(const DatumPtr &cmdP, int &minParams, int &defaultParams, int &maxParams);
 
     /// @brief Get an AST node from a primitive command.
     /// @param cmdP The name of the command to search for.
@@ -124,53 +124,53 @@ class Procedures
     /// @param maxParams The maximum number of parameters this command expects.
     /// @return A pointer to the created AST node.
     /// @note The primitive name should be tested to be in the stringToCmd hash table.
-    DatumPtr astnodeFromPrimitive(DatumPtr cmdP, int &minParams, int &defaultParams, int &maxParams);
+    DatumPtr astnodeFromPrimitive(const DatumPtr &cmdP, int &minParams, int &defaultParams, int &maxParams);
 
     /// @brief Get an AST node from a command, either a primitive or user-defined procedure.
     /// @param command The name of the command to search for.
     /// @param minParams The minimum number of parameters this command expects.
     /// @param defaultParams The number of default parameters this command expects.
     /// @param maxParams The maximum number of parameters this command expects.
-    DatumPtr astnodeFromCommand(DatumPtr command, int &minParams, int &defaultParams, int &maxParams);
+    DatumPtr astnodeFromCommand(const DatumPtr &command, int &minParams, int &defaultParams, int &maxParams);
 
     /// @brief Get the text of a procedure.
     /// @param procnameP The name of the procedure to get the text of.
     /// @return A pointer to the text of the procedure, in the form of a list of sublists.
-    DatumPtr procedureText(DatumPtr procnameP) const;
+    DatumPtr procedureText(const DatumPtr &procnameP) const;
 
     /// @brief Get the full text of a procedure.
     /// @param procnameP The name of the procedure to get the full text of.
     /// @param shouldValidate Whether to validate the procedure.
     /// @return A pointer to the full text of the procedure, in the form of a list of
     /// sublists.
-    DatumPtr procedureFulltext(DatumPtr procnameP, bool shouldValidate = true) const;
+    DatumPtr procedureFulltext(const DatumPtr &procnameP, bool shouldValidate = true) const;
 
     /// @brief Get the title of a procedure.
     /// @param procnameP The name of the procedure to get the title of.
     /// @return A string containing the title of the procedure. A title is the first line
     /// of the procedure's source text, starting with 'TO' or '>MACRO'.
-    QString procedureTitle(DatumPtr procnameP) const;
+    QString procedureTitle(const DatumPtr &procnameP) const;
 
     /// @brief Check if a name is a procedure.
     /// @param procname The name to check.
     /// @return True if the name is a procedure, false otherwise.
-    bool isProcedure(QString procname) const;
+    bool isProcedure(const QString &procname) const;
 
     /// @brief Check if a name is a macro.
     /// @param procname The name to check.
     /// @return True if the name is a macro, false otherwise.
-    bool isMacro(QString procname) const;
+    bool isMacro(const QString &procname) const;
 
     /// @brief Check if a name is a primitive.
     /// @param procname The name to check.
     /// @return True if the name is a primitive, false otherwise.
-    bool isPrimitive(QString procname) const;
+    bool isPrimitive(const QString &procname) const;
 
     /// @brief Check if a name is defined.
     /// @param procname The name to check.
     /// @return True if the name is defined, false otherwise.
     /// @note This checks both user-defined and primitive procedures.
-    bool isDefined(QString procname) const;
+    bool isDefined(const QString &procname) const;
 
     /// @brief Get all procedure names.
     /// @return A pointer to a list of all procedure names.
@@ -184,7 +184,7 @@ class Procedures
     /// @param nameP The name of the procedure to get the arity of.
     /// @return A pointer to the arity of the procedure, in the form of a list of three
     /// integers: the minimum, default, and maximum number of parameters.
-    DatumPtr arity(DatumPtr nameP) const;
+    DatumPtr arity(const DatumPtr &nameP) const;
 
     /// @brief Create an AST node from a command and its parameters.
     /// @param cmd The command to create an AST node from.
@@ -192,7 +192,7 @@ class Procedures
     /// @return A pointer to the created AST node.
     /// @note This creates an AST node from a command and its parameters, in a form suitable
     /// for use in the APPLY command.
-    DatumPtr astnodeWithLiterals(DatumPtr cmd, DatumPtr params);
+    DatumPtr astnodeWithLiterals(const DatumPtr &cmd, const DatumPtr &params);
 };
 
 /// @brief The procedure class.

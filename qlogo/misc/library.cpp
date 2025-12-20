@@ -34,7 +34,7 @@
 /// - The share directory relative to wherever the app binary is. (Linux)
 /// - The Resources directory relative to wherever the app binary is. (macOS)
 /// - The same directory as the app binary. (Windows)
-QString findDBPath(QString defaultDBName)
+QString findDBPath(const QString &defaultDBName)
 {
     // Build a list of candidate locations to try.
     QStringList candidates;
@@ -59,17 +59,15 @@ QString findDBPath(QString defaultDBName)
 
 /// @brief Initialize a database connection.
 /// @param connectionName The name of the connection.
-/// @param paramFilePath The path to the database file, may be empty.
+/// @param paramFilePath The path to the database file, may be null.
 /// @param defaultFilePath The default name of the database file.
 /// @returns True if the connection is successful, false otherwise.
 /// @note If `paramFilePath` is empty, the function will search for the database
 /// file using `findDBPath()` using `defaultFilePath` as the default name of the
 /// database file.
-bool initDBConnection(QString connectionName, QString paramFilePath, QString defaultFilePath)
+bool initDBConnection(const QString &connectionName, const QString &paramFilePath, const QString &defaultFilePath)
 {
-    QString path = paramFilePath;
-    if (path.isNull())
-        path = findDBPath(defaultFilePath);
+    QString path = ( ! paramFilePath.isNull()) ? paramFilePath : findDBPath(defaultFilePath);
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
     db.setDatabaseName(path);
     bool isSuccessful = db.open();
@@ -107,7 +105,7 @@ void Library::getConnection()
     }
 }
 
-QString Library::procedureText(QString cmdName)
+QString Library::procedureText(const QString &cmdName)
 {
     QString retval;
 
@@ -198,7 +196,7 @@ QStringList Help::allCommands()
     return retval;
 }
 
-QString Help::helpText(QString name)
+QString Help::helpText(const QString &name)
 {
     QString retval;
     QString cmdName;

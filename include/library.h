@@ -45,7 +45,7 @@ class Library
     /// @brief Return the text of library procedure of the given name.
     /// @param cmdName The name of the procedure to return the text of.
     /// @returns Null string if no procedure found.
-    QString procedureText(QString cmdName);
+    QString procedureText(const QString &cmdName);
 
     /// @brief Return a list of all procedure names available in the library.
     /// @returns A list of all procedure names available in the library.
@@ -76,7 +76,7 @@ class Help
     /// @brief Return the help text for a command.
     /// @param cmdName The name of the command to return the help text for.
     /// @returns The help text for the command.
-    QString helpText(QString cmdName);
+    QString helpText(const QString &cmdName);
 };
 
 #endif // LIBRARY_H
