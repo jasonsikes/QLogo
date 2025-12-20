@@ -275,7 +275,7 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
 ///
 /// @note This function is a wrapper that temporarily creates a `Runparser`,
 /// calls its `doRunparse()` method, and returns the result.
-DatumPtr runparse(DatumPtr src)
+DatumPtr runparse(const DatumPtr &src)
 {
     Runparser rp;
     return rp.doRunparse(src);

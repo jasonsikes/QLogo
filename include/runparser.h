@@ -59,6 +59,6 @@ class Runparser
 /// @returns A list of tokens.
 ///
 /// @note This function is a wrapper around the `Runparser` class.
-DatumPtr runparse(DatumPtr src);
+DatumPtr runparse(const DatumPtr &src);
 
 #endif // RUNPARSER_H
