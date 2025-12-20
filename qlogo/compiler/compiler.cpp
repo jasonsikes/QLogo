@@ -300,7 +300,7 @@ void Compiler::destroyCompiledTextForDatum(Datum *aDatum)
 }
 
 
-Value *Compiler::generateChildOfNode(ASTNode *parent, DatumPtr node, RequestReturnType returnType)
+Value *Compiler::generateChildOfNode(ASTNode *parent, const DatumPtr &node, RequestReturnType returnType)
 {
     Generator method = node.astnodeValue()->genExpression;
     Value *retval = ((this->*method)(node, returnType));
@@ -386,7 +386,7 @@ Value *Compiler::generateCast(Value *src, ASTNode *parent, DatumPtr node, Reques
     return nullptr;
 }
 
-Value *Compiler::generateChild(ASTNode *parent, DatumPtr node, RequestReturnType returnType)
+Value *Compiler::generateChild(ASTNode *parent, const DatumPtr &node, RequestReturnType returnType)
 {
     Value *child = generateChildOfNode(parent, node, returnType);
     return generateCast(child, parent, node, returnType);
@@ -497,7 +497,7 @@ Value *Compiler::generateArrayFromDatum(ASTNode *parent, Value *src)
     return generateFromDatum(Datum::typeArray, parent, src);
 }
 
-Value * Compiler::genLiteral(DatumPtr node, RequestReturnType returnType)
+Value * Compiler::genLiteral(const DatumPtr &node, RequestReturnType returnType)
 {
     DatumPtr literalPtr = node.astnodeValue()->childAtIndex(0);
     if (returnType == RequestReturnReal)
@@ -538,7 +538,7 @@ Value *Compiler::generateVoidRetval(DatumPtr node)
     return CoAddr(node.astnodeValue());
 }
 
-Value *Compiler::genValueOf(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genValueOf(const DatumPtr &node, RequestReturnType returnType)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     BasicBlock *noValueBB = BasicBlock::Create(*scaff->theContext, "NoValue", theFunction);
@@ -561,7 +561,7 @@ Value *Compiler::genValueOf(DatumPtr node, RequestReturnType returnType)
     return retval;
 }
 
-Value *Compiler::genExecProcedure(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genExecProcedure(const DatumPtr &node, RequestReturnType returnType)
 {
     AllocaInst *paramAry = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, "paramAry");
     Value *vAstnodeValue = CoAddr(node.astnodeValue());

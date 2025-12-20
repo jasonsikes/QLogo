@@ -48,7 +48,7 @@ FD dist
 COD***/
 // CMD FORWARD 1 1 1 n
 // CMD FD 1 1 1 n
-Value *Compiler::genForward(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genForward(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *distance = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     generateCallExtern(TyVoid, "moveTurtleForward", {PaAddr(evaluator), PaDouble(distance)});
@@ -67,7 +67,7 @@ BK dist
 COD***/
 // CMD BACK 1 1 1 n
 // CMD BK 1 1 1 n
-Value *Compiler::genBack(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genBack(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *reverseDistance = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *distance = scaff->builder.CreateFNeg(reverseDistance, "negativeDistance");
@@ -92,7 +92,7 @@ LT degrees
 COD***/
 // CMD LEFT 1 1 1 n
 // CMD LT 1 1 1 n
-Value *Compiler::genLeft(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genLeft(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *angle = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *negativeAngle = scaff->builder.CreateFNeg(angle, "negativeAngle");
@@ -110,7 +110,7 @@ RT degrees
 COD***/
 // CMD RIGHT 1 1 1 n
 // CMD RT 1 1 1 n
-Value *Compiler::genRight(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genRight(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *angle = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     generateCallExtern(TyVoid, "moveTurtleRotate", {PaAddr(evaluator), PaDouble(angle)});
@@ -133,7 +133,7 @@ SETXY xcor ycor
 
 COD***/
 // CMD SETXY 2 2 2 n
-Value *Compiler::genSetxy(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSetxy(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *x = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *y = generateChild(node.astnodeValue(), 1, RequestReturnReal);
@@ -156,7 +156,7 @@ SETX xcor
 
 COD***/
 // CMD SETX 1 1 1 n
-Value *Compiler::genSetx(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSetx(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *x = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     generateCallExtern(TyVoid, "setTurtleX", {PaAddr(evaluator), PaDouble(x)});
@@ -178,7 +178,7 @@ SETY ycor
 
 COD***/
 // CMD SETY 1 1 1 n
-Value *Compiler::genSety(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSety(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *y = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     generateCallExtern(TyVoid, "setTurtleY", {PaAddr(evaluator), PaDouble(y)});
@@ -200,7 +200,7 @@ SETPOS pos
 
 COD***/
 // CMD SETPOS 1 1 1 n
-Value *Compiler::genSetpos(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSetpos(const DatumPtr &node, RequestReturnType returnType)
 {
     AllocaInst *posAry = generateNumberAryFromDatum(node.astnodeValue(), node.astnodeValue()->childAtIndex(0), 2);
     generateCallExtern(TyVoid, "setTurtlePos", {PaAddr(evaluator), PaAddr(posAry)});
@@ -228,7 +228,7 @@ SETH degrees
 COD***/
 // CMD SETHEADING 1 1 1 n
 // CMD SETH 1 1 1 n
-Value *Compiler::genSetheading(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSetheading(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *angle = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     generateCallExtern(TyVoid, "setTurtleHeading", {PaAddr(evaluator), PaDouble(angle)});
@@ -257,7 +257,7 @@ HOME
 
 COD***/
 // CMD HOME 0 0 0 n
-Value *Compiler::genHome(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genHome(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, "setTurtleMoveToHome", {PaAddr(evaluator)});
     return generateVoidRetval(node);
@@ -280,7 +280,7 @@ ARC angle radius
 
 COD***/
 // CMD ARC 2 2 2 n
-Value *Compiler::genArc(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genArc(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *angle = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *radius = generateChild(node.astnodeValue(), 1, RequestReturnReal);
@@ -312,7 +312,7 @@ POS
 
 COD***/
 // CMD POS 0 0 0 d
-Value *Compiler::genPos(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genPos(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyAddr, "getTurtlePos", {PaAddr(evaluator)});
 }
@@ -339,7 +339,7 @@ HEADING
 
 COD***/
 // CMD HEADING 0 0 0 r
-Value *Compiler::genHeading(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genHeading(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyDouble, "getTurtleHeading", {PaAddr(evaluator)});
 }
@@ -370,7 +370,7 @@ TOWARDS pos
 
 COD***/
 // CMD TOWARDS 1 1 1 r
-Value *Compiler::genTowards(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genTowards(const DatumPtr &node, RequestReturnType returnType)
 {
     AllocaInst *posAry = generateNumberAryFromDatum(node.astnodeValue(), node.astnodeValue()->childAtIndex(0), 2);
     return generateCallExtern(TyDouble, "getTurtleTowards", {PaAddr(evaluator), PaAddr(posAry)});
@@ -409,7 +409,7 @@ SCRUNCH
 
 COD***/
 // CMD SCRUNCH 0 0 0 d
-Value *Compiler::genScrunch(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genScrunch(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyAddr, "getScrunch", {PaAddr(evaluator)});
 }
@@ -436,7 +436,7 @@ ST
 COD***/
 // CMD SHOWTURTLE 0 0 0 n
 // CMD ST 0 0 0 n
-Value *Compiler::genShowTurtle(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genShowTurtle(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, "setTurtleVisible", {PaAddr(evaluator), PaInt32(CoInt32(1))});
     return generateVoidRetval(node);
@@ -457,7 +457,7 @@ HT
 COD***/
 // CMD HIDETURTLE 0 0 0 n
 // CMD HT 0 0 0 n
-Value *Compiler::genHideTurtle(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genHideTurtle(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, "setTurtleVisible", {PaAddr(evaluator), PaInt32(CoInt32(0))});
     return generateVoidRetval(node);
@@ -474,7 +474,7 @@ CLEAN
 
 COD***/
 // CMD CLEAN 0 0 0 n
-Value *Compiler::genClean(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genClean(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, "clean", {PaAddr(evaluator)});
     return generateVoidRetval(node);
@@ -498,7 +498,7 @@ CS
 COD***/
 // CMD CLEARSCREEN 0 0 0 n
 // CMD CS 0 0 0 n
-Value *Compiler::genClearscreen(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genClearscreen(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, "setTurtleMoveToHome", {PaAddr(evaluator)});
     generateCallExtern(TyVoid, "clean", {PaAddr(evaluator)});
@@ -520,7 +520,7 @@ WRAP
 
 COD***/
 // CMD WRAP 0 0 0 n
-Value *Compiler::genWrap(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genWrap(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, "setTurtleMode", {PaAddr(evaluator), PaInt32(CoInt32(turtleWrap))});
     return generateVoidRetval(node);
@@ -550,7 +550,7 @@ WINDOW
 
 COD***/
 // CMD WINDOW 0 0 0 n
-Value *Compiler::genWindow(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genWindow(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, "setTurtleMode", {PaAddr(evaluator), PaInt32(CoInt32(turtleWindow))});
     return generateVoidRetval(node);
@@ -567,7 +567,7 @@ FENCE
 
 COD***/
 // CMD FENCE 0 0 0 n
-Value *Compiler::genFence(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genFence(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, "setTurtleMode", {PaAddr(evaluator), PaInt32(CoInt32(turtleFence))});
     return generateVoidRetval(node);
@@ -583,7 +583,7 @@ BOUNDS
 
 COD***/
 // CMD BOUNDS 0 0 0 d
-Value *Compiler::genBounds(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genBounds(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyAddr, "getBounds", {PaAddr(evaluator)});
 }
@@ -616,7 +616,7 @@ SETBOUNDS x y
 
 COD***/
 // CMD SETBOUNDS 2 2 2 n
-Value *Compiler::genSetbounds(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSetbounds(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *x = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *y = generateChild(node.astnodeValue(), 1, RequestReturnReal);
@@ -643,7 +643,7 @@ FILLED color instructions
 
 COD***/
 // CMD FILLED 2 2 2 n
-Value *Compiler::genFilled(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genFilled(const DatumPtr &node, RequestReturnType returnType)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     BasicBlock *colorNotGoodBB = BasicBlock::Create(*scaff->theContext, "colorNotGood", theFunction);
@@ -692,7 +692,7 @@ LABEL text
 
 COD***/
 // CMD LABEL 1 1 1 n
-Value *Compiler::genLabel(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genLabel(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *text = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     generateCallExtern(TyVoid, "addLabel", {PaAddr(evaluator), PaAddr(text)});
@@ -714,7 +714,7 @@ SETLABELHEIGHT height
 
 COD***/
 // CMD SETLABELHEIGHT 1 1 1 n
-Value *Compiler::genSetlabelheight(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSetlabelheight(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *height = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     generateCallExtern(TyVoid, "setLabelHeight", {PaAddr(evaluator), PaDouble(height)});
@@ -739,7 +739,7 @@ TS
 COD***/
 // CMD TEXTSCREEN 0 0 0 n
 // CMD TS 0 0 0 n
-Value *Compiler::genTextscreen(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genTextscreen(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, "setScreenMode", {PaAddr(evaluator), PaInt32(CoInt32(textScreenMode))});
     return generateVoidRetval(node);
@@ -768,7 +768,7 @@ FS
 COD***/
 // CMD FULLSCREEN 0 0 0 n
 // CMD FS 0 0 0 n
-Value *Compiler::genFullscreen(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genFullscreen(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, "setScreenMode", {PaAddr(evaluator), PaInt32(CoInt32(fullScreenMode))});
     return generateVoidRetval(node);
@@ -788,7 +788,7 @@ SS
 COD***/
 // CMD SPLITSCREEN 0 0 0 n
 // CMD SS 0 0 0 n
-Value *Compiler::genSplitscreen(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSplitscreen(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, "setScreenMode", {PaAddr(evaluator), PaInt32(CoInt32(splitScreenMode))});
     return generateVoidRetval(node);
@@ -803,7 +803,7 @@ SETSCRUNCH xscale yscale
 
 COD***/
 // CMD SETSCRUNCH 2 2 2 n
-Value *Compiler::genSetscrunch(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSetscrunch(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateVoidRetval(node);
 }
@@ -821,7 +821,7 @@ SHOWN?
 COD***/
 // CMD SHOWNP 0 0 0 b
 // CMD SHOWN? 0 0 0 b
-Value *Compiler::genShownp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genShownp(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyBool, "isTurtleVisible", {PaAddr(evaluator)});
 }
@@ -846,7 +846,7 @@ SCREENMODE
 
 COD***/
 // CMD SCREENMODE 0 0 0 d
-Value *Compiler::genScreenmode(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genScreenmode(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyAddr, "getScreenMode", {PaAddr(evaluator)});
 }
@@ -884,7 +884,7 @@ TURTLEMODE
 
 COD***/
 // CMD TURTLEMODE 0 0 0 d
-Value *Compiler::genTurtlemode(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genTurtlemode(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyAddr, "getTurtleMode", {PaAddr(evaluator)});
 }
@@ -924,7 +924,7 @@ LABELSIZE
 
 COD***/
 // CMD LABELSIZE 0 0 0 d
-Value *Compiler::genLabelsize(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genLabelsize(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyAddr, "getLabelSize", {PaAddr(evaluator)});
 }
@@ -954,7 +954,7 @@ PD
 COD***/
 // CMD PENDOWN 0 0 0 n
 // CMD PD 0 0 0 n
-Value *Compiler::genPendown(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genPendown(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, "setPenIsDown", {PaAddr(evaluator), PaBool(CoBool(true))});
     return generateVoidRetval(node);
@@ -976,7 +976,7 @@ PU
 COD***/
 // CMD PENUP 0 0 0 n
 // CMD PU 0 0 0 n
-Value *Compiler::genPenup(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genPenup(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, "setPenIsDown", {PaAddr(evaluator), PaBool(CoBool(false))});
     return generateVoidRetval(node);
@@ -992,7 +992,7 @@ PPT
 COD***/
 // CMD PENPAINT 0 0 0 n
 // CMD PPT 0 0 0 n
-Value *Compiler::genPenpaint(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genPenpaint(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, "setPenIsDown", {PaAddr(evaluator), PaBool(CoBool(true))});
     generateCallExtern(TyVoid, "setPenMode", {PaAddr(evaluator), PaInt32(CoInt32(static_cast<int32_t>(penModePaint)))});
@@ -1015,7 +1015,7 @@ PE
 COD***/
 // CMD PENERASE 0 0 0 n
 // CMD PE 0 0 0 n
-Value *Compiler::genPenerase(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genPenerase(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, "setPenIsDown", {PaAddr(evaluator), PaBool(CoBool(true))});
     generateCallExtern(TyVoid, "setPenMode", {PaAddr(evaluator), PaInt32(CoInt32(static_cast<int32_t>(penModeErase)))});
@@ -1033,7 +1033,7 @@ PX
 COD***/
 // CMD PENREVERSE 0 0 0 n
 // CMD PX 0 0 0 n
-Value *Compiler::genPenreverse(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genPenreverse(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, "setPenIsDown", {PaAddr(evaluator), PaBool(CoBool(true))});
     generateCallExtern(TyVoid, "setPenMode", {PaAddr(evaluator), PaInt32(CoInt32(static_cast<int32_t>(penModeReverse)))});
@@ -1077,7 +1077,7 @@ SETPC color
 COD***/
 // CMD SETPENCOLOR 1 1 1 n
 // CMD SETPC 1 1 1 n
-Value *Compiler::genSetpencolor(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSetpencolor(const DatumPtr &node, RequestReturnType returnType)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     BasicBlock *colorNotGoodBB = BasicBlock::Create(*scaff->theContext, "colorNotGood", theFunction);
@@ -1116,7 +1116,7 @@ ALLCOLORS
 
 COD***/
 // CMD ALLCOLORS 0 0 0 d
-Value *Compiler::genAllcolors(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genAllcolors(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyAddr, "getAllColors", {PaAddr(evaluator)});
 }
@@ -1148,7 +1148,7 @@ SETPALETTE colornumber color
 
 COD***/
 // CMD SETPALETTE 2 2 2 n
-Value *Compiler::genSetpalette(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSetpalette(const DatumPtr &node, RequestReturnType returnType)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     Value *colorIndex = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1217,7 +1217,7 @@ SETPENSIZE size
 
 COD***/
 // CMD SETPENSIZE 1 1 1 n
-Value *Compiler::genSetpensize(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSetpensize(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *size = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     size = generateGTZeroFromDouble(node.astnodeValue(), size);
@@ -1242,7 +1242,7 @@ SETBG color
 COD***/
 // CMD SETBACKGROUND 1 1 1 n
 // CMD SETBG 1 1 1 n
-Value *Compiler::genSetbackground(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSetbackground(const DatumPtr &node, RequestReturnType returnType)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     Value *color = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1285,7 +1285,7 @@ PENDOWN?
 COD***/
 // CMD PENDOWNP 0 0 0 b
 // CMD PENDOWN? 0 0 0 b
-Value *Compiler::genPendownp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genPendownp(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyBool, "isPenDown", {PaAddr(evaluator)});
 }
@@ -1305,7 +1305,7 @@ PENMODE
 
 COD***/
 // CMD PENMODE 0 0 0 d
-Value *Compiler::genPenmode(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genPenmode(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyAddr, "getPenMode", {PaAddr(evaluator)});
 }
@@ -1345,7 +1345,7 @@ PC
 COD***/
 // CMD PENCOLOR 0 0 0 d
 // CMD PC 0 0 0 d
-Value *Compiler::genPencolor(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genPencolor(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyAddr, "getPenColor", {PaAddr(evaluator)});
 }
@@ -1370,7 +1370,7 @@ PALETTE colornumber
 
 COD***/
 // CMD PALETTE 1 1 1 d
-Value *Compiler::genPalette(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genPalette(const DatumPtr &node, RequestReturnType returnType)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     Value *colorIndex = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1410,7 +1410,7 @@ PENSIZE
 
 COD***/
 // CMD PENSIZE 0 0 0 r
-Value *Compiler::genPensize(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genPensize(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyDouble, "getPenSize", {PaAddr(evaluator)});
 }
@@ -1434,7 +1434,7 @@ BG
 COD***/
 // CMD BACKGROUND 0 0 0 d
 // CMD BG 0 0 0 d
-Value *Compiler::genBackground(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genBackground(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyAddr, "getBackground", {PaAddr(evaluator)});
 }
@@ -1461,7 +1461,7 @@ SAVEPICT filename
 
 COD***/
 // CMD SAVEPICT 1 1 1 n
-Value *Compiler::genSavepict(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSavepict(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *filename = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     return generateCallExtern(TyAddr, "savePict", {PaAddr(evaluator), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue()))});
@@ -1494,7 +1494,7 @@ SVGPICT filename
 
 COD***/
 // CMD SVGPICT 1 1 1 n
-Value *Compiler::genSvgpict(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSvgpict(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *filename = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     return generateCallExtern(TyAddr, "saveSvgpict", {PaAddr(evaluator), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue()))});
@@ -1536,7 +1536,7 @@ LOADPICT filename
 
 COD***/
 // CMD LOADPICT 1 1 1 n
-Value *Compiler::genLoadpict(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genLoadpict(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *filename = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     return generateCallExtern(TyAddr, "loadPict", {PaAddr(evaluator), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue()))});
@@ -1585,7 +1585,7 @@ MOUSEPOS
 
 COD***/
 // CMD MOUSEPOS 0 0 0 d
-Value *Compiler::genMousepos(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genMousepos(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyAddr, "getMousePos", {PaAddr(evaluator)});
 }
@@ -1612,7 +1612,7 @@ CLICKPOS
 
 COD***/
 // CMD CLICKPOS 0 0 0 d
-Value *Compiler::genClickpos(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genClickpos(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyAddr, "getClickPos", {PaAddr(evaluator)});
 }
@@ -1642,7 +1642,7 @@ BUTTON?
 COD***/
 // CMD BUTTONP 0 0 0 b
 // CMD BUTTON? 0 0 0 b
-Value *Compiler::genButtonp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genButtonp(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyBool, "isMouseButtonDown", {PaAddr(evaluator)});
 }
@@ -1667,7 +1667,7 @@ BUTTON
 
 COD***/
 // CMD BUTTON 0 0 0 r
-Value *Compiler::genButton(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genButton(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyDouble, "getMouseButton", {PaAddr(evaluator)});
 }

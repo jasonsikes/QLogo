@@ -47,7 +47,7 @@ enum RequestReturnType : int
 typedef Datum* (*CompiledFunctionPtr)(addr_t, int32_t);
 
 /// Signature of method that generates IR code for a given node.
-typedef llvm::Value * (Compiler::*Generator)(DatumPtr, RequestReturnType);
+typedef llvm::Value * (Compiler::*Generator)(const DatumPtr &, RequestReturnType);
 
 
 

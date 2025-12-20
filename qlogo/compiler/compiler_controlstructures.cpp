@@ -35,7 +35,7 @@ using namespace llvm;
 using namespace llvm::orc;
 
 // This is not a user command.
-Value *Compiler::genNoop(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genNoop(const DatumPtr &node, RequestReturnType returnType)
 {
     // Do nothing.
     return generateVoidRetval(node);
@@ -65,7 +65,7 @@ instructionlist contains an expression that outputs a value.
 COD***/
 // CMD IF 2 2 3 dn
 // CMD IFELSE 3 3 3 dn
-Value *Compiler::genIfelse(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genIfelse(const DatumPtr &node, RequestReturnType returnType)
 {
     std::vector<RequestReturnType> returnTypeAry = {RequestReturnDB, returnType};
     if (node.astnodeValue()->countOfChildren() == 3)
@@ -135,7 +135,7 @@ list; outputs if the list contains an expression that outputs.
 
 COD***/
 // CMD RUN 1 1 1 dn
-Value *Compiler::genRun(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genRun(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *list = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     return generateCallList(list, returnType);
@@ -148,7 +148,7 @@ command.  Runs the "instructionlist" repeatedly, "num" times.
 
 COD***/
 // CMD REPEAT 2 2 2 dn
-Value *Compiler::genRepeat(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genRepeat(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *count = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *list = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
@@ -255,7 +255,7 @@ FOREACH, in which case # has a different meaning.
 
 COD***/
 // CMD REPCOUNT 0 0 0 r
-Value *Compiler::genRepcount(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genRepcount(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *repcountAddr = generateCallExtern(TyAddr, "repcountAddr", {});
     Value *repcount = scaff->builder.CreateLoad(TyDouble, repcountAddr, "repcount");
@@ -269,7 +269,7 @@ BYE
 
 COD***/
 // CMD BYE 0 0 0 n
-Value *Compiler::genBye(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genBye(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateImmediateReturn(generateErrorSystem());
 }
@@ -287,7 +287,7 @@ OP value
 COD***/
 // CMD OUTPUT 1 1 1 n
 // CMD OP 1 1 1 n
-Value *Compiler::genOutput(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genOutput(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateProcedureExit(node, returnType, RequestReturnDatum);
 }
@@ -301,7 +301,7 @@ STOP
 
 COD***/
 // CMD STOP 0 0 1 n
-Value *Compiler::genStop(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genStop(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateProcedureExit(node, returnType, RequestReturnNothing);
 }
@@ -331,12 +331,12 @@ Value *Compiler::genStop(DatumPtr node, RequestReturnType returnType)
 
 COD***/
 // CMD .MAYBEOUTPUT 1 1 1 n
-Value *Compiler::genMaybeoutput(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genMaybeoutput(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateProcedureExit(node, returnType, RequestReturnDN);
 }
 
-Value *Compiler::generateProcedureExit(DatumPtr node, RequestReturnType returnType, RequestReturnType paramRequestType)
+Value *Compiler::generateProcedureExit(const DatumPtr &node, RequestReturnType returnType, RequestReturnType paramRequestType)
 {
     // If the parser attached an output value to the node, then we need to process that.
     if (node.astnodeValue()->countOfChildren() > 0) {
@@ -373,7 +373,7 @@ TAG quoted.word
 
 COD***/
 // CMD TAG 1 1 1 n
-Value *Compiler::genTag(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genTag(const DatumPtr &node, RequestReturnType returnType)
 {
     // Do nothing. We need to generate something in case this is the only
     // ASTNode in the block.
@@ -391,7 +391,7 @@ GOTO word
 
 COD***/
 // CMD GOTO 1 1 1 n
-Value *Compiler::genGoto(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genGoto(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *nodeAddr = CoAddr(node.astnodeValue());
     Value *tag = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -423,7 +423,7 @@ CATCH tag instructionlist
 
 COD***/
 // CMD CATCH 2 2 2 dn
-Value *Compiler::genCatch(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genCatch(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *tag = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *instructionlist = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
@@ -528,7 +528,7 @@ THROW tag
 
 COD***/
 // CMD THROW 1 1 2 n
-Value *Compiler::genThrow(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genThrow(const DatumPtr &node, RequestReturnType returnType)
 {
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnDatum);
     Value *tag = generateWordFromDatum(node.astnodeValue(), children[0]);
@@ -550,7 +550,7 @@ ERROR
 
 COD***/
 // CMD ERROR 0 0 0 d
-Value *Compiler::genError(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genError(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyAddr, "getCurrentError", {PaAddr(evaluator)});
 }
@@ -590,7 +590,7 @@ PAUSE
 
 COD***/
 // CMD PAUSE 0 0 0 dn
-Value *Compiler::genPause(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genPause(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateCallExtern(TyAddr, "callPause", {PaAddr(evaluator)});
 }
@@ -622,7 +622,7 @@ CO value
 COD***/
 // CMD CONTINUE 0 -1 1 dn
 // CMD CO 0 -1 1 dn
-Value *Compiler::genContinue(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genContinue(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *output = CoAddr(node.astnodeValue());
     if (node.astnodeValue()->countOfChildren() == 1) {
@@ -656,7 +656,7 @@ RUNRESULT instructionlist
 
 COD***/
 // CMD RUNRESULT 1 1 1 d
-Value *Compiler::genRunresult(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genRunresult(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *instructionlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *result = generateCallList(instructionlist, RequestReturnDN);
@@ -692,7 +692,7 @@ FOREVER instructionlist
 
 COD***/
 // CMD FOREVER 1 1 1 n
-Value *Compiler::genForever(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genForever(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *list = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     list = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), list);
@@ -759,7 +759,7 @@ TEST tf
 
 COD***/
 // CMD TEST 1 1 1 n
-Value *Compiler::genTest(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genTest(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *tf = generateChild(node.astnodeValue(), 0, RequestReturnBool);
     generateCallExtern(TyVoid, "saveTestResult", {PaAddr(evaluator), PaBool(tf)});
@@ -785,7 +785,7 @@ IFT instructionlist
 COD***/
 // CMD IFTRUE 1 1 1 dn
 // CMD IFT 1 1 1 dn
-Value *Compiler::generateIftrue(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::generateIftrue(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateIftruefalse(node, returnType, true);
 }
@@ -801,12 +801,12 @@ IFF instructionlist
 COD***/
 // CMD IFFALSE 1 1 1 dn
 // CMD IFF 1 1 1 dn
-Value *Compiler::generateIffalse(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::generateIffalse(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateIftruefalse(node, returnType, false);
 }
 
-Value *Compiler::generateIftruefalse(DatumPtr node, RequestReturnType returnType, bool testForTrue)
+Value *Compiler::generateIftruefalse(const DatumPtr &node, RequestReturnType returnType, bool testForTrue)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     BasicBlock *notTestedBB = BasicBlock::Create(*scaff->theContext, "notTested", theFunction);

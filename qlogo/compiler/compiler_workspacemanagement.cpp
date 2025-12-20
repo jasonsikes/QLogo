@@ -157,7 +157,7 @@ TO procname :input1 :input2 ...                         (special form)
 COD***/
 // CMD TO -1 -1 -1 n
 // CMD .MACRO -1 -1 -1 n
-Value *Compiler::genInputProcedure(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genInputProcedure(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnNothing);
     // We take the parameters as literals; we don't generate children.
@@ -176,7 +176,7 @@ variable is changed.  If not, a new global variable is created.
 
 COD***/
 // CMD MAKE 2 2 2 n
-Value *Compiler::genMake(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genMake(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnNothing);
 
@@ -208,7 +208,7 @@ LOCAL varnamelist
 COD***/
 // TODO: [varname:varnamelist:etc] procedure is duplicated in excGlobal().
 // CMD LOCAL 1 1 -1 n
-Value *Compiler::genLocal(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genLocal(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnNothing);
 

@@ -183,7 +183,7 @@ ARCTAN num
 
 COD***/
 // CMD ARCTAN 1 1 2 r
-Value *Compiler::genArctan(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genArctan(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
@@ -213,7 +213,7 @@ ASHIFT num1 num2
 
 COD***/
 // CMD ASHIFT 2 2 2 r
-Value *Compiler::genAshift(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genAshift(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -257,7 +257,7 @@ LSHIFT num1 num2
 
 COD***/
 // CMD LSHIFT 2 2 2 r
-Value *Compiler::genLshift(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genLshift(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -300,7 +300,7 @@ BITAND num1 num2
 
 COD***/
 // CMD BITAND 0 2 -1 r
-Value *Compiler::genBitand(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genBitand(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
@@ -332,7 +332,7 @@ BITOR num1 num2
 
 COD***/
 // CMD BITOR 0 2 -1 r
-Value *Compiler::genBitor(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genBitor(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
@@ -365,7 +365,7 @@ BITXOR num1 num2
 
 COD***/
 // CMD BITXOR 0 2 -1 r
-Value *Compiler::genBitxor(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genBitxor(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
@@ -396,7 +396,7 @@ BITNOT num
 
 COD***/
 // CMD BITNOT 1 1 1 r
-Value *Compiler::genBitnot(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genBitnot(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -415,7 +415,7 @@ MODULO num1 num2
 
 COD***/
 // CMD MODULO 2 2 2 r
-Value *Compiler::genModulo(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genModulo(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -466,7 +466,7 @@ SQRT num
 
 COD***/
 // CMD SQRT 1 1 1 r
-Value *Compiler::genSqrt(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSqrt(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -483,7 +483,7 @@ POWER num1 num2
 
 COD***/
 // CMD POWER 2 2 2 r
-Value *Compiler::genPower(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genPower(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -531,7 +531,7 @@ MINUS 3 + 4	means	-(3+4)
 COD***/
 // CMD MINUS 1 1 1 r
 // CMD - 1 1 1 r
-Value *Compiler::genMinus(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genMinus(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -548,7 +548,7 @@ outputs the product of its inputs.
 
 COD***/
 // CMD PRODUCT 0 2 -1 r
-Value *Compiler::genProduct(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genProduct(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
@@ -575,7 +575,7 @@ outputs the sum of its inputs.
 
 COD***/
 // CMD SUM 0 2 -1 r
-Value *Compiler::genSum(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSum(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
@@ -604,7 +604,7 @@ by a nonspace.  (See also MINUS.)
 
 COD***/
 // CMD DIFFERENCE 2 2 2 r
-Value *Compiler::genDifference(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genDifference(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -626,7 +626,7 @@ QUOTIENT outputs the reciprocal of the input.
 
 COD***/
 // CMD QUOTIENT 1 2 2 r
-Value *Compiler::genQuotient(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genQuotient(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
@@ -658,7 +658,7 @@ REMAINDER num1 num2
 
 COD***/
 // CMD REMAINDER 2 2 2 r
-Value *Compiler::genRemainder(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genRemainder(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -676,7 +676,7 @@ outputs the sine of its input, which is taken in degrees.
 
 COD***/
 // CMD SIN 1 1 1 r
-Value *Compiler::genSin(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSin(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -696,7 +696,7 @@ the input.
 
 COD***/
 // CMD INT 1 1 1 r
-Value *Compiler::genInt(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genInt(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -710,7 +710,7 @@ outputs the nearest integer to the input.
 
 COD***/
 // CMD ROUND 1 1 1 r
-Value *Compiler::genRound(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genRound(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -724,7 +724,7 @@ outputs e (2.718281828+) to the input power.
 
 COD***/
 // CMD EXP 1 1 1 r
-Value *Compiler::genExp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genExp(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -739,7 +739,7 @@ LOG10 num
 
 COD***/
 // CMD LOG10 1 1 1 r
-Value *Compiler::genLog10(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genLog10(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -755,7 +755,7 @@ LN num
 
 COD***/
 // CMD LN 1 1 1 r
-Value *Compiler::genLn(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genLn(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -770,7 +770,7 @@ outputs the sine of its input, which is taken in radians.
 
 COD***/
 // CMD RADSIN 1 1 1 r
-Value *Compiler::genRadsin(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genRadsin(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -784,7 +784,7 @@ outputs the cosine of its input, which is taken in radians.
 
 COD***/
 // CMD RADCOS 1 1 1 r
-Value *Compiler::genRadcos(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genRadcos(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -804,7 +804,7 @@ RADARCTAN num
 
 COD***/
 // CMD RADARCTAN 1 1 2 r
-Value *Compiler::genRadarctan(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genRadarctan(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
@@ -830,7 +830,7 @@ outputs the cosine of its input, which is taken in degrees.
 
 COD***/
 // CMD COS 1 1 1 r
-Value *Compiler::genCos(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genCos(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -850,7 +850,7 @@ outputs TRUE if its first input is strictly less than its second.
 COD***/
 // CMD LESSP 2 2 2 b
 // CMD LESS? 2 2 2 b
-Value *Compiler::genLessp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genLessp(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
     Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -868,7 +868,7 @@ outputs TRUE if its first input is strictly greater than its second.
 COD***/
 // CMD GREATERP 2 2 2 b
 // CMD GREATER? 2 2 2 b
-Value *Compiler::genGreaterp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genGreaterp(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
     Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -886,7 +886,7 @@ outputs TRUE if its first input is less than or equal to its second.
 COD***/
 // CMD LESSEQUALP 2 2 2 b
 // CMD LESSEQUAL? 2 2 2 b
-Value *Compiler::genLessequalp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genLessequalp(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
     Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -904,7 +904,7 @@ outputs TRUE if its first input is greater than or equal to its second.
 COD***/
 // CMD GREATEREQUALP 2 2 2 b
 // CMD GREATEREQUAL? 2 2 2 b
-Value *Compiler::genGreaterequalp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genGreaterequalp(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
     Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -922,7 +922,7 @@ expression must produce a TRUE or FALSE value.
 
 COD***/
 // CMD NOT 1 1 1 b
-Value *Compiler::genNot(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genNot(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
     Value *tf = generateChild(node.astnodeValue(), 0, RequestReturnBool);
@@ -944,7 +944,7 @@ RANDOM num
 
 COD***/
 // CMD RANDOM 1 1 2 r
-Value *Compiler::genRandom(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genRandom(const DatumPtr &node, RequestReturnType returnType)
 {
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
     std::vector<Value *> iChildren;
@@ -1000,7 +1000,7 @@ RERANDOM
 
 COD***/
 // CMD RERANDOM 0 0 1 n
-Value *Compiler::genRerandom(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genRerandom(const DatumPtr &node, RequestReturnType returnType)
 {
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
 
@@ -1029,7 +1029,7 @@ FORM num width precision
 
 COD***/
 // CMD FORM 3 3 3 d
-Value *Compiler::genForm(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genForm(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -1055,7 +1055,7 @@ Value *Compiler::genForm(DatumPtr node, RequestReturnType returnType)
 // CMD <= 1 1 1 d
 // CMD >= 1 1 1 d
 // CMD <> 1 1 1 d
-Value *Compiler::genInfixError(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genInfixError(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
     generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1083,7 +1083,7 @@ AND tf1 tf2
 
 COD***/
 // CMD AND 0 2 -1 b
-Value *Compiler::genAnd(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genAnd(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateAndOr(node, returnType, true);
 }
@@ -1105,12 +1105,12 @@ OR tf1 tf2
 
 COD***/
 // CMD OR 0 2 -1 b
-Value *Compiler::genOr(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genOr(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateAndOr(node, returnType, false);
 }
 
-Value *Compiler::generateAndOr(DatumPtr node, RequestReturnType returnType, bool isAnd)
+Value *Compiler::generateAndOr(const DatumPtr &node, RequestReturnType returnType, bool isAnd)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
 

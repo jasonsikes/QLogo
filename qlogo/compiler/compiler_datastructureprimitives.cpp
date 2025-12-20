@@ -253,7 +253,7 @@ thing1 = thing2
 COD***/
 // CMD EQUALP 2 2 2 b
 // CMD EQUAL? 2 2 2 b
-Value *Compiler::genEqualp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genEqualp(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnBool);
 
@@ -315,7 +315,7 @@ thing1 <> thing2
 COD***/
 // CMD NOTEQUALP 2 2 2 b
 // CMD NOTEQUAL? 2 2 2 b
-Value *Compiler::genNotequalp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genNotequalp(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *eq = genEqualp(node, returnType);
     return scaff->builder.CreateSub(CoBool(1), eq, "noteq");
@@ -332,7 +332,7 @@ WORD word1 word2
 
 COD***/
 // CMD WORD 0 2 -1 d
-Value *Compiler::genWord(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genWord(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, "wordAry");
@@ -348,7 +348,7 @@ LIST thing1 thing2
 
 COD***/
 // CMD LIST 0 2 -1 d
-Value *Compiler::genList(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genList(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, "listAry");
@@ -383,7 +383,7 @@ SE thing1 thing2
 COD***/
 // CMD SENTENCE 0 2 -1 d
 // CMD SE 0 2 -1 d
-Value *Compiler::genSentence(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSentence(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, "sentenceAry");
@@ -426,7 +426,7 @@ FPUT thing list
 
 COD***/
 // CMD FPUT 2 2 2 d
-Value *Compiler::genFput(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genFput(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateFputlput(node, returnType, false);
 }
@@ -443,13 +443,13 @@ LPUT thing list
 
 COD***/
 // CMD LPUT 2 2 2 d
-Value *Compiler::genLput(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genLput(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateFputlput(node, returnType, true);
 }
 
 
-Value *Compiler::generateFputlput(DatumPtr node, RequestReturnType returnType, bool isLput)
+Value *Compiler::generateFputlput(const DatumPtr &node, RequestReturnType returnType, bool isLput)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -560,7 +560,7 @@ ARRAY size
 
 COD***/
 // CMD ARRAY 1 1 2 d
-Value *Compiler::genArray(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genArray(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *size = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -603,7 +603,7 @@ LISTTOARRAY list
 
 COD***/
 // CMD LISTTOARRAY 1 1 2 d
-Value *Compiler::genListtoarray(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genListtoarray(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *list = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -644,7 +644,7 @@ ARRAYTOLIST array
 
 COD***/
 // CMD ARRAYTOLIST 1 1 1 d
-Value *Compiler::genArraytolist(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genArraytolist(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *array = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -676,7 +676,7 @@ FIRST thing
 
 COD***/
 // CMD FIRST 1 1 1 d
-Value *Compiler::genFirst(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genFirst(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -727,7 +727,7 @@ LAST wordorlist
 
 COD***/
 // CMD LAST 1 1 1 d
-Value *Compiler::genLast(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genLast(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *wordorlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -783,7 +783,7 @@ BF wordorlist
 COD***/
 // CMD BUTFIRST 1 1 1 d
 // CMD BF 1 1 1 d
-Value *Compiler::genButfirst(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genButfirst(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *wordorlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -830,7 +830,7 @@ BL wordorlist
 COD***/
 // CMD BUTLAST 1 1 1 d
 // CMD BL 1 1 1 d
-Value *Compiler::genButlast(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genButlast(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *wordorlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -891,7 +891,7 @@ ITEM index thing
 
 COD***/
 // CMD ITEM 2 2 2 d
-Value *Compiler::genItem(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genItem(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *index = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -992,7 +992,7 @@ SETITEM index array value
 
 COD***/
 // CMD SETITEM 3 3 3 n
-Value *Compiler::genSetitem(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSetitem(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateSetitem(node, returnType, false);
 }
@@ -1010,13 +1010,13 @@ Value *Compiler::genSetitem(DatumPtr node, RequestReturnType returnType)
 
 COD***/
 // CMD .SETITEM 3 3 3 n
-Value *Compiler::genDotSetitem(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genDotSetitem(const DatumPtr &node, RequestReturnType returnType)
 {
     return generateSetitem(node, returnType, true);
 }
 
 
-Value *Compiler::generateSetitem(DatumPtr node, RequestReturnType returnType, bool isDangerous)
+Value *Compiler::generateSetitem(const DatumPtr &node, RequestReturnType returnType, bool isDangerous)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *index = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -1197,7 +1197,7 @@ EXPORTC void setDatumAtIndexOfContainer(addr_t eAddr, addr_t valueAddr, double d
 
 COD***/
 // CMD .SETFIRST 2 2 2 n
-Value *Compiler::genDotSetfirst(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genDotSetfirst(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *list = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1231,7 +1231,7 @@ EXPORTC void setFirstOfList(addr_t eAddr, addr_t listAddr, addr_t valueAddr)
 
 COD***/
 // CMD .SETBF 2 2 2 n
-Value *Compiler::genDotSetbf(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genDotSetbf(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *list = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1261,7 +1261,7 @@ WORD? thing
 COD***/
 // CMD WORDP 1 1 1 b
 // CMD WORD? 1 1 1 b
-Value *Compiler::genWordp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genWordp(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1280,7 +1280,7 @@ ARRAY? thing
 COD***/
 // CMD ARRAYP 1 1 1 b
 // CMD ARRAY? 1 1 1 b
-Value *Compiler::genArrayp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genArrayp(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1299,7 +1299,7 @@ LIST? thing
 COD***/
 // CMD LISTP 1 1 1 b
 // CMD LIST? 1 1 1 b
-Value *Compiler::genListp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genListp(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1320,7 +1320,7 @@ EMPTY? thing
 COD***/
 // CMD EMPTYP 1 1 1 b
 // CMD EMPTY? 1 1 1 b
-Value *Compiler::genEmptyp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genEmptyp(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1358,7 +1358,7 @@ BEFORE? word1 word2
 COD***/
 // CMD BEFOREP 2 2 2 b
 // CMD BEFORE? 2 2 2 b
-Value *Compiler::genBeforep(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genBeforep(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *word1 = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1394,7 +1394,7 @@ EXPORTC bool isBefore(addr_t eAddr, addr_t word1Addr, addr_t word2Addr)
 
 COD***/
 // CMD .EQ 2 2 2 b
-Value *Compiler::genDotEq(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genDotEq(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing1 = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1416,7 +1416,7 @@ MEMBER? thing1 thing2
 COD***/
 // CMD MEMBERP 2 2 2 b
 // CMD MEMBER? 2 2 2 b
-Value *Compiler::genMemberp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genMemberp(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing1 = generateChild(node.astnodeValue(), 0, RequestReturnDatum); // thing
@@ -1487,7 +1487,7 @@ SUBSTRING? thing1 thing2
 COD***/
 // CMD SUBSTRINGP 2 2 2 b
 // CMD SUBSTRING? 2 2 2 b
-Value *Compiler::genSubstringp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genSubstringp(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing1 = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1521,7 +1521,7 @@ NUMBER? thing
 COD***/
 // CMD NUMBERP 1 1 1 b
 // CMD NUMBER? 1 1 1 b
-Value *Compiler::genNumberp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genNumberp(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1562,7 +1562,7 @@ BACKSLASHED? char                               (library procedure)
 COD***/
 // CMD VBARREDP 1 1 1 b
 // CMD VBARRED? 1 1 1 b
-Value *Compiler::genVbarredp(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genVbarredp(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *c = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1609,7 +1609,7 @@ COUNT thing
 
 COD***/
 // CMD COUNT 1 1 1 n
-Value *Compiler::genCount(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genCount(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1655,7 +1655,7 @@ ASCII char
 
 COD***/
 // CMD ASCII 1 1 1 n
-Value *Compiler::genAscii(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genAscii(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *c = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1690,7 +1690,7 @@ RAWASCII char
 
 COD***/
 // CMD RAWASCII 1 1 1 n
-Value *Compiler::genRawascii(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genRawascii(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *c = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1722,7 +1722,7 @@ CHAR int
 
 COD***/
 // CMD CHAR 1 1 1 d
-Value *Compiler::genChar(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genChar(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *c = generateChild(node.astnodeValue(), 0, RequestReturnReal);
@@ -1759,7 +1759,7 @@ MEMBER thing1 thing2
 
 COD***/
 // CMD MEMBER 2 2 2 d
-Value *Compiler::genMember(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genMember(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing1 = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1827,7 +1827,7 @@ LOWERCASE word
 
 COD***/
 // CMD LOWERCASE 1 1 1 d
-Value *Compiler::genLowercase(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genLowercase(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *word = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1854,7 +1854,7 @@ UPPERCASE word
 
 COD***/
 // CMD UPPERCASE 1 1 1 d
-Value *Compiler::genUppercase(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genUppercase(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *word = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1885,7 +1885,7 @@ STANDOUT thing
 
 COD***/
 // CMD STANDOUT 1 1 1 d
-Value *Compiler::genStandout(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genStandout(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1913,7 +1913,7 @@ PARSE word
 
 COD***/
 // CMD PARSE 1 1 1 d
-Value *Compiler::genParse(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genParse(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *word = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
@@ -1946,7 +1946,7 @@ RUNPARSE wordorlist
 
 COD***/
 // CMD RUNPARSE 1 1 1 d
-Value *Compiler::genRunparse(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genRunparse(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *wordorlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);

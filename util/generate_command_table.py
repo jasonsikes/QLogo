@@ -125,7 +125,7 @@ def insert(entries, method):
         [name, min_params, default_params, max_params, return_type] = entry
         return_type_ext = string_to_enum(return_type)
         table_file.write("stringToCmd[QObject::tr(\"%s\")] = {&Compiler::%s, %s, %s, %s, %s};\n" % (name,method,min_params,default_params,max_params,return_type_ext))
-    header_file.write("llvm::Value *%s(DatumPtr node, RequestReturnType returnType);\n" % (method))
+    header_file.write("llvm::Value *%s(const DatumPtr &node, RequestReturnType returnType);\n" % (method))
 
 
 # Header and footer are the same for both the command table file and the method declaration files.

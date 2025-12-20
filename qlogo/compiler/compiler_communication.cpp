@@ -36,7 +36,7 @@ printed around sublists.  Braces are always printed around arrays.
 COD***/
 // CMD PRINT 0 1 -1 n
 // CMD PR 0 1 -1 n
-Value *Compiler::genPrint(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genPrint(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnNothing);
 
@@ -58,7 +58,7 @@ SHOW thing
 
 COD***/
 // CMD SHOW 0 1 -1 n
-Value *Compiler::genShow(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genShow(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnNothing);
 
@@ -93,7 +93,7 @@ TYPE thing
 
 COD***/
 // CMD TYPE 0 1 -1 n
-Value *Compiler::genType(DatumPtr node, RequestReturnType returnType)
+Value *Compiler::genType(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnNothing);
 

@@ -71,7 +71,7 @@ class Compiler
     llvm::Value *generateCast(llvm::Value *child, ASTNode *parent, DatumPtr, RequestReturnType);
 
     // Generate code for a child node and cast it to the requested data type.
-    llvm::Value *generateChild(ASTNode *parent, DatumPtr, RequestReturnType);
+    llvm::Value *generateChild(ASTNode *parent, const DatumPtr &, RequestReturnType);
 
     // Generate code for the child node at the given index and cast it to the requested data type.
     llvm::Value *generateChild(ASTNode *parent, unsigned int index, RequestReturnType);
@@ -86,7 +86,7 @@ class Compiler
     llvm::Value *generateGetDatumIsa(llvm::Value *objAddr);
 
     // Generate a call to a child node
-    llvm::Value *generateChildOfNode(ASTNode *parent, DatumPtr, RequestReturnType);
+    llvm::Value *generateChildOfNode(ASTNode *parent, const DatumPtr &, RequestReturnType);
 
     // Generate a void return value using the ASTNode to represent the source (for blame).
     llvm::Value *generateVoidRetval(DatumPtr node);
@@ -199,7 +199,7 @@ class Compiler
 
     // Common methodology for the genAnd()/genOr() methods.
     // @param isAnd true if AND, false if OR
-    llvm::Value *generateAndOr(DatumPtr node, RequestReturnType returnType, bool isAnd);
+    llvm::Value *generateAndOr(const DatumPtr &node, RequestReturnType returnType, bool isAnd);
 
     // Get the compiled function pointer for a list of ASTNodes.
     CompiledFunctionPtr generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, Datum *key);
@@ -238,24 +238,24 @@ class Compiler
 #include <primitives.h>
 
     // Generate a noop expression.
-    llvm::Value *genNoop(DatumPtr node, RequestReturnType returnType);
+    llvm::Value *genNoop(const DatumPtr &node, RequestReturnType returnType);
 
     // generate the common code for IFTRUE and IFFALSE.
-    llvm::Value *generateIftruefalse(DatumPtr node, RequestReturnType returnType, bool testForTrue);
+    llvm::Value *generateIftruefalse(const DatumPtr &node, RequestReturnType returnType, bool testForTrue);
 
     // generate the common code for FPUT and LPUT.
-    llvm::Value *generateFputlput(DatumPtr node, RequestReturnType returnType, bool isLput);
+    llvm::Value *generateFputlput(const DatumPtr &node, RequestReturnType returnType, bool isLput);
 
     // generate the common code for SETITEM.
-    llvm::Value *generateSetitem(DatumPtr node, RequestReturnType returnType, bool isDangerous);
+    llvm::Value *generateSetitem(const DatumPtr &node, RequestReturnType returnType, bool isDangerous);
 
     // generate the common code for OUTPUT, STOP, and .MAYBEOUTPUT.
-    llvm::Value *generateProcedureExit(DatumPtr node, RequestReturnType returnType, RequestReturnType paramRequestType);
+    llvm::Value *generateProcedureExit(const DatumPtr &node, RequestReturnType returnType, RequestReturnType paramRequestType);
 
-    llvm::Value *genValueOf(DatumPtr node, RequestReturnType returnType);
-    llvm::Value *genLiteral(DatumPtr node, RequestReturnType returnType);
+    llvm::Value *genValueOf(const DatumPtr &node, RequestReturnType returnType);
+    llvm::Value *genLiteral(const DatumPtr &node, RequestReturnType returnType);
 
-    llvm::Value *genExecProcedure(DatumPtr node, RequestReturnType returnType);
+    llvm::Value *genExecProcedure(const DatumPtr &node, RequestReturnType returnType);
 };
 
 #endif // COMPILER_H
