@@ -291,19 +291,14 @@ Value *Compiler::genEqualp(DatumPtr node, RequestReturnType returnType)
         typeOfThing2 = thing2->getType();
     }
 
-    // If second child is bool:
     if (typeOfThing2->isIntegerTy(1))
     {
         return generateCallExtern(TyBool, "cmpDatumToBool", {PaAddr(evaluator), PaAddr(thing1), PaBool(thing2)});
     }
-
-    // If second child is number:
     if (typeOfThing2->isDoubleTy())
     {
         return generateCallExtern(TyBool, "cmpDatumToDouble", {PaAddr(evaluator), PaAddr(thing1), PaDouble(thing2)});
     }
-
-    // Both must be Datums
     Q_ASSERT(typeOfThing2->isPointerTy());
     return generateCallExtern(TyBool, "cmpDatumToDatum", {PaAddr(evaluator), PaAddr(thing1), PaAddr(thing2)});
 }
@@ -1050,13 +1045,73 @@ Value *Compiler::generateSetitem(DatumPtr node, RequestReturnType returnType, bo
     return generateVoidRetval(node.astnodeValue());
 }
 
-    /// @brief Recursively check if a datum is in a container.
-    /// @param visited The set of visited nodes.
-    /// @param value The value to check for.
-    /// @param container The container to check.
-    /// @param cs The case sensitivity to use for the comparison.
-    /// @return True if the value is in the container, false otherwise.
-    bool isDatumInContainer(VisitedSet &visited, Datum *value, Datum *container, Qt::CaseSensitivity cs)
+bool isDatumInContainer(VisitedSet &visited, Datum *value, Datum *container, Qt::CaseSensitivity cs);
+
+/// @brief Recursively check if a datum is in an array.
+/// @param visited The set of visited nodes.
+/// @param value The value to check for.
+/// @param array The array to check.
+/// @param cs The case sensitivity to use for the comparison.
+/// @return True if the value is in the array, false otherwise.
+bool isDatumInArray(VisitedSet &visited, Datum *value, Array *array, Qt::CaseSensitivity cs)
+{
+    VisitedMap searched;
+    for (auto &item : array->array)
+    {
+        searched.clear();
+        Datum *itemPtr = item.datumValue();
+        if (areDatumsEqual(searched, itemPtr, value, cs))
+            return true;
+        if (itemPtr->isArray() || itemPtr->isList())
+        {
+            if (visited.contains(itemPtr))
+            {
+                visited.add(itemPtr);
+                if (isDatumInContainer(visited, itemPtr, value, cs))
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
+/// @brief Recursively check if a datum is in a list.
+/// @param visited The set of visited nodes.
+/// @param value The value to check for.
+/// @param list The list to check.
+/// @param cs The case sensitivity to use for the comparison.
+/// @return True if the value is in the list, false otherwise.
+bool isDatumInList(VisitedSet &visited, Datum *value, List *list, Qt::CaseSensitivity cs)
+{
+    VisitedMap searched;
+    while (list != EmptyList::instance())
+    {
+        Datum* itemPtr = list->head.datumValue();
+        searched.clear();
+        if (areDatumsEqual(searched, itemPtr, value, cs))
+            return true;
+        if (itemPtr->isArray() || itemPtr->isList())
+        {
+            if ( ! visited.contains(itemPtr))
+            {
+                visited.add(itemPtr);
+                if (isDatumInContainer(visited, itemPtr, value, cs))
+                    return true;
+            }
+        }
+        list = list->tail.listValue();
+    }
+    return false;
+}
+
+
+/// @brief Recursively check if a datum is in a container.
+/// @param visited The set of visited nodes.
+/// @param value The value to check for.
+/// @param container The container to check.
+/// @param cs The case sensitivity to use for the comparison.
+/// @return True if the value is in the container, false otherwise.
+bool isDatumInContainer(VisitedSet &visited, Datum *value, Datum *container, Qt::CaseSensitivity cs)
 {
     if (visited.contains(container))
         return false;
@@ -1067,43 +1122,12 @@ Value *Compiler::generateSetitem(DatumPtr node, RequestReturnType returnType, bo
     if (container->isArray())
     {
         Array *a = container->arrayValue();
-        for (auto &item : a->array)
-        {
-            searched.clear();
-            Datum *itemPtr = item.datumValue();
-            if (areDatumsEqual(searched, itemPtr, value, cs))
-                return true;
-            if (itemPtr->isArray() || itemPtr->isList())
-            {
-                if (visited.contains(itemPtr))
-                {
-                    visited.add(itemPtr);
-                    if (isDatumInContainer(visited, itemPtr, value, cs))
-                        return true;
-                }
-            }
-        }
+        return isDatumInArray(visited, value, a, cs);
     }
     else if (container->isList())
     {
         List *l = container->listValue();
-        while (l != EmptyList::instance())
-        {
-            Datum* itemPtr = l->head.datumValue();
-            searched.clear();
-            if (areDatumsEqual(searched, itemPtr, value, cs))
-                return true;
-            if (itemPtr->isArray() || itemPtr->isList())
-            {
-                if ( ! visited.contains(itemPtr))
-                {
-                    visited.add(itemPtr);
-                    if (isDatumInContainer(visited, itemPtr, value, cs))
-                        return true;
-                }
-            }
-            l = l->tail.listValue();
-        }
+        return isDatumInList(visited, value, l, cs);
     }
     else
     {
