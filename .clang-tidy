@@ -1,6 +1,7 @@
 ---
 # Clang-tidy configuration for QLogo project
 # Run with: clang-tidy -p . <files>
+# Or, find qlogo -name "*.cpp" -exec clang-tidy -p . {} \; > clang_tidy.out
 
 Checks: >
   # Bug-prone patterns
@@ -29,14 +30,14 @@ Checks: >
   cert-err33-c,
   cert-err58-cpp,
   cert-oop54-cpp,
-  cert-err61-cpp,
+  -cert-err61-cpp,  # Disabled because pointers are a core part of the language
   
   # C++ Core Guidelines
   cppcoreguidelines-owning-memory,
   cppcoreguidelines-pro-bounds-array-to-pointer-decay,
   cppcoreguidelines-pro-type-const-cast,
-  # Disabled because it causes false positives
-  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-type-reinterpret-cast,  # Disabled because it causes false positives
+
   cppcoreguidelines-slicing,
   
   # Additional bug-prone checks
