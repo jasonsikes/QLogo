@@ -64,3 +64,4 @@ cmake_install.cmake
 # Added by jason
 TODO.org
 /.qt/
+compile_commands.json
