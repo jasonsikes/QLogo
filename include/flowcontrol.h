@@ -276,7 +276,7 @@ public:
     /// @param tag The tag of the error. Can be used with `CATCH tag` and/or `SYSTEM/TOPLEVEL/PAUSE` to handle the error.
     /// @param message An optional message to accompany the error.
     /// @param output An optional output to accompany the error.
-    static FCError* custom(DatumPtr tag, DatumPtr message = nothing, DatumPtr output = nothing);
+    static FCError* custom(const DatumPtr &tag, DatumPtr message = nothing, const DatumPtr &output = nothing);
 
     /// @brief Create an error object for a turtle out of bounds error.
     static FCError* turtleOutOfBounds();
@@ -285,7 +285,7 @@ public:
     static FCError* noGraphics();
 
     /// @brief Create an error object for attempting to use a forbidden command inside a procedure.
-    static FCError* toInProc(DatumPtr cmd);
+    static FCError* toInProc(const DatumPtr &cmd);
 
     /// @brief Create an error object for an unexpected closing square during parsing.
     static FCError* unexpectedCloseSquare();
@@ -301,11 +301,11 @@ public:
 
     /// @brief Create an error object for attempting to use a command that is forbidden outside a procedure.
     /// @param cmd The command that was attempted to be used.
-    static FCError* notInsideProcedure(DatumPtr cmd);
+    static FCError* notInsideProcedure(const DatumPtr &cmd);
 
     /// @brief Create an error object for an unknown command or procedure.
     /// @param cmd The name of the unknown command or procedure.
-    static FCError* noHow(DatumPtr cmd);
+    static FCError* noHow(const DatumPtr &cmd);
 
     /// @brief Create an error object for an unknown catch tag.
     /// @param tag The name of the unknown catch tag.
@@ -314,50 +314,50 @@ public:
     /// @brief Create an error object for an input that is not accepted by a command.
     /// @param x The name of the command that rejected the input.
     /// @param y The input that was rejected.
-    static FCError* doesntLike(DatumPtr x, DatumPtr y);
+    static FCError* doesntLike(const DatumPtr &x, const DatumPtr &y);
 
     /// @brief create an error object for a command output that has no destination.
     /// @param x The output that has no destination.
-    static FCError* dontSay(DatumPtr x);
+    static FCError* dontSay(const DatumPtr &x);
 
     /// @brief create an error object for a command that was called without a TEST.
     /// @param x The command that was called without a TEST.
-    static FCError* noTest(DatumPtr x);
+    static FCError* noTest(const DatumPtr &x);
 
     /// @brief Create an error object for a command that didn't output to another that was expecting input.
     /// @param x The command that didn't output.
     /// @param y The destination that expected input.
-    static FCError* didntOutput(DatumPtr x, DatumPtr y);
+    static FCError* didntOutput(const DatumPtr &x, const DatumPtr &y);
 
     /// @brief Create an error object for a command that has too many inputs.
     /// @param x The command that has too many inputs.
-    static FCError* tooManyInputs(DatumPtr x);
+    static FCError* tooManyInputs(const DatumPtr &x);
 
     /// @brief Create an error object for a command that has too few inputs.
     /// @param x The command that has too few inputs.
-    static FCError* notEnoughInputs(DatumPtr x);
+    static FCError* notEnoughInputs(const DatumPtr &x);
 
     /// @brief Create an error object for a variable that has no value.
     /// @param x The variable that has no value.
-    static FCError* noValue(DatumPtr x);
+    static FCError* noValue(const DatumPtr &x);
 
     /// @brief Create an error object for trying to nest FILLED blocks.
     static FCError* alreadyFilling();
 
     /// @brief Create an error object for a procedure that is already defined.
     /// @param x The procedure that is already defined.
-    static FCError* procDefined(DatumPtr x);
+    static FCError* procDefined(const DatumPtr &x);
 
     /// @brief Create an error object for a bad default expression for an optional input.
     /// @param x The bad default expression.
-    static FCError* badDefault(DatumPtr x);
+    static FCError* badDefault(const DatumPtr &x);
 
     /// @brief Create an error object for a closing parenthesis not found when expected during parsing.
     static FCError* parenNf();
 
     /// @brief Create an error object for trying to manipulate a primitive.
     /// @param x The primitive that is being manipulated.
-    static FCError* isPrimitive(DatumPtr x);
+    static FCError* isPrimitive(const DatumPtr &x);
 
 
     /// @brief Return a string suitable for the PRINT command

@@ -43,7 +43,7 @@ void FCError::commonInit()
     k->currentError = DatumPtr(this);
 }
 
-FCError* FCError::custom(DatumPtr tag, DatumPtr message, DatumPtr output)
+FCError* FCError::custom(const DatumPtr &tag, DatumPtr message, const DatumPtr &output)
 {
     ErrCode code;
     if (tag.toString(ToStringFlags_Key) == QObject::tr("ERROR"))
@@ -76,7 +76,7 @@ FCError* FCError::noGraphics()
     return new FCError(ERR_NO_GRAPHICS, QObject::tr("Graphics not initialized"));
 }
 
-FCError* FCError::toInProc(DatumPtr cmd)
+FCError* FCError::toInProc(const DatumPtr &cmd)
 {
     QString message = QObject::tr("can't use %1 inside a procedure").arg(cmd.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_TO_IN_PROC, message);
@@ -103,57 +103,57 @@ FCError* FCError::fileSystem()
     return new FCError(ERR_FILESYSTEM, QObject::tr("File system error"));
 }
 
-FCError* FCError::notInsideProcedure(DatumPtr cmd)
+FCError* FCError::notInsideProcedure(const DatumPtr &cmd)
 {
     QString message = QObject::tr("Can only use %1 inside a procedure").arg(cmd.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_NOT_INSIDE_PROCEDURE, message);
 }
 
 
-FCError* FCError::noHow(DatumPtr cmd)
+FCError* FCError::noHow(const DatumPtr &cmd)
 {
     QString message = QObject::tr("I don't know how to %1").arg(cmd.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_NO_HOW, message);
 }
 
 
-FCError* FCError::doesntLike(DatumPtr x, DatumPtr y)
+FCError* FCError::doesntLike(const DatumPtr &x, const DatumPtr &y)
 {
     QString message = QObject::tr("%1 doesn't like %2 as input").arg(x.toString(Datum::ToStringFlags_Show), y.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_DOESNT_LIKE, message);
 }
 
-FCError* FCError::dontSay(DatumPtr x)
+FCError* FCError::dontSay(const DatumPtr &x)
 {
     QString message = QObject::tr("You don't say what to do with %1").arg(x.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_DONT_SAY, message);
 }
 
-FCError* FCError::noTest(DatumPtr x)
+FCError* FCError::noTest(const DatumPtr &x)
 {
     QString message = QObject::tr("%1 without TEST").arg(x.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_NO_TEST, message);
 }
 
-FCError* FCError::didntOutput(DatumPtr x, DatumPtr y)
+FCError* FCError::didntOutput(const DatumPtr &x, const DatumPtr &y)
 {
     QString message = QObject::tr("%1 didn't output to %2").arg(x.toString(Datum::ToStringFlags_Show), y.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_DIDNT_OUTPUT, message);
 }
 
-FCError* FCError::tooManyInputs(DatumPtr x)
+FCError* FCError::tooManyInputs(const DatumPtr &x)
 {
     QString message = QObject::tr("too many inputs to %1").arg(x.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_TOO_MANY_INPUTS, message);
 }
 
-FCError* FCError::notEnoughInputs(DatumPtr x)
+FCError* FCError::notEnoughInputs(const DatumPtr &x)
 {
     QString message = QObject::tr("not enough inputs to %1").arg(x.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_NOT_ENOUGH_INPUTS, message);
 }
 
-FCError* FCError::noValue(DatumPtr x)
+FCError* FCError::noValue(const DatumPtr &x)
 {
     QString message = QObject::tr("%1 has no value").arg(x.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_NO_VALUE, message);
@@ -165,13 +165,13 @@ FCError* FCError::alreadyFilling()
     return new FCError(ERR_ALREADY_FILLING, message);
 }
 
-FCError* FCError::procDefined(DatumPtr x)
+FCError* FCError::procDefined(const DatumPtr &x)
 {
     QString message = QObject::tr("%1 is already defined").arg(x.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_ALREADY_DEFINED, message);
 }
 
-FCError* FCError::badDefault(DatumPtr x)
+FCError* FCError::badDefault(const DatumPtr &x)
 {
     QString message = QObject::tr("Bad default expression for optional input: %1").arg(x.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_BAD_DEFAULT_EXPRESSION, message);
@@ -184,7 +184,7 @@ FCError* FCError::parenNf()
 }
 
 
-FCError* FCError::isPrimitive(DatumPtr x)
+FCError* FCError::isPrimitive(const DatumPtr &x)
 {
     QString message = QObject::tr("%1 is a primitive").arg(x.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_IS_PRIMITIVE, message);
