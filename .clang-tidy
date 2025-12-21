@@ -3,6 +3,7 @@
 # Run with: clang-tidy -p . <files>
 
 Checks: >
+  # Bug-prone patterns
   bugprone-use-after-move,
   bugprone-dangling-handle,
   bugprone-integer-division,
@@ -12,13 +13,62 @@ Checks: >
   bugprone-unused-raii,
   bugprone-unused-return-value,
   
+  # Performance patterns
   performance-for-range-copy,
   performance-unnecessary-copy-initialization,
   performance-move-const-arg,
   performance-unnecessary-value-param,
   
+  # Static analysis (can be slow)
   clang-analyzer-core.NullDereference,
   clang-analyzer-core.UndefinedBinaryOperatorResult,
   clang-analyzer-cplusplus.NewDelete,
   clang-analyzer-cplusplus.NewDeleteLeaks,
   
+  # CERT secure coding guidelines
+  cert-err33-c,
+  cert-err58-cpp,
+  cert-oop54-cpp,
+  cert-err61-cpp,
+  
+  # C++ Core Guidelines
+  cppcoreguidelines-owning-memory,
+  cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  cppcoreguidelines-pro-type-const-cast,
+  # Disabled because it causes false positives
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  cppcoreguidelines-slicing,
+  
+  # Additional bug-prone checks
+  bugprone-easily-swappable-parameters,
+  bugprone-exception-escape,
+  bugprone-macro-parentheses,
+  bugprone-multiple-statement-macro,
+  bugprone-no-escape-in-virtual-function,
+  bugprone-parent-virtual-call,
+  bugprone-posix-return,
+  bugprone-sizeof-container,
+  bugprone-sizeof-expression,
+  bugprone-suspicious-enum-usage,
+  bugprone-suspicious-missing-comma,
+  bugprone-suspicious-semicolon,
+  bugprone-swapped-arguments,
+  bugprone-terminating-continue,
+  bugprone-throw-keyword-missing,
+  bugprone-too-small-loop-variable,
+  bugprone-undefined-memory-manipulation,
+  bugprone-unhandled-self-assignment,
+  
+  # Performance checks
+  performance-faster-string-find,
+  performance-implicit-conversion-in-loop,
+  performance-inefficient-algorithm,
+  performance-inefficient-string-concatenation,
+  performance-inefficient-vector-operation,
+  performance-move-constructor-init,
+  performance-no-automatic-move,
+  performance-noexcept-move-constructor,
+  performance-trivially-destructible,
+  performance-type-promotion-in-math-fn,
+  performance-unnecessary-operator-params,
+
