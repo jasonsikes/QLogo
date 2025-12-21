@@ -26,7 +26,10 @@
 #endif
 
 /// @brief The mutex for the message queue
-QMutex queueLock;
+QMutex& queueLock() {
+    static QMutex queueLockInstance;
+    return queueLockInstance;
+}
 
 /// @brief The message queue
 QQueue<QByteArray> messageQueue;
@@ -63,9 +66,9 @@ void InputQueueThread::run()
             datalen -= dataread;
         }
         Q_ASSERT(0 == datalen);
-        queueLock.lock();
+        queueLock().lock();
         messageQueue.enqueue(message);
-        queueLock.unlock();
+        queueLock().unlock();
         emit sendMessageSignal();
     }
 }
@@ -85,11 +88,11 @@ QByteArray InputQueue::getMessage()
 {
     QByteArray message;
     // If there is a message already in the queue, return that.
-    queueLock.lock();
+    queueLock().lock();
     bool isMessageQueued = !messageQueue.isEmpty();
     if (isMessageQueued)
         message = messageQueue.dequeue();
-    queueLock.unlock();
+    queueLock().unlock();
     if (isMessageQueued)
         return message;
 
@@ -98,11 +101,11 @@ QByteArray InputQueue::getMessage()
     {
         eventLoop.exec();
 
-        queueLock.lock();
+        queueLock().lock();
         isMessageQueued = !messageQueue.isEmpty();
         if (isMessageQueued)
             message = messageQueue.dequeue();
-        queueLock.unlock();
+        queueLock().unlock();
         if (isMessageQueued)
             return message;
     }
@@ -110,9 +113,9 @@ QByteArray InputQueue::getMessage()
 
 bool InputQueue::isMessageAvailable()
 {
-    queueLock.lock();
+    queueLock().lock();
     bool retval = !messageQueue.isEmpty();
-    queueLock.unlock();
+    queueLock().unlock();
     return retval;
 }
 
