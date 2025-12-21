@@ -21,6 +21,7 @@
 #include "workspace/callframe.h"
 #include "kernel.h"
 #include "datum_types.h"
+#include "sharedconstants.h"
 
 #include <QFile>
 using namespace llvm;
@@ -384,7 +385,7 @@ EXPORTC double getTurtleTowards(addr_t eAddr, addr_t posAddr)
     double *pos = reinterpret_cast<double *>(posAddr);
     double vx = pos[0];
     double vy = pos[1];
-    double retval = atan2(x - vx, vy - y) * (180 / M_PI);
+    double retval = atan2(x - vx, vy - y) * (180 / PI);
 
     // Heading should only show two decimal places.
     retval = round(retval * 100.0) / 100.0;

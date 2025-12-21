@@ -14,10 +14,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#define _USE_MATH_DEFINES
-
 #include "gui/canvas.h"
-#include "math.h"
+#include <cmath>
 #include "sharedconstants.h"
 #include <QBuffer>
 #include <QColor>
@@ -218,7 +216,7 @@ void Canvas::addArc(qreal angle, qreal radius)
     qreal s = turtleMatrix.m21();
     qreal c = turtleMatrix.m11();
 
-    qreal a = atan2(s, c) * 180 / M_PI;
+    qreal a = atan2(s, c) * (180.0 / PI);
 
     if (radius < 0)
     {

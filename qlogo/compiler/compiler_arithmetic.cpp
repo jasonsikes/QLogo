@@ -19,6 +19,7 @@
 #include "astnode.h"
 #include "compiler.h"
 #include "workspace/callframe.h"
+#include "sharedconstants.h"
 #include <QRandomGenerator>
 
 static QRandomGenerator randomGenerator;
@@ -188,7 +189,7 @@ Value *Compiler::genArctan(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnReal);
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
 
-    Value *radToDeg = CoDouble(180 / M_PI);
+    Value *radToDeg = CoDouble(180 / PI);
     Value *retval;
 
     // Calculate atan() or atan2() depending on number of children.
@@ -681,7 +682,7 @@ Value *Compiler::genSin(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
 
-    Value *degToRad = CoDouble(M_PI / 180);
+    Value *degToRad = CoDouble(PI / 180);
     Value *theta = scaff->builder.CreateFMul(num, degToRad, "theta");
     return generateCallExtern(TyDouble, "sin", {PaDouble(theta)});
 }
@@ -835,7 +836,7 @@ Value *Compiler::genCos(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
 
-    Value *degToRad = CoDouble(M_PI / 180);
+    Value *degToRad = CoDouble(PI / 180);
     Value *theta = scaff->builder.CreateFMul(num, degToRad, "theta");
     return generateCallExtern(TyDouble, "cos", {PaDouble(theta)});
 }

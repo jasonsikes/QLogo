@@ -22,9 +22,6 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#define _USE_MATH_DEFINES
-
-#include <cmath>
 #include "sharedconstants.h"
 #include "controller/logocontroller.h"
 #include <QColor>

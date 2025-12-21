@@ -15,8 +15,6 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#define _USE_MATH_DEFINES
-
 #include "gui/console.h"
 #include "sharedconstants.h"
 #include <QDebug>

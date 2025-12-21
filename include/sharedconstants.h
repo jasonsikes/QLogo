@@ -28,6 +28,8 @@
 #include <unistd.h>
 #endif
 
+constexpr double PI = 3.14159265358979323846;
+
 using message_t = quint8;
 
 class Turtle;

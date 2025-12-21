@@ -15,10 +15,6 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef _USE_MATH_DEFINES
-#define _USE_MATH_DEFINES
-#endif
-
 #include "turtle.h"
 #include "controller/logocontroller.h"
 #include "flowcontrol.h"
@@ -211,7 +207,7 @@ void Turtle::forward(double steps)
 
 void Turtle::rotate(double angle)
 {
-    double rad = angle * M_PI / 180.0;
+    double rad = angle * (PI / 180.0);
     double sina = std::sin(rad);
     double cosa = std::cos(rad);
 
@@ -259,7 +255,7 @@ double Turtle::getHeading() const
     double s = turtlePosition.m[1];
     double c = turtlePosition.m[0];
 
-    double retval = atan2(s, c) * 180 / M_PI;
+    double retval = atan2(s, c) * (180.0 / PI);
     if (retval < 0)
         retval += 360;
     return retval;
