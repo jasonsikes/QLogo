@@ -67,7 +67,7 @@ DatumPtr::DatumPtr(int n)
     ++(d->retainCount);
 }
 
-DatumPtr::DatumPtr(QString n, bool isVBarred)
+DatumPtr::DatumPtr(const QString &n, bool isVBarred)
 {
     d = new Word(n, isVBarred);
     ++(d->retainCount);

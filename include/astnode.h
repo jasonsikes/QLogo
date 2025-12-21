@@ -33,10 +33,10 @@ class ASTNode : public Datum
 
   public:
     /// @brief Allocate an ASTNode with the node's name as a Word.
-    ASTNode(DatumPtr aNodeName);
+    ASTNode(const DatumPtr &aNodeName);
 
     /// @brief Allocate an ASTNode with the node's name as a QString.
-    ASTNode(QString aNodeName);
+    ASTNode(const QString &aNodeName);
 
     /// @brief A human-readable string. Usually the command name.
     DatumPtr nodeName;
@@ -53,7 +53,7 @@ class ASTNode : public Datum
 
     /// @brief Add a child to the node. Child will be added to the end of the children list.
     /// @param aChild The child to add.
-    void addChild(DatumPtr aChild);
+    void addChild(const DatumPtr &aChild);
 
     /// @brief Returns the child at the specified index.
     /// @param index The index of the child to return.

@@ -67,7 +67,7 @@ class DatumPtr
     /// @param n The string to create the DatumPtr for.
     /// @param isVBarred Whether the string is created with vertical bars.
     /// @return A new DatumPtr pointing to a new Word containing the string.
-    explicit DatumPtr(QString n, bool isVBarred = false);
+    explicit DatumPtr(const QString &n, bool isVBarred = false);
 
     /// @brief Convenience constructor for const char strings.
     ///

@@ -23,7 +23,7 @@
 #include <QObject>
 #include <qdebug.h>
 
-List::List(DatumPtr item, List *srcList)
+List::List(const DatumPtr &item, List *srcList)
 {
     isa = Datum::typeList;
     head = item;
@@ -105,7 +105,7 @@ bool List::isEmpty() const
     return this == EmptyList::instance();
 }
 
-void List::setButfirstItem(DatumPtr aValue)
+void List::setButfirstItem(const DatumPtr &aValue)
 {
     Q_ASSERT(this != EmptyList::instance());
     Q_ASSERT(aValue.isList());
@@ -182,7 +182,7 @@ void EmptyList::clear()
     Q_ASSERT(false && "Attempted to modify immutable EmptyList");
 }
 
-void EmptyList::setButfirstItem(DatumPtr /* aValue */)
+void EmptyList::setButfirstItem(const DatumPtr &/* aValue */)
 {
     Q_ASSERT(false && "Attempted to modify immutable EmptyList");
 }

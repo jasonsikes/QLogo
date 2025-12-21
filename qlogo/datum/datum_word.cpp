@@ -135,7 +135,7 @@ Word::Word()
     //qDebug() <<this << " new++ word";
 }
 
-Word::Word(const QString other, bool aIsForeverSpecial)
+Word::Word(const QString &other, bool aIsForeverSpecial)
 {
     isa = Datum::typeWord;
     number = nan("");

@@ -22,7 +22,7 @@ ListIterator::ListIterator()
 {
 }
 
-ListIterator::ListIterator(DatumPtr aList)
+ListIterator::ListIterator(const DatumPtr &aList)
 {
     ptr = aList;
 }

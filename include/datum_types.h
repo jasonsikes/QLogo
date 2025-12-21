@@ -63,7 +63,7 @@ class Word : public Datum
     /// @param other the string value of this word
     /// @param aIsForeverSpecial if set to 'true' characters defined with vertical bars will
     /// not be treated as token delimiters during parsing.
-    Word(const QString other, bool aIsForeverSpecial = false);
+    Word(const QString &other, bool aIsForeverSpecial = false);
 
     /// @brief Create a Word object with a number.
     Word(double other);
@@ -152,7 +152,7 @@ class List : public Datum
     ///
     /// @param item The item to add to the head of the list.
     /// @param srcList The list to copy from, this will become the tail of the new list.
-    List(DatumPtr item, List *srcList);
+    List(const DatumPtr &item, List *srcList);
 
     /// @brief Destructor.
     virtual ~List();
@@ -185,7 +185,7 @@ class List : public Datum
     /// @brief Replaces everything but the first item in the List with aValue.
     ///
     /// @param aValue The value to replace the first item with.
-    void setButfirstItem(DatumPtr aValue);
+    void setButfirstItem(const DatumPtr &aValue);
 
     /// @brief Create a new ListIterator pointing to the head of the List.
     /// @return A new ListIterator pointing to the head of the List.
@@ -220,7 +220,7 @@ class EmptyList : public List
 
     
     void clear();
-    void setButfirstItem(DatumPtr aValue);
+    void setButfirstItem(const DatumPtr &aValue);
 
   public:
     /// @brief Get the singleton instance of EmptyList.
@@ -248,7 +248,7 @@ class ListIterator
     ListIterator();
 
     /// @brief Create a new ListIterator pointing to the head of the List.
-    ListIterator(DatumPtr aList);
+    ListIterator(const DatumPtr &aList);
 
     /// @brief Return the element at the current location. Advance Iterator to the next location.
     ///

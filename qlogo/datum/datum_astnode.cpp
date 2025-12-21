@@ -18,7 +18,7 @@
 #include "astnode.h"
 #include <qdebug.h>
 
-void ASTNode::addChild(DatumPtr aChild)
+void ASTNode::addChild(const DatumPtr &aChild)
 {
     children.push_back(aChild);
 }
@@ -33,7 +33,7 @@ DatumPtr ASTNode::childAtIndex(unsigned index) const
     return children.at(index);
 }
 
-ASTNode::ASTNode(DatumPtr aNodeName)
+ASTNode::ASTNode(const DatumPtr &aNodeName)
 {
     isa = Datum::typeASTNode;
     children.clear();
@@ -42,7 +42,7 @@ ASTNode::ASTNode(DatumPtr aNodeName)
     returnType = RequestReturnVoid;
 }
 
-ASTNode::ASTNode(QString aNodeName)
+ASTNode::ASTNode(const QString &aNodeName)
 {
     isa = Datum::typeASTNode;
     children.clear();
