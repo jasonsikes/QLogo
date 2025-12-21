@@ -22,14 +22,19 @@
 #include "sharedconstants.h"
 #include <QRandomGenerator>
 
-static QRandomGenerator randomGenerator;
+/// Get a reference to the random number generator instance.
+static QRandomGenerator& randomGenerator()
+{
+    static QRandomGenerator randomGeneratorInstance;
+    return randomGeneratorInstance;
+}
 
 /// Generate a random nonnegative integer less than num given
 /// @param num an upper bound (exclusive) to the random number.
 /// @return the random number generated.
 EXPORTC double random1(int32_t num)
 {
-    int result = randomGenerator.bounded(num);
+    int result = randomGenerator().bounded(num);
     return (double)result;
 }
 
@@ -39,7 +44,7 @@ EXPORTC double random1(int32_t num)
 /// @return the random number generated.
 EXPORTC double random2(int32_t start, int32_t end)
 {
-    int result = randomGenerator.bounded(start, end + 1);
+    int result = randomGenerator().bounded(start, end + 1);
     return (double)result;
 }
 
@@ -48,7 +53,7 @@ EXPORTC double random2(int32_t start, int32_t end)
 /// @return nothing.
 EXPORTC addr_t setRandomWithSeed(int32_t seed)
 {
-    randomGenerator.seed(seed);
+    randomGenerator().seed(seed);
     return nullptr;
 }
 
@@ -58,7 +63,7 @@ EXPORTC addr_t setRandom()
 {
     QRandomGenerator *s = QRandomGenerator::system();
     quint32 seed = s->generate();
-    randomGenerator.seed(seed);
+    randomGenerator().seed(seed);
     return nullptr;
 }
 
