@@ -26,8 +26,13 @@
 #include <qdebug.h>
 #include "workspace/procedures.h"
 #include "controller/textstream.h"
+
 // TODO: we could reimplement this into something a little faster.
-const QString specialChars("+-()*%/<>=");
+/// A string of special characters that are used in the parser.
+const QString& specialChars() {
+    static const QString specialCharsInstance("+-()*%/<>=");
+    return specialCharsInstance;
+}
 
 QHash<List*, QList<QList<DatumPtr>>> Parser::astListTable;
 
@@ -370,7 +375,7 @@ DatumPtr Parser::parseTermexp()
             QString cmdString = currentToken.toString(Datum::ToStringFlags_Key);
             QChar firstChar = (cmdString)[0];
             if ((firstChar != '"') && (firstChar != ':') && ((firstChar < '0') || (firstChar > '9')) &&
-                !specialChars.contains(firstChar))
+                !specialChars().contains(firstChar))
             {
                 retval = parseCommand(true);
             }

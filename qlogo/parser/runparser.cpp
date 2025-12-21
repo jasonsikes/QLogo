@@ -23,8 +23,7 @@
 #include <qdatetime.h>
 #include <qdebug.h>
 
-// TODO: we could implement this into something a little faster.
-const QString specialChars("+-()*%/<>=");
+extern const QString& specialChars();
 
 void Runparser::runparseSpecialchars(void)
 {
@@ -62,7 +61,7 @@ void Runparser::runparseString()
         }
     }
 
-    while ((runparseCIter != runparseCEnd) && (!specialChars.contains(*runparseCIter)))
+    while ((runparseCIter != runparseCEnd) && (!specialChars().contains(*runparseCIter)))
     {
         retval += *runparseCIter;
         ++runparseCIter;
@@ -178,7 +177,7 @@ DatumPtr Runparser::runparseNumber()
     // at this point we have successfully parsed a complete number. However, if
     // there are more characters that aren't special characters, then we don't
     // have a complete number.
-    if (!specialChars.contains(c))
+    if (!specialChars().contains(c))
         return nothing;
 
 numberSuccessful:
@@ -235,7 +234,7 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
             while (runparseCIter != runparseCEnd)
             {
                 QChar c = *runparseCIter;
-                if (specialChars.contains(c))
+                if (specialChars().contains(c))
                 {
                     if ((c == '-') && (runparseCIter == oldWord.begin()) && (oldWord != "-"))
                         runparseMinus();
