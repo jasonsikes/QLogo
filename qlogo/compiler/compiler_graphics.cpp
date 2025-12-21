@@ -31,9 +31,9 @@ using namespace llvm::orc;
 List* listFromColor(const QColor &c)
 {
     ListBuilder retvalBuilder;
-    retvalBuilder.append(DatumPtr(round(c.redF() * 100)));
-    retvalBuilder.append(DatumPtr(round(c.greenF() * 100)));
-    retvalBuilder.append(DatumPtr(round(c.blueF() * 100)));
+    retvalBuilder.append(DatumPtr(round(static_cast<double>(c.redF()   * 100.0))));
+    retvalBuilder.append(DatumPtr(round(static_cast<double>(c.greenF() * 100.0))));
+    retvalBuilder.append(DatumPtr(round(static_cast<double>(c.blueF()  * 100.0))));
     return retvalBuilder.finishedList().listValue();
 }
 
