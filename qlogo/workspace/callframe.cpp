@@ -225,7 +225,7 @@ Datum *CallFrame::applyGoto(FCGoto* node)
     DatumPtr runningSourceListSnapshot;
 
     // Have we seen this tag already?
-    Procedure *proc = reinterpret_cast<Procedure *>(procedure);
+    Procedure *proc = static_cast<Procedure *>(procedure);
     auto blockIdIterator = proc->tagToBlockId.find(tag.toString(Datum::ToStringFlags_Key));
     if (blockIdIterator != proc->tagToBlockId.end()) {
         goto foundTag;
@@ -286,7 +286,7 @@ continueBody:
                     return retval;
                 case Datum::typeReturn:
                     // RETURN returns the data in the return value.
-                    return reinterpret_cast<FCReturn *>(retval)->returnValue().datumValue();
+                    return static_cast<FCReturn *>(retval)->returnValue().datumValue();
                 case Datum::typeGoto:
                     retval = applyGoto(static_cast<FCGoto *>(retval));
                     if (retval == nullptr) {

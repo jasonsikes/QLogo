@@ -274,12 +274,12 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
 
 CompiledFunctionPtr Compiler::functionPtrFromASTNode(ASTNode *aNode)
 {
-    auto iter = compiledTextTable.find(reinterpret_cast<Datum *>(aNode));
+    auto iter = compiledTextTable.find(static_cast<Datum *>(aNode));
     if (iter != compiledTextTable.end())
         return iter.value()->functionPtr;
 
     QList<QList<DatumPtr>> parsedList = {{DatumPtr(aNode)}};
-    return generateFunctionPtrFromASTList(parsedList, reinterpret_cast<Datum *>(aNode));
+    return generateFunctionPtrFromASTList(parsedList, static_cast<Datum *>(aNode));
 }
 
 
@@ -288,10 +288,10 @@ CompiledFunctionPtr Compiler::functionPtrFromList(List *aList)
     if (aList->astParseTimeStamp <= Config::get().mainProcedures()->timeOfLastProcedureCreation())
     {
         QList<QList<DatumPtr>> parsedList = Config::get().mainKernel()->parser->astFromList(aList);
-        return generateFunctionPtrFromASTList(parsedList, reinterpret_cast<Datum *>(aList));
+        return generateFunctionPtrFromASTList(parsedList, static_cast<Datum *>(aList));
     }
 
-    return compiledTextTable[reinterpret_cast<Datum *>(aList)]->functionPtr;
+    return compiledTextTable[static_cast<Datum *>(aList)]->functionPtr;
 }
 
 void Compiler::destroyCompiledTextForDatum(Datum *aDatum)
