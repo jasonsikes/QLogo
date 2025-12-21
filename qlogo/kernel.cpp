@@ -43,7 +43,7 @@
 // The maximum depth of procedure iterations before error is thrown.
 const int maxIterationDepth = 1000;
 
-bool Kernel::numbersFromList(QVector<double> &retval, DatumPtr listP) const
+bool Kernel::numbersFromList(QVector<double> &retval, const DatumPtr &listP) const
 {
     if (!listP.isList())
         return false;
@@ -63,7 +63,7 @@ bool Kernel::numbersFromList(QVector<double> &retval, DatumPtr listP) const
     return true;
 }
 
-bool Kernel::colorFromDatumPtr(QColor &retval, DatumPtr colorP) const
+bool Kernel::colorFromDatumPtr(QColor &retval, const DatumPtr &colorP) const
 {
     if (colorP.isWord())
     {
@@ -288,7 +288,7 @@ Kernel::~Kernel()
 }
 
 
-DatumPtr Kernel::runList(DatumPtr listP, QString startTag)
+DatumPtr Kernel::runList(const DatumPtr &listP, const QString &startTag)
 {
     DatumPtr retval;
 
@@ -342,7 +342,7 @@ DatumPtr Kernel::pause()
 }
 
 
-QString Kernel::filepathForFilename(DatumPtr filenameP) const
+QString Kernel::filepathForFilename(const DatumPtr &filenameP) const
 {
     QString filename = filenameP.wordValue()->toString();
 

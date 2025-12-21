@@ -95,7 +95,7 @@ class TextStream
 
     /// @brief Print a QString to the device
     /// @param text The text to print.
-    void lprint(QString text);
+    void lprint(const QString &text);
 
     /// @brief Return the underlying device (nullptr if there isn't a device).
     /// @return The QIODevice.

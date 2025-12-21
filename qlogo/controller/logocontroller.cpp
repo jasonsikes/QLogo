@@ -98,7 +98,7 @@ LogoController::~LogoController()
     Config::get().setMainLogoController(nullptr);
 }
 
-void LogoController::printToConsole(QString s)
+void LogoController::printToConsole(const QString &s)
 {
     *outStream << s;
     if (dribbleStream)
@@ -116,7 +116,7 @@ bool LogoController::keyQueueHasChars()
 }
 
 // This is READRAWLINE
-QString LogoController::inputRawlineWithPrompt(QString prompt)
+QString LogoController::inputRawlineWithPrompt(const QString &prompt)
 {
     QString retval;
     if (!inStream->atEnd())
@@ -149,7 +149,7 @@ void LogoController::mwait(unsigned long msecs)
     QThread::msleep(msecs);
 }
 
-bool LogoController::setDribble(QString filePath)
+bool LogoController::setDribble(const QString &filePath)
 {
     if (filePath == "")
     {

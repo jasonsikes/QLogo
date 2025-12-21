@@ -361,7 +361,7 @@ void TextStream::flush()
     stream->flush();
 }
 
-void TextStream::lprint(QString text)
+void TextStream::lprint(const QString &text)
 {
     if (stream == nullptr)
     {

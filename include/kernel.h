@@ -140,24 +140,24 @@ class Kernel
     /// @param listP The list to run.
     /// @param startTag If not null, search for the tag in the list and run from there.
     /// @return The result of the last expression in the list.
-    DatumPtr runList(DatumPtr listP, QString startTag = QString());
+    DatumPtr runList(const DatumPtr &listP, const QString &startTag = QString());
 
     /// @brief Convert a Datum to a QColor.
     /// @param colorP The Datum to convert.
     /// @return The QColor.
     /// @details This method converts a Datum to a QColor. The Datum can be a
     /// color number, color name, an RGB list or an RGBA list.
-    bool colorFromDatumPtr(QColor &retval, DatumPtr colorP) const;
+    bool colorFromDatumPtr(QColor &retval, const DatumPtr &colorP) const;
 
     /// @brief Convert a Datum to a QVector<double>.
     /// @param v The Datum to convert.
     /// @return The QVector<double>.
-    bool numbersFromList(QVector<double> &retval, DatumPtr listP) const;
+    bool numbersFromList(QVector<double> &retval, const DatumPtr &listP) const;
 
     /// @brief Get the filepath for a filename.
     /// @param filenameP The filename to get the filepath for.
     /// @return The filepath for the filename with the current file prefix.
-    QString filepathForFilename(DatumPtr filenameP) const;
+    QString filepathForFilename(const DatumPtr &filenameP) const;
 
     // SPECIAL VARIABLES
     Datum* specialVar(SpecialNames name);

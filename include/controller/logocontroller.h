@@ -83,7 +83,7 @@ class LogoController : public QObject
     /// @brief Reads a line of input from the user, with a prompt.
     /// @param prompt The prompt to display to the user.
     /// @return The line of input from the user.
-    virtual QString inputRawlineWithPrompt(QString);
+    virtual QString inputRawlineWithPrompt(const QString &prompt);
 
     /// @brief Reads a character from the user.
     /// @return The character that was read from the user.
@@ -95,7 +95,7 @@ class LogoController : public QObject
 
     /// @brief Prints a string to the console.
     /// @param text The text to print to the console.
-    virtual void printToConsole(QString);
+    virtual void printToConsole(const QString &text);
 
     /// @brief Runs the controller.
     /// @return The exit code of the controller.
@@ -216,7 +216,7 @@ class LogoController : public QObject
     /// @brief Sets the dribble file path.
     /// @param filePath The path to the dribble file. Use an empty string to disable dribbling.
     /// @return True if the dribble file was set successfully, false otherwise.
-    bool setDribble(QString filePath);
+    bool setDribble(const QString &filePath);
 
     /// @brief Checks if the dribble file is open.
     /// @return True if the dribble file is open, false otherwise.
