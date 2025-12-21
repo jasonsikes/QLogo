@@ -79,20 +79,20 @@ QString List::toString( ToStringFlags flags, int printDepthLimit, int printWidth
         {
             retval.append(' ');
         }
-        if ( (printWidth == 0) || (visited->contains(const_cast<List *>(l))))
+        if ( (printWidth == 0) || (visited->contains(l)))
         {
             // We have reached the print width limit or have a cycle, so stop traversing the list.
             retval.append("...");
             goto exit;
         }
-        visited->add(const_cast<List *>(l));
+        visited->add(l);
         retval.append(l->head.toString(flags, printDepthLimit - 1, printWidthLimit, visited));
         --printWidth;
         l = l->tail.listValue();
     }
 
 exit:
-    visited->remove(const_cast<List *>(this));
+    visited->remove(this);
     if (shouldShowBrackets)
     {
         retval.append(']');
@@ -141,13 +141,13 @@ int List::count() const
     while (iter != EmptyList::instance())
     {
         ++retval;
-        if (visited.contains(const_cast<List *>(iter)))
+        if (visited.contains(iter))
         {
             // TODO: How should we report a cycle? -1? 0?
             //  Not MAX_INT because that's a positive number.
             return retval;
         }
-        visited.add(const_cast<List *>(iter));
+        visited.add(iter);
         iter = iter->tail.listValue();
     }
     return retval;

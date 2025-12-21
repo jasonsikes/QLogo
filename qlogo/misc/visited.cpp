@@ -19,17 +19,17 @@
 
 // VisitedSet implementation
 
-void VisitedSet::add(Datum *node)
+void VisitedSet::add(const Datum *node)
 {
     visited.insert(node);
 }
 
-void VisitedSet::remove(Datum *node)
+void VisitedSet::remove(const Datum *node)
 {
     visited.remove(node);
 }
 
-bool VisitedSet::contains(Datum *node) const
+bool VisitedSet::contains(const Datum *node) const
 {
     return visited.contains(node);
 }
@@ -47,22 +47,22 @@ int VisitedSet::size() const
 
 // VisitedMap implementation
 
-void VisitedMap::add(Datum *key, Datum *value)
+void VisitedMap::add(const Datum *key, const Datum *value)
 {
     visited.insert(key, value);
 }
 
-void VisitedMap::remove(Datum *key)
+void VisitedMap::remove(const Datum *key)
 {
     visited.remove(key);
 }
 
-Datum *VisitedMap::get(Datum *key) const
+const Datum *VisitedMap::get(const Datum *key) const
 {
     return visited.value(key);
 }
 
-bool VisitedMap::contains(Datum *key) const
+bool VisitedMap::contains(const Datum *key) const
 {
     return visited.contains(key);
 }

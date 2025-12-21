@@ -29,7 +29,7 @@ class Datum;
 class VisitedSet
 {
   protected:
-    QSet<Datum *> visited;
+    QSet<const Datum *> visited;
 
   public:
     /// @brief Create an empty VisitedSet.
@@ -37,16 +37,16 @@ class VisitedSet
 
     /// @brief Add a node to the visited set.
     /// @param node The node to mark as visited.
-    void add(Datum *node);
+    void add(const Datum *node);
 
     /// @brief Remove a node from the visited set.
     /// @param node The node to UNmark as visited.
-    void remove(Datum *node);
+    void remove(const Datum *node);
 
     /// @brief Check if a node has been visited.
     /// @param node The node to check.
     /// @return True if the node has been visited, false otherwise.
-    bool contains(Datum *node) const;
+    bool contains(const Datum *node) const;
 
     /// @brief Clear all visited nodes from the set.
     void clear();
@@ -63,7 +63,7 @@ class VisitedSet
 class VisitedMap
 {
   protected:
-    QMap<Datum *, Datum *> visited;
+    QMap<const Datum *, const Datum *> visited;
 
   public:
     /// @brief Create an empty VisitedMap.
@@ -72,21 +72,21 @@ class VisitedMap
     /// @brief Add a node to the visited map.
     /// @param key The key of the node to mark as visited.
     /// @param value The value of the node to mark as visited.
-    void add(Datum *key, Datum *value);
+    void add(const Datum *key, const Datum *value);
 
     /// @brief Remove a node from the visited map.
     /// @param key The key of the node to unmark as visited.
-    void remove(Datum *key);
+    void remove(const Datum *key);
 
     /// @brief Get the value associated with a key in the visited map.
     /// @param key The key of the node to get the value of.
     /// @return The value associated with the key.
-    Datum *get(Datum *key) const;
+    const Datum *get(const Datum *key) const;
 
     /// @brief Check if a node has been visited.
     /// @param key The key of the node to check.
     /// @return True if the node has been visited, false otherwise.
-    bool contains(Datum *key) const;
+    bool contains(const Datum *key) const;
 
     /// @brief Clear all visited nodes from the map.
     void clear();

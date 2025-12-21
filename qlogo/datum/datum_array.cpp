@@ -63,12 +63,12 @@ QString Array::toString( ToStringFlags flags, int printDepthLimit, int printWidt
         visited = localVisited.get();
     }
 
-    if ( (printDepthLimit == 0) || (visited->contains(const_cast<Array *>(this))))
+    if ( (printDepthLimit == 0) || (visited->contains(this)))
     {
         return "{...}";
     }
 
-    visited->add(const_cast<Array *>(this));
+    visited->add(this);
     auto iter = array.constBegin();
     int printWidth = printWidthLimit;
 
@@ -95,6 +95,6 @@ QString Array::toString( ToStringFlags flags, int printDepthLimit, int printWidt
     {
         retval.append("@" + QString::number(origin));
     }
-    visited->remove(const_cast<Array *>(this));
+    visited->remove(this);
     return retval;
 }
