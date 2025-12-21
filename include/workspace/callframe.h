@@ -91,7 +91,7 @@ struct CallFrameStack
     /// @brief In "explicit slot" APPLY command, sets the list of values of the explicit
     /// slot variables ("?1", "?2", etc.)
     /// @param aList The list of values to set the explicit slot variables to.
-    void setExplicitSlotList(DatumPtr aList);
+    void setExplicitSlotList(const DatumPtr &aList);
 
     /// @brief In "explicit slot" APPLY command, retrieves the list of values of the
     /// explicit slot variables ("?1", "?2", etc.)

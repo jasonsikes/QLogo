@@ -162,7 +162,7 @@ void LogoControllerGUI::waitForMessage(message_t expectedType)
     } while (type != expectedType);
 }
 
-void LogoControllerGUI::printToConsole(QString s)
+void LogoControllerGUI::printToConsole(const QString &s)
 {
     message(C_CONSOLE_PRINT_STRING) << s;
 
@@ -247,7 +247,7 @@ QString LogoControllerGUI::getTextFontName() const
     return textFontName;
 }
 
-QString LogoControllerGUI::inputRawlineWithPrompt(QString prompt)
+QString LogoControllerGUI::inputRawlineWithPrompt(const QString &prompt)
 {
     if (dribbleStream)
         *dribbleStream << prompt;

@@ -1460,7 +1460,7 @@ EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
     else if (container->isArray())
         {
             Array *array = container->arrayValue();
-            for (auto item : array->array) {
+            for (const auto &item : array->array) {
                 if (cmpDatumToDatum(eAddr, thingAddr, reinterpret_cast<addr_t>(item.datumValue()))) {
                     return true;
                 }

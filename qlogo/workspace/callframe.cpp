@@ -89,7 +89,7 @@ bool CallFrameStack::testedState() const {
 
 
 
-void CallFrameStack::setExplicitSlotList(DatumPtr aList)
+void CallFrameStack::setExplicitSlotList(const DatumPtr &aList)
 {
     stack.last()->explicitSlotList = aList;
 }
@@ -107,7 +107,7 @@ DatumPtr CallFrameStack::explicitSlotList() const
 CallFrame::~CallFrame() {
     Q_ASSERT(frameStack->stack.first() == this);
     for (auto iter = localVars.begin(); iter != localVars.end(); ++iter) {
-        DatumPtr value = iter.value();
+        const DatumPtr &value = iter.value();
         if (value.isNothing()) {
             frameStack->eraseVar(iter.key());
         } else {

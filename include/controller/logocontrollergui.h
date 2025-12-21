@@ -97,12 +97,12 @@ class LogoControllerGUI : public LogoController
 
     /// @brief Prints a string to the console.
     /// @param s The string to print.
-    void printToConsole(QString s);
+    void printToConsole(const QString &s);
 
     /// @brief Prompts the user for input and returns the input as a string.
     /// @param prompt The prompt to display to the user, if any.
     /// @return The string entered by the user.
-    QString inputRawlineWithPrompt(QString prompt);
+    QString inputRawlineWithPrompt(const QString &prompt);
 
     /// @brief Reads a character from the input queue.
     /// @return The character read from the input queue.
