@@ -18,7 +18,6 @@
 #include "turtle.h"
 #include "controller/logocontroller.h"
 #include "flowcontrol.h"
-#include <cmath>
 
 // Some support functions for moving the turtle.
 

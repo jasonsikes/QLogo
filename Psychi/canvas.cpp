@@ -15,7 +15,6 @@
 //===----------------------------------------------------------------------===//
 
 #include "gui/canvas.h"
-#include <cmath>
 #include "sharedconstants.h"
 #include <QBuffer>
 #include <QColor>
