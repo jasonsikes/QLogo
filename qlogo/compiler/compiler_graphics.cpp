@@ -78,7 +78,7 @@ Value *Compiler::genBack(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC void moveTurtleForward(addr_t eAddr, double distance)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->forward(distance);
 }
 
@@ -121,7 +121,7 @@ Value *Compiler::genRight(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC void moveTurtleRotate(addr_t eAddr, double angle)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->rotate(angle);
 }
 
@@ -144,7 +144,7 @@ Value *Compiler::genSetxy(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC void setTurtleXY(addr_t eAddr, double x, double y)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->setxy(x, y);
 }
 
@@ -166,7 +166,7 @@ Value *Compiler::genSetx(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC void setTurtleX(addr_t eAddr, double x)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->setx(x);
 }
 
@@ -188,7 +188,7 @@ Value *Compiler::genSety(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC void setTurtleY(addr_t eAddr, double y)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->sety(y);
 }
 
@@ -210,8 +210,8 @@ Value *Compiler::genSetpos(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC void setTurtlePos(addr_t eAddr, addr_t posAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    double *pos = reinterpret_cast<double *>(posAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *pos = reinterpret_cast<double *>(posAddr);
     double x = pos[0];
     double y = pos[1];
     Config::get().mainTurtle()->setxy(x, y);
@@ -238,7 +238,7 @@ Value *Compiler::genSetheading(const DatumPtr &node, RequestReturnType returnTyp
 
 EXPORTC void setTurtleHeading(addr_t eAddr, double newHeading)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     double oldHeading = Config::get().mainTurtle()->getHeading();
 
     // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
@@ -266,7 +266,7 @@ Value *Compiler::genHome(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC void setTurtleMoveToHome(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->moveToHome();
 }
 
@@ -291,7 +291,7 @@ Value *Compiler::genArc(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC void drawTurtleArc(addr_t eAddr, double angle, double radius)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
     angle = 0 - angle;
 
@@ -320,7 +320,7 @@ Value *Compiler::genPos(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC addr_t getTurtlePos(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     double x = 0, y = 0;
     Config::get().mainTurtle()->getxy(x, y);
     ListBuilder retvalBuilder;
@@ -347,7 +347,7 @@ Value *Compiler::genHeading(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC double getTurtleHeading(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     double retval = Config::get().mainTurtle()->getHeading();
 
     // Heading should only show two decimal places.
@@ -379,10 +379,10 @@ Value *Compiler::genTowards(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC double getTurtleTowards(addr_t eAddr, addr_t posAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     double x = 0, y = 0;
     Config::get().mainTurtle()->getxy(x, y);
-    double *pos = reinterpret_cast<double *>(posAddr);
+    auto *pos = reinterpret_cast<double *>(posAddr);
     double vx = pos[0];
     double vy = pos[1];
     double retval = atan2(x - vx, vy - y) * (180 / PI);
@@ -417,7 +417,7 @@ Value *Compiler::genScrunch(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC addr_t getScrunch(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(1));
     retvalBuilder.append(DatumPtr(1));
@@ -445,7 +445,7 @@ Value *Compiler::genShowTurtle(const DatumPtr &node, RequestReturnType returnTyp
 
 EXPORTC void setTurtleVisible(addr_t eAddr, int visible)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->setIsTurtleVisible(visible);
 }
 
@@ -483,7 +483,7 @@ Value *Compiler::genClean(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC void clean(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainController()->clearCanvas();
 }
 
@@ -529,8 +529,8 @@ Value *Compiler::genWrap(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC void setTurtleMode(addr_t eAddr, int mode)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    TurtleModeEnum newMode = static_cast<TurtleModeEnum>(mode);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto newMode = static_cast<TurtleModeEnum>(mode);
     if (Config::get().mainTurtle()->getMode() != newMode)
     {
         bool isCanvasBounded = (newMode == turtleWindow);
@@ -591,7 +591,7 @@ Value *Compiler::genBounds(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC addr_t getBounds(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     double x = Config::get().mainController()->boundX();
     double y = Config::get().mainController()->boundY();
 
@@ -627,7 +627,7 @@ Value *Compiler::genSetbounds(const DatumPtr &node, RequestReturnType returnType
 
 EXPORTC void setBounds(addr_t eAddr, double x, double y)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainController()->setBounds(x, y);
 }
 
@@ -670,8 +670,8 @@ Value *Compiler::genFilled(const DatumPtr &node, RequestReturnType returnType)
 // Returns false if the color is not valid.
 EXPORTC int32_t beginFilledWithColor(addr_t eAddr, addr_t colorAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *d = reinterpret_cast<Datum *>(colorAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
     if (!Config::get().mainKernel()->colorFromDatumPtr(color, DatumPtr(d)))
         return 0;
@@ -702,8 +702,8 @@ Value *Compiler::genLabel(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC void addLabel(addr_t eAddr, addr_t textAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *d = reinterpret_cast<Datum *>(textAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *d = reinterpret_cast<Datum *>(textAddr);
     Config::get().mainController()->drawLabel(d->toString());
 }
 
@@ -724,7 +724,7 @@ Value *Compiler::genSetlabelheight(const DatumPtr &node, RequestReturnType retur
 
 EXPORTC void setLabelHeight(addr_t eAddr, double height)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainController()->setLabelFontSize(height);
 }
 
@@ -748,7 +748,7 @@ Value *Compiler::genTextscreen(const DatumPtr &node, RequestReturnType returnTyp
 
 EXPORTC void setScreenMode(addr_t eAddr, int mode)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainController()->setScreenMode(static_cast<ScreenModeEnum>(mode));
 }
 
@@ -829,7 +829,7 @@ Value *Compiler::genShownp(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC bool isTurtleVisible(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return Config::get().mainTurtle()->isTurtleVisible();
 }
 
@@ -854,7 +854,7 @@ Value *Compiler::genScreenmode(const DatumPtr &node, RequestReturnType returnTyp
 
 EXPORTC addr_t getScreenMode(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     ScreenModeEnum mode = Config::get().mainController()->getScreenMode();
     QString modeStr;
     switch (mode) {
@@ -892,7 +892,7 @@ Value *Compiler::genTurtlemode(const DatumPtr &node, RequestReturnType returnTyp
 
 EXPORTC addr_t getTurtleMode(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     TurtleModeEnum mode = Config::get().mainTurtle()->getMode();
     QString modeStr;
     switch (mode) {
@@ -932,7 +932,7 @@ Value *Compiler::genLabelsize(const DatumPtr &node, RequestReturnType returnType
 
 EXPORTC addr_t getLabelSize(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     double height = Config::get().mainController()->getLabelFontSize();
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(height));
@@ -963,7 +963,7 @@ Value *Compiler::genPendown(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC void setPenIsDown(addr_t eAddr, bool isDown)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->setPenIsDown(isDown);
 }
 
@@ -1002,7 +1002,7 @@ Value *Compiler::genPenpaint(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC void setPenMode(addr_t eAddr, int32_t mode)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->setPenMode(static_cast<PenModeEnum>(mode));
 }
 
@@ -1100,8 +1100,8 @@ Value *Compiler::genSetpencolor(const DatumPtr &node, RequestReturnType returnTy
 
 EXPORTC bool setPenColor(addr_t eAddr, addr_t colorAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *d = reinterpret_cast<Datum *>(colorAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
     if (!Config::get().mainKernel()->colorFromDatumPtr(color, DatumPtr(d)))
         return false;
@@ -1125,7 +1125,7 @@ Value *Compiler::genAllcolors(const DatumPtr &node, RequestReturnType returnType
 
 EXPORTC addr_t getAllColors(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     ListBuilder lb;
     QStringList colors = QColor::colorNames();
     for (const QString &i : colors)
@@ -1185,7 +1185,7 @@ Value *Compiler::genSetpalette(const DatumPtr &node, RequestReturnType returnTyp
 
 EXPORTC bool isColorIndexGood(addr_t eAddr, addr_t colorIndexAddr, double lowerLimit)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Word *w = reinterpret_cast<Word *>(colorIndexAddr);
     double colorIndex = w->numberValue();
 
@@ -1198,9 +1198,9 @@ EXPORTC bool isColorIndexGood(addr_t eAddr, addr_t colorIndexAddr, double lowerL
 
 EXPORTC bool setPalette(addr_t eAddr, addr_t colorIndexAddr, addr_t colorAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     int colorIndex = static_cast<int>((reinterpret_cast<Word *>(colorIndexAddr))->numberValue());
-    Datum *d = reinterpret_cast<Datum *>(colorAddr);
+    auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
     if (!Config::get().mainKernel()->colorFromDatumPtr(color, DatumPtr(d)))
         return false;
@@ -1228,7 +1228,7 @@ Value *Compiler::genSetpensize(const DatumPtr &node, RequestReturnType returnTyp
 
 EXPORTC void setPenSize(addr_t eAddr, double size)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->setPenSize(size);
 }
 
@@ -1265,8 +1265,8 @@ Value *Compiler::genSetbackground(const DatumPtr &node, RequestReturnType return
 
 EXPORTC bool setBackground(addr_t eAddr, addr_t colorAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *d = reinterpret_cast<Datum *>(colorAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
     if (!Config::get().mainKernel()->colorFromDatumPtr(color, DatumPtr(d)))
         return false;
@@ -1293,7 +1293,7 @@ Value *Compiler::genPendownp(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC bool isPenDown(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return Config::get().mainTurtle()->isPenDown();
 }
 
@@ -1313,7 +1313,7 @@ Value *Compiler::genPenmode(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC addr_t getPenMode(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     PenModeEnum pm = Config::get().mainTurtle()->getPenMode();
     QString retval;
     switch (pm)
@@ -1353,7 +1353,7 @@ Value *Compiler::genPencolor(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC addr_t getPenColor(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     const QColor &color = Config::get().mainTurtle()->getPenColor();
     List *retval = listFromColor(color);
     e->watch(retval);
@@ -1394,7 +1394,7 @@ Value *Compiler::genPalette(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC addr_t getPaletteColor(addr_t eAddr, addr_t colorIndexAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     int colorIndex = static_cast<int>((reinterpret_cast<Word *>(colorIndexAddr))->numberValue());
     const QColor &color = Config::get().mainKernel()->palette[colorIndex];
     List *retval = listFromColor(color);
@@ -1418,7 +1418,7 @@ Value *Compiler::genPensize(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC double getPenSize(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return Config::get().mainTurtle()->getPenSize();
 }
 
@@ -1442,7 +1442,7 @@ Value *Compiler::genBackground(const DatumPtr &node, RequestReturnType returnTyp
 
 EXPORTC addr_t getBackground(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     const QColor &color = Config::get().mainController()->getCanvasBackgroundColor();
     List *retval = listFromColor(color);
     e->watch(retval);
@@ -1470,12 +1470,12 @@ Value *Compiler::genSavepict(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC addr_t savePict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
     QString filepath = Config::get().mainKernel()->filepathForFilename(DatumPtr(filename));
     QImage image = Config::get().mainController()->getCanvasImage();
     bool isSuccessful = image.save(filepath);
-    Datum *retval = reinterpret_cast<Datum *>(nodeAddr);
+    auto *retval = reinterpret_cast<Datum *>(nodeAddr);
     if (!isSuccessful)
     {
         retval = FCError::fileSystem();
@@ -1503,12 +1503,12 @@ Value *Compiler::genSvgpict(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC addr_t saveSvgpict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
     QString filepath = Config::get().mainKernel()->filepathForFilename(DatumPtr(filename));
     QByteArray svgImage = Config::get().mainController()->getSvgImage();
 
-    Datum *retval = reinterpret_cast<Datum *>(nodeAddr);
+    auto *retval = reinterpret_cast<Datum *>(nodeAddr);
     QFile file(filepath);
     bool isSuccessful = file.open(QIODevice::WriteOnly);
     if (!isSuccessful)
@@ -1545,9 +1545,9 @@ Value *Compiler::genLoadpict(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *dFilename = reinterpret_cast<Datum *>(filenameAddr);
-    Datum *retval = reinterpret_cast<Datum *>(nodeAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *dFilename = reinterpret_cast<Datum *>(filenameAddr);
+    auto *retval = reinterpret_cast<Datum *>(nodeAddr);
     if (dFilename->isa == Datum::typeWord) {
         QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
         QString filepath = Config::get().mainKernel()->filepathForFilename(DatumPtr(filename));
@@ -1593,7 +1593,7 @@ Value *Compiler::genMousepos(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC addr_t getMousePos(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QVector2D position = Config::get().mainController()->mousePosition();
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(position.x()));
@@ -1620,7 +1620,7 @@ Value *Compiler::genClickpos(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC addr_t getClickPos(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QVector2D position = Config::get().mainController()->lastMouseclickPosition();
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(position.x()));
@@ -1650,7 +1650,7 @@ Value *Compiler::genButtonp(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC bool isMouseButtonDown(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return Config::get().mainController()->getIsMouseButtonDown();
 }
 
@@ -1675,7 +1675,7 @@ Value *Compiler::genButton(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC double getMouseButton(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return static_cast<double>(Config::get().mainController()->getAndResetButtonID());
 }
 
