@@ -211,8 +211,8 @@ Datum *CallFrame::applyContinuation(const DatumPtr &newNode, QList<DatumPtr> par
     sourceNode = newNode;
     std::vector<Datum *> newParamAry;
     newParamAry.reserve(paramAry.size());
-    for (int i = 0; i < paramAry.size(); i++) {
-        newParamAry.push_back(paramAry[i].datumValue());
+    for (auto &param : paramAry) {
+        newParamAry.push_back(param.datumValue());
     }
 
     return applyProcedureParams(newParamAry.data(), paramAry.size());
@@ -225,7 +225,7 @@ Datum *CallFrame::applyGoto(FCGoto* node)
     DatumPtr runningSourceListSnapshot;
 
     // Have we seen this tag already?
-    Procedure *proc = static_cast<Procedure *>(procedure);
+    auto *proc = static_cast<Procedure *>(procedure);
     auto blockIdIterator = proc->tagToBlockId.find(tag.toString(Datum::ToStringFlags_Key));
     if (blockIdIterator != proc->tagToBlockId.end()) {
         goto foundTag;
@@ -296,7 +296,7 @@ continueBody:
                     return retval;
                 case Datum::typeContinuation:
                 {
-                    FCContinuation *fc = static_cast<FCContinuation *>(retval);
+                    auto *fc = static_cast<FCContinuation *>(retval);
                     Datum* continuationStatus = applyContinuation(fc->procedure(), fc->params());
                     if (continuationStatus != nullptr) {
                         return continuationStatus;
