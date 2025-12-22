@@ -102,7 +102,7 @@ QString Compiler::getTagNameFromNode(const DatumPtr &node) const
             return tagName;
         }
     }
-    return QString();
+    return {};
 }
 
 
@@ -165,7 +165,7 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     Scaffold compilerScaffolding(reinterpret_cast<void *>(key));
     scaff = &compilerScaffolding;
 
-    CompiledText *compiledText = new CompiledText();
+    auto *compiledText = new CompiledText();
     compiledTextTable[key] = std::shared_ptr<CompiledText>(compiledText);
 
     // Generate the prototype and add it to the module.
