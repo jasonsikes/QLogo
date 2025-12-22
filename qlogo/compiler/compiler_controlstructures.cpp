@@ -442,7 +442,7 @@ Value *Compiler::genCatch(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC addr_t beginCatch(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Word* erractWord = reinterpret_cast<Word *>(Config::get().mainKernel()->specialVar(SpecialNames::ERRACT));
     Datum* erractValue = Config::get().mainKernel()->callStack.datumForName(erractWord->toString(Datum::ToStringFlags_Key)).datumValue();
 
@@ -456,10 +456,10 @@ EXPORTC addr_t beginCatch(addr_t eAddr)
 
 EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t resultAddr, addr_t tagAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Word* erractWord = reinterpret_cast<Word *>(Config::get().mainKernel()->specialVar(SpecialNames::ERRACT));
-    Datum* erractValue = reinterpret_cast<Datum *>(errActAddr);
-    Datum* result = reinterpret_cast<Datum *>(resultAddr);
+    auto *erractValue = reinterpret_cast<Datum *>(errActAddr);
+    auto *result = reinterpret_cast<Datum *>(resultAddr);
     Word *tag = reinterpret_cast<Word *>(tagAddr);
 
     // Restore the erract value.
@@ -470,7 +470,7 @@ EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t
     }
 
     if (result->isa == Datum::typeError) {
-        FCError* err = reinterpret_cast<FCError *>(result);
+        auto *err = reinterpret_cast<FCError *>(result);
         QString tagStr = tag->toString(Datum::ToStringFlags_Key);
 
         if ((tagStr == QObject::tr("ERROR")) 
@@ -482,7 +482,7 @@ EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t
         } else if ((err->code == ErrCode::ERR_NO_CATCH)
         && (err->tag().toString(Datum::ToStringFlags_Key) == tagStr)) {
             e->watch(err);
-            addr_t retval = reinterpret_cast<addr_t>(err->output().datumValue());
+            auto retval = reinterpret_cast<addr_t>(err->output().datumValue());
             Config::get().mainKernel()->currentError = nothing;
             return retval;
         }
@@ -557,12 +557,12 @@ Value *Compiler::genError(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC addr_t getCurrentError(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr errPtr = Config::get().mainKernel()->currentError;
 
     ListBuilder retvalBuilder;
     if ( ! errPtr.isNothing()) {
-        FCError *err = reinterpret_cast<FCError *>(errPtr.datumValue());
+        auto *err = reinterpret_cast<FCError *>(errPtr.datumValue());
         retvalBuilder.append(DatumPtr(err->code));
         retvalBuilder.append(err->message());
         retvalBuilder.append(err->procedure());
@@ -597,7 +597,7 @@ Value *Compiler::genPause(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC addr_t callPause(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Datum *retval = Config::get().mainKernel()->pause().datumValue();
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
@@ -633,8 +633,8 @@ Value *Compiler::genContinue(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC addr_t generateContinue(addr_t eAddr, addr_t outputAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *output = reinterpret_cast<Datum *>(outputAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *output = reinterpret_cast<Datum *>(outputAddr);
 
     FCError *err = FCError::custom(DatumPtr(QObject::tr("PAUSE")), nothing, DatumPtr(output));
     e->watch(err);
@@ -665,8 +665,8 @@ Value *Compiler::genRunresult(const DatumPtr &node, RequestReturnType returnType
 
 EXPORTC addr_t processRunresult(addr_t eAddr, addr_t resultAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *result = reinterpret_cast<Datum *>(resultAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *result = reinterpret_cast<Datum *>(resultAddr);
     Datum *retval;
 
     if ((result->isa & Datum::typeDataMask) != 0) {
@@ -769,7 +769,7 @@ Value *Compiler::genTest(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC void saveTestResult(addr_t eAddr, bool tf)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainKernel()->callStack.setTest(tf);
 }
 
@@ -846,12 +846,12 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, RequestReturnType ret
 
 EXPORTC bool getIsTested(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return Config::get().mainKernel()->callStack.isTested();
 }
 
 EXPORTC bool getTestResult(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return Config::get().mainKernel()->callStack.testedState();
 }
