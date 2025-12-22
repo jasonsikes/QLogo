@@ -66,7 +66,7 @@ void Procedures::defineProcedure(const DatumPtr &cmd, const DatumPtr &procnameP,
 }
 
 DatumPtr Procedures::createProcedure(const DatumPtr &cmd, const DatumPtr &text, const DatumPtr &sourceText) {
-    Procedure *body = new Procedure();
+    auto *body = new Procedure();
     DatumPtr bodyP(body);
 
     lastProcedureCreatedTimestamp = QDateTime::currentMSecsSinceEpoch();

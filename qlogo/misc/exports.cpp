@@ -101,7 +101,7 @@ EXPORTC addr_t getDatumForVarname(addr_t wordAddr)
 EXPORTC addr_t stdWriteDatum(addr_t datumAddr, bool useShow)
 {
     Datum::ToStringFlags writeFlags = useShow ? Datum::ToStringFlags_Show : Datum::ToStringFlags_None;
-    Datum *d = reinterpret_cast<Datum *>(datumAddr);
+    auto *d = reinterpret_cast<Datum *>(datumAddr);
     QString output = d->toString(writeFlags) + "\n";
     Config::get().mainKernel()->stdPrint(output);
     return nullptr;
@@ -116,7 +116,7 @@ EXPORTC addr_t stdWriteDatumAry(addr_t datumAddr, uint32_t count, bool useShow, 
 {
     Datum::ToStringFlags writeFlags = useShow ? Datum::ToStringFlags_Show : Datum::ToStringFlags_None;
     int countOfWords = (int)count;
-    Datum **datumAry = reinterpret_cast<Datum **>(datumAddr);
+    auto **datumAry = reinterpret_cast<Datum **>(datumAddr);
     QString output = "";
     for (int i = 0; i < countOfWords; ++i)
     {
@@ -137,7 +137,7 @@ EXPORTC addr_t stdWriteDatumAry(addr_t datumAddr, uint32_t count, bool useShow, 
 /// @return the given value as a QLogo object
 EXPORTC addr_t getWordForDouble(addr_t eAddr, double val)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Word *w = new Word(val);
     e->watch(w);
 
@@ -150,7 +150,7 @@ EXPORTC addr_t getWordForDouble(addr_t eAddr, double val)
 /// @return the given value as a QLogo object
 EXPORTC addr_t getWordForBool(addr_t eAddr, bool val)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Word *w = new Word(val ? QObject::tr("true") : QObject::tr("false"));
     e->watch(w);
 
@@ -175,7 +175,7 @@ EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr)
 /// @return the result of the list execution
 EXPORTC addr_t runList(addr_t eAddr, addr_t listAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     List *list = reinterpret_cast<List *>(listAddr);
     Datum *result = e->subExec(list);
     e->watch(result);
@@ -191,9 +191,9 @@ EXPORTC addr_t runList(addr_t eAddr, addr_t listAddr)
 /// @return the result of the procedure execution.
 EXPORTC addr_t runProcedure(addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAddr, uint32_t paramCount)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    ASTNode *node = reinterpret_cast<ASTNode *>(astnodeAddr);
-    Datum **paramAry = reinterpret_cast<Datum **>(paramAryAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto **paramAry = reinterpret_cast<Datum **>(paramAryAddr);
     Datum *result = e->procedureExec(node, paramAry, paramCount);
     e->watch(result);
 
@@ -205,7 +205,7 @@ EXPORTC addr_t runProcedure(addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAdd
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorSystem(addr_t eAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     FCError *err = FCError::custom(DatumPtr(QObject::tr("SYSTEM")));
     e->watch(err);
     return reinterpret_cast<addr_t >(err);
@@ -218,9 +218,9 @@ EXPORTC addr_t getErrorSystem(addr_t eAddr)
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorNoLike(addr_t eAddr, addr_t whoAddr, addr_t whatAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *who = reinterpret_cast<Datum *>(whoAddr);
-    Datum *what = reinterpret_cast<Datum *>(whatAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *who = reinterpret_cast<Datum *>(whoAddr);
+    auto *what = reinterpret_cast<Datum *>(whatAddr);
     FCError *err = FCError::doesntLike(who,what);
     e->watch(err);
     return reinterpret_cast<addr_t >(err);
@@ -232,8 +232,8 @@ EXPORTC addr_t getErrorNoLike(addr_t eAddr, addr_t whoAddr, addr_t whatAddr)
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorNoSay(addr_t eAddr, addr_t whatAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *what = reinterpret_cast<Datum *>(whatAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *what = reinterpret_cast<Datum *>(whatAddr);
     FCError *err = FCError::dontSay(DatumPtr(what->toString(Datum::ToStringFlags_Show)));
     e->watch(err);
     return reinterpret_cast<addr_t >(err);
@@ -245,8 +245,8 @@ EXPORTC addr_t getErrorNoSay(addr_t eAddr, addr_t whatAddr)
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorNoTest(addr_t eAddr, addr_t whoAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *who = reinterpret_cast<Datum *>(whoAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *who = reinterpret_cast<Datum *>(whoAddr);
     FCError *err = FCError::noTest(DatumPtr(who->toString(Datum::ToStringFlags_Show)));
     e->watch(err);
     return reinterpret_cast<addr_t >(err);
@@ -259,9 +259,9 @@ EXPORTC addr_t getErrorNoTest(addr_t eAddr, addr_t whoAddr)
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorNoOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *x = reinterpret_cast<Datum *>(xAddr);
-    Datum *y = reinterpret_cast<Datum *>(yAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *x = reinterpret_cast<Datum *>(xAddr);
+    auto *y = reinterpret_cast<Datum *>(yAddr);
     // If the thing that didn't output is an ASTNode, use the name of the ASTNode.
     if (x->isa == Datum::typeASTNode)
     {
@@ -278,8 +278,8 @@ EXPORTC addr_t getErrorNoOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr)
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorNotEnoughInputs(addr_t eAddr, addr_t xAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *x = reinterpret_cast<Datum *>(xAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *x = reinterpret_cast<Datum *>(xAddr);
     FCError *err = FCError::notEnoughInputs(DatumPtr(x->toString(Datum::ToStringFlags_Show)));
     e->watch(err);
     return reinterpret_cast<addr_t >(err);
@@ -291,8 +291,8 @@ EXPORTC addr_t getErrorNotEnoughInputs(addr_t eAddr, addr_t xAddr)
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorNoValue(addr_t eAddr, addr_t whatAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *what = reinterpret_cast<Datum *>(whatAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *what = reinterpret_cast<Datum *>(whatAddr);
     FCError *err = FCError::noValue(DatumPtr(what->toString(Datum::ToStringFlags_Show)));
     e->watch(err);
     return reinterpret_cast<addr_t >(err);
@@ -305,9 +305,9 @@ EXPORTC addr_t getErrorNoValue(addr_t eAddr, addr_t whatAddr)
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorCustom(addr_t eAddr, addr_t tagAddr, addr_t outputAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *tag = reinterpret_cast<Datum *>(tagAddr);
-    Datum *output = reinterpret_cast<Datum *>(outputAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *tag = reinterpret_cast<Datum *>(tagAddr);
+    auto *output = reinterpret_cast<Datum *>(outputAddr);
     FCError *err = FCError::custom(DatumPtr(tag), nothing, DatumPtr(output));
     e->watch(err);
     return reinterpret_cast<addr_t >(err);
@@ -320,7 +320,7 @@ EXPORTC addr_t getErrorCustom(addr_t eAddr, addr_t tagAddr, addr_t outputAddr)
 /// @return a pointer to the RETURN control object that was generated.
 EXPORTC addr_t getCtrlReturn(addr_t eAddr, addr_t astNodeAddr, addr_t retvalAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr retval = DatumPtr(reinterpret_cast<Datum *>(retvalAddr));
     FCReturn *control = new FCReturn(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), retval);
     e->watch(control);
@@ -335,8 +335,8 @@ EXPORTC addr_t getCtrlReturn(addr_t eAddr, addr_t astNodeAddr, addr_t retvalAddr
 /// @return a pointer to the CONTINUATION control object that was generated.
 EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t paramAryAddr, uint32_t paramCount)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    ASTNode *node = reinterpret_cast<ASTNode *>(astNodeAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astNodeAddr);
     DatumPtr nodePtr = DatumPtr(node);
 
     QList<DatumPtr> paramAry;
@@ -344,7 +344,7 @@ EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t para
         DatumPtr param = DatumPtr(reinterpret_cast<Datum *>(paramAryAddr[i]));
         paramAry.append(param);
     }
-    FCContinuation *control = new FCContinuation(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), nodePtr, paramAry);
+    auto *control = new FCContinuation(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), nodePtr, paramAry);
     e->watch(control);
     return reinterpret_cast<addr_t >(control);
 }
@@ -356,10 +356,10 @@ EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t para
 /// @return a pointer to the GOTO control object that was generated.
 EXPORTC addr_t getCtrlGoto(addr_t eAddr, addr_t astNodeAddr, addr_t tagAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr tag = DatumPtr(reinterpret_cast<Datum *>(tagAddr));
 
-    FCGoto *control = new FCGoto(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), tag);
+    auto *control = new FCGoto(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), tag);
     e->watch(control);
     return reinterpret_cast<addr_t >(control);
 }
@@ -380,9 +380,9 @@ EXPORTC int32_t getCountOfList(addr_t listAddr)
 /// @return 0 if the list is not a list of doubles, 1 if it is.
 EXPORTC int32_t getNumberAryFromList(addr_t eAddr, addr_t listAddr, addr_t destAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr list = DatumPtr(reinterpret_cast<Datum *>(listAddr));
-    double *dest = reinterpret_cast<double *>(destAddr);
+    auto *dest = reinterpret_cast<double *>(destAddr);
     // Presumably, getCountOfList() has already been called so the destination size is correct.
     while ((list.isList()) && ! list.listValue()->isEmpty())
     {

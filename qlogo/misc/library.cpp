@@ -54,7 +54,7 @@ QString findDBPath(const QString &defaultDBName)
             return c;
     }
 
-    return QString();
+    return {};
 }
 
 /// @brief Initialize a database connection.
