@@ -29,8 +29,8 @@
 /// @return ASTNode on success, else Err.
 EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
-    ASTNode *node = reinterpret_cast<ASTNode*>(nodeAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode*>(nodeAddr);
     CallFrame *currentFrame = Config::get().mainKernel()->callStack.localFrame();
     DatumPtr currentProc = currentFrame->sourceNode;
     if (currentProc.isASTNode())
