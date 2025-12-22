@@ -76,7 +76,7 @@ EXPORTC addr_t setRandom()
 /// @return A Word(string) with formatting applied.
 EXPORTC addr_t getFormForNumber(addr_t eAddr, double num, uint32_t width, int32_t precision)
 {
-    Evaluator *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString retval = QString("%1").arg(num, width, 'f', precision);
     Word *w = new Word(retval);
     e->watch(w);
@@ -311,9 +311,9 @@ Value *Compiler::genBitand(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnReal);
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
 
-    for (int i = 0; i < children.size(); ++i)
+    for (auto & child : children)
     {
-        children[i] = generateInt32FromDouble(node.astnodeValue(), children[i], true);
+        child = generateInt32FromDouble(node.astnodeValue(), child, true);
     }
 
     if (children.size() == 0)
@@ -323,9 +323,9 @@ Value *Compiler::genBitand(const DatumPtr &node, RequestReturnType returnType)
 
     Value *retval = children[0];
 
-    for (int i = 1; i < children.size(); ++i)
+    for (auto & child : children)
     {
-        retval = scaff->builder.CreateAnd(retval, children[i], "BitAND");
+        retval = scaff->builder.CreateAnd(retval, child, "BitAND");
     }
     return scaff->builder.CreateSIToFP(retval, TyDouble, "IntToFP");
 }
@@ -343,9 +343,9 @@ Value *Compiler::genBitor(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnReal);
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
 
-    for (int i = 0; i < children.size(); ++i)
+    for (auto & child : children)
     {
-        children[i] = generateInt32FromDouble(node.astnodeValue(), children[i], true);
+        child = generateInt32FromDouble(node.astnodeValue(), child, true);
     }
 
     if (children.size() == 0)
@@ -355,9 +355,9 @@ Value *Compiler::genBitor(const DatumPtr &node, RequestReturnType returnType)
 
     Value *retval = children[0];
 
-    for (int i = 1; i < children.size(); ++i)
+    for (auto & child : children)
     {
-        retval = scaff->builder.CreateOr(retval, children[i], "BitOR");
+        retval = scaff->builder.CreateOr(retval, child, "BitOR");
     }
     return scaff->builder.CreateSIToFP(retval, TyDouble, "IntToFP");
 }
@@ -376,9 +376,9 @@ Value *Compiler::genBitxor(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnReal);
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
 
-    for (int i = 0; i < children.size(); ++i)
+    for (auto & child : children)
     {
-        children[i] = generateInt32FromDouble(node.astnodeValue(), children[i], true);
+        child = generateInt32FromDouble(node.astnodeValue(), child, true);
     }
 
     if (children.size() == 0)
@@ -961,9 +961,9 @@ Value *Compiler::genRandom(const DatumPtr &node, RequestReturnType returnType)
         children[0] = generateNotZeroFromDouble(node.astnodeValue(), children[0]);
     }
 
-    for (int i = 0; i < children.size(); ++i)
+    for (auto & child : children)
     {
-        iChildren.push_back(generateInt32FromDouble(node.astnodeValue(), children[i], true));
+        iChildren.push_back(generateInt32FromDouble(node.astnodeValue(), child, true));
     }
 
     if (children.size() == 1)
@@ -1131,9 +1131,9 @@ Value *Compiler::generateAndOr(const DatumPtr &node, RequestReturnType returnTyp
     BasicBlock *exitNoContBB = BasicBlock::Create(*scaff->theContext, "exitNoCont");
     BasicBlock *exitMayContBB = BasicBlock::Create(*scaff->theContext, "exitMayCont");
     BasicBlock *exitBB = BasicBlock::Create(*scaff->theContext, "exit");
-    for (int i = 0; i < children.size(); ++i)
+    for (auto & child : children)
     {
-        Value *c = children[i];
+        Value *c = child;
 
         // If input is a Datum type (can be word or list)
         if (c->getType()->isPointerTy())
