@@ -35,7 +35,7 @@ class DatumPtr
     /// Creates a pointer to the specified Datum object and increases its retain count.
     /// The referred object will be destroyed when the last object referring to it
     /// is destroyed.
-    DatumPtr(Datum *);
+    DatumPtr(Datum *) noexcept;
 
     /// @brief Destructor.
     ///

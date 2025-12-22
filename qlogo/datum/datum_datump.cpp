@@ -31,7 +31,7 @@ DatumPtr::DatumPtr() : d(Datum::getInstance())
 {
 }
 
-DatumPtr::DatumPtr(Datum *other)
+DatumPtr::DatumPtr(Datum *other) noexcept
 {
     d = other;
     if (isNotPersistent(d))
