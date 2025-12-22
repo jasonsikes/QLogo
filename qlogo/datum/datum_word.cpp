@@ -54,7 +54,7 @@ QChar rawToChar(const QChar &src)
     ushort v = src.unicode();
     if (v >= 32)
         return src;
-    for (const ushort *i = rawToAsciiMap; *i <= v; i += 2)
+    for (const ushort *i = &rawToAsciiMap[0]; *i <= v; i += 2)
     {
         if (*i == v)
         {
@@ -114,7 +114,7 @@ QChar charToRaw(const QChar &src)
                                     9,  4,   // \t (tab)
                                     0,  0};
     ushort v = src.unicode();
-    for (const ushort *i = asciiToRawMap; *i >= v; i += 2)
+    for (const ushort *i = &asciiToRawMap[0]; *i >= v; i += 2)
     {
         if (*i == v)
         {
