@@ -18,7 +18,7 @@
 #include "workspace/propertylists.h"
 #include "datum_types.h"
 
-PropertyLists::PropertyLists() {}
+PropertyLists::PropertyLists() = default;
 
 void PropertyLists::addProperty(const QString &plistname,
                                 const QString &propname, const DatumPtr &value) {
