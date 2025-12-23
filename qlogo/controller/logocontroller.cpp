@@ -136,7 +136,7 @@ DatumPtr LogoController::readchar()
     QChar c;
     outStream->flush();
     if (inStream->atEnd())
-        return nothing;
+        return nothing();
     *inStream >> c;
     QString retval = c;
     DatumPtr retvalP = DatumPtr(retval);

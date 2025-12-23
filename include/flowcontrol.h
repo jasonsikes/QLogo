@@ -245,7 +245,7 @@ public:
     /// @param aMessage The error message.
     /// @param aTag The tag of the error. Can be used with `CATCH tag` and/or `SYSTEM/TOPLEVEL/PAUSE` to handle the error.
     /// @note The other elements are fetched from the procedure.
-    FCError(ErrCode aCode, DatumPtr aMessage, DatumPtr aTag = nothing, DatumPtr aOutput = nothing)
+    FCError(ErrCode aCode, DatumPtr aMessage, DatumPtr aTag = nothing(), DatumPtr aOutput = nothing())
         : code(aCode)
     {
         isa = Datum::typeError;
@@ -261,7 +261,7 @@ public:
     /// @param aMessage The error message.
     /// @param aTag The tag of the error. Can be used with `CATCH tag` and/or `SYSTEM/TOPLEVEL/PAUSE` to handle the error.
     /// @note The other elements are fetched from the procedure.
-    FCError(ErrCode aCode, QString aMessage, DatumPtr aTag = nothing, DatumPtr aOutput = nothing)
+    FCError(ErrCode aCode, QString aMessage, DatumPtr aTag = nothing(), DatumPtr aOutput = nothing())
         : code(aCode)
     {
         isa = Datum::typeError;
@@ -276,7 +276,7 @@ public:
     /// @param tag The tag of the error. Can be used with `CATCH tag` and/or `SYSTEM/TOPLEVEL/PAUSE` to handle the error.
     /// @param message An optional message to accompany the error.
     /// @param output An optional output to accompany the error.
-    static FCError* custom(const DatumPtr &tag, DatumPtr message = nothing, const DatumPtr &output = nothing);
+    static FCError* custom(const DatumPtr &tag, DatumPtr message = nothing(), const DatumPtr &output = nothing());
 
     /// @brief Create an error object for a turtle out of bounds error.
     static FCError* turtleOutOfBounds();

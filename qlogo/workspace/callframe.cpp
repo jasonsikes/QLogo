@@ -37,7 +37,7 @@ DatumPtr CallFrameStack::datumForName(const QString &name) const {
     if (result != variables.end()) {
         return *result;
     }
-    return nothing;
+    return nothing();
 }
 
 
@@ -120,7 +120,7 @@ CallFrame::~CallFrame() {
 void CallFrame::setVarAsLocal(const QString &name) {
     DatumPtr originalValue = frameStack->datumForName(name);
     localVars.insert(name, originalValue);
-    frameStack->setDatumForName(nothing, name);
+    frameStack->setDatumForName(nothing(), name);
 }
 
 

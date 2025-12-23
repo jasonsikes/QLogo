@@ -449,7 +449,7 @@ EXPORTC addr_t beginCatch(addr_t eAddr)
     // Save the erract value.
     if (erractValue->isa != Datum::typeNothing) {
         erractValue->retainCount++;
-        Config::get().mainKernel()->callStack.setDatumForName(nothing, erractWord->toString(Datum::ToStringFlags_Key));
+        Config::get().mainKernel()->callStack.setDatumForName(nothing(), erractWord->toString(Datum::ToStringFlags_Key));
     }
     return reinterpret_cast<addr_t>(erractValue);
 }
@@ -483,7 +483,7 @@ EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t
         && (err->tag().toString(Datum::ToStringFlags_Key) == tagStr)) {
             e->watch(err);
             auto retval = reinterpret_cast<addr_t>(err->output().datumValue());
-            Config::get().mainKernel()->currentError = nothing;
+            Config::get().mainKernel()->currentError = nothing();
             return retval;
         }
         return resultAddr;
@@ -636,7 +636,7 @@ EXPORTC addr_t generateContinue(addr_t eAddr, addr_t outputAddr)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *output = reinterpret_cast<Datum *>(outputAddr);
 
-    FCError *err = FCError::custom(DatumPtr(QObject::tr("PAUSE")), nothing, DatumPtr(output));
+    FCError *err = FCError::custom(DatumPtr(QObject::tr("PAUSE")), nothing(), DatumPtr(output));
     e->watch(err);
     return reinterpret_cast<addr_t>(err);
 }

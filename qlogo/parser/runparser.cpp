@@ -96,7 +96,7 @@ void Runparser::runparseMinus()
 DatumPtr Runparser::runparseNumber()
 {
     if (runparseCIter == runparseCEnd)
-        return nothing;
+        return nothing();
     QString::iterator iter = runparseCIter;
     QString result = "";
     bool hasDigit = false;
@@ -108,7 +108,7 @@ DatumPtr Runparser::runparseNumber()
     }
 
     if (iter == runparseCEnd)
-        return nothing;
+        return nothing();
     c = *iter;
     while (c.isDigit())
     {
@@ -138,14 +138,14 @@ DatumPtr Runparser::runparseNumber()
     }
 
     if (!hasDigit)
-        return nothing;
+        return nothing();
     hasDigit = false;
     if ((c == 'e') || (c == 'E'))
     {
         result += c;
         ++iter;
         if (iter == runparseCEnd)
-            return nothing;
+            return nothing();
         c = *iter;
     }
     else
@@ -158,7 +158,7 @@ DatumPtr Runparser::runparseNumber()
         result += c;
         ++iter;
         if (iter == runparseCEnd)
-            return nothing;
+            return nothing();
         c = *iter;
     }
     while (c.isDigit())
@@ -172,13 +172,13 @@ DatumPtr Runparser::runparseNumber()
     }
 
     if (!hasDigit)
-        return nothing;
+        return nothing();
 
     // at this point we have successfully parsed a complete number. However, if
     // there are more characters that aren't special characters, then we don't
     // have a complete number.
     if (!specialChars().contains(c))
-        return nothing;
+        return nothing();
 
 numberSuccessful:
     double value = result.toDouble();

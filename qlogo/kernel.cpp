@@ -108,7 +108,7 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
         try {
             DatumPtr line = systemReadStream->readlistWithPrompt(localPrompt, true);
             if (line.isNothing()) // EOF
-                return nothing;
+                return nothing();
             result = runList(line);
         } catch (FCError *e) {
             sysPrint(e->toString());
@@ -321,7 +321,7 @@ DatumPtr Kernel::pause()
     if (isPausing)
     {
         sysPrint(QObject::tr("Already Pausing"));
-        return nothing;
+        return nothing();
     }
 
     isPausing = true;
@@ -331,7 +331,7 @@ DatumPtr Kernel::pause()
         sourceNodeName = sourceNode.astnodeValue()->nodeName.toString();
     }
 
-    CallFrame frame(&callStack, nothing);
+    CallFrame frame(&callStack, nothing());
 
     sysPrint(QObject::tr("Pausing...\n"));
 

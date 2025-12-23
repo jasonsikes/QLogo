@@ -127,8 +127,8 @@ DatumPtr List::itemAtIndex(int anIndex) const
 void List::clear()
 {
     Q_ASSERT(this != EmptyList::instance());
-    head = nothing;
-    tail = nothing;
+    head = nothing();
+    tail = nothing();
     Parser::destroyAstForList(this);
     astParseTimeStamp = 0;
 }
@@ -165,7 +165,7 @@ ListIterator List::newIterator() const
 EmptyList *EmptyList::instance_ = nullptr;
 
 EmptyList::EmptyList()
-    : List(nothing, nullptr)
+    : List(nothing(), nullptr)
 {
     isa = Datum::typeEmptyList;
 }

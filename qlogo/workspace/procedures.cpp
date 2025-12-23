@@ -354,7 +354,7 @@ DatumPtr Procedures::procedureForName(const QString &aName) const
 {
     if ( ! procedures.contains(aName)) {
         if ( ! stdLib.allProcedureNames().contains(aName)) {
-            return nothing;
+            return nothing();
         }
         // TODO: Procedure is in our library, add it to our procedures table.
     }
@@ -414,7 +414,7 @@ DatumPtr Procedures::astnodeFromCommand(const DatumPtr &cmdP, int &minParams,
     } else { // This is not a command.
         throw FCError::noHow(cmdP);
     }
-    return nothing;
+    return nothing();
 }
 
 
@@ -495,7 +495,7 @@ DatumPtr Procedures::arity(const DatumPtr &nameP) const {
         maxParams = command.countOfMaxParams;
     } else {
         throw FCError::noHow(nameP);
-        return nothing;
+        return nothing();
     }
 
     ListBuilder retvalBuilder;

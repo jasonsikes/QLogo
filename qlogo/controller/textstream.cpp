@@ -58,7 +58,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
         lineP = readwordWithPrompt(prompt, true);
 
         if (lineP.isNothing())
-            return nothing;
+            return nothing();
 
         listSourceWord = lineP.wordValue()->toString(Datum::ToStringFlags_Raw);
         listSourceWordIter = listSourceWord.begin();
@@ -223,13 +223,13 @@ DatumPtr TextStream::readrawlineWithPrompt(const QString &prompt, bool shouldSav
     {
         retval = Config::get().mainController()->inputRawlineWithPrompt(prompt);
         if (retval.isNull())
-            return nothing;
+            return nothing();
     }
     else
     {
         if (stream->atEnd())
         {
-            return nothing;
+            return nothing();
         }
         retval = stream->readLine();
         if (stream->status() != QTextStream::Ok)
@@ -255,7 +255,7 @@ DatumPtr TextStream::readwordWithPrompt(const QString &prompt, bool shouldSavePr
 
     DatumPtr line = readrawlineWithPrompt(prompt, shouldSavePreviousLines);
     if (line.isNothing())
-        return nothing;
+        return nothing();
 
     forever
     {

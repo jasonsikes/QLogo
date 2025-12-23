@@ -215,7 +215,7 @@ struct CallFrame
     /// @param aFrameStack A pointer to the call frame stack.
     /// @param aSourceNode The ASTNode source of this running procedure. 'nothing'
     /// is reserved for the global frame or PAUSE.
-    CallFrame(CallFrameStack *aFrameStack, DatumPtr aSourceNode = nothing)
+    CallFrame(CallFrameStack *aFrameStack, DatumPtr aSourceNode = nothing())
         : frameStack(aFrameStack), sourceNode(aSourceNode)
     {
         frameStack->stack.push_front(this);

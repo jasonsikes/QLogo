@@ -308,7 +308,7 @@ EXPORTC addr_t getErrorCustom(addr_t eAddr, addr_t tagAddr, addr_t outputAddr)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *tag = reinterpret_cast<Datum *>(tagAddr);
     auto *output = reinterpret_cast<Datum *>(outputAddr);
-    FCError *err = FCError::custom(DatumPtr(tag), nothing, DatumPtr(output));
+    FCError *err = FCError::custom(DatumPtr(tag), nothing(), DatumPtr(output));
     e->watch(err);
     return reinterpret_cast<addr_t >(err);
 }

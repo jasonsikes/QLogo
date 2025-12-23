@@ -339,7 +339,7 @@ DatumPtr Parser::parseminusexp()
 DatumPtr Parser::parseTermexp()
 {
     if (currentToken.isNothing())
-        return nothing;
+        return nothing();
 
     if (currentToken.isList())
     {
@@ -447,7 +447,7 @@ DatumPtr Parser::parseTermexp()
 DatumPtr Parser::parseCommand(bool isVararg)
 {
     if (currentToken.isNothing())
-        return nothing;
+        return nothing();
     DatumPtr cmdP = currentToken;
     QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
 
@@ -530,6 +530,6 @@ void Parser::advanceToken()
     }
     else
     {
-        currentToken = nothing;
+        currentToken = nothing();
     }
 }

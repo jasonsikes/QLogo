@@ -229,7 +229,9 @@ class DatumPtr
 Q_DECLARE_TYPEINFO(DatumPtr, Q_RELOCATABLE_TYPE);
 
 /// @brief A pointer to the singleton Datum instance.
-extern DatumPtr nothing;
+/// @details Returns a reference to a function-local static to avoid exceptions
+/// during global static initialization.
+const DatumPtr& nothing();
 
 /// @brief A pointer to an empty list.
 /// @details Returns a reference to a function-local static to avoid exceptions

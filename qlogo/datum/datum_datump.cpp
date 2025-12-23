@@ -172,4 +172,9 @@ QString DatumPtr::toString( Datum::ToStringFlags flags, int printDepthLimit, int
 }
 
 // Value to represent nothing (similar to nullptr)
-DatumPtr nothing(Datum::getInstance());
+// Use function-local static to avoid exceptions during global static initialization
+const DatumPtr& nothing()
+{
+    static const DatumPtr instance(Datum::getInstance());
+    return instance;
+}
