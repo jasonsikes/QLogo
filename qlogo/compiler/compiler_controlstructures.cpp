@@ -443,7 +443,7 @@ Value *Compiler::genCatch(const DatumPtr &node, RequestReturnType returnType)
 EXPORTC addr_t beginCatch(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Word* erractWord = reinterpret_cast<Word *>(Config::get().mainKernel()->specialVar(SpecialNames::ERRACT));
+    auto *erractWord = reinterpret_cast<Word *>(Config::get().mainKernel()->specialVar(SpecialNames::ERRACT));
     Datum* erractValue = Config::get().mainKernel()->callStack.datumForName(erractWord->toString(Datum::ToStringFlags_Key)).datumValue();
 
     // Save the erract value.
@@ -457,10 +457,10 @@ EXPORTC addr_t beginCatch(addr_t eAddr)
 EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t resultAddr, addr_t tagAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Word* erractWord = reinterpret_cast<Word *>(Config::get().mainKernel()->specialVar(SpecialNames::ERRACT));
+    auto *erractWord = reinterpret_cast<Word *>(Config::get().mainKernel()->specialVar(SpecialNames::ERRACT));
     auto *erractValue = reinterpret_cast<Datum *>(errActAddr);
     auto *result = reinterpret_cast<Datum *>(resultAddr);
-    Word *tag = reinterpret_cast<Word *>(tagAddr);
+    auto *tag = reinterpret_cast<Word *>(tagAddr);
 
     // Restore the erract value.
     if (erractValue->isa != Datum::typeNothing) {

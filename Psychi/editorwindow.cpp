@@ -83,7 +83,7 @@ bool EditorWindow::eventFilter(QObject *watched, QEvent *event)
 {
     if (event->type() == QEvent::KeyPress)
     {
-        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        auto *keyEvent = static_cast<QKeyEvent *>(event);
 
         if (keyEvent->matches(saveChangesKey))
         {

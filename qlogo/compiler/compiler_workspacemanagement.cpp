@@ -221,7 +221,7 @@ Value *Compiler::genLocal(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC void setVarAsLocal(addr_t varname)
 {
-    Word* varName = reinterpret_cast<Word*>(varname);
+    auto *varName = reinterpret_cast<Word*>(varname);
     QString varNameStr = varName->toString(Datum::ToStringFlags_Key);
     CallFrame *currentFrame = Config::get().mainKernel()->callStack.localFrame();
     currentFrame->setVarAsLocal(varNameStr);

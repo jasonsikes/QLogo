@@ -35,7 +35,7 @@ EXPORTC void printInt(int32_t p)
 /// @note the caller should check getValidityOfDoubleForDatum() afterward.
 EXPORTC double getDoubleForDatum(addr_t eAddr, addr_t datumAddr)
 {
-    Word *w = reinterpret_cast<Word *>(datumAddr);
+    auto *w = reinterpret_cast<Word *>(datumAddr);
     if(w->isa == Datum::typeWord) {
         return w->numberValue();
     }
@@ -49,7 +49,7 @@ EXPORTC double getDoubleForDatum(addr_t eAddr, addr_t datumAddr)
 /// @note the caller should getDoubleForDatum before querying validity.
 EXPORTC bool getValidityOfDoubleForDatum(addr_t eAddr, addr_t datumAddr)
 {
-    Word *w = reinterpret_cast<Word *>(datumAddr);
+    auto *w = reinterpret_cast<Word *>(datumAddr);
     if(w->isa == Datum::typeWord) {
         return w->numberIsValid;
     }
@@ -62,7 +62,7 @@ EXPORTC bool getValidityOfDoubleForDatum(addr_t eAddr, addr_t datumAddr)
 /// @return the stored value as a bool
 EXPORTC bool getBoolForDatum(addr_t eAddr, addr_t datumAddr)
 {
-    Word *w = reinterpret_cast<Word *>(datumAddr);
+    auto *w = reinterpret_cast<Word *>(datumAddr);
     if(w->isa == Datum::typeWord) {
         return w->boolValue();
     }
@@ -76,7 +76,7 @@ EXPORTC bool getBoolForDatum(addr_t eAddr, addr_t datumAddr)
 /// @note the caller should getBoolForDatum before querying validity.
 EXPORTC bool getValidityOfBoolForDatum(addr_t eAddr, addr_t datumAddr)
 {
-    Word *w = reinterpret_cast<Word *>(datumAddr);
+    auto *w = reinterpret_cast<Word *>(datumAddr);
     if(w->isa == Datum::typeWord) {
         return w->boolIsValid;
     }
@@ -88,7 +88,7 @@ EXPORTC bool getValidityOfBoolForDatum(addr_t eAddr, addr_t datumAddr)
 /// @return the stored value as a QLogo object
 EXPORTC addr_t getDatumForVarname(addr_t wordAddr)
 {
-    QString name = reinterpret_cast<Word *>(wordAddr)->toString(Datum::ToStringFlags_Key);
+    auto name = reinterpret_cast<Word *>(wordAddr)->toString(Datum::ToStringFlags_Key);
     Datum *val = Config::get().mainKernel()->callStack.datumForName(name).datumValue();
 
     return reinterpret_cast<addr_t >(val);
@@ -163,8 +163,8 @@ EXPORTC addr_t getWordForBool(addr_t eAddr, bool val)
 /// @param wordAddr a pointer to a Word object which contains the name of the variable
 EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr)
 {
-    DatumPtr d = DatumPtr(reinterpret_cast<Datum *>(datumAddr));
-    Word *w = reinterpret_cast<Word *>(wordAddr);
+    auto d = DatumPtr(reinterpret_cast<Datum *>(datumAddr));
+    auto *w = reinterpret_cast<Word *>(wordAddr);
     Config::get().mainKernel()->callStack.setDatumForName(d, w->toString(Datum::ToStringFlags_Key));
 }
 
@@ -176,7 +176,7 @@ EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr)
 EXPORTC addr_t runList(addr_t eAddr, addr_t listAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    List *list = reinterpret_cast<List *>(listAddr);
+    auto *list = reinterpret_cast<List *>(listAddr);
     Datum *result = e->subExec(list);
     e->watch(result);
 
@@ -321,7 +321,7 @@ EXPORTC addr_t getErrorCustom(addr_t eAddr, addr_t tagAddr, addr_t outputAddr)
 EXPORTC addr_t getCtrlReturn(addr_t eAddr, addr_t astNodeAddr, addr_t retvalAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    DatumPtr retval = DatumPtr(reinterpret_cast<Datum *>(retvalAddr));
+    auto retval = DatumPtr(reinterpret_cast<Datum *>(retvalAddr));
     auto *control = new FCReturn(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), retval);
     e->watch(control);
     return reinterpret_cast<addr_t >(control);
@@ -337,11 +337,11 @@ EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t para
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astNodeAddr);
-    DatumPtr nodePtr = DatumPtr(node);
+    auto nodePtr = DatumPtr(node);
 
     QList<DatumPtr> paramAry;
     for (uint32_t i = 0; i < paramCount; ++i) {
-        DatumPtr param = DatumPtr(reinterpret_cast<Datum *>(paramAryAddr[i]));
+        auto param = DatumPtr(reinterpret_cast<Datum *>(paramAryAddr[i]));
         paramAry.append(param);
     }
     auto *control = new FCContinuation(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), nodePtr, paramAry);
@@ -357,7 +357,7 @@ EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t para
 EXPORTC addr_t getCtrlGoto(addr_t eAddr, addr_t astNodeAddr, addr_t tagAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    DatumPtr tag = DatumPtr(reinterpret_cast<Datum *>(tagAddr));
+    auto tag = DatumPtr(reinterpret_cast<Datum *>(tagAddr));
 
     auto *control = new FCGoto(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), tag);
     e->watch(control);
@@ -369,7 +369,7 @@ EXPORTC addr_t getCtrlGoto(addr_t eAddr, addr_t astNodeAddr, addr_t tagAddr)
 /// @return the number of elements in the list.
 EXPORTC int32_t getCountOfList(addr_t listAddr)
 {
-    List *list = reinterpret_cast<List *>(listAddr);
+    auto *list = reinterpret_cast<List *>(listAddr);
     return list->count();
 }
 
@@ -381,7 +381,7 @@ EXPORTC int32_t getCountOfList(addr_t listAddr)
 EXPORTC int32_t getNumberAryFromList(addr_t eAddr, addr_t listAddr, addr_t destAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    DatumPtr list = DatumPtr(reinterpret_cast<Datum *>(listAddr));
+    auto list = DatumPtr(reinterpret_cast<Datum *>(listAddr));
     auto *dest = reinterpret_cast<double *>(destAddr);
     // Presumably, getCountOfList() has already been called so the destination size is correct.
     while ((list.isList()) && ! list.listValue()->isEmpty())

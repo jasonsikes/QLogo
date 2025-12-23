@@ -1186,7 +1186,7 @@ Value *Compiler::genSetpalette(const DatumPtr &node, RequestReturnType returnTyp
 EXPORTC bool isColorIndexGood(addr_t eAddr, addr_t colorIndexAddr, double lowerLimit)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Word *w = reinterpret_cast<Word *>(colorIndexAddr);
+    auto *w = reinterpret_cast<Word *>(colorIndexAddr);
     double colorIndex = w->numberValue();
 
     return (w->numberIsValid)
@@ -1199,7 +1199,7 @@ EXPORTC bool isColorIndexGood(addr_t eAddr, addr_t colorIndexAddr, double lowerL
 EXPORTC bool setPalette(addr_t eAddr, addr_t colorIndexAddr, addr_t colorAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    int colorIndex = static_cast<int>((reinterpret_cast<Word *>(colorIndexAddr))->numberValue());
+    auto colorIndex = static_cast<int>((reinterpret_cast<Word *>(colorIndexAddr))->numberValue());
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
     if (!Config::get().mainKernel()->colorFromDatumPtr(color, DatumPtr(d)))
@@ -1395,7 +1395,7 @@ Value *Compiler::genPalette(const DatumPtr &node, RequestReturnType returnType)
 EXPORTC addr_t getPaletteColor(addr_t eAddr, addr_t colorIndexAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    int colorIndex = static_cast<int>((reinterpret_cast<Word *>(colorIndexAddr))->numberValue());
+    auto colorIndex = static_cast<int>((reinterpret_cast<Word *>(colorIndexAddr))->numberValue());
     const QColor &color = Config::get().mainKernel()->palette[colorIndex];
     List *retval = listFromColor(color);
     e->watch(retval);
