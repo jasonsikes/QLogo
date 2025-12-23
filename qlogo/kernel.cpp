@@ -271,7 +271,7 @@ Kernel::Kernel()
     initVariables();
     initPalette();
 
-    filePrefix = emptyList;
+    filePrefix = emptyList();
 }
 
 Kernel::~Kernel()

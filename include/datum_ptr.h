@@ -232,6 +232,8 @@ Q_DECLARE_TYPEINFO(DatumPtr, Q_RELOCATABLE_TYPE);
 extern DatumPtr nothing;
 
 /// @brief A pointer to an empty list.
-extern DatumPtr emptyList;
+/// @details Returns a reference to a function-local static to avoid exceptions
+/// during global static initialization.
+const DatumPtr& emptyList();
 
 #endif // DATUM_PTR_H

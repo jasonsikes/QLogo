@@ -115,13 +115,13 @@ void List::setButfirstItem(const DatumPtr &aValue)
 
 DatumPtr List::itemAtIndex(int anIndex) const
 {
-    DatumPtr ptr(const_cast<List *>(this));
+    const List *iter = this;
     while (anIndex > 1)
     {
         --anIndex;
-        ptr = ptr.listValue()->tail;
+        iter = iter->tail.listValue();
     }
-    return ptr.listValue()->head;
+    return iter->head;
 }
 
 void List::clear()
@@ -155,7 +155,10 @@ int List::count() const
 
 ListIterator List::newIterator() const
 {
-    return ListIterator(const_cast<List *>(this));
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+    // Safe: ListIterator only reads from the list, it never modifies it.
+    // The const_cast is needed because DatumPtr constructor takes non-const Datum*.
+    return {const_cast<List *>(this)};
 }
 
 // EmptyList singleton implementation
@@ -194,4 +197,9 @@ QString EmptyList::toString( ToStringFlags flags, int /* printDepthLimit */, int
 }
 
 // Value to represent an empty list
-DatumPtr emptyList(EmptyList::instance());
+// Use function-local static to avoid exceptions during global static initialization
+const DatumPtr& emptyList()
+{
+    static const DatumPtr instance(EmptyList::instance());
+    return instance;
+}

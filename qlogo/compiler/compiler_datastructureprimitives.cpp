@@ -586,7 +586,7 @@ EXPORTC addr_t createArray(addr_t eAddr, int32_t size, int32_t origin)
     auto *retval = new Array(origin, size);
     for (int i = 0; i < size; ++i)
     {
-        retval->array.append(emptyList);
+        retval->array.append(emptyList());
     }
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);

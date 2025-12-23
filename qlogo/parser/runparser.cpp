@@ -210,7 +210,7 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
     }
 
     if (src.isNothing()) {
-        return emptyList;
+        return emptyList();
     }
 
     if (runparseBuilder)

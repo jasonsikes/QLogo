@@ -42,7 +42,7 @@ TextStream::TextStream(QTextStream *aStream)
 
 void TextStream::clearLineHistory()
 {
-    recentLineHistory = emptyList;
+    recentLineHistory = emptyList();
 }
 
 // TODO: This is huge. Break it up.
@@ -329,7 +329,7 @@ DatumPtr TextStream::readChar()
     }
 
     if (stream->atEnd())
-        return emptyList;
+        return emptyList();
     QString line = stream->read(1);
     if (stream->status() != QTextStream::Ok)
         throw FCError::fileSystem();

@@ -33,7 +33,7 @@ DatumPtr PropertyLists::getProperty(const QString &plistname,
                                   const QString &propname) {
   if (plists.contains(plistname) && plists[plistname].contains(propname))
     return plists[plistname][propname];
-  return emptyList;
+  return emptyList();
 }
 
 void PropertyLists::removeProperty(const QString &plistname,

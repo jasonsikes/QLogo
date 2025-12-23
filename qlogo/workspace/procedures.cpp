@@ -171,7 +171,7 @@ DatumPtr Procedures::createProcedure(const DatumPtr &cmd, const DatumPtr &text, 
 
     body->instructionList = text.listValue()->tail;
     if (body->instructionList.isNothing())
-        body->instructionList = emptyList;
+        body->instructionList = emptyList();
 
     // Iterate over the instruction list and add tags to the tagToLine map.
     ListIterator lineIter = body->instructionList.listValue()->newIterator();
