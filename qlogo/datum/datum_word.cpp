@@ -126,7 +126,7 @@ QChar rawToChar(const QChar &src)
     if (v >= 32)
         return src;
     
-    return QChar(rawToAsciiLookup[v]);
+    return {rawToAsciiLookup[v]};
 }
 
 /// @brief Convert a string of raw characters to a string of printable characters.
@@ -160,7 +160,7 @@ QChar charToRaw(const QChar &src)
     if (v >= 128)
         return src;
     
-    return QChar(asciiToRawLookup[v]);
+    return {asciiToRawLookup[v]};
 }
 
 Word::Word()
@@ -198,10 +198,7 @@ Word::Word(double other)
     //qDebug() <<this << " new++ word: " <<other;
 }
 
-Word::~Word()
-{
-    //qDebug() <<this << " --del word";
-}
+Word::~Word() = default;
 
 void Word::genRawString() const
 {
