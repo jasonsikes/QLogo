@@ -322,7 +322,7 @@ EXPORTC addr_t getCtrlReturn(addr_t eAddr, addr_t astNodeAddr, addr_t retvalAddr
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr retval = DatumPtr(reinterpret_cast<Datum *>(retvalAddr));
-    FCReturn *control = new FCReturn(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), retval);
+    auto *control = new FCReturn(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), retval);
     e->watch(control);
     return reinterpret_cast<addr_t >(control);
 }

@@ -137,12 +137,11 @@ QChar rawToChar(const QChar &src)
 /// and thus QString's copy-on-write is not triggered.
 void rawToChar(QString &src)
 {
-    for (int i = 0; i < src.size(); ++i)
+    for (auto &s : src)
     {
-        QChar s = src[i];
         QChar d = rawToChar(s);
         if (s != d)
-            src[i] = d;
+            s = d;
     }
 }
 

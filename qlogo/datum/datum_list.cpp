@@ -155,9 +155,9 @@ int List::count() const
 
 ListIterator List::newIterator() const
 {
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     // Safe: ListIterator only reads from the list, it never modifies it.
     // The const_cast is needed because DatumPtr constructor takes non-const Datum*.
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     return {const_cast<List *>(this)};
 }
 

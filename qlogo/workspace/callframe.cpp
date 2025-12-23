@@ -206,12 +206,12 @@ Datum *CallFrame::exec(Datum **paramAry, uint32_t paramCount) {
     return retval;
 }
 
-Datum *CallFrame::applyContinuation(const DatumPtr &newNode, QList<DatumPtr> paramAry)
+Datum *CallFrame::applyContinuation(const DatumPtr &newNode, const QList<DatumPtr> &paramAry)
 {
     sourceNode = newNode;
     std::vector<Datum *> newParamAry;
     newParamAry.reserve(paramAry.size());
-    for (auto &param : paramAry) {
+    for (const auto &param : paramAry) {
         newParamAry.push_back(param.datumValue());
     }
 

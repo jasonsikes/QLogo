@@ -194,7 +194,7 @@ struct CallFrame
     /// @param newNode The ASTNode of the new procedure to continue with.
     /// @param paramAry The parameters to apply to the new node.
     /// @returns nothing if successful, or an error if not.
-    Datum* applyContinuation(const DatumPtr &newNode, QList<DatumPtr> paramAry);
+    Datum* applyContinuation(const DatumPtr &newNode, const QList<DatumPtr> &paramAry);
 
     /// @brief Jump to the line in the procedure containing the given tag.
     /// @param node The FCGoto node.

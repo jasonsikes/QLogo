@@ -43,9 +43,7 @@ Array::Array(int aOrigin, List *source)
     }
 }
 
-Array::~Array()
-{
-}
+Array::~Array() = default;
 
 // TODO: Make element access protected to properly enforce origin addition and bounds checking.
 

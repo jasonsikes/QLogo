@@ -913,7 +913,7 @@ Value *Compiler::genItem(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC bool isDatumIndexValid(addr_t eAddr, addr_t thingAddr, double dIndex, addr_t listItemPtrAddr)
 {
-    Evaluator *e = reinterpret_cast<Evaluator*>(eAddr);
+    auto *e = reinterpret_cast<Evaluator*>(eAddr);
     auto *thing = reinterpret_cast<Datum*>(thingAddr);
     auto **listItemPtr = reinterpret_cast<Datum**>(listItemPtrAddr);
     auto index = static_cast<qsizetype>(dIndex);
