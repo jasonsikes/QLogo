@@ -33,7 +33,7 @@
 #include <QImage>
 #include <QDir>
 #include <QDebug>
-#include <stdlib.h> // arc4random_uniform()
+#include <cstdlib> // arc4random_uniform()
 
 #include "runparser.h"
 #include "turtle.h"
@@ -87,11 +87,11 @@ bool Kernel::colorFromDatumPtr(QColor &retval, const DatumPtr &colorP) const
             return false;
         if ((v.size() != 3) && (v.size() != 4))
             return false;
-        for (int i = 0; i < v.size(); ++i)
+        for (double &i : v)
         {
-            if ((v[i] < 0) || (v[i] > 100))
+            if ((i < 0) || (i > 100))
                 return false;
-            v[i] *= 255.0 / 100;
+            i *= 255.0 / 100;
         }
         double alpha = (v.size() == 4) ? v[3] : 255;
         retval = QColor(v[0], v[1], v[2], alpha);
@@ -225,7 +225,7 @@ COMMANDLINE						(variable)
 
 COD***/
 
-void Kernel::initVariables(void)
+void Kernel::initVariables()
 {
     ListBuilder builder;
     for (auto &arg : Config::get().ARGV)

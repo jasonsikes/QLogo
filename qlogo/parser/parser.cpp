@@ -140,7 +140,7 @@ QList<QList<DatumPtr>> Parser::astFromList(List *aList)
         // If the last ASTNode is a tag, generate a NOOP expression at the end
         // to ensure that there is an instruction to jump to.
         if (astFlatList.last().astnodeValue()->genExpression == &Compiler::genTag) {
-            ASTNode *noopNode = new ASTNode(DatumPtr(QObject::tr("NOOP")));
+            auto *noopNode = new ASTNode(DatumPtr(QObject::tr("NOOP")));
             noopNode->genExpression = &Compiler::genNoop;
             noopNode->returnType = RequestReturnNothing;
             astFlatList.append(DatumPtr(noopNode));

@@ -25,7 +25,7 @@
 
 extern const QString& specialChars();
 
-void Runparser::runparseSpecialchars(void)
+void Runparser::runparseSpecialchars()
 {
     QString retval = *runparseCIter;
     ++runparseCIter;
