@@ -19,7 +19,7 @@
 #include "kernel.h"
 #include <QApplication>
 #include <QIODevice>
-#include <signal.h>
+#include <csignal>
 #include <QFile>
 /// @brief The most recent signal that was received.
 /// The value of this variable is set by the handle_signal function. When the latestSignal
@@ -164,7 +164,7 @@ bool LogoController::setDribble(const QString &filePath)
         dribbleStream = nullptr;
         return true;
     }
-    QFile *file = new QFile(filePath);
+    auto *file = new QFile(filePath);
     if (!file->open(QIODevice::Append))
         return false;
 
@@ -184,7 +184,7 @@ SignalsEnum_t LogoController::latestSignal()
     return retval;
 }
 
-int LogoController::run(void)
+int LogoController::run()
 {
     initialize();
 

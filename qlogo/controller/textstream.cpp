@@ -169,8 +169,8 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
                         }
                         origin = originStr.toInt();
                     }
-                    Array *ary = new Array(origin, builder.finishedList().listValue());
-                    return DatumPtr(ary);
+                    auto *ary = new Array(origin, builder.finishedList().listValue());
+                    return {ary};
                 }
                 case '{':
                     builder.append(tokenizeListWithPrompt("", false, true, shouldRemoveComments));
@@ -209,8 +209,8 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
         // We have exhausted our source. Return what we have.
         if (makeArray)
         {
-            Array *ary = new Array(1, builder.finishedList().listValue());
-            return DatumPtr(ary);
+            auto *ary = new Array(1, builder.finishedList().listValue());
+            return {ary};
         }
         return builder.finishedList();
     } // /forever

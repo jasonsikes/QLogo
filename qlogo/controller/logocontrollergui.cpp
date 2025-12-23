@@ -60,9 +60,7 @@ void LogoControllerGUI::systemStop()
     QApplication::quit();
 }
 
-LogoControllerGUI::~LogoControllerGUI()
-{
-}
+LogoControllerGUI::~LogoControllerGUI() = default;
 
 void LogoControllerGUI::initialize()
 {
@@ -391,7 +389,7 @@ void LogoControllerGUI::setCanvasBackgroundImage(QImage anImage)
     message(C_CANVAS_SET_BACKGROUND_IMAGE) << anImage;
 }
 
-const QColor LogoControllerGUI::getCanvasBackgroundColor(void) const
+const QColor LogoControllerGUI::getCanvasBackgroundColor() const
 {
     return currentBackgroundColor;
 }
