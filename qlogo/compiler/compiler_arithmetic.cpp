@@ -78,7 +78,7 @@ EXPORTC addr_t getFormForNumber(addr_t eAddr, double num, uint32_t width, int32_
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString retval = QString("%1").arg(num, width, 'f', precision);
-    Word *w = new Word(retval);
+    auto *w = new Word(retval);
     e->watch(w);
 
     return reinterpret_cast<addr_t>(w);

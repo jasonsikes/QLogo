@@ -184,7 +184,7 @@ DatumPtr Parser::parseRootExp()
     if ((currentToken.isa() == Datum::typeWord)
      && (currentToken.toString(Datum::ToStringFlags_Key) == QObject::tr("STOP")))
     {
-        DatumPtr newNode = DatumPtr(new ASTNode(currentToken));
+        auto newNode = DatumPtr(new ASTNode(currentToken));
         newNode.astnodeValue()->genExpression = &Compiler::genStop;
         newNode.astnodeValue()->returnType = RequestReturnNothing;
         newNode.astnodeValue()->addChild(node);
@@ -206,7 +206,7 @@ DatumPtr Parser::parseExp()
         advanceToken();
         DatumPtr right = parseSumexp();
 
-        DatumPtr node = DatumPtr(new ASTNode(op));
+        auto node = DatumPtr(new ASTNode(op));
         if ( ! right.isASTNode())
             throw FCError::notEnoughInputs(op);
 
@@ -257,7 +257,7 @@ DatumPtr Parser::parseSumexp()
         advanceToken();
         DatumPtr right = parseMulexp();
 
-        DatumPtr node = DatumPtr(new ASTNode(op));
+        auto node = DatumPtr(new ASTNode(op));
         if ( ! right.isASTNode())
             throw FCError::notEnoughInputs(op);
 
@@ -289,7 +289,7 @@ DatumPtr Parser::parseMulexp()
         advanceToken();
         DatumPtr right = parseminusexp();
 
-        DatumPtr node = DatumPtr(new ASTNode(op));
+        auto node = DatumPtr(new ASTNode(op));
         if ( ! right.isASTNode())
             throw FCError::notEnoughInputs(op);
 
@@ -324,7 +324,7 @@ DatumPtr Parser::parseminusexp()
         advanceToken();
         DatumPtr right = parseTermexp();
 
-        DatumPtr node = DatumPtr(new ASTNode(op));
+        auto node = DatumPtr(new ASTNode(op));
         if ( ! right.isASTNode())
             throw FCError::notEnoughInputs(op);
         

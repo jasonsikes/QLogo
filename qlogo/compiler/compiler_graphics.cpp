@@ -869,7 +869,7 @@ EXPORTC addr_t getScreenMode(addr_t eAddr)
             modeStr = QObject::tr("fullscreen");
             break;
     }
-    Word *retval = new Word(modeStr);
+    auto *retval = new Word(modeStr);
     e->watch(retval);
     return reinterpret_cast<addr_t >(retval);
 }
@@ -906,7 +906,7 @@ EXPORTC addr_t getTurtleMode(addr_t eAddr)
         modeStr = QObject::tr("window");
         break;
     }
-    Word *retval = new Word(modeStr);
+    auto *retval = new Word(modeStr);
     e->watch(retval);
     return reinterpret_cast<addr_t >(retval);
 }
@@ -1328,7 +1328,7 @@ EXPORTC addr_t getPenMode(addr_t eAddr)
         retval = QObject::tr("erase");
         break;
     }
-    Word *w = new Word(retval);
+    auto *w = new Word(retval);
     e->watch(w);
     return reinterpret_cast<addr_t>(w);
 }

@@ -138,7 +138,7 @@ EXPORTC addr_t stdWriteDatumAry(addr_t datumAddr, uint32_t count, bool useShow, 
 EXPORTC addr_t getWordForDouble(addr_t eAddr, double val)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Word *w = new Word(val);
+    auto *w = new Word(val);
     e->watch(w);
 
     return reinterpret_cast<addr_t >(w);
@@ -151,7 +151,7 @@ EXPORTC addr_t getWordForDouble(addr_t eAddr, double val)
 EXPORTC addr_t getWordForBool(addr_t eAddr, bool val)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Word *w = new Word(val ? QObject::tr("true") : QObject::tr("false"));
+    auto *w = new Word(val ? QObject::tr("true") : QObject::tr("false"));
     e->watch(w);
 
     return reinterpret_cast<addr_t >(w);

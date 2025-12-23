@@ -248,7 +248,7 @@ DatumPtr Procedures::procedureText(const DatumPtr &procnameP) const {
     }
 
     if (body->restInput != "") {
-        List *restInput = new List(DatumPtr(body->restInput), EmptyList::instance());
+        auto *restInput = new List(DatumPtr(body->restInput), EmptyList::instance());
         inputsBuilder.append(DatumPtr(restInput));
     }
 
@@ -372,7 +372,7 @@ bool Procedures::isNamedProcedure(const QString &aName) const
 
 DatumPtr Procedures::astnodeFromPrimitive(const DatumPtr &cmdP, int &minParams, int &defaultParams, int &maxParams) {
     QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
-    DatumPtr node = DatumPtr(new ASTNode(cmdP));
+    auto node = DatumPtr(new ASTNode(cmdP));
     Cmd_t command = stringToCmd[cmdString];
     defaultParams = command.countOfDefaultParams;
     minParams = command.countOfMinParams;
@@ -386,7 +386,7 @@ DatumPtr Procedures::astnodeFromPrimitive(const DatumPtr &cmdP, int &minParams, 
 DatumPtr Procedures::astnodeFromProcedure(const DatumPtr &cmdP, int &minParams, int &defaultParams, int &maxParams) {
     QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
     DatumPtr procBody = procedureForName(cmdString);
-    DatumPtr node = DatumPtr(new ASTNode(cmdP));
+    auto node = DatumPtr(new ASTNode(cmdP));
     // if (procBody.procedureValue()->isMacro)
     //     node.astnodeValue()->kernel = &Kernel::executeMacro;
     // else
@@ -431,7 +431,7 @@ DatumPtr Procedures::astnodeWithLiterals(const DatumPtr &cmd, const DatumPtr &pa
     ListIterator iter = params.listValue()->newIterator();
     while (iter.elementExists()) {
         DatumPtr p = iter.element();
-        DatumPtr a = DatumPtr(new ASTNode(QObject::tr("literal")));
+        auto a = DatumPtr(new ASTNode(QObject::tr("literal")));
         // TODO: What is the ReturnType of this?
         a.astnodeValue()->genExpression = &Compiler::genLiteral;
         a.astnodeValue()->addChild(p);
