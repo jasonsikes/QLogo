@@ -241,7 +241,7 @@ class EmptyList : public List
 class ListIterator
 {
   protected:
-    DatumPtr ptr;
+    const List *iterator;
 
   public:
     /// @brief Create an empty ListIterator.

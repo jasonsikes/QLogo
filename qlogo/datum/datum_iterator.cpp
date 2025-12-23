@@ -18,23 +18,20 @@
 #include "datum_types.h"
 #include <qdebug.h>
 
-ListIterator::ListIterator()
-{
-}
+ListIterator::ListIterator() = default;
 
-ListIterator::ListIterator(const DatumPtr &aList)
+ListIterator::ListIterator(const DatumPtr &aList) : iterator(aList.listValue())
 {
-    ptr = aList;
 }
 
 DatumPtr ListIterator::element()
 {
-    DatumPtr retval = ptr.listValue()->head;
-    ptr = ptr.listValue()->tail;
+    DatumPtr retval = iterator->head;
+    iterator = iterator->tail.listValue();
     return retval;
 }
 
 bool ListIterator::elementExists() const
 {
-    return ! ptr.listValue()->isEmpty();
+    return iterator != EmptyList::instance();
 }

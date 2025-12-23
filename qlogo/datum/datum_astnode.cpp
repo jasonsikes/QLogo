@@ -51,9 +51,7 @@ ASTNode::ASTNode(const QString &aNodeName)
     returnType = RequestReturnVoid;
 }
 
-ASTNode::~ASTNode()
-{
-}
+ASTNode::~ASTNode() = default;
 
 // For debugging. Parameters are ignored.
 QString ASTNode::toString( ToStringFlags, int, int, VisitedSet *) const
