@@ -188,6 +188,49 @@ bool containsRawChars(const QString &src)
     return false;
 }
 
+/// @brief Create a vertical bar-formatted string from a string.
+/// @param src The string to convert.
+/// @return The vertical bar-formatted string.
+/// @details This function converts a string to a vertical bar-formatted string.
+/// If the string contains any raw characters, they will be converted into their printable equivalents.
+/// The string will be wrapped in vertical bars.
+QString toVBarredString(const QString &src)
+{
+    QString retval("|");
+    for (auto c : src)
+    {
+        QChar s = rawToChar(c);
+        if ((s == '\\') || (s == '|'))
+        {
+            retval.append('\\');
+        }
+        retval.append(s);
+    }
+    retval.append('|');
+    return retval;
+}
+
+/// @brief Create a backslashed string from a string.
+/// @param src The string to convert.
+/// @return The backslashed string.
+/// @details This function converts a string to a backslashed string.
+/// If the string contains any raw characters, they will be converted into their printable equivalents.
+QString toBackslashedString(const QString &src)
+{
+    QString retval;
+    for (auto c : src)
+    {
+        QChar r = charToRaw(c);
+        QChar s = rawToChar(r);
+        if (r != s)
+        {
+            retval.append('\\');
+        }
+        retval.append(s);
+    }
+    return retval;
+}
+
 Word::Word()
 {
     isa = Datum::typeWord;
@@ -331,28 +374,11 @@ QString Word::toString(ToStringFlags flags, int printDepthLimit, int printWidthL
 
     if (shouldShowBars)
     {
-        retval.append('|');
-        for (auto c : srcString)
-        {
-            QChar s = rawToChar(c);
-            if ((s == '\\') || (s == '|'))
-            {
-                retval.append('\\');
-            }
-            retval.append(s);
-        }
-        retval.append('|');
-        return retval;
+        retval.append(toVBarredString(srcString));
     }
-    for (auto c : srcString)
+    else
     {
-        QChar r = charToRaw(c);
-        QChar s = rawToChar(r);
-        if (r != s)
-        {
-            retval.append('\\');
-        }
-        retval.append(s);
+        retval.append(toBackslashedString(srcString));
     }
     return retval;
 }
