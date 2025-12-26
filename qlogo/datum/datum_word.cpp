@@ -284,7 +284,7 @@ bool Word::boolValue() const
     return boolean;
 }
 
-QString Word::toString(ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited) const
+QString Word::toString(ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *) const
 {
     if (flags & Datum::ToStringFlags_Key)
     {
