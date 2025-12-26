@@ -14,26 +14,25 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "compiler_private.h"
-#include "turtle.h"
 #include "astnode.h"
 #include "compiler.h"
-#include "workspace/callframe.h"
-#include "kernel.h"
+#include "compiler_private.h"
 #include "datum_types.h"
+#include "kernel.h"
 #include "sharedconstants.h"
+#include "turtle.h"
+#include "workspace/callframe.h"
 
 #include <QFile>
 using namespace llvm;
 using namespace llvm::orc;
 
-
-List* listFromColor(const QColor &c)
+List *listFromColor(const QColor &c)
 {
     ListBuilder retvalBuilder;
-    retvalBuilder.append(DatumPtr(round(static_cast<double>(c.redF()   * 100.0))));
+    retvalBuilder.append(DatumPtr(round(static_cast<double>(c.redF() * 100.0))));
     retvalBuilder.append(DatumPtr(round(static_cast<double>(c.greenF() * 100.0))));
-    retvalBuilder.append(DatumPtr(round(static_cast<double>(c.blueF()  * 100.0))));
+    retvalBuilder.append(DatumPtr(round(static_cast<double>(c.blueF() * 100.0))));
     return retvalBuilder.finishedList().listValue();
 }
 
@@ -55,7 +54,6 @@ Value *Compiler::genForward(const DatumPtr &node, RequestReturnType returnType)
     generateCallExtern(TyVoid, "moveTurtleForward", {PaAddr(evaluator), PaDouble(distance)});
     return generateVoidRetval(node);
 }
-
 
 /***DOC BACK BK
 BACK dist
@@ -81,7 +79,6 @@ EXPORTC void moveTurtleForward(addr_t eAddr, double distance)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->forward(distance);
 }
-
 
 /***DOC LEFT LT
 LEFT degrees
@@ -118,13 +115,11 @@ Value *Compiler::genRight(const DatumPtr &node, RequestReturnType returnType)
     return generateVoidRetval(node);
 }
 
-
 EXPORTC void moveTurtleRotate(addr_t eAddr, double angle)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->rotate(angle);
 }
-
 
 /***DOC SETXY
 SETXY xcor ycor
@@ -192,7 +187,6 @@ EXPORTC void setTurtleY(addr_t eAddr, double y)
     Config::get().mainTurtle()->sety(y);
 }
 
-
 /***DOC SETPOS
 SETPOS pos
 
@@ -216,7 +210,6 @@ EXPORTC void setTurtlePos(addr_t eAddr, addr_t posAddr)
     double y = pos[1];
     Config::get().mainTurtle()->setxy(x, y);
 }
-
 
 /***DOC SETHEADING SETH
 SETHEADING degrees
@@ -248,8 +241,6 @@ EXPORTC void setTurtleHeading(addr_t eAddr, double newHeading)
     Config::get().mainTurtle()->rotate(adjustment);
 }
 
-
-
 /***DOC HOME
 HOME
 
@@ -269,8 +260,6 @@ EXPORTC void setTurtleMoveToHome(addr_t eAddr)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->moveToHome();
 }
-
-
 
 /***DOC ARC
 ARC angle radius
@@ -302,7 +291,6 @@ EXPORTC void drawTurtleArc(addr_t eAddr, double angle, double radius)
         Config::get().mainTurtle()->drawArc(angle, radius);
 }
 
-
 // TURTLE MOTION QUERIES
 
 /***DOC POS
@@ -326,12 +314,10 @@ EXPORTC addr_t getTurtlePos(addr_t eAddr)
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(x));
     retvalBuilder.append(DatumPtr(y));
-    Datum* retval = retvalBuilder.finishedList().datumValue();
+    Datum *retval = retvalBuilder.finishedList().datumValue();
     e->watch(retval);
-    return reinterpret_cast<addr_t >(retval);
+    return reinterpret_cast<addr_t>(retval);
 }
-
-
 
 /***DOC HEADING
 HEADING
@@ -359,8 +345,6 @@ EXPORTC double getTurtleHeading(addr_t eAddr)
 
     return retval;
 }
-
-
 
 /***DOC TOWARDS
 TOWARDS pos
@@ -398,7 +382,6 @@ EXPORTC double getTurtleTowards(addr_t eAddr, addr_t posAddr)
     return retval;
 }
 
-
 /***DOC SCRUNCH
 SCRUNCH
 
@@ -421,9 +404,9 @@ EXPORTC addr_t getScrunch(addr_t eAddr)
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(1));
     retvalBuilder.append(DatumPtr(1));
-    Datum* retval = retvalBuilder.finishedList().datumValue();
+    Datum *retval = retvalBuilder.finishedList().datumValue();
     e->watch(retval);
-    return reinterpret_cast<addr_t >(retval);
+    return reinterpret_cast<addr_t>(retval);
 }
 
 // TURTLE AND WINDOW CONTROL
@@ -464,8 +447,6 @@ Value *Compiler::genHideTurtle(const DatumPtr &node, RequestReturnType returnTyp
     return generateVoidRetval(node);
 }
 
-
-
 /***DOC CLEAN
 CLEAN
 
@@ -487,8 +468,6 @@ EXPORTC void clean(addr_t eAddr)
     Config::get().mainController()->clearCanvas();
 }
 
-
-
 /***DOC CLEARSCREEN CS
 CLEARSCREEN
 CS
@@ -505,8 +484,6 @@ Value *Compiler::genClearscreen(const DatumPtr &node, RequestReturnType returnTy
     generateCallExtern(TyVoid, "clean", {PaAddr(evaluator)});
     return generateVoidRetval(node);
 }
-
-
 
 /***DOC WRAP
 WRAP
@@ -557,7 +534,6 @@ Value *Compiler::genWindow(const DatumPtr &node, RequestReturnType returnType)
     return generateVoidRetval(node);
 }
 
-
 /***DOC FENCE
 FENCE
 
@@ -573,8 +549,6 @@ Value *Compiler::genFence(const DatumPtr &node, RequestReturnType returnType)
     generateCallExtern(TyVoid, "setTurtleMode", {PaAddr(evaluator), PaInt32(CoInt32(turtleFence))});
     return generateVoidRetval(node);
 }
-
-
 
 /***DOC BOUNDS
 BOUNDS
@@ -598,12 +572,10 @@ EXPORTC addr_t getBounds(addr_t eAddr)
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(x));
     retvalBuilder.append(DatumPtr(y));
-    Datum* retval = retvalBuilder.finishedList().datumValue();
+    Datum *retval = retvalBuilder.finishedList().datumValue();
     e->watch(retval);
-    return reinterpret_cast<addr_t >(retval);
+    return reinterpret_cast<addr_t>(retval);
 }
-
-
 
 /***DOC SETBOUNDS
 SETBOUNDS x y
@@ -631,7 +603,6 @@ EXPORTC void setBounds(addr_t eAddr, double x, double y)
     Config::get().mainController()->setBounds(x, y);
 }
 
-
 /***DOC FILLED
 FILLED color instructions
 
@@ -657,7 +628,8 @@ Value *Compiler::genFilled(const DatumPtr &node, RequestReturnType returnType)
 
     // Color is not good.
     scaff->builder.SetInsertPoint(colorNotGoodBB);
-    Value *errVal = generateCallExtern(TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color)});
+    Value *errVal = generateCallExtern(
+        TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color)});
     scaff->builder.CreateRet(errVal);
 
     // Color is good.
@@ -684,7 +656,6 @@ EXPORTC void endFilled(addr_t eAddr)
     Config::get().mainTurtle()->endFill();
 }
 
-
 /***DOC LABEL
 LABEL text
 
@@ -707,7 +678,6 @@ EXPORTC void addLabel(addr_t eAddr, addr_t textAddr)
     Config::get().mainController()->drawLabel(d->toString());
 }
 
-
 /***DOC SETLABELHEIGHT
 SETLABELHEIGHT height
 
@@ -727,7 +697,6 @@ EXPORTC void setLabelHeight(addr_t eAddr, double height)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainController()->setLabelFontSize(height);
 }
-
 
 /***DOC TEXTSCREEN TS
 TEXTSCREEN
@@ -752,8 +721,6 @@ EXPORTC void setScreenMode(addr_t eAddr, int mode)
     Config::get().mainController()->setScreenMode(static_cast<ScreenModeEnum>(mode));
 }
 
-
-
 /***DOC FULLSCREEN FS
 FULLSCREEN
 FS
@@ -775,8 +742,6 @@ Value *Compiler::genFullscreen(const DatumPtr &node, RequestReturnType returnTyp
     return generateVoidRetval(node);
 }
 
-
-
 /***DOC SPLITSCREEN SS
 SPLITSCREEN
 SS
@@ -795,8 +760,6 @@ Value *Compiler::genSplitscreen(const DatumPtr &node, RequestReturnType returnTy
     return generateVoidRetval(node);
 }
 
-
-
 /***DOC SETSCRUNCH
 SETSCRUNCH xscale yscale
 
@@ -808,7 +771,6 @@ Value *Compiler::genSetscrunch(const DatumPtr &node, RequestReturnType returnTyp
 {
     return generateVoidRetval(node);
 }
-
 
 // TURTLE AND WINDOW QUERIES
 
@@ -833,8 +795,6 @@ EXPORTC bool isTurtleVisible(addr_t eAddr)
     return Config::get().mainTurtle()->isTurtleVisible();
 }
 
-
-
 /***DOC SCREENMODE
 SCREENMODE
 
@@ -857,25 +817,23 @@ EXPORTC addr_t getScreenMode(addr_t eAddr)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     ScreenModeEnum mode = Config::get().mainController()->getScreenMode();
     QString modeStr;
-    switch (mode) {
-        case textScreenMode:
-        case initScreenMode:
-            modeStr = QObject::tr("textscreen");
-            break;
-        case splitScreenMode:
-            modeStr = QObject::tr("splitscreen");
-            break;
-        case fullScreenMode:
-            modeStr = QObject::tr("fullscreen");
-            break;
+    switch (mode)
+    {
+    case textScreenMode:
+    case initScreenMode:
+        modeStr = QObject::tr("textscreen");
+        break;
+    case splitScreenMode:
+        modeStr = QObject::tr("splitscreen");
+        break;
+    case fullScreenMode:
+        modeStr = QObject::tr("fullscreen");
+        break;
     }
     auto *retval = new Word(modeStr);
     e->watch(retval);
-    return reinterpret_cast<addr_t >(retval);
+    return reinterpret_cast<addr_t>(retval);
 }
-
-
-
 
 /***DOC TURTLEMODE
 TURTLEMODE
@@ -895,7 +853,8 @@ EXPORTC addr_t getTurtleMode(addr_t eAddr)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     TurtleModeEnum mode = Config::get().mainTurtle()->getMode();
     QString modeStr;
-    switch (mode) {
+    switch (mode)
+    {
     case turtleWrap:
         modeStr = QObject::tr("wrap");
         break;
@@ -908,10 +867,8 @@ EXPORTC addr_t getTurtleMode(addr_t eAddr)
     }
     auto *retval = new Word(modeStr);
     e->watch(retval);
-    return reinterpret_cast<addr_t >(retval);
+    return reinterpret_cast<addr_t>(retval);
 }
-
-
 
 /***DOC LABELSIZE
 LABELSIZE
@@ -937,12 +894,10 @@ EXPORTC addr_t getLabelSize(addr_t eAddr)
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(height));
     retvalBuilder.append(DatumPtr(height));
-    Datum* retval = retvalBuilder.finishedList().datumValue();
+    Datum *retval = retvalBuilder.finishedList().datumValue();
     e->watch(retval);
-    return reinterpret_cast<addr_t >(retval);
+    return reinterpret_cast<addr_t>(retval);
 }
-
-
 
 // PEN AND BACKGROUND CONTROL
 
@@ -967,7 +922,6 @@ EXPORTC void setPenIsDown(addr_t eAddr, bool isDown)
     Config::get().mainTurtle()->setPenIsDown(isDown);
 }
 
-
 /***DOC PENUP PU
 PENUP
 PU
@@ -982,7 +936,6 @@ Value *Compiler::genPenup(const DatumPtr &node, RequestReturnType returnType)
     generateCallExtern(TyVoid, "setPenIsDown", {PaAddr(evaluator), PaBool(CoBool(false))});
     return generateVoidRetval(node);
 }
-
 
 /***DOC PENPAINT PPT
 PENPAINT
@@ -1006,7 +959,6 @@ EXPORTC void setPenMode(addr_t eAddr, int32_t mode)
     Config::get().mainTurtle()->setPenMode(static_cast<PenModeEnum>(mode));
 }
 
-
 /***DOC PENERASE PE
 PENERASE
 PE
@@ -1023,7 +975,6 @@ Value *Compiler::genPenerase(const DatumPtr &node, RequestReturnType returnType)
     return generateVoidRetval(node);
 }
 
-
 /***DOC PENREVERSE PX
 PENREVERSE
 PX
@@ -1037,10 +988,10 @@ COD***/
 Value *Compiler::genPenreverse(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, "setPenIsDown", {PaAddr(evaluator), PaBool(CoBool(true))});
-    generateCallExtern(TyVoid, "setPenMode", {PaAddr(evaluator), PaInt32(CoInt32(static_cast<int32_t>(penModeReverse)))});
+    generateCallExtern(
+        TyVoid, "setPenMode", {PaAddr(evaluator), PaInt32(CoInt32(static_cast<int32_t>(penModeReverse)))});
     return generateVoidRetval(node);
 }
-
 
 /***DOC SETPENCOLOR SETPC
 SETPENCOLOR color
@@ -1090,7 +1041,8 @@ Value *Compiler::genSetpencolor(const DatumPtr &node, RequestReturnType returnTy
 
     // Color is not good.
     scaff->builder.SetInsertPoint(colorNotGoodBB);
-    Value *errVal = generateCallExtern(TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color)});
+    Value *errVal = generateCallExtern(
+        TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color)});
     scaff->builder.CreateRet(errVal);
 
     // Color is good.
@@ -1109,7 +1061,6 @@ EXPORTC bool setPenColor(addr_t eAddr, addr_t colorAddr)
     return true;
 }
 
-
 /***DOC ALLCOLORS
 ALLCOLORS
 
@@ -1121,7 +1072,6 @@ Value *Compiler::genAllcolors(const DatumPtr &node, RequestReturnType returnType
 {
     return generateCallExtern(TyAddr, "getAllColors", {PaAddr(evaluator)});
 }
-
 
 EXPORTC addr_t getAllColors(addr_t eAddr)
 {
@@ -1136,7 +1086,6 @@ EXPORTC addr_t getAllColors(addr_t eAddr)
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
-
 
 /***DOC SETPALETTE
 SETPALETTE colornumber color
@@ -1153,7 +1102,8 @@ Value *Compiler::genSetpalette(const DatumPtr &node, RequestReturnType returnTyp
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     Value *colorIndex = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    Value *isColorIndexGood = generateCallExtern(TyBool, "isColorIndexGood", {PaAddr(evaluator), PaAddr(colorIndex), PaDouble(CoDouble(8.0))});
+    Value *isColorIndexGood = generateCallExtern(
+        TyBool, "isColorIndexGood", {PaAddr(evaluator), PaAddr(colorIndex), PaDouble(CoDouble(8.0))});
     Value *isColorIndexGoodCmp = scaff->builder.CreateICmpEQ(isColorIndexGood, CoBool(true), "isColorIndexGood");
     BasicBlock *colorIndexNotGoodBB = BasicBlock::Create(*scaff->theContext, "colorIndexNotGood", theFunction);
     BasicBlock *colorIndexGoodBB = BasicBlock::Create(*scaff->theContext, "colorIndexGood", theFunction);
@@ -1163,19 +1113,22 @@ Value *Compiler::genSetpalette(const DatumPtr &node, RequestReturnType returnTyp
 
     // Color index is not good.
     scaff->builder.SetInsertPoint(colorIndexNotGoodBB);
-    Value *errVal = generateCallExtern(TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(colorIndex)});
+    Value *errVal = generateCallExtern(
+        TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(colorIndex)});
     scaff->builder.CreateRet(errVal);
 
     // Color index is good.
     scaff->builder.SetInsertPoint(colorIndexGoodBB);
     Value *color = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
-    Value *colorIsGood = generateCallExtern(TyBool, "setPalette", {PaAddr(evaluator), PaAddr(colorIndex), PaAddr(color)});
+    Value *colorIsGood =
+        generateCallExtern(TyBool, "setPalette", {PaAddr(evaluator), PaAddr(colorIndex), PaAddr(color)});
     Value *colorIsGoodCmp = scaff->builder.CreateICmpEQ(colorIsGood, CoBool(true), "colorIsGood");
     scaff->builder.CreateCondBr(colorIsGoodCmp, colorGoodBB, colorNotGoodBB);
 
     // Color is not good.
     scaff->builder.SetInsertPoint(colorNotGoodBB);
-    errVal = generateCallExtern(TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color)});
+    errVal = generateCallExtern(
+        TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color)});
     scaff->builder.CreateRet(errVal);
 
     // Color is good.
@@ -1189,12 +1142,9 @@ EXPORTC bool isColorIndexGood(addr_t eAddr, addr_t colorIndexAddr, double lowerL
     auto *w = reinterpret_cast<Word *>(colorIndexAddr);
     double colorIndex = w->numberValue();
 
-    return (w->numberIsValid)
-      && (colorIndex == floor(colorIndex))
-      && (colorIndex >= lowerLimit)
-      && (colorIndex < Config::get().mainKernel()->palette.size());
+    return (w->numberIsValid) && (colorIndex == floor(colorIndex)) && (colorIndex >= lowerLimit) &&
+           (colorIndex < Config::get().mainKernel()->palette.size());
 }
-
 
 EXPORTC bool setPalette(addr_t eAddr, addr_t colorIndexAddr, addr_t colorAddr)
 {
@@ -1207,8 +1157,6 @@ EXPORTC bool setPalette(addr_t eAddr, addr_t colorIndexAddr, addr_t colorAddr)
     Config::get().mainKernel()->palette[colorIndex] = color;
     return true;
 }
-
-
 
 /***DOC SETPENSIZE
 SETPENSIZE size
@@ -1232,7 +1180,6 @@ EXPORTC void setPenSize(addr_t eAddr, double size)
     Config::get().mainTurtle()->setPenSize(size);
 }
 
-
 /***DOC SETBACKGROUND SETBG
 SETBACKGROUND color
 SETBG color
@@ -1255,7 +1202,8 @@ Value *Compiler::genSetbackground(const DatumPtr &node, RequestReturnType return
 
     // Color is not good.
     scaff->builder.SetInsertPoint(colorNotGoodBB);
-    Value *errVal = generateCallExtern(TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color)});
+    Value *errVal = generateCallExtern(
+        TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color)});
     scaff->builder.CreateRet(errVal);
 
     // Color is good.
@@ -1273,7 +1221,6 @@ EXPORTC bool setBackground(addr_t eAddr, addr_t colorAddr)
     Config::get().mainController()->setCanvasBackgroundColor(color);
     return true;
 }
-
 
 // PEN QUERIES
 
@@ -1296,7 +1243,6 @@ EXPORTC bool isPenDown(addr_t eAddr)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return Config::get().mainTurtle()->isPenDown();
 }
-
 
 /***DOC PENMODE
 PENMODE
@@ -1333,8 +1279,6 @@ EXPORTC addr_t getPenMode(addr_t eAddr)
     return reinterpret_cast<addr_t>(w);
 }
 
-
-
 /***DOC PENCOLOR PC
 PENCOLOR
 PC
@@ -1360,8 +1304,6 @@ EXPORTC addr_t getPenColor(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-
-
 /***DOC PALETTE
 PALETTE colornumber
 
@@ -1375,7 +1317,8 @@ Value *Compiler::genPalette(const DatumPtr &node, RequestReturnType returnType)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     Value *colorIndex = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    Value *isColorIndexGood = generateCallExtern(TyBool, "isColorIndexGood", {PaAddr(evaluator), PaAddr(colorIndex), PaDouble(CoDouble(0.0))});
+    Value *isColorIndexGood = generateCallExtern(
+        TyBool, "isColorIndexGood", {PaAddr(evaluator), PaAddr(colorIndex), PaDouble(CoDouble(0.0))});
     Value *isColorIndexGoodCmp = scaff->builder.CreateICmpEQ(isColorIndexGood, CoBool(true), "isColorIndexGood");
     BasicBlock *colorIndexNotGoodBB = BasicBlock::Create(*scaff->theContext, "colorIndexNotGood", theFunction);
     BasicBlock *colorIndexGoodBB = BasicBlock::Create(*scaff->theContext, "colorIndexGood", theFunction);
@@ -1383,7 +1326,8 @@ Value *Compiler::genPalette(const DatumPtr &node, RequestReturnType returnType)
 
     // Color index is not good.
     scaff->builder.SetInsertPoint(colorIndexNotGoodBB);
-    Value *errVal = generateCallExtern(TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(colorIndex)});
+    Value *errVal = generateCallExtern(
+        TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(colorIndex)});
     scaff->builder.CreateRet(errVal);
 
     // Color index is good.
@@ -1401,7 +1345,6 @@ EXPORTC addr_t getPaletteColor(addr_t eAddr, addr_t colorIndexAddr)
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
 }
-
 
 /***DOC PENSIZE
 PENSIZE
@@ -1421,7 +1364,6 @@ EXPORTC double getPenSize(addr_t eAddr)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return Config::get().mainTurtle()->getPenSize();
 }
-
 
 /***DOC BACKGROUND BG
 BACKGROUND
@@ -1449,7 +1391,6 @@ EXPORTC addr_t getBackground(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-
 // SAVING AND LOADING PICTURES
 
 /***DOC SAVEPICT
@@ -1465,7 +1406,8 @@ COD***/
 Value *Compiler::genSavepict(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *filename = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    return generateCallExtern(TyAddr, "savePict", {PaAddr(evaluator), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue()))});
+    return generateCallExtern(
+        TyAddr, "savePict", {PaAddr(evaluator), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue()))});
 }
 
 EXPORTC addr_t savePict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
@@ -1484,8 +1426,6 @@ EXPORTC addr_t savePict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-
-
 /***DOC SVGPICT
 SVGPICT filename
 
@@ -1498,7 +1438,8 @@ COD***/
 Value *Compiler::genSvgpict(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *filename = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    return generateCallExtern(TyAddr, "saveSvgpict", {PaAddr(evaluator), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue()))});
+    return generateCallExtern(
+        TyAddr, "saveSvgpict", {PaAddr(evaluator), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue()))});
 }
 
 EXPORTC addr_t saveSvgpict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
@@ -1524,7 +1465,6 @@ EXPORTC addr_t saveSvgpict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-
 /***DOC LOADPICT
 LOADPICT filename
 
@@ -1540,7 +1480,8 @@ COD***/
 Value *Compiler::genLoadpict(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *filename = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    return generateCallExtern(TyAddr, "loadPict", {PaAddr(evaluator), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue()))});
+    return generateCallExtern(
+        TyAddr, "loadPict", {PaAddr(evaluator), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue()))});
 }
 
 EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
@@ -1548,7 +1489,8 @@ EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *dFilename = reinterpret_cast<Datum *>(filenameAddr);
     auto *retval = reinterpret_cast<Datum *>(nodeAddr);
-    if (dFilename->isa == Datum::typeWord) {
+    if (dFilename->isa == Datum::typeWord)
+    {
         QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
         QString filepath = Config::get().mainKernel()->filepathForFilename(DatumPtr(filename));
         QImage image = QImage(filepath);
@@ -1559,8 +1501,10 @@ EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
         Config::get().mainController()->setCanvasBackgroundImage(image);
         goto done;
     }
-    if (dFilename->isList()) {
-        if (dFilename->listValue()->isEmpty()) {
+    if (dFilename->isList())
+    {
+        if (dFilename->listValue()->isEmpty())
+        {
             Config::get().mainController()->setCanvasBackgroundImage(QImage());
             goto done;
         }
@@ -1570,7 +1514,6 @@ done:
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
 }
-
 
 // MOUSE QUERIES
 
@@ -1598,11 +1541,10 @@ EXPORTC addr_t getMousePos(addr_t eAddr)
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(position.x()));
     retvalBuilder.append(DatumPtr(position.y()));
-    Datum* retval = retvalBuilder.finishedList().datumValue();
+    Datum *retval = retvalBuilder.finishedList().datumValue();
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
 }
-
 
 /***DOC CLICKPOS
 CLICKPOS
@@ -1625,11 +1567,10 @@ EXPORTC addr_t getClickPos(addr_t eAddr)
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(position.x()));
     retvalBuilder.append(DatumPtr(position.y()));
-    Datum* retval = retvalBuilder.finishedList().datumValue();
+    Datum *retval = retvalBuilder.finishedList().datumValue();
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
 }
-
 
 /***DOC BUTTONP BUTTON?
 BUTTONP
@@ -1654,8 +1595,6 @@ EXPORTC bool isMouseButtonDown(addr_t eAddr)
     return Config::get().mainController()->getIsMouseButtonDown();
 }
 
-
-
 /***DOC BUTTON
 BUTTON
 
@@ -1678,9 +1617,3 @@ EXPORTC double getMouseButton(addr_t eAddr)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return static_cast<double>(Config::get().mainController()->getAndResetButtonID());
 }
-
-
-
-
-
-

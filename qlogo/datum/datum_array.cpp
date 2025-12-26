@@ -47,7 +47,7 @@ Array::~Array() = default;
 
 // TODO: Make element access protected to properly enforce origin addition and bounds checking.
 
-QString Array::toString( ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited) const
+QString Array::toString(ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited) const
 {
     if (array.isEmpty())
     {
@@ -61,7 +61,7 @@ QString Array::toString( ToStringFlags flags, int printDepthLimit, int printWidt
         visited = localVisited.get();
     }
 
-    if ( (printDepthLimit == 0) || (visited->contains(this)))
+    if ((printDepthLimit == 0) || (visited->contains(this)))
     {
         return "{...}";
     }

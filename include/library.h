@@ -20,8 +20,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include <QStringList>
 #include <QSqlDatabase>
+#include <QStringList>
 
 /// @brief The Library class provides access to the QLogo standard library.
 class Library
@@ -33,7 +33,6 @@ class Library
     void getConnection();
 
   public:
-
     /// @brief Constructor for the Library class.
     Library()
     {
@@ -60,7 +59,6 @@ class Help
     void getConnection();
 
   public:
-
     /// @brief Constructor for the Help class.
     Help()
     {

@@ -22,10 +22,9 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "sharedconstants.h"
 #include "controller/logocontroller.h"
+#include "sharedconstants.h"
 #include <QColor>
-
 
 /// @brief The Turtle class is responsible for maintaining the state of the turtle,
 /// including its position, orientation, and pen state.

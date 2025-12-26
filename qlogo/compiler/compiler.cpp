@@ -14,20 +14,19 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum_types.h"
 #include "compiler.h"
-#include "compiler_private.h"
 #include "astnode.h"
-#include <iostream>
-#include <QDebug>
+#include "compiler_private.h"
 #include "controller/logocontroller.h"
-#include "workspace/callframe.h"
-#include "workspace/procedures.h"
+#include "datum_types.h"
 #include "kernel.h"
 #include "parser.h"
+#include "workspace/callframe.h"
+#include "workspace/procedures.h"
+#include <QDebug>
+#include <iostream>
 
-QHash<Datum *, std::shared_ptr<CompiledText> > Compiler::compiledTextTable;
-
+QHash<Datum *, std::shared_ptr<CompiledText>> Compiler::compiledTextTable;
 
 using namespace llvm;
 using namespace llvm::orc;
@@ -73,8 +72,6 @@ CompiledText::~CompiledText()
     mainCompilerContext->exitOnErr(rt->remove());
 }
 
-
-
 Compiler::Compiler()
 {
     Q_ASSERT(mainCompilerContext == nullptr);
@@ -95,16 +92,17 @@ QString Compiler::getTagNameFromNode(const DatumPtr &node) const
 {
     Q_ASSERT(node.astnodeValue()->genExpression == &Compiler::genTag);
     ASTNode *tagNode = node.astnodeValue()->childAtIndex(0).astnodeValue();
-    if (tagNode->genExpression == &Compiler::genLiteral) {
+    if (tagNode->genExpression == &Compiler::genLiteral)
+    {
         DatumPtr tagNameNode = tagNode->childAtIndex(0);
-        if (tagNameNode.isWord()) {
+        if (tagNameNode.isWord())
+        {
             QString tagName = tagNameNode.toString(Datum::ToStringFlags_Key);
             return tagName;
         }
     }
     return {};
 }
-
 
 void Compiler::setTagToBlockIdInProcedure(const QList<DatumPtr> &tagList, int32_t blockId)
 {
@@ -113,7 +111,8 @@ void Compiler::setTagToBlockIdInProcedure(const QList<DatumPtr> &tagList, int32_
 
     // If the current frame is not a procedure, there is no need to save the tag names
     // because we can't jump to them.
-    if (!currentFrame->sourceNode.isASTNode()) {
+    if (!currentFrame->sourceNode.isASTNode())
+    {
         return;
     }
 
@@ -123,7 +122,8 @@ void Compiler::setTagToBlockIdInProcedure(const QList<DatumPtr> &tagList, int32_
     for (auto &node : tagList)
     {
         QString tagName = getTagNameFromNode(node);
-        if (!tagName.isEmpty()) {
+        if (!tagName.isEmpty())
+        {
             currentProcedure->tagToBlockId[tagName] = blockId;
             currentProcedure->tagToLine[tagName] = currentRunningLine;
         }
@@ -139,13 +139,15 @@ BasicBlock *Compiler::generateTOC(QList<BasicBlock *> blocks, Function *theFunct
 
     // Since the TOC is prepended, insert them at the start of the function in reverse order.
     BasicBlock *previousBlock = blocks[0];
-    for (int i = 1; i < blocks.size(); ++i) {
+    for (int i = 1; i < blocks.size(); ++i)
+    {
         BasicBlock *tocBlock = BasicBlock::Create(*scaff->theContext, "Toc", theFunction, previousBlock);
         tocEntries.prepend(tocBlock);
         previousBlock = tocBlock;
     }
 
-    for (int i = 0; i < tocEntries.size(); ++i) {
+    for (int i = 0; i < tocEntries.size(); ++i)
+    {
         BasicBlock *tocEntry = tocEntries[i];
         uint32_t tagId = i + 1;
         BasicBlock *destBlock = blocks[tagId];
@@ -214,7 +216,9 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
             currentBlock = newBlock;
             scaff->builder.SetInsertPoint(newBlock);
             setTagToBlockIdInProcedure(srcBlock, blockId);
-        } else {
+        }
+        else
+        {
             for (auto &node : srcBlock)
             {
                 // If this is the last node, accept any Datum return type.
@@ -225,11 +229,12 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
             }
         }
     }
-        
+
     // Finish off the function
     scaff->builder.CreateRet(nodeResult);
 
-    if (blocks.size() > 1) {
+    if (blocks.size() > 1)
+    {
         generateTOC(blocks, theFunction);
     }
 
@@ -271,7 +276,6 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     return compiledText->functionPtr;
 }
 
-
 CompiledFunctionPtr Compiler::functionPtrFromASTNode(ASTNode *aNode)
 {
     auto iter = compiledTextTable.find(static_cast<Datum *>(aNode));
@@ -281,7 +285,6 @@ CompiledFunctionPtr Compiler::functionPtrFromASTNode(ASTNode *aNode)
     QList<QList<DatumPtr>> parsedList = {{DatumPtr(aNode)}};
     return generateFunctionPtrFromASTList(parsedList, static_cast<Datum *>(aNode));
 }
-
 
 CompiledFunctionPtr Compiler::functionPtrFromList(List *aList)
 {
@@ -298,7 +301,6 @@ void Compiler::destroyCompiledTextForDatum(Datum *aDatum)
 {
     compiledTextTable.remove(aDatum);
 }
-
 
 Value *Compiler::generateChildOfNode(ASTNode *parent, const DatumPtr &node, RequestReturnType returnType)
 {
@@ -497,7 +499,7 @@ Value *Compiler::generateArrayFromDatum(ASTNode *parent, Value *src)
     return generateFromDatum(Datum::typeArray, parent, src);
 }
 
-Value * Compiler::genLiteral(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genLiteral(const DatumPtr &node, RequestReturnType returnType)
 {
     DatumPtr literalPtr = node.astnodeValue()->childAtIndex(0);
     if (returnType == RequestReturnReal)
@@ -566,18 +568,13 @@ Value *Compiler::genExecProcedure(const DatumPtr &node, RequestReturnType return
     AllocaInst *paramAry = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, "paramAry");
     Value *vAstnodeValue = CoAddr(node.astnodeValue());
     Value *vParamArySize = CoInt32(node.astnodeValue()->countOfChildren());
-    return generateCallExtern(TyAddr,
-                         "runProcedure",
-                          {PaAddr(evaluator),
-                           PaAddr(vAstnodeValue),
-                           PaAddr(paramAry),
-                           PaInt32(vParamArySize)});
+    return generateCallExtern(
+        TyAddr, "runProcedure", {PaAddr(evaluator), PaAddr(vAstnodeValue), PaAddr(paramAry), PaInt32(vParamArySize)});
 }
-
 
 Value *Compiler::generateCallList(Value *list, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, "runList", {PaAddr(evaluator),PaAddr(list)});
+    return generateCallExtern(TyAddr, "runList", {PaAddr(evaluator), PaAddr(list)});
 }
 
 Value *Compiler::generateWordFromDouble(Value *val)
@@ -689,7 +686,6 @@ AllocaInst *Compiler::generateAllocaAry(const std::vector<llvm::Value *> &values
     return retval;
 }
 
-
 std::vector<Value *> Compiler::generateChildren(ASTNode *node, std::vector<RequestReturnType> returnTypeAry)
 {
     Q_ASSERT(node->countOfChildren() == returnTypeAry.size());
@@ -708,14 +704,15 @@ std::vector<Value *> Compiler::generateChildren(ASTNode *node, std::vector<Reque
 
 // Generate a call to an external function
 Value *Compiler::generateCallExtern(Type *returnType,
-                               const std::string &name,
-                               const std::vector<std::pair<Type *,Value *> >&args)
+                                    const std::string &name,
+                                    const std::vector<std::pair<Type *, Value *>> &args)
 {
     std::vector<Type *> paramTypes;
     std::vector<Value *> argsV;
     paramTypes.reserve(args.size());
     argsV.reserve(args.size());
-    for (auto &arg : args) {
+    for (auto &arg : args)
+    {
         paramTypes.push_back(arg.first);
         argsV.push_back(arg.second);
     }
@@ -751,7 +748,7 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr
 
     scaff->builder.SetInsertPoint(bailoutBB);
     Value *errWho = CoAddr(parent->nodeName.datumValue());
-    Value *errObj = generateCallExtern(TyAddr, "getErrorNoLike", {PaAddr(evaluator),PaAddr(errWho), PaAddr(list)});
+    Value *errObj = generateCallExtern(TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(errWho), PaAddr(list)});
     scaff->builder.CreateRet(errObj);
 
     scaff->builder.SetInsertPoint(continueBB);
@@ -766,7 +763,6 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr
     scaff->builder.SetInsertPoint(gotPosBB);
     return ary;
 }
-
 
 Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const validatorFunction &validator)
 {
@@ -811,7 +807,7 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
     scaff->builder.CreateCondBr(isDatumCond, wordCheckBB, notDatumBB);
 
     // TODO: getDoubleForDatum() makes this redundant.
-    // Check if the new candidate is a word.    
+    // Check if the new candidate is a word.
     scaff->builder.SetInsertPoint(wordCheckBB);
     badValue->addIncoming(newCandidate, wordCheckBB);
     Value *isWordCond = scaff->builder.CreateICmpEQ(datamIsa, CoInt32(Datum::typeWord), "isWordCond");
@@ -887,8 +883,7 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
     return candidate;
 }
 
-
-#pragma GCC diagnostic  push
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 
 // Generate code to return a datum type (isa) of a given object.
@@ -897,7 +892,7 @@ Value *Compiler::generateGetDatumIsa(Value *objAddr)
     // The GEP instruction assumes that the offset value is in multiples of the size of the data type.
     // However, offsetof() returns the offset in bytes.
     const unsigned int isaOffset = offsetof(Datum, isa) / sizeof(addr_t);
-    Q_ASSERT((double)offsetof(Datum,isa) / sizeof(addr_t) - isaOffset == 0);
+    Q_ASSERT((double)offsetof(Datum, isa) / sizeof(addr_t) - isaOffset == 0);
 
     ConstantInt *isaOffsetofLoc = CoInt64(isaOffset);
     Value *isaLoc = scaff->builder.CreateGEP(TyAddr, objAddr, isaOffsetofLoc, "isaLoc");

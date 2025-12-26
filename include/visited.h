@@ -17,9 +17,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-
-#include <QSet>
 #include <QMap>
+#include <QSet>
 
 class Datum;
 
@@ -33,7 +32,9 @@ class VisitedSet
 
   public:
     /// @brief Create an empty VisitedSet.
-    VisitedSet() {}
+    VisitedSet()
+    {
+    }
 
     /// @brief Add a node to the visited set.
     /// @param node The node to mark as visited.
@@ -67,7 +68,9 @@ class VisitedMap
 
   public:
     /// @brief Create an empty VisitedMap.
-    VisitedMap() {}
+    VisitedMap()
+    {
+    }
 
     /// @brief Add a node to the visited map.
     /// @param key The key of the node to mark as visited.

@@ -23,7 +23,7 @@
 #include <qdatetime.h>
 #include <qdebug.h>
 
-extern const QString& specialChars();
+extern const QString &specialChars();
 
 void Runparser::runparseSpecialchars()
 {
@@ -51,7 +51,7 @@ void Runparser::runparseString()
         retval = "?";
         ++runparseCIter;
         DatumPtr number = runparseNumber();
-        if ( ! number.isNothing())
+        if (!number.isNothing())
         {
             runparseBuilder->append(DatumPtr(QString("(")));
             runparseBuilder->append(DatumPtr(QString("?")));
@@ -80,7 +80,7 @@ void Runparser::runparseMinus()
     }
 
     DatumPtr number = runparseNumber();
-    if ( ! number.isNothing())
+    if (!number.isNothing())
     {
         runparseBuilder->append(number);
         return;
@@ -209,7 +209,8 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
         src = stream.readlistWithPrompt("", false);
     }
 
-    if (src.isNothing()) {
+    if (src.isNothing())
+    {
         return emptyList();
     }
 

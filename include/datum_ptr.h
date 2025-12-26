@@ -2,15 +2,14 @@
 #define DATUM_PTR_H
 
 #include "datum_core.h"
-#include <QString>
 #include <QDebug>
+#include <QString>
 
 class Procedure;
 class ASTNode;
 class FlowControl;
 class FCError;
 class VisitedSet;
-
 
 /// @brief A smart pointer to a Datum.
 ///
@@ -150,7 +149,6 @@ class DatumPtr
         return d->isa == Datum::typeArray;
     }
 
-
     /// @brief Returns true if the referred Datum is an Err, false otherwise.
     ///
     /// @return True if the referred Datum is an Err, false otherwise.
@@ -159,11 +157,11 @@ class DatumPtr
         return d->isa == Datum::typeError;
     }
 
-
     /// @brief Returns true if the referred Datum is the singleton Datum instance, false otherwise.
     ///
     /// @return True if the referred Datum is the singleton Datum instance, false otherwise.
-    bool isNothing() const {
+    bool isNothing() const
+    {
         return d == Datum::getInstance();
     }
 
@@ -174,7 +172,6 @@ class DatumPtr
     {
         return (d->isa & Datum::typeFlowControlMask) != 0;
     }
-
 
     /// @brief Reassign the pointer to refer to the other object.
     ///
@@ -204,7 +201,10 @@ class DatumPtr
     /// @param printWidthLimit Limit the length of a string or list or array for readability.
     /// @param visited Set of visited nodes to prevent cycles.
     /// @return A string representation of the Datum.
-    QString toString( Datum::ToStringFlags flags = Datum::ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) const;
+    QString toString(Datum::ToStringFlags flags = Datum::ToStringFlags_None,
+                     int printDepthLimit = -1,
+                     int printWidthLimit = -1,
+                     VisitedSet *visited = nullptr) const;
 
     /// @brief returns the DatumType of the referenced object.
     ///
@@ -231,11 +231,11 @@ Q_DECLARE_TYPEINFO(DatumPtr, Q_RELOCATABLE_TYPE);
 /// @brief A pointer to the singleton Datum instance.
 /// @details Returns a reference to a function-local static to avoid exceptions
 /// during global static initialization.
-const DatumPtr& nothing();
+const DatumPtr &nothing();
 
 /// @brief A pointer to an empty list.
 /// @details Returns a reference to a function-local static to avoid exceptions
 /// during global static initialization.
-const DatumPtr& emptyList();
+const DatumPtr &emptyList();
 
 #endif // DATUM_PTR_H

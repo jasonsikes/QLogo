@@ -14,9 +14,9 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "compiler_private.h"
 #include "astnode.h"
 #include "compiler.h"
+#include "compiler_private.h"
 
 using namespace llvm;
 using namespace llvm::orc;
@@ -44,7 +44,8 @@ Value *Compiler::genPrint(const DatumPtr &node, RequestReturnType returnType)
     Value *useShow = CoBool(false);
     Value *addNewline = CoBool(true);
 
-    generateCallExtern(TyAddr, "stdWriteDatumAry", {PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline)});
+    generateCallExtern(
+        TyAddr, "stdWriteDatumAry", {PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline)});
     return generateVoidRetval(node);
 }
 
@@ -66,7 +67,8 @@ Value *Compiler::genShow(const DatumPtr &node, RequestReturnType returnType)
     Value *useShow = CoBool(true);
     Value *addNewline = CoBool(true);
 
-    generateCallExtern(TyAddr, "stdWriteDatumAry", {PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline)});
+    generateCallExtern(
+        TyAddr, "stdWriteDatumAry", {PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline)});
     return generateVoidRetval(node);
 }
 
@@ -101,6 +103,7 @@ Value *Compiler::genType(const DatumPtr &node, RequestReturnType returnType)
     Value *useShow = CoBool(false);
     Value *addNewline = CoBool(false);
 
-    generateCallExtern(TyAddr, "stdWriteDatumAry", {PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline)});
+    generateCallExtern(
+        TyAddr, "stdWriteDatumAry", {PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline)});
     return generateVoidRetval(node);
 }

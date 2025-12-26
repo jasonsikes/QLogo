@@ -14,16 +14,16 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "compiler_private.h"
-#include "datum_types.h"
 #include "astnode.h"
 #include "compiler.h"
-#include "workspace/callframe.h"
+#include "compiler_private.h"
+#include "datum_types.h"
 #include "sharedconstants.h"
+#include "workspace/callframe.h"
 #include <QRandomGenerator>
 
 /// Get a reference to the random number generator instance.
-static QRandomGenerator& randomGenerator()
+static QRandomGenerator &randomGenerator()
 {
     static QRandomGenerator randomGeneratorInstance;
     return randomGeneratorInstance;
@@ -105,7 +105,7 @@ Value *Compiler::generateNotNegativeInt32FromDouble(ASTNode *parent, Value *src)
     Value *retvalInt = nullptr;
     auto validator = [this, &retvalInt](Value *candidate) {
         BasicBlock *intTestBB = scaff->builder.GetInsertBlock();
-        Function *theFunction = intTestBB->getParent(); 
+        Function *theFunction = intTestBB->getParent();
 
         BasicBlock *zeroTestBB = BasicBlock::Create(*scaff->theContext, "zeroTestBB", theFunction);
         BasicBlock *resumeBB = BasicBlock::Create(*scaff->theContext, "resumeBB", theFunction);
@@ -134,7 +134,7 @@ Value *Compiler::generateNotZeroInt32FromDouble(ASTNode *parent, Value *src)
     Value *retvalInt = nullptr;
     auto validator = [this, &retvalInt](Value *candidate) {
         BasicBlock *intTestBB = scaff->builder.GetInsertBlock();
-        Function *theFunction = intTestBB->getParent(); 
+        Function *theFunction = intTestBB->getParent();
 
         BasicBlock *zeroTestBB = BasicBlock::Create(*scaff->theContext, "zeroTestBB", theFunction);
         BasicBlock *resumeBB = BasicBlock::Create(*scaff->theContext, "resumeBB", theFunction);
@@ -160,23 +160,20 @@ Value *Compiler::generateNotZeroInt32FromDouble(ASTNode *parent, Value *src)
 
 Value *Compiler::generateNotZeroFromDouble(ASTNode *parent, Value *src)
 {
-    return generateValidationDouble(parent, src, [this](Value *val) {
-        return scaff->builder.CreateFCmpONE(val, CoDouble(0.0), "isZeroTest");
-    });
+    return generateValidationDouble(
+        parent, src, [this](Value *val) { return scaff->builder.CreateFCmpONE(val, CoDouble(0.0), "isZeroTest"); });
 }
 
 Value *Compiler::generateNotNegativeFromDouble(ASTNode *parent, Value *src)
 {
-    return generateValidationDouble(parent, src, [this](Value *val) {
-        return scaff->builder.CreateFCmpOGE(val, CoDouble(0.0), "isZeroTest");
-    });
+    return generateValidationDouble(
+        parent, src, [this](Value *val) { return scaff->builder.CreateFCmpOGE(val, CoDouble(0.0), "isZeroTest"); });
 }
 
 Value *Compiler::generateGTZeroFromDouble(ASTNode *parent, Value *src)
 {
-    return generateValidationDouble(parent, src, [this](Value *val) {
-        return scaff->builder.CreateFCmpOGT(val, CoDouble(0.0), "isZeroTest");
-    });
+    return generateValidationDouble(
+        parent, src, [this](Value *val) { return scaff->builder.CreateFCmpOGT(val, CoDouble(0.0), "isZeroTest"); });
 }
 
 /***DOC ARCTAN
@@ -311,7 +308,7 @@ Value *Compiler::genBitand(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnReal);
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
 
-    for (auto & child : children)
+    for (auto &child : children)
     {
         child = generateInt32FromDouble(node.astnodeValue(), child, true);
     }
@@ -323,7 +320,7 @@ Value *Compiler::genBitand(const DatumPtr &node, RequestReturnType returnType)
 
     Value *retval = children[0];
 
-    for (auto & child : children)
+    for (auto &child : children)
     {
         retval = scaff->builder.CreateAnd(retval, child, "BitAND");
     }
@@ -343,7 +340,7 @@ Value *Compiler::genBitor(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnReal);
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
 
-    for (auto & child : children)
+    for (auto &child : children)
     {
         child = generateInt32FromDouble(node.astnodeValue(), child, true);
     }
@@ -355,7 +352,7 @@ Value *Compiler::genBitor(const DatumPtr &node, RequestReturnType returnType)
 
     Value *retval = children[0];
 
-    for (auto & child : children)
+    for (auto &child : children)
     {
         retval = scaff->builder.CreateOr(retval, child, "BitOR");
     }
@@ -376,7 +373,7 @@ Value *Compiler::genBitxor(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnReal);
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
 
-    for (auto & child : children)
+    for (auto &child : children)
     {
         child = generateInt32FromDouble(node.astnodeValue(), child, true);
     }
@@ -961,7 +958,7 @@ Value *Compiler::genRandom(const DatumPtr &node, RequestReturnType returnType)
         children[0] = generateNotZeroFromDouble(node.astnodeValue(), children[0]);
     }
 
-    for (auto & child : children)
+    for (auto &child : children)
     {
         iChildren.push_back(generateInt32FromDouble(node.astnodeValue(), child, true));
     }
@@ -1131,7 +1128,7 @@ Value *Compiler::generateAndOr(const DatumPtr &node, RequestReturnType returnTyp
     BasicBlock *exitNoContBB = BasicBlock::Create(*scaff->theContext, "exitNoCont");
     BasicBlock *exitMayContBB = BasicBlock::Create(*scaff->theContext, "exitMayCont");
     BasicBlock *exitBB = BasicBlock::Create(*scaff->theContext, "exit");
-    for (auto & child : children)
+    for (auto &child : children)
     {
         Value *c = child;
 
@@ -1177,7 +1174,6 @@ Value *Compiler::generateAndOr(const DatumPtr &node, RequestReturnType returnTyp
     return phiNode;
 }
 
-
 Value *Compiler::generateListExecIfList(ASTNode *parent, Value *c)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
@@ -1197,8 +1193,8 @@ Value *Compiler::generateListExecIfList(ASTNode *parent, Value *c)
     // The list gets executed.
     Value *listRunResult = generateCallList(c, RequestReturnDatum);
     Value *listRunResultType = generateGetDatumIsa(listRunResult);
-    Value *listRunResultCond = scaff->builder.CreateICmpEQ(
-        listRunResultType, CoInt32(Datum::typeASTNode), "listRunResultTypeTest");
+    Value *listRunResultCond =
+        scaff->builder.CreateICmpEQ(listRunResultType, CoInt32(Datum::typeASTNode), "listRunResultTypeTest");
     scaff->builder.CreateCondBr(listRunResultCond, isNothingBB, notListBB);
 
     // List execution resulted in nothing.

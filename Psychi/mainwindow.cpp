@@ -151,8 +151,7 @@ void MainWindow::initialize()
     ui->mainCanvas->setLabelFontName(defaultFont.family());
     setSplitterforMode(initScreenMode);
 
-    message(W_INITIALIZE) << QFontDatabase::families() << defaultFont.family()
-              << (double)defaultFont.pointSizeF();
+    message(W_INITIALIZE) << QFontDatabase::families() << defaultFont.family() << (double)defaultFont.pointSizeF();
 }
 
 void MainWindow::fileDialogModal()

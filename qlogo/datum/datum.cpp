@@ -16,16 +16,15 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum_core.h"
+#include "sharedconstants.h"
 #include <QObject>
 #include <qdebug.h>
 #include <unistd.h>
-#include "sharedconstants.h"
 
 /// @brief The number of Datum objects in use.
 int countOfNodes = 0;
 /// @brief The maximum number of Datum objects that have ever been in use.
 int maxCountOfNodes = 0;
-
 
 Datum::Datum() : retainCount(0), isa(typeNothingPersistent)
 {
@@ -33,7 +32,7 @@ Datum::Datum() : retainCount(0), isa(typeNothingPersistent)
     if (countOfNodes > maxCountOfNodes)
         maxCountOfNodes = countOfNodes;
     if (Config::get().showCON)
-        qDebug() <<this << " con++: " << countOfNodes;
+        qDebug() << this << " con++: " << countOfNodes;
 }
 
 Datum *Datum::getInstance()
@@ -46,10 +45,10 @@ Datum::~Datum()
 {
     --countOfNodes;
     if (Config::get().showCON)
-        qDebug() <<this << " --con: " << countOfNodes;
+        qDebug() << this << " --con: " << countOfNodes;
 }
 
-QString Datum::toString( ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited) const
+QString Datum::toString(ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited) const
 {
     return QObject::tr("nothing");
 }

@@ -21,8 +21,8 @@
 #ifndef LOGOCONTROLLERGUI_H
 #define LOGOCONTROLLERGUI_H
 
-#include "controller/logocontroller.h"
 #include "controller/inputqueue.h"
+#include "controller/logocontroller.h"
 #include "sharedconstants.h"
 #include <QDataStream>
 #include <QFile>

@@ -16,7 +16,6 @@
 
 #include "visited.h"
 
-
 // VisitedSet implementation
 
 void VisitedSet::add(const Datum *node)
@@ -43,7 +42,6 @@ int VisitedSet::size() const
 {
     return visited.size();
 }
-
 
 // VisitedMap implementation
 

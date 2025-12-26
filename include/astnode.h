@@ -17,8 +17,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum_ptr.h"
 #include "compiler_types.h"
+#include "datum_ptr.h"
 #include <QList>
 
 /// @brief A node of QLogo's Abstract Syntax Tree.
@@ -74,8 +74,10 @@ class ASTNode : public Datum
 
     /// @brief For debugging. To be used when printing out the AST. Parameters are ignored.
     /// @return A string representation of this node.
-    QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) const override;
-
+    QString toString(ToStringFlags flags = ToStringFlags_None,
+                     int printDepthLimit = -1,
+                     int printWidthLimit = -1,
+                     VisitedSet *visited = nullptr) const override;
 };
 
 #endif // DATUM_ASTNODE_H

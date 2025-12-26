@@ -17,19 +17,19 @@
 ///
 //===----------------------------------------------------------------------===//
 
+#include "compiler_types.h"
+#include "datum_ptr.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/Transforms/Scalar/GVN.h"
 #include "llvm/Transforms/Scalar/Reassociate.h"
-#include "datum_ptr.h"
-#include "compiler_types.h"
 
 struct Scaffold;
 
 namespace llvm
 {
-    class Value;
-    class AllocaInst;
-};
+class Value;
+class AllocaInst;
+}; // namespace llvm
 
 /// @brief A function that validates a value.
 /// @param parent The parent ASTNode of the value to validate.
@@ -37,7 +37,6 @@ namespace llvm
 /// @return The result of a comparison operation, e.g. CreateICmpEQ().
 /// @note The retval of this function will immediately be passed to CreateCondBr().
 typedef std::function<llvm::Value *(llvm::Value *)> validatorFunction;
-
 
 class Compiler
 {
@@ -51,7 +50,7 @@ class Compiler
     llvm::Value *blockId;
 
     // The hash table of compiled texts referenced by lists or ASTNodes.
-    static QHash<Datum *, std::shared_ptr<CompiledText> > compiledTextTable;
+    static QHash<Datum *, std::shared_ptr<CompiledText>> compiledTextTable;
 
     // Child node generation.
 
@@ -76,11 +75,10 @@ class Compiler
     // Generate code for the child node at the given index and cast it to the requested data type.
     llvm::Value *generateChild(ASTNode *parent, unsigned int index, RequestReturnType);
 
-
     // Generate a call to an external function
     llvm::Value *generateCallExtern(llvm::Type *returnType,
-                               const std::string &name,
-                               const std::vector<std::pair<llvm::Type *, llvm::Value *>> &args);
+                                    const std::string &name,
+                                    const std::vector<std::pair<llvm::Type *, llvm::Value *>> &args);
 
     // Generate a query to return a datum type (isa) of a given object.
     llvm::Value *generateGetDatumIsa(llvm::Value *objAddr);
@@ -250,7 +248,9 @@ class Compiler
     llvm::Value *generateSetitem(const DatumPtr &node, RequestReturnType returnType, bool isDangerous);
 
     // generate the common code for OUTPUT, STOP, and .MAYBEOUTPUT.
-    llvm::Value *generateProcedureExit(const DatumPtr &node, RequestReturnType returnType, RequestReturnType paramRequestType);
+    llvm::Value *generateProcedureExit(const DatumPtr &node,
+                                       RequestReturnType returnType,
+                                       RequestReturnType paramRequestType);
 
     llvm::Value *genValueOf(const DatumPtr &node, RequestReturnType returnType);
     llvm::Value *genLiteral(const DatumPtr &node, RequestReturnType returnType);

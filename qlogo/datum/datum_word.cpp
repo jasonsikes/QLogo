@@ -17,100 +17,107 @@
 
 #include "datum_types.h"
 #include <QObject>
-#include <qdebug.h>
 #include <array>
+#include <qdebug.h>
 
-namespace {
-    constexpr std::array<ushort, 46> rawToAsciiMapPairs = {
-        3,  32,  // ' ' (space)
-        4,  9,   // \t (tab)
-        5,  10,  // \n (newline)
-        6,  40,  // ( (left parenthesis)
-        11, 63,  // ? (question mark)
-        14, 43,  // + (plus)
-        15, 126, // ~ (tilde)
-        16, 41,  // ) (right parenthesis)
-        17, 91,  // [ (left bracket)
-        18, 93,  // ] (right bracket)
-        19, 45,  // - (minus)
-        20, 42,  // * (asterisk)
-        21, 47,  // / (slash)
-        22, 61,  // = (equals)
-        23, 60,  // < (less than)
-        24, 62,  // > (greater than)
-        25, 34,  // " (quote)
-        26, 92,  // \ (backslash)
-        27, 58,  // : (colon)
-        28, 59,  // ; (semicolon)
-        29, 124, // | (vertical bar)
-        30, 123, // { (left brace)
-        31, 125  // } (right brace)
-    };
-    
-    constexpr std::array<ushort, 46> asciiToRawMapPairs = {
-        126, 15, // ~ (tilde)
-        125, 31, // } (right brace)
-        124, 29, // | (vertical bar)
-        123, 30, // { (left brace)
-        93, 18,  // ] (right bracket)
-        92, 26,  // \ (backslash)
-        91, 17,  // [ (left bracket)
-        63, 11,  // ? (question mark)
-        62, 24,  // > (greater than)
-        61, 22,  // = (equals)
-        60, 23,  // < (less than)
-        59, 28,  // ; (semicolon)
-        58, 27,  // : (colon)
-        47, 21,  // / (slash)
-        45, 19,  // - (minus)
-        43, 14,  // + (plus)
-        42, 20,  // * (asterisk)
-        41, 16,  // ) (right parenthesis)
-        40,  6,  // ( (left parenthesis)
-        34,  25, // " (quote)
-        32,  3,  // ' ' (space)
-        10,  5,  // \n (newline)
-        9,  4    // \t (tab)
-    };
-    
-    // Build a 32-element lookup table from the mapping pairs at compile time
-    constexpr std::array<ushort, 32> buildRawToAsciiLookup()
+namespace
+{
+constexpr std::array<ushort, 46> rawToAsciiMapPairs = {
+    3,  32,  // ' ' (space)
+    4,  9,   // \t (tab)
+    5,  10,  // \n (newline)
+    6,  40,  // ( (left parenthesis)
+    11, 63,  // ? (question mark)
+    14, 43,  // + (plus)
+    15, 126, // ~ (tilde)
+    16, 41,  // ) (right parenthesis)
+    17, 91,  // [ (left bracket)
+    18, 93,  // ] (right bracket)
+    19, 45,  // - (minus)
+    20, 42,  // * (asterisk)
+    21, 47,  // / (slash)
+    22, 61,  // = (equals)
+    23, 60,  // < (less than)
+    24, 62,  // > (greater than)
+    25, 34,  // " (quote)
+    26, 92,  // \ (backslash)
+    27, 58,  // : (colon)
+    28, 59,  // ; (semicolon)
+    29, 124, // | (vertical bar)
+    30, 123, // { (left brace)
+    31, 125  // } (right brace)
+};
+
+constexpr std::array<ushort, 46> asciiToRawMapPairs = {
+    126, 15, // ~ (tilde)
+    125, 31, // } (right brace)
+    124, 29, // | (vertical bar)
+    123, 30, // { (left brace)
+    93,  18, // ] (right bracket)
+    92,  26, // \ (backslash)
+    91,  17, // [ (left bracket)
+    63,  11, // ? (question mark)
+    62,  24, // > (greater than)
+    61,  22, // = (equals)
+    60,  23, // < (less than)
+    59,  28, // ; (semicolon)
+    58,  27, // : (colon)
+    47,  21, // / (slash)
+    45,  19, // - (minus)
+    43,  14, // + (plus)
+    42,  20, // * (asterisk)
+    41,  16, // ) (right parenthesis)
+    40,  6,  // ( (left parenthesis)
+    34,  25, // " (quote)
+    32,  3,  // ' ' (space)
+    10,  5,  // \n (newline)
+    9,   4   // \t (tab)
+};
+
+// Build a 32-element lookup table from the mapping pairs at compile time
+constexpr std::array<ushort, 32> buildRawToAsciiLookup()
+{
+    std::array<ushort, 32> lookup{};
+    // Initialize with identity mapping (index == value)
+    for (size_t i = 0; i < lookup.size(); ++i)
     {
-        std::array<ushort, 32> lookup{};
-        // Initialize with identity mapping (index == value)
-        for (size_t i = 0; i < lookup.size(); ++i) {
-            lookup[i] = static_cast<ushort>(i);
-        }
-        // Override with mappings from 23 pairs
-        for (size_t i = 0; i < rawToAsciiMapPairs.size(); i += 2) {
-            ushort raw = rawToAsciiMapPairs[i];
-            ushort ascii = rawToAsciiMapPairs[i + 1];
-            if (raw < 32) {
-                lookup[raw] = ascii;
-            }
-        }
-        return lookup;
+        lookup[i] = static_cast<ushort>(i);
     }
-    
-    // Build a 128-element lookup table from the mapping pairs at compile time
-    constexpr std::array<ushort, 128> buildAsciiToRawLookup()
+    // Override with mappings from 23 pairs
+    for (size_t i = 0; i < rawToAsciiMapPairs.size(); i += 2)
     {
-        std::array<ushort, 128> lookup{};
-        // Initialize with identity mapping (index == value)
-        for (size_t i = 0; i < lookup.size(); ++i) {
-            lookup[i] = static_cast<ushort>(i);
+        ushort raw = rawToAsciiMapPairs[i];
+        ushort ascii = rawToAsciiMapPairs[i + 1];
+        if (raw < 32)
+        {
+            lookup[raw] = ascii;
         }
-        // Override with mappings from 23 pairs
-        for (size_t i = 0; i < asciiToRawMapPairs.size(); i += 2) {
-            ushort ascii = asciiToRawMapPairs[i];
-            ushort raw = asciiToRawMapPairs[i + 1];
-            if (ascii < 128) {
-                lookup[ascii] = raw;
-            }
-        }
-        return lookup;
     }
+    return lookup;
 }
+
+// Build a 128-element lookup table from the mapping pairs at compile time
+constexpr std::array<ushort, 128> buildAsciiToRawLookup()
+{
+    std::array<ushort, 128> lookup{};
+    // Initialize with identity mapping (index == value)
+    for (size_t i = 0; i < lookup.size(); ++i)
+    {
+        lookup[i] = static_cast<ushort>(i);
+    }
+    // Override with mappings from 23 pairs
+    for (size_t i = 0; i < asciiToRawMapPairs.size(); i += 2)
+    {
+        ushort ascii = asciiToRawMapPairs[i];
+        ushort raw = asciiToRawMapPairs[i + 1];
+        if (ascii < 128)
+        {
+            lookup[ascii] = raw;
+        }
+    }
+    return lookup;
+}
+} // namespace
 
 /// @brief Convert a raw character to a printable character.
 /// @param src The raw character to convert.
@@ -121,11 +128,11 @@ namespace {
 QChar rawToChar(const QChar &src)
 {
     static constexpr auto rawToAsciiLookup = buildRawToAsciiLookup();
-    
+
     ushort v = src.unicode();
     if (v >= 32)
         return src;
-    
+
     return {rawToAsciiLookup[v]};
 }
 
@@ -154,11 +161,11 @@ void rawToChar(QString &src)
 QChar charToRaw(const QChar &src)
 {
     static constexpr auto asciiToRawLookup = buildAsciiToRawLookup();
-    
+
     ushort v = src.unicode();
     if (v >= 128)
         return src;
-    
+
     return {asciiToRawLookup[v]};
 }
 
@@ -170,7 +177,7 @@ Word::Word()
     printableString = QString();
     keyString = QString();
     sourceIsNumber = false;
-    //qDebug() <<this << " new++ word";
+    // qDebug() <<this << " new++ word";
 }
 
 Word::Word(const QString &other, bool aIsForeverSpecial)
@@ -182,7 +189,7 @@ Word::Word(const QString &other, bool aIsForeverSpecial)
     printableString = QString();
     keyString = QString();
     sourceIsNumber = false;
-    //qDebug() <<this << " new++ word: " <<other;
+    // qDebug() <<this << " new++ word: " <<other;
 }
 
 Word::Word(double other)
@@ -194,7 +201,7 @@ Word::Word(double other)
     printableString = QString();
     keyString = QString();
     sourceIsNumber = true;
-    //qDebug() <<this << " new++ word: " <<other;
+    // qDebug() <<this << " new++ word: " <<other;
 }
 
 Word::~Word() = default;
@@ -258,7 +265,7 @@ bool Word::boolValue() const
     return boolean;
 }
 
-QString Word::toString( ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited) const
+QString Word::toString(ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited) const
 {
     if (flags & Datum::ToStringFlags_Key)
     {
@@ -289,7 +296,7 @@ QString Word::toString( ToStringFlags flags, int printDepthLimit, int printWidth
         srcString = srcString.left(printWidthLimit) + "...";
     }
 
-    if ( ! fullPrintp)
+    if (!fullPrintp)
     {
         return srcString;
     }

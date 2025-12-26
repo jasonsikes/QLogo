@@ -14,27 +14,28 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "compiler.h"
 #include "parser.h"
 #include "astnode.h"
+#include "compiler.h"
 #include "controller/logocontroller.h"
+#include "controller/textstream.h"
 #include "datum_types.h"
 #include "flowcontrol.h"
 #include "kernel.h"
 #include "runparser.h"
+#include "workspace/procedures.h"
 #include <qdatetime.h>
 #include <qdebug.h>
-#include "workspace/procedures.h"
-#include "controller/textstream.h"
 
 // TODO: we could reimplement this into something a little faster.
 /// A string of special characters that are used in the parser.
-const QString& specialChars() {
+const QString &specialChars()
+{
     static const QString specialCharsInstance("+-()*%/<>=");
     return specialCharsInstance;
 }
 
-QHash<List*, QList<QList<DatumPtr>>> Parser::astListTable;
+QHash<List *, QList<QList<DatumPtr>>> Parser::astListTable;
 
 bool isTag(const DatumPtr &node)
 {
@@ -107,7 +108,6 @@ void Parser::inputProcedure(ASTNode *node, TextStream *readStream)
     Config::get().mainKernel()->sysPrint(message);
 }
 
-
 QList<QList<DatumPtr>> Parser::astFromList(List *aList)
 {
     QList<QList<DatumPtr>> &retval = astListTable[aList];
@@ -125,7 +125,7 @@ QList<QList<DatumPtr>> Parser::astFromList(List *aList)
 
         try
         {
-            while ( ! currentToken.isNothing())
+            while (!currentToken.isNothing())
             {
                 astFlatList.push_back(parseRootExp());
             }
@@ -139,7 +139,8 @@ QList<QList<DatumPtr>> Parser::astFromList(List *aList)
         }
         // If the last ASTNode is a tag, generate a NOOP expression at the end
         // to ensure that there is an instruction to jump to.
-        if (astFlatList.last().astnodeValue()->genExpression == &Compiler::genTag) {
+        if (astFlatList.last().astnodeValue()->genExpression == &Compiler::genTag)
+        {
             auto *noopNode = new ASTNode(DatumPtr(QObject::tr("NOOP")));
             noopNode->genExpression = &Compiler::genNoop;
             noopNode->returnType = RequestReturnNothing;
@@ -152,7 +153,7 @@ QList<QList<DatumPtr>> Parser::astFromList(List *aList)
         {
             if (currentBlock.isEmpty())
                 currentBlock.append(node);
-            else 
+            else
             {
                 if (isTag(node) == isTag(currentBlock.last()))
                     currentBlock.append(node);
@@ -164,7 +165,6 @@ QList<QList<DatumPtr>> Parser::astFromList(List *aList)
             }
         }
         retval.append(currentBlock);
-
     }
     return retval;
 }
@@ -176,13 +176,11 @@ void Parser::destroyAstForList(List *aList)
 
 // The remaining methods parse into AST nodes.
 
-
-
 DatumPtr Parser::parseRootExp()
 {
     DatumPtr node = parseExp();
-    if ((currentToken.isa() == Datum::typeWord)
-     && (currentToken.toString(Datum::ToStringFlags_Key) == QObject::tr("STOP")))
+    if ((currentToken.isa() == Datum::typeWord) &&
+        (currentToken.toString(Datum::ToStringFlags_Key) == QObject::tr("STOP")))
     {
         auto newNode = DatumPtr(new ASTNode(currentToken));
         newNode.astnodeValue()->genExpression = &Compiler::genStop;
@@ -198,16 +196,15 @@ DatumPtr Parser::parseExp()
 {
     DatumPtr left = parseSumexp();
     while ((currentToken.isa() == Datum::typeWord) &&
-           ((currentToken.toString() == "=") || (currentToken.toString() == "<>") ||
-            (currentToken.toString() == ">") || (currentToken.toString() == "<") ||
-            (currentToken.toString() == ">=") || (currentToken.toString() == "<=")))
+           ((currentToken.toString() == "=") || (currentToken.toString() == "<>") || (currentToken.toString() == ">") ||
+            (currentToken.toString() == "<") || (currentToken.toString() == ">=") || (currentToken.toString() == "<=")))
     {
         DatumPtr op = currentToken;
         advanceToken();
         DatumPtr right = parseSumexp();
 
         auto node = DatumPtr(new ASTNode(op));
-        if ( ! right.isASTNode())
+        if (!right.isASTNode())
             throw FCError::notEnoughInputs(op);
 
         if (op.toString() == "=")
@@ -258,7 +255,7 @@ DatumPtr Parser::parseSumexp()
         DatumPtr right = parseMulexp();
 
         auto node = DatumPtr(new ASTNode(op));
-        if ( ! right.isASTNode())
+        if (!right.isASTNode())
             throw FCError::notEnoughInputs(op);
 
         if (op.toString() == "+")
@@ -282,15 +279,14 @@ DatumPtr Parser::parseMulexp()
 {
     DatumPtr left = parseminusexp();
     while ((currentToken.isa() == Datum::typeWord) &&
-           ((currentToken.toString() == "*") || (currentToken.toString() == "/") ||
-            (currentToken.toString() == "%")))
+           ((currentToken.toString() == "*") || (currentToken.toString() == "/") || (currentToken.toString() == "%")))
     {
         DatumPtr op = currentToken;
         advanceToken();
         DatumPtr right = parseminusexp();
 
         auto node = DatumPtr(new ASTNode(op));
-        if ( ! right.isASTNode())
+        if (!right.isASTNode())
             throw FCError::notEnoughInputs(op);
 
         if (op.toString() == "*")
@@ -325,9 +321,9 @@ DatumPtr Parser::parseminusexp()
         DatumPtr right = parseTermexp();
 
         auto node = DatumPtr(new ASTNode(op));
-        if ( ! right.isASTNode())
+        if (!right.isASTNode())
             throw FCError::notEnoughInputs(op);
-        
+
         node.astnodeValue()->genExpression = &Compiler::genDifference;
         node.astnodeValue()->addChild(left);
         node.astnodeValue()->addChild(right);
@@ -403,7 +399,8 @@ DatumPtr Parser::parseTermexp()
     QChar firstChar = currentToken.toString(Datum::ToStringFlags_Raw).at(0);
     if ((firstChar == '"') || (firstChar == ':'))
     {
-        QString name = currentToken.toString(Datum::ToStringFlags_Raw).right(currentToken.toString(Datum::ToStringFlags_Raw).size() - 1);
+        QString name = currentToken.toString(Datum::ToStringFlags_Raw)
+                           .right(currentToken.toString(Datum::ToStringFlags_Raw).size() - 1);
         if (!currentToken.wordValue()->isForeverSpecial)
         {
             rawToChar(name);
@@ -441,7 +438,7 @@ DatumPtr Parser::parseTermexp()
     }
 
     // If all else fails, it must be a function with the default number of params
-    return  parseCommand(false);
+    return parseCommand(false);
 }
 
 DatumPtr Parser::parseCommand(bool isVararg)
@@ -466,8 +463,7 @@ DatumPtr Parser::parseCommand(bool isVararg)
     // isVararg: read all parameters until ')'
     if (isVararg)
     {
-        while (( ! currentToken.isNothing()) &&
-               ((!currentToken.isWord()) || (currentToken.toString() != ")")))
+        while ((!currentToken.isNothing()) && ((!currentToken.isWord()) || (currentToken.toString() != ")")))
         {
             DatumPtr child;
             if (minParams < 0)
@@ -485,7 +481,7 @@ DatumPtr Parser::parseCommand(bool isVararg)
     }
     else if (defaultParams < 0)
     { // "Special form": read all parameters until EOL
-        while ( ! currentToken.isNothing())
+        while (!currentToken.isNothing())
         {
             DatumPtr child;
             if (minParams < 0)

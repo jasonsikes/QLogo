@@ -16,9 +16,9 @@
 ///
 //===----------------------------------------------------------------------===//
 
+#include "compiler.h"
 #include "datum_types.h"
 #include "parser.h"
-#include "compiler.h"
 #include "visited.h"
 #include <QObject>
 #include <qdebug.h>
@@ -46,13 +46,13 @@ List::~List()
     }
 }
 
-QString List::toString( ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited) const
+QString List::toString(ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited) const
 {
     bool shouldShowBrackets = (flags & ToStringFlags_Show) != 0;
     QString retval = shouldShowBrackets ? "[" : "";
     std::unique_ptr<VisitedSet> localVisited;
     int printWidth = printWidthLimit - 1;
-    const List* l = this;
+    const List *l = this;
 
     if (this == EmptyList::instance())
         goto exit;
@@ -73,13 +73,13 @@ QString List::toString( ToStringFlags flags, int printDepthLimit, int printWidth
     // Any lists within a collection need to show their brackets.
     flags = (Datum::ToStringFlags)(flags | Datum::ToStringFlags_Show);
 
-    while ( ! l->isEmpty())
+    while (!l->isEmpty())
     {
         if (l != this)
         {
             retval.append(' ');
         }
-        if ( (printWidth == 0) || (visited->contains(l)))
+        if ((printWidth == 0) || (visited->contains(l)))
         {
             // We have reached the print width limit or have a cycle, so stop traversing the list.
             retval.append("...");
@@ -136,7 +136,7 @@ void List::clear()
 int List::count() const
 {
     int retval = 0;
-    const List* iter = this;
+    const List *iter = this;
     VisitedSet visited;
     while (iter != EmptyList::instance())
     {
@@ -164,8 +164,7 @@ ListIterator List::newIterator() const
 // EmptyList singleton implementation
 EmptyList *EmptyList::instance_ = nullptr;
 
-EmptyList::EmptyList()
-    : List(nothing(), nullptr)
+EmptyList::EmptyList() : List(nothing(), nullptr)
 {
     isa = Datum::typeEmptyList;
 }
@@ -185,12 +184,15 @@ void EmptyList::clear()
     Q_ASSERT(false && "Attempted to modify immutable EmptyList");
 }
 
-void EmptyList::setButfirstItem(const DatumPtr &/* aValue */)
+void EmptyList::setButfirstItem(const DatumPtr & /* aValue */)
 {
     Q_ASSERT(false && "Attempted to modify immutable EmptyList");
 }
 
-QString EmptyList::toString( ToStringFlags flags, int /* printDepthLimit */, int /* printWidthLimit */, VisitedSet * /* visited */) const
+QString EmptyList::toString(ToStringFlags flags,
+                            int /* printDepthLimit */,
+                            int /* printWidthLimit */,
+                            VisitedSet * /* visited */) const
 {
     bool shouldShowBrackets = (flags & ToStringFlags_Show) != 0;
     return shouldShowBrackets ? "[]" : "";
@@ -198,7 +200,7 @@ QString EmptyList::toString( ToStringFlags flags, int /* printDepthLimit */, int
 
 // Value to represent an empty list
 // Use function-local static to avoid exceptions during global static initialization
-const DatumPtr& emptyList()
+const DatumPtr &emptyList()
 {
     static const DatumPtr instance(EmptyList::instance());
     return instance;

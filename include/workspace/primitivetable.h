@@ -221,5 +221,3 @@ stringToCmd[QObject::tr("TO")] = {&Compiler::genInputProcedure, -1, -1, -1, Requ
 stringToCmd[QObject::tr(".MACRO")] = {&Compiler::genInputProcedure, -1, -1, -1, RequestReturnN};
 stringToCmd[QObject::tr("MAKE")] = {&Compiler::genMake, 2, 2, 2, RequestReturnN};
 stringToCmd[QObject::tr("LOCAL")] = {&Compiler::genLocal, 1, 1, -1, RequestReturnN};
-
-

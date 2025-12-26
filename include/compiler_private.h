@@ -42,13 +42,10 @@
 class CompilerContext
 {
     std::unique_ptr<llvm::orc::ExecutionSession> exeSession;
-
     llvm::DataLayout dataLayout;
     llvm::orc::MangleAndInterner mangler;
-
     llvm::orc::RTDyldObjectLinkingLayer objectLayer;
     llvm::orc::IRCompileLayer compileLayer;
-
     llvm::orc::JITDylib &jitLib;
 
   public:
@@ -138,29 +135,29 @@ struct Scaffold
 // Some defines to reduce boilerplate
 
 // Data types
-#define TyVoid (Type::getVoidTy(*scaff->theContext))
-#define TyInt16 (Type::getInt16Ty(*scaff->theContext))
-#define TyInt32 (Type::getInt32Ty(*scaff->theContext))
-#define TyInt64 (Type::getInt64Ty(*scaff->theContext))
+#define TyVoid   (Type::getVoidTy(*scaff->theContext))
+#define TyInt16  (Type::getInt16Ty(*scaff->theContext))
+#define TyInt32  (Type::getInt32Ty(*scaff->theContext))
+#define TyInt64  (Type::getInt64Ty(*scaff->theContext))
 #define TyDouble (Type::getDoubleTy(*scaff->theContext))
-#define TyAddr (PointerType::get(*scaff->theContext, 0))
-#define TyBool (Type::getInt1Ty(*scaff->theContext))
+#define TyAddr   (PointerType::get(*scaff->theContext, 0))
+#define TyBool   (Type::getInt1Ty(*scaff->theContext))
 
 // Data value constants
-#define CoInt16(VAL) (ConstantInt::get(*scaff->theContext, APInt(16, (uint16_t)(VAL))))
-#define CoInt32(VAL) (ConstantInt::get(*scaff->theContext, APInt(32, (uint32_t)(VAL))))
-#define CoInt64(VAL) (ConstantInt::get(*scaff->theContext, APInt(64, (uint64_t)(VAL))))
+#define CoInt16(VAL)  (ConstantInt::get(*scaff->theContext, APInt(16, (uint16_t)(VAL))))
+#define CoInt32(VAL)  (ConstantInt::get(*scaff->theContext, APInt(32, (uint32_t)(VAL))))
+#define CoInt64(VAL)  (ConstantInt::get(*scaff->theContext, APInt(64, (uint64_t)(VAL))))
 #define CoDouble(VAL) (ConstantFP::get(*scaff->theContext, APFloat((VAL))))
-#define CoAddr(VAL) (scaff->builder.CreateIntToPtr(CoInt64(VAL), TyAddr))
-#define CoBool(VAL) (ConstantInt::get(*scaff->theContext, APInt(1, VAL)))
+#define CoAddr(VAL)   (scaff->builder.CreateIntToPtr(CoInt64(VAL), TyAddr))
+#define CoBool(VAL)   (ConstantInt::get(*scaff->theContext, APInt(1, VAL)))
 
 // Parameter combinations
-#define PaInt16(VAL) {TyInt16, (VAL)}
-#define PaInt32(VAL) {TyInt32, (VAL)}
-#define PaInt64(VAL) {TyInt64, (VAL)}
+#define PaInt16(VAL)  {TyInt16, (VAL)}
+#define PaInt32(VAL)  {TyInt32, (VAL)}
+#define PaInt64(VAL)  {TyInt64, (VAL)}
 #define PaDouble(VAL) {TyDouble, (VAL)}
-#define PaAddr(VAL) {TyAddr, (VAL)}
-#define PaBool(VAL) {TyBool, (VAL)}
+#define PaAddr(VAL)   {TyAddr, (VAL)}
+#define PaBool(VAL)   {TyBool, (VAL)}
 
 #ifdef _WIN32
 #define EXPORTC extern "C" __declspec(dllexport)

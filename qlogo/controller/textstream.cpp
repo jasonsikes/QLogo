@@ -200,7 +200,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
             lineP = readwordWithPrompt("{ ", true);
         else
             lineP = readwordWithPrompt("[ ", true);
-        if ( ! lineP.isNothing())
+        if (!lineP.isNothing())
         {
             listSourceWord = lineP.wordValue()->toString(Datum::ToStringFlags_Raw);
             listSourceWordIter = listSourceWord.begin();
@@ -242,7 +242,7 @@ DatumPtr TextStream::readrawlineWithPrompt(const QString &prompt, bool shouldSav
         clearLineHistory();
     }
     // TODO: How to save input when running `TO`?
-    //recentLineHistory.listValue()->append(retvalPtr);
+    // recentLineHistory.listValue()->append(retvalPtr);
 
     return retvalPtr;
 }

@@ -46,7 +46,6 @@ class Parser
     DatumPtr parseCommand(bool isVararg);
 
   public:
-
     /// @brief Parse a QLogo list into a list of Abstract Syntax Trees.
     /// @param aList The list to parse.
     /// @returns A list of AST nodes.

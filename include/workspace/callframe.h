@@ -19,8 +19,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum_ptr.h"
 #include "compiler_types.h"
+#include "datum_ptr.h"
 
 struct CallFrame;
 struct Evaluator;
@@ -187,14 +187,13 @@ struct CallFrame
     /// @param paramAry The parameters to apply.
     /// @param paramCount The number of parameters to apply.
     /// @returns nothing if successful, or an error if not.
-    Datum* applyProcedureParams(Datum **paramAry, uint32_t paramCount);
-
+    Datum *applyProcedureParams(Datum **paramAry, uint32_t paramCount);
 
     /// @brief End the current procedure by continuing with the given node and parameters.
     /// @param newNode The ASTNode of the new procedure to continue with.
     /// @param paramAry The parameters to apply to the new node.
     /// @returns nothing if successful, or an error if not.
-    Datum* applyContinuation(const DatumPtr &newNode, const QList<DatumPtr> &paramAry);
+    Datum *applyContinuation(const DatumPtr &newNode, const QList<DatumPtr> &paramAry);
 
     /// @brief Jump to the line in the procedure containing the given tag.
     /// @param node The FCGoto node.
@@ -205,7 +204,7 @@ struct CallFrame
     /// @param paramAry The parameters to apply.
     /// @param paramCount The number of parameters to apply.
     /// @returns the result of this execution.
-    Datum* exec(Datum **paramAry, uint32_t paramCount);
+    Datum *exec(Datum **paramAry, uint32_t paramCount);
 
     /// @brief Execute the body of the procedure referenced in the source node.
     /// @returns the result of this execution.
@@ -262,15 +261,15 @@ struct Evaluator
     /// @brief Execute this list. Will return when execution is complete.
     /// @param jumpLocation The location within the line to jump to.
     /// @returns the result of this execution.
-    Datum* exec(int32_t jumpLocation = 0);
+    Datum *exec(int32_t jumpLocation = 0);
 
     /// @brief Execute the given sublist. Will return when execution is complete.
     /// @returns the result of this execution.
-    Datum* subExec(Datum * aList);
+    Datum *subExec(Datum *aList);
 
     /// @brief Execute the given procedure. Will return when execution is complete.
     /// @returns the result of this execution.
-    Datum* procedureExec(ASTNode *node, Datum **paramAry, uint32_t paramCount);
+    Datum *procedureExec(ASTNode *node, Datum **paramAry, uint32_t paramCount);
 
     /// @brief Add a Datum to the release pool
     /// @returns the given pointer (pass-through).

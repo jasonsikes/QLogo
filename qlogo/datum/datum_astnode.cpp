@@ -54,7 +54,7 @@ ASTNode::ASTNode(const QString &aNodeName)
 ASTNode::~ASTNode() = default;
 
 // For debugging. Parameters are ignored.
-QString ASTNode::toString( ToStringFlags, int, int, VisitedSet *) const
+QString ASTNode::toString(ToStringFlags, int, int, VisitedSet *) const
 {
     QString retval = QString("( %1").arg(nodeName.toString());
     for (auto &iter : children)

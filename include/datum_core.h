@@ -16,7 +16,6 @@ class Datum
     friend struct Evaluator;
 
   protected:
-
     /// @brief Protected constructors to prevent direct instantiation.
     ///
     /// @details The Datum class uses the singleton pattern. Only one instance
@@ -30,35 +29,29 @@ class Datum
     Datum();
 
   public:
-
     /// @brief Value stored in isa.
     enum DatumType : uint32_t
     {
         // These are the three data types that are made available to the user.
-        typeWord              = 0x00000001,
-        typeList              = 0x00000002,
-        typeArray             = 0x00000004,
-        typeEmptyList         = 0x00010002, // Singleton instance of EmptyList
-
-        typeDataMask          = 0x00000007, // Word + List + Array
-        typeWordOrListMask    = 0x00000003, // Word + List
-
+        typeWord = 0x00000001,
+        typeList = 0x00000002,
+        typeArray = 0x00000004,
+        typeEmptyList = 0x00010002,      // Singleton instance of EmptyList
+        typeDataMask = 0x00000007,       // Word + List + Array
+        typeWordOrListMask = 0x00000003, // Word + List
         // These are the types that control the flow of the program.
-        typeError             = 0x00000010,
-        typeGoto              = 0x00000020,
-        typeContinuation      = 0x00000040,
-        typeReturn            = 0x00000080,
-        typeFlowControlMask   = 0x000000F0,
-
+        typeError = 0x00000010,
+        typeGoto = 0x00000020,
+        typeContinuation = 0x00000040,
+        typeReturn = 0x00000080,
+        typeFlowControlMask = 0x000000F0,
         // These are the types that are used internally by QLogo.
-        typeNothing           = 0x00000100,
-        typeASTNode           = 0x00000200,
-        typeProcedure         = 0x00000400,
+        typeNothing = 0x00000100,
+        typeASTNode = 0x00000200,
+        typeProcedure = 0x00000400,
         typeNothingPersistent = 0x00010100, // Singleton instance of Nothing
-
-        typeUnboundMask       = 0x00000300, // typeASTNode + typeNothing
-
-        typePersistentMask    = 0x00010000, // OR this value to prevent the datum from being destroyed
+        typeUnboundMask = 0x00000300,       // typeASTNode + typeNothing
+        typePersistentMask = 0x00010000,    // OR this value to prevent the datum from being destroyed
     };
 
     DatumType isa; // Subclasses must set this to a valid value.
@@ -102,7 +95,10 @@ class Datum
     /// @param printWidthLimit Limit the length of a string or list or array for readability.
     /// @param visited Set of visited nodes to prevent cycles.
     /// @return A string representation of the Datum.
-    virtual QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) const;
+    virtual QString toString(ToStringFlags flags = ToStringFlags_None,
+                             int printDepthLimit = -1,
+                             int printWidthLimit = -1,
+                             VisitedSet *visited = nullptr) const;
 
     /// @brief Returns true if the referred Datum is a List, false otherwise.
     ///
@@ -128,7 +124,8 @@ class Datum
         return (isa & Datum::typeWord) != 0;
     }
 
-    /// @brief Performs an assertion check that the referred Datum is a Word. Returns a pointer to the referred Datum as a Word.
+    /// @brief Performs an assertion check that the referred Datum is a Word. Returns a pointer to the referred Datum as
+    /// a Word.
     ///
     /// @return A pointer to the referred Datum as a Word.
     Word *wordValue() const
@@ -137,7 +134,8 @@ class Datum
         return reinterpret_cast<Word *>(const_cast<Datum *>(this));
     }
 
-    /// @brief Performs an assertion check that the referred Datum is a List. Returns a pointer to the referred Datum as a List.
+    /// @brief Performs an assertion check that the referred Datum is a List. Returns a pointer to the referred Datum as
+    /// a List.
     ///
     /// @return A pointer to the referred Datum as a List.
     List *listValue() const
@@ -146,7 +144,8 @@ class Datum
         return reinterpret_cast<List *>(const_cast<Datum *>(this));
     }
 
-    /// @brief Performs an assertion check that the referred Datum is an Array. Returns a pointer to the referred Datum as an Array.
+    /// @brief Performs an assertion check that the referred Datum is an Array. Returns a pointer to the referred Datum
+    /// as an Array.
     ///
     /// @return A pointer to the referred Datum as an Array.
     Array *arrayValue() const

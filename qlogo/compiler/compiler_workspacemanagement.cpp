@@ -14,14 +14,14 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "compiler_private.h"
-#include "flowcontrol.h"
 #include "astnode.h"
 #include "compiler.h"
-#include "workspace/callframe.h"
-#include "sharedconstants.h"
-#include "kernel.h"
+#include "compiler_private.h"
 #include "datum_types.h"
+#include "flowcontrol.h"
+#include "kernel.h"
+#include "sharedconstants.h"
+#include "workspace/callframe.h"
 
 /// @brief input a procedure using the system read stream.
 /// @param eAddr a pointer to the Evaluator object
@@ -30,7 +30,7 @@
 EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *node = reinterpret_cast<ASTNode*>(nodeAddr);
+    auto *node = reinterpret_cast<ASTNode *>(nodeAddr);
     CallFrame *currentFrame = Config::get().mainKernel()->callStack.localFrame();
     DatumPtr currentProc = currentFrame->sourceNode;
     if (currentProc.isASTNode())
@@ -165,7 +165,6 @@ Value *Compiler::genInputProcedure(const DatumPtr &node, RequestReturnType retur
     return generateCallExtern(TyAddr, "inputProcedure", {PaAddr(evaluator), PaAddr(CoAddr(node.datumValue()))});
 }
 
-
 /***DOC MAKE
 MAKE varname value
 
@@ -187,8 +186,6 @@ Value *Compiler::genMake(const DatumPtr &node, RequestReturnType returnType)
     generateCallExtern(TyVoid, "setDatumForWord", {PaAddr(value), PaAddr(varname)});
     return generateVoidRetval(node);
 }
-
-
 
 /***DOC LOCAL
 LOCAL varname
@@ -221,7 +218,7 @@ Value *Compiler::genLocal(const DatumPtr &node, RequestReturnType returnType)
 
 EXPORTC void setVarAsLocal(addr_t varname)
 {
-    auto *varName = reinterpret_cast<Word*>(varname);
+    auto *varName = reinterpret_cast<Word *>(varname);
     QString varNameStr = varName->toString(Datum::ToStringFlags_Key);
     CallFrame *currentFrame = Config::get().mainKernel()->callStack.localFrame();
     currentFrame->setVarAsLocal(varNameStr);

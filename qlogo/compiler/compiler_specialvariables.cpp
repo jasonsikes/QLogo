@@ -14,11 +14,11 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "compiler_private.h"
 #include "compiler.h"
-#include "sharedconstants.h"
-#include "kernel.h"
+#include "compiler_private.h"
 #include "datum_types.h"
+#include "kernel.h"
+#include "sharedconstants.h"
 
 #include <QObject>
 
@@ -54,7 +54,7 @@ EXPORTC bool getvarErroract(addr_t eAddr)
     }
     if (val.isList())
     {
-        return ! val.listValue()->isEmpty();
+        return !val.listValue()->isEmpty();
     }
     return false;
 }

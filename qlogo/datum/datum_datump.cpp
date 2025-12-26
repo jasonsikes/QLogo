@@ -16,9 +16,9 @@
 ///
 //===----------------------------------------------------------------------===//
 
+#include "astnode.h"
 #include "datum_types.h"
 #include "workspace/procedures.h"
-#include "astnode.h"
 #include <QObject>
 #include <qdebug.h>
 
@@ -166,14 +166,17 @@ FCError *DatumPtr::errValue() const
     return reinterpret_cast<FCError *>(d);
 }
 
-QString DatumPtr::toString( Datum::ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited) const
+QString DatumPtr::toString(Datum::ToStringFlags flags,
+                           int printDepthLimit,
+                           int printWidthLimit,
+                           VisitedSet *visited) const
 {
     return d->toString(flags, printDepthLimit, printWidthLimit, visited);
 }
 
 // Value to represent nothing (similar to nullptr)
 // Use function-local static to avoid exceptions during global static initialization
-const DatumPtr& nothing()
+const DatumPtr &nothing()
 {
     static const DatumPtr instance(Datum::getInstance());
     return instance;

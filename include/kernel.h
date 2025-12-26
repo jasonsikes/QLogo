@@ -18,8 +18,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum_ptr.h"
-#include "workspace/callframe.h"
 #include "library.h"
+#include "workspace/callframe.h"
 #include "workspace/propertylists.h"
 #include <QColor>
 #include <QSet>
@@ -30,7 +30,7 @@ class Turtle;
 class ProcedureScope;
 class Compiler;
 class TextStream;
-
+class Procedures;
 
 /// @brief Special variables.
 /// @note These are variable names that are used to store special values.
@@ -39,14 +39,11 @@ enum SpecialNames
     ERRACT
 };
 
-
-
-
 /// @brief The Kernel class does most of the work for the QLogo interpreter.
 /// @details The Kernel class is the core of the QLogo interpreter. It is the evaluator of the QLogo
 /// language. It maintains the state of execution of the Logo code. It owns the objects that
 /// support the execution of the code, such as the parser, the procedures, and
-/// the turtle. 
+/// the turtle.
 class Kernel
 {
     Procedures *procedures;
@@ -81,12 +78,9 @@ class Kernel
     /// Initialize LOGO system variables
     void initVariables(void);
 
-
   public:
-
     /// @brief Parser.
     Parser *parser;
-
 
     /// @brief The current error, if any.
     DatumPtr currentError;
@@ -107,7 +101,6 @@ class Kernel
     /// @todo
     CallFrameStack callStack;
 
-
     /// @brief The palette of colors.
     /// @details The first 16 colors [0-15] are the standard Logo colors. The first 8
     /// are immutable. The rest [8-100] are user-assignable.
@@ -119,7 +112,6 @@ class Kernel
     /// @return The result of the last expression entered.
     /// @note The return value is useful only in the case of PAUSE.
     DatumPtr readEvalPrintLoop(bool isPausing, const QString &prompt = QString());
-
 
     /// @brief Input the body of a procedure.
     /// @param node the ASTNode that holds the command, the procedure name and parameters.
@@ -160,7 +152,7 @@ class Kernel
     QString filepathForFilename(const DatumPtr &filenameP) const;
 
     // SPECIAL VARIABLES
-    Datum* specialVar(SpecialNames name);
+    Datum *specialVar(SpecialNames name);
 
     /// @brief Perform pause, essentially a REPL loop.
     /// @return The value passed to CONTINUE, if any.

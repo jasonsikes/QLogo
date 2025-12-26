@@ -20,58 +20,67 @@
 
 PropertyLists::PropertyLists() = default;
 
-void PropertyLists::addProperty(const QString &plistname,
-                                const QString &propname, const DatumPtr &value) {
-  if (!plists.contains(plistname)) {
-    plists.insert(plistname, QHash<QString, DatumPtr>());
-  }
-
-  plists[plistname][propname] = value;
-}
-
-DatumPtr PropertyLists::getProperty(const QString &plistname,
-                                  const QString &propname) {
-  if (plists.contains(plistname) && plists[plistname].contains(propname))
-    return plists[plistname][propname];
-  return emptyList();
-}
-
-void PropertyLists::removeProperty(const QString &plistname,
-                                   const QString &propname) {
-  if (plists.contains(plistname)) {
-    plists[plistname].remove(propname);
-    if (plists[plistname].isEmpty())
-      plists.remove(plistname);
-  }
-}
-
-DatumPtr PropertyLists::getPropertyList(const QString &plistname) {
-  ListBuilder builder;
-  if (plists.contains(plistname)) {
-    QList<QString> keys = plists[plistname].keys();
-    QList<DatumPtr> values = plists[plistname].values();
-    QList<QString>::iterator kIter = keys.begin();
-    for (auto &vIter : values) {
-      builder.append(DatumPtr(*kIter));
-      builder.append(vIter);
-      ++kIter;
+void PropertyLists::addProperty(const QString &plistname, const QString &propname, const DatumPtr &value)
+{
+    if (!plists.contains(plistname))
+    {
+        plists.insert(plistname, QHash<QString, DatumPtr>());
     }
-  }
-  return builder.finishedList();
+
+    plists[plistname][propname] = value;
 }
 
-void PropertyLists::erasePropertyList(const QString &plistname) {
-  plists.remove(plistname);
+DatumPtr PropertyLists::getProperty(const QString &plistname, const QString &propname)
+{
+    if (plists.contains(plistname) && plists[plistname].contains(propname))
+        return plists[plistname][propname];
+    return emptyList();
 }
 
-bool PropertyLists::isPropertyList(const QString &plistname) {
-  return plists.contains(plistname);
+void PropertyLists::removeProperty(const QString &plistname, const QString &propname)
+{
+    if (plists.contains(plistname))
+    {
+        plists[plistname].remove(propname);
+        if (plists[plistname].isEmpty())
+            plists.remove(plistname);
+    }
 }
 
-DatumPtr PropertyLists::allPLists() {
-  ListBuilder builder;
-  for (auto name : plists.asKeyValueRange()) {
-      builder.append(DatumPtr(name.first));
-  }
-  return builder.finishedList();
+DatumPtr PropertyLists::getPropertyList(const QString &plistname)
+{
+    ListBuilder builder;
+    if (plists.contains(plistname))
+    {
+        QList<QString> keys = plists[plistname].keys();
+        QList<DatumPtr> values = plists[plistname].values();
+        QList<QString>::iterator kIter = keys.begin();
+        for (auto &vIter : values)
+        {
+            builder.append(DatumPtr(*kIter));
+            builder.append(vIter);
+            ++kIter;
+        }
+    }
+    return builder.finishedList();
+}
+
+void PropertyLists::erasePropertyList(const QString &plistname)
+{
+    plists.remove(plistname);
+}
+
+bool PropertyLists::isPropertyList(const QString &plistname)
+{
+    return plists.contains(plistname);
+}
+
+DatumPtr PropertyLists::allPLists()
+{
+    ListBuilder builder;
+    for (auto name : plists.asKeyValueRange())
+    {
+        builder.append(DatumPtr(name.first));
+    }
+    return builder.finishedList();
 }

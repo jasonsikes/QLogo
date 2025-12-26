@@ -19,20 +19,20 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "compiler.h"
-#include "sharedconstants.h"
 #include "kernel.h"
 #include "astnode.h"
+#include "compiler.h"
+#include "controller/textstream.h"
 #include "datum_types.h"
 #include "parser.h"
-#include "controller/textstream.h"
+#include "sharedconstants.h"
 #include "workspace/procedures.h"
 #include <QApplication> // quit()
 #include <QColor>
+#include <QDebug>
+#include <QDir>
 #include <QFont>
 #include <QImage>
-#include <QDir>
-#include <QDebug>
 #include <cstdlib> // arc4random_uniform()
 
 #include "runparser.h"
@@ -103,14 +103,18 @@ bool Kernel::colorFromDatumPtr(QColor &retval, const DatumPtr &colorP) const
 DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
 {
     QString localPrompt = prompt + "? ";
-    forever {
+    forever
+    {
         DatumPtr result;
-        try {
+        try
+        {
             DatumPtr line = systemReadStream->readlistWithPrompt(localPrompt, true);
             if (line.isNothing()) // EOF
                 return nothing();
             result = runList(line);
-        } catch (FCError *e) {
+        }
+        catch (FCError *e)
+        {
             sysPrint(e->toString());
             sysPrint("\n");
             continue;
@@ -154,12 +158,15 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
         sysPrint(QString("You don't say what to do with %1\n").arg(result.toString(Datum::ToStringFlags_Show)));
     }
 }
-Datum* Kernel::inputProcedure(ASTNode *node)
+Datum *Kernel::inputProcedure(ASTNode *node)
 {
     Datum *retval = node;
-    try {
+    try
+    {
         parser->inputProcedure(node, systemReadStream);
-    } catch (FCError *err) {
+    }
+    catch (FCError *err)
+    {
         retval = err;
     }
     return retval;
@@ -247,7 +254,6 @@ void Kernel::initVariables()
     // "LOGOVERSION"
     // "ALLOWGETSET"
     // "COMMANDLINE"
-
 }
 
 Kernel::Kernel()
@@ -287,7 +293,6 @@ Kernel::~Kernel()
     Config::get().setMainKernel(nullptr);
 }
 
-
 DatumPtr Kernel::runList(const DatumPtr &listP, const QString &startTag)
 {
     DatumPtr retval;
@@ -300,20 +305,19 @@ DatumPtr Kernel::runList(const DatumPtr &listP, const QString &startTag)
     return retval;
 }
 
-Datum* Kernel::specialVar(SpecialNames name)
+Datum *Kernel::specialVar(SpecialNames name)
 {
     switch (name)
     {
-        case ERRACT:
-        {
-            static DatumPtr erract = DatumPtr(new Word("ERRACT"));
-            return erract.datumValue();
-        }
-        default:
-            return nullptr;
+    case ERRACT:
+    {
+        static DatumPtr erract = DatumPtr(new Word("ERRACT"));
+        return erract.datumValue();
+    }
+    default:
+        return nullptr;
     }
 }
-
 
 DatumPtr Kernel::pause()
 {
@@ -327,7 +331,8 @@ DatumPtr Kernel::pause()
     isPausing = true;
     DatumPtr sourceNode = callStack.localFrame()->sourceNode;
     QString sourceNodeName;
-    if (sourceNode.isASTNode()) {
+    if (sourceNode.isASTNode())
+    {
         sourceNodeName = sourceNode.astnodeValue()->nodeName.toString();
     }
 
@@ -335,12 +340,11 @@ DatumPtr Kernel::pause()
 
     sysPrint(QObject::tr("Pausing...\n"));
 
-    DatumPtr result = readEvalPrintLoop(true,sourceNodeName);
+    DatumPtr result = readEvalPrintLoop(true, sourceNodeName);
 
     isPausing = false;
     return result;
 }
-
 
 QString Kernel::filepathForFilename(const DatumPtr &filenameP) const
 {
@@ -372,5 +376,3 @@ void Kernel::sysPrint(const QString &text)
 {
     systemWriteStream->lprint(text);
 }
-
-

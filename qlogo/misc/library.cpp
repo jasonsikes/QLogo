@@ -67,7 +67,7 @@ QString findDBPath(const QString &defaultDBName)
 /// database file.
 bool initDBConnection(const QString &connectionName, const QString &paramFilePath, const QString &defaultFilePath)
 {
-    QString path = ( ! paramFilePath.isNull()) ? paramFilePath : findDBPath(defaultFilePath);
+    QString path = (!paramFilePath.isNull()) ? paramFilePath : findDBPath(defaultFilePath);
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
     db.setDatabaseName(path);
     bool isSuccessful = db.open();

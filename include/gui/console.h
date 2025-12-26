@@ -61,7 +61,6 @@ class Console : public QTextEdit
     void insertFromMimeData(const QMimeData *source) Q_DECL_OVERRIDE;
 
   public:
-
     /// @brief Constructor
     /// @param parent The Qt parent widget
     Console(QWidget *parent = 0);

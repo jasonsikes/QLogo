@@ -18,9 +18,9 @@
 #include "controller/logocontroller.h"
 #include "kernel.h"
 #include <QApplication>
+#include <QFile>
 #include <QIODevice>
 #include <csignal>
-#include <QFile>
 /// @brief The most recent signal that was received.
 /// The value of this variable is set by the handle_signal function. When the latestSignal
 /// method is called, the value is reset to noSignal.

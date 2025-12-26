@@ -20,13 +20,13 @@
 #include <QMutex>
 #include <QQueue>
 
-
 #ifndef _WIN32
 #include <unistd.h>
 #endif
 
 /// @brief The mutex for the message queue
-QMutex& queueLock() {
+QMutex &queueLock()
+{
     static QMutex queueLockInstance;
     return queueLockInstance;
 }

@@ -17,9 +17,9 @@
 ///
 //===----------------------------------------------------------------------===//
 
+#include "compiler_types.h"
 #include "datum_ptr.h"
 #include "library.h"
-#include "compiler_types.h"
 #include <QHash>
 
 /// @brief A structure to hold a command's details for the parser.
@@ -43,7 +43,6 @@ struct Cmd_t
     RequestReturnType returnType;
 };
 
-
 /// @brief The procedures class.
 /// @note This is the main class for managing procedures in QLogo. It holds all
 /// user-defined and library procedures.
@@ -60,7 +59,6 @@ class Procedures
     Library stdLib;
 
   public:
-
     /// @brief Constructor.
     Procedures();
 
@@ -98,7 +96,10 @@ class Procedures
     /// @param sourceText The source text to define a procedure from, or 'nothing' if there
     /// was no source text.
     /// @note This creates a Procedure object and saves it to the procedures hash table.
-    void defineProcedure(const DatumPtr &cmd, const DatumPtr &procnameP, const DatumPtr &text, const DatumPtr &sourceText);
+    void defineProcedure(const DatumPtr &cmd,
+                         const DatumPtr &procnameP,
+                         const DatumPtr &text,
+                         const DatumPtr &sourceText);
 
     /// @brief Copy a procedure to a new name.
     /// @param newnameP The new name to copy the procedure to.
@@ -202,7 +203,6 @@ class Procedure : public Datum
 {
 
   public:
-
     /// @brief Constructor.
     Procedure()
     {
@@ -248,7 +248,6 @@ class Procedure : public Datum
     /// @note This is a list of lists, with each sublist representing a line of instruction.
     /// @TODO This should be a deep copy of the source lists, to prevent direct modification.
     DatumPtr instructionList;
-
 };
 
 #endif // PROCEDURES_H

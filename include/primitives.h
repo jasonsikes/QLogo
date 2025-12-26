@@ -164,5 +164,3 @@ llvm::Value *genButton(const DatumPtr &node, RequestReturnType returnType);
 llvm::Value *genInputProcedure(const DatumPtr &node, RequestReturnType returnType);
 llvm::Value *genMake(const DatumPtr &node, RequestReturnType returnType);
 llvm::Value *genLocal(const DatumPtr &node, RequestReturnType returnType);
-
-

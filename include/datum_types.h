@@ -2,8 +2,8 @@
 #define DATUM_TYPES_H
 
 #include "datum_ptr.h"
-#include <QString>
 #include <QList>
+#include <QString>
 
 class ListIterator;
 class VisitedSet;
@@ -16,8 +16,6 @@ QChar charToRaw(const QChar &src);
 
 /// Convert a string from "raw" encoding to Char. In place.
 void rawToChar(QString &src);
-
-
 
 /// @brief The basic unit of data in QLogo. A Word is a string or number.
 ///
@@ -80,8 +78,10 @@ class Word : public Datum
     /// but it's because that is the procedure of the underlying Qt toolkit.
     bool boolValue(void) const;
 
-    virtual QString toString( Datum::ToStringFlags flags = Datum::ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) const override;
-
+    virtual QString toString(Datum::ToStringFlags flags = Datum::ToStringFlags_None,
+                             int printDepthLimit = -1,
+                             int printWidthLimit = -1,
+                             VisitedSet *visited = nullptr) const override;
 
     /// @brief Return true iff this word was created with a number.
     ///
@@ -113,7 +113,10 @@ struct Array : public Datum
     /// @brief Destructor.
     ~Array();
 
-    virtual QString toString( Datum::ToStringFlags flags = Datum::ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) const override;
+    virtual QString toString(Datum::ToStringFlags flags = Datum::ToStringFlags_None,
+                             int printDepthLimit = -1,
+                             int printWidthLimit = -1,
+                             VisitedSet *visited = nullptr) const override;
 
     /// @brief The starting index of this Array.
     int origin = 1;
@@ -157,7 +160,10 @@ class List : public Datum
     /// @brief Destructor.
     virtual ~List();
 
-    virtual QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) const override;
+    virtual QString toString(ToStringFlags flags = ToStringFlags_None,
+                             int printDepthLimit = -1,
+                             int printWidthLimit = -1,
+                             VisitedSet *visited = nullptr) const override;
 
     /// @brief Empty the List
     void clear();
@@ -218,7 +224,6 @@ class EmptyList : public List
     /// @brief Static instance pointer.
     static EmptyList *instance_;
 
-    
     void clear();
     void setButfirstItem(const DatumPtr &aValue);
 
@@ -228,7 +233,10 @@ class EmptyList : public List
     /// @return A pointer to the singleton EmptyList instance.
     static EmptyList *instance();
 
-    virtual QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) const override;
+    virtual QString toString(ToStringFlags flags = ToStringFlags_None,
+                             int printDepthLimit = -1,
+                             int printWidthLimit = -1,
+                             VisitedSet *visited = nullptr) const override;
 };
 
 /// @brief A class that simplifies iterating through a list.
@@ -259,7 +267,6 @@ class ListIterator
     bool elementExists() const;
 };
 
-
 /// @brief A class that allows quickly building a list.
 ///
 /// @details This class is used to build a list quickly by appending elements to the end of the list.
@@ -269,12 +276,14 @@ class ListBuilder
   private:
     DatumPtr finishedList_;
 
-public:
+  public:
     List *firstNode;
     List *lastNode;
 
-    ListBuilder() : firstNode(EmptyList::instance()), lastNode(EmptyList::instance()), finishedList_(EmptyList::instance())
-    {}
+    ListBuilder()
+        : firstNode(EmptyList::instance()), lastNode(EmptyList::instance()), finishedList_(EmptyList::instance())
+    {
+    }
 
     /// @brief Append an element to the end of the list.
     /// @param element The element to append to the end of the list.
@@ -286,7 +295,9 @@ public:
             firstNode = newList;
             lastNode = newList;
             finishedList_ = DatumPtr(firstNode);
-        } else {
+        }
+        else
+        {
             lastNode->tail = DatumPtr(newList);
             lastNode = newList;
         }

@@ -32,7 +32,6 @@
 class Kernel;
 class QTextStream;
 
-
 enum SignalsEnum_t : int
 {
     noSignal = 0,
@@ -46,7 +45,6 @@ enum SignalsEnum_t : int
     /// CTRL-Z, pause running script [ PAUSE ]
     pauseSignal
 };
-
 
 /// @brief The LogoController class is the superclass for all controllers that handle user interaction.
 /// It provides a set of common methods that are used by all controllers. It also implements

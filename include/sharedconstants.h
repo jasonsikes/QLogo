@@ -17,11 +17,11 @@
 ///
 //===----------------------------------------------------------------------===//
 
+#include <QByteArray>
 #include <QChar>
 #include <QColor>
-#include <QDebug>
 #include <QDataStream>
-#include <QByteArray>
+#include <QDebug>
 #include <QIODevice>
 
 #ifndef _WIN32
@@ -252,18 +252,24 @@ class Config
     const char *defaultHelpDbFilename = "qlogo_help.db";
 };
 
-struct Transform {
+struct Transform
+{
     double m[9];
 
-    Transform() {
-        m[0] = 1.0; m[1] = 0.0; m[2] = 0.0;
-        m[3] = 0.0; m[4] = 1.0; m[5] = 0.0;
-        m[6] = 0.0; m[7] = 0.0; m[8] = 1.0;
+    Transform()
+    {
+        m[0] = 1.0;
+        m[1] = 0.0;
+        m[2] = 0.0;
+        m[3] = 0.0;
+        m[4] = 1.0;
+        m[5] = 0.0;
+        m[6] = 0.0;
+        m[7] = 0.0;
+        m[8] = 1.0;
     }
 
-    Transform(double a0, double a1, double a2,
-              double a3, double a4, double a5,
-              double a6, double a7, double a8)
+    Transform(double a0, double a1, double a2, double a3, double a4, double a5, double a6, double a7, double a8)
     {
         m[0] = a0;
         m[1] = a1;
@@ -276,23 +282,29 @@ struct Transform {
         m[8] = a8;
     }
 
-    Transform(const Transform& other) {
+    Transform(const Transform &other)
+    {
         std::copy(other.m, other.m + 9, m);
     }
 
-    Transform& operator=(const Transform& other) {
-        if (this != &other) {
+    Transform &operator=(const Transform &other)
+    {
+        if (this != &other)
+        {
             std::copy(other.m, other.m + 9, m);
         }
         return *this;
     }
 
-    Transform(Transform&& other) noexcept {
+    Transform(Transform &&other) noexcept
+    {
         std::copy(other.m, other.m + 9, m);
     }
 
-    Transform& operator=(Transform&& other) noexcept {
-        if (this != &other) {
+    Transform &operator=(Transform &&other) noexcept
+    {
+        if (this != &other)
+        {
             std::copy(other.m, other.m + 9, m);
         }
         return *this;
@@ -301,15 +313,19 @@ struct Transform {
     ~Transform() = default;
 };
 
-inline QDataStream& operator<<(QDataStream& out, const Transform& transform) {
-    for (int i = 0; i < 9; ++i) {
+inline QDataStream &operator<<(QDataStream &out, const Transform &transform)
+{
+    for (int i = 0; i < 9; ++i)
+    {
         out << transform.m[i];
     }
     return out;
 }
 
-inline QDataStream& operator>>(QDataStream& in, Transform& transform) {
-    for (int i = 0; i < 9; ++i) {
+inline QDataStream &operator>>(QDataStream &in, Transform &transform)
+{
+    for (int i = 0; i < 9; ++i)
+    {
         in >> transform.m[i];
     }
     return in;
@@ -364,7 +380,7 @@ class QProcess;
 struct ProcessMessageWriter
 {
     static QProcess *process;
-    
+
     static qint64 write(const QByteArray &buffer);
 };
 

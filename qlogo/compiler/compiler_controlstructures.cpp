@@ -14,13 +14,13 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "compiler_private.h"
 #include "astnode.h"
 #include "compiler.h"
-#include "sharedconstants.h"
-#include "kernel.h"
-#include "flowcontrol.h"
+#include "compiler_private.h"
 #include "datum_types.h"
+#include "flowcontrol.h"
+#include "kernel.h"
+#include "sharedconstants.h"
 
 #include <QObject>
 
@@ -40,7 +40,6 @@ Value *Compiler::genNoop(const DatumPtr &node, RequestReturnType returnType)
     // Do nothing.
     return generateVoidRetval(node);
 }
-
 
 /***DOC IF
 IF tf instructionlist
@@ -79,7 +78,6 @@ Value *Compiler::genIfelse(const DatumPtr &node, RequestReturnType returnType)
     BasicBlock *elseBB = BasicBlock::Create(*scaff->theContext, "else", theFunction);
     BasicBlock *mergeBB = BasicBlock::Create(*scaff->theContext, "ifcont", theFunction);
 
-
     Value *cond = children[0];
     Value *ift;
     Value *iff;
@@ -91,7 +89,6 @@ Value *Compiler::genIfelse(const DatumPtr &node, RequestReturnType returnType)
         cond = generateBoolFromDatum(node.astnodeValue(), cond);
         // bool continues.
     }
-
 
     cond = scaff->builder.CreateICmpEQ(cond, CoBool(1), "ifcond");
     scaff->builder.CreateCondBr(cond, thenBB, elseBB);
@@ -110,7 +107,9 @@ Value *Compiler::genIfelse(const DatumPtr &node, RequestReturnType returnType)
     if (children.size() == 3)
     {
         iff = generateCallList(children[2], returnType);
-    } else {
+    }
+    else
+    {
         iff = CoAddr(node.astnodeValue());
     }
 
@@ -274,7 +273,6 @@ Value *Compiler::genBye(const DatumPtr &node, RequestReturnType returnType)
     return generateImmediateReturn(generateErrorSystem());
 }
 
-
 /***DOC OUTPUT OP
 OUTPUT value
 OP value
@@ -336,18 +334,23 @@ Value *Compiler::genMaybeoutput(const DatumPtr &node, RequestReturnType returnTy
     return generateProcedureExit(node, returnType, RequestReturnDN);
 }
 
-Value *Compiler::generateProcedureExit(const DatumPtr &node, RequestReturnType returnType, RequestReturnType paramRequestType)
+Value *Compiler::generateProcedureExit(const DatumPtr &node,
+                                       RequestReturnType returnType,
+                                       RequestReturnType paramRequestType)
 {
     // If the parser attached an output value to the node, then we need to process that.
-    if (node.astnodeValue()->countOfChildren() > 0) {
+    if (node.astnodeValue()->countOfChildren() > 0)
+    {
         DatumPtr child = node.astnodeValue()->childAtIndex(0);
         DatumPtr proc = child.astnodeValue()->procedure;
-        if (proc.isNothing()) {
+        if (proc.isNothing())
+        {
             // It's a primitive, not a procedure. Generate a call to it.
             // Then generate a return of the value.
             Value *retval = generateChild(node.astnodeValue(), child, paramRequestType);
 
-            retval = generateCallExtern(TyAddr, "getCtrlReturn", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval)});
+            retval = generateCallExtern(
+                TyAddr, "getCtrlReturn", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval)});
             return retval;
         }
         // Else it's a procedure. Generate a tail call to it.
@@ -355,14 +358,17 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node, RequestReturnType r
 
         // TODO: Instead of RequestReturnDatum, should we use paramRequestType?
         AllocaInst *ary = generateChildrenAlloca(child.astnodeValue(), RequestReturnDatum, "childAry");
-        Value *retObj = generateCallExtern(TyAddr, "getCtrlContinuation", {PaAddr(evaluator), PaAddr(childAddr), PaAddr(ary), PaInt32(ary->getArraySize())});
+        Value *retObj =
+            generateCallExtern(TyAddr,
+                               "getCtrlContinuation",
+                               {PaAddr(evaluator), PaAddr(childAddr), PaAddr(ary), PaInt32(ary->getArraySize())});
         return retObj;
     }
     // There is no child. Return nothing.
     Value *retval = generateVoidRetval(node);
-    return generateCallExtern(TyAddr, "getCtrlReturn", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval)});
+    return generateCallExtern(
+        TyAddr, "getCtrlReturn", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval)});
 }
-
 
 /***DOC TAG
 TAG quoted.word
@@ -400,7 +406,6 @@ Value *Compiler::genGoto(const DatumPtr &node, RequestReturnType returnType)
     return retObj;
 }
 
-
 /***DOC CATCH
 CATCH tag instructionlist
 
@@ -432,11 +437,10 @@ Value *Compiler::genCatch(const DatumPtr &node, RequestReturnType returnType)
 
     Value *result = generateCallList(instructionlist, returnType);
 
-    Value *retval = generateCallExtern(TyAddr, "endCatch", {PaAddr(evaluator),
-                                                                 PaAddr(CoAddr(node.astnodeValue())),
-                                                                 PaAddr(errActStash),
-                                                                 PaAddr(result),
-                                                                 PaAddr(tag)});
+    Value *retval = generateCallExtern(
+        TyAddr,
+        "endCatch",
+        {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(errActStash), PaAddr(result), PaAddr(tag)});
     return retval;
 }
 
@@ -444,12 +448,15 @@ EXPORTC addr_t beginCatch(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *erractWord = reinterpret_cast<Word *>(Config::get().mainKernel()->specialVar(SpecialNames::ERRACT));
-    Datum* erractValue = Config::get().mainKernel()->callStack.datumForName(erractWord->toString(Datum::ToStringFlags_Key)).datumValue();
+    Datum *erractValue =
+        Config::get().mainKernel()->callStack.datumForName(erractWord->toString(Datum::ToStringFlags_Key)).datumValue();
 
     // Save the erract value.
-    if (erractValue->isa != Datum::typeNothing) {
+    if (erractValue->isa != Datum::typeNothing)
+    {
         erractValue->retainCount++;
-        Config::get().mainKernel()->callStack.setDatumForName(nothing(), erractWord->toString(Datum::ToStringFlags_Key));
+        Config::get().mainKernel()->callStack.setDatumForName(nothing(),
+                                                              erractWord->toString(Datum::ToStringFlags_Key));
     }
     return reinterpret_cast<addr_t>(erractValue);
 }
@@ -463,24 +470,29 @@ EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t
     auto *tag = reinterpret_cast<Word *>(tagAddr);
 
     // Restore the erract value.
-    if (erractValue->isa != Datum::typeNothing) {
+    if (erractValue->isa != Datum::typeNothing)
+    {
         DatumPtr erractValuePtr = DatumPtr(erractValue);
-        Config::get().mainKernel()->callStack.setDatumForName(erractValuePtr, erractWord->toString(Datum::ToStringFlags_Key));
+        Config::get().mainKernel()->callStack.setDatumForName(erractValuePtr,
+                                                              erractWord->toString(Datum::ToStringFlags_Key));
         erractValue->retainCount--;
     }
 
-    if (result->isa == Datum::typeError) {
+    if (result->isa == Datum::typeError)
+    {
         auto *err = reinterpret_cast<FCError *>(result);
         QString tagStr = tag->toString(Datum::ToStringFlags_Key);
 
-        if ((tagStr == QObject::tr("ERROR")) 
-        && ((err->code == ErrCode::ERR_NO_CATCH)
-        && (err->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("ERROR"))
-        || (err->code != ErrCode::ERR_NO_CATCH))) {
+        if ((tagStr == QObject::tr("ERROR")) &&
+            ((err->code == ErrCode::ERR_NO_CATCH) &&
+                 (err->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("ERROR")) ||
+             (err->code != ErrCode::ERR_NO_CATCH)))
+        {
             e->watch(err);
             return nodeAddr;
-        } else if ((err->code == ErrCode::ERR_NO_CATCH)
-        && (err->tag().toString(Datum::ToStringFlags_Key) == tagStr)) {
+        }
+        else if ((err->code == ErrCode::ERR_NO_CATCH) && (err->tag().toString(Datum::ToStringFlags_Key) == tagStr))
+        {
             e->watch(err);
             auto retval = reinterpret_cast<addr_t>(err->output().datumValue());
             Config::get().mainKernel()->currentError = nothing();
@@ -488,10 +500,9 @@ EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t
         }
         return resultAddr;
     }
-    
+
     return reinterpret_cast<addr_t>(result);
 }
-
 
 /***DOC THROW
 THROW tag
@@ -561,7 +572,8 @@ EXPORTC addr_t getCurrentError(addr_t eAddr)
     DatumPtr errPtr = Config::get().mainKernel()->currentError;
 
     ListBuilder retvalBuilder;
-    if ( ! errPtr.isNothing()) {
+    if (!errPtr.isNothing())
+    {
         auto *err = reinterpret_cast<FCError *>(errPtr.datumValue());
         retvalBuilder.append(DatumPtr(err->code));
         retvalBuilder.append(err->message());
@@ -572,8 +584,6 @@ EXPORTC addr_t getCurrentError(addr_t eAddr)
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
 }
-
-
 
 /***DOC PAUSE
 PAUSE
@@ -603,7 +613,6 @@ EXPORTC addr_t callPause(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-
 /***DOC CONTINUE CO
 CONTINUE value
 CO value
@@ -625,7 +634,8 @@ COD***/
 Value *Compiler::genContinue(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *output = CoAddr(node.astnodeValue());
-    if (node.astnodeValue()->countOfChildren() == 1) {
+    if (node.astnodeValue()->countOfChildren() == 1)
+    {
         output = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     }
     return generateCallExtern(TyAddr, "generateContinue", {PaAddr(evaluator), PaAddr(output)});
@@ -669,20 +679,22 @@ EXPORTC addr_t processRunresult(addr_t eAddr, addr_t resultAddr)
     auto *result = reinterpret_cast<Datum *>(resultAddr);
     Datum *retval;
 
-    if ((result->isa & Datum::typeDataMask) != 0) {
+    if ((result->isa & Datum::typeDataMask) != 0)
+    {
         retval = new List(result, EmptyList::instance());
     }
-    else if ((result->isa & Datum::typeUnboundMask) != 0) {
+    else if ((result->isa & Datum::typeUnboundMask) != 0)
+    {
         retval = EmptyList::instance();
     }
-    else {
+    else
+    {
         // Pass through whatever we got because it's not good.
         return resultAddr;
     }
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
 }
-
 
 /***DOC FOREVER
 FOREVER instructionlist
@@ -747,8 +759,6 @@ Value *Compiler::genForever(const DatumPtr &node, RequestReturnType returnType)
     return generateVoidRetval(node);
 }
 
-
-
 /***DOC TEST
 TEST tf
 
@@ -766,13 +776,11 @@ Value *Compiler::genTest(const DatumPtr &node, RequestReturnType returnType)
     return generateVoidRetval(node);
 }
 
-
 EXPORTC void saveTestResult(addr_t eAddr, bool tf)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainKernel()->callStack.setTest(tf);
 }
-
 
 /***DOC IFTRUE IFT
 IFTRUE instructionlist

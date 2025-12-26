@@ -27,7 +27,6 @@ struct FCGoto;
 struct FCReturn;
 struct FCContinuation;
 
-
 /// @brief The flow control instruction.
 ///
 /// @details This class is used to signal the end of execution of a list or procedure. The base class does nothing.
@@ -37,8 +36,9 @@ struct FCContinuation;
 /// - typeReturn: Return from the current procedure.
 /// - typeContinuation: Similar to typeReturn but scope is unaffected.
 /// - typeError: Signal an error.
-/// 
-struct FlowControl : public Datum {
+///
+struct FlowControl : public Datum
+{
 
     /// @brief The source node of the flow control instruction, for blame tracking.
     DatumPtr sourceNode;
@@ -48,7 +48,8 @@ struct FlowControl : public Datum {
     QList<DatumPtr> dataAry;
 };
 
-struct FCGoto : public FlowControl {
+struct FCGoto : public FlowControl
+{
 
     FCGoto(DatumPtr aSourceNode, DatumPtr aTag)
     {
@@ -58,7 +59,7 @@ struct FCGoto : public FlowControl {
     }
 
     /// @brief The tag to goto.
-    DatumPtr& tag()
+    DatumPtr &tag()
     {
         Q_ASSERT(isa == Datum::typeGoto);
         Q_ASSERT(dataAry.isEmpty());
@@ -66,7 +67,8 @@ struct FCGoto : public FlowControl {
     }
 };
 
-struct FCReturn : public FlowControl {
+struct FCReturn : public FlowControl
+{
 
     FCReturn(DatumPtr aSourceNode, DatumPtr aValue)
     {
@@ -76,14 +78,15 @@ struct FCReturn : public FlowControl {
     }
 
     /// @brief The value to return.
-    DatumPtr& returnValue()
+    DatumPtr &returnValue()
     {
         Q_ASSERT(isa == Datum::typeReturn);
         return data;
     }
 };
 
-struct FCContinuation : public FlowControl {
+struct FCContinuation : public FlowControl
+{
 
     FCContinuation(DatumPtr aSourceNode, DatumPtr aProcedure, QList<DatumPtr> aParams)
     {
@@ -94,14 +97,14 @@ struct FCContinuation : public FlowControl {
     }
 
     /// @brief The procedure to continue.
-    DatumPtr& procedure()
+    DatumPtr &procedure()
     {
         Q_ASSERT(isa == Datum::typeContinuation);
         return data;
     }
 
     /// @brief The parameters to pass to the procedure.
-    QList<DatumPtr>& params()
+    QList<DatumPtr> &params()
     {
         Q_ASSERT(isa == Datum::typeContinuation);
         return dataAry;
@@ -150,15 +153,15 @@ enum ErrCode : int
 /// @brief An error object.
 struct FCError : public FlowControl
 {
-private:
+  private:
     /// @brief Initialize the error object with information from the kernel object.
     void commonInit();
 
-public:
+  public:
     ErrCode code;
 
     /// @brief The text string message of the error.
-    DatumPtr& message()
+    DatumPtr &message()
     {
         Q_ASSERT(isa == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
@@ -166,7 +169,7 @@ public:
     }
 
     /// @brief The text string message of the error (const version).
-    const DatumPtr& message() const
+    const DatumPtr &message() const
     {
         Q_ASSERT(isa == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
@@ -174,7 +177,7 @@ public:
     }
 
     /// @brief The error tag.
-    DatumPtr& tag()
+    DatumPtr &tag()
     {
         Q_ASSERT(isa == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
@@ -182,7 +185,7 @@ public:
     }
 
     /// @brief The error tag (const version).
-    const DatumPtr& tag() const
+    const DatumPtr &tag() const
     {
         Q_ASSERT(isa == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
@@ -193,7 +196,7 @@ public:
     /// @details This is used to store the output of the error. The Logo library uses the
     /// throw/catch mechanism as a means of passing execution control.
     /// The output is the value that is thrown to and used by the catch block.
-    DatumPtr& output()
+    DatumPtr &output()
     {
         Q_ASSERT(isa == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
@@ -201,7 +204,7 @@ public:
     }
 
     /// @brief The output of the error (const version).
-    const DatumPtr& output() const
+    const DatumPtr &output() const
     {
         Q_ASSERT(isa == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
@@ -209,7 +212,7 @@ public:
     }
 
     /// @brief The line where the error occurred.
-    DatumPtr& line()
+    DatumPtr &line()
     {
         Q_ASSERT(isa == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
@@ -217,7 +220,7 @@ public:
     }
 
     /// @brief The line where the error occurred (const version).
-    const DatumPtr& line() const
+    const DatumPtr &line() const
     {
         Q_ASSERT(isa == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
@@ -225,7 +228,7 @@ public:
     }
 
     /// @brief The procedure where the error occurred.
-    DatumPtr& procedure()
+    DatumPtr &procedure()
     {
         Q_ASSERT(isa == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
@@ -233,7 +236,7 @@ public:
     }
 
     /// @brief The procedure where the error occurred (const version).
-    const DatumPtr& procedure() const
+    const DatumPtr &procedure() const
     {
         Q_ASSERT(isa == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
@@ -243,10 +246,10 @@ public:
     /// @brief Create an error object.
     /// @param aCode The error code.
     /// @param aMessage The error message.
-    /// @param aTag The tag of the error. Can be used with `CATCH tag` and/or `SYSTEM/TOPLEVEL/PAUSE` to handle the error.
+    /// @param aTag The tag of the error. Can be used with `CATCH tag` and/or `SYSTEM/TOPLEVEL/PAUSE` to handle the
+    /// error.
     /// @note The other elements are fetched from the procedure.
-    FCError(ErrCode aCode, DatumPtr aMessage, DatumPtr aTag = nothing(), DatumPtr aOutput = nothing())
-        : code(aCode)
+    FCError(ErrCode aCode, DatumPtr aMessage, DatumPtr aTag = nothing(), DatumPtr aOutput = nothing()) : code(aCode)
     {
         isa = Datum::typeError;
         dataAry.resize(5);
@@ -259,10 +262,10 @@ public:
     /// @brief Create an error object.
     /// @param aCode The error code.
     /// @param aMessage The error message.
-    /// @param aTag The tag of the error. Can be used with `CATCH tag` and/or `SYSTEM/TOPLEVEL/PAUSE` to handle the error.
+    /// @param aTag The tag of the error. Can be used with `CATCH tag` and/or `SYSTEM/TOPLEVEL/PAUSE` to handle the
+    /// error.
     /// @note The other elements are fetched from the procedure.
-    FCError(ErrCode aCode, QString aMessage, DatumPtr aTag = nothing(), DatumPtr aOutput = nothing())
-        : code(aCode)
+    FCError(ErrCode aCode, QString aMessage, DatumPtr aTag = nothing(), DatumPtr aOutput = nothing()) : code(aCode)
     {
         isa = Datum::typeError;
         dataAry.resize(5);
@@ -273,92 +276,92 @@ public:
     }
 
     /// @brief Create an error object for a custom error.
-    /// @param tag The tag of the error. Can be used with `CATCH tag` and/or `SYSTEM/TOPLEVEL/PAUSE` to handle the error.
+    /// @param tag The tag of the error. Can be used with `CATCH tag` and/or `SYSTEM/TOPLEVEL/PAUSE` to handle the
+    /// error.
     /// @param message An optional message to accompany the error.
     /// @param output An optional output to accompany the error.
-    static FCError* custom(const DatumPtr &tag, DatumPtr message = nothing(), const DatumPtr &output = nothing());
+    static FCError *custom(const DatumPtr &tag, DatumPtr message = nothing(), const DatumPtr &output = nothing());
 
     /// @brief Create an error object for a turtle out of bounds error.
-    static FCError* turtleOutOfBounds();
+    static FCError *turtleOutOfBounds();
 
     /// @brief Create an error object for attempting to use a graphics/turtle command with no active graphics window.
-    static FCError* noGraphics();
+    static FCError *noGraphics();
 
     /// @brief Create an error object for attempting to use a forbidden command inside a procedure.
-    static FCError* toInProc(const DatumPtr &cmd);
+    static FCError *toInProc(const DatumPtr &cmd);
 
     /// @brief Create an error object for an unexpected closing square during parsing.
-    static FCError* unexpectedCloseSquare();
+    static FCError *unexpectedCloseSquare();
 
     /// @brief Create an error object for an unexpected closing brace during parsing.
-    static FCError* unexpectedCloseBrace();
+    static FCError *unexpectedCloseBrace();
 
     /// @brief Create an error object for an unexpected closing parenthesis during parsing.
-    static FCError* unexpectedCloseParen();
+    static FCError *unexpectedCloseParen();
 
     /// @brief Create an error object for a file system error.
-    static FCError* fileSystem();
+    static FCError *fileSystem();
 
     /// @brief Create an error object for attempting to use a command that is forbidden outside a procedure.
     /// @param cmd The command that was attempted to be used.
-    static FCError* notInsideProcedure(const DatumPtr &cmd);
+    static FCError *notInsideProcedure(const DatumPtr &cmd);
 
     /// @brief Create an error object for an unknown command or procedure.
     /// @param cmd The name of the unknown command or procedure.
-    static FCError* noHow(const DatumPtr &cmd);
+    static FCError *noHow(const DatumPtr &cmd);
 
     /// @brief Create an error object for an unknown catch tag.
     /// @param tag The name of the unknown catch tag.
-    static FCError* noCatch(DatumPtr tag);
+    static FCError *noCatch(DatumPtr tag);
 
     /// @brief Create an error object for an input that is not accepted by a command.
     /// @param x The name of the command that rejected the input.
     /// @param y The input that was rejected.
-    static FCError* doesntLike(const DatumPtr &x, const DatumPtr &y);
+    static FCError *doesntLike(const DatumPtr &x, const DatumPtr &y);
 
     /// @brief create an error object for a command output that has no destination.
     /// @param x The output that has no destination.
-    static FCError* dontSay(const DatumPtr &x);
+    static FCError *dontSay(const DatumPtr &x);
 
     /// @brief create an error object for a command that was called without a TEST.
     /// @param x The command that was called without a TEST.
-    static FCError* noTest(const DatumPtr &x);
+    static FCError *noTest(const DatumPtr &x);
 
     /// @brief Create an error object for a command that didn't output to another that was expecting input.
     /// @param x The command that didn't output.
     /// @param y The destination that expected input.
-    static FCError* didntOutput(const DatumPtr &x, const DatumPtr &y);
+    static FCError *didntOutput(const DatumPtr &x, const DatumPtr &y);
 
     /// @brief Create an error object for a command that has too many inputs.
     /// @param x The command that has too many inputs.
-    static FCError* tooManyInputs(const DatumPtr &x);
+    static FCError *tooManyInputs(const DatumPtr &x);
 
     /// @brief Create an error object for a command that has too few inputs.
     /// @param x The command that has too few inputs.
-    static FCError* notEnoughInputs(const DatumPtr &x);
+    static FCError *notEnoughInputs(const DatumPtr &x);
 
     /// @brief Create an error object for a variable that has no value.
     /// @param x The variable that has no value.
-    static FCError* noValue(const DatumPtr &x);
+    static FCError *noValue(const DatumPtr &x);
 
     /// @brief Create an error object for trying to nest FILLED blocks.
-    static FCError* alreadyFilling();
+    static FCError *alreadyFilling();
 
     /// @brief Create an error object for a procedure that is already defined.
     /// @param x The procedure that is already defined.
-    static FCError* procDefined(const DatumPtr &x);
+    static FCError *procDefined(const DatumPtr &x);
 
     /// @brief Create an error object for a bad default expression for an optional input.
     /// @param x The bad default expression.
-    static FCError* badDefault(const DatumPtr &x);
+    static FCError *badDefault(const DatumPtr &x);
 
     /// @brief Create an error object for a closing parenthesis not found when expected during parsing.
-    static FCError* parenNf();
+    static FCError *parenNf();
 
     /// @brief Create an error object for trying to manipulate a primitive.
     /// @param x The primitive that is being manipulated.
-    static FCError* isPrimitive(const DatumPtr &x);
-
+    static FCError *isPrimitive(const DatumPtr &x);
 
     /// @brief Return a string suitable for the PRINT command
     ///
@@ -367,8 +370,10 @@ public:
     /// @param printWidthLimit Limit the length of a string or list for readability. (ignored for errors)
     /// @param visited Set of visited nodes to prevent cycles.
     /// @return A string suitable for the PRINT command
-    QString toString( ToStringFlags flags = ToStringFlags_None, int printDepthLimit = -1, int printWidthLimit = -1, VisitedSet *visited = nullptr) const override;
-
+    QString toString(ToStringFlags flags = ToStringFlags_None,
+                     int printDepthLimit = -1,
+                     int printWidthLimit = -1,
+                     VisitedSet *visited = nullptr) const override;
 };
 
 #endif // FLOWCONTROL_H
