@@ -169,6 +169,25 @@ QChar charToRaw(const QChar &src)
     return {asciiToRawLookup[v]};
 }
 
+/// @brief Check if a string contains any raw characters.
+/// @param src The string to check.
+/// @return True if the string contains any raw characters, false otherwise.
+/// @details This function checks if a string contains any raw characters.
+/// If the string contains any raw characters, it returns true.
+/// Otherwise, it returns false.
+bool containsRawChars(const QString &src)
+{
+    for (auto c : src)
+    {
+        QChar t = rawToChar(c);
+        if (t != c)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 Word::Word()
 {
     isa = Datum::typeWord;
@@ -308,16 +327,8 @@ QString Word::toString(ToStringFlags flags, int printDepthLimit, int printWidthL
         return retval + "||";
     }
 
-    bool shouldShowBars = false;
-    for (auto c : srcString)
-    {
-        QChar t = rawToChar(c);
-        if (t != c)
-        {
-            shouldShowBars = true;
-            break;
-        }
-    }
+    bool shouldShowBars = containsRawChars(srcString);
+
     if (shouldShowBars)
     {
         retval.append('|');
