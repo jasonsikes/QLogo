@@ -1225,8 +1225,8 @@ EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
         QString containerString = word->toString(Datum::ToStringFlags_Key);
         if (thing->isWord())
         {
-            Word *word = thing->wordValue();
-            QString thingString = word->toString(Datum::ToStringFlags_Key);
+            Word *word2 = thing->wordValue();
+            QString thingString = word2->toString(Datum::ToStringFlags_Key);
             if (thingString.length() != 1)
             {
                 return false;

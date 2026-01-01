@@ -147,6 +147,7 @@ void rawToChar(QString &src)
     for (auto &s : src)
     {
         QChar d = rawToChar(s);
+        // cppcheck-suppress duplicateConditionalAssign
         if (s != d)
             s = d;
     }

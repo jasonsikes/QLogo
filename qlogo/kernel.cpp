@@ -361,7 +361,7 @@ QString Kernel::filepathForFilename(const DatumPtr &filenameP) const
 void Kernel::closeAll()
 {
     QStringList names = fileStreams.keys();
-    for (auto &iter : names)
+    for (const auto &iter : names)
     {
         // close(iter);
     }
