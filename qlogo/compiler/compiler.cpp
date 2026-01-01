@@ -17,14 +17,13 @@
 #include "compiler.h"
 #include "astnode.h"
 #include "compiler_private.h"
-#include "controller/logocontroller.h"
 #include "datum_types.h"
 #include "exports.h"
 #include "kernel.h"
 #include "parser.h"
+#include "sharedconstants.h"
 #include "workspace/callframe.h"
 #include "workspace/procedures.h"
-#include <QDebug>
 #include <iostream>
 
 QHash<Datum *, std::shared_ptr<CompiledText>> Compiler::compiledTextTable;

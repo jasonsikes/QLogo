@@ -23,8 +23,6 @@
 #include "sharedconstants.h"
 #include "turtle.h"
 #include "workspace/callframe.h"
-
-#include <QFile>
 using namespace llvm;
 using namespace llvm::orc;
 

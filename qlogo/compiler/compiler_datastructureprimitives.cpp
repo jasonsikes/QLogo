@@ -17,15 +17,12 @@
 #include "astnode.h"
 #include "compiler.h"
 #include "compiler_private.h"
-#include "controller/logocontroller.h"
-#include "controller/textstream.h"
+#include "datum_types.h"
 #include "exports.h"
 #include "kernel.h"
-#include "runparser.h"
 #include "sharedconstants.h"
 #include "visited.h"
 #include "workspace/callframe.h"
-#include <QIODevice>
 
 using namespace llvm;
 using namespace llvm::orc;

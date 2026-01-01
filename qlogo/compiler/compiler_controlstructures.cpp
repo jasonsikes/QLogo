@@ -22,8 +22,6 @@
 #include "flowcontrol.h"
 #include "kernel.h"
 #include "sharedconstants.h"
-
-#include <QObject>
 using namespace llvm;
 using namespace llvm::orc;
 
