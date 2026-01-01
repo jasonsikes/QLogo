@@ -718,15 +718,10 @@ Value *Compiler::generateExternFunctionCall(Type *returnType,
         argsV.push_back(arg.second);
     }
 
-    Function *calleeF = scaff->theModule->getFunction(name);
+    FunctionType *fType = FunctionType::get(returnType, paramTypes, false);
+    FunctionCallee calleeF = scaff->theModule->getOrInsertFunction(name, fType);
 
-    if (!calleeF)
-    {
-        FunctionType *fType = FunctionType::get(returnType, paramTypes, false);
-        calleeF = Function::Create(fType, Function::ExternalLinkage, name, scaff->theModule.get());
-    }
-
-    Q_ASSERT(calleeF->arg_size() == argsV.size());
+    Q_ASSERT(calleeF.getFunctionType()->getNumParams() == argsV.size());
 
     if (returnType->isVoidTy())
         return scaff->builder.CreateCall(calleeF, argsV);
