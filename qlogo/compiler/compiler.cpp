@@ -368,7 +368,6 @@ Value *Compiler::generateCast(Value *src, ASTNode *parent, const DatumPtr &node,
             return src;
 
         return generateImmediateReturn(generateErrorNoOutput(src, parent));
-        Q_ASSERT(false);
     }
 
     if (srcReturnType == RequestReturnDN)
@@ -711,7 +710,7 @@ Value *Compiler::generateExternFunctionCall(Type *returnType,
     std::vector<Value *> argsV;
     paramTypes.reserve(args.size());
     argsV.reserve(args.size());
-    for (auto &arg : args)
+    for (const auto &arg : args)
     {
         paramTypes.push_back(arg.first);
         argsV.push_back(arg.second);
