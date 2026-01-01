@@ -18,6 +18,7 @@
 #include "compiler.h"
 #include "compiler_private.h"
 #include "datum_types.h"
+#include "exports.h"
 #include "kernel.h"
 #include "sharedconstants.h"
 #include "turtle.h"
@@ -26,15 +27,6 @@
 #include <QFile>
 using namespace llvm;
 using namespace llvm::orc;
-
-List *listFromColor(const QColor &c)
-{
-    ListBuilder retvalBuilder;
-    retvalBuilder.append(DatumPtr(round(static_cast<double>(c.redF() * 100.0))));
-    retvalBuilder.append(DatumPtr(round(static_cast<double>(c.greenF() * 100.0))));
-    retvalBuilder.append(DatumPtr(round(static_cast<double>(c.blueF() * 100.0))));
-    return retvalBuilder.finishedList().listValue();
-}
 
 // TURTLE MOTION
 
@@ -51,7 +43,7 @@ COD***/
 Value *Compiler::genForward(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *distance = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    generateCallExtern(TyVoid, "moveTurtleForward", {PaAddr(evaluator), PaDouble(distance)});
+    generateCallExtern(TyVoid, moveTurtleForward, PaAddr(evaluator), PaDouble(distance));
     return generateVoidRetval(node);
 }
 
@@ -70,16 +62,9 @@ Value *Compiler::genBack(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *reverseDistance = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *distance = scaff->builder.CreateFNeg(reverseDistance, "negativeDistance");
-    generateCallExtern(TyVoid, "moveTurtleForward", {PaAddr(evaluator), PaDouble(distance)});
+    generateCallExtern(TyVoid, moveTurtleForward, PaAddr(evaluator), PaDouble(distance));
     return generateVoidRetval(node);
 }
-
-EXPORTC void moveTurtleForward(addr_t eAddr, double distance)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Config::get().mainTurtle()->forward(distance);
-}
-
 /***DOC LEFT LT
 LEFT degrees
 LT degrees
@@ -94,7 +79,7 @@ Value *Compiler::genLeft(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *angle = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *negativeAngle = scaff->builder.CreateFNeg(angle, "negativeAngle");
-    generateCallExtern(TyVoid, "moveTurtleRotate", {PaAddr(evaluator), PaDouble(negativeAngle)});
+    generateCallExtern(TyVoid, moveTurtleRotate, PaAddr(evaluator), PaDouble(negativeAngle));
     return generateVoidRetval(node);
 }
 
@@ -111,16 +96,9 @@ COD***/
 Value *Compiler::genRight(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *angle = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    generateCallExtern(TyVoid, "moveTurtleRotate", {PaAddr(evaluator), PaDouble(angle)});
+    generateCallExtern(TyVoid, moveTurtleRotate, PaAddr(evaluator), PaDouble(angle));
     return generateVoidRetval(node);
 }
-
-EXPORTC void moveTurtleRotate(addr_t eAddr, double angle)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Config::get().mainTurtle()->rotate(angle);
-}
-
 /***DOC SETXY
 SETXY xcor ycor
 
@@ -133,16 +111,9 @@ Value *Compiler::genSetxy(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *x = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *y = generateChild(node.astnodeValue(), 1, RequestReturnReal);
-    generateCallExtern(TyVoid, "setTurtleXY", {PaAddr(evaluator), PaDouble(x), PaDouble(y)});
+    generateCallExtern(TyVoid, setTurtleXY, PaAddr(evaluator), PaDouble(x), PaDouble(y));
     return generateVoidRetval(node);
 }
-
-EXPORTC void setTurtleXY(addr_t eAddr, double x, double y)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Config::get().mainTurtle()->setxy(x, y);
-}
-
 /***DOC SETX
 SETX xcor
 
@@ -155,16 +126,9 @@ COD***/
 Value *Compiler::genSetx(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *x = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    generateCallExtern(TyVoid, "setTurtleX", {PaAddr(evaluator), PaDouble(x)});
+    generateCallExtern(TyVoid, setTurtleX, PaAddr(evaluator), PaDouble(x));
     return generateVoidRetval(node);
 }
-
-EXPORTC void setTurtleX(addr_t eAddr, double x)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Config::get().mainTurtle()->setx(x);
-}
-
 /***DOC SETY
 SETY ycor
 
@@ -177,16 +141,9 @@ COD***/
 Value *Compiler::genSety(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *y = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    generateCallExtern(TyVoid, "setTurtleY", {PaAddr(evaluator), PaDouble(y)});
+    generateCallExtern(TyVoid, setTurtleY, PaAddr(evaluator), PaDouble(y));
     return generateVoidRetval(node);
 }
-
-EXPORTC void setTurtleY(addr_t eAddr, double y)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Config::get().mainTurtle()->sety(y);
-}
-
 /***DOC SETPOS
 SETPOS pos
 
@@ -198,19 +155,9 @@ COD***/
 Value *Compiler::genSetpos(const DatumPtr &node, RequestReturnType returnType)
 {
     AllocaInst *posAry = generateNumberAryFromDatum(node.astnodeValue(), node.astnodeValue()->childAtIndex(0), 2);
-    generateCallExtern(TyVoid, "setTurtlePos", {PaAddr(evaluator), PaAddr(posAry)});
+    generateCallExtern(TyVoid, setTurtlePos, PaAddr(evaluator), PaAddr(posAry));
     return generateVoidRetval(node);
 }
-
-EXPORTC void setTurtlePos(addr_t eAddr, addr_t posAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *pos = reinterpret_cast<double *>(posAddr);
-    double x = pos[0];
-    double y = pos[1];
-    Config::get().mainTurtle()->setxy(x, y);
-}
-
 /***DOC SETHEADING SETH
 SETHEADING degrees
 SETH degrees
@@ -225,22 +172,9 @@ COD***/
 Value *Compiler::genSetheading(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *angle = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    generateCallExtern(TyVoid, "setTurtleHeading", {PaAddr(evaluator), PaDouble(angle)});
+    generateCallExtern(TyVoid, setTurtleHeading, PaAddr(evaluator), PaDouble(angle));
     return generateVoidRetval(node);
 }
-
-EXPORTC void setTurtleHeading(addr_t eAddr, double newHeading)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    double oldHeading = Config::get().mainTurtle()->getHeading();
-
-    // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
-    newHeading = 360 - newHeading;
-
-    double adjustment = oldHeading - newHeading;
-    Config::get().mainTurtle()->rotate(adjustment);
-}
-
 /***DOC HOME
 HOME
 
@@ -251,16 +185,9 @@ COD***/
 // CMD HOME 0 0 0 n
 Value *Compiler::genHome(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, "setTurtleMoveToHome", {PaAddr(evaluator)});
+    generateCallExtern(TyVoid, setTurtleMoveToHome, PaAddr(evaluator));
     return generateVoidRetval(node);
 }
-
-EXPORTC void setTurtleMoveToHome(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Config::get().mainTurtle()->moveToHome();
-}
-
 /***DOC ARC
 ARC angle radius
 
@@ -274,23 +201,9 @@ Value *Compiler::genArc(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *angle = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *radius = generateChild(node.astnodeValue(), 1, RequestReturnReal);
-    generateCallExtern(TyVoid, "drawTurtleArc", {PaAddr(evaluator), PaDouble(angle), PaDouble(radius)});
+    generateCallExtern(TyVoid, drawTurtleArc, PaAddr(evaluator), PaDouble(angle), PaDouble(radius));
     return generateVoidRetval(node);
 }
-
-EXPORTC void drawTurtleArc(addr_t eAddr, double angle, double radius)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
-    angle = 0 - angle;
-
-    if ((angle < -360) || (angle > 360))
-        angle = 360;
-
-    if ((angle != 0) && (radius != 0))
-        Config::get().mainTurtle()->drawArc(angle, radius);
-}
-
 // TURTLE MOTION QUERIES
 
 /***DOC POS
@@ -303,22 +216,8 @@ COD***/
 // CMD POS 0 0 0 d
 Value *Compiler::genPos(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, "getTurtlePos", {PaAddr(evaluator)});
+    return generateCallExtern(TyAddr, getTurtlePos, PaAddr(evaluator));
 }
-
-EXPORTC addr_t getTurtlePos(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    double x = 0, y = 0;
-    Config::get().mainTurtle()->getxy(x, y);
-    ListBuilder retvalBuilder;
-    retvalBuilder.append(DatumPtr(x));
-    retvalBuilder.append(DatumPtr(y));
-    Datum *retval = retvalBuilder.finishedList().datumValue();
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
-}
-
 /***DOC HEADING
 HEADING
 
@@ -328,24 +227,8 @@ COD***/
 // CMD HEADING 0 0 0 r
 Value *Compiler::genHeading(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyDouble, "getTurtleHeading", {PaAddr(evaluator)});
+    return generateCallExtern(TyDouble, getTurtleHeading, PaAddr(evaluator));
 }
-
-EXPORTC double getTurtleHeading(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    double retval = Config::get().mainTurtle()->getHeading();
-
-    // Heading should only show two decimal places.
-    retval = round(retval * 100.0) / 100.0;
-
-    // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
-    if (retval > 0)
-        retval = 360 - retval;
-
-    return retval;
-}
-
 /***DOC TOWARDS
 TOWARDS pos
 
@@ -358,30 +241,8 @@ COD***/
 Value *Compiler::genTowards(const DatumPtr &node, RequestReturnType returnType)
 {
     AllocaInst *posAry = generateNumberAryFromDatum(node.astnodeValue(), node.astnodeValue()->childAtIndex(0), 2);
-    return generateCallExtern(TyDouble, "getTurtleTowards", {PaAddr(evaluator), PaAddr(posAry)});
+    return generateCallExtern(TyDouble, getTurtleTowards, PaAddr(evaluator), PaAddr(posAry));
 }
-
-EXPORTC double getTurtleTowards(addr_t eAddr, addr_t posAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    double x = 0, y = 0;
-    Config::get().mainTurtle()->getxy(x, y);
-    auto *pos = reinterpret_cast<double *>(posAddr);
-    double vx = pos[0];
-    double vy = pos[1];
-    double retval = atan2(x - vx, vy - y) * (180 / PI);
-
-    // Heading should only show two decimal places.
-    retval = round(retval * 100.0) / 100.0;
-
-    // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
-    retval = 0 - retval;
-    if (retval < 0)
-        retval = 360 + retval;
-
-    return retval;
-}
-
 /***DOC SCRUNCH
 SCRUNCH
 
@@ -395,20 +256,8 @@ COD***/
 // CMD SCRUNCH 0 0 0 d
 Value *Compiler::genScrunch(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, "getScrunch", {PaAddr(evaluator)});
+    return generateCallExtern(TyAddr, getScrunch, PaAddr(evaluator));
 }
-
-EXPORTC addr_t getScrunch(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    ListBuilder retvalBuilder;
-    retvalBuilder.append(DatumPtr(1));
-    retvalBuilder.append(DatumPtr(1));
-    Datum *retval = retvalBuilder.finishedList().datumValue();
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
-}
-
 // TURTLE AND WINDOW CONTROL
 
 /***DOC SHOWTURTLE ST
@@ -422,16 +271,9 @@ COD***/
 // CMD ST 0 0 0 n
 Value *Compiler::genShowTurtle(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, "setTurtleVisible", {PaAddr(evaluator), PaInt32(CoInt32(1))});
+    generateCallExtern(TyVoid, setTurtleVisible, PaAddr(evaluator), PaInt32(CoInt32(1)));
     return generateVoidRetval(node);
 }
-
-EXPORTC void setTurtleVisible(addr_t eAddr, int visible)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Config::get().mainTurtle()->setIsTurtleVisible(visible);
-}
-
 /***DOC HIDETURTLE HT
 HIDETURTLE
 HT
@@ -443,7 +285,7 @@ COD***/
 // CMD HT 0 0 0 n
 Value *Compiler::genHideTurtle(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, "setTurtleVisible", {PaAddr(evaluator), PaInt32(CoInt32(0))});
+    generateCallExtern(TyVoid, setTurtleVisible, PaAddr(evaluator), PaInt32(CoInt32(0)));
     return generateVoidRetval(node);
 }
 
@@ -458,16 +300,9 @@ COD***/
 // CMD CLEAN 0 0 0 n
 Value *Compiler::genClean(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, "clean", {PaAddr(evaluator)});
+    generateCallExtern(TyVoid, clean, PaAddr(evaluator));
     return generateVoidRetval(node);
 }
-
-EXPORTC void clean(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Config::get().mainController()->clearCanvas();
-}
-
 /***DOC CLEARSCREEN CS
 CLEARSCREEN
 CS
@@ -480,8 +315,8 @@ COD***/
 // CMD CS 0 0 0 n
 Value *Compiler::genClearscreen(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, "setTurtleMoveToHome", {PaAddr(evaluator)});
-    generateCallExtern(TyVoid, "clean", {PaAddr(evaluator)});
+    generateCallExtern(TyVoid, setTurtleMoveToHome, PaAddr(evaluator));
+    generateCallExtern(TyVoid, clean, PaAddr(evaluator));
     return generateVoidRetval(node);
 }
 
@@ -500,22 +335,9 @@ COD***/
 // CMD WRAP 0 0 0 n
 Value *Compiler::genWrap(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, "setTurtleMode", {PaAddr(evaluator), PaInt32(CoInt32(turtleWrap))});
+    generateCallExtern(TyVoid, setTurtleMode, PaAddr(evaluator), PaInt32(CoInt32(turtleWrap)));
     return generateVoidRetval(node);
 }
-
-EXPORTC void setTurtleMode(addr_t eAddr, int mode)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto newMode = static_cast<TurtleModeEnum>(mode);
-    if (Config::get().mainTurtle()->getMode() != newMode)
-    {
-        bool isCanvasBounded = (newMode == turtleWindow);
-        Config::get().mainTurtle()->setMode(newMode);
-        Config::get().mainController()->setIsCanvasBounded(isCanvasBounded);
-    }
-}
-
 /***DOC WINDOW
 WINDOW
 
@@ -530,7 +352,7 @@ COD***/
 // CMD WINDOW 0 0 0 n
 Value *Compiler::genWindow(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, "setTurtleMode", {PaAddr(evaluator), PaInt32(CoInt32(turtleWindow))});
+    generateCallExtern(TyVoid, setTurtleMode, PaAddr(evaluator), PaInt32(CoInt32(turtleWindow)));
     return generateVoidRetval(node);
 }
 
@@ -546,7 +368,7 @@ COD***/
 // CMD FENCE 0 0 0 n
 Value *Compiler::genFence(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, "setTurtleMode", {PaAddr(evaluator), PaInt32(CoInt32(turtleFence))});
+    generateCallExtern(TyVoid, setTurtleMode, PaAddr(evaluator), PaInt32(CoInt32(turtleFence)));
     return generateVoidRetval(node);
 }
 
@@ -560,23 +382,8 @@ COD***/
 // CMD BOUNDS 0 0 0 d
 Value *Compiler::genBounds(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, "getBounds", {PaAddr(evaluator)});
+    return generateCallExtern(TyAddr, getBounds, PaAddr(evaluator));
 }
-
-EXPORTC addr_t getBounds(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    double x = Config::get().mainController()->boundX();
-    double y = Config::get().mainController()->boundY();
-
-    ListBuilder retvalBuilder;
-    retvalBuilder.append(DatumPtr(x));
-    retvalBuilder.append(DatumPtr(y));
-    Datum *retval = retvalBuilder.finishedList().datumValue();
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
-}
-
 /***DOC SETBOUNDS
 SETBOUNDS x y
 
@@ -593,16 +400,9 @@ Value *Compiler::genSetbounds(const DatumPtr &node, RequestReturnType returnType
 {
     Value *x = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *y = generateChild(node.astnodeValue(), 1, RequestReturnReal);
-    generateCallExtern(TyVoid, "setBounds", {PaAddr(evaluator), PaDouble(x), PaDouble(y)});
+    generateCallExtern(TyVoid, setBounds, PaAddr(evaluator), PaDouble(x), PaDouble(y));
     return generateVoidRetval(node);
 }
-
-EXPORTC void setBounds(addr_t eAddr, double x, double y)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Config::get().mainController()->setBounds(x, y);
-}
-
 /***DOC FILLED
 FILLED color instructions
 
@@ -622,40 +422,24 @@ Value *Compiler::genFilled(const DatumPtr &node, RequestReturnType returnType)
     BasicBlock *colorGoodBB = BasicBlock::Create(*scaff->theContext, "colorGood", theFunction);
     Value *color = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *instructions = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
-    Value *isGood = generateCallExtern(TyInt32, "beginFilledWithColor", {PaAddr(evaluator), PaAddr(color)});
+    Value *isGood = generateCallExtern(TyInt32, beginFilledWithColor, PaAddr(evaluator), PaAddr(color));
     Value *isGoodCmp = scaff->builder.CreateICmpEQ(isGood, CoInt32(1), "isGood");
     scaff->builder.CreateCondBr(isGoodCmp, colorGoodBB, colorNotGoodBB);
 
     // Color is not good.
     scaff->builder.SetInsertPoint(colorNotGoodBB);
     Value *errVal = generateCallExtern(
-        TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color)});
+        TyAddr, getErrorNoLike, PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color));
     scaff->builder.CreateRet(errVal);
 
     // Color is good.
     scaff->builder.SetInsertPoint(colorGoodBB);
     Value *result = generateCallList(instructions, RequestReturnDatum);
-    generateCallExtern(TyVoid, "endFilled", {PaAddr(evaluator)});
+    generateCallExtern(TyVoid, endFilled, PaAddr(evaluator));
     return result;
 }
 
 // Returns false if the color is not valid.
-EXPORTC int32_t beginFilledWithColor(addr_t eAddr, addr_t colorAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *d = reinterpret_cast<Datum *>(colorAddr);
-    QColor color;
-    if (!Config::get().mainKernel()->colorFromDatumPtr(color, DatumPtr(d)))
-        return 0;
-    Config::get().mainTurtle()->beginFillWithColor(color);
-    return 1;
-}
-
-EXPORTC void endFilled(addr_t eAddr)
-{
-    Config::get().mainTurtle()->endFill();
-}
-
 /***DOC LABEL
 LABEL text
 
@@ -667,17 +451,9 @@ COD***/
 Value *Compiler::genLabel(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *text = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    generateCallExtern(TyVoid, "addLabel", {PaAddr(evaluator), PaAddr(text)});
+    generateCallExtern(TyVoid, addLabel, PaAddr(evaluator), PaAddr(text));
     return generateVoidRetval(node);
 }
-
-EXPORTC void addLabel(addr_t eAddr, addr_t textAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *d = reinterpret_cast<Datum *>(textAddr);
-    Config::get().mainController()->drawLabel(d->toString());
-}
-
 /***DOC SETLABELHEIGHT
 SETLABELHEIGHT height
 
@@ -688,16 +464,9 @@ COD***/
 Value *Compiler::genSetlabelheight(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *height = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    generateCallExtern(TyVoid, "setLabelHeight", {PaAddr(evaluator), PaDouble(height)});
+    generateCallExtern(TyVoid, setLabelHeight, PaAddr(evaluator), PaDouble(height));
     return generateVoidRetval(node);
 }
-
-EXPORTC void setLabelHeight(addr_t eAddr, double height)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Config::get().mainController()->setLabelFontSize(height);
-}
-
 /***DOC TEXTSCREEN TS
 TEXTSCREEN
 TS
@@ -711,16 +480,9 @@ COD***/
 // CMD TS 0 0 0 n
 Value *Compiler::genTextscreen(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, "setScreenMode", {PaAddr(evaluator), PaInt32(CoInt32(textScreenMode))});
+    generateCallExtern(TyVoid, setScreenMode, PaAddr(evaluator), PaInt32(CoInt32(textScreenMode)));
     return generateVoidRetval(node);
 }
-
-EXPORTC void setScreenMode(addr_t eAddr, int mode)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Config::get().mainController()->setScreenMode(static_cast<ScreenModeEnum>(mode));
-}
-
 /***DOC FULLSCREEN FS
 FULLSCREEN
 FS
@@ -738,7 +500,7 @@ COD***/
 // CMD FS 0 0 0 n
 Value *Compiler::genFullscreen(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, "setScreenMode", {PaAddr(evaluator), PaInt32(CoInt32(fullScreenMode))});
+    generateCallExtern(TyVoid, setScreenMode, PaAddr(evaluator), PaInt32(CoInt32(fullScreenMode)));
     return generateVoidRetval(node);
 }
 
@@ -756,7 +518,7 @@ COD***/
 // CMD SS 0 0 0 n
 Value *Compiler::genSplitscreen(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, "setScreenMode", {PaAddr(evaluator), PaInt32(CoInt32(splitScreenMode))});
+    generateCallExtern(TyVoid, setScreenMode, PaAddr(evaluator), PaInt32(CoInt32(splitScreenMode)));
     return generateVoidRetval(node);
 }
 
@@ -786,15 +548,8 @@ COD***/
 // CMD SHOWN? 0 0 0 b
 Value *Compiler::genShownp(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyBool, "isTurtleVisible", {PaAddr(evaluator)});
+    return generateCallExtern(TyBool, isTurtleVisible, PaAddr(evaluator));
 }
-
-EXPORTC bool isTurtleVisible(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    return Config::get().mainTurtle()->isTurtleVisible();
-}
-
 /***DOC SCREENMODE
 SCREENMODE
 
@@ -809,32 +564,8 @@ COD***/
 // CMD SCREENMODE 0 0 0 d
 Value *Compiler::genScreenmode(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, "getScreenMode", {PaAddr(evaluator)});
+    return generateCallExtern(TyAddr, getScreenMode, PaAddr(evaluator));
 }
-
-EXPORTC addr_t getScreenMode(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    ScreenModeEnum mode = Config::get().mainController()->getScreenMode();
-    QString modeStr;
-    switch (mode)
-    {
-    case textScreenMode:
-    case initScreenMode:
-        modeStr = QObject::tr("textscreen");
-        break;
-    case splitScreenMode:
-        modeStr = QObject::tr("splitscreen");
-        break;
-    case fullScreenMode:
-        modeStr = QObject::tr("fullscreen");
-        break;
-    }
-    auto *retval = new Word(modeStr);
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
-}
-
 /***DOC TURTLEMODE
 TURTLEMODE
 
@@ -845,31 +576,8 @@ COD***/
 // CMD TURTLEMODE 0 0 0 d
 Value *Compiler::genTurtlemode(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, "getTurtleMode", {PaAddr(evaluator)});
+    return generateCallExtern(TyAddr, getTurtleMode, PaAddr(evaluator));
 }
-
-EXPORTC addr_t getTurtleMode(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    TurtleModeEnum mode = Config::get().mainTurtle()->getMode();
-    QString modeStr;
-    switch (mode)
-    {
-    case turtleWrap:
-        modeStr = QObject::tr("wrap");
-        break;
-    case turtleFence:
-        modeStr = QObject::tr("fence");
-        break;
-    case turtleWindow:
-        modeStr = QObject::tr("window");
-        break;
-    }
-    auto *retval = new Word(modeStr);
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
-}
-
 /***DOC LABELSIZE
 LABELSIZE
 
@@ -884,21 +592,8 @@ COD***/
 // CMD LABELSIZE 0 0 0 d
 Value *Compiler::genLabelsize(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, "getLabelSize", {PaAddr(evaluator)});
+    return generateCallExtern(TyAddr, getLabelSize, PaAddr(evaluator));
 }
-
-EXPORTC addr_t getLabelSize(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    double height = Config::get().mainController()->getLabelFontSize();
-    ListBuilder retvalBuilder;
-    retvalBuilder.append(DatumPtr(height));
-    retvalBuilder.append(DatumPtr(height));
-    Datum *retval = retvalBuilder.finishedList().datumValue();
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
-}
-
 // PEN AND BACKGROUND CONTROL
 
 /***DOC PENDOWN PD
@@ -912,16 +607,9 @@ COD***/
 // CMD PD 0 0 0 n
 Value *Compiler::genPendown(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, "setPenIsDown", {PaAddr(evaluator), PaBool(CoBool(true))});
+    generateCallExtern(TyVoid, setPenIsDown, PaAddr(evaluator), PaBool(CoBool(true)));
     return generateVoidRetval(node);
 }
-
-EXPORTC void setPenIsDown(addr_t eAddr, bool isDown)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Config::get().mainTurtle()->setPenIsDown(isDown);
-}
-
 /***DOC PENUP PU
 PENUP
 PU
@@ -933,7 +621,7 @@ COD***/
 // CMD PU 0 0 0 n
 Value *Compiler::genPenup(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, "setPenIsDown", {PaAddr(evaluator), PaBool(CoBool(false))});
+    generateCallExtern(TyVoid, setPenIsDown, PaAddr(evaluator), PaBool(CoBool(false)));
     return generateVoidRetval(node);
 }
 
@@ -948,17 +636,10 @@ COD***/
 // CMD PPT 0 0 0 n
 Value *Compiler::genPenpaint(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, "setPenIsDown", {PaAddr(evaluator), PaBool(CoBool(true))});
-    generateCallExtern(TyVoid, "setPenMode", {PaAddr(evaluator), PaInt32(CoInt32(static_cast<int32_t>(penModePaint)))});
+    generateCallExtern(TyVoid, setPenIsDown, PaAddr(evaluator), PaBool(CoBool(true)));
+    generateCallExtern(TyVoid, setPenMode, PaAddr(evaluator), PaInt32(CoInt32(static_cast<int32_t>(penModePaint))));
     return generateVoidRetval(node);
 }
-
-EXPORTC void setPenMode(addr_t eAddr, int32_t mode)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Config::get().mainTurtle()->setPenMode(static_cast<PenModeEnum>(mode));
-}
-
 /***DOC PENERASE PE
 PENERASE
 PE
@@ -970,8 +651,8 @@ COD***/
 // CMD PE 0 0 0 n
 Value *Compiler::genPenerase(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, "setPenIsDown", {PaAddr(evaluator), PaBool(CoBool(true))});
-    generateCallExtern(TyVoid, "setPenMode", {PaAddr(evaluator), PaInt32(CoInt32(static_cast<int32_t>(penModeErase)))});
+    generateCallExtern(TyVoid, setPenIsDown, PaAddr(evaluator), PaBool(CoBool(true)));
+    generateCallExtern(TyVoid, setPenMode, PaAddr(evaluator), PaInt32(CoInt32(static_cast<int32_t>(penModeErase))));
     return generateVoidRetval(node);
 }
 
@@ -987,9 +668,8 @@ COD***/
 // CMD PX 0 0 0 n
 Value *Compiler::genPenreverse(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, "setPenIsDown", {PaAddr(evaluator), PaBool(CoBool(true))});
-    generateCallExtern(
-        TyVoid, "setPenMode", {PaAddr(evaluator), PaInt32(CoInt32(static_cast<int32_t>(penModeReverse)))});
+    generateCallExtern(TyVoid, setPenIsDown, PaAddr(evaluator), PaBool(CoBool(true)));
+    generateCallExtern(TyVoid, setPenMode, PaAddr(evaluator), PaInt32(CoInt32(static_cast<int32_t>(penModeReverse))));
     return generateVoidRetval(node);
 }
 
@@ -1035,32 +715,20 @@ Value *Compiler::genSetpencolor(const DatumPtr &node, RequestReturnType returnTy
     BasicBlock *colorNotGoodBB = BasicBlock::Create(*scaff->theContext, "colorNotGood", theFunction);
     BasicBlock *colorGoodBB = BasicBlock::Create(*scaff->theContext, "colorGood", theFunction);
     Value *color = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    Value *isGood = generateCallExtern(TyBool, "setPenColor", {PaAddr(evaluator), PaAddr(color)});
+    Value *isGood = generateCallExtern(TyBool, setPenColor, PaAddr(evaluator), PaAddr(color));
     Value *isGoodCmp = scaff->builder.CreateICmpEQ(isGood, CoBool(true), "isGood");
     scaff->builder.CreateCondBr(isGoodCmp, colorGoodBB, colorNotGoodBB);
 
     // Color is not good.
     scaff->builder.SetInsertPoint(colorNotGoodBB);
     Value *errVal = generateCallExtern(
-        TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color)});
+        TyAddr, getErrorNoLike, PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color));
     scaff->builder.CreateRet(errVal);
 
     // Color is good.
     scaff->builder.SetInsertPoint(colorGoodBB);
     return generateVoidRetval(node);
 }
-
-EXPORTC bool setPenColor(addr_t eAddr, addr_t colorAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *d = reinterpret_cast<Datum *>(colorAddr);
-    QColor color;
-    if (!Config::get().mainKernel()->colorFromDatumPtr(color, DatumPtr(d)))
-        return false;
-    Config::get().mainTurtle()->setPenColor(color);
-    return true;
-}
-
 /***DOC ALLCOLORS
 ALLCOLORS
 
@@ -1070,23 +738,8 @@ COD***/
 // CMD ALLCOLORS 0 0 0 d
 Value *Compiler::genAllcolors(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, "getAllColors", {PaAddr(evaluator)});
+    return generateCallExtern(TyAddr, getAllColors, PaAddr(evaluator));
 }
-
-EXPORTC addr_t getAllColors(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    ListBuilder lb;
-    QStringList colors = QColor::colorNames();
-    for (const QString &i : colors)
-    {
-        lb.append(DatumPtr(new Word(i)));
-    }
-    DatumPtr retval = lb.finishedList();
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval.datumValue());
-}
-
 /***DOC SETPALETTE
 SETPALETTE colornumber color
 
@@ -1102,9 +755,9 @@ Value *Compiler::genSetpalette(const DatumPtr &node, RequestReturnType returnTyp
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     Value *colorIndex = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    Value *isColorIndexGood = generateCallExtern(
-        TyBool, "isColorIndexGood", {PaAddr(evaluator), PaAddr(colorIndex), PaDouble(CoDouble(8.0))});
-    Value *isColorIndexGoodCmp = scaff->builder.CreateICmpEQ(isColorIndexGood, CoBool(true), "isColorIndexGood");
+    Value *isColorIndexGoodResult =
+        generateCallExtern(TyBool, isColorIndexGood, PaAddr(evaluator), PaAddr(colorIndex), PaDouble(CoDouble(8.0)));
+    Value *isColorIndexGoodCmp = scaff->builder.CreateICmpEQ(isColorIndexGoodResult, CoBool(true), "isColorIndexGood");
     BasicBlock *colorIndexNotGoodBB = BasicBlock::Create(*scaff->theContext, "colorIndexNotGood", theFunction);
     BasicBlock *colorIndexGoodBB = BasicBlock::Create(*scaff->theContext, "colorIndexGood", theFunction);
     BasicBlock *colorNotGoodBB = BasicBlock::Create(*scaff->theContext, "colorNotGood", theFunction);
@@ -1114,50 +767,26 @@ Value *Compiler::genSetpalette(const DatumPtr &node, RequestReturnType returnTyp
     // Color index is not good.
     scaff->builder.SetInsertPoint(colorIndexNotGoodBB);
     Value *errVal = generateCallExtern(
-        TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(colorIndex)});
+        TyAddr, getErrorNoLike, PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(colorIndex));
     scaff->builder.CreateRet(errVal);
 
     // Color index is good.
     scaff->builder.SetInsertPoint(colorIndexGoodBB);
     Value *color = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
-    Value *colorIsGood =
-        generateCallExtern(TyBool, "setPalette", {PaAddr(evaluator), PaAddr(colorIndex), PaAddr(color)});
+    Value *colorIsGood = generateCallExtern(TyBool, setPalette, PaAddr(evaluator), PaAddr(colorIndex), PaAddr(color));
     Value *colorIsGoodCmp = scaff->builder.CreateICmpEQ(colorIsGood, CoBool(true), "colorIsGood");
     scaff->builder.CreateCondBr(colorIsGoodCmp, colorGoodBB, colorNotGoodBB);
 
     // Color is not good.
     scaff->builder.SetInsertPoint(colorNotGoodBB);
     errVal = generateCallExtern(
-        TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color)});
+        TyAddr, getErrorNoLike, PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color));
     scaff->builder.CreateRet(errVal);
 
     // Color is good.
     scaff->builder.SetInsertPoint(colorGoodBB);
     return generateVoidRetval(node);
 }
-
-EXPORTC bool isColorIndexGood(addr_t eAddr, addr_t colorIndexAddr, double lowerLimit)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *w = reinterpret_cast<Word *>(colorIndexAddr);
-    double colorIndex = w->numberValue();
-
-    return (w->numberIsValid) && (colorIndex == floor(colorIndex)) && (colorIndex >= lowerLimit) &&
-           (colorIndex < Config::get().mainKernel()->palette.size());
-}
-
-EXPORTC bool setPalette(addr_t eAddr, addr_t colorIndexAddr, addr_t colorAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto colorIndex = static_cast<int>((reinterpret_cast<Word *>(colorIndexAddr))->numberValue());
-    auto *d = reinterpret_cast<Datum *>(colorAddr);
-    QColor color;
-    if (!Config::get().mainKernel()->colorFromDatumPtr(color, DatumPtr(d)))
-        return false;
-    Config::get().mainKernel()->palette[colorIndex] = color;
-    return true;
-}
-
 /***DOC SETPENSIZE
 SETPENSIZE size
 
@@ -1170,16 +799,9 @@ Value *Compiler::genSetpensize(const DatumPtr &node, RequestReturnType returnTyp
 {
     Value *size = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     size = generateGTZeroFromDouble(node.astnodeValue(), size);
-    generateCallExtern(TyVoid, "setPenSize", {PaAddr(evaluator), PaAddr(size)});
+    generateCallExtern(TyVoid, setPenSize, PaAddr(evaluator), PaAddr(size));
     return generateVoidRetval(node);
 }
-
-EXPORTC void setPenSize(addr_t eAddr, double size)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Config::get().mainTurtle()->setPenSize(size);
-}
-
 /***DOC SETBACKGROUND SETBG
 SETBACKGROUND color
 SETBG color
@@ -1194,7 +816,7 @@ Value *Compiler::genSetbackground(const DatumPtr &node, RequestReturnType return
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     Value *color = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    Value *isGood = generateCallExtern(TyBool, "setBackground", {PaAddr(evaluator), PaAddr(color)});
+    Value *isGood = generateCallExtern(TyBool, setBackground, PaAddr(evaluator), PaAddr(color));
     Value *isGoodCmp = scaff->builder.CreateICmpEQ(isGood, CoBool(true), "isGood");
     BasicBlock *colorNotGoodBB = BasicBlock::Create(*scaff->theContext, "colorNotGood", theFunction);
     BasicBlock *colorGoodBB = BasicBlock::Create(*scaff->theContext, "colorGood", theFunction);
@@ -1203,25 +825,13 @@ Value *Compiler::genSetbackground(const DatumPtr &node, RequestReturnType return
     // Color is not good.
     scaff->builder.SetInsertPoint(colorNotGoodBB);
     Value *errVal = generateCallExtern(
-        TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color)});
+        TyAddr, getErrorNoLike, PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color));
     scaff->builder.CreateRet(errVal);
 
     // Color is good.
     scaff->builder.SetInsertPoint(colorGoodBB);
     return generateVoidRetval(node);
 }
-
-EXPORTC bool setBackground(addr_t eAddr, addr_t colorAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *d = reinterpret_cast<Datum *>(colorAddr);
-    QColor color;
-    if (!Config::get().mainKernel()->colorFromDatumPtr(color, DatumPtr(d)))
-        return false;
-    Config::get().mainController()->setCanvasBackgroundColor(color);
-    return true;
-}
-
 // PEN QUERIES
 
 /***DOC PENDOWNP PENDOWN?
@@ -1235,15 +845,8 @@ COD***/
 // CMD PENDOWN? 0 0 0 b
 Value *Compiler::genPendownp(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyBool, "isPenDown", {PaAddr(evaluator)});
+    return generateCallExtern(TyBool, isPenDown, PaAddr(evaluator));
 }
-
-EXPORTC bool isPenDown(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    return Config::get().mainTurtle()->isPenDown();
-}
-
 /***DOC PENMODE
 PENMODE
 
@@ -1254,31 +857,8 @@ COD***/
 // CMD PENMODE 0 0 0 d
 Value *Compiler::genPenmode(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, "getPenMode", {PaAddr(evaluator)});
+    return generateCallExtern(TyAddr, getPenMode, PaAddr(evaluator));
 }
-
-EXPORTC addr_t getPenMode(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    PenModeEnum pm = Config::get().mainTurtle()->getPenMode();
-    QString retval;
-    switch (pm)
-    {
-    case penModePaint:
-        retval = QObject::tr("paint");
-        break;
-    case penModeReverse:
-        retval = QObject::tr("reverse");
-        break;
-    case penModeErase:
-        retval = QObject::tr("erase");
-        break;
-    }
-    auto *w = new Word(retval);
-    e->watch(w);
-    return reinterpret_cast<addr_t>(w);
-}
-
 /***DOC PENCOLOR PC
 PENCOLOR
 PC
@@ -1292,18 +872,8 @@ COD***/
 // CMD PC 0 0 0 d
 Value *Compiler::genPencolor(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, "getPenColor", {PaAddr(evaluator)});
+    return generateCallExtern(TyAddr, getPenColor, PaAddr(evaluator));
 }
-
-EXPORTC addr_t getPenColor(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    const QColor &color = Config::get().mainTurtle()->getPenColor();
-    List *retval = listFromColor(color);
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
-}
-
 /***DOC PALETTE
 PALETTE colornumber
 
@@ -1317,8 +887,8 @@ Value *Compiler::genPalette(const DatumPtr &node, RequestReturnType returnType)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     Value *colorIndex = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    Value *isColorIndexGood = generateCallExtern(
-        TyBool, "isColorIndexGood", {PaAddr(evaluator), PaAddr(colorIndex), PaDouble(CoDouble(0.0))});
+    Value *isColorIndexGood =
+        generateCallExtern(TyBool, isColorIndexGood, PaAddr(evaluator), PaAddr(colorIndex), PaDouble(CoDouble(0.0)));
     Value *isColorIndexGoodCmp = scaff->builder.CreateICmpEQ(isColorIndexGood, CoBool(true), "isColorIndexGood");
     BasicBlock *colorIndexNotGoodBB = BasicBlock::Create(*scaff->theContext, "colorIndexNotGood", theFunction);
     BasicBlock *colorIndexGoodBB = BasicBlock::Create(*scaff->theContext, "colorIndexGood", theFunction);
@@ -1327,25 +897,14 @@ Value *Compiler::genPalette(const DatumPtr &node, RequestReturnType returnType)
     // Color index is not good.
     scaff->builder.SetInsertPoint(colorIndexNotGoodBB);
     Value *errVal = generateCallExtern(
-        TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(colorIndex)});
+        TyAddr, getErrorNoLike, PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(colorIndex));
     scaff->builder.CreateRet(errVal);
 
     // Color index is good.
     scaff->builder.SetInsertPoint(colorIndexGoodBB);
-    Value *color = generateCallExtern(TyAddr, "getPaletteColor", {PaAddr(evaluator), PaAddr(colorIndex)});
+    Value *color = generateCallExtern(TyAddr, getPaletteColor, PaAddr(evaluator), PaAddr(colorIndex));
     return color;
 }
-
-EXPORTC addr_t getPaletteColor(addr_t eAddr, addr_t colorIndexAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto colorIndex = static_cast<int>((reinterpret_cast<Word *>(colorIndexAddr))->numberValue());
-    const QColor &color = Config::get().mainKernel()->palette[colorIndex];
-    List *retval = listFromColor(color);
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
-}
-
 /***DOC PENSIZE
 PENSIZE
 
@@ -1356,15 +915,8 @@ COD***/
 // CMD PENSIZE 0 0 0 r
 Value *Compiler::genPensize(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyDouble, "getPenSize", {PaAddr(evaluator)});
+    return generateCallExtern(TyDouble, getPenSize, PaAddr(evaluator));
 }
-
-EXPORTC double getPenSize(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    return Config::get().mainTurtle()->getPenSize();
-}
-
 /***DOC BACKGROUND BG
 BACKGROUND
 BG
@@ -1379,18 +931,8 @@ COD***/
 // CMD BG 0 0 0 d
 Value *Compiler::genBackground(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, "getBackground", {PaAddr(evaluator)});
+    return generateCallExtern(TyAddr, getBackground, PaAddr(evaluator));
 }
-
-EXPORTC addr_t getBackground(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    const QColor &color = Config::get().mainController()->getCanvasBackgroundColor();
-    List *retval = listFromColor(color);
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
-}
-
 // SAVING AND LOADING PICTURES
 
 /***DOC SAVEPICT
@@ -1407,25 +949,8 @@ Value *Compiler::genSavepict(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *filename = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     return generateCallExtern(
-        TyAddr, "savePict", {PaAddr(evaluator), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue()))});
+        TyAddr, savePict, PaAddr(evaluator), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue())));
 }
-
-EXPORTC addr_t savePict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
-    QString filepath = Config::get().mainKernel()->filepathForFilename(DatumPtr(filename));
-    QImage image = Config::get().mainController()->getCanvasImage();
-    bool isSuccessful = image.save(filepath);
-    auto *retval = reinterpret_cast<Datum *>(nodeAddr);
-    if (!isSuccessful)
-    {
-        retval = FCError::fileSystem();
-    }
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
-}
-
 /***DOC SVGPICT
 SVGPICT filename
 
@@ -1439,32 +964,8 @@ Value *Compiler::genSvgpict(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *filename = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     return generateCallExtern(
-        TyAddr, "saveSvgpict", {PaAddr(evaluator), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue()))});
+        TyAddr, saveSvgpict, PaAddr(evaluator), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue())));
 }
-
-EXPORTC addr_t saveSvgpict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
-    QString filepath = Config::get().mainKernel()->filepathForFilename(DatumPtr(filename));
-    QByteArray svgImage = Config::get().mainController()->getSvgImage();
-
-    auto *retval = reinterpret_cast<Datum *>(nodeAddr);
-    QFile file(filepath);
-    bool isSuccessful = file.open(QIODevice::WriteOnly);
-    if (!isSuccessful)
-    {
-        retval = FCError::fileSystem();
-    }
-
-    qint64 bytesWritten = file.write(svgImage);
-    if (bytesWritten != svgImage.size())
-        retval = FCError::fileSystem();
-
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
-}
-
 /***DOC LOADPICT
 LOADPICT filename
 
@@ -1481,40 +982,8 @@ Value *Compiler::genLoadpict(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *filename = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     return generateCallExtern(
-        TyAddr, "loadPict", {PaAddr(evaluator), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue()))});
+        TyAddr, loadPict, PaAddr(evaluator), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue())));
 }
-
-EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *dFilename = reinterpret_cast<Datum *>(filenameAddr);
-    auto *retval = reinterpret_cast<Datum *>(nodeAddr);
-    if (dFilename->isa == Datum::typeWord)
-    {
-        QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
-        QString filepath = Config::get().mainKernel()->filepathForFilename(DatumPtr(filename));
-        QImage image = QImage(filepath);
-        if (image.isNull())
-        {
-            retval = FCError::fileSystem();
-        }
-        Config::get().mainController()->setCanvasBackgroundImage(image);
-        goto done;
-    }
-    if (dFilename->isList())
-    {
-        if (dFilename->listValue()->isEmpty())
-        {
-            Config::get().mainController()->setCanvasBackgroundImage(QImage());
-            goto done;
-        }
-    }
-    retval = FCError::doesntLike(DatumPtr(reinterpret_cast<ASTNode *>(nodeAddr)->nodeName), DatumPtr(dFilename));
-done:
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
-}
-
 // MOUSE QUERIES
 
 /***DOC MOUSEPOS
@@ -1531,21 +1000,8 @@ COD***/
 // CMD MOUSEPOS 0 0 0 d
 Value *Compiler::genMousepos(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, "getMousePos", {PaAddr(evaluator)});
+    return generateCallExtern(TyAddr, getMousePos, PaAddr(evaluator));
 }
-
-EXPORTC addr_t getMousePos(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    QVector2D position = Config::get().mainController()->mousePosition();
-    ListBuilder retvalBuilder;
-    retvalBuilder.append(DatumPtr(position.x()));
-    retvalBuilder.append(DatumPtr(position.y()));
-    Datum *retval = retvalBuilder.finishedList().datumValue();
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
-}
-
 /***DOC CLICKPOS
 CLICKPOS
 
@@ -1557,21 +1013,8 @@ COD***/
 // CMD CLICKPOS 0 0 0 d
 Value *Compiler::genClickpos(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, "getClickPos", {PaAddr(evaluator)});
+    return generateCallExtern(TyAddr, getClickPos, PaAddr(evaluator));
 }
-
-EXPORTC addr_t getClickPos(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    QVector2D position = Config::get().mainController()->lastMouseclickPosition();
-    ListBuilder retvalBuilder;
-    retvalBuilder.append(DatumPtr(position.x()));
-    retvalBuilder.append(DatumPtr(position.y()));
-    Datum *retval = retvalBuilder.finishedList().datumValue();
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
-}
-
 /***DOC BUTTONP BUTTON?
 BUTTONP
 BUTTON?
@@ -1586,15 +1029,8 @@ COD***/
 // CMD BUTTON? 0 0 0 b
 Value *Compiler::genButtonp(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyBool, "isMouseButtonDown", {PaAddr(evaluator)});
+    return generateCallExtern(TyBool, isMouseButtonDown, PaAddr(evaluator));
 }
-
-EXPORTC bool isMouseButtonDown(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    return Config::get().mainController()->getIsMouseButtonDown();
-}
-
 /***DOC BUTTON
 BUTTON
 
@@ -1609,11 +1045,5 @@ COD***/
 // CMD BUTTON 0 0 0 r
 Value *Compiler::genButton(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyDouble, "getMouseButton", {PaAddr(evaluator)});
-}
-
-EXPORTC double getMouseButton(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    return static_cast<double>(Config::get().mainController()->getAndResetButtonID());
+    return generateCallExtern(TyDouble, getMouseButton, PaAddr(evaluator));
 }

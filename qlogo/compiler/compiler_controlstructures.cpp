@@ -18,19 +18,12 @@
 #include "compiler.h"
 #include "compiler_private.h"
 #include "datum_types.h"
+#include "exports.h"
 #include "flowcontrol.h"
 #include "kernel.h"
 #include "sharedconstants.h"
 
 #include <QObject>
-
-/// @brief return the address of the repcount variable.
-EXPORTC addr_t repcountAddr(void)
-{
-    void *retval = &Config::get().mainKernel()->callStack.repcount;
-    return (addr_t)retval;
-}
-
 using namespace llvm;
 using namespace llvm::orc;
 
@@ -180,10 +173,10 @@ Value *Compiler::genRepeat(const DatumPtr &node, RequestReturnType returnType)
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
 
     // Get the current value of repcount since we are shadowing it.
-    Value *repcountAddr = generateCallExtern(TyAddr, "repcountAddr", {});
-    Value *shadowedRepcount = scaff->builder.CreateLoad(TyDouble, repcountAddr, "shadowedRepcount");
+    Value *repcountAddress = generateCallExtern(TyAddr, repcountAddr);
+    Value *shadowedRepcount = scaff->builder.CreateLoad(TyDouble, repcountAddress, "shadowedRepcount");
 
-    scaff->builder.CreateStore(CoDouble(1.0), repcountAddr);
+    scaff->builder.CreateStore(CoDouble(1.0), repcountAddress);
 
     BasicBlock *loopBB = BasicBlock::Create(*scaff->theContext, "loop", theFunction);
     BasicBlock *whileBB = BasicBlock::Create(*scaff->theContext, "while", theFunction);
@@ -196,7 +189,7 @@ Value *Compiler::genRepeat(const DatumPtr &node, RequestReturnType returnType)
     scaff->builder.CreateBr(loopBB);
 
     scaff->builder.SetInsertPoint(loopBB);
-    Value *repcount = scaff->builder.CreateLoad(TyDouble, repcountAddr, "repcount");
+    Value *repcount = scaff->builder.CreateLoad(TyDouble, repcountAddress, "repcount");
     Value *isLast = scaff->builder.CreateFCmpULE(repcount, count, "isLast");
     scaff->builder.CreateCondBr(isLast, whileBB, exitBB);
 
@@ -214,7 +207,7 @@ Value *Compiler::genRepeat(const DatumPtr &node, RequestReturnType returnType)
 
     scaff->builder.SetInsertPoint(loopNextBB);
     Value *incrRepcount = scaff->builder.CreateFAdd(repcount, CoDouble(1.0), "incrRepcount");
-    scaff->builder.CreateStore(incrRepcount, repcountAddr);
+    scaff->builder.CreateStore(incrRepcount, repcountAddress);
     scaff->builder.CreateBr(loopBB);
 
     scaff->builder.SetInsertPoint(datumIsLastBB);
@@ -229,14 +222,14 @@ Value *Compiler::genRepeat(const DatumPtr &node, RequestReturnType returnType)
     PHINode *phiError = scaff->builder.CreatePHI(TyAddr, 2, "errVal");
     phiError->addIncoming(errNoSay, noSayErrorBB);
     phiError->addIncoming(result, whileBB);
-    scaff->builder.CreateStore(shadowedRepcount, repcountAddr);
+    scaff->builder.CreateStore(shadowedRepcount, repcountAddress);
     scaff->builder.CreateRet(phiError);
 
     scaff->builder.SetInsertPoint(exitBB);
     PHINode *phiNode = scaff->builder.CreatePHI(TyAddr, 2, "retval");
     phiNode->addIncoming(generateVoidRetval(node), loopBB);
     phiNode->addIncoming(result, datumIsLastBB);
-    scaff->builder.CreateStore(shadowedRepcount, repcountAddr);
+    scaff->builder.CreateStore(shadowedRepcount, repcountAddress);
     return phiNode;
 }
 
@@ -256,8 +249,8 @@ COD***/
 // CMD REPCOUNT 0 0 0 r
 Value *Compiler::genRepcount(const DatumPtr &node, RequestReturnType returnType)
 {
-    Value *repcountAddr = generateCallExtern(TyAddr, "repcountAddr", {});
-    Value *repcount = scaff->builder.CreateLoad(TyDouble, repcountAddr, "repcount");
+    Value *repcountAddress = generateCallExtern(TyAddr, repcountAddr);
+    Value *repcount = scaff->builder.CreateLoad(TyDouble, repcountAddress, "repcount");
     return repcount;
 }
 
@@ -350,7 +343,7 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node,
             Value *retval = generateChild(node.astnodeValue(), child, paramRequestType);
 
             retval = generateCallExtern(
-                TyAddr, "getCtrlReturn", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval)});
+                TyAddr, getCtrlReturn, PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
             return retval;
         }
         // Else it's a procedure. Generate a tail call to it.
@@ -358,16 +351,18 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node,
 
         // TODO: Instead of RequestReturnDatum, should we use paramRequestType?
         AllocaInst *ary = generateChildrenAlloca(child.astnodeValue(), RequestReturnDatum, "childAry");
-        Value *retObj =
-            generateCallExtern(TyAddr,
-                               "getCtrlContinuation",
-                               {PaAddr(evaluator), PaAddr(childAddr), PaAddr(ary), PaInt32(ary->getArraySize())});
+        Value *retObj = generateCallExtern(TyAddr,
+                                           getCtrlContinuation,
+                                           PaAddr(evaluator),
+                                           PaAddr(childAddr),
+                                           PaAddr(ary),
+                                           PaInt32(ary->getArraySize()));
         return retObj;
     }
     // There is no child. Return nothing.
     Value *retval = generateVoidRetval(node);
     return generateCallExtern(
-        TyAddr, "getCtrlReturn", {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval)});
+        TyAddr, getCtrlReturn, PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
 }
 
 /***DOC TAG
@@ -402,7 +397,7 @@ Value *Compiler::genGoto(const DatumPtr &node, RequestReturnType returnType)
     Value *nodeAddr = CoAddr(node.astnodeValue());
     Value *tag = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     tag = generateWordFromDatum(node.astnodeValue(), tag);
-    Value *retObj = generateCallExtern(TyAddr, "getCtrlGoto", {PaAddr(evaluator), PaAddr(nodeAddr), PaAddr(tag)});
+    Value *retObj = generateCallExtern(TyAddr, getCtrlGoto, PaAddr(evaluator), PaAddr(nodeAddr), PaAddr(tag));
     return retObj;
 }
 
@@ -433,75 +428,18 @@ Value *Compiler::genCatch(const DatumPtr &node, RequestReturnType returnType)
     Value *tag = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *instructionlist = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
     generateWordFromDatum(node.astnodeValue(), tag);
-    Value *errActStash = generateCallExtern(TyAddr, "beginCatch", {PaAddr(evaluator)});
+    Value *errActStash = generateCallExtern(TyAddr, beginCatch, PaAddr(evaluator));
 
     Value *result = generateCallList(instructionlist, returnType);
 
-    Value *retval = generateCallExtern(
-        TyAddr,
-        "endCatch",
-        {PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(errActStash), PaAddr(result), PaAddr(tag)});
+    Value *retval = generateCallExtern(TyAddr,
+                                       endCatch,
+                                       PaAddr(evaluator),
+                                       PaAddr(CoAddr(node.astnodeValue())),
+                                       PaAddr(errActStash),
+                                       PaAddr(result),
+                                       PaAddr(tag));
     return retval;
-}
-
-EXPORTC addr_t beginCatch(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *erractWord = reinterpret_cast<Word *>(Config::get().mainKernel()->specialVar(SpecialNames::ERRACT));
-    Datum *erractValue =
-        Config::get().mainKernel()->callStack.datumForName(erractWord->toString(Datum::ToStringFlags_Key)).datumValue();
-
-    // Save the erract value.
-    if (erractValue->isa != Datum::typeNothing)
-    {
-        erractValue->retainCount++;
-        Config::get().mainKernel()->callStack.setDatumForName(nothing(),
-                                                              erractWord->toString(Datum::ToStringFlags_Key));
-    }
-    return reinterpret_cast<addr_t>(erractValue);
-}
-
-EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t resultAddr, addr_t tagAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *erractWord = reinterpret_cast<Word *>(Config::get().mainKernel()->specialVar(SpecialNames::ERRACT));
-    auto *erractValue = reinterpret_cast<Datum *>(errActAddr);
-    auto *result = reinterpret_cast<Datum *>(resultAddr);
-    auto *tag = reinterpret_cast<Word *>(tagAddr);
-
-    // Restore the erract value.
-    if (erractValue->isa != Datum::typeNothing)
-    {
-        DatumPtr erractValuePtr = DatumPtr(erractValue);
-        Config::get().mainKernel()->callStack.setDatumForName(erractValuePtr,
-                                                              erractWord->toString(Datum::ToStringFlags_Key));
-        erractValue->retainCount--;
-    }
-
-    if (result->isa == Datum::typeError)
-    {
-        auto *err = reinterpret_cast<FCError *>(result);
-        QString tagStr = tag->toString(Datum::ToStringFlags_Key);
-
-        if ((tagStr == QObject::tr("ERROR")) &&
-            ((err->code == ErrCode::ERR_NO_CATCH) &&
-                 (err->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("ERROR")) ||
-             (err->code != ErrCode::ERR_NO_CATCH)))
-        {
-            e->watch(err);
-            return nodeAddr;
-        }
-        else if ((err->code == ErrCode::ERR_NO_CATCH) && (err->tag().toString(Datum::ToStringFlags_Key) == tagStr))
-        {
-            e->watch(err);
-            auto retval = reinterpret_cast<addr_t>(err->output().datumValue());
-            Config::get().mainKernel()->currentError = nothing();
-            return retval;
-        }
-        return resultAddr;
-    }
-
-    return reinterpret_cast<addr_t>(result);
 }
 
 /***DOC THROW
@@ -544,7 +482,7 @@ Value *Compiler::genThrow(const DatumPtr &node, RequestReturnType returnType)
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnDatum);
     Value *tag = generateWordFromDatum(node.astnodeValue(), children[0]);
     Value *output = (children.size() == 1) ? CoAddr(Datum::getInstance()) : children[1];
-    Value *errObj = generateCallExtern(TyAddr, "getErrorCustom", {PaAddr(evaluator), PaAddr(tag), PaAddr(output)});
+    Value *errObj = generateCallExtern(TyAddr, getErrorCustom, PaAddr(evaluator), PaAddr(tag), PaAddr(output));
     return generateImmediateReturn(errObj);
 }
 
@@ -563,28 +501,8 @@ COD***/
 // CMD ERROR 0 0 0 d
 Value *Compiler::genError(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, "getCurrentError", {PaAddr(evaluator)});
+    return generateCallExtern(TyAddr, getCurrentError, PaAddr(evaluator));
 }
-
-EXPORTC addr_t getCurrentError(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    DatumPtr errPtr = Config::get().mainKernel()->currentError;
-
-    ListBuilder retvalBuilder;
-    if (!errPtr.isNothing())
-    {
-        auto *err = reinterpret_cast<FCError *>(errPtr.datumValue());
-        retvalBuilder.append(DatumPtr(err->code));
-        retvalBuilder.append(err->message());
-        retvalBuilder.append(err->procedure());
-        retvalBuilder.append(err->line());
-    }
-    Datum *retval = retvalBuilder.finishedList().datumValue();
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
-}
-
 /***DOC PAUSE
 PAUSE
 
@@ -602,15 +520,7 @@ COD***/
 // CMD PAUSE 0 0 0 dn
 Value *Compiler::genPause(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, "callPause", {PaAddr(evaluator)});
-}
-
-EXPORTC addr_t callPause(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *retval = Config::get().mainKernel()->pause().datumValue();
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
+    return generateCallExtern(TyAddr, callPause, PaAddr(evaluator));
 }
 
 /***DOC CONTINUE CO
@@ -638,19 +548,8 @@ Value *Compiler::genContinue(const DatumPtr &node, RequestReturnType returnType)
     {
         output = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     }
-    return generateCallExtern(TyAddr, "generateContinue", {PaAddr(evaluator), PaAddr(output)});
+    return generateCallExtern(TyAddr, generateContinue, PaAddr(evaluator), PaAddr(output));
 }
-
-EXPORTC addr_t generateContinue(addr_t eAddr, addr_t outputAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *output = reinterpret_cast<Datum *>(outputAddr);
-
-    FCError *err = FCError::custom(DatumPtr(QObject::tr("PAUSE")), nothing(), DatumPtr(output));
-    e->watch(err);
-    return reinterpret_cast<addr_t>(err);
-}
-
 /***DOC RUNRESULT
 RUNRESULT instructionlist
 
@@ -670,32 +569,8 @@ Value *Compiler::genRunresult(const DatumPtr &node, RequestReturnType returnType
 {
     Value *instructionlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *result = generateCallList(instructionlist, RequestReturnDN);
-    return generateCallExtern(TyAddr, "processRunresult", {PaAddr(evaluator), PaAddr(result)});
+    return generateCallExtern(TyAddr, processRunresult, PaAddr(evaluator), PaAddr(result));
 }
-
-EXPORTC addr_t processRunresult(addr_t eAddr, addr_t resultAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *result = reinterpret_cast<Datum *>(resultAddr);
-    Datum *retval;
-
-    if ((result->isa & Datum::typeDataMask) != 0)
-    {
-        retval = new List(result, EmptyList::instance());
-    }
-    else if ((result->isa & Datum::typeUnboundMask) != 0)
-    {
-        retval = EmptyList::instance();
-    }
-    else
-    {
-        // Pass through whatever we got because it's not good.
-        return resultAddr;
-    }
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
-}
-
 /***DOC FOREVER
 FOREVER instructionlist
 
@@ -712,10 +587,10 @@ Value *Compiler::genForever(const DatumPtr &node, RequestReturnType returnType)
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
 
     // Get the current value of repcount since we are shadowing it.
-    Value *repcountAddr = generateCallExtern(TyAddr, "repcountAddr", {});
-    Value *shadowedRepcount = scaff->builder.CreateLoad(TyDouble, repcountAddr, "shadowedRepcount");
+    Value *repcountAddress = generateCallExtern(TyAddr, repcountAddr);
+    Value *shadowedRepcount = scaff->builder.CreateLoad(TyDouble, repcountAddress, "shadowedRepcount");
 
-    scaff->builder.CreateStore(CoDouble(1.0), repcountAddr);
+    scaff->builder.CreateStore(CoDouble(1.0), repcountAddress);
 
     BasicBlock *whileBB = BasicBlock::Create(*scaff->theContext, "while", theFunction);
     BasicBlock *datumCheckBB = BasicBlock::Create(*scaff->theContext, "datumCheck", theFunction);
@@ -738,9 +613,9 @@ Value *Compiler::genForever(const DatumPtr &node, RequestReturnType returnType)
     scaff->builder.CreateCondBr(isDatumCond, loopNextBB, noSayErrorBB);
 
     scaff->builder.SetInsertPoint(loopNextBB);
-    Value *repcount = scaff->builder.CreateLoad(TyDouble, repcountAddr, "repcount");
+    Value *repcount = scaff->builder.CreateLoad(TyDouble, repcountAddress, "repcount");
     Value *incrRepcount = scaff->builder.CreateFAdd(repcount, CoDouble(1.0), "incrRepcount");
-    scaff->builder.CreateStore(incrRepcount, repcountAddr);
+    scaff->builder.CreateStore(incrRepcount, repcountAddress);
     scaff->builder.CreateBr(whileBB);
 
     scaff->builder.SetInsertPoint(noSayErrorBB);
@@ -751,7 +626,7 @@ Value *Compiler::genForever(const DatumPtr &node, RequestReturnType returnType)
     PHINode *phiError = scaff->builder.CreatePHI(TyAddr, 2, "errVal");
     phiError->addIncoming(errNoSay, noSayErrorBB);
     phiError->addIncoming(result, whileBB);
-    scaff->builder.CreateStore(shadowedRepcount, repcountAddr);
+    scaff->builder.CreateStore(shadowedRepcount, repcountAddress);
     scaff->builder.CreateRet(phiError);
 
     // We will never reach here, but the compiler requires a current block and a return value.
@@ -772,16 +647,9 @@ COD***/
 Value *Compiler::genTest(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *tf = generateChild(node.astnodeValue(), 0, RequestReturnBool);
-    generateCallExtern(TyVoid, "saveTestResult", {PaAddr(evaluator), PaBool(tf)});
+    generateCallExtern(TyVoid, saveTestResult, PaAddr(evaluator), PaBool(tf));
     return generateVoidRetval(node);
 }
-
-EXPORTC void saveTestResult(addr_t eAddr, bool tf)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Config::get().mainKernel()->callStack.setTest(tf);
-}
-
 /***DOC IFTRUE IFT
 IFTRUE instructionlist
 IFT instructionlist
@@ -824,7 +692,7 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, RequestReturnType ret
     BasicBlock *returnBB = BasicBlock::Create(*scaff->theContext, "return", theFunction);
 
     Value *instructionlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    Value *testResult = generateCallExtern(TyBool, "getIsTested", {PaAddr(evaluator)});
+    Value *testResult = generateCallExtern(TyBool, getIsTested, PaAddr(evaluator));
     Value *cond = scaff->builder.CreateICmpEQ(testResult, CoBool(1), "isTested");
     scaff->builder.CreateCondBr(cond, isTestedBB, notTestedBB);
 
@@ -833,7 +701,7 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, RequestReturnType ret
     scaff->builder.CreateRet(errVal);
 
     scaff->builder.SetInsertPoint(isTestedBB);
-    testResult = generateCallExtern(TyBool, "getTestResult", {PaAddr(evaluator)});
+    testResult = generateCallExtern(TyBool, getTestResult, PaAddr(evaluator));
     cond = scaff->builder.CreateICmpEQ(testResult, CoBool(testForTrue), "testResult");
     scaff->builder.CreateCondBr(cond, runListBB, noRunListBB);
 
@@ -850,16 +718,4 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, RequestReturnType ret
     retval->addIncoming(listRetval, runListBB);
     retval->addIncoming(noRetval, noRunListBB);
     return retval;
-}
-
-EXPORTC bool getIsTested(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    return Config::get().mainKernel()->callStack.isTested();
-}
-
-EXPORTC bool getTestResult(addr_t eAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    return Config::get().mainKernel()->callStack.testedState();
 }

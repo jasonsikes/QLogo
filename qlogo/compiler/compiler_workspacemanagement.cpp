@@ -18,31 +18,11 @@
 #include "compiler.h"
 #include "compiler_private.h"
 #include "datum_types.h"
+#include "exports.h"
 #include "flowcontrol.h"
 #include "kernel.h"
 #include "sharedconstants.h"
 #include "workspace/callframe.h"
-
-/// @brief input a procedure using the system read stream.
-/// @param eAddr a pointer to the Evaluator object
-/// @param nodeAddr a pointer to the node calling this procedure.
-/// @return ASTNode on success, else Err.
-EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *node = reinterpret_cast<ASTNode *>(nodeAddr);
-    CallFrame *currentFrame = Config::get().mainKernel()->callStack.localFrame();
-    DatumPtr currentProc = currentFrame->sourceNode;
-    if (currentProc.isASTNode())
-    {
-        FCError *err = FCError::toInProc(node->nodeName);
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-
-    return reinterpret_cast<addr_t>(Config::get().mainKernel()->inputProcedure(node));
-}
-
 using namespace llvm;
 using namespace llvm::orc;
 
@@ -162,7 +142,7 @@ Value *Compiler::genInputProcedure(const DatumPtr &node, RequestReturnType retur
     Q_ASSERT(returnType && RequestReturnNothing);
     // We take the parameters as literals; we don't generate children.
     // Pass the node directly to the input function.
-    return generateCallExtern(TyAddr, "inputProcedure", {PaAddr(evaluator), PaAddr(CoAddr(node.datumValue()))});
+    return generateCallExtern(TyAddr, inputProcedure, PaAddr(evaluator), PaAddr(CoAddr(node.datumValue())));
 }
 
 /***DOC MAKE
@@ -183,7 +163,7 @@ Value *Compiler::genMake(const DatumPtr &node, RequestReturnType returnType)
     Value *value = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
     varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
 
-    generateCallExtern(TyVoid, "setDatumForWord", {PaAddr(value), PaAddr(varname)});
+    generateCallExtern(TyVoid, setDatumForWord, PaAddr(value), PaAddr(varname));
     return generateVoidRetval(node);
 }
 
@@ -211,15 +191,7 @@ Value *Compiler::genLocal(const DatumPtr &node, RequestReturnType returnType)
 
     Value *varname = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
-    generateCallExtern(TyVoid, "setVarAsLocal", {PaAddr(varname)});
+    generateCallExtern(TyVoid, setVarAsLocal, PaAddr(varname));
 
     return generateVoidRetval(node);
-}
-
-EXPORTC void setVarAsLocal(addr_t varname)
-{
-    auto *varName = reinterpret_cast<Word *>(varname);
-    QString varNameStr = varName->toString(Datum::ToStringFlags_Key);
-    CallFrame *currentFrame = Config::get().mainKernel()->callStack.localFrame();
-    currentFrame->setVarAsLocal(varNameStr);
 }

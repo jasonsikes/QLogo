@@ -19,6 +19,7 @@
 #include "compiler_private.h"
 #include "controller/logocontroller.h"
 #include "datum_types.h"
+#include "exports.h"
 #include "kernel.h"
 #include "parser.h"
 #include "workspace/callframe.h"
@@ -404,8 +405,8 @@ Value *Compiler::generateDoubleFromDatum(ASTNode *parent, Value *src)
 {
     Value *retval = nullptr;
     auto realTest = [this, &retval](Value *src) {
-        retval = generateCallExtern(TyDouble, "getDoubleForDatum", {PaAddr(evaluator), PaAddr(src)});
-        Value *dType = generateCallExtern(TyBool, "getValidityOfDoubleForDatum", {PaAddr(evaluator), PaAddr(src)});
+        retval = generateCallExtern(TyDouble, getDoubleForDatum, PaAddr(evaluator), PaAddr(src));
+        Value *dType = generateCallExtern(TyBool, getValidityOfDoubleForDatum, PaAddr(evaluator), PaAddr(src));
         return scaff->builder.CreateICmpEQ(dType, CoBool(true), "isValidTest");
     };
     generateValidationDatum(parent, src, realTest);
@@ -416,8 +417,8 @@ Value *Compiler::generateBoolFromDatum(ASTNode *parent, Value *src)
 {
     Value *retval = nullptr;
     auto boolTest = [this, &retval](Value *src) {
-        retval = generateCallExtern(TyBool, "getBoolForDatum", {PaAddr(evaluator), PaAddr(src)});
-        Value *dType = generateCallExtern(TyBool, "getValidityOfBoolForDatum", {PaAddr(evaluator), PaAddr(src)});
+        retval = generateCallExtern(TyBool, getBoolForDatum, PaAddr(evaluator), PaAddr(src));
+        Value *dType = generateCallExtern(TyBool, getValidityOfBoolForDatum, PaAddr(evaluator), PaAddr(src));
         return scaff->builder.CreateICmpEQ(dType, CoBool(true), "isValidTest");
     };
     generateValidationDatum(parent, src, boolTest);
@@ -548,7 +549,7 @@ Value *Compiler::genValueOf(const DatumPtr &node, RequestReturnType returnType)
 
     Word *varName = node.astnodeValue()->childAtIndex(0).wordValue();
     Value *nameAddr = CoAddr(varName);
-    Value *retval = generateCallExtern(TyAddr, "getDatumForVarname", {PaAddr(nameAddr)});
+    Value *retval = generateCallExtern(TyAddr, getDatumForVarname, PaAddr(nameAddr));
 
     Value *dType = generateGetDatumIsa(retval);
     Value *mask = scaff->builder.CreateAnd(dType, CoInt32(Datum::typeDataMask), "dataMask");
@@ -569,66 +570,66 @@ Value *Compiler::genExecProcedure(const DatumPtr &node, RequestReturnType return
     Value *vAstnodeValue = CoAddr(node.astnodeValue());
     Value *vParamArySize = CoInt32(node.astnodeValue()->countOfChildren());
     return generateCallExtern(
-        TyAddr, "runProcedure", {PaAddr(evaluator), PaAddr(vAstnodeValue), PaAddr(paramAry), PaInt32(vParamArySize)});
+        TyAddr, runProcedure, PaAddr(evaluator), PaAddr(vAstnodeValue), PaAddr(paramAry), PaInt32(vParamArySize));
 }
 
 Value *Compiler::generateCallList(Value *list, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, "runList", {PaAddr(evaluator), PaAddr(list)});
+    return generateCallExtern(TyAddr, runList, PaAddr(evaluator), PaAddr(list));
 }
 
 Value *Compiler::generateWordFromDouble(Value *val)
 {
-    return generateCallExtern(TyAddr, "getWordForDouble", {PaAddr(evaluator), PaDouble(val)});
+    return generateCallExtern(TyAddr, getWordForDouble, PaAddr(evaluator), PaDouble(val));
 }
 
 Value *Compiler::generateWordFromBool(Value *val)
 {
-    return generateCallExtern(TyAddr, "getWordForBool", {PaAddr(evaluator), PaBool(val)});
+    return generateCallExtern(TyAddr, getWordForBool, PaAddr(evaluator), PaBool(val));
 }
 
 Value *Compiler::generateErrorSystem()
 {
-    Value *errObj = generateCallExtern(TyAddr, "getErrorSystem", {PaAddr(evaluator)});
+    Value *errObj = generateCallExtern(TyAddr, getErrorSystem, PaAddr(evaluator));
     return errObj;
 }
 
 Value *Compiler::generateErrorNoLike(ASTNode *who, Value *what)
 {
     Value *errWho = CoAddr(who->nodeName.datumValue());
-    Value *errObj = generateCallExtern(TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(errWho), PaAddr(what)});
+    Value *errObj = generateCallExtern(TyAddr, getErrorNoLike, PaAddr(evaluator), PaAddr(errWho), PaAddr(what));
     return errObj;
 }
 
 Value *Compiler::generateErrorNoSay(Value *what)
 {
-    Value *errObj = generateCallExtern(TyAddr, "getErrorNoSay", {PaAddr(evaluator), PaAddr(what)});
+    Value *errObj = generateCallExtern(TyAddr, getErrorNoSay, PaAddr(evaluator), PaAddr(what));
     return errObj;
 }
 
 Value *Compiler::generateErrorNoTest(Value *who)
 {
-    Value *errObj = generateCallExtern(TyAddr, "getErrorNoTest", {PaAddr(evaluator), PaAddr(who)});
+    Value *errObj = generateCallExtern(TyAddr, getErrorNoTest, PaAddr(evaluator), PaAddr(who));
     return errObj;
 }
 
 Value *Compiler::generateErrorNoValue(Value *what)
 {
-    Value *errObj = generateCallExtern(TyAddr, "getErrorNoValue", {PaAddr(evaluator), PaAddr(what)});
+    Value *errObj = generateCallExtern(TyAddr, getErrorNoValue, PaAddr(evaluator), PaAddr(what));
     return errObj;
 }
 
 Value *Compiler::generateErrorNoOutput(Value *x, ASTNode *y)
 {
     Value *vY = CoAddr(y->nodeName.datumValue());
-    Value *errObj = generateCallExtern(TyAddr, "getErrorNoOutput", {PaAddr(evaluator), PaAddr(x), PaAddr(vY)});
+    Value *errObj = generateCallExtern(TyAddr, getErrorNoOutput, PaAddr(evaluator), PaAddr(x), PaAddr(vY));
     return errObj;
 }
 
 Value *Compiler::generateErrorNotEnoughInputs(ASTNode *x)
 {
     Value *vX = CoAddr(x->nodeName.datumValue());
-    Value *errObj = generateCallExtern(TyAddr, "getErrorNotEnoughInputs", {PaAddr(evaluator), PaAddr(vX)});
+    Value *errObj = generateCallExtern(TyAddr, getErrorNotEnoughInputs, PaAddr(evaluator), PaAddr(vX));
     return errObj;
 }
 
@@ -703,9 +704,9 @@ std::vector<Value *> Compiler::generateChildren(ASTNode *node, std::vector<Reque
 }
 
 // Generate a call to an external function
-Value *Compiler::generateCallExtern(Type *returnType,
-                                    const std::string &name,
-                                    const std::vector<std::pair<Type *, Value *>> &args)
+Value *Compiler::generateExternFunctionCall(Type *returnType,
+                                            const std::string &name,
+                                            const std::vector<std::pair<Type *, Value *>> &args)
 {
     std::vector<Type *> paramTypes;
     std::vector<Value *> argsV;
@@ -738,7 +739,7 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr
     Value *vSize = CoInt32(size);
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     Value *list = generateChild(parent, srcPtr, RequestReturnDatum);
-    Value *count = generateCallExtern(TyInt32, "getCountOfList", {PaAddr(list)});
+    Value *count = generateCallExtern(TyInt32, getCountOfList, PaAddr(list));
     // There should be two doubles in the list
     BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, "notGood", theFunction);
     BasicBlock *continueBB = BasicBlock::Create(*scaff->theContext, "good", theFunction);
@@ -748,13 +749,13 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr
 
     scaff->builder.SetInsertPoint(bailoutBB);
     Value *errWho = CoAddr(parent->nodeName.datumValue());
-    Value *errObj = generateCallExtern(TyAddr, "getErrorNoLike", {PaAddr(evaluator), PaAddr(errWho), PaAddr(list)});
+    Value *errObj = generateCallExtern(TyAddr, getErrorNoLike, PaAddr(evaluator), PaAddr(errWho), PaAddr(list));
     scaff->builder.CreateRet(errObj);
 
     scaff->builder.SetInsertPoint(continueBB);
     AllocaInst *ary = scaff->builder.CreateAlloca(TyDouble, vSize, "ary");
 
-    Value *isGood = generateCallExtern(TyInt32, "getNumberAryFromList", {PaAddr(evaluator), PaAddr(list), PaAddr(ary)});
+    Value *isGood = generateCallExtern(TyInt32, getNumberAryFromList, PaAddr(evaluator), PaAddr(list), PaAddr(ary));
     BasicBlock *gotPosBB = BasicBlock::Create(*scaff->theContext, "gotPos", theFunction);
 
     Value *countCond = scaff->builder.CreateICmpEQ(isGood, CoInt32(1), "countTest");
@@ -790,7 +791,7 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
     // The number is bad. Convert it to a word, and then decide what to do with it.
     scaff->builder.SetInsertPoint(convertBB);
     Value *badWord = generateWordFromDouble(candidate);
-    Value *varErroract = generateCallExtern(TyBool, "getvarErroract", {PaAddr(evaluator)});
+    Value *varErroract = generateCallExtern(TyBool, getvarErroract, PaAddr(evaluator));
     Value *isTrueCond = scaff->builder.CreateICmpEQ(varErroract, CoBool(true), "isTrueCond");
     scaff->builder.CreateCondBr(isTrueCond, erractBB, bailoutBB);
 
@@ -799,8 +800,8 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
     PHINode *badValue = scaff->builder.CreatePHI(TyAddr, 3, "badValue");
     badValue->addIncoming(badWord, convertBB);
     Value *errmsg = generateErrorNoLike(parent, badValue);
-    generateCallExtern(TyAddr, "stdWriteDatum", {PaAddr(errmsg), PaBool(CoBool(true))});
-    Value *newCandidate = generateCallExtern(TyAddr, "callPause", {PaAddr(evaluator)});
+    generateCallExtern(TyAddr, stdWriteDatum, PaAddr(errmsg), PaBool(CoBool(true)));
+    Value *newCandidate = generateCallExtern(TyAddr, callPause, PaAddr(evaluator));
     Value *datamIsa = generateGetDatumIsa(newCandidate);
     Value *isDatumMasked = scaff->builder.CreateAnd(datamIsa, CoInt32(Datum::typeDataMask), "isDatumMasked");
     Value *isDatumCond = scaff->builder.CreateICmpNE(isDatumMasked, CoInt32(0), "isDatumCond");
@@ -815,10 +816,10 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
 
     // Check if the new candidate is a double.
     scaff->builder.SetInsertPoint(doubleCheckBB);
-    Value *dVal = generateCallExtern(TyDouble, "getDoubleForDatum", {PaAddr(evaluator), PaAddr(newCandidate)});
+    Value *dVal = generateCallExtern(TyDouble, getDoubleForDatum, PaAddr(evaluator), PaAddr(newCandidate));
     badValue->addIncoming(newCandidate, doubleCheckBB);
     candidate->addIncoming(dVal, doubleCheckBB);
-    Value *dType = generateCallExtern(TyBool, "getValidityOfDoubleForDatum", {PaAddr(evaluator), PaAddr(newCandidate)});
+    Value *dType = generateCallExtern(TyBool, getValidityOfDoubleForDatum, PaAddr(evaluator), PaAddr(newCandidate));
     Value *isDoubleCond = scaff->builder.CreateICmpEQ(dType, CoBool(true), "isDoubleCond");
     scaff->builder.CreateCondBr(isDoubleCond, validateBB, erractBB);
 
@@ -858,14 +859,14 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
     scaff->builder.CreateCondBr(cond, acceptBB, isNotValidBB);
 
     scaff->builder.SetInsertPoint(isNotValidBB);
-    Value *varErroract = generateCallExtern(TyBool, "getvarErroract", {PaAddr(evaluator)});
+    Value *varErroract = generateCallExtern(TyBool, getvarErroract, PaAddr(evaluator));
     Value *isTrue = scaff->builder.CreateICmpEQ(varErroract, CoBool(true), "isTrue");
     scaff->builder.CreateCondBr(isTrue, errorActionBB, bailoutBB);
 
     scaff->builder.SetInsertPoint(errorActionBB);
     Value *errmsg = generateErrorNoLike(parent, src);
-    generateCallExtern(TyAddr, "stdWriteDatum", {PaAddr(errmsg), PaBool(CoBool(true))});
-    Value *newCandidate = generateCallExtern(TyAddr, "callPause", {PaAddr(evaluator)});
+    generateCallExtern(TyAddr, stdWriteDatum, PaAddr(errmsg), PaBool(CoBool(true)));
+    Value *newCandidate = generateCallExtern(TyAddr, callPause, PaAddr(evaluator));
     Value *datamIsa = generateGetDatumIsa(newCandidate);
     Value *isDatumMasked = scaff->builder.CreateAnd(datamIsa, CoInt32(Datum::typeDataMask), "isDatumMasked");
     Value *isDatum = scaff->builder.CreateICmpNE(isDatumMasked, CoInt32(0), "isDatum");

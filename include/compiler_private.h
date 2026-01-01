@@ -159,10 +159,4 @@ struct Scaffold
 #define PaAddr(VAL)   {TyAddr, (VAL)}
 #define PaBool(VAL)   {TyBool, (VAL)}
 
-#ifdef _WIN32
-#define EXPORTC extern "C" __declspec(dllexport)
-#else
-#define EXPORTC extern "C"
-#endif
-
 #endif // COMPILER_PRIVATE_H

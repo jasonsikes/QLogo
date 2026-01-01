@@ -76,9 +76,9 @@ class Compiler
     llvm::Value *generateChild(ASTNode *parent, unsigned int index, RequestReturnType);
 
     // Generate a call to an external function
-    llvm::Value *generateCallExtern(llvm::Type *returnType,
-                                    const std::string &name,
-                                    const std::vector<std::pair<llvm::Type *, llvm::Value *>> &args);
+    llvm::Value *generateExternFunctionCall(llvm::Type *returnType,
+                                            const std::string &name,
+                                            const std::vector<std::pair<llvm::Type *, llvm::Value *>> &args);
 
     // Generate a query to return a datum type (isa) of a given object.
     llvm::Value *generateGetDatumIsa(llvm::Value *objAddr);

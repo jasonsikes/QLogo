@@ -18,71 +18,10 @@
 #include "compiler.h"
 #include "compiler_private.h"
 #include "datum_types.h"
+#include "exports.h"
 #include "sharedconstants.h"
 #include "workspace/callframe.h"
-#include <QRandomGenerator>
 
-/// Get a reference to the random number generator instance.
-static QRandomGenerator &randomGenerator()
-{
-    static QRandomGenerator randomGeneratorInstance;
-    return randomGeneratorInstance;
-}
-
-/// Generate a random nonnegative integer less than num given
-/// @param num an upper bound (exclusive) to the random number.
-/// @return the random number generated.
-EXPORTC double random1(int32_t num)
-{
-    int result = randomGenerator().bounded(num);
-    return (double)result;
-}
-
-/// Generate a random integer between start and end (both inclusive)
-/// @param start a lower bound (inclusive) to the random number.
-/// @param end an upper bound (inclusive) to the random number.
-/// @return the random number generated.
-EXPORTC double random2(int32_t start, int32_t end)
-{
-    int result = randomGenerator().bounded(start, end + 1);
-    return (double)result;
-}
-
-/// Set the seed for the random number generator
-/// @param seed the seed.
-/// @return nothing.
-EXPORTC addr_t setRandomWithSeed(int32_t seed)
-{
-    randomGenerator().seed(seed);
-    return nullptr;
-}
-
-/// Set the seed for the random number generator using the system seed
-/// @return nothing.
-EXPORTC addr_t setRandom()
-{
-    QRandomGenerator *s = QRandomGenerator::system();
-    quint32 seed = s->generate();
-    randomGenerator().seed(seed);
-    return nullptr;
-}
-
-/// Generate a Word(string) from a number that is formatted according to the
-/// other parameters.
-/// @param eAddr a pointer to the Evaluator object
-/// @param num the number to apply formatting to.
-/// @param width the minimum number of characters to use. Spaces may be added.
-/// @param precision the number of digits to add after the decimal point.
-/// @return A Word(string) with formatting applied.
-EXPORTC addr_t getFormForNumber(addr_t eAddr, double num, uint32_t width, int32_t precision)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    QString retval = QString("%1").arg(num, width, 'f', precision);
-    auto *w = new Word(retval);
-    e->watch(w);
-
-    return reinterpret_cast<addr_t>(w);
-}
 using namespace llvm;
 using namespace llvm::orc;
 
@@ -197,11 +136,11 @@ Value *Compiler::genArctan(const DatumPtr &node, RequestReturnType returnType)
     // Calculate atan() or atan2() depending on number of children.
     if (children.size() == 1)
     {
-        retval = generateCallExtern(TyDouble, "atan", {PaDouble(children[0])});
+        retval = generateCallExtern(TyDouble, atan, PaDouble(children[0]));
     }
     else
     {
-        retval = generateCallExtern(TyDouble, "atan2", {PaDouble(children[1]), PaDouble(children[0])});
+        retval = generateCallExtern(TyDouble, atan2, PaDouble(children[1]), PaDouble(children[0]));
     }
     retval = scaff->builder.CreateFMul(retval, radToDeg, "theta");
     return retval;
@@ -475,7 +414,7 @@ Value *Compiler::genSqrt(const DatumPtr &node, RequestReturnType returnType)
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
 
     num = generateNotNegativeFromDouble(node.astnodeValue(), num);
-    return generateCallExtern(TyDouble, "sqrt", {PaDouble(num)});
+    return generateCallExtern(TyDouble, sqrt, PaDouble(num));
 }
 
 /***DOC POWER
@@ -516,7 +455,7 @@ Value *Compiler::genPower(const DatumPtr &node, RequestReturnType returnType)
     PHINode *num2Phi = scaff->builder.CreatePHI(TyDouble, 2, "num2Phi");
     num2Phi->addIncoming(num2, startBB);
     num2Phi->addIncoming(num2Int, postNegativeBB);
-    return generateCallExtern(TyDouble, "pow", {PaDouble(num1), PaDouble(num2Phi)});
+    return generateCallExtern(TyDouble, pow, PaDouble(num1), PaDouble(num2Phi));
 }
 
 /***DOC MINUS
@@ -686,7 +625,7 @@ Value *Compiler::genSin(const DatumPtr &node, RequestReturnType returnType)
 
     Value *degToRad = CoDouble(PI / 180);
     Value *theta = scaff->builder.CreateFMul(num, degToRad, "theta");
-    return generateCallExtern(TyDouble, "sin", {PaDouble(theta)});
+    return generateCallExtern(TyDouble, sin, PaDouble(theta));
 }
 
 /***DOC INT
@@ -703,7 +642,7 @@ Value *Compiler::genInt(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    return generateCallExtern(TyDouble, "trunc", {PaDouble(num)});
+    return generateCallExtern(TyDouble, trunc, PaDouble(num));
 }
 
 /***DOC ROUND
@@ -717,7 +656,7 @@ Value *Compiler::genRound(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    return generateCallExtern(TyDouble, "round", {PaDouble(num)});
+    return generateCallExtern(TyDouble, round, PaDouble(num));
 }
 
 /***DOC EXP
@@ -731,7 +670,7 @@ Value *Compiler::genExp(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    return generateCallExtern(TyDouble, "exp", {PaDouble(num)});
+    return generateCallExtern(TyDouble, exp, PaDouble(num));
 }
 
 /***DOC LOG10
@@ -747,7 +686,7 @@ Value *Compiler::genLog10(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     num = generateGTZeroFromDouble(node.astnodeValue(), num);
-    return generateCallExtern(TyDouble, "log10", {PaDouble(num)});
+    return generateCallExtern(TyDouble, log10, PaDouble(num));
 }
 
 /***DOC LN
@@ -763,7 +702,7 @@ Value *Compiler::genLn(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     num = generateGTZeroFromDouble(node.astnodeValue(), num);
-    return generateCallExtern(TyDouble, "log", {PaDouble(num)});
+    return generateCallExtern(TyDouble, log, PaDouble(num));
 }
 
 /***DOC RADSIN
@@ -777,7 +716,7 @@ Value *Compiler::genRadsin(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    return generateCallExtern(TyDouble, "sin", {PaDouble(num)});
+    return generateCallExtern(TyDouble, sin, PaDouble(num));
 }
 
 /***DOC RADCOS
@@ -791,7 +730,7 @@ Value *Compiler::genRadcos(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnReal);
     Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    return generateCallExtern(TyDouble, "cos", {PaDouble(num)});
+    return generateCallExtern(TyDouble, cos, PaDouble(num));
 }
 
 /***DOC RADARCTAN
@@ -817,11 +756,11 @@ Value *Compiler::genRadarctan(const DatumPtr &node, RequestReturnType returnType
     // Calculate atan() or atan2() depending on number of children.
     if (children.size() == 1)
     {
-        retval = generateCallExtern(TyDouble, "atan", {PaDouble(children[0])});
+        retval = generateCallExtern(TyDouble, atan, PaDouble(children[0]));
     }
     else
     {
-        retval = generateCallExtern(TyDouble, "atan2", {PaDouble(children[1]), PaDouble(children[0])});
+        retval = generateCallExtern(TyDouble, atan2, PaDouble(children[1]), PaDouble(children[0]));
     }
     return retval;
 }
@@ -840,7 +779,7 @@ Value *Compiler::genCos(const DatumPtr &node, RequestReturnType returnType)
 
     Value *degToRad = CoDouble(PI / 180);
     Value *theta = scaff->builder.CreateFMul(num, degToRad, "theta");
-    return generateCallExtern(TyDouble, "cos", {PaDouble(theta)});
+    return generateCallExtern(TyDouble, cos, PaDouble(theta));
 }
 
 /***DOC LESSP LESS?
@@ -965,7 +904,7 @@ Value *Compiler::genRandom(const DatumPtr &node, RequestReturnType returnType)
 
     if (children.size() == 1)
     {
-        return generateCallExtern(TyDouble, "random1", {PaInt32(iChildren[0])});
+        return generateCallExtern(TyDouble, random1, PaInt32(iChildren[0]));
     }
 
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
@@ -986,7 +925,7 @@ Value *Compiler::genRandom(const DatumPtr &node, RequestReturnType returnType)
 
     scaff->builder.SetInsertPoint(isGTBB);
 
-    return generateCallExtern(TyDouble, "random2", {PaInt32(iChildren[0]), PaInt32(iChildren[1])});
+    return generateCallExtern(TyDouble, random2, PaInt32(iChildren[0]), PaInt32(iChildren[1]));
 }
 
 /***DOC RERANDOM
@@ -1011,11 +950,11 @@ Value *Compiler::genRerandom(const DatumPtr &node, RequestReturnType returnType)
     {
         Value *seed = generateNotNegativeFromDouble(node.astnodeValue(), children[0]);
         seed = generateInt32FromDouble(node.astnodeValue(), seed, true);
-        generateCallExtern(TyVoid, "setRandomWithSeed", {PaInt32(seed)});
+        generateCallExtern(TyVoid, setRandomWithSeed, PaInt32(seed));
     }
     else
     {
-        generateCallExtern(TyVoid, "setRandom", {});
+        generateCallExtern(TyVoid, setRandom, {});
     }
     return generateVoidRetval(node);
 }
@@ -1044,7 +983,7 @@ Value *Compiler::genForm(const DatumPtr &node, RequestReturnType returnType)
     precision = generateNotNegativeFromDouble(node.astnodeValue(), precision);
     precision = generateInt32FromDouble(node.astnodeValue(), precision, true);
     return generateCallExtern(
-        TyAddr, "getFormForNumber", {PaAddr(evaluator), PaDouble(num), PaInt32(width), PaInt32(precision)});
+        TyAddr, getFormForNumber, PaAddr(evaluator), PaDouble(num), PaInt32(width), PaInt32(precision));
 }
 
 // Add infix entries to table. This will cause an error if they are used as

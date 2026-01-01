@@ -33,28 +33,3 @@ ERRACT                          (variable)
     inspect the state of the program.
 
 COD***/
-
-/// @brief Get the value of the ERRORACT variable.
-/// @param eAddr the address of the evaluator.
-/// @return the value of the ERRORACT variable as a boolean.
-/// @note In QLogo, ERRACT is a pseudo-boolean variable. For compatibility with
-/// UCBLogo, we accept any word or list. However, in QLogo, ERRACT is considered TRUE
-/// only if the following conditions are met:
-/// 1. The value EXISTS, and:
-/// 2 a. The value is a word AND the word is not "FALSE" or the empty string, or
-/// 2 b. The value is a list AND the list is not empty.
-EXPORTC bool getvarErroract(addr_t eAddr)
-{
-    QString name = QObject::tr("ERRACT");
-    DatumPtr val = Config::get().mainKernel()->callStack.datumForName(name);
-    if (val.isWord())
-    {
-        QString word = val.toString(Datum::ToStringFlags_Key);
-        return (word != "FALSE") && (word != "");
-    }
-    if (val.isList())
-    {
-        return !val.listValue()->isEmpty();
-    }
-    return false;
-}

@@ -46,6 +46,7 @@ set(QLOGO_SOURCES
   ../include/flowcontrol.h
   ../include/kernel.h
   ../include/primitives.h
+  ../include/exports.h
   ../include/library.h
   ../include/turtle.h
   ../include/parser.h
