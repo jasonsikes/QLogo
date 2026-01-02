@@ -135,7 +135,7 @@ QList<QList<DatumPtr>> Parser::astFromList(List *aList)
             // The AST is invalid, so destroy it and rethrow the error.
             destroyAstForList(aList);
             aList->astParseTimeStamp = 0;
-            throw e;
+            throw;
         }
         // If the last ASTNode is a tag, generate a NOOP expression at the end
         // to ensure that there is an instruction to jump to.
