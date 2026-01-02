@@ -165,7 +165,7 @@ class Canvas : public QWidget
 
     const QColor &colorForCurrentPenmode();
 
-    void updateMatrix(void);
+    void updateMatrix();
 
     QPointF pointFromTurtle();
 
@@ -228,7 +228,7 @@ class Canvas : public QWidget
     /// @brief Add a label at the current turtle location.
     ///
     /// @param aText The text to display.
-    void addLabel(QString aText);
+    void addLabel(const QString &aText);
 
     /// @brief Set the font size for all future text labels.
     ///
@@ -238,7 +238,7 @@ class Canvas : public QWidget
     /// @brief Set the font name for all future text labels.
     ///
     /// @param name The new font name.
-    void setLabelFontName(QString name);
+    void setLabelFontName(const QString &name);
 
     /// @brief Sets future lines and polygons to be drawn using newMode.
     ///
@@ -270,7 +270,7 @@ class Canvas : public QWidget
     /// If image is a valid image, then it will be drawn onto the canvas
     /// above the background color and below everything the turtle draws. The
     /// image will be scaled to fit the bounds set by setBounds().
-    void setBackgroundImage(QImage image);
+    void setBackgroundImage(const QImage &image);
 
     /// @brief Redraw the canvas onto an image object and return it.
     ///

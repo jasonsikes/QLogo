@@ -187,7 +187,7 @@ const QColor &Canvas::colorForCurrentPenmode()
     return QColorConstants::White;
 }
 
-void Canvas::setLabelFontName(QString name)
+void Canvas::setLabelFontName(const QString &name)
 {
     labelFont.setFamily(name);
 }
@@ -197,7 +197,7 @@ void Canvas::setLabelFontSize(qreal aSize)
     labelFont.setPointSizeF(aSize);
 }
 
-void Canvas::addLabel(QString aText)
+void Canvas::addLabel(const QString &aText)
 {
     // The "minus-dy" is because we have to flip the coordinate system when
     // drawing text. This is the most efficient place to do it.
@@ -263,7 +263,7 @@ void Canvas::setForegroundColor(const QColor &c)
     setLastWriteInfo();
 }
 
-void Canvas::setBackgroundImage(QImage image)
+void Canvas::setBackgroundImage(const QImage &image)
 {
     backgroundImage = image;
     update();
@@ -444,7 +444,7 @@ void Canvas::emitVertex()
     update();
 }
 
-void Canvas::updateMatrix(void)
+void Canvas::updateMatrix()
 {
     // Set coordinate system so that background box fits in widget and fills
     // without stretching.
@@ -471,7 +471,7 @@ void Canvas::updateMatrix(void)
 
 QPointF Canvas::pointFromTurtle()
 {
-    return QPointF(turtleMatrix.dx(), turtleMatrix.dy());
+    return {turtleMatrix.dx(), turtleMatrix.dy()};
 }
 
 void Canvas::beginPolygon(const QColor &color)

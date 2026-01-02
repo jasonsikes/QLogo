@@ -88,7 +88,7 @@ QString MainWindow::findQlogoExe()
     }
 
     // TODO: How do we handle this gracefully?
-    return QString();
+    return {};
 }
 
 int MainWindow::startLogo()
@@ -161,7 +161,7 @@ void MainWindow::fileDialogModal()
     message(W_FILE_DIALOG_GET_PATH) << filePath;
 }
 
-void MainWindow::openEditorWindow(const QString startingText)
+void MainWindow::openEditorWindow(const QString &startingText)
 {
     if (editWindow == nullptr)
     {
@@ -177,7 +177,7 @@ void MainWindow::openEditorWindow(const QString startingText)
     editWindow->setFocus();
 }
 
-void MainWindow::editingHasEndedSlot(QString text)
+void MainWindow::editingHasEndedSlot(const QString &text)
 {
     message(C_CONSOLE_END_EDIT_TEXT) << text;
 }

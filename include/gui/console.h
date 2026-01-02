@@ -45,7 +45,7 @@ class Console : public QTextEdit
     QTextCharFormat textFormat;
 
     bool isPrintingStandout = false;
-    void writeTextFragment(const QString text);
+    void writeTextFragment(const QString &text);
     void standout();
 
     // Key press events
@@ -66,15 +66,15 @@ class Console : public QTextEdit
     Console(QWidget *parent = 0);
 
     /// @brief Destructor
-    ~Console();
+    ~Console() = default;
 
     /// @brief Print a string to the console
     /// @param text The text to print
-    void printString(const QString text);
+    void printString(const QString &text);
 
     /// @brief Request a rawline from the user
     /// @param prompt The prompt to display to the user
-    void requestRawlineWithPrompt(const QString prompt);
+    void requestRawlineWithPrompt(const QString &prompt);
 
     /// @brief Request a character from the user
     void requestChar();
@@ -91,7 +91,7 @@ class Console : public QTextEdit
 
     /// @brief Set the font name
     /// @param aName The name of the font
-    void setTextFontName(const QString aName);
+    void setTextFontName(const QString &aName);
 
     /// @brief Set the font size
     /// @param aSize The size of the font

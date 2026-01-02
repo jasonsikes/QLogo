@@ -69,7 +69,7 @@ class MainWindow : public QMainWindow
     void initialize();
     void introduceCanvas();
     void setSplitterforMode(ScreenModeEnum mode);
-    void openEditorWindow(const QString startingText);
+    void openEditorWindow(const QString &startingText);
 
     void sendCanvasImage();
     void sendCanvasSvg();
@@ -122,7 +122,7 @@ class MainWindow : public QMainWindow
     void splitterHasMovedSlot(int, int);
 
     /// @brief Handle the editing being ended.
-    void editingHasEndedSlot(QString text);
+    void editingHasEndedSlot(const QString &text);
 
     /// @brief Handle a mouse button being clicked.
     void mouseclickedSlot(QPointF QPointF, int buttonID);

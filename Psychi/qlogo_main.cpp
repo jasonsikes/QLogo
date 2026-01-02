@@ -20,8 +20,8 @@ int main(int argc, char *argv[])
 // This code isn't actually executed. It's to compel the linker to include the
 // SQL stuff for the qlogo binary into the MacOS bundle.
 // cppcheck-suppress unusedFunction
-void ignoreMe(void)
+void ignoreMe()
 {
-    QSqlDatabase *driver = new QSqlDatabase();
+    auto driver = new QSqlDatabase();
     delete driver;
 }

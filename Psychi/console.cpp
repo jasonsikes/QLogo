@@ -29,12 +29,8 @@ Console::Console(QWidget *parent) : QTextEdit(parent)
     textFormat.setForeground(QBrush(QWidget::palette().color(QPalette::Text)));
 }
 
-Console::~Console()
-{
-}
-
 // Write a fragment of text
-void Console::writeTextFragment(const QString text)
+void Console::writeTextFragment(const QString &text)
 {
     QTextCursor tc = textCursor();
     // If we are overwriting, delete the previous text before inserting
@@ -76,7 +72,7 @@ void Console::standout()
     isPrintingStandout = !isPrintingStandout;
 }
 
-void Console::printString(const QString text)
+void Console::printString(const QString &text)
 {
     // Because STANDOUT requires characters added to strings, we have to
     // handle them here.
@@ -93,7 +89,7 @@ void Console::printString(const QString text)
     ensureCursorVisible();
 }
 
-void Console::setTextFontName(const QString aName)
+void Console::setTextFontName(const QString &aName)
 {
     QFont f = textFormat.font();
     f.setFamily(aName);
@@ -119,7 +115,7 @@ void Console::setTextFontColor(QColor foreground, QColor background)
     }
 }
 
-void Console::requestRawlineWithPrompt(const QString prompt)
+void Console::requestRawlineWithPrompt(const QString &prompt)
 {
     consoleMode = consoleModeWaitingForRawline;
     moveCursor(QTextCursor::End);
