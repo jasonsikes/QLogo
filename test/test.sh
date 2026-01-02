@@ -75,6 +75,9 @@ then
     exit 0
 fi
 
+# Maximum number of parallel processes
+max_jobs=8
+
 if (( $argc > 0 ))
 then
     for filename in ${filenames[*]}
@@ -84,10 +87,64 @@ then
 else
     start_time=`date +%s`
     test_count=0
+    
+    # Create temporary file for collecting failed test names
+    failed_test_file=$(mktemp /tmp/test_failed_XXXXXX)
+    
+    # Collect all .lg files first
+    test_files=()
     for a in *.lg; do
-        run_test $a
+        test_files+=("$a")
+    done
+    
+    # Function to run a test in the background
+    run_test_parallel() {
+        f="$1"
+        if [[ $f == *.lg ]]
+        then
+            echo $f
+            # Run test in background
+            (
+                $logo_path $exe_opts < $f 2>&1 | diff "${f%.lg}.result" -
+                exit_code=$?
+                if [ $exit_code -eq 1 ]; then
+                    # Append failed test name to shared file
+                    echo "$f" >> "$failed_test_file"
+                fi
+            ) &
+        fi
+    }
+    
+    # Run tests in parallel, limiting to max_jobs concurrent processes
+    job_pids=()
+    for a in ${test_files[@]}; do
+        # Wait for a job slot if we've reached the limit
+        while (( ${#job_pids[@]} >= max_jobs )); do
+            # Wait for any job to complete
+            wait $job_pids[1]
+            # Remove completed job from array
+            job_pids=(${job_pids[2,-1]})
+        done
+        
+        run_test_parallel $a
+        # Store the PID of the background job (zsh stores it in $!)
+        job_pids+=($!)
         ((++test_count))
     done
+    
+    # Wait for all remaining jobs to complete
+    for pid in $job_pids; do
+        wait $pid
+    done
+    
+    # Read failed tests from the temporary file
+    if [ -f "$failed_test_file" ] && [ -s "$failed_test_file" ]; then
+        while IFS= read -r line; do
+            failed_tests+=("$line")
+        done < "$failed_test_file"
+    fi
+    rm -f "$failed_test_file"
+    
     end_time=`date +%s`
     trt=$((end_time-start_time))
 
