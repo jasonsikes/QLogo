@@ -1629,23 +1629,23 @@ EXPORTC void endFilled(void)
     Config::get().mainTurtle()->endFill();
 }
 
-EXPORTC void addLabel(addr_t /* eAddr */, addr_t textAddr)
+EXPORTC void addLabel(addr_t textAddr)
 {
     auto *d = reinterpret_cast<Datum *>(textAddr);
     Config::get().mainController()->drawLabel(d->toString());
 }
 
-EXPORTC void setLabelHeight(addr_t /* eAddr */, double height)
+EXPORTC void setLabelHeight(double height)
 {
     Config::get().mainController()->setLabelFontSize(height);
 }
 
-EXPORTC void setScreenMode(addr_t /* eAddr */, int mode)
+EXPORTC void setScreenMode(int mode)
 {
     Config::get().mainController()->setScreenMode(static_cast<ScreenModeEnum>(mode));
 }
 
-EXPORTC bool isTurtleVisible(addr_t /* eAddr */)
+EXPORTC bool isTurtleVisible(void)
 {
     return Config::get().mainTurtle()->isTurtleVisible();
 }
@@ -1707,7 +1707,7 @@ EXPORTC addr_t getLabelSize(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC void setPenIsDown(addr_t /* eAddr */, bool isDown)
+EXPORTC void setPenIsDown(bool isDown)
 {
     Config::get().mainTurtle()->setPenIsDown(isDown);
 }

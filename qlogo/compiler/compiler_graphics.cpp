@@ -449,7 +449,7 @@ COD***/
 Value *Compiler::genLabel(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *text = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    generateCallExtern(TyVoid, addLabel, PaAddr(evaluator), PaAddr(text));
+    generateCallExtern(TyVoid, addLabel, PaAddr(text));
     return generateVoidRetval(node);
 }
 /***DOC SETLABELHEIGHT
@@ -462,7 +462,7 @@ COD***/
 Value *Compiler::genSetlabelheight(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *height = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    generateCallExtern(TyVoid, setLabelHeight, PaAddr(evaluator), PaDouble(height));
+    generateCallExtern(TyVoid, setLabelHeight, PaDouble(height));
     return generateVoidRetval(node);
 }
 /***DOC TEXTSCREEN TS
@@ -478,7 +478,7 @@ COD***/
 // CMD TS 0 0 0 n
 Value *Compiler::genTextscreen(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, setScreenMode, PaAddr(evaluator), PaInt32(CoInt32(textScreenMode)));
+    generateCallExtern(TyVoid, setScreenMode, PaInt32(CoInt32(textScreenMode)));
     return generateVoidRetval(node);
 }
 /***DOC FULLSCREEN FS
@@ -498,7 +498,7 @@ COD***/
 // CMD FS 0 0 0 n
 Value *Compiler::genFullscreen(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, setScreenMode, PaAddr(evaluator), PaInt32(CoInt32(fullScreenMode)));
+    generateCallExtern(TyVoid, setScreenMode, PaInt32(CoInt32(fullScreenMode)));
     return generateVoidRetval(node);
 }
 
@@ -516,7 +516,7 @@ COD***/
 // CMD SS 0 0 0 n
 Value *Compiler::genSplitscreen(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, setScreenMode, PaAddr(evaluator), PaInt32(CoInt32(splitScreenMode)));
+    generateCallExtern(TyVoid, setScreenMode, PaInt32(CoInt32(splitScreenMode)));
     return generateVoidRetval(node);
 }
 
@@ -546,7 +546,7 @@ COD***/
 // CMD SHOWN? 0 0 0 b
 Value *Compiler::genShownp(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyBool, isTurtleVisible, PaAddr(evaluator));
+    return generateCallExtern(TyBool, isTurtleVisible);
 }
 /***DOC SCREENMODE
 SCREENMODE
@@ -605,7 +605,7 @@ COD***/
 // CMD PD 0 0 0 n
 Value *Compiler::genPendown(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, setPenIsDown, PaAddr(evaluator), PaBool(CoBool(true)));
+    generateCallExtern(TyVoid, setPenIsDown, PaBool(CoBool(true)));
     return generateVoidRetval(node);
 }
 /***DOC PENUP PU
@@ -619,7 +619,7 @@ COD***/
 // CMD PU 0 0 0 n
 Value *Compiler::genPenup(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, setPenIsDown, PaAddr(evaluator), PaBool(CoBool(false)));
+    generateCallExtern(TyVoid, setPenIsDown, PaBool(CoBool(false)));
     return generateVoidRetval(node);
 }
 
@@ -634,7 +634,7 @@ COD***/
 // CMD PPT 0 0 0 n
 Value *Compiler::genPenpaint(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, setPenIsDown, PaAddr(evaluator), PaBool(CoBool(true)));
+    generateCallExtern(TyVoid, setPenIsDown, PaBool(CoBool(true)));
     generateCallExtern(TyVoid, setPenMode, PaAddr(evaluator), PaInt32(CoInt32(static_cast<int32_t>(penModePaint))));
     return generateVoidRetval(node);
 }
@@ -649,7 +649,7 @@ COD***/
 // CMD PE 0 0 0 n
 Value *Compiler::genPenerase(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, setPenIsDown, PaAddr(evaluator), PaBool(CoBool(true)));
+    generateCallExtern(TyVoid, setPenIsDown, PaBool(CoBool(true)));
     generateCallExtern(TyVoid, setPenMode, PaAddr(evaluator), PaInt32(CoInt32(static_cast<int32_t>(penModeErase))));
     return generateVoidRetval(node);
 }
@@ -666,7 +666,7 @@ COD***/
 // CMD PX 0 0 0 n
 Value *Compiler::genPenreverse(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, setPenIsDown, PaAddr(evaluator), PaBool(CoBool(true)));
+    generateCallExtern(TyVoid, setPenIsDown, PaBool(CoBool(true)));
     generateCallExtern(TyVoid, setPenMode, PaAddr(evaluator), PaInt32(CoInt32(static_cast<int32_t>(penModeReverse))));
     return generateVoidRetval(node);
 }
