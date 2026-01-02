@@ -784,7 +784,7 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
     // The number is bad. Convert it to a word, and then decide what to do with it.
     scaff->builder.SetInsertPoint(convertBB);
     Value *badWord = generateWordFromDouble(candidate);
-    Value *varErroract = generateCallExtern(TyBool, getvarErroract, PaAddr(evaluator));
+    Value *varErroract = generateCallExtern(TyBool, getvarErroract);
     Value *isTrueCond = scaff->builder.CreateICmpEQ(varErroract, CoBool(true), "isTrueCond");
     scaff->builder.CreateCondBr(isTrueCond, erractBB, bailoutBB);
 
@@ -852,7 +852,7 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
     scaff->builder.CreateCondBr(cond, acceptBB, isNotValidBB);
 
     scaff->builder.SetInsertPoint(isNotValidBB);
-    Value *varErroract = generateCallExtern(TyBool, getvarErroract, PaAddr(evaluator));
+    Value *varErroract = generateCallExtern(TyBool, getvarErroract);
     Value *isTrue = scaff->builder.CreateICmpEQ(varErroract, CoBool(true), "isTrue");
     scaff->builder.CreateCondBr(isTrue, errorActionBB, bailoutBB);
 

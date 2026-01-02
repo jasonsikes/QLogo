@@ -1766,7 +1766,7 @@ EXPORTC void setPenSize(double size)
     Config::get().mainTurtle()->setPenSize(size);
 }
 
-EXPORTC bool setBackground(addr_t /* eAddr */, addr_t colorAddr)
+EXPORTC bool setBackground(addr_t colorAddr)
 {
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
@@ -1776,7 +1776,7 @@ EXPORTC bool setBackground(addr_t /* eAddr */, addr_t colorAddr)
     return true;
 }
 
-EXPORTC bool isPenDown(addr_t /* eAddr */)
+EXPORTC bool isPenDown(void)
 {
     return Config::get().mainTurtle()->isPenDown();
 }
@@ -1822,7 +1822,7 @@ EXPORTC addr_t getPaletteColor(addr_t eAddr, addr_t colorIndexAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC double getPenSize(addr_t /* eAddr */)
+EXPORTC double getPenSize(void)
 {
     return Config::get().mainTurtle()->getPenSize();
 }
@@ -1930,12 +1930,12 @@ EXPORTC addr_t getClickPos(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC bool isMouseButtonDown(addr_t /* eAddr */)
+EXPORTC bool isMouseButtonDown(void)
 {
     return Config::get().mainController()->getIsMouseButtonDown();
 }
 
-EXPORTC double getMouseButton(addr_t /* eAddr */)
+EXPORTC double getMouseButton(void)
 {
     return static_cast<double>(Config::get().mainController()->getAndResetButtonID());
 }
@@ -1949,7 +1949,7 @@ EXPORTC double getMouseButton(addr_t /* eAddr */)
 /// 1. The value EXISTS, and:
 /// 2 a. The value is a word AND the word is not "FALSE" or the empty string, or
 /// 2 b. The value is a list AND the list is not empty.
-EXPORTC bool getvarErroract(addr_t /* eAddr */)
+EXPORTC bool getvarErroract(void)
 {
     QString name = QObject::tr("ERRACT");
     DatumPtr val = Config::get().mainKernel()->callStack.datumForName(name);

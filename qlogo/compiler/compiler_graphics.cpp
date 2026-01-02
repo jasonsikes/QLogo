@@ -814,7 +814,7 @@ Value *Compiler::genSetbackground(const DatumPtr &node, RequestReturnType return
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     Value *color = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    Value *isGood = generateCallExtern(TyBool, setBackground, PaAddr(evaluator), PaAddr(color));
+    Value *isGood = generateCallExtern(TyBool, setBackground, PaAddr(color));
     Value *isGoodCmp = scaff->builder.CreateICmpEQ(isGood, CoBool(true), "isGood");
     BasicBlock *colorNotGoodBB = BasicBlock::Create(*scaff->theContext, "colorNotGood", theFunction);
     BasicBlock *colorGoodBB = BasicBlock::Create(*scaff->theContext, "colorGood", theFunction);
@@ -843,7 +843,7 @@ COD***/
 // CMD PENDOWN? 0 0 0 b
 Value *Compiler::genPendownp(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyBool, isPenDown, PaAddr(evaluator));
+    return generateCallExtern(TyBool, isPenDown);
 }
 /***DOC PENMODE
 PENMODE
@@ -912,7 +912,7 @@ COD***/
 // CMD PENSIZE 0 0 0 r
 Value *Compiler::genPensize(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyDouble, getPenSize, PaAddr(evaluator));
+    return generateCallExtern(TyDouble, getPenSize);
 }
 /***DOC BACKGROUND BG
 BACKGROUND
@@ -1026,7 +1026,7 @@ COD***/
 // CMD BUTTON? 0 0 0 b
 Value *Compiler::genButtonp(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyBool, isMouseButtonDown, PaAddr(evaluator));
+    return generateCallExtern(TyBool, isMouseButtonDown);
 }
 /***DOC BUTTON
 BUTTON
@@ -1042,5 +1042,5 @@ COD***/
 // CMD BUTTON 0 0 0 r
 Value *Compiler::genButton(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyDouble, getMouseButton, PaAddr(evaluator));
+    return generateCallExtern(TyDouble, getMouseButton);
 }
