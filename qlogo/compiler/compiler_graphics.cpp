@@ -183,7 +183,7 @@ COD***/
 // CMD HOME 0 0 0 n
 Value *Compiler::genHome(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, setTurtleMoveToHome, PaAddr(evaluator));
+    generateCallExtern(TyVoid, setTurtleMoveToHome);
     return generateVoidRetval(node);
 }
 /***DOC ARC
@@ -199,7 +199,7 @@ Value *Compiler::genArc(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *angle = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *radius = generateChild(node.astnodeValue(), 1, RequestReturnReal);
-    generateCallExtern(TyVoid, drawTurtleArc, PaAddr(evaluator), PaDouble(angle), PaDouble(radius));
+    generateCallExtern(TyVoid, drawTurtleArc, PaDouble(angle), PaDouble(radius));
     return generateVoidRetval(node);
 }
 // TURTLE MOTION QUERIES
@@ -225,7 +225,7 @@ COD***/
 // CMD HEADING 0 0 0 r
 Value *Compiler::genHeading(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyDouble, getTurtleHeading, PaAddr(evaluator));
+    return generateCallExtern(TyDouble, getTurtleHeading);
 }
 /***DOC TOWARDS
 TOWARDS pos
@@ -239,7 +239,7 @@ COD***/
 Value *Compiler::genTowards(const DatumPtr &node, RequestReturnType returnType)
 {
     AllocaInst *posAry = generateNumberAryFromDatum(node.astnodeValue(), node.astnodeValue()->childAtIndex(0), 2);
-    return generateCallExtern(TyDouble, getTurtleTowards, PaAddr(evaluator), PaAddr(posAry));
+    return generateCallExtern(TyDouble, getTurtleTowards, PaAddr(posAry));
 }
 /***DOC SCRUNCH
 SCRUNCH
@@ -269,7 +269,7 @@ COD***/
 // CMD ST 0 0 0 n
 Value *Compiler::genShowTurtle(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, setTurtleVisible, PaAddr(evaluator), PaInt32(CoInt32(1)));
+    generateCallExtern(TyVoid, setTurtleVisible, PaInt32(CoInt32(1)));
     return generateVoidRetval(node);
 }
 /***DOC HIDETURTLE HT
@@ -283,7 +283,7 @@ COD***/
 // CMD HT 0 0 0 n
 Value *Compiler::genHideTurtle(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, setTurtleVisible, PaAddr(evaluator), PaInt32(CoInt32(0)));
+    generateCallExtern(TyVoid, setTurtleVisible, PaInt32(CoInt32(0)));
     return generateVoidRetval(node);
 }
 
@@ -313,7 +313,7 @@ COD***/
 // CMD CS 0 0 0 n
 Value *Compiler::genClearscreen(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, setTurtleMoveToHome, PaAddr(evaluator));
+    generateCallExtern(TyVoid, setTurtleMoveToHome);
     generateCallExtern(TyVoid, clean, PaAddr(evaluator));
     return generateVoidRetval(node);
 }

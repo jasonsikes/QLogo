@@ -1499,12 +1499,12 @@ EXPORTC void setTurtleHeading(double newHeading)
     Config::get().mainTurtle()->rotate(adjustment);
 }
 
-EXPORTC void setTurtleMoveToHome(addr_t /* eAddr */)
+EXPORTC void setTurtleMoveToHome(void)
 {
     Config::get().mainTurtle()->moveToHome();
 }
 
-EXPORTC void drawTurtleArc(addr_t /* eAddr */, double angle, double radius)
+EXPORTC void drawTurtleArc(double angle, double radius)
 {
     // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
     angle = 0 - angle;
@@ -1529,7 +1529,7 @@ EXPORTC addr_t getTurtlePos(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC double getTurtleHeading(addr_t /* eAddr */)
+EXPORTC double getTurtleHeading(void)
 {
     double retval = Config::get().mainTurtle()->getHeading();
 
@@ -1543,7 +1543,7 @@ EXPORTC double getTurtleHeading(addr_t /* eAddr */)
     return retval;
 }
 
-EXPORTC double getTurtleTowards(addr_t /* eAddr */, addr_t posAddr)
+EXPORTC double getTurtleTowards(addr_t posAddr)
 {
     double x = 0, y = 0;
     Config::get().mainTurtle()->getxy(x, y);
@@ -1574,7 +1574,7 @@ EXPORTC addr_t getScrunch(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC void setTurtleVisible(addr_t /* eAddr */, int visible)
+EXPORTC void setTurtleVisible(int visible)
 {
     Config::get().mainTurtle()->setIsTurtleVisible(visible);
 }
