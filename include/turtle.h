@@ -25,12 +25,13 @@
 #include "controller/logocontroller.h"
 #include "sharedconstants.h"
 #include <QColor>
+#include <QTransform>
 
 /// @brief The Turtle class is responsible for maintaining the state of the turtle,
 /// including its position, orientation, and pen state.
 class Turtle
 {
-    Transform turtlePosition;
+    QTransform turtlePosition;
 
     QColor penColor;
     TurtleModeEnum mode = turtleWindow;
@@ -51,10 +52,10 @@ class Turtle
                     double boundV,
                     bool isXBoundary,
                     double mult);
-    void moveTurtle(const Transform &newPosition);
-    void moveTurtleWrap(const Transform &newPosition);
-    void moveTurtleFence(const Transform &newPosition);
-    void moveTurtleWindow(const Transform &newPosition);
+    void moveTurtle(const QTransform &newPosition);
+    void moveTurtleWrap(const QTransform &newPosition);
+    void moveTurtleFence(const QTransform &newPosition);
+    void moveTurtleWindow(const QTransform &newPosition);
 
   public:
     /// @brief Constructor for the Turtle class.
@@ -65,7 +66,7 @@ class Turtle
 
     /// @brief Get the current turtle position and orientation.
     /// @return The current turtle position and orientation.
-    const Transform &getMatrix() const
+    const QTransform &getMatrix() const
     {
         return turtlePosition;
     }

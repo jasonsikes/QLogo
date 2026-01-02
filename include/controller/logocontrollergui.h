@@ -27,6 +27,7 @@
 #include <QDataStream>
 #include <QFile>
 #include <QFont>
+#include <QTransform>
 
 /// @brief  The LogoControllerGUI class is a subclass of the LogoController class.
 /// It provides a way to communicate user input and output through Psychi, the
@@ -119,7 +120,7 @@ class LogoControllerGUI : public LogoController
 
     /// @brief Sets the turtle position.
     /// @param newTurtlePos The new turtle position.
-    void setTurtlePos(const Transform &newTurtlePos) override;
+    void setTurtlePos(const QTransform &newTurtlePos) override;
 
     /// @brief Sets the turtle visibility.
     /// @param isVisible True if the turtle is visible, false otherwise.

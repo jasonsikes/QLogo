@@ -97,11 +97,9 @@ enum messageCategory : message_t
 class Config
 {
   private:
-    Config()
-    {
-    }
-    Config(const Config &);
-    Config &operator=(const Config &);
+    Config() = default;
+    Config(const Config &other) = delete;
+    Config &operator=(const Config &other) = delete;
     ~Config()
     {
         Q_ASSERT(mTurtle == nullptr);
@@ -251,85 +249,6 @@ class Config
     /// @brief The default help database filename.
     const char *defaultHelpDbFilename = "qlogo_help.db";
 };
-
-struct Transform
-{
-    double m[9];
-
-    Transform()
-    {
-        m[0] = 1.0;
-        m[1] = 0.0;
-        m[2] = 0.0;
-        m[3] = 0.0;
-        m[4] = 1.0;
-        m[5] = 0.0;
-        m[6] = 0.0;
-        m[7] = 0.0;
-        m[8] = 1.0;
-    }
-
-    Transform(double a0, double a1, double a2, double a3, double a4, double a5, double a6, double a7, double a8)
-    {
-        m[0] = a0;
-        m[1] = a1;
-        m[2] = a2;
-        m[3] = a3;
-        m[4] = a4;
-        m[5] = a5;
-        m[6] = a6;
-        m[7] = a7;
-        m[8] = a8;
-    }
-
-    Transform(const Transform &other)
-    {
-        std::copy(other.m, other.m + 9, m);
-    }
-
-    Transform &operator=(const Transform &other)
-    {
-        if (this != &other)
-        {
-            std::copy(other.m, other.m + 9, m);
-        }
-        return *this;
-    }
-
-    Transform(Transform &&other) noexcept
-    {
-        std::copy(other.m, other.m + 9, m);
-    }
-
-    Transform &operator=(Transform &&other) noexcept
-    {
-        if (this != &other)
-        {
-            std::copy(other.m, other.m + 9, m);
-        }
-        return *this;
-    }
-
-    ~Transform() = default;
-};
-
-inline QDataStream &operator<<(QDataStream &out, const Transform &transform)
-{
-    for (int i = 0; i < 9; ++i)
-    {
-        out << transform.m[i];
-    }
-    return out;
-}
-
-inline QDataStream &operator>>(QDataStream &in, Transform &transform)
-{
-    for (int i = 0; i < 9; ++i)
-    {
-        in >> transform.m[i];
-    }
-    return in;
-}
 
 enum PenModeEnum
 {

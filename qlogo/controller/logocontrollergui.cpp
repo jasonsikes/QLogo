@@ -274,7 +274,7 @@ QString LogoControllerGUI::fileDialogModal()
     return filePath;
 }
 
-void LogoControllerGUI::setTurtlePos(const Transform &newTurtlePos)
+void LogoControllerGUI::setTurtlePos(const QTransform &newTurtlePos)
 {
     message(C_CANVAS_UPDATE_TURTLE_POS) << newTurtlePos;
 }
