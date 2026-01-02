@@ -51,7 +51,7 @@ struct FlowControl : public Datum
 struct FCGoto : public FlowControl
 {
 
-    FCGoto(DatumPtr aSourceNode, DatumPtr aTag)
+    FCGoto(const DatumPtr &aSourceNode, const DatumPtr &aTag)
     {
         isa = Datum::typeGoto;
         data = aTag;
@@ -70,7 +70,7 @@ struct FCGoto : public FlowControl
 struct FCReturn : public FlowControl
 {
 
-    FCReturn(DatumPtr aSourceNode, DatumPtr aValue)
+    FCReturn(const DatumPtr &aSourceNode, const DatumPtr &aValue)
     {
         isa = Datum::typeReturn;
         data = aValue;
@@ -88,7 +88,7 @@ struct FCReturn : public FlowControl
 struct FCContinuation : public FlowControl
 {
 
-    FCContinuation(DatumPtr aSourceNode, DatumPtr aProcedure, QList<DatumPtr> aParams)
+    FCContinuation(const DatumPtr &aSourceNode, const DatumPtr &aProcedure, const QList<DatumPtr> &aParams)
     {
         isa = Datum::typeContinuation;
         data = aProcedure;
@@ -249,7 +249,11 @@ struct FCError : public FlowControl
     /// @param aTag The tag of the error. Can be used with `CATCH tag` and/or `SYSTEM/TOPLEVEL/PAUSE` to handle the
     /// error.
     /// @note The other elements are fetched from the procedure.
-    FCError(ErrCode aCode, DatumPtr aMessage, DatumPtr aTag = nothing(), DatumPtr aOutput = nothing()) : code(aCode)
+    FCError(ErrCode aCode,
+            const DatumPtr &aMessage,
+            const DatumPtr &aTag = nothing(),
+            const DatumPtr &aOutput = nothing())
+        : code(aCode)
     {
         isa = Datum::typeError;
         dataAry.resize(5);
@@ -265,7 +269,11 @@ struct FCError : public FlowControl
     /// @param aTag The tag of the error. Can be used with `CATCH tag` and/or `SYSTEM/TOPLEVEL/PAUSE` to handle the
     /// error.
     /// @note The other elements are fetched from the procedure.
-    FCError(ErrCode aCode, QString aMessage, DatumPtr aTag = nothing(), DatumPtr aOutput = nothing()) : code(aCode)
+    FCError(ErrCode aCode,
+            const QString &aMessage,
+            const DatumPtr &aTag = nothing(),
+            const DatumPtr &aOutput = nothing())
+        : code(aCode)
     {
         isa = Datum::typeError;
         dataAry.resize(5);

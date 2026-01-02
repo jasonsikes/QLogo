@@ -65,7 +65,7 @@ class Turtle
 
     /// @brief Get the current turtle position and orientation.
     /// @return The current turtle position and orientation.
-    const Transform &getMatrix(void) const
+    const Transform &getMatrix() const
     {
         return turtlePosition;
     }
