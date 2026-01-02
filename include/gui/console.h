@@ -63,10 +63,10 @@ class Console : public QTextEdit
   public:
     /// @brief Constructor
     /// @param parent The Qt parent widget
-    Console(QWidget *parent = 0);
+    Console(QWidget *parent = nullptr);
 
     /// @brief Destructor
-    ~Console() = default;
+    ~Console() override = default;
 
     /// @brief Print a string to the console
     /// @param text The text to print

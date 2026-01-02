@@ -35,14 +35,14 @@ class EditorWindow : public QMainWindow
     Q_OBJECT
 
     Ui::EditorWindow *ui;
-    bool eventFilter(QObject *watched, QEvent *event);
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
   public:
     /// @brief Constructor.
-    explicit EditorWindow(QWidget *parent = 0);
+    explicit EditorWindow(QWidget *parent = nullptr);
 
     /// @brief Destructor.
-    ~EditorWindow();
+    ~EditorWindow() override;
 
     /// @brief Set the contents of the editor window.
     ///
