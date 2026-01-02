@@ -1465,22 +1465,22 @@ EXPORTC void moveTurtleRotate(double angle)
     Config::get().mainTurtle()->rotate(angle);
 }
 
-EXPORTC void setTurtleXY(addr_t /* eAddr */, double x, double y)
+EXPORTC void setTurtleXY(double x, double y)
 {
     Config::get().mainTurtle()->setxy(x, y);
 }
 
-EXPORTC void setTurtleX(addr_t /* eAddr */, double x)
+EXPORTC void setTurtleX(double x)
 {
     Config::get().mainTurtle()->setx(x);
 }
 
-EXPORTC void setTurtleY(addr_t /* eAddr */, double y)
+EXPORTC void setTurtleY(double y)
 {
     Config::get().mainTurtle()->sety(y);
 }
 
-EXPORTC void setTurtlePos(addr_t /* eAddr */, addr_t posAddr)
+EXPORTC void setTurtlePos(addr_t posAddr)
 {
     const auto *pos = reinterpret_cast<const double *>(posAddr);
     double x = pos[0];
@@ -1488,7 +1488,7 @@ EXPORTC void setTurtlePos(addr_t /* eAddr */, addr_t posAddr)
     Config::get().mainTurtle()->setxy(x, y);
 }
 
-EXPORTC void setTurtleHeading(addr_t /* eAddr */, double newHeading)
+EXPORTC void setTurtleHeading(double newHeading)
 {
     double oldHeading = Config::get().mainTurtle()->getHeading();
 

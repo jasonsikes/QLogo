@@ -109,7 +109,7 @@ Value *Compiler::genSetxy(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *x = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *y = generateChild(node.astnodeValue(), 1, RequestReturnReal);
-    generateCallExtern(TyVoid, setTurtleXY, PaAddr(evaluator), PaDouble(x), PaDouble(y));
+    generateCallExtern(TyVoid, setTurtleXY, PaDouble(x), PaDouble(y));
     return generateVoidRetval(node);
 }
 /***DOC SETX
@@ -124,7 +124,7 @@ COD***/
 Value *Compiler::genSetx(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *x = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    generateCallExtern(TyVoid, setTurtleX, PaAddr(evaluator), PaDouble(x));
+    generateCallExtern(TyVoid, setTurtleX, PaDouble(x));
     return generateVoidRetval(node);
 }
 /***DOC SETY
@@ -139,7 +139,7 @@ COD***/
 Value *Compiler::genSety(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *y = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    generateCallExtern(TyVoid, setTurtleY, PaAddr(evaluator), PaDouble(y));
+    generateCallExtern(TyVoid, setTurtleY, PaDouble(y));
     return generateVoidRetval(node);
 }
 /***DOC SETPOS
@@ -153,7 +153,7 @@ COD***/
 Value *Compiler::genSetpos(const DatumPtr &node, RequestReturnType returnType)
 {
     AllocaInst *posAry = generateNumberAryFromDatum(node.astnodeValue(), node.astnodeValue()->childAtIndex(0), 2);
-    generateCallExtern(TyVoid, setTurtlePos, PaAddr(evaluator), PaAddr(posAry));
+    generateCallExtern(TyVoid, setTurtlePos, PaAddr(posAry));
     return generateVoidRetval(node);
 }
 /***DOC SETHEADING SETH
@@ -170,7 +170,7 @@ COD***/
 Value *Compiler::genSetheading(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *angle = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    generateCallExtern(TyVoid, setTurtleHeading, PaAddr(evaluator), PaDouble(angle));
+    generateCallExtern(TyVoid, setTurtleHeading, PaDouble(angle));
     return generateVoidRetval(node);
 }
 /***DOC HOME
