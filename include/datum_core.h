@@ -16,19 +16,20 @@ class Datum
     friend struct Evaluator;
 
   protected:
-    /// @brief Protected constructors to prevent direct instantiation.
+    /// @brief Protected constructor to prevent direct instantiation.
     ///
     /// @details The Datum class uses the singleton pattern. Only one instance
     /// of Datum can exist (accessed via getInstance()). Subclasses can still
-    /// be instantiated multiple times because they can call these protected constructors.
+    /// be instantiated multiple times because they can call this deleted constructor.
+    Datum();
+
+  public:
     Datum &operator=(const Datum &) = delete;
     Datum &operator=(Datum &&) = delete;
     Datum &operator=(Datum *) = delete;
     Datum(const Datum &) = delete;
     Datum(Datum &&) = delete;
-    Datum();
 
-  public:
     /// @brief Value stored in isa.
     enum DatumType : uint32_t
     {
