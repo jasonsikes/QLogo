@@ -199,14 +199,14 @@ DatumPtr Procedures::createProcedure(const DatumPtr &cmd, const DatumPtr &text, 
             DatumPtr d = wordIter.element();
             if (d.isWord() && (d.toString(Datum::ToStringFlags_Key) == QObject::tr("TAG")) && wordIter.elementExists())
             {
-                DatumPtr d = wordIter.element();
-                if (d.isWord())
+                DatumPtr tag = wordIter.element();
+                if (tag.isWord())
                 {
-                    QString param = d.toString(Datum::ToStringFlags_Key);
+                    QString param = tag.toString(Datum::ToStringFlags_Key);
                     if ((param.size() > 1) && (param)[0] == '"')
                     {
-                        QString tag = param.right(param.size() - 1);
-                        body->tagToLine[tag] = lineP;
+                        QString tagName = param.right(param.size() - 1);
+                        body->tagToLine[tagName] = lineP;
                     }
                 }
             }
@@ -362,14 +362,14 @@ QString Procedures::procedureTitle(const DatumPtr &procnameP) const
 
     QString paramName;
 
-    for (auto &i : body->requiredInputs)
+    for (const auto &i : body->requiredInputs)
     {
         paramName = i;
         paramName.prepend(':');
         firstLineBuilder.append(DatumPtr(paramName));
     }
 
-    for (auto &i : body->optionalDefaults)
+    for (const auto &i : body->optionalDefaults)
     {
         firstLineBuilder.append(i);
     }
@@ -555,7 +555,6 @@ DatumPtr Procedures::arity(const DatumPtr &nameP) const
     else
     {
         throw FCError::noHow(nameP);
-        return nothing();
     }
 
     ListBuilder retvalBuilder;
