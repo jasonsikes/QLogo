@@ -37,7 +37,7 @@ struct Label
     /// @param aText The text to display.
     /// @param aPosition The position to display the text.
     /// @param aFont The font to use for the text.
-    Label(QString aText, QPointF aPosition, QFont aFont) : text(aText), position(aPosition), font(aFont)
+    Label(const QString &aText, QPointF aPosition, const QFont &aFont) : text(aText), position(aPosition), font(aFont)
     {
     }
 };
@@ -182,7 +182,7 @@ class Canvas : public QWidget
     /// @brief Construct a Canvas
     ///
     /// @param parent The Qt parent widget.
-    Canvas(QWidget *parent = 0);
+    Canvas(QWidget *parent = nullptr);
 
     /// @brief Set the position and orientation of the turtle.
     ///
