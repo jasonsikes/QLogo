@@ -298,7 +298,7 @@ COD***/
 // CMD CLEAN 0 0 0 n
 Value *Compiler::genClean(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, clean, PaAddr(evaluator));
+    generateCallExtern(TyVoid, clean);
     return generateVoidRetval(node);
 }
 /***DOC CLEARSCREEN CS
@@ -314,7 +314,7 @@ COD***/
 Value *Compiler::genClearscreen(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, setTurtleMoveToHome);
-    generateCallExtern(TyVoid, clean, PaAddr(evaluator));
+    generateCallExtern(TyVoid, clean);
     return generateVoidRetval(node);
 }
 
@@ -333,7 +333,7 @@ COD***/
 // CMD WRAP 0 0 0 n
 Value *Compiler::genWrap(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, setTurtleMode, PaAddr(evaluator), PaInt32(CoInt32(turtleWrap)));
+    generateCallExtern(TyVoid, setTurtleMode, PaInt32(CoInt32(turtleWrap)));
     return generateVoidRetval(node);
 }
 /***DOC WINDOW
@@ -350,7 +350,7 @@ COD***/
 // CMD WINDOW 0 0 0 n
 Value *Compiler::genWindow(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, setTurtleMode, PaAddr(evaluator), PaInt32(CoInt32(turtleWindow)));
+    generateCallExtern(TyVoid, setTurtleMode, PaInt32(CoInt32(turtleWindow)));
     return generateVoidRetval(node);
 }
 
@@ -366,7 +366,7 @@ COD***/
 // CMD FENCE 0 0 0 n
 Value *Compiler::genFence(const DatumPtr &node, RequestReturnType returnType)
 {
-    generateCallExtern(TyVoid, setTurtleMode, PaAddr(evaluator), PaInt32(CoInt32(turtleFence)));
+    generateCallExtern(TyVoid, setTurtleMode, PaInt32(CoInt32(turtleFence)));
     return generateVoidRetval(node);
 }
 
@@ -398,7 +398,7 @@ Value *Compiler::genSetbounds(const DatumPtr &node, RequestReturnType returnType
 {
     Value *x = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *y = generateChild(node.astnodeValue(), 1, RequestReturnReal);
-    generateCallExtern(TyVoid, setBounds, PaAddr(evaluator), PaDouble(x), PaDouble(y));
+    generateCallExtern(TyVoid, setBounds, PaDouble(x), PaDouble(y));
     return generateVoidRetval(node);
 }
 /***DOC FILLED
@@ -420,7 +420,7 @@ Value *Compiler::genFilled(const DatumPtr &node, RequestReturnType returnType)
     BasicBlock *colorGoodBB = BasicBlock::Create(*scaff->theContext, "colorGood", theFunction);
     Value *color = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *instructions = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
-    Value *isGood = generateCallExtern(TyInt32, beginFilledWithColor, PaAddr(evaluator), PaAddr(color));
+    Value *isGood = generateCallExtern(TyInt32, beginFilledWithColor, PaAddr(color));
     Value *isGoodCmp = scaff->builder.CreateICmpEQ(isGood, CoInt32(1), "isGood");
     scaff->builder.CreateCondBr(isGoodCmp, colorGoodBB, colorNotGoodBB);
 
@@ -433,7 +433,7 @@ Value *Compiler::genFilled(const DatumPtr &node, RequestReturnType returnType)
     // Color is good.
     scaff->builder.SetInsertPoint(colorGoodBB);
     Value *result = generateCallList(instructions, RequestReturnDatum);
-    generateCallExtern(TyVoid, endFilled, PaAddr(evaluator));
+    generateCallExtern(TyVoid, endFilled);
     return result;
 }
 

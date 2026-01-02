@@ -1579,12 +1579,12 @@ EXPORTC void setTurtleVisible(int visible)
     Config::get().mainTurtle()->setIsTurtleVisible(visible);
 }
 
-EXPORTC void clean(addr_t /* eAddr */)
+EXPORTC void clean(void)
 {
     Config::get().mainController()->clearCanvas();
 }
 
-EXPORTC void setTurtleMode(addr_t /* eAddr */, int mode)
+EXPORTC void setTurtleMode(int mode)
 {
     auto newMode = static_cast<TurtleModeEnum>(mode);
     if (Config::get().mainTurtle()->getMode() != newMode)
@@ -1609,12 +1609,12 @@ EXPORTC addr_t getBounds(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC void setBounds(addr_t /* eAddr */, double x, double y)
+EXPORTC void setBounds(double x, double y)
 {
     Config::get().mainController()->setBounds(x, y);
 }
 
-EXPORTC int32_t beginFilledWithColor(addr_t /* eAddr */, addr_t colorAddr)
+EXPORTC int32_t beginFilledWithColor(addr_t colorAddr)
 {
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
@@ -1624,7 +1624,7 @@ EXPORTC int32_t beginFilledWithColor(addr_t /* eAddr */, addr_t colorAddr)
     return 1;
 }
 
-EXPORTC void endFilled(addr_t /* eAddr */)
+EXPORTC void endFilled(void)
 {
     Config::get().mainTurtle()->endFill();
 }
