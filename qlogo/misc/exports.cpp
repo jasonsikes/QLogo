@@ -31,6 +31,8 @@
 #include <QObject>
 #include <QRandomGenerator>
 
+#include <algorithm>
+
 bool areDatumsEqual(VisitedMap &visited, Datum *d1, Datum *d2, Qt::CaseSensitivity cs);
 
 /// @brief Recursively check if a datum is in an array.
@@ -499,13 +501,12 @@ EXPORTC int32_t getCountOfList(addr_t listAddr)
 /// @param listAddr a pointer to the List object source
 /// @param destAddr a pointer to the double array to store the values.
 /// @return 0 if the list is not a list of doubles, 1 if it is.
-EXPORTC int32_t getNumberAryFromList(addr_t eAddr, addr_t listAddr, addr_t destAddr)
+EXPORTC int32_t getNumberAryFromList(addr_t /* eAddr */, addr_t listAddr, addr_t destAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto list = DatumPtr(reinterpret_cast<Datum *>(listAddr));
     auto *dest = reinterpret_cast<double *>(destAddr);
     // Presumably, getCountOfList() has already been called so the destination size is correct.
-    while ((list.isList()) && !list.listValue()->isEmpty())
+    while (list.isList() && !list.listValue()->isEmpty())
     {
         DatumPtr d = list.listValue()->head;
         if (!d.isWord())
@@ -587,9 +588,8 @@ EXPORTC addr_t repcountAddr(void)
     return (addr_t)retval;
 }
 
-EXPORTC addr_t beginCatch(addr_t eAddr)
+EXPORTC addr_t beginCatch(addr_t /* eAddr */)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *erractWord = reinterpret_cast<Word *>(Config::get().mainKernel()->specialVar(SpecialNames::ERRACT));
     Datum *erractValue =
         Config::get().mainKernel()->callStack.datumForName(erractWord->toString(Datum::ToStringFlags_Key)).datumValue();
@@ -707,21 +707,18 @@ EXPORTC addr_t processRunresult(addr_t eAddr, addr_t resultAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC void saveTestResult(addr_t eAddr, bool tf)
+EXPORTC void saveTestResult(addr_t /* eAddr */, bool tf)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainKernel()->callStack.setTest(tf);
 }
 
-EXPORTC bool getIsTested(addr_t eAddr)
+EXPORTC bool getIsTested(addr_t /* eAddr */)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return Config::get().mainKernel()->callStack.isTested();
 }
 
-EXPORTC bool getTestResult(addr_t eAddr)
+EXPORTC bool getTestResult(addr_t /* eAddr */)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return Config::get().mainKernel()->callStack.testedState();
 }
 
@@ -785,9 +782,8 @@ EXPORTC addr_t concatWord(addr_t eAddr, addr_t aryAddr, uint32_t count)
     return reinterpret_cast<addr_t>(e->watch(new Word(retval)));
 }
 
-EXPORTC bool isDatumEmpty(addr_t eAddr, addr_t dAddr)
+EXPORTC bool isDatumEmpty(addr_t /* eAddr */, addr_t dAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *d = reinterpret_cast<Datum *>(dAddr);
     if (d->isWord())
     {
@@ -909,7 +905,7 @@ EXPORTC addr_t listToArray(addr_t eAddr, addr_t listAddr, int32_t origin)
 EXPORTC addr_t arrayToList(addr_t eAddr, addr_t arrayAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *array = reinterpret_cast<Array *>(arrayAddr);
+    const auto *array = reinterpret_cast<const Array *>(arrayAddr);
     ListBuilder builder;
     for (const auto &i : array->array)
     {
@@ -1044,9 +1040,8 @@ EXPORTC addr_t butLastOfDatum(addr_t eAddr, addr_t thingAddr)
     return nullptr;
 }
 
-EXPORTC bool isDatumIndexValid(addr_t eAddr, addr_t thingAddr, double dIndex, addr_t listItemPtrAddr)
+EXPORTC bool isDatumIndexValid(addr_t /* eAddr */, addr_t thingAddr, double dIndex, addr_t listItemPtrAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     auto **listItemPtr = reinterpret_cast<Datum **>(listItemPtrAddr);
     auto index = static_cast<qsizetype>(dIndex);
@@ -1140,9 +1135,8 @@ EXPORTC bool isDatumContainerOrInContainer(addr_t eAddr, addr_t valueAddr, addr_
     return isDatumInContainer(visited, value, container, cs);
 }
 
-EXPORTC void setDatumAtIndexOfContainer(addr_t eAddr, addr_t valueAddr, double dIndex, addr_t containerAddr)
+EXPORTC void setDatumAtIndexOfContainer(addr_t /* eAddr */, addr_t valueAddr, double dIndex, addr_t containerAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *container = reinterpret_cast<Datum *>(containerAddr);
     DatumPtr value(reinterpret_cast<Datum *>(valueAddr));
     auto index = static_cast<qsizetype>(dIndex);
@@ -1167,25 +1161,22 @@ EXPORTC void setDatumAtIndexOfContainer(addr_t eAddr, addr_t valueAddr, double d
     }
 }
 
-EXPORTC void setFirstOfList(addr_t eAddr, addr_t listAddr, addr_t valueAddr)
+EXPORTC void setFirstOfList(addr_t /* eAddr */, addr_t listAddr, addr_t valueAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *l = reinterpret_cast<List *>(listAddr);
     l->head = DatumPtr(reinterpret_cast<Datum *>(valueAddr));
     l->astParseTimeStamp = 0;
 }
 
-EXPORTC void setButfirstOfList(addr_t eAddr, addr_t listAddr, addr_t valueAddr)
+EXPORTC void setButfirstOfList(addr_t /* eAddr */, addr_t listAddr, addr_t valueAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *l = reinterpret_cast<List *>(listAddr);
     l->tail = DatumPtr(reinterpret_cast<Datum *>(valueAddr));
     l->astParseTimeStamp = 0;
 }
 
-EXPORTC bool isEmpty(addr_t eAddr, addr_t thingAddr)
+EXPORTC bool isEmpty(addr_t /* eAddr */, addr_t thingAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     if (thing->isWord())
     {
@@ -1215,7 +1206,6 @@ EXPORTC bool isBefore(addr_t eAddr, addr_t word1Addr, addr_t word2Addr)
 
 EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     auto *container = reinterpret_cast<Datum *>(containerAddr);
 
@@ -1252,15 +1242,10 @@ EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
     }
     else if (container->isArray())
     {
-        Array *array = container->arrayValue();
-        for (const auto &item : array->array)
-        {
-            if (cmpDatumToDatum(eAddr, thingAddr, reinterpret_cast<addr_t>(item.datumValue())))
-            {
-                return true;
-            }
-        }
-        return false;
+        const Array *array = container->arrayValue();
+        return std::any_of(array->array.begin(), array->array.end(), [eAddr, thingAddr](const auto &item) {
+            return cmpDatumToDatum(eAddr, thingAddr, reinterpret_cast<addr_t>(item.datumValue()));
+        });
     }
     else
     {
@@ -1270,9 +1255,8 @@ EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
     return false;
 }
 
-EXPORTC bool isSubstring(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
+EXPORTC bool isSubstring(addr_t /* eAddr */, addr_t thing1Addr, addr_t thing2Addr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing1 = reinterpret_cast<Datum *>(thing1Addr);
     auto *thing2 = reinterpret_cast<Datum *>(thing2Addr);
 
@@ -1287,9 +1271,8 @@ EXPORTC bool isSubstring(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
     return false;
 }
 
-EXPORTC bool isNumber(addr_t eAddr, addr_t thingAddr)
+EXPORTC bool isNumber(addr_t /* eAddr */, addr_t thingAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     if (thing->isa != Datum::typeWord)
     {
@@ -1300,9 +1283,8 @@ EXPORTC bool isNumber(addr_t eAddr, addr_t thingAddr)
     return word->numberIsValid;
 }
 
-EXPORTC bool isSingleCharWord(addr_t eAddr, addr_t candidateAddr)
+EXPORTC bool isSingleCharWord(addr_t /* eAddr */, addr_t candidateAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *candidate = reinterpret_cast<Datum *>(candidateAddr);
     if (candidate->isa != Datum::typeWord)
     {
@@ -1312,9 +1294,8 @@ EXPORTC bool isSingleCharWord(addr_t eAddr, addr_t candidateAddr)
     return word->toString(Datum::ToStringFlags_Key).length() == 1;
 }
 
-EXPORTC bool isVbarred(addr_t eAddr, addr_t cAddr)
+EXPORTC bool isVbarred(addr_t /* eAddr */, addr_t cAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *word = reinterpret_cast<Word *>(cAddr);
 
     // A character is vbarred IFF it's print value is different from its raw value.
@@ -1323,9 +1304,8 @@ EXPORTC bool isVbarred(addr_t eAddr, addr_t cAddr)
     return rawC != c;
 }
 
-EXPORTC double datumCount(addr_t eAddr, addr_t thingAddr)
+EXPORTC double datumCount(addr_t /* eAddr */, addr_t thingAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     if (thing->isWord())
     {
@@ -1346,16 +1326,14 @@ EXPORTC double datumCount(addr_t eAddr, addr_t thingAddr)
     return 0;
 }
 
-EXPORTC double ascii(addr_t eAddr, addr_t cAddr)
+EXPORTC double ascii(addr_t /* eAddr */, addr_t cAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *word = reinterpret_cast<Word *>(cAddr);
     return word->toString().front().unicode();
 }
 
-EXPORTC double rawascii(addr_t eAddr, addr_t cAddr)
+EXPORTC double rawascii(addr_t /* eAddr */, addr_t cAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *word = reinterpret_cast<Word *>(cAddr);
     return word->toString(Datum::ToStringFlags_Raw).front().unicode();
 }
@@ -1477,48 +1455,41 @@ EXPORTC addr_t runparseDatum(addr_t eAddr, addr_t wordorlistAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC void moveTurtleForward(addr_t eAddr, double distance)
+EXPORTC void moveTurtleForward(addr_t /* eAddr */, double distance)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->forward(distance);
 }
 
-EXPORTC void moveTurtleRotate(addr_t eAddr, double angle)
+EXPORTC void moveTurtleRotate(addr_t /* eAddr */, double angle)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->rotate(angle);
 }
 
-EXPORTC void setTurtleXY(addr_t eAddr, double x, double y)
+EXPORTC void setTurtleXY(addr_t /* eAddr */, double x, double y)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->setxy(x, y);
 }
 
-EXPORTC void setTurtleX(addr_t eAddr, double x)
+EXPORTC void setTurtleX(addr_t /* eAddr */, double x)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->setx(x);
 }
 
-EXPORTC void setTurtleY(addr_t eAddr, double y)
+EXPORTC void setTurtleY(addr_t /* eAddr */, double y)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->sety(y);
 }
 
-EXPORTC void setTurtlePos(addr_t eAddr, addr_t posAddr)
+EXPORTC void setTurtlePos(addr_t /* eAddr */, addr_t posAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *pos = reinterpret_cast<double *>(posAddr);
+    const auto *pos = reinterpret_cast<const double *>(posAddr);
     double x = pos[0];
     double y = pos[1];
     Config::get().mainTurtle()->setxy(x, y);
 }
 
-EXPORTC void setTurtleHeading(addr_t eAddr, double newHeading)
+EXPORTC void setTurtleHeading(addr_t /* eAddr */, double newHeading)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     double oldHeading = Config::get().mainTurtle()->getHeading();
 
     // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
@@ -1528,15 +1499,13 @@ EXPORTC void setTurtleHeading(addr_t eAddr, double newHeading)
     Config::get().mainTurtle()->rotate(adjustment);
 }
 
-EXPORTC void setTurtleMoveToHome(addr_t eAddr)
+EXPORTC void setTurtleMoveToHome(addr_t /* eAddr */)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->moveToHome();
 }
 
-EXPORTC void drawTurtleArc(addr_t eAddr, double angle, double radius)
+EXPORTC void drawTurtleArc(addr_t /* eAddr */, double angle, double radius)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
     angle = 0 - angle;
 
@@ -1560,9 +1529,8 @@ EXPORTC addr_t getTurtlePos(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC double getTurtleHeading(addr_t eAddr)
+EXPORTC double getTurtleHeading(addr_t /* eAddr */)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     double retval = Config::get().mainTurtle()->getHeading();
 
     // Heading should only show two decimal places.
@@ -1575,12 +1543,11 @@ EXPORTC double getTurtleHeading(addr_t eAddr)
     return retval;
 }
 
-EXPORTC double getTurtleTowards(addr_t eAddr, addr_t posAddr)
+EXPORTC double getTurtleTowards(addr_t /* eAddr */, addr_t posAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     double x = 0, y = 0;
     Config::get().mainTurtle()->getxy(x, y);
-    auto *pos = reinterpret_cast<double *>(posAddr);
+    const auto *pos = reinterpret_cast<const double *>(posAddr);
     double vx = pos[0];
     double vy = pos[1];
     double retval = atan2(x - vx, vy - y) * (180 / PI);
@@ -1607,21 +1574,18 @@ EXPORTC addr_t getScrunch(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC void setTurtleVisible(addr_t eAddr, int visible)
+EXPORTC void setTurtleVisible(addr_t /* eAddr */, int visible)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->setIsTurtleVisible(visible);
 }
 
-EXPORTC void clean(addr_t eAddr)
+EXPORTC void clean(addr_t /* eAddr */)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainController()->clearCanvas();
 }
 
-EXPORTC void setTurtleMode(addr_t eAddr, int mode)
+EXPORTC void setTurtleMode(addr_t /* eAddr */, int mode)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto newMode = static_cast<TurtleModeEnum>(mode);
     if (Config::get().mainTurtle()->getMode() != newMode)
     {
@@ -1645,15 +1609,13 @@ EXPORTC addr_t getBounds(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC void setBounds(addr_t eAddr, double x, double y)
+EXPORTC void setBounds(addr_t /* eAddr */, double x, double y)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainController()->setBounds(x, y);
 }
 
-EXPORTC int32_t beginFilledWithColor(addr_t eAddr, addr_t colorAddr)
+EXPORTC int32_t beginFilledWithColor(addr_t /* eAddr */, addr_t colorAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
     if (!Config::get().mainKernel()->colorFromDatumPtr(color, DatumPtr(d)))
@@ -1662,33 +1624,29 @@ EXPORTC int32_t beginFilledWithColor(addr_t eAddr, addr_t colorAddr)
     return 1;
 }
 
-EXPORTC void endFilled(addr_t eAddr)
+EXPORTC void endFilled(addr_t /* eAddr */)
 {
     Config::get().mainTurtle()->endFill();
 }
 
-EXPORTC void addLabel(addr_t eAddr, addr_t textAddr)
+EXPORTC void addLabel(addr_t /* eAddr */, addr_t textAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *d = reinterpret_cast<Datum *>(textAddr);
     Config::get().mainController()->drawLabel(d->toString());
 }
 
-EXPORTC void setLabelHeight(addr_t eAddr, double height)
+EXPORTC void setLabelHeight(addr_t /* eAddr */, double height)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainController()->setLabelFontSize(height);
 }
 
-EXPORTC void setScreenMode(addr_t eAddr, int mode)
+EXPORTC void setScreenMode(addr_t /* eAddr */, int mode)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainController()->setScreenMode(static_cast<ScreenModeEnum>(mode));
 }
 
-EXPORTC bool isTurtleVisible(addr_t eAddr)
+EXPORTC bool isTurtleVisible(addr_t /* eAddr */)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return Config::get().mainTurtle()->isTurtleVisible();
 }
 
@@ -1749,21 +1707,18 @@ EXPORTC addr_t getLabelSize(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC void setPenIsDown(addr_t eAddr, bool isDown)
+EXPORTC void setPenIsDown(addr_t /* eAddr */, bool isDown)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->setPenIsDown(isDown);
 }
 
-EXPORTC void setPenMode(addr_t eAddr, int32_t mode)
+EXPORTC void setPenMode(addr_t /* eAddr */, int32_t mode)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->setPenMode(static_cast<PenModeEnum>(mode));
 }
 
-EXPORTC bool setPenColor(addr_t eAddr, addr_t colorAddr)
+EXPORTC bool setPenColor(addr_t /* eAddr */, addr_t colorAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
     if (!Config::get().mainKernel()->colorFromDatumPtr(color, DatumPtr(d)))
@@ -1786,9 +1741,8 @@ EXPORTC addr_t getAllColors(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
-EXPORTC bool isColorIndexGood(addr_t eAddr, addr_t colorIndexAddr, double lowerLimit)
+EXPORTC bool isColorIndexGood(addr_t /* eAddr */, addr_t colorIndexAddr, double lowerLimit)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *w = reinterpret_cast<Word *>(colorIndexAddr);
     double colorIndex = w->numberValue();
 
@@ -1796,9 +1750,8 @@ EXPORTC bool isColorIndexGood(addr_t eAddr, addr_t colorIndexAddr, double lowerL
            (colorIndex < Config::get().mainKernel()->palette.size());
 }
 
-EXPORTC bool setPalette(addr_t eAddr, addr_t colorIndexAddr, addr_t colorAddr)
+EXPORTC bool setPalette(addr_t /* eAddr */, addr_t colorIndexAddr, addr_t colorAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto colorIndex = static_cast<int>((reinterpret_cast<Word *>(colorIndexAddr))->numberValue());
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
@@ -1808,15 +1761,13 @@ EXPORTC bool setPalette(addr_t eAddr, addr_t colorIndexAddr, addr_t colorAddr)
     return true;
 }
 
-EXPORTC void setPenSize(addr_t eAddr, double size)
+EXPORTC void setPenSize(addr_t /* eAddr */, double size)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Config::get().mainTurtle()->setPenSize(size);
 }
 
-EXPORTC bool setBackground(addr_t eAddr, addr_t colorAddr)
+EXPORTC bool setBackground(addr_t /* eAddr */, addr_t colorAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
     if (!Config::get().mainKernel()->colorFromDatumPtr(color, DatumPtr(d)))
@@ -1825,9 +1776,8 @@ EXPORTC bool setBackground(addr_t eAddr, addr_t colorAddr)
     return true;
 }
 
-EXPORTC bool isPenDown(addr_t eAddr)
+EXPORTC bool isPenDown(addr_t /* eAddr */)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return Config::get().mainTurtle()->isPenDown();
 }
 
@@ -1872,9 +1822,8 @@ EXPORTC addr_t getPaletteColor(addr_t eAddr, addr_t colorIndexAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC double getPenSize(addr_t eAddr)
+EXPORTC double getPenSize(addr_t /* eAddr */)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return Config::get().mainTurtle()->getPenSize();
 }
 
@@ -1981,15 +1930,13 @@ EXPORTC addr_t getClickPos(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC bool isMouseButtonDown(addr_t eAddr)
+EXPORTC bool isMouseButtonDown(addr_t /* eAddr */)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return Config::get().mainController()->getIsMouseButtonDown();
 }
 
-EXPORTC double getMouseButton(addr_t eAddr)
+EXPORTC double getMouseButton(addr_t /* eAddr */)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return static_cast<double>(Config::get().mainController()->getAndResetButtonID());
 }
 
@@ -2002,7 +1949,7 @@ EXPORTC double getMouseButton(addr_t eAddr)
 /// 1. The value EXISTS, and:
 /// 2 a. The value is a word AND the word is not "FALSE" or the empty string, or
 /// 2 b. The value is a list AND the list is not empty.
-EXPORTC bool getvarErroract(addr_t eAddr)
+EXPORTC bool getvarErroract(addr_t /* eAddr */)
 {
     QString name = QObject::tr("ERRACT");
     DatumPtr val = Config::get().mainKernel()->callStack.datumForName(name);
@@ -2026,7 +1973,7 @@ EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(nodeAddr);
-    CallFrame *currentFrame = Config::get().mainKernel()->callStack.localFrame();
+    const CallFrame *currentFrame = Config::get().mainKernel()->callStack.localFrame();
     DatumPtr currentProc = currentFrame->sourceNode;
     if (currentProc.isASTNode())
     {
@@ -2038,6 +1985,7 @@ EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
     return reinterpret_cast<addr_t>(Config::get().mainKernel()->inputProcedure(node));
 }
 
+// TODO: Should the executor be passed in here instead of getting the local frame from the call stack?
 EXPORTC void setVarAsLocal(addr_t varname)
 {
     auto *varName = reinterpret_cast<Word *>(varname);
