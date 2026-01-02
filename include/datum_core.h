@@ -129,30 +129,60 @@ class Datum
     /// a Word.
     ///
     /// @return A pointer to the referred Datum as a Word.
-    Word *wordValue() const
+    const Word *wordValue() const
     {
         Q_ASSERT(isWord());
-        return reinterpret_cast<Word *>(const_cast<Datum *>(this));
+        return reinterpret_cast<const Word *>(this);
+    }
+
+    /// @brief Performs an assertion check that the referred Datum is a Word. Returns a pointer to the referred Datum as
+    /// a Word.
+    ///
+    /// @return A pointer to the referred Datum as a Word.
+    Word *wordValue()
+    {
+        Q_ASSERT(isWord());
+        return reinterpret_cast<Word *>(this);
     }
 
     /// @brief Performs an assertion check that the referred Datum is a List. Returns a pointer to the referred Datum as
     /// a List.
     ///
     /// @return A pointer to the referred Datum as a List.
-    List *listValue() const
+    const List *listValue() const
     {
         Q_ASSERT(isList());
-        return reinterpret_cast<List *>(const_cast<Datum *>(this));
+        return reinterpret_cast<const List *>(this);
+    }
+
+    /// @brief Performs an assertion check that the referred Datum is a List. Returns a pointer to the referred Datum as
+    /// a List.
+    ///
+    /// @return A pointer to the referred Datum as a List.
+    List *listValue()
+    {
+        Q_ASSERT(isList());
+        return reinterpret_cast<List *>(this);
     }
 
     /// @brief Performs an assertion check that the referred Datum is an Array. Returns a pointer to the referred Datum
     /// as an Array.
     ///
     /// @return A pointer to the referred Datum as an Array.
-    Array *arrayValue() const
+    const Array *arrayValue() const
     {
         Q_ASSERT(isArray());
-        return reinterpret_cast<Array *>(const_cast<Datum *>(this));
+        return reinterpret_cast<const Array *>(this);
+    }
+
+    /// @brief Performs an assertion check that the referred Datum is an Array. Returns a pointer to the referred Datum
+    /// as an Array.
+    ///
+    /// @return A pointer to the referred Datum as an Array.
+    Array *arrayValue()
+    {
+        Q_ASSERT(isArray());
+        return reinterpret_cast<Array *>(this);
     }
 };
 
