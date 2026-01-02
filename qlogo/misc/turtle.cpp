@@ -77,7 +77,7 @@ bool Turtle::wrapTurtle(double lineStartU,
                                        mult * boundU,
                                        tempTurtlePos.m33());
         }
-        Config::get().mainController()->setTurtlePos(tempTurtlePos);
+        Config::get().mainController()->setTurtlePos(&tempTurtlePos);
         Config::get().mainController()->emitVertex();
         if (penIsDown)
             Config::get().mainController()->setPenIsDown(false);
@@ -106,7 +106,7 @@ bool Turtle::wrapTurtle(double lineStartU,
                                         -mult * boundU,
                                         turtlePosition.m33());
         }
-        Config::get().mainController()->setTurtlePos(turtlePosition);
+        Config::get().mainController()->setTurtlePos(&turtlePosition);
         Config::get().mainController()->emitVertex();
         if (penIsDown)
             Config::get().mainController()->setPenIsDown(true);
@@ -165,7 +165,7 @@ void Turtle::moveTurtleWrap(const QTransform &newPosition)
                                 lineEndX,
                                 lineEndY,
                                 newPosition.m33());
-    Config::get().mainController()->setTurtlePos(turtlePosition);
+    Config::get().mainController()->setTurtlePos(&turtlePosition);
     Config::get().mainController()->emitVertex();
 }
 
@@ -184,7 +184,7 @@ void Turtle::moveTurtleFence(const QTransform &newPosition)
         throw FCError::turtleOutOfBounds();
     }
     turtlePosition = newPosition;
-    Config::get().mainController()->setTurtlePos(turtlePosition);
+    Config::get().mainController()->setTurtlePos(&turtlePosition);
     Config::get().mainController()->emitVertex();
 }
 
@@ -205,7 +205,7 @@ void Turtle::moveTurtleWindow(const QTransform &newPosition)
     }
 
     turtlePosition = newPosition;
-    Config::get().mainController()->setTurtlePos(turtlePosition);
+    Config::get().mainController()->setTurtlePos(&turtlePosition);
     Config::get().mainController()->emitVertex();
 }
 
@@ -250,7 +250,7 @@ void Turtle::rotate(double angle)
     // but QTransform::rotate() uses counter-clockwise rotation (standard math convention).
     // Negate the angle to match Logo's behavior.
     turtlePosition.rotate(-angle);
-    Config::get().mainController()->setTurtlePos(turtlePosition);
+    Config::get().mainController()->setTurtlePos(&turtlePosition);
 }
 
 void Turtle::getxy(double &x, double &y) const

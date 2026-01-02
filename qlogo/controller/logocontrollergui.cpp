@@ -23,6 +23,7 @@
 #include <QDataStream>
 #include <QMatrix4x4>
 #include <QMessageBox>
+#include <QTransform>
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -274,9 +275,9 @@ QString LogoControllerGUI::fileDialogModal()
     return filePath;
 }
 
-void LogoControllerGUI::setTurtlePos(const QTransform &newTurtlePos)
+void LogoControllerGUI::setTurtlePos(QTransform *newTurtlePosPtr)
 {
-    message(C_CANVAS_UPDATE_TURTLE_POS) << newTurtlePos;
+    message(C_CANVAS_UPDATE_TURTLE_POS) << *newTurtlePosPtr;
 }
 
 void LogoControllerGUI::setPenmode(PenModeEnum aMode)

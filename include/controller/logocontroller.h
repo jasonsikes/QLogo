@@ -27,9 +27,9 @@
 #include <QImage>
 #include <QObject>
 #include <QThread>
-#include <QTransform>
 #include <QVector2D>
 
+class QTransform;
 class Kernel;
 class QTextStream;
 
@@ -131,7 +131,7 @@ class LogoController : public QObject
     /// @param newTurtlePos The new position of the turtle.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to set the turtle position.
-    virtual void setTurtlePos(const QTransform &newTurtlePos)
+    virtual void setTurtlePos(QTransform *newTurtlePosPtr)
     {
         throw FCError::noGraphics();
     }
