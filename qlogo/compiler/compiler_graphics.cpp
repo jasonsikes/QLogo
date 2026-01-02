@@ -41,7 +41,7 @@ COD***/
 Value *Compiler::genForward(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *distance = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    generateCallExtern(TyVoid, moveTurtleForward, PaAddr(evaluator), PaDouble(distance));
+    generateCallExtern(TyVoid, moveTurtleForward, PaDouble(distance));
     return generateVoidRetval(node);
 }
 
@@ -60,7 +60,7 @@ Value *Compiler::genBack(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *reverseDistance = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *distance = scaff->builder.CreateFNeg(reverseDistance, "negativeDistance");
-    generateCallExtern(TyVoid, moveTurtleForward, PaAddr(evaluator), PaDouble(distance));
+    generateCallExtern(TyVoid, moveTurtleForward, PaDouble(distance));
     return generateVoidRetval(node);
 }
 /***DOC LEFT LT
@@ -77,7 +77,7 @@ Value *Compiler::genLeft(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *angle = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *negativeAngle = scaff->builder.CreateFNeg(angle, "negativeAngle");
-    generateCallExtern(TyVoid, moveTurtleRotate, PaAddr(evaluator), PaDouble(negativeAngle));
+    generateCallExtern(TyVoid, moveTurtleRotate, PaDouble(negativeAngle));
     return generateVoidRetval(node);
 }
 
@@ -94,7 +94,7 @@ COD***/
 Value *Compiler::genRight(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *angle = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    generateCallExtern(TyVoid, moveTurtleRotate, PaAddr(evaluator), PaDouble(angle));
+    generateCallExtern(TyVoid, moveTurtleRotate, PaDouble(angle));
     return generateVoidRetval(node);
 }
 /***DOC SETXY

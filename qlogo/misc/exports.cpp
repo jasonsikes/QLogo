@@ -1304,7 +1304,7 @@ EXPORTC bool isVbarred(addr_t cAddr)
     return rawC != c;
 }
 
-EXPORTC double datumCount(addr_t /* eAddr */, addr_t thingAddr)
+EXPORTC double datumCount(addr_t thingAddr)
 {
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     if (thing->isWord())
@@ -1326,13 +1326,13 @@ EXPORTC double datumCount(addr_t /* eAddr */, addr_t thingAddr)
     return 0;
 }
 
-EXPORTC double ascii(addr_t /* eAddr */, addr_t cAddr)
+EXPORTC double ascii(addr_t cAddr)
 {
     auto *word = reinterpret_cast<Word *>(cAddr);
     return word->toString().front().unicode();
 }
 
-EXPORTC double rawascii(addr_t /* eAddr */, addr_t cAddr)
+EXPORTC double rawascii(addr_t cAddr)
 {
     auto *word = reinterpret_cast<Word *>(cAddr);
     return word->toString(Datum::ToStringFlags_Raw).front().unicode();
@@ -1455,12 +1455,12 @@ EXPORTC addr_t runparseDatum(addr_t eAddr, addr_t wordorlistAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC void moveTurtleForward(addr_t /* eAddr */, double distance)
+EXPORTC void moveTurtleForward(double distance)
 {
     Config::get().mainTurtle()->forward(distance);
 }
 
-EXPORTC void moveTurtleRotate(addr_t /* eAddr */, double angle)
+EXPORTC void moveTurtleRotate(double angle)
 {
     Config::get().mainTurtle()->rotate(angle);
 }

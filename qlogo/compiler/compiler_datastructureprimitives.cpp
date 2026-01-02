@@ -887,7 +887,7 @@ Value *Compiler::genCount(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    return generateCallExtern(TyDouble, datumCount, PaAddr(evaluator), PaAddr(thing));
+    return generateCallExtern(TyDouble, datumCount, PaAddr(thing));
 }
 /***DOC ASCII
 ASCII char
@@ -915,7 +915,7 @@ Value *Compiler::genAscii(const DatumPtr &node, RequestReturnType returnType)
     };
     c = generateValidationDatum(node.astnodeValue(), c, validator);
 
-    return generateCallExtern(TyDouble, ascii, PaAddr(evaluator), PaAddr(c));
+    return generateCallExtern(TyDouble, ascii, PaAddr(c));
 }
 /***DOC RAWASCII
 RAWASCII char
@@ -940,7 +940,7 @@ Value *Compiler::genRawascii(const DatumPtr &node, RequestReturnType returnType)
     };
     c = generateValidationDatum(node.astnodeValue(), c, validator);
 
-    return generateCallExtern(TyDouble, rawascii, PaAddr(evaluator), PaAddr(c));
+    return generateCallExtern(TyDouble, rawascii, PaAddr(c));
 }
 /***DOC CHAR
 CHAR int
