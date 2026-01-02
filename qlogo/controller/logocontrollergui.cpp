@@ -209,7 +209,7 @@ bool LogoControllerGUI::cursorOverwriteMode()
     return cursoreModeIsOverwrite;
 }
 
-QString LogoControllerGUI::editText(QString startText)
+QString LogoControllerGUI::editText(const QString &startText)
 {
     message(C_CONSOLE_BEGIN_EDIT_TEXT) << startText;
 
@@ -218,7 +218,7 @@ QString LogoControllerGUI::editText(QString startText)
     return editorText;
 }
 
-void LogoControllerGUI::setTextFontName(const QString aFontName)
+void LogoControllerGUI::setTextFontName(const QString &aFontName)
 {
     if (textFontName == aFontName)
         return;
@@ -333,7 +333,7 @@ void LogoControllerGUI::endPolygon()
     message(C_CANVAS_END_POLYGON);
 }
 
-void LogoControllerGUI::drawLabel(QString aString)
+void LogoControllerGUI::drawLabel(const QString &aString)
 {
     message(C_CANVAS_DRAW_LABEL) << aString;
 }
@@ -343,7 +343,7 @@ void LogoControllerGUI::drawArc(double angle, double radius)
     message(C_CANVAS_DRAW_ARC) << (qreal)angle << (qreal)radius;
 }
 
-void LogoControllerGUI::setLabelFontName(QString aName)
+void LogoControllerGUI::setLabelFontName(const QString &aName)
 {
     if (aName == labelFontName)
         return;
@@ -384,12 +384,12 @@ void LogoControllerGUI::setCanvasForegroundColor(const QColor &aColor)
     }
 }
 
-void LogoControllerGUI::setCanvasBackgroundImage(QImage anImage)
+void LogoControllerGUI::setCanvasBackgroundImage(const QImage &anImage)
 {
     message(C_CANVAS_SET_BACKGROUND_IMAGE) << anImage;
 }
 
-const QColor LogoControllerGUI::getCanvasBackgroundColor() const
+const QColor LogoControllerGUI::getCanvasBackgroundColor()
 {
     return currentBackgroundColor;
 }

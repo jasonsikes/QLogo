@@ -60,10 +60,10 @@ class LogoController : public QObject
   public:
     /// @brief Constructor
     /// @param parent The Qt parent object.
-    LogoController(QObject *parent = 0);
+    LogoController(QObject *parent = nullptr);
 
     /// @brief Destructor
-    virtual ~LogoController();
+    virtual ~LogoController() override;
 
     /// @brief Returns the most recent interrupt signal that was received, if any. Resets the signal.
     /// @return The most recent interrupt signal that was received, if any.
@@ -98,12 +98,12 @@ class LogoController : public QObject
     /// @brief Runs the controller.
     /// @return The exit code of the controller.
     /// @note The application main should call this method to begin the main loop of the application.
-    int run(void);
+    int run();
 
     /// @brief Stops the application.
     /// @note Call this method to begin the shutdown process. Shortly after this method is called,
     /// the controller will perform cleanup tasks and the run() method will return.
-    virtual void systemStop(void);
+    virtual void systemStop();
 
     /// @brief Waits for the given number of milliseconds.
     /// @param ms The number of milliseconds to wait.
@@ -112,7 +112,7 @@ class LogoController : public QObject
     virtual QString fileDialogModal()
     {
         throw FCError::noGraphics();
-        return QString();
+        return {};
     }
 
     /// @brief Edits a text string.
@@ -120,10 +120,10 @@ class LogoController : public QObject
     /// @return The edited text.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to edit the text.
-    virtual QString editText(QString text)
+    virtual QString editText(const QString &text)
     {
         throw FCError::noGraphics();
-        return QString();
+        return {};
     }
 
     /// @brief Sets the turtle position.
@@ -163,7 +163,7 @@ class LogoController : public QObject
     /// @brief Clears the canvas.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to clear the canvas.
-    virtual void clearCanvas(void)
+    virtual void clearCanvas()
     {
         throw FCError::noGraphics();
     }
@@ -172,7 +172,7 @@ class LogoController : public QObject
     /// @param text The text to draw to the canvas.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to draw a label.
-    virtual void drawLabel(QString text)
+    virtual void drawLabel(const QString &text)
     {
         throw FCError::noGraphics();
     }
@@ -191,7 +191,7 @@ class LogoController : public QObject
     /// @param fontName The name of the font to use for labels.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to set the label font name.
-    virtual void setLabelFontName(QString fontName)
+    virtual void setLabelFontName(const QString &fontName)
     {
         throw FCError::noGraphics();
     }
@@ -273,7 +273,7 @@ class LogoController : public QObject
     /// @param image The image to set the background to.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to set the background image of the canvas.
-    virtual void setCanvasBackgroundImage(QImage image)
+    virtual void setCanvasBackgroundImage(const QImage &image)
     {
         throw FCError::noGraphics();
     }
@@ -282,10 +282,10 @@ class LogoController : public QObject
     /// @return The current background color of the canvas.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to return the background color of the canvas.
-    virtual const QColor getCanvasBackgroundColor(void)
+    virtual const QColor getCanvasBackgroundColor()
     {
         throw FCError::noGraphics();
-        return QColor();
+        return {};
     }
 
     /// @brief Returns the current state of the canvas as an image.
@@ -295,7 +295,7 @@ class LogoController : public QObject
     virtual QImage getCanvasImage()
     {
         throw FCError::noGraphics();
-        return QImage();
+        return {};
     }
 
     /// @brief Returns the current state of the canvas as an SVG.
@@ -305,7 +305,7 @@ class LogoController : public QObject
     virtual QByteArray getSvgImage()
     {
         throw FCError::noGraphics();
-        return QByteArray();
+        return {};
     }
 
     /// @brief Returns if a mouse button is down.
@@ -335,7 +335,7 @@ class LogoController : public QObject
     virtual QVector2D lastMouseclickPosition()
     {
         throw FCError::noGraphics();
-        return QVector2D();
+        return {};
     }
 
     /// @brief Returns the current position of the mouse.
@@ -345,7 +345,7 @@ class LogoController : public QObject
     virtual QVector2D mousePosition()
     {
         throw FCError::noGraphics();
-        return QVector2D();
+        return {};
     }
 
     /// @brief Clears the text on the screen.
@@ -412,14 +412,14 @@ class LogoController : public QObject
     virtual QString getTextFontName()
     {
         throw FCError::noGraphics();
-        return QString();
+        return {};
     }
 
     /// @brief Sets the text font name.
     /// @param name The name of the font.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to set the text font name.
-    virtual void setTextFontName(QString name)
+    virtual void setTextFontName(const QString &name)
     {
         throw FCError::noGraphics();
     }
@@ -431,7 +431,7 @@ class LogoController : public QObject
     virtual QStringList getAllFontNames()
     {
         throw FCError::noGraphics();
-        return QStringList();
+        return {};
     }
 
     /// @brief Sets the cursor overwrite mode.
@@ -479,14 +479,14 @@ class LogoController : public QObject
     virtual QString getLabelFontName()
     {
         throw FCError::noGraphics();
-        return QString();
+        return {};
     }
 
     /// @brief Sets the label font name.
     /// @param name The name of the font.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to set the label font name.
-    virtual void setLabelFontName(QString &name)
+    virtual void setLabelFontName(const QString &name)
     {
         throw FCError::noGraphics();
     }

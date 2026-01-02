@@ -31,9 +31,9 @@ class Runparser
     QString::iterator runparseCIter;
     QString::iterator runparseCEnd;
     bool isRunparseSourceSpecial;
-    void runparseSpecialchars(void);
-    void runparseMinus(void);
-    DatumPtr runparseNumber(void); // returns a number if successful
+    void runparseSpecialchars();
+    void runparseMinus();
+    DatumPtr runparseNumber(); // returns a number if successful
     void runparseQuotedWord();
     void runparseString();
 

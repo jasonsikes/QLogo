@@ -79,127 +79,127 @@ class LogoControllerGUI : public LogoController
     QString labelFontName;
     double labelFontSize;
 
-    void processInputMessageQueue();
+    void processInputMessageQueue() override;
 
   public:
     /// @brief Constructor for the LogoControllerGUI class.
     /// @param parent The parent Qt object.
-    LogoControllerGUI(QObject *parent = 0);
+    LogoControllerGUI(QObject *parent = nullptr);
 
     /// @brief Destructor for the LogoControllerGUI class.
-    ~LogoControllerGUI();
+    ~LogoControllerGUI() override;
 
     /// @brief Initiates a system stop.
-    void systemStop();
+    void systemStop() override;
 
     /// @brief Initializes the GUI controller.
-    void initialize();
+    void initialize() override;
 
     /// @brief Prints a string to the console.
     /// @param s The string to print.
-    void printToConsole(const QString &s);
+    void printToConsole(const QString &s) override;
 
     /// @brief Prompts the user for input and returns the input as a string.
     /// @param prompt The prompt to display to the user, if any.
     /// @return The string entered by the user.
-    QString inputRawlineWithPrompt(const QString &prompt);
+    QString inputRawlineWithPrompt(const QString &prompt) override;
 
     /// @brief Reads a character from the input queue.
     /// @return The character read from the input queue.
     /// @note This function is blocking. It will wait for a character to be
     /// available in the input queue.
-    DatumPtr readchar();
+    DatumPtr readchar() override;
 
     QString fileDialogModal();
 
     /// @brief Edits text in the GUI.
     /// @param startText The text to edit.
     /// @return The edited text.
-    QString editText(QString startText);
+    QString editText(const QString &startText) override;
 
     /// @brief Sets the turtle position.
     /// @param newTurtlePos The new turtle position.
-    void setTurtlePos(const Transform &newTurtlePos);
+    void setTurtlePos(const Transform &newTurtlePos) override;
 
     /// @brief Sets the turtle visibility.
     /// @param isVisible True if the turtle is visible, false otherwise.
-    void setTurtleIsVisible(int isVisible);
+    void setTurtleIsVisible(int isVisible) override;
 
     /// @brief Sets the pen mode.
     /// @param aMode The new pen mode.
-    void setPenmode(PenModeEnum aMode);
+    void setPenmode(PenModeEnum aMode) override;
 
     /// @brief Emits a vertex to the canvas.
-    void emitVertex();
+    void emitVertex() override;
 
     /// @brief Sets the pen state.
     /// @param penIsDown True if the pen should be down, false otherwise.
-    void setPenIsDown(bool penIsDown);
+    void setPenIsDown(bool penIsDown) override;
 
     /// @brief Sets the canvas foreground color.
     /// @param color The new foreground color.
-    void setCanvasForegroundColor(const QColor &color);
+    void setCanvasForegroundColor(const QColor &color) override;
 
     /// @brief Sets the canvas background color.
     /// @param color The new background color.
-    void setCanvasBackgroundColor(const QColor &color);
+    void setCanvasBackgroundColor(const QColor &color) override;
 
     /// @brief Sets the canvas background image.
     /// @param image The new background image.
-    void setCanvasBackgroundImage(QImage image);
+    void setCanvasBackgroundImage(const QImage &image) override;
 
     /// @brief Begins a polygon.
     /// @param color The color of the polygon.
-    void beginPolygon(const QColor &color);
+    void beginPolygon(const QColor &color) override;
 
     /// @brief Ends a polygon.
-    void endPolygon();
+    void endPolygon() override;
 
     /// @brief Clears the canvas.
-    void clearCanvas();
+    void clearCanvas() override;
 
     /// @brief Draws a label to the canvas.
     /// @param text The text to draw.
     /// @note Draws a label at the current turtle position.
-    void drawLabel(QString text);
+    void drawLabel(const QString &text) override;
 
     /// @brief Draws an arc to the canvas.
     /// @param angle The angle of the arc.
     /// @param radius The radius of the arc.
-    void drawArc(double angle, double radius);
+    void drawArc(double angle, double radius) override;
 
     /// @brief Gets if the mouse button is down.
     /// @return True if the mouse button is down, false otherwise.
-    bool getIsMouseButtonDown();
+    bool getIsMouseButtonDown() override;
 
     /// @brief Gets and resets the button ID.
     /// @return The button ID.
     /// @note The button ID is reset to indicate that the button
     /// has not been pressed since the last time this function returned a buttonID.
-    int getAndResetButtonID();
+    int getAndResetButtonID() override;
 
     /// @brief Gets the last mouse click position.
     /// @return The last mouse click position.
-    QVector2D lastMouseclickPosition();
+    QVector2D lastMouseclickPosition() override;
 
     /// @brief Gets the current mouse position.
     /// @return The current mouse position.
-    QVector2D mousePosition();
+    QVector2D mousePosition() override;
 
     /// @brief Sets the screen mode.
     /// @param newMode The new screen mode.
-    void setScreenMode(ScreenModeEnum newMode);
+    void setScreenMode(ScreenModeEnum newMode) override;
 
     /// @brief Gets the current screen mode.
     /// @return The current screen mode.
-    ScreenModeEnum getScreenMode();
+    ScreenModeEnum getScreenMode() override;
 
     /// @brief Sets the canvas bounds.
     /// @param x The X coordinate of the upper-right corner of the bounding box.
     /// @param y The Y coordinate of the upper-right corner of the bounding box.
     /// @note The X and Y coordinates of the lower left are the negative of the upper-right coordinates.
     /// The origin [0,0] is always in the center of the canvas.
-    void setBounds(double x, double y);
+    void setBounds(double x, double y) override;
 
     /// @brief Gets the X coordinate of the upper-right corner of the bounding box.
     /// @return The X coordinate of the upper-right corner of the bounding box.
@@ -217,11 +217,11 @@ class LogoControllerGUI : public LogoController
 
     /// @brief Gets the canvas background color.
     /// @return The canvas background color.
-    const QColor getCanvasBackgroundColor(void) const;
+    const QColor getCanvasBackgroundColor() override;
 
     /// @brief Sets if the canvas is bounded.
     /// @param aIsBounded True if the canvas should be bounded, false otherwise.
-    void setIsCanvasBounded(bool aIsBounded);
+    void setIsCanvasBounded(bool aIsBounded) override;
 
     /// @brief Gets if the canvas is bounded.
     /// @return True if the canvas is bounded, false otherwise.
@@ -238,16 +238,16 @@ class LogoControllerGUI : public LogoController
     /// @brief Gets the canvas image.
     /// @return The current canvas image.
     /// @note This method modifies state (waits for message), so it cannot be const.
-    QImage getCanvasImage();
+    QImage getCanvasImage() override;
 
     /// @brief Gets the canvas SVG image.
     /// @return The current canvas as a SVG image.
     /// @note This method modifies state (waits for message), so it cannot be const.
-    QByteArray getSvgImage();
+    QByteArray getSvgImage() override;
 
     /// @brief Sets the text font size.
     /// @param aSize The new font size.
-    void setTextFontSize(double aSize);
+    void setTextFontSize(double aSize) override;
 
     /// @brief Gets the text font size.
     /// @return The current text font size.
@@ -259,7 +259,7 @@ class LogoControllerGUI : public LogoController
 
     /// @brief Sets the text font name.
     /// @param aFontName The new font name.
-    void setTextFontName(QString aFontName);
+    void setTextFontName(const QString &aFontName) override;
 
     /// @brief Gets all available font names.
     /// @return A list of all available font names.
@@ -271,7 +271,7 @@ class LogoControllerGUI : public LogoController
     /// @brief Adds standout control characters to a string.
     /// @param src The string to add the standout to.
     /// @return The string with the standout control characters added.
-    QString addStandoutToString(QString src);
+    QString addStandoutToString(QString src) override;
 
     /// @brief Gets the text cursor position.
     /// @param row The row of the text cursor position.
@@ -281,50 +281,47 @@ class LogoControllerGUI : public LogoController
     /// @brief Sets the text cursor position.
     /// @param row The row of the new text cursor position.
     /// @param col The column of the new text cursor position.
-    void setTextCursorPos(int row, int col);
+    void setTextCursorPos(int row, int col) override;
 
     /// @brief Sets the text color.
     /// @param foregroundColor The new foreground color.
     /// @param backgroundColor The new background color.
-    void setTextColor(const QColor &foregroundColor, const QColor &backgroundColor);
+    void setTextColor(const QColor &foregroundColor, const QColor &backgroundColor) override;
 
     /// @brief Sets the cursor overwrite mode.
     /// @param isOverwriteMode True if the cursor should overwrite text, false otherwise.
-    void setCursorOverwriteMode(bool isOverwriteMode);
+    void setCursorOverwriteMode(bool isOverwriteMode) override;
 
     /// @brief Gets if the cursor is in overwrite mode.
     /// @return True if the cursor is in overwrite mode, false otherwise.
-    bool cursorOverwriteMode();
+    bool cursorOverwriteMode() override;
 
     /// @brief Sets the label font size.
     /// @param aSize The new font size.
-    void setLabelFontSize(double aSize);
+    void setLabelFontSize(double aSize) override;
 
     /// @brief Gets the label font size.
     /// @return The current label font size.
-    double getLabelFontSize();
+    double getLabelFontSize() override;
 
     /// @brief Gets the label font name.
     /// @return The current label font name.
-    QString getLabelFontName();
+    QString getLabelFontName() override;
 
     /// @brief Sets the label font name.
     /// @param aName The new font name.
-    void setLabelFontName(QString aName);
-
-    /// @brief Sets the label font name.
-    /// @param aName The new font name.
+    void setLabelFontName(const QString &aName) override;
 
     /// @brief Sets the pen size.
     /// @param aSize The new pen size.
-    void setPensize(qreal);
+    void setPensize(qreal) override;
 
     /// @brief Waits for a number of milliseconds.
     /// @param msecs The number of milliseconds to wait.
-    void mwait(unsigned long msecs);
+    void mwait(unsigned long msecs) override;
 
     /// @brief Clears all of the text from the GUI console.
-    void clearScreenText();
+    void clearScreenText() override;
 };
 
 #endif // LOGOCONTROLLERGUI_H
