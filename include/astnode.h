@@ -65,12 +65,10 @@ class ASTNode : public Datum
     int countOfChildren() const;
 
     /// @brief Create an invalid ASTNode.
-    ASTNode()
-    {
-    }
+    ASTNode() = default;
 
     /// @brief Destructor.
-    ~ASTNode();
+    ~ASTNode() override;
 
     /// @brief For debugging. To be used when printing out the AST. Parameters are ignored.
     /// @return A string representation of this node.
