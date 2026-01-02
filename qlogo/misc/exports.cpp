@@ -782,7 +782,7 @@ EXPORTC addr_t concatWord(addr_t eAddr, addr_t aryAddr, uint32_t count)
     return reinterpret_cast<addr_t>(e->watch(new Word(retval)));
 }
 
-EXPORTC bool isDatumEmpty(addr_t /* eAddr */, addr_t dAddr)
+EXPORTC bool isDatumEmpty(addr_t dAddr)
 {
     auto *d = reinterpret_cast<Datum *>(dAddr);
     if (d->isWord())
@@ -1040,7 +1040,7 @@ EXPORTC addr_t butLastOfDatum(addr_t eAddr, addr_t thingAddr)
     return nullptr;
 }
 
-EXPORTC bool isDatumIndexValid(addr_t /* eAddr */, addr_t thingAddr, double dIndex, addr_t listItemPtrAddr)
+EXPORTC bool isDatumIndexValid(addr_t thingAddr, double dIndex, addr_t listItemPtrAddr)
 {
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     auto **listItemPtr = reinterpret_cast<Datum **>(listItemPtrAddr);
@@ -1135,7 +1135,7 @@ EXPORTC bool isDatumContainerOrInContainer(addr_t eAddr, addr_t valueAddr, addr_
     return isDatumInContainer(visited, value, container, cs);
 }
 
-EXPORTC void setDatumAtIndexOfContainer(addr_t /* eAddr */, addr_t valueAddr, double dIndex, addr_t containerAddr)
+EXPORTC void setDatumAtIndexOfContainer(addr_t valueAddr, double dIndex, addr_t containerAddr)
 {
     auto *container = reinterpret_cast<Datum *>(containerAddr);
     DatumPtr value(reinterpret_cast<Datum *>(valueAddr));
@@ -1161,21 +1161,21 @@ EXPORTC void setDatumAtIndexOfContainer(addr_t /* eAddr */, addr_t valueAddr, do
     }
 }
 
-EXPORTC void setFirstOfList(addr_t /* eAddr */, addr_t listAddr, addr_t valueAddr)
+EXPORTC void setFirstOfList(addr_t listAddr, addr_t valueAddr)
 {
     auto *l = reinterpret_cast<List *>(listAddr);
     l->head = DatumPtr(reinterpret_cast<Datum *>(valueAddr));
     l->astParseTimeStamp = 0;
 }
 
-EXPORTC void setButfirstOfList(addr_t /* eAddr */, addr_t listAddr, addr_t valueAddr)
+EXPORTC void setButfirstOfList(addr_t listAddr, addr_t valueAddr)
 {
     auto *l = reinterpret_cast<List *>(listAddr);
     l->tail = DatumPtr(reinterpret_cast<Datum *>(valueAddr));
     l->astParseTimeStamp = 0;
 }
 
-EXPORTC bool isEmpty(addr_t /* eAddr */, addr_t thingAddr)
+EXPORTC bool isEmpty(addr_t thingAddr)
 {
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     if (thing->isWord())
@@ -1255,7 +1255,7 @@ EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
     return false;
 }
 
-EXPORTC bool isSubstring(addr_t /* eAddr */, addr_t thing1Addr, addr_t thing2Addr)
+EXPORTC bool isSubstring(addr_t thing1Addr, addr_t thing2Addr)
 {
     auto *thing1 = reinterpret_cast<Datum *>(thing1Addr);
     auto *thing2 = reinterpret_cast<Datum *>(thing2Addr);
@@ -1271,7 +1271,7 @@ EXPORTC bool isSubstring(addr_t /* eAddr */, addr_t thing1Addr, addr_t thing2Add
     return false;
 }
 
-EXPORTC bool isNumber(addr_t /* eAddr */, addr_t thingAddr)
+EXPORTC bool isNumber(addr_t thingAddr)
 {
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     if (thing->isa != Datum::typeWord)
@@ -1283,7 +1283,7 @@ EXPORTC bool isNumber(addr_t /* eAddr */, addr_t thingAddr)
     return word->numberIsValid;
 }
 
-EXPORTC bool isSingleCharWord(addr_t /* eAddr */, addr_t candidateAddr)
+EXPORTC bool isSingleCharWord(addr_t candidateAddr)
 {
     auto *candidate = reinterpret_cast<Datum *>(candidateAddr);
     if (candidate->isa != Datum::typeWord)
@@ -1294,7 +1294,7 @@ EXPORTC bool isSingleCharWord(addr_t /* eAddr */, addr_t candidateAddr)
     return word->toString(Datum::ToStringFlags_Key).length() == 1;
 }
 
-EXPORTC bool isVbarred(addr_t /* eAddr */, addr_t cAddr)
+EXPORTC bool isVbarred(addr_t cAddr)
 {
     auto *word = reinterpret_cast<Word *>(cAddr);
 

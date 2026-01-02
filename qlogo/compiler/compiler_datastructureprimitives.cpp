@@ -100,7 +100,7 @@ Value *Compiler::generateNotEmptyWordOrListFromDatum(ASTNode *parent, Value *src
 
         // Word or List block
         scaff->builder.SetInsertPoint(wordOrListBB);
-        Value *isEmpty = generateCallExtern(TyBool, isDatumEmpty, PaAddr(evaluator), PaAddr(wordorlist));
+        Value *isEmpty = generateCallExtern(TyBool, isDatumEmpty, PaAddr(wordorlist));
         Value *isEmptyCond = scaff->builder.CreateICmpEQ(isEmpty, CoBool(false), "isDatumEmptyCond");
         scaff->builder.CreateBr(endBB);
 
@@ -131,7 +131,7 @@ Value *Compiler::generateNotEmptyListFromDatum(ASTNode *parent, Value *src)
 
         // Word or List block
         scaff->builder.SetInsertPoint(listBB);
-        Value *isEmpty = generateCallExtern(TyBool, isDatumEmpty, PaAddr(evaluator), PaAddr(wordorlist));
+        Value *isEmpty = generateCallExtern(TyBool, isDatumEmpty, PaAddr(wordorlist));
         Value *isEmptyCond = scaff->builder.CreateICmpEQ(isEmpty, CoBool(false), "isDatumEmptyCond");
         scaff->builder.CreateBr(endBB);
 
@@ -470,7 +470,7 @@ Value *Compiler::genFirst(const DatumPtr &node, RequestReturnType returnType)
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
 
     auto validator = [this](Value *thing) {
-        Value *isEmpty = generateCallExtern(TyBool, isDatumEmpty, PaAddr(evaluator), PaAddr(thing));
+        Value *isEmpty = generateCallExtern(TyBool, isDatumEmpty, PaAddr(thing));
         return scaff->builder.CreateICmpEQ(isEmpty, CoBool(false), "isDatumEmptyCond");
     };
     thing = generateValidationDatum(node.astnodeValue(), thing, validator);
@@ -557,8 +557,8 @@ Value *Compiler::genItem(const DatumPtr &node, RequestReturnType returnType)
     Datum **listItemPtr = &listItem;
 
     auto validator = [this, listItemPtr, thing](Value *index) {
-        Value *isValid = generateCallExtern(
-            TyBool, isDatumIndexValid, PaAddr(evaluator), PaAddr(thing), PaDouble(index), PaAddr(CoAddr(listItemPtr)));
+        Value *isValid =
+            generateCallExtern(TyBool, isDatumIndexValid, PaAddr(thing), PaDouble(index), PaAddr(CoAddr(listItemPtr)));
         return scaff->builder.CreateICmpEQ(isValid, CoBool(true), "isDatumIndexValidCond");
     };
     index = generateValidationDouble(node.astnodeValue(), index, validator);
@@ -606,8 +606,8 @@ Value *Compiler::generateSetitem(const DatumPtr &node, RequestReturnType returnT
     array = generateArrayFromDatum(node.astnodeValue(), array);
 
     auto indexValidator = [this, array](Value *index) {
-        Value *isValid = generateCallExtern(
-            TyBool, isDatumIndexValid, PaAddr(evaluator), PaAddr(array), PaDouble(index), PaAddr(CoAddr(0)));
+        Value *isValid =
+            generateCallExtern(TyBool, isDatumIndexValid, PaAddr(array), PaDouble(index), PaAddr(CoAddr(0)));
         return scaff->builder.CreateICmpEQ(isValid, CoBool(true), "isDatumIndexValidCond");
     };
     index = generateValidationDouble(node.astnodeValue(), index, indexValidator);
@@ -624,8 +624,7 @@ Value *Compiler::generateSetitem(const DatumPtr &node, RequestReturnType returnT
         value = generateValidationDatum(node.astnodeValue(), value, valueValidator);
     }
 
-    generateCallExtern(
-        TyVoid, setDatumAtIndexOfContainer, PaAddr(evaluator), PaAddr(value), PaDouble(index), PaAddr(array));
+    generateCallExtern(TyVoid, setDatumAtIndexOfContainer, PaAddr(value), PaDouble(index), PaAddr(array));
     return generateVoidRetval(node.astnodeValue());
 }
 
@@ -648,7 +647,7 @@ Value *Compiler::genDotSetfirst(const DatumPtr &node, RequestReturnType returnTy
     Value *list = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *value = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
     list = generateNotEmptyListFromDatum(node.astnodeValue(), list);
-    generateCallExtern(TyVoid, setFirstOfList, PaAddr(evaluator), PaAddr(list), PaAddr(value));
+    generateCallExtern(TyVoid, setFirstOfList, PaAddr(list), PaAddr(value));
     return generateVoidRetval(node.astnodeValue());
 }
 /***DOC .SETBF
@@ -672,7 +671,7 @@ Value *Compiler::genDotSetbf(const DatumPtr &node, RequestReturnType returnType)
     Value *value = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
     list = generateNotEmptyListFromDatum(node.astnodeValue(), list);
     value = generateListFromDatum(node.astnodeValue(), value);
-    generateCallExtern(TyVoid, setButfirstOfList, PaAddr(evaluator), PaAddr(list), PaAddr(value));
+    generateCallExtern(TyVoid, setButfirstOfList, PaAddr(list), PaAddr(value));
     return generateVoidRetval(node.astnodeValue());
 }
 /***DOC WORDP WORD?
@@ -744,7 +743,7 @@ Value *Compiler::genEmptyp(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    return generateCallExtern(TyBool, isEmpty, PaAddr(evaluator), PaAddr(thing));
+    return generateCallExtern(TyBool, isEmpty, PaAddr(thing));
 }
 /***DOC BEFOREP BEFORE?
 BEFOREP word1 word2
@@ -824,7 +823,7 @@ Value *Compiler::genSubstringp(const DatumPtr &node, RequestReturnType returnTyp
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing1 = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *thing2 = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
-    return generateCallExtern(TyBool, isSubstring, PaAddr(evaluator), PaAddr(thing1), PaAddr(thing2));
+    return generateCallExtern(TyBool, isSubstring, PaAddr(thing1), PaAddr(thing2));
 }
 /***DOC NUMBERP NUMBER?
 NUMBERP thing
@@ -839,7 +838,7 @@ Value *Compiler::genNumberp(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    return generateCallExtern(TyBool, isNumber, PaAddr(evaluator), PaAddr(thing));
+    return generateCallExtern(TyBool, isNumber, PaAddr(thing));
 }
 /***DOC VBARREDP VBARRED? BACKSLASHEDP BACKSLASHED?
 VBARREDP char
@@ -867,12 +866,12 @@ Value *Compiler::genVbarredp(const DatumPtr &node, RequestReturnType returnType)
     Value *c = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
 
     auto validator = [this](Value *candidate) {
-        Value *isGoodChar = generateCallExtern(TyBool, isSingleCharWord, PaAddr(evaluator), PaAddr(candidate));
+        Value *isGoodChar = generateCallExtern(TyBool, isSingleCharWord, PaAddr(candidate));
         return scaff->builder.CreateICmpEQ(isGoodChar, CoBool(true), "isGoodCond");
     };
     c = generateValidationDatum(node.astnodeValue(), c, validator);
 
-    return generateCallExtern(TyBool, isVbarred, PaAddr(evaluator), PaAddr(c));
+    return generateCallExtern(TyBool, isVbarred, PaAddr(c));
 }
 /***DOC COUNT
 COUNT thing
@@ -911,7 +910,7 @@ Value *Compiler::genAscii(const DatumPtr &node, RequestReturnType returnType)
     Value *c = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
 
     auto validator = [this](Value *candidate) {
-        Value *isGoodChar = generateCallExtern(TyBool, isSingleCharWord, PaAddr(evaluator), PaAddr(candidate));
+        Value *isGoodChar = generateCallExtern(TyBool, isSingleCharWord, PaAddr(candidate));
         return scaff->builder.CreateICmpEQ(isGoodChar, CoBool(true), "isGoodCond");
     };
     c = generateValidationDatum(node.astnodeValue(), c, validator);
@@ -936,7 +935,7 @@ Value *Compiler::genRawascii(const DatumPtr &node, RequestReturnType returnType)
     Value *c = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
 
     auto validator = [this](Value *candidate) {
-        Value *isGoodChar = generateCallExtern(TyBool, isSingleCharWord, PaAddr(evaluator), PaAddr(candidate));
+        Value *isGoodChar = generateCallExtern(TyBool, isSingleCharWord, PaAddr(candidate));
         return scaff->builder.CreateICmpEQ(isGoodChar, CoBool(true), "isGoodCond");
     };
     c = generateValidationDatum(node.astnodeValue(), c, validator);
