@@ -748,7 +748,7 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr
     scaff->builder.SetInsertPoint(continueBB);
     AllocaInst *ary = scaff->builder.CreateAlloca(TyDouble, vSize, "ary");
 
-    Value *isGood = generateCallExtern(TyInt32, getNumberAryFromList, PaAddr(evaluator), PaAddr(list), PaAddr(ary));
+    Value *isGood = generateCallExtern(TyInt32, getNumberAryFromList, PaAddr(list), PaAddr(ary));
     BasicBlock *gotPosBB = BasicBlock::Create(*scaff->theContext, "gotPos", theFunction);
 
     Value *countCond = scaff->builder.CreateICmpEQ(isGood, CoInt32(1), "countTest");

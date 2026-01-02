@@ -426,7 +426,7 @@ Value *Compiler::genCatch(const DatumPtr &node, RequestReturnType returnType)
     Value *tag = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *instructionlist = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
     generateWordFromDatum(node.astnodeValue(), tag);
-    Value *errActStash = generateCallExtern(TyAddr, beginCatch, PaAddr(evaluator));
+    Value *errActStash = generateCallExtern(TyAddr, beginCatch);
 
     Value *result = generateCallList(instructionlist, returnType);
 
@@ -645,7 +645,7 @@ COD***/
 Value *Compiler::genTest(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *tf = generateChild(node.astnodeValue(), 0, RequestReturnBool);
-    generateCallExtern(TyVoid, saveTestResult, PaAddr(evaluator), PaBool(tf));
+    generateCallExtern(TyVoid, saveTestResult, PaBool(tf));
     return generateVoidRetval(node);
 }
 /***DOC IFTRUE IFT
@@ -690,7 +690,7 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, RequestReturnType ret
     BasicBlock *returnBB = BasicBlock::Create(*scaff->theContext, "return", theFunction);
 
     Value *instructionlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    Value *testResult = generateCallExtern(TyBool, getIsTested, PaAddr(evaluator));
+    Value *testResult = generateCallExtern(TyBool, getIsTested);
     Value *cond = scaff->builder.CreateICmpEQ(testResult, CoBool(1), "isTested");
     scaff->builder.CreateCondBr(cond, isTestedBB, notTestedBB);
 
@@ -699,7 +699,7 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, RequestReturnType ret
     scaff->builder.CreateRet(errVal);
 
     scaff->builder.SetInsertPoint(isTestedBB);
-    testResult = generateCallExtern(TyBool, getTestResult, PaAddr(evaluator));
+    testResult = generateCallExtern(TyBool, getTestResult);
     cond = scaff->builder.CreateICmpEQ(testResult, CoBool(testForTrue), "testResult");
     scaff->builder.CreateCondBr(cond, runListBB, noRunListBB);
 

@@ -501,7 +501,7 @@ EXPORTC int32_t getCountOfList(addr_t listAddr)
 /// @param listAddr a pointer to the List object source
 /// @param destAddr a pointer to the double array to store the values.
 /// @return 0 if the list is not a list of doubles, 1 if it is.
-EXPORTC int32_t getNumberAryFromList(addr_t /* eAddr */, addr_t listAddr, addr_t destAddr)
+EXPORTC int32_t getNumberAryFromList(addr_t listAddr, addr_t destAddr)
 {
     auto list = DatumPtr(reinterpret_cast<Datum *>(listAddr));
     auto *dest = reinterpret_cast<double *>(destAddr);
@@ -588,7 +588,7 @@ EXPORTC addr_t repcountAddr(void)
     return (addr_t)retval;
 }
 
-EXPORTC addr_t beginCatch(addr_t /* eAddr */)
+EXPORTC addr_t beginCatch(void)
 {
     auto *erractWord = reinterpret_cast<Word *>(Config::get().mainKernel()->specialVar(SpecialNames::ERRACT));
     Datum *erractValue =
@@ -707,17 +707,17 @@ EXPORTC addr_t processRunresult(addr_t eAddr, addr_t resultAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC void saveTestResult(addr_t /* eAddr */, bool tf)
+EXPORTC void saveTestResult(bool tf)
 {
     Config::get().mainKernel()->callStack.setTest(tf);
 }
 
-EXPORTC bool getIsTested(addr_t /* eAddr */)
+EXPORTC bool getIsTested(void)
 {
     return Config::get().mainKernel()->callStack.isTested();
 }
 
-EXPORTC bool getTestResult(addr_t /* eAddr */)
+EXPORTC bool getTestResult(void)
 {
     return Config::get().mainKernel()->callStack.testedState();
 }
