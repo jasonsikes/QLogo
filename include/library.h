@@ -34,9 +34,7 @@ class Library
 
   public:
     /// @brief Constructor for the Library class.
-    Library()
-    {
-    }
+    Library() = default;
 
     /// @brief Destructor for the Library class.
     ~Library();
@@ -60,9 +58,7 @@ class Help
 
   public:
     /// @brief Constructor for the Help class.
-    Help()
-    {
-    }
+    Help() = default;
 
     /// @brief Destructor for the Help class.
     ~Help();

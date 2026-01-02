@@ -80,17 +80,17 @@ class MainWindow : public QMainWindow
     void processReadBuffer();
 
   protected:
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
     QString findQlogoExe();
 
   public:
     /// @brief Constructor.
     ///
     /// @param parent The Qt parent widget.
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
 
     /// @brief Destructor.
-    ~MainWindow();
+    ~MainWindow() override;
 
     /// @brief Show the main window.
     void show();

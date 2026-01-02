@@ -188,10 +188,10 @@ class LogoController : public QObject
     }
 
     /// @brief Sets the label font name.
-    /// @param fontName The name of the font to use for labels.
+    /// @param name The name of the font to use for labels.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to set the label font name.
-    virtual void setLabelFontName(const QString &fontName)
+    virtual void setLabelFontName(const QString &name)
     {
         throw FCError::noGraphics();
     }
@@ -480,15 +480,6 @@ class LogoController : public QObject
     {
         throw FCError::noGraphics();
         return {};
-    }
-
-    /// @brief Sets the label font name.
-    /// @param name The name of the font.
-    /// @note The base method triggers an error message. Subclasses can override this method to
-    /// perform the necessary tasks to set the label font name.
-    virtual void setLabelFontName(const QString &name)
-    {
-        throw FCError::noGraphics();
     }
 
     /// @brief Sets if the turtle is visible.

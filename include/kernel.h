@@ -73,10 +73,10 @@ class Kernel
 
     void closeAll();
 
-    void initPalette(void);
+    void initPalette();
 
     /// Initialize LOGO system variables
-    void initVariables(void);
+    void initVariables();
 
   public:
     /// @brief Parser.
