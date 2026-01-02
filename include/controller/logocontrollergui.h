@@ -110,7 +110,7 @@ class LogoControllerGUI : public LogoController
     /// available in the input queue.
     DatumPtr readchar() override;
 
-    QString fileDialogModal();
+    QString fileDialogModal() override;
 
     /// @brief Edits text in the GUI.
     /// @param startText The text to edit.
@@ -225,12 +225,12 @@ class LogoControllerGUI : public LogoController
 
     /// @brief Gets if the canvas is bounded.
     /// @return True if the canvas is bounded, false otherwise.
-    bool isCanvasBounded() const;
+    bool isCanvasBounded() const override;
 
     /// @brief Checks if a candidate pen size is valid.
     /// @param candidate The candidate pen size.
     /// @return True if the candidate pen size is valid, false otherwise.
-    bool isPenSizeValid(double candidate) const
+    bool isPenSizeValid(double candidate) const override
     {
         return candidate >= 0;
     }
@@ -251,11 +251,11 @@ class LogoControllerGUI : public LogoController
 
     /// @brief Gets the text font size.
     /// @return The current text font size.
-    double getTextFontSize() const;
+    double getTextFontSize() const override;
 
     /// @brief Gets the text font name.
     /// @return The current text font name.
-    QString getTextFontName() const;
+    QString getTextFontName() const override;
 
     /// @brief Sets the text font name.
     /// @param aFontName The new font name.
@@ -263,7 +263,7 @@ class LogoControllerGUI : public LogoController
 
     /// @brief Gets all available font names.
     /// @return A list of all available font names.
-    QStringList getAllFontNames() const
+    QStringList getAllFontNames() const override
     {
         return allFontNames;
     }
@@ -276,7 +276,7 @@ class LogoControllerGUI : public LogoController
     /// @brief Gets the text cursor position.
     /// @param row The row of the text cursor position.
     /// @param col The column of the text cursor position.
-    void getTextCursorPos(int &row, int &col);
+    void getTextCursorPos(int &row, int &col) override;
 
     /// @brief Sets the text cursor position.
     /// @param row The row of the new text cursor position.

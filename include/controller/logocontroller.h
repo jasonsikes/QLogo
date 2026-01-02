@@ -235,7 +235,7 @@ class LogoController : public QObject
     /// @return The x coordinate of the upper right corner of the canvas.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to return the x coordinate of the upper right corner of the canvas.
-    virtual double boundX()
+    virtual double boundX() const
     {
         throw FCError::noGraphics();
         return 0;
@@ -245,7 +245,7 @@ class LogoController : public QObject
     /// @return The y coordinate of the upper right corner of the canvas.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to return the y coordinate of the upper right corner of the canvas.
-    virtual double boundY()
+    virtual double boundY() const
     {
         throw FCError::noGraphics();
         return 0;
@@ -399,7 +399,7 @@ class LogoController : public QObject
     /// @return The text font point size.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to return the text font size.
-    virtual double getTextFontSize()
+    virtual double getTextFontSize() const
     {
         throw FCError::noGraphics();
         return 12;
@@ -409,7 +409,7 @@ class LogoController : public QObject
     /// @return The text font name.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to return the text font name.
-    virtual QString getTextFontName()
+    virtual QString getTextFontName() const
     {
         throw FCError::noGraphics();
         return {};
@@ -428,7 +428,7 @@ class LogoController : public QObject
     /// @return A list of all the font names.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to return all the font names.
-    virtual QStringList getAllFontNames()
+    virtual QStringList getAllFontNames() const
     {
         throw FCError::noGraphics();
         return {};
@@ -542,7 +542,7 @@ class LogoController : public QObject
     /// @return True if the pen size is valid, false otherwise.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to return if the pen size is valid.
-    virtual bool isPenSizeValid(double size)
+    virtual bool isPenSizeValid(double size) const
     {
         throw FCError::noGraphics();
         return false;
@@ -561,7 +561,7 @@ class LogoController : public QObject
     /// @return True if the canvas is bounded, false otherwise.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to return if the canvas is bounded.
-    virtual bool isCanvasBounded()
+    virtual bool isCanvasBounded() const
     {
         throw FCError::noGraphics();
         return false;
