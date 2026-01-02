@@ -1712,12 +1712,12 @@ EXPORTC void setPenIsDown(bool isDown)
     Config::get().mainTurtle()->setPenIsDown(isDown);
 }
 
-EXPORTC void setPenMode(addr_t /* eAddr */, int32_t mode)
+EXPORTC void setPenMode(int32_t mode)
 {
     Config::get().mainTurtle()->setPenMode(static_cast<PenModeEnum>(mode));
 }
 
-EXPORTC bool setPenColor(addr_t /* eAddr */, addr_t colorAddr)
+EXPORTC bool setPenColor(addr_t colorAddr)
 {
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
@@ -1741,7 +1741,7 @@ EXPORTC addr_t getAllColors(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
-EXPORTC bool isColorIndexGood(addr_t /* eAddr */, addr_t colorIndexAddr, double lowerLimit)
+EXPORTC bool isColorIndexGood(addr_t colorIndexAddr, double lowerLimit)
 {
     auto *w = reinterpret_cast<Word *>(colorIndexAddr);
     double colorIndex = w->numberValue();
@@ -1750,7 +1750,7 @@ EXPORTC bool isColorIndexGood(addr_t /* eAddr */, addr_t colorIndexAddr, double 
            (colorIndex < Config::get().mainKernel()->palette.size());
 }
 
-EXPORTC bool setPalette(addr_t /* eAddr */, addr_t colorIndexAddr, addr_t colorAddr)
+EXPORTC bool setPalette(addr_t colorIndexAddr, addr_t colorAddr)
 {
     auto colorIndex = static_cast<int>((reinterpret_cast<Word *>(colorIndexAddr))->numberValue());
     auto *d = reinterpret_cast<Datum *>(colorAddr);
@@ -1761,7 +1761,7 @@ EXPORTC bool setPalette(addr_t /* eAddr */, addr_t colorIndexAddr, addr_t colorA
     return true;
 }
 
-EXPORTC void setPenSize(addr_t /* eAddr */, double size)
+EXPORTC void setPenSize(double size)
 {
     Config::get().mainTurtle()->setPenSize(size);
 }

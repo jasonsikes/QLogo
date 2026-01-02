@@ -635,7 +635,7 @@ COD***/
 Value *Compiler::genPenpaint(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, setPenIsDown, PaBool(CoBool(true)));
-    generateCallExtern(TyVoid, setPenMode, PaAddr(evaluator), PaInt32(CoInt32(static_cast<int32_t>(penModePaint))));
+    generateCallExtern(TyVoid, setPenMode, PaInt32(CoInt32(static_cast<int32_t>(penModePaint))));
     return generateVoidRetval(node);
 }
 /***DOC PENERASE PE
@@ -650,7 +650,7 @@ COD***/
 Value *Compiler::genPenerase(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, setPenIsDown, PaBool(CoBool(true)));
-    generateCallExtern(TyVoid, setPenMode, PaAddr(evaluator), PaInt32(CoInt32(static_cast<int32_t>(penModeErase))));
+    generateCallExtern(TyVoid, setPenMode, PaInt32(CoInt32(static_cast<int32_t>(penModeErase))));
     return generateVoidRetval(node);
 }
 
@@ -667,7 +667,7 @@ COD***/
 Value *Compiler::genPenreverse(const DatumPtr &node, RequestReturnType returnType)
 {
     generateCallExtern(TyVoid, setPenIsDown, PaBool(CoBool(true)));
-    generateCallExtern(TyVoid, setPenMode, PaAddr(evaluator), PaInt32(CoInt32(static_cast<int32_t>(penModeReverse))));
+    generateCallExtern(TyVoid, setPenMode, PaInt32(CoInt32(static_cast<int32_t>(penModeReverse))));
     return generateVoidRetval(node);
 }
 
@@ -713,7 +713,7 @@ Value *Compiler::genSetpencolor(const DatumPtr &node, RequestReturnType returnTy
     BasicBlock *colorNotGoodBB = BasicBlock::Create(*scaff->theContext, "colorNotGood", theFunction);
     BasicBlock *colorGoodBB = BasicBlock::Create(*scaff->theContext, "colorGood", theFunction);
     Value *color = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    Value *isGood = generateCallExtern(TyBool, setPenColor, PaAddr(evaluator), PaAddr(color));
+    Value *isGood = generateCallExtern(TyBool, setPenColor, PaAddr(color));
     Value *isGoodCmp = scaff->builder.CreateICmpEQ(isGood, CoBool(true), "isGood");
     scaff->builder.CreateCondBr(isGoodCmp, colorGoodBB, colorNotGoodBB);
 
@@ -754,7 +754,7 @@ Value *Compiler::genSetpalette(const DatumPtr &node, RequestReturnType returnTyp
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     Value *colorIndex = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *isColorIndexGoodResult =
-        generateCallExtern(TyBool, isColorIndexGood, PaAddr(evaluator), PaAddr(colorIndex), PaDouble(CoDouble(8.0)));
+        generateCallExtern(TyBool, isColorIndexGood, PaAddr(colorIndex), PaDouble(CoDouble(8.0)));
     Value *isColorIndexGoodCmp = scaff->builder.CreateICmpEQ(isColorIndexGoodResult, CoBool(true), "isColorIndexGood");
     BasicBlock *colorIndexNotGoodBB = BasicBlock::Create(*scaff->theContext, "colorIndexNotGood", theFunction);
     BasicBlock *colorIndexGoodBB = BasicBlock::Create(*scaff->theContext, "colorIndexGood", theFunction);
@@ -771,7 +771,7 @@ Value *Compiler::genSetpalette(const DatumPtr &node, RequestReturnType returnTyp
     // Color index is good.
     scaff->builder.SetInsertPoint(colorIndexGoodBB);
     Value *color = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
-    Value *colorIsGood = generateCallExtern(TyBool, setPalette, PaAddr(evaluator), PaAddr(colorIndex), PaAddr(color));
+    Value *colorIsGood = generateCallExtern(TyBool, setPalette, PaAddr(colorIndex), PaAddr(color));
     Value *colorIsGoodCmp = scaff->builder.CreateICmpEQ(colorIsGood, CoBool(true), "colorIsGood");
     scaff->builder.CreateCondBr(colorIsGoodCmp, colorGoodBB, colorNotGoodBB);
 
@@ -797,7 +797,7 @@ Value *Compiler::genSetpensize(const DatumPtr &node, RequestReturnType returnTyp
 {
     Value *size = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     size = generateGTZeroFromDouble(node.astnodeValue(), size);
-    generateCallExtern(TyVoid, setPenSize, PaAddr(evaluator), PaAddr(size));
+    generateCallExtern(TyVoid, setPenSize, PaDouble(size));
     return generateVoidRetval(node);
 }
 /***DOC SETBACKGROUND SETBG
@@ -885,8 +885,7 @@ Value *Compiler::genPalette(const DatumPtr &node, RequestReturnType returnType)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     Value *colorIndex = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    Value *isColorIndexGood =
-        generateCallExtern(TyBool, isColorIndexGood, PaAddr(evaluator), PaAddr(colorIndex), PaDouble(CoDouble(0.0)));
+    Value *isColorIndexGood = generateCallExtern(TyBool, isColorIndexGood, PaAddr(colorIndex), PaDouble(CoDouble(0.0)));
     Value *isColorIndexGoodCmp = scaff->builder.CreateICmpEQ(isColorIndexGood, CoBool(true), "isColorIndexGood");
     BasicBlock *colorIndexNotGoodBB = BasicBlock::Create(*scaff->theContext, "colorIndexNotGood", theFunction);
     BasicBlock *colorIndexGoodBB = BasicBlock::Create(*scaff->theContext, "colorIndexGood", theFunction);
