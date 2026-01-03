@@ -56,7 +56,6 @@ void LogoControllerGUI::systemStop()
 
     messageQueue.stopQueue();
 
-    qDebug() << "We are done";
     setDribble("");
     QApplication::quit();
 }

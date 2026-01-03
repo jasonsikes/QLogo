@@ -1,0 +1,60 @@
+name: Basic Console Output Test
+description: Tests basic console print functionality
+
+messages:
+  # qlogo sends W_INITIALIZE first (handled automatically)
+  # After initialization, qlogo will request the first line
+  
+  # Expect the initial prompt request
+  - expect:
+      message: C_CONSOLE_REQUEST_LINE
+      data:
+        prompt: "? "
+  
+  # Send a Logo command
+  - send:
+      message: C_CONSOLE_RAWLINE_READ
+      data: "print 2 + 2"
+  
+  # Expect the output (qlogo should send this before requesting next line)
+  - expect:
+      message: C_CONSOLE_PRINT_STRING
+      data: "4"
+  
+  # qlogo will request another line after printing output
+  - expect:
+      message: C_CONSOLE_REQUEST_LINE
+      data:
+        prompt: "? "
+  
+  # Send another command
+  - send:
+      message: C_CONSOLE_RAWLINE_READ
+      data: "print \"hello"
+  
+  # Expect the output
+  - expect:
+      message: C_CONSOLE_PRINT_STRING
+      data: "hello"
+  
+  # qlogo will request another line
+  - expect:
+      message: C_CONSOLE_REQUEST_LINE
+      data:
+        prompt: "? "
+  
+  # Send BYE command to terminate qlogo
+  - send:
+      message: C_CONSOLE_RAWLINE_READ
+      data: "BYE"
+  
+  # Read and ignore C_CONSOLE_PRINT_STRING message (no data validation)
+  - expect:
+      message: C_CONSOLE_PRINT_STRING
+  
+  # Expect W_CLOSE_PIPE from qlogo
+  - expect:
+      message: W_CLOSE_PIPE
+  
+  # Close the write pipe
+  - close_write_pipe: {}
