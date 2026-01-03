@@ -66,22 +66,22 @@ class Word : public Datum
     /// @brief Create a Word object with a number.
     Word(double other);
 
-    ~Word();
+    ~Word() override;
 
     /// @brief returns the number representation of the Word, if possible.
     /// @note check numberIsValid to determine validity AFTER calling this. It may seem counterintuitive,
     /// but it's because that is the procedure of the underlying Qt toolkit.
-    double numberValue(void) const;
+    double numberValue() const;
 
     /// @brief returns the boolean representation of the Word, if possible.
     /// @note check boolIsValid to determine validity AFTER calling this. It may seem counterintuitive,
     /// but it's because that is the procedure of the underlying Qt toolkit.
-    bool boolValue(void) const;
+    bool boolValue() const;
 
-    virtual QString toString(Datum::ToStringFlags flags = Datum::ToStringFlags_None,
-                             int printDepthLimit = -1,
-                             int printWidthLimit = -1,
-                             VisitedSet *visited = nullptr) const override;
+    QString toString(Datum::ToStringFlags flags = Datum::ToStringFlags_None,
+                     int printDepthLimit = -1,
+                     int printWidthLimit = -1,
+                     VisitedSet *visited = nullptr) const override;
 
     /// @brief Return true iff this word was created with a number.
     ///
@@ -209,18 +209,6 @@ class EmptyList : public List
     /// @brief Private constructor to enforce singleton pattern.
     EmptyList();
 
-    /// @brief Deleted copy constructor to prevent copying.
-    EmptyList(const EmptyList &) = delete;
-
-    /// @brief Deleted assignment operator to prevent assignment.
-    EmptyList &operator=(const EmptyList &) = delete;
-
-    /// @brief Deleted move constructor to prevent moving.
-    EmptyList(EmptyList &&) = delete;
-
-    /// @brief Deleted move assignment operator to prevent move assignment.
-    EmptyList &operator=(EmptyList &&) = delete;
-
     /// @brief Static instance pointer.
     static EmptyList *instance_;
 
@@ -233,10 +221,22 @@ class EmptyList : public List
     /// @return A pointer to the singleton EmptyList instance.
     static EmptyList *instance();
 
-    virtual QString toString(ToStringFlags flags = ToStringFlags_None,
-                             int printDepthLimit = -1,
-                             int printWidthLimit = -1,
-                             VisitedSet *visited = nullptr) const override;
+    /// @brief Deleted copy constructor to prevent copying.
+    EmptyList(const EmptyList &) = delete;
+
+    /// @brief Deleted assignment operator to prevent assignment.
+    EmptyList &operator=(const EmptyList &) = delete;
+
+    /// @brief Deleted move constructor to prevent moving.
+    EmptyList(EmptyList &&) = delete;
+
+    /// @brief Deleted move assignment operator to prevent move assignment.
+    EmptyList &operator=(EmptyList &&) = delete;
+
+    QString toString(ToStringFlags flags = ToStringFlags_None,
+                     int printDepthLimit = -1,
+                     int printWidthLimit = -1,
+                     VisitedSet *visited = nullptr) const override;
 };
 
 /// @brief A class that simplifies iterating through a list.
@@ -287,7 +287,7 @@ class ListBuilder
 
     /// @brief Append an element to the end of the list.
     /// @param element The element to append to the end of the list.
-    void append(DatumPtr element)
+    void append(const DatumPtr &element)
     {
         List *newList = new List(element, EmptyList::instance());
         if (firstNode == EmptyList::instance())

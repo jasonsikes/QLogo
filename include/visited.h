@@ -32,9 +32,7 @@ class VisitedSet
 
   public:
     /// @brief Create an empty VisitedSet.
-    VisitedSet()
-    {
-    }
+    VisitedSet() = default;
 
     /// @brief Add a node to the visited set.
     /// @param node The node to mark as visited.
@@ -68,9 +66,7 @@ class VisitedMap
 
   public:
     /// @brief Create an empty VisitedMap.
-    VisitedMap()
-    {
-    }
+    VisitedMap() = default;
 
     /// @brief Add a node to the visited map.
     /// @param key The key of the node to mark as visited.
