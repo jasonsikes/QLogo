@@ -6,11 +6,27 @@
 
 #include "gui/mainwindow.h"
 #include <QApplication>
+#include <QCommandLineParser>
 #include <QSqlDatabase>
+
+// Global logging flag
+bool logging = false;
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+
+    // Parse command line arguments
+    QCommandLineParser parser;
+    parser.addOption(QCommandLineOption("log", "Enable logging"));
+    parser.process(a);
+
+    // Set logging flag if --log option is present
+    if (parser.isSet("log"))
+    {
+        logging = true;
+    }
+
     MainWindow w;
     w.show();
 

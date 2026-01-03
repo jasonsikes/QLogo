@@ -27,16 +27,519 @@
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QScrollBar>
+#include <QTextStream>
 #include <QThread>
 #include <QTimer>
+#include <iostream>
+
+// External declaration of logging flag from qlogo_main.cpp
+extern bool logging;
 
 /// @brief a pointer to the qlogo process.
 static QProcess *logoProcess;
 
 QProcess *ProcessMessageWriter::process = nullptr;
 
+/// @brief Get the name of a message type for logging
+static QString getMessageTypeName(message_t type)
+{
+    switch (type)
+    {
+    case W_ZERO:
+        return "W_ZERO";
+    case W_INITIALIZE:
+        return "W_INITIALIZE";
+    case W_CLOSE_PIPE:
+        return "W_CLOSE_PIPE";
+    case W_SET_SCREENMODE:
+        return "W_SET_SCREENMODE";
+    case W_FILE_DIALOG_GET_PATH:
+        return "W_FILE_DIALOG_GET_PATH";
+    case S_SYSTEM:
+        return "S_SYSTEM";
+    case S_TOPLEVEL:
+        return "S_TOPLEVEL";
+    case S_PAUSE:
+        return "S_PAUSE";
+    case C_CONSOLE_PRINT_STRING:
+        return "C_CONSOLE_PRINT_STRING";
+    case C_CONSOLE_REQUEST_LINE:
+        return "C_CONSOLE_REQUEST_LINE";
+    case C_CONSOLE_REQUEST_CHAR:
+        return "C_CONSOLE_REQUEST_CHAR";
+    case C_CONSOLE_RAWLINE_READ:
+        return "C_CONSOLE_RAWLINE_READ";
+    case C_CONSOLE_CHAR_READ:
+        return "C_CONSOLE_CHAR_READ";
+    case C_CONSOLE_SET_FONT_NAME:
+        return "C_CONSOLE_SET_FONT_NAME";
+    case C_CONSOLE_SET_FONT_SIZE:
+        return "C_CONSOLE_SET_FONT_SIZE";
+    case C_CONSOLE_BEGIN_EDIT_TEXT:
+        return "C_CONSOLE_BEGIN_EDIT_TEXT";
+    case C_CONSOLE_END_EDIT_TEXT:
+        return "C_CONSOLE_END_EDIT_TEXT";
+    case C_CONSOLE_TEXT_CURSOR_POS:
+        return "C_CONSOLE_TEXT_CURSOR_POS";
+    case C_CONSOLE_SET_TEXT_CURSOR_POS:
+        return "C_CONSOLE_SET_TEXT_CURSOR_POS";
+    case C_CONSOLE_SET_CURSOR_MODE:
+        return "C_CONSOLE_SET_CURSOR_MODE";
+    case C_CONSOLE_SET_TEXT_COLOR:
+        return "C_CONSOLE_SET_TEXT_COLOR";
+    case C_CONSOLE_CLEAR_SCREEN_TEXT:
+        return "C_CONSOLE_CLEAR_SCREEN_TEXT";
+    case C_CANVAS_UPDATE_TURTLE_POS:
+        return "C_CANVAS_UPDATE_TURTLE_POS";
+    case C_CANVAS_EMIT_VERTEX:
+        return "C_CANVAS_EMIT_VERTEX";
+    case C_CANVAS_SET_FOREGROUND_COLOR:
+        return "C_CANVAS_SET_FOREGROUND_COLOR";
+    case C_CANVAS_SET_BACKGROUND_COLOR:
+        return "C_CANVAS_SET_BACKGROUND_COLOR";
+    case C_CANVAS_SET_BACKGROUND_IMAGE:
+        return "C_CANVAS_SET_BACKGROUND_IMAGE";
+    case C_CANVAS_BEGIN_POLYGON:
+        return "C_CANVAS_BEGIN_POLYGON";
+    case C_CANVAS_END_POLYGON:
+        return "C_CANVAS_END_POLYGON";
+    case C_CANVAS_SET_TURTLE_IS_VISIBLE:
+        return "C_CANVAS_SET_TURTLE_IS_VISIBLE";
+    case C_CANVAS_DRAW_LABEL:
+        return "C_CANVAS_DRAW_LABEL";
+    case C_CANVAS_DRAW_ARC:
+        return "C_CANVAS_DRAW_ARC";
+    case C_CANVAS_CLEAR_SCREEN:
+        return "C_CANVAS_CLEAR_SCREEN";
+    case C_CANVAS_SETBOUNDS:
+        return "C_CANVAS_SETBOUNDS";
+    case C_CANVAS_SET_IS_BOUNDED:
+        return "C_CANVAS_SET_IS_BOUNDED";
+    case C_CANVAS_SET_PENSIZE:
+        return "C_CANVAS_SET_PENSIZE";
+    case C_CANVAS_SET_PENUPDOWN:
+        return "C_CANVAS_SET_PENUPDOWN";
+    case C_CANVAS_SET_FONT_NAME:
+        return "C_CANVAS_SET_FONT_NAME";
+    case C_CANVAS_SET_FONT_SIZE:
+        return "C_CANVAS_SET_FONT_SIZE";
+    case C_CANVAS_GET_IMAGE:
+        return "C_CANVAS_GET_IMAGE";
+    case C_CANVAS_GET_SVG:
+        return "C_CANVAS_GET_SVG";
+    case C_CANVAS_MOUSE_BUTTON_DOWN:
+        return "C_CANVAS_MOUSE_BUTTON_DOWN";
+    case C_CANVAS_MOUSE_MOVED:
+        return "C_CANVAS_MOUSE_MOVED";
+    case C_CANVAS_MOUSE_BUTTON_UP:
+        return "C_CANVAS_MOUSE_BUTTON_UP";
+    case C_CANVAS_SET_PENMODE:
+        return "C_CANVAS_SET_PENMODE";
+    default:
+        return QString("UNKNOWN(%1)").arg(type);
+    }
+}
+
+/// @brief Escape a string for YAML output
+static QString yamlEscape(const QString &str)
+{
+    QString result;
+    result.reserve(str.length() + 10);
+    for (QChar c : str)
+    {
+        if (c == '\n')
+            result += "\\n";
+        else if (c == '\r')
+            result += "\\r";
+        else if (c == '\t')
+            result += "\\t";
+        else if (c == '"')
+            result += "\\\"";
+        else if (c == '\\')
+            result += "\\\\";
+        else if (c.unicode() < 32 || c.unicode() > 126)
+            result += QString("\\u%1").arg(c.unicode(), 4, 16, QChar('0'));
+        else
+            result += c;
+    }
+    return result;
+}
+
+/// @brief Serialize message data to YAML format
+static QString serializeMessageData(message_t type, const QByteArray &dataBuffer)
+{
+    QString result;
+    QTextStream yaml(&result);
+
+    bool hasData = false;
+    yaml << "    data:";
+
+    // If buffer is empty, output null
+    if (dataBuffer.isEmpty())
+    {
+        yaml << " null\n";
+        return result;
+    }
+
+    QDataStream readStream(dataBuffer);
+
+    switch (type)
+    {
+    case W_INITIALIZE:
+    {
+        // Can be empty (request) or QStringList, QString, double (response)
+        if (!readStream.atEnd() && dataBuffer.size() >= static_cast<int>(sizeof(qint32)))
+        {
+            yaml << "\n";
+            int fontCount;
+            readStream >> fontCount;
+            QStringList fontNames;
+            for (int i = 0; i < fontCount && !readStream.atEnd(); ++i)
+            {
+                QString font;
+                readStream >> font;
+                fontNames << font;
+            }
+            QString textFontName;
+            double textFontSize;
+            if (!readStream.atEnd())
+            {
+                readStream >> textFontName >> textFontSize;
+
+                // Output as list format matching test_pipe.py expectations
+                yaml << "      - " << fontCount << "\n";
+                for (const QString &font : fontNames)
+                {
+                    yaml << "      - \"" << yamlEscape(font) << "\"\n";
+                }
+                yaml << "      - \"" << yamlEscape(textFontName) << "\"\n";
+                yaml << "      - " << textFontSize << "\n";
+                hasData = true;
+            }
+        }
+        break;
+    }
+    case W_SET_SCREENMODE:
+    {
+        ScreenModeEnum mode;
+        readStream >> mode;
+        yaml << " " << (int)mode << "\n";
+        hasData = true;
+        break;
+    }
+    case W_FILE_DIALOG_GET_PATH:
+    {
+        QString path;
+        readStream >> path;
+        yaml << " \"" << yamlEscape(path) << "\"\n";
+        hasData = true;
+        break;
+    }
+    case C_CONSOLE_PRINT_STRING:
+    {
+        QString text;
+        readStream >> text;
+        yaml << " \"" << yamlEscape(text) << "\"\n";
+        hasData = true;
+        break;
+    }
+    case C_CONSOLE_SET_FONT_NAME:
+    {
+        QString name;
+        readStream >> name;
+        yaml << " \"" << yamlEscape(name) << "\"\n";
+        hasData = true;
+        break;
+    }
+    case C_CONSOLE_SET_FONT_SIZE:
+    {
+        qreal size;
+        readStream >> size;
+        yaml << " " << size << "\n";
+        hasData = true;
+        break;
+    }
+    case C_CONSOLE_REQUEST_LINE:
+    {
+        QString prompt;
+        readStream >> prompt;
+        yaml << "\n";
+        yaml << "      prompt: \"" << yamlEscape(prompt) << "\"\n";
+        hasData = true;
+        break;
+    }
+    case C_CONSOLE_BEGIN_EDIT_TEXT:
+    {
+        QString text;
+        readStream >> text;
+        yaml << " \"" << yamlEscape(text) << "\"\n";
+        hasData = true;
+        break;
+    }
+    case C_CONSOLE_END_EDIT_TEXT:
+    {
+        QString text;
+        readStream >> text;
+        yaml << " \"" << yamlEscape(text) << "\"\n";
+        hasData = true;
+        break;
+    }
+    case C_CONSOLE_TEXT_CURSOR_POS:
+    {
+        int row, col;
+        readStream >> row >> col;
+        yaml << "\n";
+        yaml << "      row: " << row << "\n";
+        yaml << "      col: " << col << "\n";
+        hasData = true;
+        break;
+    }
+    case C_CONSOLE_SET_TEXT_CURSOR_POS:
+    {
+        int row, col;
+        readStream >> row >> col;
+        yaml << "\n";
+        yaml << "      - " << row << "\n";
+        yaml << "      - " << col << "\n";
+        hasData = true;
+        break;
+    }
+    case C_CONSOLE_SET_CURSOR_MODE:
+    {
+        bool mode;
+        readStream >> mode;
+        yaml << " " << (mode ? "true" : "false") << "\n";
+        hasData = true;
+        break;
+    }
+    case C_CONSOLE_SET_TEXT_COLOR:
+    {
+        QColor foreground, background;
+        readStream >> foreground >> background;
+        yaml << "\n";
+        yaml << "      foreground:\n";
+        yaml << "        r: " << foreground.red() << "\n";
+        yaml << "        g: " << foreground.green() << "\n";
+        yaml << "        b: " << foreground.blue() << "\n";
+        yaml << "        a: " << foreground.alpha() << "\n";
+        yaml << "      background:\n";
+        yaml << "        r: " << background.red() << "\n";
+        yaml << "        g: " << background.green() << "\n";
+        yaml << "        b: " << background.blue() << "\n";
+        yaml << "        a: " << background.alpha() << "\n";
+        hasData = true;
+        break;
+    }
+    case C_CONSOLE_RAWLINE_READ:
+    {
+        QString line;
+        readStream >> line;
+        yaml << " \"" << yamlEscape(line) << "\"\n";
+        hasData = true;
+        break;
+    }
+    case C_CONSOLE_CHAR_READ:
+    {
+        QChar c;
+        readStream >> c;
+        yaml << " \"" << yamlEscape(QString(c)) << "\"\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_UPDATE_TURTLE_POS:
+    {
+        QTransform matrix;
+        readStream >> matrix;
+        // Transform is complex, just output a placeholder
+        yaml << " <QTransform>\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_SET_TURTLE_IS_VISIBLE:
+    {
+        bool visible;
+        readStream >> visible;
+        yaml << " " << (visible ? "true" : "false") << "\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_SET_FOREGROUND_COLOR:
+    case C_CANVAS_SET_BACKGROUND_COLOR:
+    case C_CANVAS_BEGIN_POLYGON:
+    {
+        QColor color;
+        readStream >> color;
+        yaml << "\n";
+        yaml << "      r: " << color.red() << "\n";
+        yaml << "      g: " << color.green() << "\n";
+        yaml << "      b: " << color.blue() << "\n";
+        yaml << "      a: " << color.alpha() << "\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_SET_BACKGROUND_IMAGE:
+    {
+        QImage image;
+        readStream >> image;
+        yaml << " <QImage>\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_SETBOUNDS:
+    {
+        qreal x, y;
+        readStream >> x >> y;
+        yaml << "\n";
+        yaml << "      - " << x << "\n";
+        yaml << "      - " << y << "\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_SET_IS_BOUNDED:
+    {
+        bool bounded;
+        readStream >> bounded;
+        yaml << " " << (bounded ? "true" : "false") << "\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_SET_FONT_NAME:
+    {
+        QString name;
+        readStream >> name;
+        yaml << " \"" << yamlEscape(name) << "\"\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_SET_FONT_SIZE:
+    {
+        qreal size;
+        readStream >> size;
+        yaml << " " << size << "\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_DRAW_LABEL:
+    {
+        QString label;
+        readStream >> label;
+        yaml << " \"" << yamlEscape(label) << "\"\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_DRAW_ARC:
+    {
+        qreal angle, radius;
+        readStream >> angle >> radius;
+        yaml << "\n";
+        yaml << "      - " << angle << "\n";
+        yaml << "      - " << radius << "\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_SET_PENSIZE:
+    {
+        qreal size;
+        readStream >> size;
+        yaml << " " << size << "\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_SET_PENUPDOWN:
+    {
+        bool down;
+        readStream >> down;
+        yaml << " " << (down ? "true" : "false") << "\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_SET_PENMODE:
+    {
+        PenModeEnum mode;
+        readStream >> mode;
+        yaml << " " << (int)mode << "\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_GET_IMAGE:
+    {
+        QImage image;
+        readStream >> image;
+        yaml << " <QImage>\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_GET_SVG:
+    {
+        QByteArray svg;
+        readStream >> svg;
+        yaml << " <QByteArray>\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_MOUSE_BUTTON_DOWN:
+    {
+        QPointF point;
+        int button;
+        readStream >> point >> button;
+        yaml << "\n";
+        yaml << "      point:\n";
+        yaml << "        x: " << point.x() << "\n";
+        yaml << "        y: " << point.y() << "\n";
+        yaml << "      button: " << button << "\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_MOUSE_MOVED:
+    {
+        QPointF point;
+        readStream >> point;
+        yaml << "\n";
+        yaml << "      x: " << point.x() << "\n";
+        yaml << "      y: " << point.y() << "\n";
+        hasData = true;
+        break;
+    }
+    default:
+        // No data or unknown message type
+        break;
+    }
+
+    if (!hasData)
+    {
+        yaml << " null\n";
+    }
+
+    return result;
+}
+
 qint64 ProcessMessageWriter::write(const QByteArray &buffer)
 {
+    if (logging)
+    {
+        // Extract message type and data from buffer
+        // Buffer format: [length (8 bytes)][header (1 byte)][data...]
+        if (buffer.size() >= static_cast<int>(sizeof(qint64) + sizeof(message_t)))
+        {
+            QByteArray messageData = buffer.mid(sizeof(qint64)); // Skip length prefix
+            QDataStream stream(messageData);
+            message_t header;
+            stream >> header;
+
+            // Extract data portion (after header)
+            QByteArray dataPortion = messageData.mid(sizeof(message_t));
+
+            QString msgTypeName = getMessageTypeName(header);
+
+            std::cout << "send:\n";
+            std::cout << "  message: " << msgTypeName.toStdString() << "\n";
+
+            // Serialize the data
+            QString yamlData = serializeMessageData(header, dataPortion);
+            std::cout << yamlData.toStdString();
+        }
+    }
+
     return process->write(buffer);
 }
 
@@ -242,6 +745,22 @@ void MainWindow::processReadBuffer()
     message_t header;
 
     dataStream >> header;
+
+    // Log received message if logging is enabled
+    if (logging)
+    {
+        QString msgTypeName = getMessageTypeName(header);
+
+        std::cout << "expect:\n";
+        std::cout << "  message: " << msgTypeName.toStdString() << "\n";
+
+        // Extract data portion (after header, which is 1 byte)
+        QByteArray dataPortion = readBuffer.mid(sizeof(message_t));
+
+        QString yamlData = serializeMessageData(header, dataPortion);
+        std::cout << yamlData.toStdString();
+    }
+
     switch (header)
     {
     case W_ZERO:
