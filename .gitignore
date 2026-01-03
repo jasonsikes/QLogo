@@ -65,3 +65,5 @@ cmake_install.cmake
 TODO.org
 /.qt/
 compile_commands.json
+share/
+scripts/__pycache__/
