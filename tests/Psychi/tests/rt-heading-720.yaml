@@ -1,0 +1,38 @@
+name: RT Heading 720 Test
+description: Tests the RIGHT and HEADING commands with 720 degrees
+
+messages:
+  - expect:
+      message: C_CONSOLE_REQUEST_LINE
+      data:
+        prompt: "? "
+  - send:
+      message: C_CONSOLE_RAWLINE_READ
+      data: "rt 720"
+  - expect:
+      message: C_CANVAS_UPDATE_TURTLE_POS
+      data: <QTransform>
+  - expect:
+      message: C_CONSOLE_REQUEST_LINE
+      data:
+        prompt: "? "
+  - send:
+      message: C_CONSOLE_RAWLINE_READ
+      data: "print heading"
+  - expect:
+      message: C_CONSOLE_PRINT_STRING
+      data: "0\n"
+  - expect:
+      message: C_CONSOLE_REQUEST_LINE
+      data:
+        prompt: "? "
+  - send:
+      message: C_CONSOLE_RAWLINE_READ
+      data: "bye"
+  - expect:
+      message: C_CONSOLE_PRINT_STRING
+      data: "\n"
+  - expect:
+      message: W_CLOSE_PIPE
+      data: null
+  - close_write_pipe: {}

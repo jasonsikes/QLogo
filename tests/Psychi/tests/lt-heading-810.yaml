@@ -1,0 +1,38 @@
+name: LT Heading 810 Test
+description: Tests the LT and HEADING commands with 810 degrees
+
+messages:
+  - expect:
+      message: C_CONSOLE_REQUEST_LINE
+      data:
+        prompt: "? "
+  - send:
+      message: C_CONSOLE_RAWLINE_READ
+      data: "lt 810"
+  - expect:
+      message: C_CANVAS_UPDATE_TURTLE_POS
+      data: <QTransform>
+  - expect:
+      message: C_CONSOLE_REQUEST_LINE
+      data:
+        prompt: "? "
+  - send:
+      message: C_CONSOLE_RAWLINE_READ
+      data: "print heading"
+  - expect:
+      message: C_CONSOLE_PRINT_STRING
+      data: "270\n"
+  - expect:
+      message: C_CONSOLE_REQUEST_LINE
+      data:
+        prompt: "? "
+  - send:
+      message: C_CONSOLE_RAWLINE_READ
+      data: "bye"
+  - expect:
+      message: C_CONSOLE_PRINT_STRING
+      data: "\n"
+  - expect:
+      message: W_CLOSE_PIPE
+      data: null
+  - close_write_pipe: {}
