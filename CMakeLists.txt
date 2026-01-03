@@ -43,7 +43,7 @@ file(COPY "share/${QLOGO_HELP}" "share/${QLOGO_LIB}"
     DESTINATION "${QLOGO_DATA_DIR}"
 )
 
-file(COPY "${CMAKE_SOURCE_DIR}/test"
+file(COPY "${CMAKE_SOURCE_DIR}/tests"
     DESTINATION "${CMAKE_BINARY_DIR}"
 )
 
