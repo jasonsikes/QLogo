@@ -38,6 +38,22 @@ extern bool logging;
 /// @brief a pointer to the qlogo process.
 static QProcess *logoProcess;
 
+/// @brief Track if YAML header has been output
+static bool yamlHeaderOutput = false;
+
+/// @brief Output YAML header if not already output
+static void outputYamlHeaderIfNeeded()
+{
+    if (logging && !yamlHeaderOutput)
+    {
+        std::cout << "name: Generated Test\n";
+        std::cout << "description: Auto-generated test from logging output\n";
+        std::cout << "\n";
+        std::cout << "messages:\n";
+        yamlHeaderOutput = true;
+    }
+}
+
 QProcess *ProcessMessageWriter::process = nullptr;
 
 /// @brief Get the name of a message type for logging
@@ -172,7 +188,7 @@ static QString serializeMessageData(message_t type, const QByteArray &dataBuffer
     QTextStream yaml(&result);
 
     bool hasData = false;
-    yaml << "    data:";
+    yaml << "      data:";
 
     // If buffer is empty, output null
     if (dataBuffer.isEmpty())
@@ -185,40 +201,7 @@ static QString serializeMessageData(message_t type, const QByteArray &dataBuffer
 
     switch (type)
     {
-    case W_INITIALIZE:
-    {
-        // Can be empty (request) or QStringList, QString, double (response)
-        if (!readStream.atEnd() && dataBuffer.size() >= static_cast<int>(sizeof(qint32)))
-        {
-            yaml << "\n";
-            int fontCount;
-            readStream >> fontCount;
-            QStringList fontNames;
-            for (int i = 0; i < fontCount && !readStream.atEnd(); ++i)
-            {
-                QString font;
-                readStream >> font;
-                fontNames << font;
-            }
-            QString textFontName;
-            double textFontSize;
-            if (!readStream.atEnd())
-            {
-                readStream >> textFontName >> textFontSize;
-
-                // Output as list format matching test_pipe.py expectations
-                yaml << "      - " << fontCount << "\n";
-                for (const QString &font : fontNames)
-                {
-                    yaml << "      - \"" << yamlEscape(font) << "\"\n";
-                }
-                yaml << "      - \"" << yamlEscape(textFontName) << "\"\n";
-                yaml << "      - " << textFontSize << "\n";
-                hasData = true;
-            }
-        }
-        break;
-    }
+    // W_INITIALIZE is handled outside of script, so not logged
     case W_SET_SCREENMODE:
     {
         ScreenModeEnum mode;
@@ -264,7 +247,7 @@ static QString serializeMessageData(message_t type, const QByteArray &dataBuffer
         QString prompt;
         readStream >> prompt;
         yaml << "\n";
-        yaml << "      prompt: \"" << yamlEscape(prompt) << "\"\n";
+        yaml << "        prompt: \"" << yamlEscape(prompt) << "\"\n";
         hasData = true;
         break;
     }
@@ -289,8 +272,8 @@ static QString serializeMessageData(message_t type, const QByteArray &dataBuffer
         int row, col;
         readStream >> row >> col;
         yaml << "\n";
-        yaml << "      row: " << row << "\n";
-        yaml << "      col: " << col << "\n";
+        yaml << "        row: " << row << "\n";
+        yaml << "        col: " << col << "\n";
         hasData = true;
         break;
     }
@@ -299,8 +282,8 @@ static QString serializeMessageData(message_t type, const QByteArray &dataBuffer
         int row, col;
         readStream >> row >> col;
         yaml << "\n";
-        yaml << "      - " << row << "\n";
-        yaml << "      - " << col << "\n";
+        yaml << "        - " << row << "\n";
+        yaml << "        - " << col << "\n";
         hasData = true;
         break;
     }
@@ -317,16 +300,16 @@ static QString serializeMessageData(message_t type, const QByteArray &dataBuffer
         QColor foreground, background;
         readStream >> foreground >> background;
         yaml << "\n";
-        yaml << "      foreground:\n";
-        yaml << "        r: " << foreground.red() << "\n";
-        yaml << "        g: " << foreground.green() << "\n";
-        yaml << "        b: " << foreground.blue() << "\n";
-        yaml << "        a: " << foreground.alpha() << "\n";
-        yaml << "      background:\n";
-        yaml << "        r: " << background.red() << "\n";
-        yaml << "        g: " << background.green() << "\n";
-        yaml << "        b: " << background.blue() << "\n";
-        yaml << "        a: " << background.alpha() << "\n";
+        yaml << "        foreground:\n";
+        yaml << "          r: " << foreground.red() << "\n";
+        yaml << "          g: " << foreground.green() << "\n";
+        yaml << "          b: " << foreground.blue() << "\n";
+        yaml << "          a: " << foreground.alpha() << "\n";
+        yaml << "        background:\n";
+        yaml << "          r: " << background.red() << "\n";
+        yaml << "          g: " << background.green() << "\n";
+        yaml << "          b: " << background.blue() << "\n";
+        yaml << "          a: " << background.alpha() << "\n";
         hasData = true;
         break;
     }
@@ -370,10 +353,10 @@ static QString serializeMessageData(message_t type, const QByteArray &dataBuffer
         QColor color;
         readStream >> color;
         yaml << "\n";
-        yaml << "      r: " << color.red() << "\n";
-        yaml << "      g: " << color.green() << "\n";
-        yaml << "      b: " << color.blue() << "\n";
-        yaml << "      a: " << color.alpha() << "\n";
+        yaml << "        r: " << color.red() << "\n";
+        yaml << "        g: " << color.green() << "\n";
+        yaml << "        b: " << color.blue() << "\n";
+        yaml << "        a: " << color.alpha() << "\n";
         hasData = true;
         break;
     }
@@ -390,8 +373,8 @@ static QString serializeMessageData(message_t type, const QByteArray &dataBuffer
         qreal x, y;
         readStream >> x >> y;
         yaml << "\n";
-        yaml << "      - " << x << "\n";
-        yaml << "      - " << y << "\n";
+        yaml << "        - " << x << "\n";
+        yaml << "        - " << y << "\n";
         hasData = true;
         break;
     }
@@ -432,8 +415,8 @@ static QString serializeMessageData(message_t type, const QByteArray &dataBuffer
         qreal angle, radius;
         readStream >> angle >> radius;
         yaml << "\n";
-        yaml << "      - " << angle << "\n";
-        yaml << "      - " << radius << "\n";
+        yaml << "        - " << angle << "\n";
+        yaml << "        - " << radius << "\n";
         hasData = true;
         break;
     }
@@ -483,10 +466,10 @@ static QString serializeMessageData(message_t type, const QByteArray &dataBuffer
         int button;
         readStream >> point >> button;
         yaml << "\n";
-        yaml << "      point:\n";
-        yaml << "        x: " << point.x() << "\n";
-        yaml << "        y: " << point.y() << "\n";
-        yaml << "      button: " << button << "\n";
+        yaml << "        point:\n";
+        yaml << "          x: " << point.x() << "\n";
+        yaml << "          y: " << point.y() << "\n";
+        yaml << "        button: " << button << "\n";
         hasData = true;
         break;
     }
@@ -495,8 +478,8 @@ static QString serializeMessageData(message_t type, const QByteArray &dataBuffer
         QPointF point;
         readStream >> point;
         yaml << "\n";
-        yaml << "      x: " << point.x() << "\n";
-        yaml << "      y: " << point.y() << "\n";
+        yaml << "        x: " << point.x() << "\n";
+        yaml << "        y: " << point.y() << "\n";
         hasData = true;
         break;
     }
@@ -526,17 +509,23 @@ qint64 ProcessMessageWriter::write(const QByteArray &buffer)
             message_t header;
             stream >> header;
 
-            // Extract data portion (after header)
-            QByteArray dataPortion = messageData.mid(sizeof(message_t));
+            // Skip W_INITIALIZE messages (handled outside of script)
+            if (header != W_INITIALIZE)
+            {
+                outputYamlHeaderIfNeeded();
 
-            QString msgTypeName = getMessageTypeName(header);
+                // Extract data portion (after header)
+                QByteArray dataPortion = messageData.mid(sizeof(message_t));
 
-            std::cout << "send:\n";
-            std::cout << "  message: " << msgTypeName.toStdString() << "\n";
+                QString msgTypeName = getMessageTypeName(header);
 
-            // Serialize the data
-            QString yamlData = serializeMessageData(header, dataPortion);
-            std::cout << yamlData.toStdString();
+                std::cout << "  - send:\n";
+                std::cout << "      message: " << msgTypeName.toStdString() << "\n";
+
+                // Serialize the data
+                QString yamlData = serializeMessageData(header, dataPortion);
+                std::cout << yamlData.toStdString();
+            }
         }
     }
 
@@ -635,6 +624,13 @@ void MainWindow::closeEvent(QCloseEvent *event)
     if (pid > 0)
     {
         message(S_SYSTEM);
+
+        if (logging)
+        {
+            outputYamlHeaderIfNeeded();
+            std::cout << "  - close_write_pipe: {}\n";
+        }
+
         logoProcess->closeWriteChannel();
 
         event->ignore();
@@ -749,16 +745,22 @@ void MainWindow::processReadBuffer()
     // Log received message if logging is enabled
     if (logging)
     {
-        QString msgTypeName = getMessageTypeName(header);
+        // Skip W_INITIALIZE messages (handled outside of script)
+        if (header != W_INITIALIZE)
+        {
+            outputYamlHeaderIfNeeded();
 
-        std::cout << "expect:\n";
-        std::cout << "  message: " << msgTypeName.toStdString() << "\n";
+            QString msgTypeName = getMessageTypeName(header);
 
-        // Extract data portion (after header, which is 1 byte)
-        QByteArray dataPortion = readBuffer.mid(sizeof(message_t));
+            std::cout << "  - expect:\n";
+            std::cout << "      message: " << msgTypeName.toStdString() << "\n";
 
-        QString yamlData = serializeMessageData(header, dataPortion);
-        std::cout << yamlData.toStdString();
+            // Extract data portion (after header, which is 1 byte)
+            QByteArray dataPortion = readBuffer.mid(sizeof(message_t));
+
+            QString yamlData = serializeMessageData(header, dataPortion);
+            std::cout << yamlData.toStdString();
+        }
     }
 
     switch (header)
@@ -774,6 +776,12 @@ void MainWindow::processReadBuffer()
     }
     case W_CLOSE_PIPE:
     {
+        if (logging)
+        {
+            outputYamlHeaderIfNeeded();
+            std::cout << "  - close_write_pipe: {}\n";
+        }
+
         logoProcess->closeWriteChannel();
         break;
     }
