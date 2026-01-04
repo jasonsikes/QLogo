@@ -55,9 +55,9 @@ class Datum
         typePersistentMask = 0x00010000,    // OR this value to prevent the datum from being destroyed
     };
 
-    DatumType isa; // Subclasses must set this to a valid value.
+    DatumType isa = typeNothingPersistent; // Subclasses must set this to a valid value.
 
-    int retainCount;
+    int retainCount = 0;
 
     /// @brief If set to 'true', DatumPtr will send qDebug message when this is deleted.
     bool alertOnDelete = false;

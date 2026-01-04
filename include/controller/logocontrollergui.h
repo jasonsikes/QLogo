@@ -205,14 +205,14 @@ class LogoControllerGUI : public LogoController
 
     /// @brief Gets the X coordinate of the upper-right corner of the bounding box.
     /// @return The X coordinate of the upper-right corner of the bounding box.
-    double boundX() const
+    double boundX() const override
     {
         return xbound;
     }
 
     /// @brief Gets the Y coordinate of the upper-right corner of the bounding box.
     /// @return The Y coordinate of the upper-right corner of the bounding box.
-    double boundY() const
+    double boundY() const override
     {
         return ybound;
     }

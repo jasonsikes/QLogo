@@ -111,12 +111,12 @@ struct Array : public Datum
     Array(int aOrigin, List *source);
 
     /// @brief Destructor.
-    ~Array();
+    ~Array() override;
 
-    virtual QString toString(Datum::ToStringFlags flags = Datum::ToStringFlags_None,
-                             int printDepthLimit = -1,
-                             int printWidthLimit = -1,
-                             VisitedSet *visited = nullptr) const override;
+    QString toString(Datum::ToStringFlags flags = Datum::ToStringFlags_None,
+                     int printDepthLimit = -1,
+                     int printWidthLimit = -1,
+                     VisitedSet *visited = nullptr) const override;
 
     /// @brief The starting index of this Array.
     int origin = 1;
@@ -158,12 +158,12 @@ class List : public Datum
     List(const DatumPtr &item, List *srcList);
 
     /// @brief Destructor.
-    virtual ~List();
+    ~List() override;
 
-    virtual QString toString(ToStringFlags flags = ToStringFlags_None,
-                             int printDepthLimit = -1,
-                             int printWidthLimit = -1,
-                             VisitedSet *visited = nullptr) const override;
+    QString toString(ToStringFlags flags = ToStringFlags_None,
+                     int printDepthLimit = -1,
+                     int printWidthLimit = -1,
+                     VisitedSet *visited = nullptr) const override;
 
     /// @brief Empty the List
     void clear();
@@ -191,7 +191,7 @@ class List : public Datum
     /// @brief Replaces everything but the first item in the List with aValue.
     ///
     /// @param aValue The value to replace the first item with.
-    void setButfirstItem(const DatumPtr &aValue);
+    virtual void setButfirstItem(const DatumPtr &aValue);
 
     /// @brief Create a new ListIterator pointing to the head of the List.
     /// @return A new ListIterator pointing to the head of the List.
@@ -213,7 +213,7 @@ class EmptyList : public List
     static EmptyList *instance_;
 
     void clear();
-    void setButfirstItem(const DatumPtr &aValue);
+    void setButfirstItem(const DatumPtr &aValue) override;
 
   public:
     /// @brief Get the singleton instance of EmptyList.

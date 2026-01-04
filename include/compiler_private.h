@@ -53,8 +53,8 @@ class CompilerContext
 
     CompilerContext(std::unique_ptr<llvm::orc::ExecutionSession> es,
                     llvm::orc::JITTargetMachineBuilder jtmb,
-                    llvm::DataLayout dl)
-        : exeSession(std::move(es)), dataLayout(std::move(dl)), mangler(*this->exeSession, this->dataLayout),
+                    const llvm::DataLayout &dl)
+        : exeSession(std::move(es)), dataLayout(dl), mangler(*this->exeSession, this->dataLayout),
           objectLayer(*this->exeSession, []() { return std::make_unique<llvm::SectionMemoryManager>(); }),
           compileLayer(
               *this->exeSession, objectLayer, std::make_unique<llvm::orc::ConcurrentIRCompiler>(std::move(jtmb))),
@@ -71,7 +71,7 @@ class CompilerContext
         }
     }
 
-    ~CompilerContext()
+    ~CompilerContext() // NOLINT(modernize-use-equals-default) - not trivial, needs to call endSession()
     {
         if (auto err = exeSession->endSession())
             exeSession->reportError(std::move(err));
@@ -89,7 +89,7 @@ class CompilerContext
         auto dl = jtmb.getDefaultDataLayoutForTarget();
         Q_ASSERT(dl);
 
-        return new CompilerContext(std::move(es), std::move(jtmb), std::move(*dl));
+        return new CompilerContext(std::move(es), std::move(jtmb), *dl);
     }
 
     const llvm::DataLayout &getDataLayout() const

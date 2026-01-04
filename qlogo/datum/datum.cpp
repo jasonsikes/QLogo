@@ -18,6 +18,7 @@
 #include "datum_core.h"
 #include "sharedconstants.h"
 #include <QObject>
+#include <algorithm>
 #include <qdebug.h>
 #include <unistd.h>
 
@@ -26,11 +27,10 @@ int countOfNodes = 0;
 /// @brief The maximum number of Datum objects that have ever been in use.
 int maxCountOfNodes = 0;
 
-Datum::Datum() : retainCount(0), isa(typeNothingPersistent)
+Datum::Datum()
 {
     ++countOfNodes;
-    if (countOfNodes > maxCountOfNodes)
-        maxCountOfNodes = countOfNodes;
+    maxCountOfNodes = std::max(maxCountOfNodes, countOfNodes);
     if (Config::get().showCON)
         qDebug() << this << " con++: " << countOfNodes;
 }

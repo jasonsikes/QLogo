@@ -21,11 +21,10 @@
 
 // Some support functions for moving the turtle.
 
-Turtle::Turtle() : turtlePosition(QTransform()), turtleIsVisible(true), penIsDown(true)
+Turtle::Turtle() : turtlePosition(QTransform())
 {
     Config::get().setMainTurtle(this);
     penColor = Config::get().initialCanvasForegroundColor;
-    mode = turtleWindow;
 }
 
 Turtle::~Turtle()

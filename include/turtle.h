@@ -40,8 +40,8 @@ class Turtle
 
     double penSize = Config::get().initialPensize;
 
-    bool turtleIsVisible;
-    bool penIsDown;
+    bool turtleIsVisible = true;
+    bool penIsDown = true;
     bool isFilling = false;
 
     bool wrapTurtle(double lineStartU,

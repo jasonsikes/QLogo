@@ -64,7 +64,7 @@ class LogoController : public QObject
     LogoController(QObject *parent = nullptr);
 
     /// @brief Destructor
-    virtual ~LogoController() override;
+    ~LogoController() override;
 
     /// @brief Returns the most recent interrupt signal that was received, if any. Resets the signal.
     /// @return The most recent interrupt signal that was received, if any.

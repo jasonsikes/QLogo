@@ -97,9 +97,6 @@ enum messageCategory : message_t
 class Config
 {
   private:
-    Config() = default;
-    Config(const Config &other) = delete;
-    Config &operator=(const Config &other) = delete;
     ~Config()
     {
         Q_ASSERT(mTurtle == nullptr);
@@ -116,6 +113,12 @@ class Config
     Compiler *mCompiler = nullptr;
 
   public:
+    Config() = default;
+    Config(const Config &other) = delete;
+    Config(Config &&other) = delete;
+    Config &operator=(const Config &other) = delete;
+    Config &operator=(Config &&other) = delete;
+
     /// @brief Get the singleton instance of the Config class.
     /// @return The singleton instance of the Config class.
     static Config &get()
