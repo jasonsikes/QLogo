@@ -49,7 +49,7 @@ class EditorWindow : public QMainWindow
     /// This function sets the contents of the editor window to the given text.
     ///
     /// @param startingText The text to present to the user for editing.
-    void setContents(const QString startingText);
+    void setContents(const QString &startingText);
 
     /// @brief Show the editor window.
     void show();

@@ -62,7 +62,7 @@ class MainWindow : public QMainWindow
     EditorWindow *editWindow = nullptr;
 
     int startLogo();
-    void beginReadRawlineWithPrompt(const QString prompt);
+    void beginReadRawlineWithPrompt(const QString &prompt);
     void beginReadChar();
     void sendConsoleCursorPosition();
 

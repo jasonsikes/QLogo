@@ -45,7 +45,7 @@ EditorWindow::~EditorWindow()
     delete ui;
 }
 
-void EditorWindow::setContents(const QString startingText)
+void EditorWindow::setContents(const QString &startingText)
 {
     ui->plainTextEdit->setPlainText(startingText);
 }

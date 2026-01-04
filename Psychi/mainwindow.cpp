@@ -1040,7 +1040,7 @@ void MainWindow::readStandardError()
     qDebug() << "stderr: " << QString(ary);
 }
 
-void MainWindow::beginReadRawlineWithPrompt(const QString prompt)
+void MainWindow::beginReadRawlineWithPrompt(const QString &prompt)
 {
     windowMode = windowMode_waitForRawline;
     ui->mainConsole->requestRawlineWithPrompt(prompt);
