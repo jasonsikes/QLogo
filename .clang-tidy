@@ -1,7 +1,6 @@
 ---
 # Clang-tidy configuration for QLogo project
-# Run with: clang-tidy -p . <files>
-# Or, find qlogo -name "*.cpp" -exec clang-tidy -p . {} \; > clang_tidy.out
+# Run with: scripts/run-clang-tools.sh
 
 Checks: >
   # Bug-prone patterns
