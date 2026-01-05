@@ -1,0 +1,51 @@
+name: RT FD Test
+description: Tests the RIGHT and FORWARD commands
+
+messages:
+  - expect:
+      message: C_CONSOLE_REQUEST_LINE
+      data:
+        prompt: "? "
+  - send:
+      message: C_CONSOLE_RAWLINE_READ
+      data: "rt 90"
+  - expect:
+      message: C_CANVAS_UPDATE_TURTLE_POS
+      data: <QTransform>
+  - expect:
+      message: C_CONSOLE_REQUEST_LINE
+      data:
+        prompt: "? "
+  - send:
+      message: C_CONSOLE_RAWLINE_READ
+      data: "fd 100"
+  - expect:
+      message: C_CANVAS_UPDATE_TURTLE_POS
+      data: <QTransform>
+  - expect:
+      message: C_CANVAS_EMIT_VERTEX
+      data: null
+  - expect:
+      message: C_CONSOLE_REQUEST_LINE
+      data:
+        prompt: "? "
+  - send:
+      message: C_CONSOLE_RAWLINE_READ
+      data: "show pos"
+  - expect:
+      message: C_CONSOLE_PRINT_STRING
+      data: "[100 0]\n"
+  - expect:
+      message: C_CONSOLE_REQUEST_LINE
+      data:
+        prompt: "? "
+  - send:
+      message: C_CONSOLE_RAWLINE_READ
+      data: "bye"
+  - expect:
+      message: C_CONSOLE_PRINT_STRING
+      data: "\n"
+  - expect:
+      message: W_CLOSE_PIPE
+      data: null
+  - close_write_pipe: {}
