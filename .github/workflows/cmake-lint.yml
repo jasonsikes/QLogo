@@ -1,0 +1,53 @@
+name: CMake Lint
+
+on:
+  pull_request:
+    paths:
+      - '**/CMakeLists.txt'
+      - '**/*.cmake'
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - '**/CMakeLists.txt'
+      - '**/*.cmake'
+
+jobs:
+  cmake-lint:
+    name: Lint CMake files
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install cmake-lint
+      run: |
+        pip3 install cmake-lint
+        
+    - name: Run cmake-lint
+      continue-on-error: true
+      run: |
+        find . -name "CMakeLists.txt" -o -name "*.cmake" | \
+          grep -v build | \
+          grep -v ".git" | \
+          xargs cmake-lint --suppress-decorations || true
+        
+    - name: Install cmake-format
+      run: |
+        pip3 install cmake-format
+        
+    - name: Check cmake-format
+      continue-on-error: true
+      run: |
+        find . -name "CMakeLists.txt" -o -name "*.cmake" | \
+          grep -v build | \
+          grep -v ".git" | \
+          while read file; do
+            echo "Checking: $file"
+            cmake-format --check "$file" || echo "  ⚠ Needs formatting"
+          done
+
+
+

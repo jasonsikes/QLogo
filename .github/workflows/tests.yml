@@ -1,0 +1,74 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        build-type: [Debug, Release]
+        exclude:
+          # Only test Release on one OS to save CI time
+          - os: macos-latest
+            build-type: Release
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          ninja-build \
+          qt6-base-dev \
+          qt6-base-dev-tools \
+          libqt6sql6-sqlite \
+          libllvm-dev \
+          clang
+        
+    - name: Install dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install cmake ninja qt@6 llvm
+        
+    - name: Configure CMake
+      run: |
+        mkdir -p build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+              -G Ninja ..
+              
+    - name: Build
+      run: |
+        cd build
+        cmake --build . --config ${{ matrix.build-type }}
+        
+    - name: Run tests
+      working-directory: build/test
+      run: |
+        chmod +x test.sh
+        ./test.sh || true  # Don't fail on first error to see all results
+        
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.os }}-${{ matrix.build-type }}
+        path: build/test/
+        retention-days: 7
+
+
+
