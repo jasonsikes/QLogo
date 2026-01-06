@@ -24,8 +24,8 @@
 /// @brief A node of QLogo's Abstract Syntax Tree.
 ///
 /// @details Before execution, a list is parsed into a QList of executable nodes. Each node
-/// contains its name, a pointer to the KernelMethod that will perform the actual execution,
-/// and an array of zero or more child ASTNodes.
+/// contains its name, a pointer to the Compiler generator method that will generate the code
+/// to execute this node, and an array of zero or more child ASTNodes.
 class ASTNode : public Datum
 {
   protected:
@@ -46,10 +46,10 @@ class ASTNode : public Datum
     DatumPtr procedure;
 
     /// @brief A pointer to the Compiler method that generates code to execute this node.
-    Generator genExpression;
+    Generator genExpression = nullptr;
 
     /// @brief a bitfield containing the type(s) of value that this function is expected to return.
-    RequestReturnType returnType;
+    RequestReturnType returnType = RequestReturnVoid;
 
     /// @brief Add a child to the node. Child will be added to the end of the children list.
     /// @param aChild The child to add.

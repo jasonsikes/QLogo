@@ -38,8 +38,6 @@ ASTNode::ASTNode(const DatumPtr &aNodeName)
     isa = Datum::typeASTNode;
     children.clear();
     nodeName = aNodeName;
-    genExpression = nullptr;
-    returnType = RequestReturnVoid;
 }
 
 ASTNode::ASTNode(const QString &aNodeName)
@@ -47,8 +45,6 @@ ASTNode::ASTNode(const QString &aNodeName)
     isa = Datum::typeASTNode;
     children.clear();
     nodeName = DatumPtr(aNodeName);
-    genExpression = nullptr;
-    returnType = RequestReturnVoid;
 }
 
 ASTNode::~ASTNode() = default;
