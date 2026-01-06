@@ -10,7 +10,7 @@
 ///
 /// \file
 /// This file contains the implementation of the Parser class, which is
-/// responsible for parsing text, lists, and arrays.
+/// responsible for generating an Abstract Syntax Tree from a list.
 ///
 //===----------------------------------------------------------------------===//
 
