@@ -229,10 +229,10 @@ class Procedure : public Datum
     int countOfMaxParams = -1;
 
     /// @brief A hash table to map tag names to the lines in the source text.
-    QHash<const QString, DatumPtr> tagToLine;
+    QHash<QString, DatumPtr> tagToLine;
 
     /// @brief A hash table to map tag names to the block ID for efficient execution.
-    QHash<const QString, int32_t> tagToBlockId;
+    QHash<QString, int32_t> tagToBlockId;
 
     /// @brief Whether this procedure is a macro.
     bool isMacro = false;
