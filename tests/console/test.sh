@@ -78,6 +78,15 @@ fi
 # Maximum number of parallel processes
 max_jobs=8
 
+# Check if system has GNU date (supports %N for nanoseconds)
+has_gnu_date() {
+    # GNU date supports --version, BSD date doesn't
+    if date --version >/dev/null 2>&1 && date --version 2>&1 | grep -q "GNU"; then
+        return 0
+    fi
+    return 1
+}
+
 if (( $argc > 0 ))
 then
     for filename in ${filenames[*]}
@@ -85,7 +94,9 @@ then
         run_test $filename
     done
 else
-    start_time=`date +%s`
+    if has_gnu_date; then
+        start_time=`date +%s%3N`
+    fi
     test_count=0
     
     # Create temporary file for collecting failed test names
@@ -145,8 +156,10 @@ else
     fi
     rm -f "$failed_test_file"
     
-    end_time=`date +%s`
-    trt=$((end_time-start_time))
+    if has_gnu_date; then
+        end_time=`date +%s%3N`
+        trt=$((end_time-start_time))
+    fi
 
     if (( ${#failed_tests[@]} )); then
         echo
@@ -162,7 +175,9 @@ else
     fi
 
     echo $test_count tests.
-    echo Total Running time: ${trt} seconds
+    if has_gnu_date; then
+        echo Total Running time: ${trt} milliseconds
+    fi
 fi
 
 if (( ${#failed_tests[@]} )); then
