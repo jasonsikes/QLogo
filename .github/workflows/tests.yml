@@ -47,6 +47,10 @@ jobs:
       run: |
         mkdir -p build
         cd build
+        if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+          LLVM_PREFIX=$(brew --prefix llvm)
+          export LLVM_DIR="${LLVM_PREFIX}/lib/cmake/llvm"
+        fi
         cmake -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
               -G Ninja ..
