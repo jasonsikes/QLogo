@@ -80,7 +80,7 @@ class Kernel
 
   public:
     /// @brief Treeifier.
-    Treeifier *parser;
+    Treeifier *treeifier;
 
     /// @brief The current error, if any.
     DatumPtr currentError;

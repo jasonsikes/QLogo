@@ -1,5 +1,5 @@
 
-//===-- qlogo/parser.cpp - Parser class implementation -------*- C++ -*-===//
+//===-- qlogo/textstream.cpp - TextStream class implementation -------*- C++ -*-===//
 //
 // Copyright 2017-2024 Jason Sikes
 //
@@ -10,7 +10,7 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the Reader class, which is responsible
+/// This file contains the implementation of the TextStream class, which is responsible
 /// for reading text from any kind of text stream.
 ///
 //===----------------------------------------------------------------------===//

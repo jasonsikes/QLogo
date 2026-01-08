@@ -329,7 +329,7 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node,
                                        RequestReturnType returnType,
                                        RequestReturnType paramRequestType)
 {
-    // If the parser attached an output value to the node, then we need to process that.
+    // If the treeifyer attached an output value to the node, then we need to process that.
     if (node.astnodeValue()->countOfChildren() > 0)
     {
         DatumPtr child = node.astnodeValue()->childAtIndex(0);

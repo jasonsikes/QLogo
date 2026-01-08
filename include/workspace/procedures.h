@@ -22,7 +22,7 @@
 #include "library.h"
 #include <QHash>
 
-/// @brief A structure to hold a command's details for the parser.
+/// @brief A structure to hold a command's details for the treeifyer.
 /// @note This is used to map a command name to its method, minimum, default, maximum
 /// parameter counts, and return data type.
 struct Cmd_t

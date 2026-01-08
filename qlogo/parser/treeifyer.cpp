@@ -1,4 +1,4 @@
-//===-- parser.cpp - Treeifier class implementation -------*- C++ -*-===//
+//===-- treeifyer.cpp - Treeifier class implementation -------*- C++ -*-===//
 //
 // Copyright 2017-2024 Jason Sikes
 //
@@ -28,7 +28,7 @@
 #include <qdebug.h>
 
 // TODO: we could reimplement this into something a little faster.
-/// A string of special characters that are used in the parser.
+/// A string of special characters that are used in the treeifyer.
 const QString &specialChars()
 {
     static const QString specialCharsInstance("+-()*%/<>=");

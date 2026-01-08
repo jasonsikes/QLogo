@@ -163,7 +163,7 @@ Datum *Kernel::inputProcedure(ASTNode *node)
     Datum *retval = node;
     try
     {
-        parser->inputProcedure(node, systemReadStream);
+        treeifier->inputProcedure(node, systemReadStream);
     }
     catch (FCError *err)
     {
@@ -267,7 +267,7 @@ Kernel::Kernel()
 
     turtle = new Turtle;
     procedures = new Procedures;
-    parser = new Treeifier;
+    treeifier = new Treeifier;
     theCompiler = new Compiler();
 
     // callStack holds a pointer to the new frame so it will be deleted when this
@@ -284,7 +284,7 @@ Kernel::~Kernel()
 {
     closeAll();
     delete theCompiler;
-    delete parser;
+    delete treeifier;
     delete procedures;
     delete turtle;
 
