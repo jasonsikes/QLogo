@@ -1,7 +1,7 @@
 #ifndef TREEIFIER_H
 #define TREEIFIER_H
 
-//===-- qlogo/parser.h - Treeifier class definition -------*- C++ -*-===//
+//===-- qlogo/treeifyer.h - Treeifier class definition -------*- C++ -*-===//
 //
 // Copyright 2017-2024 Jason Sikes
 //

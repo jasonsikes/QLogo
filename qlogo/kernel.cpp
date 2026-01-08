@@ -24,8 +24,8 @@
 #include "compiler.h"
 #include "controller/textstream.h"
 #include "datum_types.h"
-#include "parser.h"
 #include "sharedconstants.h"
+#include "treeifyer.h"
 #include "workspace/procedures.h"
 #include <QApplication> // quit()
 #include <QColor>

@@ -19,9 +19,9 @@
 #include "compiler.h"
 #include "flowcontrol.h"
 #include "kernel.h"
-#include "parser.h"
 #include "runparser.h"
 #include "sharedconstants.h"
+#include "treeifyer.h"
 #include "workspace/procedures.h"
 
 #include <QObject>

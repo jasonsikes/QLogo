@@ -18,7 +18,7 @@
 
 #include "compiler.h"
 #include "datum_types.h"
-#include "parser.h"
+#include "treeifyer.h"
 #include "visited.h"
 #include <QObject>
 #include <qdebug.h>

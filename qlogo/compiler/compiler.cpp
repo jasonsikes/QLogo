@@ -20,8 +20,8 @@
 #include "datum_types.h"
 #include "exports.h"
 #include "kernel.h"
-#include "parser.h"
 #include "sharedconstants.h"
+#include "treeifyer.h"
 #include "workspace/callframe.h"
 #include "workspace/procedures.h"
 #include <iostream>

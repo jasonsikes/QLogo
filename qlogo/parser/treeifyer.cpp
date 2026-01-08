@@ -14,7 +14,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "parser.h"
+#include "treeifyer.h"
 #include "astnode.h"
 #include "compiler.h"
 #include "controller/logocontroller.h"
