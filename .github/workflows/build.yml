@@ -32,6 +32,7 @@ jobs:
           qt6-base-dev \
           qt6-base-dev-tools \
           libqt6sql6-sqlite \
+          libqt6svg6 \
           llvm-19-dev
         
     - name: Install dependencies (macOS)
