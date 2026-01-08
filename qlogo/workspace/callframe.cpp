@@ -21,7 +21,6 @@
 #include "kernel.h"
 #include "runparser.h"
 #include "sharedconstants.h"
-#include "treeifyer.h"
 #include "workspace/procedures.h"
 
 #include <QObject>
