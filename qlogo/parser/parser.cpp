@@ -10,7 +10,7 @@
 ///
 /// \file
 /// This file contains the implementation of the Parser class, which is
-/// responsible for generating an Abstract Syntax Tree from a list.
+/// responsible for treeifying a list into an Abstract Syntax Tree.
 ///
 //===----------------------------------------------------------------------===//
 
@@ -127,7 +127,7 @@ QList<QList<DatumPtr>> Parser::astFromList(List *aList)
         {
             while (!currentToken.isNothing())
             {
-                astFlatList.push_back(parseRootExp());
+                astFlatList.push_back(treeifyRootExp());
             }
         }
         catch (FCError *e)
@@ -174,11 +174,11 @@ void Parser::destroyAstForList(List *aList)
     astListTable.remove(aList);
 }
 
-// The remaining methods parse into AST nodes.
+// The remaining methods treeify into AST nodes.
 
-DatumPtr Parser::parseRootExp()
+DatumPtr Parser::treeifyRootExp()
 {
-    DatumPtr node = parseExp();
+    DatumPtr node = treeifyExp();
     if ((currentToken.isa() == Datum::typeWord) &&
         (currentToken.toString(Datum::ToStringFlags_Key) == QObject::tr("STOP")))
     {
@@ -192,16 +192,16 @@ DatumPtr Parser::parseRootExp()
     return node;
 }
 
-DatumPtr Parser::parseExp()
+DatumPtr Parser::treeifyExp()
 {
-    DatumPtr left = parseSumexp();
+    DatumPtr left = treeifySumexp();
     while ((currentToken.isa() == Datum::typeWord) &&
            ((currentToken.toString() == "=") || (currentToken.toString() == "<>") || (currentToken.toString() == ">") ||
             (currentToken.toString() == "<") || (currentToken.toString() == ">=") || (currentToken.toString() == "<=")))
     {
         DatumPtr op = currentToken;
         advanceToken();
-        DatumPtr right = parseSumexp();
+        DatumPtr right = treeifySumexp();
 
         auto node = DatumPtr(new ASTNode(op));
         if (!right.isASTNode())
@@ -244,15 +244,15 @@ DatumPtr Parser::parseExp()
     return left;
 }
 
-DatumPtr Parser::parseSumexp()
+DatumPtr Parser::treeifySumexp()
 {
-    DatumPtr left = parseMulexp();
+    DatumPtr left = treeifyMulexp();
     while ((currentToken.isa() == Datum::typeWord) &&
            ((currentToken.toString() == "+") || (currentToken.toString() == "-")))
     {
         DatumPtr op = currentToken;
         advanceToken();
-        DatumPtr right = parseMulexp();
+        DatumPtr right = treeifyMulexp();
 
         auto node = DatumPtr(new ASTNode(op));
         if (!right.isASTNode())
@@ -275,15 +275,15 @@ DatumPtr Parser::parseSumexp()
     return left;
 }
 
-DatumPtr Parser::parseMulexp()
+DatumPtr Parser::treeifyMulexp()
 {
-    DatumPtr left = parseminusexp();
+    DatumPtr left = treeifyminusexp();
     while ((currentToken.isa() == Datum::typeWord) &&
            ((currentToken.toString() == "*") || (currentToken.toString() == "/") || (currentToken.toString() == "%")))
     {
         DatumPtr op = currentToken;
         advanceToken();
-        DatumPtr right = parseminusexp();
+        DatumPtr right = treeifyminusexp();
 
         auto node = DatumPtr(new ASTNode(op));
         if (!right.isASTNode())
@@ -311,14 +311,14 @@ DatumPtr Parser::parseMulexp()
     return left;
 }
 
-DatumPtr Parser::parseminusexp()
+DatumPtr Parser::treeifyminusexp()
 {
-    DatumPtr left = parseTermexp();
+    DatumPtr left = treeifyTermexp();
     while ((currentToken.isa() == Datum::typeWord) && ((currentToken.toString() == "--")))
     {
         DatumPtr op = currentToken;
         advanceToken();
-        DatumPtr right = parseTermexp();
+        DatumPtr right = treeifyTermexp();
 
         auto node = DatumPtr(new ASTNode(op));
         if (!right.isASTNode())
@@ -332,7 +332,7 @@ DatumPtr Parser::parseminusexp()
     return left;
 }
 
-DatumPtr Parser::parseTermexp()
+DatumPtr Parser::treeifyTermexp()
 {
     if (currentToken.isNothing())
         return nothing();
@@ -373,16 +373,16 @@ DatumPtr Parser::parseTermexp()
             if ((firstChar != '"') && (firstChar != ':') && ((firstChar < '0') || (firstChar > '9')) &&
                 !specialChars().contains(firstChar))
             {
-                retval = parseCommand(true);
+                retval = treeifyCommand(true);
             }
             else
             {
-                retval = parseExp();
+                retval = treeifyExp();
             }
         }
         else
         {
-            retval = parseExp();
+            retval = treeifyExp();
         }
 
         // Make sure there is a closing paren
@@ -438,10 +438,10 @@ DatumPtr Parser::parseTermexp()
     }
 
     // If all else fails, it must be a function with the default number of params
-    return parseCommand(false);
+    return treeifyCommand(false);
 }
 
-DatumPtr Parser::parseCommand(bool isVararg)
+DatumPtr Parser::treeifyCommand(bool isVararg)
 {
     if (currentToken.isNothing())
         return nothing();
@@ -473,7 +473,7 @@ DatumPtr Parser::parseCommand(bool isVararg)
             }
             else
             {
-                child = parseExp();
+                child = treeifyExp();
             }
             node.astnodeValue()->addChild(child);
             ++countOfChildren;
@@ -491,7 +491,7 @@ DatumPtr Parser::parseCommand(bool isVararg)
             }
             else
             {
-                child = parseExp();
+                child = treeifyExp();
             }
             node.astnodeValue()->addChild(child);
             ++countOfChildren;
@@ -503,7 +503,7 @@ DatumPtr Parser::parseCommand(bool isVararg)
         {
             if (currentToken.isNothing())
                 throw FCError::notEnoughInputs(cmdP);
-            DatumPtr child = parseExp();
+            DatumPtr child = treeifyExp();
             node.astnodeValue()->addChild(child);
             ++countOfChildren;
         }

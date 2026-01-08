@@ -13,7 +13,7 @@
 ///
 /// \file
 /// This file contains the declaration of the Parser class, which is responsible
-/// for parsing a QLogo list into Abstract Syntax Trees and for reading user-defined
+/// for treeifying a QLogo list into Abstract Syntax Trees and for reading user-defined
 /// procedures from a text stream.
 ///
 //===----------------------------------------------------------------------===//
@@ -26,7 +26,7 @@ class Procedures;
 class Kernel;
 class TextStream;
 
-/// @brief The Parser class is responsible for parsing a QLogo list into Abstract
+/// @brief The Parser class is responsible for treeifying a QLogo list into Abstract
 /// Syntax Trees and for reading user-defined procedures from a text stream.
 class Parser
 {
@@ -37,17 +37,17 @@ class Parser
     void advanceToken();
     List *listIter;
 
-    DatumPtr parseRootExp();
-    DatumPtr parseExp();
-    DatumPtr parseSumexp();
-    DatumPtr parseMulexp();
-    DatumPtr parseminusexp();
-    DatumPtr parseTermexp();
-    DatumPtr parseCommand(bool isVararg);
+    DatumPtr treeifyRootExp();
+    DatumPtr treeifyExp();
+    DatumPtr treeifySumexp();
+    DatumPtr treeifyMulexp();
+    DatumPtr treeifyminusexp();
+    DatumPtr treeifyTermexp();
+    DatumPtr treeifyCommand(bool isVararg);
 
   public:
-    /// @brief Parse a QLogo list into a list of Abstract Syntax Trees.
-    /// @param aList The list to parse.
+    /// @brief Treeify a QLogo list into a list of Abstract Syntax Trees.
+    /// @param aList The list to treeify.
     /// @returns A list of AST nodes.
     /// @note A QLogo list may hold multiple trees. For example,
     /// `[HOME FORWARD 100]` is a list containing two trees, one for the `HOME`
