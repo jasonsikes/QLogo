@@ -72,13 +72,6 @@ class Procedures
         return lastProcedureCreatedTimestamp;
     }
 
-    /// @brief Create an AST from a list.
-    /// @param aList The list to create an AST from.
-    /// @return A pointer to the created ASTList.
-    /// @note A list can contain several commands, so this returns a list of ASTNode roots,
-    /// with each root representing a command.
-    QList<DatumPtr> *astFromList(List *aList);
-
     /// @brief Create a procedure from a command and its text.
     /// @param cmd The name of the command.
     /// @param text The text to create a procedure from, in the form of a list of sublists.
