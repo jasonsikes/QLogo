@@ -224,9 +224,6 @@ class Compiler
     /// Get the compiled function pointer for a list.
     CompiledFunctionPtr functionPtrFromList(List *aList);
 
-    /// Get the compiled function pointer for an ASTNode.
-    CompiledFunctionPtr functionPtrFromASTNode(ASTNode *aNode);
-
     /// Destroy the compiled text for a datum (either a List or an ASTNode).
     static void destroyCompiledTextForDatum(Datum *aDatum);
 
