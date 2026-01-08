@@ -62,12 +62,6 @@ class Treeifier
     /// starting with `END` is encountered, and the text is read into the body of
     /// the procedure.
     void inputProcedure(ASTNode *node, TextStream *readStream);
-
-    /// @brief Destroy the AST built from a list, if it exists.
-    /// @param aList The list to destroy the AST for.
-    /// @note This should only be called by a list destructor.
-    /// @note This will, in turn, destroy the compiled function for the AST.
-    static void destroyAstForList(List *aList);
 };
 
 #endif // TREEIFIER_H

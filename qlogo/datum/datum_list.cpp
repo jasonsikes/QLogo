@@ -129,7 +129,8 @@ void List::clear()
     Q_ASSERT(this != EmptyList::instance());
     head = nothing();
     tail = nothing();
-    Treeifier::destroyAstForList(this);
+    if (astParseTimeStamp > 0)
+        Compiler::destroyCompiledTextForDatum(this);
     astParseTimeStamp = 0;
 }
 

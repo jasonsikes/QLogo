@@ -168,6 +168,7 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     scaff = &compilerScaffolding;
 
     auto *compiledText = new CompiledText();
+    compiledText->astList = parsedList;
     compiledTextTable[key] = std::shared_ptr<CompiledText>(compiledText);
 
     // Generate the prototype and add it to the module.

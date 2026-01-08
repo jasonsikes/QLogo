@@ -6,12 +6,12 @@
 #undef emit
 #endif
 
+#include "datum_ptr.h"
+#include <QList>
 #include <llvm/ExecutionEngine/Orc/Core.h>
 #include <llvm/IR/Value.h>
 
 typedef uint64_t *addr_t;
-class Datum;
-class DatumPtr;
 class Compiler;
 
 /// @brief Expression generator request type.
@@ -53,6 +53,10 @@ struct CompiledText
     llvm::orc::ResourceTrackerSP rt;
 
     CompiledFunctionPtr functionPtr = nullptr;
+
+    // The AST list from which the compiled function was generated.
+    // This is stored to ensure the AST nodes are kept alive as long as the compiled text exists.
+    QList<QList<DatumPtr>> astList;
 
     ~CompiledText();
 };

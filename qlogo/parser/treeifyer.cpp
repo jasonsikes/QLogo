@@ -35,8 +35,6 @@ const QString &specialChars()
     return specialCharsInstance;
 }
 
-QHash<List *, QList<QList<DatumPtr>>> Treeifier::astListTable;
-
 bool isTag(const DatumPtr &node)
 {
     return node.astnodeValue()->genExpression == &Compiler::genTag;
@@ -46,6 +44,7 @@ void Treeifier::inputProcedure(ASTNode *node, TextStream *readStream)
 {
     // to is the command name that initiated inputProcedure(), it is the first
     // word in the input line, 'TO' or '.MACRO'.
+    // TODO: rename this to "command"
     DatumPtr to = node->nodeName;
     if (node->countOfChildren() == 0)
         throw FCError::notEnoughInputs(to);
@@ -110,68 +109,57 @@ void Treeifier::inputProcedure(ASTNode *node, TextStream *readStream)
 
 QList<QList<DatumPtr>> Treeifier::astFromList(List *aList)
 {
-    QList<QList<DatumPtr>> &retval = astListTable[aList];
-    if (aList->astParseTimeStamp <= Config::get().mainProcedures()->timeOfLastProcedureCreation())
+    QList<QList<DatumPtr>> retval;
+    aList->astParseTimeStamp = QDateTime::currentMSecsSinceEpoch();
+
+    DatumPtr runParsedList = runparse(aList);
+
+    listIter = runParsedList.listValue();
+    QList<DatumPtr> astFlatList;
+
+    advanceToken();
+
+    try
     {
-        aList->astParseTimeStamp = QDateTime::currentMSecsSinceEpoch();
-
-        DatumPtr runParsedList = runparse(aList);
-
-        listIter = runParsedList.listValue();
-        retval.clear();
-        QList<DatumPtr> astFlatList;
-
-        advanceToken();
-
-        try
+        while (!currentToken.isNothing())
         {
-            while (!currentToken.isNothing())
-            {
-                astFlatList.push_back(treeifyRootExp());
-            }
+            astFlatList.push_back(treeifyRootExp());
         }
-        catch (FCError *e)
-        {
-            // The AST is invalid, so destroy it and rethrow the error.
-            destroyAstForList(aList);
-            aList->astParseTimeStamp = 0;
-            throw;
-        }
-        // If the last ASTNode is a tag, generate a NOOP expression at the end
-        // to ensure that there is an instruction to jump to.
-        if (astFlatList.last().astnodeValue()->genExpression == &Compiler::genTag)
-        {
-            auto *noopNode = new ASTNode(DatumPtr(QObject::tr("NOOP")));
-            noopNode->genExpression = &Compiler::genNoop;
-            noopNode->returnType = RequestReturnNothing;
-            astFlatList.append(DatumPtr(noopNode));
-        }
+    }
+    catch (FCError *e)
+    {
+        aList->astParseTimeStamp = 0;
+        throw;
+    }
+    // If the last ASTNode is a tag, generate a NOOP expression after it
+    // to ensure that there is an instruction to jump to.
+    if (astFlatList.last().astnodeValue()->genExpression == &Compiler::genTag)
+    {
+        auto *noopNode = new ASTNode(DatumPtr(QObject::tr("NOOP")));
+        noopNode->genExpression = &Compiler::genNoop;
+        noopNode->returnType = RequestReturnNothing;
+        astFlatList.append(DatumPtr(noopNode));
+    }
 
-        // Now create AST sublists for tag/block pairs.
-        QList<DatumPtr> currentBlock;
-        for (auto &node : astFlatList)
+    // Now create AST sublists for tag/block pairs.
+    QList<DatumPtr> currentBlock;
+    for (auto &node : astFlatList)
+    {
+        if (currentBlock.isEmpty())
+            currentBlock.append(node);
+        else
         {
-            if (currentBlock.isEmpty())
+            if (isTag(node) == isTag(currentBlock.last()))
                 currentBlock.append(node);
             else
             {
-                if (isTag(node) == isTag(currentBlock.last()))
-                    currentBlock.append(node);
-                else
-                {
-                    retval.append(currentBlock);
-                    currentBlock = {node};
-                }
+                retval.append(currentBlock);
+                currentBlock = {node};
             }
         }
-        retval.append(currentBlock);
     }
+    retval.append(currentBlock);
     return retval;
-}
-
-void Treeifier::destroyAstForList(List *aList)
-{
-    astListTable.remove(aList);
 }
 
 // The remaining methods treeify into AST nodes.
