@@ -44,14 +44,6 @@ class Runparser
     /// @param src A QLogo word or list to parse.
     /// @returns A list of tokens.
     DatumPtr doRunparse(DatumPtr src);
-
-    ~Runparser()
-    {
-        if (runparseBuilder)
-        {
-            delete runparseBuilder;
-        }
-    }
 };
 
 /// @brief Parse a QLogo word or list into a list of tokens.

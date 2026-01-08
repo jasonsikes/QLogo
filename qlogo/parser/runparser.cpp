@@ -214,11 +214,8 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
         return emptyList();
     }
 
-    if (runparseBuilder)
-    {
-        delete runparseBuilder;
-    }
-    runparseBuilder = new ListBuilder();
+    ListBuilder builder;
+    runparseBuilder = &builder;
 
     ListIterator iter = src.listValue()->newIterator();
 
