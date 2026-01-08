@@ -25,7 +25,7 @@
 #include <QSet>
 #include <QVector>
 
-class Parser;
+class Treeifier;
 class Turtle;
 class ProcedureScope;
 class Compiler;
@@ -79,8 +79,8 @@ class Kernel
     void initVariables();
 
   public:
-    /// @brief Parser.
-    Parser *parser;
+    /// @brief Treeifier.
+    Treeifier *parser;
 
     /// @brief The current error, if any.
     DatumPtr currentError;

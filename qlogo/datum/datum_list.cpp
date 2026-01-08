@@ -129,7 +129,7 @@ void List::clear()
     Q_ASSERT(this != EmptyList::instance());
     head = nothing();
     tail = nothing();
-    Parser::destroyAstForList(this);
+    Treeifier::destroyAstForList(this);
     astParseTimeStamp = 0;
 }
 

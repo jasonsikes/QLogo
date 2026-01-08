@@ -1,4 +1,4 @@
-//===-- parser.cpp - Parser class implementation -------*- C++ -*-===//
+//===-- parser.cpp - Treeifier class implementation -------*- C++ -*-===//
 //
 // Copyright 2017-2024 Jason Sikes
 //
@@ -9,7 +9,7 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the Parser class, which is
+/// This file contains the implementation of the Treeifier class, which is
 /// responsible for treeifying a list into an Abstract Syntax Tree.
 ///
 //===----------------------------------------------------------------------===//
@@ -35,14 +35,14 @@ const QString &specialChars()
     return specialCharsInstance;
 }
 
-QHash<List *, QList<QList<DatumPtr>>> Parser::astListTable;
+QHash<List *, QList<QList<DatumPtr>>> Treeifier::astListTable;
 
 bool isTag(const DatumPtr &node)
 {
     return node.astnodeValue()->genExpression == &Compiler::genTag;
 }
 
-void Parser::inputProcedure(ASTNode *node, TextStream *readStream)
+void Treeifier::inputProcedure(ASTNode *node, TextStream *readStream)
 {
     // to is the command name that initiated inputProcedure(), it is the first
     // word in the input line, 'TO' or '.MACRO'.
@@ -108,7 +108,7 @@ void Parser::inputProcedure(ASTNode *node, TextStream *readStream)
     Config::get().mainKernel()->sysPrint(message);
 }
 
-QList<QList<DatumPtr>> Parser::astFromList(List *aList)
+QList<QList<DatumPtr>> Treeifier::astFromList(List *aList)
 {
     QList<QList<DatumPtr>> &retval = astListTable[aList];
     if (aList->astParseTimeStamp <= Config::get().mainProcedures()->timeOfLastProcedureCreation())
@@ -169,14 +169,14 @@ QList<QList<DatumPtr>> Parser::astFromList(List *aList)
     return retval;
 }
 
-void Parser::destroyAstForList(List *aList)
+void Treeifier::destroyAstForList(List *aList)
 {
     astListTable.remove(aList);
 }
 
 // The remaining methods treeify into AST nodes.
 
-DatumPtr Parser::treeifyRootExp()
+DatumPtr Treeifier::treeifyRootExp()
 {
     DatumPtr node = treeifyExp();
     if ((currentToken.isa() == Datum::typeWord) &&
@@ -192,7 +192,7 @@ DatumPtr Parser::treeifyRootExp()
     return node;
 }
 
-DatumPtr Parser::treeifyExp()
+DatumPtr Treeifier::treeifyExp()
 {
     DatumPtr left = treeifySumexp();
     while ((currentToken.isa() == Datum::typeWord) &&
@@ -244,7 +244,7 @@ DatumPtr Parser::treeifyExp()
     return left;
 }
 
-DatumPtr Parser::treeifySumexp()
+DatumPtr Treeifier::treeifySumexp()
 {
     DatumPtr left = treeifyMulexp();
     while ((currentToken.isa() == Datum::typeWord) &&
@@ -275,7 +275,7 @@ DatumPtr Parser::treeifySumexp()
     return left;
 }
 
-DatumPtr Parser::treeifyMulexp()
+DatumPtr Treeifier::treeifyMulexp()
 {
     DatumPtr left = treeifyminusexp();
     while ((currentToken.isa() == Datum::typeWord) &&
@@ -311,7 +311,7 @@ DatumPtr Parser::treeifyMulexp()
     return left;
 }
 
-DatumPtr Parser::treeifyminusexp()
+DatumPtr Treeifier::treeifyminusexp()
 {
     DatumPtr left = treeifyTermexp();
     while ((currentToken.isa() == Datum::typeWord) && ((currentToken.toString() == "--")))
@@ -332,7 +332,7 @@ DatumPtr Parser::treeifyminusexp()
     return left;
 }
 
-DatumPtr Parser::treeifyTermexp()
+DatumPtr Treeifier::treeifyTermexp()
 {
     if (currentToken.isNothing())
         return nothing();
@@ -441,7 +441,7 @@ DatumPtr Parser::treeifyTermexp()
     return treeifyCommand(false);
 }
 
-DatumPtr Parser::treeifyCommand(bool isVararg)
+DatumPtr Treeifier::treeifyCommand(bool isVararg)
 {
     if (currentToken.isNothing())
         return nothing();
@@ -517,7 +517,7 @@ DatumPtr Parser::treeifyCommand(bool isVararg)
     return node;
 }
 
-void Parser::advanceToken()
+void Treeifier::advanceToken()
 {
     if (listIter != EmptyList::instance())
     {

@@ -1,7 +1,7 @@
-#ifndef PARSER_H
-#define PARSER_H
+#ifndef TREEIFIER_H
+#define TREEIFIER_H
 
-//===-- qlogo/parser.h - Parser class definition -------*- C++ -*-===//
+//===-- qlogo/parser.h - Treeifier class definition -------*- C++ -*-===//
 //
 // Copyright 2017-2024 Jason Sikes
 //
@@ -12,7 +12,7 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the declaration of the Parser class, which is responsible
+/// This file contains the declaration of the Treeifier class, which is responsible
 /// for treeifying a QLogo list into Abstract Syntax Trees and for reading user-defined
 /// procedures from a text stream.
 ///
@@ -26,9 +26,9 @@ class Procedures;
 class Kernel;
 class TextStream;
 
-/// @brief The Parser class is responsible for treeifying a QLogo list into Abstract
+/// @brief The Treeifier class is responsible for treeifying a QLogo list into Abstract
 /// Syntax Trees and for reading user-defined procedures from a text stream.
-class Parser
+class Treeifier
 {
     DatumPtr currentToken;
 
@@ -70,4 +70,4 @@ class Parser
     static void destroyAstForList(List *aList);
 };
 
-#endif // PARSER_H
+#endif // TREEIFIER_H

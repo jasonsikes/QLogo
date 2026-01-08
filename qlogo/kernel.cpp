@@ -267,7 +267,7 @@ Kernel::Kernel()
 
     turtle = new Turtle;
     procedures = new Procedures;
-    parser = new Parser;
+    parser = new Treeifier;
     theCompiler = new Compiler();
 
     // callStack holds a pointer to the new frame so it will be deleted when this
