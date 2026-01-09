@@ -53,15 +53,6 @@ class Treeifier
     /// `[HOME FORWARD 100]` is a list containing two trees, one for the `HOME`
     /// command and one for the `FORWARD` command.
     QList<QList<DatumPtr>> astFromList(List *aList);
-
-    /// @brief Read a user-defined procedure from a text stream.
-    /// @param node An AST node that contains the first line of the procedure.
-    /// @param readStream The text stream to read the procedure from.
-    /// @note The first line will have already been read and assigned to the children nodes of `node`.
-    /// The procedure is read until the end of the text stream or until a line
-    /// starting with `END` is encountered, and the text is read into the body of
-    /// the procedure.
-    void inputProcedure(ASTNode *node, TextStream *readStream);
 };
 
 #endif // TREEIFIER_H

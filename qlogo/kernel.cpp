@@ -158,12 +158,75 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
         sysPrint(QString("You don't say what to do with %1\n").arg(result.toString(Datum::ToStringFlags_Show)));
     }
 }
+
 Datum *Kernel::inputProcedure(ASTNode *node)
 {
     Datum *retval = node;
     try
     {
-        treeifier->inputProcedure(node, systemReadStream);
+        // to is the command name that initiated inputProcedure(), it is the first
+        // word in the input line, 'TO' or '.MACRO'.
+        // TODO: rename this to "command"
+        DatumPtr to = node->nodeName;
+        if (node->countOfChildren() == 0)
+            throw FCError::notEnoughInputs(to);
+
+        // procnameP is the name of the procedure, the second word in the input line,
+        // following 'TO' or '.MACRO'.
+        DatumPtr procnameP = node->childAtIndex(0);
+        if (!procnameP.isWord())
+            throw FCError::doesntLike(to, procnameP);
+
+        procnameP.wordValue()->numberValue();
+        if (procnameP.wordValue()->numberIsValid)
+            throw FCError::doesntLike(to, procnameP);
+
+        QString procname = procnameP.toString(Datum::ToStringFlags_Key);
+
+        QChar firstChar = (procname)[0];
+        if ((firstChar == '"') || (firstChar == ':') || (firstChar == '(') || (firstChar == ')'))
+            throw FCError::doesntLike(to, procnameP);
+
+        if (Config::get().mainProcedures()->isProcedure(procname))
+            throw FCError::procDefined(procnameP);
+
+        // Assign the procedure's parameter names and default values.
+        ListBuilder firstLineBuilder;
+        for (int i = 1; i < node->countOfChildren(); ++i)
+        {
+            firstLineBuilder.append(node->childAtIndex(i));
+        }
+        DatumPtr firstLine = firstLineBuilder.finishedList();
+        ListBuilder textBuilder;
+        textBuilder.append(firstLine);
+
+        // Now read in the body
+        forever
+        {
+            DatumPtr line = systemReadStream->readlistWithPrompt("> ", true, true);
+            if (!line.isList()) // this must be the end of the input
+                break;
+            if (line.listValue()->isEmpty())
+                continue;
+            DatumPtr first = line.listValue()->head;
+            if (first.isWord())
+            {
+                QString firstWord = first.toString(Datum::ToStringFlags_Key);
+                if (firstWord == QObject::tr("END"))
+                    break;
+            }
+            textBuilder.append(line);
+        }
+        DatumPtr textP = textBuilder.finishedList();
+
+        // The sourcetext is the raw text from which the procedure was defined.
+        // We save it in case user executes `FULLTEXT`.
+        DatumPtr sourceText = systemReadStream->recentHistory();
+        Config::get().mainProcedures()->defineProcedure(to, procnameP, textP, sourceText);
+
+        QString message = QObject::tr("%1 defined\n");
+        message = message.arg(procnameP.toString());
+        Config::get().mainKernel()->sysPrint(message);
     }
     catch (FCError *err)
     {
