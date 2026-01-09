@@ -239,11 +239,17 @@ Datum *CallFrame::applyGoto(FCGoto *node)
     // Save our running state in case we need to restore it later.
     runningSourceListSnapshot = runningSourceList;
 
-    // TODO: What if compilation results in an error?
     while (runningSourceList.isList() && runningSourceList.listValue()->isEmpty() == false)
     {
         List *list = runningSourceList.listValue()->head.listValue();
-        Config::get().mainCompiler()->functionPtrFromList(list);
+        try
+        {
+            Config::get().mainCompiler()->functionPtrFromList(list);
+        }
+        catch (FCError *e)
+        {
+            return e;
+        }
         blockIdIterator = proc->tagToBlockId.find(tag.toString(Datum::ToStringFlags_Key));
         if (blockIdIterator != proc->tagToBlockId.end())
         {
