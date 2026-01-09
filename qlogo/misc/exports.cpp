@@ -1984,7 +1984,9 @@ EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
         return reinterpret_cast<addr_t>(err);
     }
 
-    return reinterpret_cast<addr_t>(Config::get().mainKernel()->inputProcedure(node));
+    Datum *retval = Config::get().mainKernel()->inputProcedure(node);
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
 }
 
 // TODO: Should the executor be passed in here instead of getting the local frame from the call stack?
