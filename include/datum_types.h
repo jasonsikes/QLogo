@@ -185,11 +185,6 @@ class List : public Datum
     /// @return True if this is an empty list, false otherwise.
     bool isEmpty() const;
 
-    /// @brief Replaces everything but the first item in the List with aValue.
-    ///
-    /// @param aValue The value to replace the first item with.
-    virtual void setButfirstItem(const DatumPtr &aValue);
-
     /// @brief Create a new ListIterator pointing to the head of the List.
     /// @return A new ListIterator pointing to the head of the List.
     ListIterator newIterator() const;
@@ -210,7 +205,6 @@ class EmptyList : public List
     static EmptyList *instance_;
 
     void clear();
-    void setButfirstItem(const DatumPtr &aValue) override;
 
   public:
     /// @brief Get the singleton instance of EmptyList.

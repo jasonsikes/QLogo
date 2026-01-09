@@ -104,15 +104,6 @@ bool List::isEmpty() const
     return this == EmptyList::instance();
 }
 
-void List::setButfirstItem(const DatumPtr &aValue)
-{
-    Q_ASSERT(this != EmptyList::instance());
-    Q_ASSERT(aValue.isList());
-    tail = aValue;
-    if (compileTimeStamp > 0)
-        compileTimeStamp = 1;
-}
-
 DatumPtr List::itemAtIndex(int anIndex) const
 {
     const List *iter = this;
@@ -182,11 +173,6 @@ EmptyList *EmptyList::instance()
 void EmptyList::clear()
 {
     // EmptyList is immutable - do nothing
-    Q_ASSERT(false && "Attempted to modify immutable EmptyList");
-}
-
-void EmptyList::setButfirstItem(const DatumPtr & /* aValue */)
-{
     Q_ASSERT(false && "Attempted to modify immutable EmptyList");
 }
 
