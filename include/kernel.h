@@ -69,8 +69,6 @@ class Kernel
     DatumPtr editFileName;
     QString workspaceText;
 
-    void inputProcedure(DatumPtr nodeP);
-
     void closeAll();
 
     void initPalette();
