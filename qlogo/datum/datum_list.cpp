@@ -28,7 +28,6 @@ List::List(const DatumPtr &item, List *srcList)
     isa = Datum::typeList;
     head = item;
     tail = DatumPtr(srcList);
-    astParseTimeStamp = 0;
 }
 
 List::~List()
@@ -110,7 +109,8 @@ void List::setButfirstItem(const DatumPtr &aValue)
     Q_ASSERT(this != EmptyList::instance());
     Q_ASSERT(aValue.isList());
     tail = aValue;
-    astParseTimeStamp = 0;
+    if (compileTimeStamp > 0)
+        compileTimeStamp = 1;
 }
 
 DatumPtr List::itemAtIndex(int anIndex) const
@@ -129,9 +129,9 @@ void List::clear()
     Q_ASSERT(this != EmptyList::instance());
     head = nothing();
     tail = nothing();
-    if (astParseTimeStamp > 0)
+    if (compileTimeStamp > 0)
         Compiler::destroyCompiledTextForDatum(this);
-    astParseTimeStamp = 0;
+    compileTimeStamp = 0;
 }
 
 int List::count() const

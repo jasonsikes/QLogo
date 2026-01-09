@@ -1165,14 +1165,16 @@ EXPORTC void setFirstOfList(addr_t listAddr, addr_t valueAddr)
 {
     auto *l = reinterpret_cast<List *>(listAddr);
     l->head = DatumPtr(reinterpret_cast<Datum *>(valueAddr));
-    l->astParseTimeStamp = 0;
+    if (l->compileTimeStamp > 0)
+        l->compileTimeStamp = 1;
 }
 
 EXPORTC void setButfirstOfList(addr_t listAddr, addr_t valueAddr)
 {
     auto *l = reinterpret_cast<List *>(listAddr);
     l->tail = DatumPtr(reinterpret_cast<Datum *>(valueAddr));
-    l->astParseTimeStamp = 0;
+    if (l->compileTimeStamp > 0)
+        l->compileTimeStamp = 1;
 }
 
 EXPORTC bool isEmpty(addr_t thingAddr)

@@ -143,13 +143,10 @@ class List : public Datum
 
     /// @brief The time, as returned by QDateTime::currentMSecsSinceEpoch().
     ///
-    /// @details This is used to determine if the list needs to be reparsed.
-    /// Set when the most recent ASTList is generated from this list. Reset this
-    /// to zero when the list is modified to trigger reparsing, if needed.
-    ///
-    /// @todo It's difficult to know when the list is modified. We should consider
-    /// removing this.
-    qint64 astParseTimeStamp;
+    /// @details This is used to determine if the list needs to be recompiled.
+    /// Set when this list is compiled. Reset this to zero when the compiled text is destroyed.
+    /// Set to one when the list is modified to trigger recompilation, if needed.
+    qint64 compileTimeStamp = 0;
 
     /// @brief Create a new list by attaching item as the head of srcList.
     ///

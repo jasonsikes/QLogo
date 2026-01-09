@@ -110,7 +110,7 @@ void Treeifier::inputProcedure(ASTNode *node, TextStream *readStream)
 QList<QList<DatumPtr>> Treeifier::astFromList(List *aList)
 {
     QList<QList<DatumPtr>> retval;
-    aList->astParseTimeStamp = QDateTime::currentMSecsSinceEpoch();
+    aList->compileTimeStamp = QDateTime::currentMSecsSinceEpoch();
 
     DatumPtr runParsedList = runparse(aList);
 
@@ -128,7 +128,7 @@ QList<QList<DatumPtr>> Treeifier::astFromList(List *aList)
     }
     catch (FCError *e)
     {
-        aList->astParseTimeStamp = 0;
+        aList->compileTimeStamp = 0;
         throw;
     }
     // If the last ASTNode is a tag, generate a NOOP expression after it
