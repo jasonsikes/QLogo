@@ -1,0 +1,5 @@
+print 1.4e2
+print 3.14e+1
+print 1.2e-5
+print 1e-4
+print 2e4
