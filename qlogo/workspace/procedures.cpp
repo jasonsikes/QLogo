@@ -19,6 +19,7 @@
 #include "workspace/procedures.h"
 #include "QApplication"
 #include "astnode.h"
+#include "cmd_strings.h"
 #include "compiler.h"
 #include "datum_types.h"
 #include "flowcontrol.h"

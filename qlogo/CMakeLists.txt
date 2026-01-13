@@ -27,11 +27,14 @@ set(QLOGO_SOURCES
   misc/visited.cpp
   parser/treeifyer.cpp
   parser/runparser.cpp
+  parser/cmd_strings.cpp
+  parser/op_strings.cpp
   workspace/callframe.cpp
   workspace/procedures.cpp
   workspace/propertylists.cpp
 
   ../include/sharedconstants.h
+  ../include/cmd_strings.h
   ../include/compiler.h
   ../include/compiler_private.h
   ../include/compiler_types.h
@@ -51,6 +54,7 @@ set(QLOGO_SOURCES
   ../include/turtle.h
   ../include/treeifyer.h
   ../include/runparser.h
+  ../include/op_strings.h
   ../include/visited.h
   ../include/workspace/callframe.h
   ../include/workspace/primitivetable.h

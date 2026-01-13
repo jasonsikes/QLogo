@@ -16,12 +16,14 @@
 
 #include "treeifyer.h"
 #include "astnode.h"
+#include "cmd_strings.h"
 #include "compiler.h"
 #include "controller/logocontroller.h"
 #include "controller/textstream.h"
 #include "datum_types.h"
 #include "flowcontrol.h"
 #include "kernel.h"
+#include "op_strings.h"
 #include "runparser.h"
 #include "workspace/procedures.h"
 #include <qdatetime.h>
@@ -68,7 +70,7 @@ QList<QList<DatumPtr>> Treeifier::astFromList(List *aList)
     // to ensure that there is an instruction to jump to.
     if (astFlatList.last().astnodeValue()->genExpression == &Compiler::genTag)
     {
-        auto *noopNode = new ASTNode(DatumPtr(QObject::tr("NOOP")));
+        auto *noopNode = new ASTNode(DatumPtr(StringConstants::keywordNoop()));
         noopNode->genExpression = &Compiler::genNoop;
         noopNode->returnType = RequestReturnNothing;
         astFlatList.append(DatumPtr(noopNode));
@@ -101,7 +103,7 @@ DatumPtr Treeifier::treeifyRootExp()
 {
     DatumPtr node = treeifyExp();
     if ((currentToken.isa() == Datum::typeWord) &&
-        (currentToken.toString(Datum::ToStringFlags_Key) == QObject::tr("STOP")))
+        (currentToken.toString(Datum::ToStringFlags_Key) == StringConstants::cmdStrSTOP()))
     {
         auto newNode = DatumPtr(new ASTNode(currentToken));
         newNode.astnodeValue()->genExpression = &Compiler::genStop;
@@ -116,9 +118,12 @@ DatumPtr Treeifier::treeifyRootExp()
 DatumPtr Treeifier::treeifyExp()
 {
     DatumPtr left = treeifySumexp();
-    while ((currentToken.isa() == Datum::typeWord) &&
-           ((currentToken.toString() == "=") || (currentToken.toString() == "<>") || (currentToken.toString() == ">") ||
-            (currentToken.toString() == "<") || (currentToken.toString() == ">=") || (currentToken.toString() == "<=")))
+    while ((currentToken.isa() == Datum::typeWord) && ((currentToken.toString() == StringConstants::opEqual()) ||
+                                                       (currentToken.toString() == StringConstants::opNotEqual()) ||
+                                                       (currentToken.toString() == StringConstants::opGreaterThan()) ||
+                                                       (currentToken.toString() == StringConstants::opLessThan()) ||
+                                                       (currentToken.toString() == StringConstants::opGreaterEqual()) ||
+                                                       (currentToken.toString() == StringConstants::opLessEqual())))
     {
         DatumPtr op = currentToken;
         advanceToken();
@@ -128,27 +133,27 @@ DatumPtr Treeifier::treeifyExp()
         if (!right.isASTNode())
             throw FCError::notEnoughInputs(op);
 
-        if (op.toString() == "=")
+        if (op.toString() == StringConstants::opEqual())
         {
             node.astnodeValue()->genExpression = &Compiler::genEqualp;
             node.astnodeValue()->returnType = RequestReturnBool;
         }
-        else if (op.toString() == "<>")
+        else if (op.toString() == StringConstants::opNotEqual())
         {
             node.astnodeValue()->genExpression = &Compiler::genNotequalp;
             node.astnodeValue()->returnType = RequestReturnBool;
         }
-        else if (op.toString() == "<")
+        else if (op.toString() == StringConstants::opLessThan())
         {
             node.astnodeValue()->genExpression = &Compiler::genLessp;
             node.astnodeValue()->returnType = RequestReturnBool;
         }
-        else if (op.toString() == ">")
+        else if (op.toString() == StringConstants::opGreaterThan())
         {
             node.astnodeValue()->genExpression = &Compiler::genGreaterp;
             node.astnodeValue()->returnType = RequestReturnBool;
         }
-        else if (op.toString() == "<=")
+        else if (op.toString() == StringConstants::opLessEqual())
         {
             node.astnodeValue()->genExpression = &Compiler::genLessequalp;
             node.astnodeValue()->returnType = RequestReturnBool;
@@ -168,8 +173,8 @@ DatumPtr Treeifier::treeifyExp()
 DatumPtr Treeifier::treeifySumexp()
 {
     DatumPtr left = treeifyMulexp();
-    while ((currentToken.isa() == Datum::typeWord) &&
-           ((currentToken.toString() == "+") || (currentToken.toString() == "-")))
+    while ((currentToken.isa() == Datum::typeWord) && ((currentToken.toString() == StringConstants::opPlus()) ||
+                                                       (currentToken.toString() == StringConstants::opMinus())))
     {
         DatumPtr op = currentToken;
         advanceToken();
@@ -179,7 +184,7 @@ DatumPtr Treeifier::treeifySumexp()
         if (!right.isASTNode())
             throw FCError::notEnoughInputs(op);
 
-        if (op.toString() == "+")
+        if (op.toString() == StringConstants::opPlus())
         {
             node.astnodeValue()->genExpression = &Compiler::genSum;
             node.astnodeValue()->returnType = RequestReturnReal;
@@ -199,8 +204,9 @@ DatumPtr Treeifier::treeifySumexp()
 DatumPtr Treeifier::treeifyMulexp()
 {
     DatumPtr left = treeifyminusexp();
-    while ((currentToken.isa() == Datum::typeWord) &&
-           ((currentToken.toString() == "*") || (currentToken.toString() == "/") || (currentToken.toString() == "%")))
+    while ((currentToken.isa() == Datum::typeWord) && ((currentToken.toString() == StringConstants::opMultiply()) ||
+                                                       (currentToken.toString() == StringConstants::opDivide()) ||
+                                                       (currentToken.toString() == StringConstants::opModulo())))
     {
         DatumPtr op = currentToken;
         advanceToken();
@@ -210,12 +216,12 @@ DatumPtr Treeifier::treeifyMulexp()
         if (!right.isASTNode())
             throw FCError::notEnoughInputs(op);
 
-        if (op.toString() == "*")
+        if (op.toString() == StringConstants::opMultiply())
         {
             node.astnodeValue()->genExpression = &Compiler::genProduct;
             node.astnodeValue()->returnType = RequestReturnReal;
         }
-        else if (op.toString() == "/")
+        else if (op.toString() == StringConstants::opDivide())
         {
             node.astnodeValue()->genExpression = &Compiler::genQuotient;
             node.astnodeValue()->returnType = RequestReturnReal;
@@ -235,7 +241,7 @@ DatumPtr Treeifier::treeifyMulexp()
 DatumPtr Treeifier::treeifyminusexp()
 {
     DatumPtr left = treeifyTermexp();
-    while ((currentToken.isa() == Datum::typeWord) && ((currentToken.toString() == "--")))
+    while ((currentToken.isa() == Datum::typeWord) && ((currentToken.toString() == StringConstants::opDoubleMinus())))
     {
         DatumPtr op = currentToken;
         advanceToken();
@@ -260,7 +266,7 @@ DatumPtr Treeifier::treeifyTermexp()
 
     if (currentToken.isList())
     {
-        DatumPtr node(new ASTNode(QObject::tr("List")));
+        DatumPtr node(new ASTNode(StringConstants::astNodeTypeList()));
         node.astnodeValue()->genExpression = &Compiler::genLiteral;
         node.astnodeValue()->returnType = RequestReturnDatum;
         node.astnodeValue()->addChild(currentToken);
@@ -270,7 +276,7 @@ DatumPtr Treeifier::treeifyTermexp()
 
     if (currentToken.isa() == Datum::typeArray)
     {
-        DatumPtr node(new ASTNode(QObject::tr("Array")));
+        DatumPtr node(new ASTNode(StringConstants::astNodeTypeArray()));
         node.astnodeValue()->genExpression = &Compiler::genLiteral;
         node.astnodeValue()->returnType = RequestReturnDatum;
         node.astnodeValue()->addChild(currentToken);
@@ -281,7 +287,7 @@ DatumPtr Treeifier::treeifyTermexp()
     Q_ASSERT(currentToken.isa() == Datum::typeWord);
 
     // See if it's an open paren
-    if (currentToken.toString() == "(")
+    if (currentToken.toString() == StringConstants::opOpenParen())
     {
         // This may be an expression or a vararg function
         DatumPtr retval;
@@ -307,7 +313,7 @@ DatumPtr Treeifier::treeifyTermexp()
         }
 
         // Make sure there is a closing paren
-        if ((!currentToken.isWord()) || (currentToken.toString() != ")"))
+        if ((!currentToken.isWord()) || (currentToken.toString() != StringConstants::opCloseParen()))
         {
 
             throw FCError::parenNf();
@@ -318,7 +324,7 @@ DatumPtr Treeifier::treeifyTermexp()
     }
 
     QChar firstChar = currentToken.toString(Datum::ToStringFlags_Raw).at(0);
-    if ((firstChar == '"') || (firstChar == ':'))
+    if ((firstChar == StringConstants::opQuote().at(0)) || (firstChar == StringConstants::opColon().at(0)))
     {
         QString name = currentToken.toString(Datum::ToStringFlags_Raw)
                            .right(currentToken.toString(Datum::ToStringFlags_Raw).size() - 1);
@@ -326,9 +332,9 @@ DatumPtr Treeifier::treeifyTermexp()
         {
             rawToChar(name);
         }
-        if (firstChar == '"')
+        if (firstChar == StringConstants::opQuote().at(0))
         {
-            DatumPtr node(new ASTNode(QObject::tr("QuotedWord")));
+            DatumPtr node(new ASTNode(StringConstants::astNodeTypeQuotedWord()));
             node.astnodeValue()->genExpression = &Compiler::genLiteral;
             node.astnodeValue()->returnType = RequestReturnDatum;
             node.astnodeValue()->addChild(DatumPtr(DatumPtr(name, currentToken.wordValue()->isForeverSpecial)));
@@ -337,7 +343,7 @@ DatumPtr Treeifier::treeifyTermexp()
         }
         else
         {
-            DatumPtr node(new ASTNode(QObject::tr("ValueOf")));
+            DatumPtr node(new ASTNode(StringConstants::astNodeTypeValueOf()));
             node.astnodeValue()->genExpression = &Compiler::genValueOf;
             node.astnodeValue()->returnType = RequestReturnDatum;
             node.astnodeValue()->addChild(DatumPtr(name));
@@ -350,7 +356,7 @@ DatumPtr Treeifier::treeifyTermexp()
     double number = currentToken.wordValue()->numberValue();
     if (currentToken.wordValue()->numberIsValid)
     {
-        DatumPtr node(new ASTNode(QObject::tr("number")));
+        DatumPtr node(new ASTNode(StringConstants::astNodeTypeNumber()));
         node.astnodeValue()->genExpression = &Compiler::genLiteral;
         node.astnodeValue()->returnType = RequestReturnDatum;
         node.astnodeValue()->addChild(DatumPtr(number));
@@ -369,7 +375,7 @@ DatumPtr Treeifier::treeifyCommand(bool isVararg)
     DatumPtr cmdP = currentToken;
     QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
 
-    if (cmdString == ")")
+    if (cmdString == StringConstants::opCloseParen())
         throw FCError::unexpectedCloseParen();
 
     int defaultParams = 0;
@@ -384,7 +390,8 @@ DatumPtr Treeifier::treeifyCommand(bool isVararg)
     // isVararg: read all parameters until ')'
     if (isVararg)
     {
-        while ((!currentToken.isNothing()) && ((!currentToken.isWord()) || (currentToken.toString() != ")")))
+        while ((!currentToken.isNothing()) &&
+               ((!currentToken.isWord()) || (currentToken.toString() != StringConstants::opCloseParen())))
         {
             DatumPtr child;
             if (minParams < 0)
