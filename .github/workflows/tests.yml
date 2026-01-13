@@ -35,7 +35,8 @@ jobs:
           qt6-base-dev \
           qt6-base-dev-tools \
           libqt6sql6-sqlite \
-          libllvm-dev \
+          libqt6svg6 \
+          llvm-19-dev \
           clang
         
     - name: Install dependencies (macOS)
