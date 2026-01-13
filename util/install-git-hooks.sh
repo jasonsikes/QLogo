@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Install git hooks from scripts/git-hooks/ to .git/hooks/
+# Install git hooks from util/git-hooks/ to .git/hooks/
 # This script should be run after cloning the repository
 #
 
@@ -15,7 +15,7 @@ NC='\033[0m'
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-HOOKS_SOURCE_DIR="$REPO_ROOT/scripts/git-hooks"
+HOOKS_SOURCE_DIR="$REPO_ROOT/util/git-hooks"
 HOOKS_TARGET_DIR="$REPO_ROOT/.git/hooks"
 
 if [ ! -d "$HOOKS_SOURCE_DIR" ]; then

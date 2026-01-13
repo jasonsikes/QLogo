@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Local script to run clang-format and clang-tidy on the codebase
-# Usage: ./scripts/run-clang-tools.sh [format|tidy|both]
+# Usage: ./util/run-clang-tools.sh [format|tidy|both]
 #
 
 set -e

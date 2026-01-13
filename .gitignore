@@ -66,4 +66,4 @@ TODO.org
 /.qt/
 compile_commands.json
 share/
-scripts/__pycache__/
+util/__pycache__/
