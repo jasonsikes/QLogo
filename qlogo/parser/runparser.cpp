@@ -96,94 +96,148 @@ void Runparser::runparseMinus()
     ++runparseCIter;
 }
 
+/// @brief Parse digits from the current iterator position.
+/// @param iter Reference to the iterator (will be advanced).
+/// @param end End iterator.
+/// @param result String to append digits to.
+/// @return True if at least one digit was parsed.
+static bool parseDigits(QString::iterator &iter, const QString::iterator &end, QString &result)
+{
+    bool hasDigit = false;
+    while (iter != end && (*iter).isDigit())
+    {
+        result += *iter;
+        ++iter;
+        hasDigit = true;
+    }
+    return hasDigit;
+}
+
+/// @brief Parse the integer part of a number (digits before decimal point).
+/// @param iter Reference to the iterator (will be advanced).
+/// @param end End iterator.
+/// @param result String to append digits to.
+/// @return True if at least one digit was parsed.
+static bool parseIntegerPart(QString::iterator &iter, const QString::iterator &end, QString &result)
+{
+    return parseDigits(iter, end, result);
+}
+
+/// @brief Parse the decimal part of a number (digits after decimal point).
+/// @param iter Reference to the iterator (will be advanced).
+/// @param end End iterator.
+/// @param result String to append digits to.
+/// @return True if at least one digit was parsed.
+static bool parseDecimalPart(QString::iterator &iter, const QString::iterator &end, QString &result)
+{
+    if (iter == end || *iter != '.')
+        return false;
+
+    result += '.';
+    ++iter;
+    return parseDigits(iter, end, result);
+}
+
+/// @brief Parse the exponent part of a number (e/E followed by optional sign and digits).
+/// @param iter Reference to the iterator (will be advanced).
+/// @param end End iterator.
+/// @param result String to append exponent to.
+/// @return True if a valid exponent was parsed.
+static bool parseExponent(QString::iterator &iter, const QString::iterator &end, QString &result)
+{
+    if (iter == end)
+        return false;
+
+    QChar c = *iter;
+    if (c != 'e' && c != 'E')
+        return false;
+
+    result += c;
+    ++iter;
+
+    if (iter == end)
+        return false;
+
+    // Optional sign
+    c = *iter;
+    if (c == '+' || c == '-')
+    {
+        result += c;
+        ++iter;
+        if (iter == end)
+            return false;
+    }
+
+    // Must have at least one digit
+    return parseDigits(iter, end, result);
+}
+
 DatumPtr Runparser::runparseNumber()
 {
     if (runparseCIter == runparseCEnd)
         return nothing();
+
     QString::iterator iter = runparseCIter;
     QString result;
-    bool hasDigit = false;
+    bool hasIntegerPart = false;
+    bool hasDecimalPart = false;
+
+    // Parse optional minus sign
     QChar c = *iter;
     if (c == '-')
     {
         result = opMinus();
         ++iter;
-    }
-
-    if (iter == runparseCEnd)
-        return nothing();
-    c = *iter;
-    while (c.isDigit())
-    {
-        result += c;
-        ++iter;
-        if (iter == runparseCEnd)
-            goto numberSuccessful;
-        c = *iter;
-        hasDigit = true;
-    }
-    if (c == '.')
-    {
-        result += c;
-        ++iter;
-        if ((iter == runparseCEnd) && hasDigit)
-            goto numberSuccessful;
-        c = *iter;
-    }
-    while (c.isDigit())
-    {
-        result += c;
-        ++iter;
-        if (iter == runparseCEnd)
-            goto numberSuccessful;
-        c = *iter;
-        hasDigit = true;
-    }
-
-    if (!hasDigit)
-        return nothing();
-    hasDigit = false;
-    if ((c == 'e') || (c == 'E'))
-    {
-        result += c;
-        ++iter;
         if (iter == runparseCEnd)
             return nothing();
-        c = *iter;
-    }
-    else
-    {
-        goto numberSuccessful;
     }
 
-    if ((c == '+') || (c == '-'))
+    // Parse integer part (digits before decimal point)
+    hasIntegerPart = parseIntegerPart(iter, runparseCEnd, result);
+
+    // Parse decimal part (optional)
+    if (iter != runparseCEnd && *iter == '.')
     {
-        result += c;
-        ++iter;
-        if (iter == runparseCEnd)
+        bool hadDigitsBeforeDecimal = hasIntegerPart;
+        hasDecimalPart = parseDecimalPart(iter, runparseCEnd, result);
+
+        // Edge case: ".5" is valid (0.5), but "." alone is not
+        // Edge case: "1.2.3" should fail - if we see another '.' after parsing decimal, fail
+        if (!hadDigitsBeforeDecimal && !hasDecimalPart)
+        {
+            // We saw "." but no digits after it, and no digits before it
             return nothing();
-        c = *iter;
+        }
+
+        // Check for multiple decimal points
+        if (iter != runparseCEnd && *iter == '.')
+        {
+            return nothing();
+        }
     }
-    while (c.isDigit())
+
+    // Must have at least integer part or decimal part
+    if (!hasIntegerPart && !hasDecimalPart)
+        return nothing();
+
+    // Parse exponent (optional)
+    if (iter != runparseCEnd && (*iter == 'e' || *iter == 'E'))
     {
-        result += c;
-        ++iter;
-        hasDigit = true;
-        if (iter == runparseCEnd)
-            goto numberSuccessful;
-        c = *iter;
+        if (!parseExponent(iter, runparseCEnd, result))
+        {
+            // Invalid exponent (e.g., "1e" or "1e+")
+            return nothing();
+        }
     }
 
-    if (!hasDigit)
+    // Check that the next character (if any) is a special character
+    // This ensures we've parsed a complete number token
+    if (iter != runparseCEnd && !specialChars().contains(*iter))
+    {
         return nothing();
+    }
 
-    // at this point we have successfully parsed a complete number. However, if
-    // there are more characters that aren't special characters, then we don't
-    // have a complete number.
-    if (!specialChars().contains(c))
-        return nothing();
-
-numberSuccessful:
+    // Successfully parsed a number
     double value = result.toDouble();
     runparseCIter = iter;
     return DatumPtr(value);
