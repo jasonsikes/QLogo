@@ -41,10 +41,10 @@ done
 
 # Change to the directory of the test script.
 test_dir=$(dirname $0)
-cd $test_dir
+cd $test_dir/tests
 
 logo_binary=qlogo
-logo_path="../../qlogo/$logo_binary"
+logo_path="../../../qlogo/$logo_binary"
 failed_tests=()
 
 exe_opts=""
