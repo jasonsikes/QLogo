@@ -116,13 +116,19 @@ const QString &opColon()
     return str;
 }
 
-//=== Keyword Strings (Translatable) ===//
+const QString &opQuestion()
+{
+    static const QString str = QStringLiteral("?");
+    return str;
+}
 
-// const QString &keywordStop()
-// {
-//     static const QString str = QObject::tr("STOP");
-//     return str;
-// }
+const QString &opNumberZero()
+{
+    static const QString str = QStringLiteral("0");
+    return str;
+}
+
+//=== Keyword Strings (Translatable) ===//
 
 const QString &keywordNoop()
 {

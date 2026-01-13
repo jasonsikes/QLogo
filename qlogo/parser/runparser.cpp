@@ -20,10 +20,13 @@
 #include "controller/logocontroller.h"
 #include "controller/textstream.h"
 #include "datum_types.h"
+#include "op_strings.h"
 #include <qdatetime.h>
 #include <qdebug.h>
 
 extern const QString &specialChars();
+
+using namespace StringConstants;
 
 void Runparser::runparseSpecialchars()
 {
@@ -33,7 +36,7 @@ void Runparser::runparseSpecialchars()
     {
         QChar c = *runparseCIter;
         // there are some cases where special chars are combined
-        if (((retval == "<") && (c == '=')) || ((retval == "<") && (c == '>')) || ((retval == ">") && (c == '=')))
+        if (((retval == opLessThan()) && (c == '=')) || ((retval == opLessThan()) && (c == '>')) || ((retval == opGreaterThan()) && (c == '=')))
         {
             retval += c;
             ++runparseCIter;
@@ -44,19 +47,19 @@ void Runparser::runparseSpecialchars()
 
 void Runparser::runparseString()
 {
-    QString retval = "";
+    QString retval;
 
     if (*runparseCIter == '?')
     {
-        retval = "?";
+        retval = opQuestion();
         ++runparseCIter;
         DatumPtr number = runparseNumber();
         if (!number.isNothing())
         {
-            runparseBuilder->append(DatumPtr(QString("(")));
-            runparseBuilder->append(DatumPtr(QString("?")));
+            runparseBuilder->append(DatumPtr(opOpenParen()));
+            runparseBuilder->append(DatumPtr(opQuestion()));
             runparseBuilder->append(number);
-            runparseBuilder->append(DatumPtr(QString(")")));
+            runparseBuilder->append(DatumPtr(opCloseParen()));
             return;
         }
     }
@@ -87,8 +90,8 @@ void Runparser::runparseMinus()
     }
 
     // This is a minus function
-    runparseBuilder->append(DatumPtr(QString("0")));
-    runparseBuilder->append(DatumPtr(QString("--")));
+    runparseBuilder->append(DatumPtr(opNumberZero()));
+    runparseBuilder->append(DatumPtr(opDoubleMinus()));
     // discard the minus
     ++runparseCIter;
 }
@@ -98,12 +101,12 @@ DatumPtr Runparser::runparseNumber()
     if (runparseCIter == runparseCEnd)
         return nothing();
     QString::iterator iter = runparseCIter;
-    QString result = "";
+    QString result;
     bool hasDigit = false;
     QChar c = *iter;
     if (c == '-')
     {
-        result = "-";
+        result = opMinus();
         ++iter;
     }
 
@@ -188,7 +191,7 @@ numberSuccessful:
 
 void Runparser::runparseQuotedWord()
 {
-    QString retval = "";
+    QString retval;
     while ((runparseCIter != runparseCEnd) && (*runparseCIter != '(') && (*runparseCIter != ')'))
     {
         retval += *runparseCIter;
@@ -234,7 +237,7 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
                 QChar c = *runparseCIter;
                 if (specialChars().contains(c))
                 {
-                    if ((c == '-') && (runparseCIter == oldWord.begin()) && (oldWord != "-"))
+                    if ((c == '-') && (runparseCIter == oldWord.begin()) && (oldWord != opMinus()))
                         runparseMinus();
                     else
                         runparseSpecialchars();

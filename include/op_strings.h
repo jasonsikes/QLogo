@@ -93,12 +93,16 @@ const QString &opQuote();
 /// @return Reference to the ":" string.
 const QString &opColon();
 
+/// @brief Question operator string.
+/// @return Reference to the "?" string.
+const QString &opQuestion();
+
+/// @brief Zero operator string.
+/// @return Reference to the "0" string.
+const QString &opNumberZero();
+
 //=== Keyword Strings (Translatable) ===//
 // These return QString references for translatable keywords
-
-// /// @brief "STOP" keyword string.
-// /// @return Reference to the translated "STOP" string.
-// const QString &keywordStop();
 
 /// @brief "NOOP" keyword string.
 /// @return Reference to the translated "NOOP" string.
