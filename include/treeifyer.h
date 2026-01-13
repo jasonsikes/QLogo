@@ -41,7 +41,7 @@ class Treeifier
     DatumPtr treeifyExp();
     DatumPtr treeifySumexp();
     DatumPtr treeifyMulexp();
-    DatumPtr treeifyminusexp();
+    DatumPtr treeifyMinusexp();
     DatumPtr treeifyTermexp();
     DatumPtr treeifyCommand(bool isVararg);
 

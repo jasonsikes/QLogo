@@ -203,14 +203,14 @@ DatumPtr Treeifier::treeifySumexp()
 
 DatumPtr Treeifier::treeifyMulexp()
 {
-    DatumPtr left = treeifyminusexp();
+    DatumPtr left = treeifyMinusexp();
     while ((currentToken.isa() == Datum::typeWord) && ((currentToken.toString() == StringConstants::opMultiply()) ||
                                                        (currentToken.toString() == StringConstants::opDivide()) ||
                                                        (currentToken.toString() == StringConstants::opModulo())))
     {
         DatumPtr op = currentToken;
         advanceToken();
-        DatumPtr right = treeifyminusexp();
+        DatumPtr right = treeifyMinusexp();
 
         auto node = DatumPtr(new ASTNode(op));
         if (!right.isASTNode())
@@ -238,7 +238,7 @@ DatumPtr Treeifier::treeifyMulexp()
     return left;
 }
 
-DatumPtr Treeifier::treeifyminusexp()
+DatumPtr Treeifier::treeifyMinusexp()
 {
     DatumPtr left = treeifyTermexp();
     while ((currentToken.isa() == Datum::typeWord) && ((currentToken.toString() == StringConstants::opDoubleMinus())))
