@@ -33,7 +33,9 @@ class Runparser
     bool isRunparseSourceSpecial;
     void runparseSpecialchars();
     void runparseMinus();
-    DatumPtr runparseNumber(); // returns a number if successful
+    DatumPtr tryParseNegativeNumber();
+    void parseUnaryMinus();
+    DatumPtr runparseNumber();
     void runparseQuotedWord();
     void runparseString();
 

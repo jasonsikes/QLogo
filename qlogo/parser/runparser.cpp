@@ -72,28 +72,81 @@ void Runparser::runparseString()
     runparseBuilder->append(DatumPtr(retval, isRunparseSourceSpecial));
 }
 
-void Runparser::runparseMinus()
+/// @brief Check if a minus sign at the start of a word should be treated as
+///        a potential negative number or unary minus operator.
+/// @param c The current character (should be '-').
+/// @param iter The current iterator position.
+/// @param wordBegin The beginning of the word being parsed.
+/// @param word The full word being parsed.
+/// @return True if we should attempt to parse a negative number or unary minus.
+static bool shouldParseMinusAtWordStart(QChar c, QString::iterator iter, QString::iterator wordBegin, const QString &word)
 {
+    // Only process minus signs
+    if (c != '-')
+        return false;
+
+    // Only process minus at the start of a word
+    if (iter != wordBegin)
+        return false;
+
+    // Special case: if the word is exactly "-", treat it as a special character
+    // (not as a unary minus operator). This prevents parsing a standalone "-"
+    // as "0" followed by "--".
+    if (word == opMinus())
+        return false;
+
+    return true;
+}
+
+/// @brief Attempt to parse a negative number starting from the current position.
+/// @return The parsed number if successful, nothing() otherwise.
+/// @note This function advances the iterator if a number is successfully parsed.
+DatumPtr Runparser::tryParseNegativeNumber()
+{
+    // Check if there's at least one more character after the minus
     QString::iterator nextCharIter = runparseCIter;
     ++nextCharIter;
     if (nextCharIter == runparseCEnd)
     {
-        runparseSpecialchars();
-        return;
+        // Just a minus sign with nothing after it - not a valid number
+        return nothing();
     }
 
+    // Try to parse a number (runparseNumber handles the minus sign)
     DatumPtr number = runparseNumber();
+    return number;
+}
+
+/// @brief Parse a unary minus operator (MINUS function).
+/// @details This outputs "0" followed by "--" to represent the binary minus
+///          operation with highest precedence. The "--" operator will be handled by the treeifier as
+///          subtraction, so "0 -- x" effectively becomes "MINUS x".
+/// @note This function advances the iterator past the minus sign.
+void Runparser::parseUnaryMinus()
+{
+    // Output "0" and "--" to represent unary minus
+    // The treeifier will interpret this as: 0 - x, which is equivalent to MINUS x
+    runparseBuilder->append(DatumPtr(opNumberZero()));
+    runparseBuilder->append(DatumPtr(opDoubleMinus()));
+    ++runparseCIter;
+}
+
+/// @brief Handle a minus sign that appears at the start of a word.
+/// @details This function attempts to parse a negative number first. If that fails,
+///          it treats the minus as a unary minus operator (MINUS function).
+void Runparser::runparseMinus()
+{
+    // First, try to parse as a negative number
+    DatumPtr number = tryParseNegativeNumber();
     if (!number.isNothing())
     {
+        // Successfully parsed a negative number
         runparseBuilder->append(number);
         return;
     }
 
-    // This is a minus function
-    runparseBuilder->append(DatumPtr(opNumberZero()));
-    runparseBuilder->append(DatumPtr(opDoubleMinus()));
-    // discard the minus
-    ++runparseCIter;
+    // Not a negative number, so treat it as a unary minus operator
+    parseUnaryMinus();
 }
 
 /// @brief Parse digits from the current iterator position.
@@ -291,10 +344,17 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
                 QChar c = *runparseCIter;
                 if (specialChars().contains(c))
                 {
-                    if ((c == '-') && (runparseCIter == oldWord.begin()) && (oldWord != opMinus()))
+                    // Check if this minus sign at the start of a word should be
+                    // treated as a potential negative number or unary minus operator
+                    if (shouldParseMinusAtWordStart(c, runparseCIter, oldWord.begin(), oldWord))
+                    {
                         runparseMinus();
+                    }
                     else
+                    {
+                        // Treat as a regular special character (e.g., binary minus, standalone "-")
                         runparseSpecialchars();
+                    }
                     continue;
                 }
                 if (c == '"')
