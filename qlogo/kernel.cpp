@@ -116,7 +116,6 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
         catch (FCError *e)
         {
             sysPrint(e->toString() + "\n");
-            delete e;
             continue;
         }
         if ((result.datumValue()->isa & Datum::typeUnboundMask) != 0)
