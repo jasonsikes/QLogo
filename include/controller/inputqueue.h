@@ -1,7 +1,7 @@
 #ifndef INPUTQUEUE_H
 #define INPUTQUEUE_H
 
-//===-- qlogo/reader.h - Reader class definition -------*- C++ -*-===//
+//===-- qlogo/inputqueue.h - InputQueueThread and InputQueue class definitions -------*- C++ -*-===//
 //
 // Copyright 2017-2024 Jason Sikes
 //
