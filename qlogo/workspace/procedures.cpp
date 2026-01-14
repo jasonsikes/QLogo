@@ -411,20 +411,17 @@ bool Procedures::isNamedProcedure(const QString &aName) const
     return procedures.contains(aName) || stdLib.allProcedureNames().contains(aName);
 }
 
-DatumPtr Procedures::astnodeFromPrimitive(const DatumPtr &cmdP, int &minParams, int &defaultParams, int &maxParams)
+std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromPrimitive(const DatumPtr &cmdP)
 {
     QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
     auto node = DatumPtr(new ASTNode(cmdP));
     Cmd_t command = stringToCmd[cmdString];
-    defaultParams = command.countOfDefaultParams;
-    minParams = command.countOfMinParams;
-    maxParams = command.countOfMaxParams;
     node.astnodeValue()->genExpression = command.method;
     node.astnodeValue()->returnType = command.returnType;
-    return node;
+    return {node, command.countOfMinParams, command.countOfDefaultParams, command.countOfMaxParams};
 }
 
-DatumPtr Procedures::astnodeFromProcedure(const DatumPtr &cmdP, int &minParams, int &defaultParams, int &maxParams)
+std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromProcedure(const DatumPtr &cmdP)
 {
     QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
     DatumPtr procBody = procedureForName(cmdString);
@@ -437,36 +434,32 @@ DatumPtr Procedures::astnodeFromProcedure(const DatumPtr &cmdP, int &minParams, 
     node.astnodeValue()->genExpression = &Compiler::genExecProcedure;
     node.astnodeValue()->returnType = RequestReturnDatum;
     node.astnodeValue()->procedure = procBody;
-    defaultParams = procBody.procedureValue()->countOfDefaultParams;
-    minParams = procBody.procedureValue()->countOfMinParams;
-    maxParams = procBody.procedureValue()->countOfMaxParams;
-    return node;
+    return {node, procBody.procedureValue()->countOfMinParams, procBody.procedureValue()->countOfDefaultParams, procBody.procedureValue()->countOfMaxParams};
 }
 
-DatumPtr Procedures::astnodeFromCommand(const DatumPtr &cmdP, int &minParams, int &defaultParams, int &maxParams)
+std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromCommand(const DatumPtr &cmdP)
 {
     QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
 
     if (stringToCmd.contains(cmdString))
     { // This is a primitive.
-        return astnodeFromPrimitive(cmdP, minParams, defaultParams, maxParams);
+        return astnodeFromPrimitive(cmdP);
     }
     else if (isNamedProcedure(cmdString))
     { // This is a procedure.
-        return astnodeFromProcedure(cmdP, minParams, defaultParams, maxParams);
+        return astnodeFromProcedure(cmdP);
         // TODO: Foo and setFoo
     }
     else
     { // This is not a command.
         throw FCError::noHow(cmdP);
     }
-    return nothing();
+    return {nothing(), 0, 0, 0};
 }
 
 DatumPtr Procedures::astnodeWithLiterals(const DatumPtr &cmd, const DatumPtr &params)
 {
-    int minParams = 0, maxParams = 0, defaultParams = 0;
-    DatumPtr node = astnodeFromCommand(cmd, minParams, defaultParams, maxParams);
+    auto [node, minParams, defaultParams, maxParams] = astnodeFromCommand(cmd);
 
     int countOfChildren = params.listValue()->count();
     if (countOfChildren < minParams)

@@ -70,6 +70,7 @@ QList<QList<DatumPtr>> Treeifier::astFromList(List *aList)
     }
     // If the last ASTNode is a tag, generate a NOOP expression after it
     // to ensure that there is an instruction to jump to.
+    Q_ASSERT(!astFlatList.isEmpty());
     if (astFlatList.last().astnodeValue()->genExpression == &Compiler::genTag)
     {
         auto *noopNode = new ASTNode(DatumPtr(keywordNoop()));
@@ -316,10 +317,7 @@ DatumPtr Treeifier::treeifyTermexp()
 
         // Make sure there is a closing paren
         if ((!currentToken.isWord()) || (currentToken.toString() != opCloseParen()))
-        {
-
             throw FCError::parenNf();
-        }
 
         advanceToken();
         return retval;
@@ -328,8 +326,7 @@ DatumPtr Treeifier::treeifyTermexp()
     QChar firstChar = currentToken.toString(Datum::ToStringFlags_Raw).at(0);
     if ((firstChar == opQuote().at(0)) || (firstChar == opColon().at(0)))
     {
-        QString name = currentToken.toString(Datum::ToStringFlags_Raw)
-                           .right(currentToken.toString(Datum::ToStringFlags_Raw).size() - 1);
+        QString name = currentToken.toString(Datum::ToStringFlags_Raw).mid(1);
         if (!currentToken.wordValue()->isForeverSpecial)
         {
             rawToChar(name);
@@ -380,11 +377,7 @@ DatumPtr Treeifier::treeifyCommand(bool isVararg)
     if (cmdString == opCloseParen())
         throw FCError::unexpectedCloseParen();
 
-    int defaultParams = 0;
-    int minParams = 0;
-    int maxParams = 0;
-
-    DatumPtr node = Config::get().mainProcedures()->astnodeFromCommand(cmdP, minParams, defaultParams, maxParams);
+    auto [node, minParams, defaultParams, maxParams] = Config::get().mainProcedures()->astnodeFromCommand(cmdP);
 
     advanceToken();
 

@@ -105,27 +105,19 @@ class Procedures
 
     /// @brief Get an AST node from a procedure.
     /// @param cmdP The name of the procedure to search for.
-    /// @param minParams The minimum number of parameters this procedure expects.
-    /// @param defaultParams The number of default parameters this procedure expects.
-    /// @param maxParams The maximum number of parameters this procedure expects.
-    /// @return A pointer to the created AST node.
-    DatumPtr astnodeFromProcedure(const DatumPtr &cmdP, int &minParams, int &defaultParams, int &maxParams);
+    /// @return A tuple containing a pointer to the created AST node, and three integers representing the arity of the procedure.
+    std::tuple<DatumPtr, int, int, int> astnodeFromProcedure(const DatumPtr &cmdP);
 
     /// @brief Get an AST node from a primitive command.
     /// @param cmdP The name of the command to search for.
-    /// @param minParams The minimum number of parameters this command expects.
-    /// @param defaultParams The number of default parameters this command expects.
-    /// @param maxParams The maximum number of parameters this command expects.
-    /// @return A pointer to the created AST node.
+    /// @return A tuple containing a pointer to the created AST node, and three integers representing the arity of the command.
     /// @note The primitive name should be tested to be in the stringToCmd hash table.
-    DatumPtr astnodeFromPrimitive(const DatumPtr &cmdP, int &minParams, int &defaultParams, int &maxParams);
+    std::tuple<DatumPtr, int, int, int> astnodeFromPrimitive(const DatumPtr &cmdP);
 
     /// @brief Get an AST node from a command, either a primitive or user-defined procedure.
     /// @param command The name of the command to search for.
-    /// @param minParams The minimum number of parameters this command expects.
-    /// @param defaultParams The number of default parameters this command expects.
-    /// @param maxParams The maximum number of parameters this command expects.
-    DatumPtr astnodeFromCommand(const DatumPtr &command, int &minParams, int &defaultParams, int &maxParams);
+    /// @return A tuple containing a pointer to the created AST node, and three integers representing the arity of the command.
+    std::tuple<DatumPtr, int, int, int> astnodeFromCommand(const DatumPtr &command);
 
     /// @brief Get the text of a procedure.
     /// @param procnameP The name of the procedure to get the text of.
