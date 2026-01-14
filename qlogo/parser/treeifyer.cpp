@@ -377,63 +377,89 @@ DatumPtr Treeifier::treeifyCommand(bool isVararg)
     if (cmdString == opCloseParen())
         throw FCError::unexpectedCloseParen();
 
+    // Retrieve command configuration:
+    // - minParams: minimum required parameters (-1 means no minimum, raw token mode)
+    // - defaultParams: default number of parameters to read (-1 means special form, read until EOL)
+    // - maxParams: maximum allowed parameters (-1 means unlimited)
     auto [node, minParams, defaultParams, maxParams] = Config::get().mainProcedures()->astnodeFromCommand(cmdP);
 
     advanceToken();
 
     int countOfChildren = 0;
-    // isVararg: read all parameters until ')'
+    
+    // Strategy 1: Variable-argument function (e.g., function calls in parentheses)
+    // Read all parameters until encountering a closing parenthesis ')'
     if (isVararg)
     {
+        // Continue reading while there are tokens and we haven't seen the closing paren
+        // Condition: token exists AND (it's not a word OR it's not the closing paren)
         while ((!currentToken.isNothing()) &&
                ((!currentToken.isWord()) || (currentToken.toString() != opCloseParen())))
         {
             DatumPtr child;
+            // If minParams < 0, this command takes raw tokens (no expression parsing)
+            // Otherwise, recursively parse the token as an expression
             if (minParams < 0)
             {
+                // Raw token mode: use token as-is without parsing
                 child = currentToken;
                 advanceToken();
             }
             else
             {
+                // Expression mode: recursively parse the parameter as an expression
                 child = treeifyExp();
             }
             node.astnodeValue()->addChild(child);
             ++countOfChildren;
         }
     }
+    // Strategy 2: Special form (e.g., TO or HELP)
+    // Read all parameters until end of line (EOL)
     else if (defaultParams < 0)
-    { // "Special form": read all parameters until EOL
+    {
+        // Special forms consume all remaining tokens until nothing is left
         while (!currentToken.isNothing())
         {
             DatumPtr child;
+            // Same raw token vs expression logic as vararg case
             if (minParams < 0)
             {
+                // Raw token mode: use token as-is
                 child = currentToken;
                 advanceToken();
             }
             else
             {
+                // Expression mode: parse parameter as expression
                 child = treeifyExp();
             }
             node.astnodeValue()->addChild(child);
             ++countOfChildren;
         }
     }
+    // Strategy 3: Fixed-parameter function (most common case)
+    // Read exactly the default number of parameters
     else
-    { // Read in the default number of params
+    {
+        // Read exactly defaultParams number of parameters
         for (int i = defaultParams; i > 0; --i)
         {
+            // Check for premature end of input
             if (currentToken.isNothing())
                 throw FCError::notEnoughInputs(cmdP);
+            // Always parse as expression for fixed-parameter functions
             DatumPtr child = treeifyExp();
             node.astnodeValue()->addChild(child);
             ++countOfChildren;
         }
     }
 
+    // Validate parameter count against constraints
+    // Ensure we have at least the minimum required parameters
     if (countOfChildren < minParams)
         throw FCError::notEnoughInputs(node.astnodeValue()->nodeName);
+    // Ensure we don't exceed the maximum allowed parameters (if maxParams is set)
     if ((countOfChildren > maxParams) && (maxParams > -1))
         throw FCError::tooManyInputs(node.astnodeValue()->nodeName);
 
