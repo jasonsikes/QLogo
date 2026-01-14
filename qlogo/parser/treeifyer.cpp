@@ -71,7 +71,7 @@ QList<QList<DatumPtr>> Treeifier::astFromList(List *aList)
     // If the last ASTNode is a tag, generate a NOOP expression after it
     // to ensure that there is an instruction to jump to.
     Q_ASSERT(!astFlatList.isEmpty());
-    if (astFlatList.last().astnodeValue()->genExpression == &Compiler::genTag)
+    if (isTag(astFlatList.last()))
     {
         auto *noopNode = new ASTNode(DatumPtr(keywordNoop()));
         noopNode->genExpression = &Compiler::genNoop;

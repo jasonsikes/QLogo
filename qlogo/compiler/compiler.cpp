@@ -90,15 +90,14 @@ Compiler::~Compiler()
 
 QString Compiler::getTagNameFromNode(const DatumPtr &node) const
 {
-    Q_ASSERT(node.astnodeValue()->genExpression == &Compiler::genTag);
+    Q_ASSERT(isTag(node));
     ASTNode *tagNode = node.astnodeValue()->childAtIndex(0).astnodeValue();
     if (tagNode->genExpression == &Compiler::genLiteral)
     {
         DatumPtr tagNameNode = tagNode->childAtIndex(0);
         if (tagNameNode.isWord())
         {
-            QString tagName = tagNameNode.toString(Datum::ToStringFlags_Key);
-            return tagName;
+            return tagNameNode.toString(Datum::ToStringFlags_Key);
         }
     }
     return {};
@@ -192,7 +191,7 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     int blockId = 0;
 
     // If the first block is a tag, save the tag names
-    if (parsedList.first().first().astnodeValue()->genExpression == &Compiler::genTag)
+    if (isTag(parsedList.first().first()))
     {
         setTagToBlockIdInProcedure(parsedList.first(), blockId);
         // Remove the first tag block from the list.
@@ -207,7 +206,7 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     RequestReturnType returnTypeRequest = RequestReturnNothing;
     for (auto &srcBlock : parsedList)
     {
-        if (srcBlock.first().astnodeValue()->genExpression == &Compiler::genTag)
+        if (isTag(srcBlock.first()))
         {
             ++blockId;
             BasicBlock *newBlock = BasicBlock::Create(*scaff->theContext, "Block", theFunction);

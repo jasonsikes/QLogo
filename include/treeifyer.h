@@ -55,4 +55,9 @@ class Treeifier
     QList<QList<DatumPtr>> astFromList(List *aList);
 };
 
+/// @brief Check if a node is a tag.
+/// @param node The node to check.
+/// @return True if the node is a tag, false otherwise.
+bool isTag(const DatumPtr &node);
+
 #endif // TREEIFIER_H
