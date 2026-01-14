@@ -106,12 +106,13 @@ class Procedures
     /// @brief Get an AST node from a procedure.
     /// @param cmdP The name of the procedure to search for.
     /// @return A tuple containing a pointer to the created AST node, and three integers representing the arity of the procedure.
+    ///         If the procedure is not found, returns a tuple with nothing() as the first element.
     std::tuple<DatumPtr, int, int, int> astnodeFromProcedure(const DatumPtr &cmdP);
 
     /// @brief Get an AST node from a primitive command.
     /// @param cmdP The name of the command to search for.
     /// @return A tuple containing a pointer to the created AST node, and three integers representing the arity of the command.
-    /// @note The primitive name should be tested to be in the stringToCmd hash table.
+    ///         If the command is not found, returns a tuple with nothing() as the first element.
     std::tuple<DatumPtr, int, int, int> astnodeFromPrimitive(const DatumPtr &cmdP);
 
     /// @brief Get an AST node from a command, either a primitive or user-defined procedure.

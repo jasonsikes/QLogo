@@ -414,8 +414,13 @@ bool Procedures::isNamedProcedure(const QString &aName) const
 std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromPrimitive(const DatumPtr &cmdP)
 {
     QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
+    auto it = stringToCmd.find(cmdString);
+    if (it == stringToCmd.end())
+    {
+        return {nothing(), 0, 0, 0};
+    }
+    const Cmd_t &command = it.value();
     auto node = DatumPtr(new ASTNode(cmdP));
-    Cmd_t command = stringToCmd[cmdString];
     node.astnodeValue()->genExpression = command.method;
     node.astnodeValue()->returnType = command.returnType;
     return {node, command.countOfMinParams, command.countOfDefaultParams, command.countOfMaxParams};
@@ -425,6 +430,10 @@ std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromProcedure(const Datum
 {
     QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
     DatumPtr procBody = procedureForName(cmdString);
+    if (procBody == nothing())
+    {
+        return {nothing(), 0, 0, 0};
+    }
     auto node = DatumPtr(new ASTNode(cmdP));
     // if (procBody.procedureValue()->isMacro)
     //     node.astnodeValue()->kernel = &Kernel::executeMacro;
@@ -441,19 +450,21 @@ std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromCommand(const DatumPt
 {
     QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
 
-    if (stringToCmd.contains(cmdString))
+    auto [node, minParams, defaultParams, maxParams] = astnodeFromPrimitive(cmdP);
+    if (node != nothing())
     { // This is a primitive.
-        return astnodeFromPrimitive(cmdP);
+        return {node, minParams, defaultParams, maxParams};
     }
-    else if (isNamedProcedure(cmdString))
+    
+    auto [procNode, procMinParams, procDefaultParams, procMaxParams] = astnodeFromProcedure(cmdP);
+    if (procNode != nothing())
     { // This is a procedure.
-        return astnodeFromProcedure(cmdP);
+        return {procNode, procMinParams, procDefaultParams, procMaxParams};
         // TODO: Foo and setFoo
     }
-    else
-    { // This is not a command.
-        throw FCError::noHow(cmdP);
-    }
+    
+    // This is not a command.
+    throw FCError::noHow(cmdP);
     return {nothing(), 0, 0, 0};
 }
 
