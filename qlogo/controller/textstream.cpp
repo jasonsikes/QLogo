@@ -45,24 +45,175 @@ void TextStream::clearLineHistory()
     recentLineHistory = emptyList();
 }
 
-// TODO: This is huge. Break it up.
+bool TextStream::initializeBaseLevelReading(const QString &prompt)
+{
+    DatumPtr lineP = readwordWithPrompt(prompt, true);
+    if (lineP.isNothing())
+        return false;
+    listSourceWord = lineP.wordValue()->toString(Datum::ToStringFlags_Raw);
+    listSourceWordIter = listSourceWord.begin();
+    return true;
+}
+
+bool TextStream::processVbarredCharacter(ushort c, bool &isVbarred, bool &isCurrentWordVbarred, QString &currentWord)
+{
+    if (isVbarred)
+    {
+        if (c == '|')
+        {
+            isVbarred = false;
+            return true; // Continue processing
+        }
+        currentWord.push_back(charToRaw(c));
+        return true; // Continue processing
+    }
+    if (c == '|')
+    {
+        isVbarred = true;
+        isCurrentWordVbarred = true;
+        return true; // Continue processing
+    }
+    return false; // Not a vbarred character, continue normal processing
+}
+
+bool TextStream::processTildeContinuation()
+{
+    QString::iterator lookAhead = listSourceWordIter;
+    while (lookAhead != listSourceWord.end() && *lookAhead == ' ')
+        ++lookAhead;
+    if (lookAhead != listSourceWord.end() && *lookAhead == '\n')
+    {
+        ++lookAhead;
+        listSourceWordIter = lookAhead;
+        return true; // Handled, continue
+    }
+    return false; // Not a continuation, continue normal processing
+}
+
+bool TextStream::processComments(ushort c, bool shouldRemoveComments)
+{
+    if (!shouldRemoveComments)
+        return false;
+
+    // Check for ; comment or #! comment
+    if (c == ';' || (c == '#' && listSourceWordIter != listSourceWord.end() &&
+                     listSourceWordIter->unicode() == '!'))
+    {
+        // Skip to end of line
+        while ((listSourceWordIter != listSourceWord.end()) && (*listSourceWordIter != '\n'))
+            ++listSourceWordIter;
+        // Consume the eol
+        if (listSourceWordIter != listSourceWord.end())
+            ++listSourceWordIter;
+        return true; // Handled, continue
+    }
+    return false; // Not a comment, continue normal processing
+}
+
+TextStream::DelimiterResult TextStream::processDelimiter(ushort c, ListBuilder &builder, QString &currentWord,
+                                                          bool &isCurrentWordVbarred, bool isBaseLevel, bool makeArray,
+                                                          bool shouldRemoveComments)
+{
+    // Add current word to builder if it exists
+    if (currentWord.size() > 0)
+    {
+        builder.append(DatumPtr(currentWord, isCurrentWordVbarred));
+        currentWord = "";
+        isCurrentWordVbarred = false;
+    }
+
+    switch (c)
+    {
+    case '[':
+        builder.append(tokenizeListWithPrompt("", false, false, shouldRemoveComments));
+        return DelimiterResult::AppendSublist;
+    case ']':
+        if (isBaseLevel || makeArray)
+        {
+            throw FCError::unexpectedCloseSquare();
+        }
+        return DelimiterResult::ReturnList;
+    case '}':
+    {
+        if (isBaseLevel || !makeArray)
+        {
+            throw FCError::unexpectedCloseBrace();
+        }
+        return DelimiterResult::ReturnArray;
+    }
+    case '{':
+        builder.append(tokenizeListWithPrompt("", false, true, shouldRemoveComments));
+        return DelimiterResult::AppendSubarray;
+    default:
+        // Space or tab - just continue
+        return DelimiterResult::Continue;
+    }
+}
+
+int TextStream::processArrayOrigin()
+{
+    int origin = 1;
+    if (listSourceWordIter != listSourceWord.end() && *listSourceWordIter == '@')
+    {
+        QString originStr = "";
+        ++listSourceWordIter;
+        while (listSourceWordIter != listSourceWord.end() && (*listSourceWordIter >= '0') &&
+               (*listSourceWordIter <= '9'))
+        {
+            originStr += *listSourceWordIter;
+            ++listSourceWordIter;
+        }
+        origin = originStr.toInt();
+    }
+    return origin;
+}
+
+bool TextStream::finalizeResult(ListBuilder &builder, bool isBaseLevel, bool makeArray, DatumPtr &result)
+{
+    if (isBaseLevel)
+    {
+        result = builder.finishedList();
+        return false; // Don't continue, we have a result
+    }
+
+    // Get some more source material if we can
+    DatumPtr lineP;
+    if (makeArray)
+        lineP = readwordWithPrompt("{ ", true);
+    else
+        lineP = readwordWithPrompt("[ ", true);
+
+    if (!lineP.isNothing())
+    {
+        listSourceWord = lineP.wordValue()->toString(Datum::ToStringFlags_Raw);
+        listSourceWordIter = listSourceWord.begin();
+        return true; // Continue processing
+    }
+
+    // We have exhausted our source. Return what we have.
+    if (makeArray)
+    {
+        auto *ary = new Array(1, builder.finishedList().listValue());
+        result = {ary};
+    }
+    else
+    {
+        result = builder.finishedList();
+    }
+    return false; // Don't continue, we have a result
+}
+
 DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
                                             bool isBaseLevel,
                                             bool makeArray,
                                             bool shouldRemoveComments)
 {
-    DatumPtr lineP;
-
     if (isBaseLevel)
     {
-        lineP = readwordWithPrompt(prompt, true);
-
-        if (lineP.isNothing())
+        if (!initializeBaseLevelReading(prompt))
             return nothing();
-
-        listSourceWord = lineP.wordValue()->toString(Datum::ToStringFlags_Raw);
-        listSourceWordIter = listSourceWord.begin();
     }
+
     ListBuilder builder;
     QString currentWord = "";
 
@@ -76,106 +227,36 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
             ushort c = listSourceWordIter->unicode();
             ++listSourceWordIter;
 
-            if (isVbarred)
-            {
-                if (c == '|')
-                {
-                    isVbarred = false;
-                    continue;
-                }
-                currentWord.push_back(charToRaw(c));
+            // Process vbarred characters
+            if (processVbarredCharacter(c, isVbarred, isCurrentWordVbarred, currentWord))
                 continue;
-            }
-            if (c == '|')
-            {
-                isVbarred = true;
-                isCurrentWordVbarred = true;
-                continue;
-            }
 
-            if (c == '~')
-            {
-                // If this is the last character of the line then jump to the beginning
-                // of the next line
-                QString::iterator lookAhead = listSourceWordIter;
-                while (*lookAhead == ' ')
-                    ++lookAhead;
-                if (*lookAhead == '\n')
-                {
-                    ++lookAhead;
-                    listSourceWordIter = lookAhead;
-                    continue;
-                }
-            }
-            if (((c == ';') || ((c == '#') && (listSourceWordIter != listSourceWord.end()) &&
-                                (listSourceWordIter->unicode() == '!'))) &&
-                shouldRemoveComments)
-            {
-                // We are parsing a comment
-                while ((listSourceWordIter != listSourceWord.end()) && (*listSourceWordIter != '\n'))
-                    ++listSourceWordIter;
-                // Consume the eol
-                if (listSourceWordIter != listSourceWord.end())
-                    ++listSourceWordIter;
+            // Process tilde continuation
+            if (c == '~' && processTildeContinuation())
                 continue;
-            }
-            if ((c == '#') && (listSourceWordIter != listSourceWord.end()) && (listSourceWordIter->unicode() == '!') &&
-                shouldRemoveComments)
-            {
-                // This is a comment
-                while ((listSourceWordIter != listSourceWord.end()) && (*listSourceWordIter != '\n'))
-                    ++listSourceWordIter;
-                // Consume the eol
-                if (listSourceWordIter != listSourceWord.end())
-                    ++listSourceWordIter;
+
+            // Process comments
+            if (processComments(c, shouldRemoveComments))
                 continue;
-            }
+
+            // Process delimiters
             if ((c == ' ') || (c == '\t') || (c == '[') || (c == ']') || (c == '{') || (c == '}'))
             {
-                // This is a delimiter
-                if (currentWord.size() > 0)
+                DelimiterResult result = processDelimiter(c, builder, currentWord, isCurrentWordVbarred,
+                                                          isBaseLevel, makeArray, shouldRemoveComments);
+                switch (result)
                 {
-                    builder.append(DatumPtr(currentWord, isCurrentWordVbarred));
-                    currentWord = "";
-                    isCurrentWordVbarred = false;
-                }
-                switch (c)
-                {
-                case '[':
-                    builder.append(tokenizeListWithPrompt("", false, false, shouldRemoveComments));
-                    break;
-                case ']':
-                    if ((isBaseLevel) || makeArray)
-                    {
-                        throw FCError::unexpectedCloseSquare();
-                    }
+                case DelimiterResult::ReturnList:
                     return builder.finishedList();
-                case '}':
+                case DelimiterResult::ReturnArray:
                 {
-                    if ((isBaseLevel) || !makeArray)
-                    {
-                        throw FCError::unexpectedCloseBrace();
-                    }
-                    int origin = 1;
-                    // See if array has a custom origin
-                    if (*listSourceWordIter == '@')
-                    {
-                        QString originStr = "";
-                        ++listSourceWordIter;
-                        while ((*listSourceWordIter >= '0') && (*listSourceWordIter <= '9'))
-                        {
-                            originStr += *listSourceWordIter;
-                            ++listSourceWordIter;
-                        }
-                        origin = originStr.toInt();
-                    }
+                    int origin = processArrayOrigin();
                     auto *ary = new Array(origin, builder.finishedList().listValue());
                     return {ary};
                 }
-                case '{':
-                    builder.append(tokenizeListWithPrompt("", false, true, shouldRemoveComments));
-                    break;
-                default:
+                case DelimiterResult::AppendSublist:
+                case DelimiterResult::AppendSubarray:
+                case DelimiterResult::Continue:
                     break;
                 }
             }
@@ -184,35 +265,19 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
                 currentWord.push_back(c);
             }
         }
-        // This is the end of the read. Add the last word to the list.
+
+        // End of current source word. Add the last word to the list.
         if (currentWord.size() > 0)
         {
             builder.append(DatumPtr(currentWord, isCurrentWordVbarred));
             currentWord = "";
         }
 
-        // If this is the base-level list then we can just return
-        if (isBaseLevel)
-            return builder.finishedList();
-
-        // Get some more source material if we can
-        if (makeArray)
-            lineP = readwordWithPrompt("{ ", true);
-        else
-            lineP = readwordWithPrompt("[ ", true);
-        if (!lineP.isNothing())
-        {
-            listSourceWord = lineP.wordValue()->toString(Datum::ToStringFlags_Raw);
-            listSourceWordIter = listSourceWord.begin();
-            continue;
-        }
-        // We have exhausted our source. Return what we have.
-        if (makeArray)
-        {
-            auto *ary = new Array(1, builder.finishedList().listValue());
-            return {ary};
-        }
-        return builder.finishedList();
+        // Try to finalize or get more input
+        DatumPtr result;
+        if (!finalizeResult(builder, isBaseLevel, makeArray, result))
+            return result;
+        // If finalizeResult returns true, it means more input was read and we should continue
     } // /forever
 }
 

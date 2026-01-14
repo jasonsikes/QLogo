@@ -20,7 +20,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum_ptr.h"
+#include "datum_types.h"
 #include <QTextStream>
 
 class TextStream
@@ -38,6 +38,17 @@ class TextStream
     // The work of List/Array reading is done here. Will call itself to process
     // sublists and subarrays.
     DatumPtr tokenizeListWithPrompt(const QString &prompt, bool isBaseLevel, bool makeArray, bool shouldRemoveComments);
+
+    // Helper methods for tokenizeListWithPrompt
+    bool initializeBaseLevelReading(const QString &prompt);
+    bool processVbarredCharacter(ushort c, bool &isVbarred, bool &isCurrentWordVbarred, QString &currentWord);
+    bool processTildeContinuation();
+    bool processComments(ushort c, bool shouldRemoveComments);
+    enum class DelimiterResult { Continue, ReturnList, ReturnArray, AppendSublist, AppendSubarray };
+    DelimiterResult processDelimiter(ushort c, ListBuilder &builder, QString &currentWord, bool &isCurrentWordVbarred,
+                                     bool isBaseLevel, bool makeArray, bool shouldRemoveComments);
+    int processArrayOrigin();
+    bool finalizeResult(ListBuilder &builder, bool isBaseLevel, bool makeArray, DatumPtr &result);
 
     // The current source word for string parsing.
     QString listSourceWord;
