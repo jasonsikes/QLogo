@@ -12,6 +12,37 @@
 /// This file contains the implementation of the Treeifier class, which is
 /// responsible for treeifying a list into an Abstract Syntax Tree.
 ///
+/// \section Operator Precedence Hierarchy
+///
+/// The parser uses a recursive descent structure where each function handles
+/// operators at a specific precedence level. The precedence hierarchy (from
+/// lowest to highest) is:
+///
+/// 1. Comparison operators (lowest precedence)
+///    - Operators: ==, !=, <, >, <=, >=
+///    - Function: treeifyExp()
+///    - Associates: left-to-right
+///
+/// 2. Addition and subtraction
+///    - Operators: +, -
+///    - Function: treeifySumexp()
+///    - Associates: left-to-right
+///
+/// 3. Multiplication, division, and modulo
+///    - Operators: *, /, %
+///    - Function: treeifyMulexp()
+///    - Associates: left-to-right
+///
+/// 4. Double minus operator
+///    - Operator: --
+///    - Function: treeifyMinusexp()
+///    - Associates: left-to-right
+///
+/// 5. Terminals (highest precedence)
+///    - Includes: numbers, literals, quoted words, variable references (:var),
+///      parentheses (for grouping), function calls, lists, arrays
+///    - Function: treeifyTermexp()
+///
 //===----------------------------------------------------------------------===//
 
 #include "treeifyer.h"
@@ -110,9 +141,17 @@ QList<QList<DatumPtr>> Treeifier::astFromList(List *aList)
 
 // The remaining methods treeify into AST nodes.
 
+/// @brief Parse a root expression, handling optional STOP command.
+/// @return AST node representing the root expression.
 DatumPtr Treeifier::treeifyRootExp()
 {
     DatumPtr node = treeifyExp();
+
+    // The STOP command is a special case that is handled here.
+    // The reason is that STOP terminates a procedure, but it may be preceded by an expression,
+    // and because of tail recursion optimization, we must trampoline the expression when terminating the procedure.
+    // Thus, the expression becomes a child of the STOP node.
+    // e.g. [PRINT 2+2 STOP] becomes [STOP [PRINT 2+2]]
     if ((currentToken.isa() == Datum::typeWord) &&
         (currentToken.toString(Datum::ToStringFlags_Key) == cmdStrSTOP()))
     {
@@ -126,6 +165,11 @@ DatumPtr Treeifier::treeifyRootExp()
     return node;
 }
 
+/// @brief Parse comparison expressions (lowest precedence level).
+/// @details Handles comparison operators: ==, !=, <, >, <=, >=
+///          These operators have the lowest precedence and associate left-to-right.
+///          Example: `a < b == c` parses as `(a < b) == c`
+/// @return AST node representing the comparison expression.
 DatumPtr Treeifier::treeifyExp()
 {
     DatumPtr left = treeifySumexp();
@@ -181,6 +225,11 @@ DatumPtr Treeifier::treeifyExp()
     return left;
 }
 
+/// @brief Parse addition and subtraction expressions.
+/// @details Handles operators: +, -
+///          These operators have higher precedence than comparisons and associate left-to-right.
+///          Example: `a + b - c` parses as `(a + b) - c`
+/// @return AST node representing the sum/difference expression.
 DatumPtr Treeifier::treeifySumexp()
 {
     DatumPtr left = treeifyMulexp();
@@ -212,6 +261,11 @@ DatumPtr Treeifier::treeifySumexp()
     return left;
 }
 
+/// @brief Parse multiplication, division, and modulo expressions.
+/// @details Handles operators: *, /, %
+///          These operators have higher precedence than addition/subtraction and associate left-to-right.
+///          Example: `a * b / c` parses as `(a * b) / c`
+/// @return AST node representing the product/quotient/remainder expression.
 DatumPtr Treeifier::treeifyMulexp()
 {
     DatumPtr left = treeifyMinusexp();
@@ -249,6 +303,11 @@ DatumPtr Treeifier::treeifyMulexp()
     return left;
 }
 
+/// @brief Parse double-minus expressions.
+/// @details Handles operator: --
+///          This operator has higher precedence than multiplication/division/modulo and associates left-to-right.
+///          Example: `a -- b` parses as subtraction (difference operation).
+/// @return AST node representing the difference expression.
 DatumPtr Treeifier::treeifyMinusexp()
 {
     DatumPtr left = treeifyTermexp();
@@ -270,6 +329,17 @@ DatumPtr Treeifier::treeifyMinusexp()
     return left;
 }
 
+/// @brief Parse terminal expressions (highest precedence level).
+/// @details Handles terminals including:
+///          - Numbers (literals)
+///          - Lists and arrays (literals)
+///          - Quoted words (string literals)
+///          - Variable references (colon-prefixed, e.g., :var)
+///          - Parenthesized expressions (for grouping/overriding precedence)
+///          - Function/procedure calls
+///          Terminals have the highest precedence and are evaluated first.
+///          Parentheses allow explicit grouping to override the default precedence.
+/// @return AST node representing the terminal expression.
 DatumPtr Treeifier::treeifyTermexp()
 {
     if (currentToken.isNothing())
