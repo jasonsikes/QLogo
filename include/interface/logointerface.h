@@ -96,10 +96,13 @@ class LogoInterface : public QObject
     /// @param text The text to print to the console.
     virtual void printToConsole(const QString &text);
 
-    /// @brief Runs the interface.
-    /// @return The exit code of the interface.
-    /// @note The application main should call this method to begin the main loop of the application.
-    int run();
+    /// @brief Initializes the signal handlers.
+    /// @note This method sets up signal handlers for SIGINT, SIGTSTP, and SIGQUIT.
+    static void initSignals();
+
+    /// @brief Restores the default signal handlers.
+    /// @note This method restores the default signal handlers for SIGINT, SIGTSTP, and SIGQUIT.
+    static void restoreSignals();
 
     /// @brief Stops the application.
     /// @note Call this method to begin the shutdown process. Shortly after this method is called,

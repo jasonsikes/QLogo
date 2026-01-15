@@ -435,3 +435,16 @@ void Kernel::sysPrint(const QString &text)
 {
     systemWriteStream->lprint(text);
 }
+
+int Kernel::run()
+{
+    Config::get().mainInterface()->initialize();
+
+    LogoInterface::initSignals();
+
+    readEvalPrintLoop(false);
+
+    LogoInterface::restoreSignals();
+
+    return 0;
+}

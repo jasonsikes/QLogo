@@ -163,6 +163,12 @@ class Kernel
     /// @brief Perform pause, essentially a REPL loop.
     /// @return The value passed to CONTINUE, if any.
     DatumPtr pause();
+
+    /// @brief Runs the main loop of the QLogo interpreter.
+    /// @return The exit code of the application.
+    /// @note This method initializes the interface, sets up signal handlers,
+    /// runs the read-eval-print loop, and at termination restores signal handlers.
+    int run();
 };
 
 #endif // EXECUTOR_H

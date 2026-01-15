@@ -26,19 +26,6 @@
 /// method is called, the value is reset to noSignal.
 SignalsEnum_t lastSignal = noSignal;
 
-#ifdef _WIN32
-
-static void initSignals()
-{
-    // TODO: I need to find out how to handle keyboard interrupts in Windows
-}
-
-static void restoreSignals()
-{
-}
-
-#else
-
 /// @brief Handles a signal.
 /// @param sig The signal to handle.
 /// The function sets lastSignal to the most recent signal that was received from the operating system.
@@ -61,16 +48,27 @@ static void handle_signal(int sig)
     }
 }
 
-/// @brief Initializes the signal handler.
-static void initSignals()
+#ifdef _WIN32
+
+void LogoInterface::initSignals()
+{
+    // TODO: I need to find out how to handle keyboard interrupts in Windows
+}
+
+void LogoInterface::restoreSignals()
+{
+}
+
+#else
+
+void LogoInterface::initSignals()
 {
     signal(SIGINT, handle_signal);  // TOPLEVEL
     signal(SIGTSTP, handle_signal); // PAUSE
     signal(SIGQUIT, handle_signal); // SYSTEM
 }
 
-/// @brief Restores the default signal handlers.
-static void restoreSignals()
+void LogoInterface::restoreSignals()
 {
     signal(SIGINT, SIG_DFL);
     signal(SIGTSTP, SIG_DFL);
@@ -176,18 +174,6 @@ SignalsEnum_t LogoInterface::latestSignal()
     return retval;
 }
 
-int LogoInterface::run()
-{
-    initialize();
-
-    initSignals();
-
-    Kernel::get().readEvalPrintLoop(false);
-
-    restoreSignals();
-
-    return 0;
-}
 
 void LogoInterface::systemStop()
 {
