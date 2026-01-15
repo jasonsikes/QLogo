@@ -91,8 +91,8 @@ class LogoInterfaceGUI : public LogoInterface
     /// @brief Destructor for the LogoInterfaceGUI class.
     ~LogoInterfaceGUI() override;
 
-    /// @brief Initiates a system stop.
-    void systemStop() override;
+    /// @brief Stops communication and initiates cleanup tasks.
+    void closeInterface() override;
 
     /// @brief Initializes the GUI interface.
     void initialize() override;

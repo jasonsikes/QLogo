@@ -104,10 +104,8 @@ class LogoInterface : public QObject
     /// @note This method restores the default signal handlers for SIGINT, SIGTSTP, and SIGQUIT.
     static void restoreSignals();
 
-    /// @brief Stops the application.
-    /// @note Call this method to begin the shutdown process. Shortly after this method is called,
-    /// the interface will perform cleanup tasks and the run() method will return.
-    virtual void systemStop();
+    /// @brief Stops communication and initiates cleanup tasks.
+    virtual void closeInterface();
 
     virtual QString fileDialogModal()
     {

@@ -50,14 +50,13 @@ LogoInterfaceGUI::LogoInterfaceGUI(QObject *parent) : LogoInterface(parent)
 #endif
 }
 
-void LogoInterfaceGUI::systemStop()
+void LogoInterfaceGUI::closeInterface()
 {
     message(W_CLOSE_PIPE);
 
     messageQueue.stopQueue();
 
     setDribble("");
-    QApplication::quit();
 }
 
 LogoInterfaceGUI::~LogoInterfaceGUI() = default;

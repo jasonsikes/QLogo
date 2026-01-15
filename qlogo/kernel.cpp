@@ -133,7 +133,8 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
                 if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("SYSTEM"))
                 {
                     sysPrint("\n");
-                    Config::get().mainInterface()->systemStop();
+                    Config::get().mainInterface()->closeInterface();
+                    QApplication::quit();
                     return result;
                 }
                 if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("PAUSE") && isPausing)

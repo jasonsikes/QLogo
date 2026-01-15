@@ -175,7 +175,7 @@ SignalsEnum_t LogoInterface::latestSignal()
 }
 
 
-void LogoInterface::systemStop()
+void LogoInterface::closeInterface()
 {
-    QApplication::quit();
+    setDribble("");
 }
