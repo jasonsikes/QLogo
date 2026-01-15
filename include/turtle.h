@@ -22,7 +22,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "controller/logocontroller.h"
+#include "controller/logointerface.h"
 #include "sharedconstants.h"
 #include <QColor>
 #include <QTransform>
@@ -83,7 +83,7 @@ class Turtle
     void setIsTurtleVisible(bool aIsVisible)
     {
         turtleIsVisible = aIsVisible;
-        Config::get().mainController()->setTurtleIsVisible(aIsVisible);
+        Config::get().mainInterface()->setTurtleIsVisible(aIsVisible);
     }
 
     /// @brief Check if the pen is down.

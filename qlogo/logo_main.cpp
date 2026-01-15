@@ -11,13 +11,13 @@
 /// \file
 /// This file contains the main function for the QLogo language interpreter. Upon
 /// initialization, the main function will process command line arguments and create
-/// a LogoController (or LogoController subclass) object. The main function will then
-/// call the run() method of the LogoController object, which will start the main
+/// a LogoInterface (or LogoInterface subclass) object. The main function will then
+/// call the run() method of the LogoInterface object, which will start the main
 /// loop of the QLogo language interpreter.
 ///
 //===----------------------------------------------------------------------===//
 
-#include "controller/logocontrollergui.h"
+#include "controller/logointerfacegui.h"
 #include <QCommandLineParser>
 #include <QCoreApplication>
 #include <unistd.h>
@@ -125,16 +125,16 @@ int main(int argc, char **argv)
 
     processOptions(&application);
 
-    LogoController *mainController;
+    LogoInterface *mainInterface;
     if (Config::get().hasGUI)
     {
-        mainController = new LogoControllerGUI;
+        mainInterface = new LogoInterfaceGUI;
     }
     else
     {
-        mainController = new LogoController;
+        mainInterface = new LogoInterface;
     }
-    int retval = mainController->run();
-    delete mainController;
+    int retval = mainInterface->run();
+    delete mainInterface;
     return retval;
 }

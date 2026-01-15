@@ -38,7 +38,7 @@
 #include "runparser.h"
 #include "turtle.h"
 
-#include "controller/logocontroller.h"
+#include "controller/logointerface.h"
 
 // The maximum depth of procedure iterations before error is thrown.
 const int maxIterationDepth = 1000;
@@ -133,7 +133,7 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
                 if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("SYSTEM"))
                 {
                     sysPrint("\n");
-                    Config::get().mainController()->systemStop();
+                    Config::get().mainInterface()->systemStop();
                     return result;
                 }
                 if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("PAUSE") && isPausing)

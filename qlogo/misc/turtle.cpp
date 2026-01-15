@@ -16,7 +16,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "turtle.h"
-#include "controller/logocontroller.h"
+#include "controller/logointerface.h"
 #include "flowcontrol.h"
 
 // Some support functions for moving the turtle.
@@ -35,7 +35,7 @@ Turtle::~Turtle()
 void Turtle::setPenIsDown(bool aIsPenDown)
 {
     penIsDown = aIsPenDown;
-    Config::get().mainController()->setPenIsDown(penIsDown);
+    Config::get().mainInterface()->setPenIsDown(penIsDown);
 }
 
 // Move the turtle. If over a boundary, wrap.
@@ -76,10 +76,10 @@ bool Turtle::wrapTurtle(double lineStartU,
                                        mult * boundU,
                                        tempTurtlePos.m33());
         }
-        Config::get().mainController()->setTurtlePos(&tempTurtlePos);
-        Config::get().mainController()->emitVertex();
+        Config::get().mainInterface()->setTurtlePos(&tempTurtlePos);
+        Config::get().mainInterface()->emitVertex();
         if (penIsDown)
-            Config::get().mainController()->setPenIsDown(false);
+            Config::get().mainInterface()->setPenIsDown(false);
 
         if (isXBoundary)
         {
@@ -105,10 +105,10 @@ bool Turtle::wrapTurtle(double lineStartU,
                                         -mult * boundU,
                                         turtlePosition.m33());
         }
-        Config::get().mainController()->setTurtlePos(&turtlePosition);
-        Config::get().mainController()->emitVertex();
+        Config::get().mainInterface()->setTurtlePos(&turtlePosition);
+        Config::get().mainInterface()->emitVertex();
         if (penIsDown)
-            Config::get().mainController()->setPenIsDown(true);
+            Config::get().mainInterface()->setPenIsDown(true);
         lineEndU -= 2 * mult * boundU;
         return true;
     }
@@ -122,8 +122,8 @@ void Turtle::moveTurtleWrap(const QTransform &newPosition)
 {
     double lineEndX = newPosition.dx();
     double lineEndY = newPosition.dy();
-    double boundX = Config::get().mainController()->boundX();
-    double boundY = Config::get().mainController()->boundY();
+    double boundX = Config::get().mainInterface()->boundX();
+    double boundY = Config::get().mainInterface()->boundY();
 
     while ((lineEndX < -boundX) || (lineEndX > boundX) || (lineEndY < -boundY) || (lineEndY > boundY))
     {
@@ -164,8 +164,8 @@ void Turtle::moveTurtleWrap(const QTransform &newPosition)
                                 lineEndX,
                                 lineEndY,
                                 newPosition.m33());
-    Config::get().mainController()->setTurtlePos(&turtlePosition);
-    Config::get().mainController()->emitVertex();
+    Config::get().mainInterface()->setTurtlePos(&turtlePosition);
+    Config::get().mainInterface()->emitVertex();
 }
 
 // Move the turtle to a new position, but only if the new position is within the
@@ -175,16 +175,16 @@ void Turtle::moveTurtleFence(const QTransform &newPosition)
 {
     double lineEndX = newPosition.dx();
     double lineEndY = newPosition.dy();
-    double boundX = Config::get().mainController()->boundX();
-    double boundY = Config::get().mainController()->boundY();
+    double boundX = Config::get().mainInterface()->boundX();
+    double boundY = Config::get().mainInterface()->boundY();
 
     if ((lineEndX < -boundX) || (lineEndX > boundX) || (lineEndY < -boundY) || (lineEndY > boundY))
     {
         throw FCError::turtleOutOfBounds();
     }
     turtlePosition = newPosition;
-    Config::get().mainController()->setTurtlePos(&turtlePosition);
-    Config::get().mainController()->emitVertex();
+    Config::get().mainInterface()->setTurtlePos(&turtlePosition);
+    Config::get().mainInterface()->emitVertex();
 }
 
 // Move the turtle to a new position, adjusting the canvas boundaries,
@@ -193,19 +193,19 @@ void Turtle::moveTurtleWindow(const QTransform &newPosition)
 {
     double candidateX = std::abs(newPosition.dx()) + penSize;
     double candidateY = std::abs(newPosition.dy()) + penSize;
-    double boundX = Config::get().mainController()->boundX();
-    double boundY = Config::get().mainController()->boundY();
+    double boundX = Config::get().mainInterface()->boundX();
+    double boundY = Config::get().mainInterface()->boundY();
 
     if ((candidateX > boundX) || (candidateY > boundY))
     {
         boundX = (candidateX > boundX) ? candidateX : boundX;
         boundY = (candidateY > boundY) ? candidateY : boundY;
-        Config::get().mainController()->setBounds(boundX, boundY);
+        Config::get().mainInterface()->setBounds(boundX, boundY);
     }
 
     turtlePosition = newPosition;
-    Config::get().mainController()->setTurtlePos(&turtlePosition);
-    Config::get().mainController()->emitVertex();
+    Config::get().mainInterface()->setTurtlePos(&turtlePosition);
+    Config::get().mainInterface()->emitVertex();
 }
 
 void Turtle::moveTurtle(const QTransform &newPosition)
@@ -226,7 +226,7 @@ void Turtle::moveTurtle(const QTransform &newPosition)
 
 void Turtle::drawArc(double angle, double radius)
 {
-    Config::get().mainController()->drawArc(angle, radius);
+    Config::get().mainInterface()->drawArc(angle, radius);
 }
 
 void Turtle::forward(double steps)
@@ -249,7 +249,7 @@ void Turtle::rotate(double angle)
     // but QTransform::rotate() uses counter-clockwise rotation (standard math convention).
     // Negate the angle to match Logo's behavior.
     turtlePosition.rotate(-angle);
-    Config::get().mainController()->setTurtlePos(&turtlePosition);
+    Config::get().mainInterface()->setTurtlePos(&turtlePosition);
 }
 
 void Turtle::getxy(double &x, double &y) const
@@ -263,8 +263,8 @@ void Turtle::setMode(TurtleModeEnum newMode)
     mode = newMode;
     if (mode != turtleWindow)
     {
-        double boundX = Config::get().mainController()->boundX();
-        double boundY = Config::get().mainController()->boundY();
+        double boundX = Config::get().mainInterface()->boundX();
+        double boundY = Config::get().mainInterface()->boundY();
         double posX = turtlePosition.dx();
         double posY = turtlePosition.dy();
         if ((posX < -boundX) || (posX > boundX) || (posY < -boundY) || (posY > boundY))
@@ -324,7 +324,7 @@ void Turtle::moveToHome()
 void Turtle::setPenColor(const QColor &c)
 {
     penColor = c;
-    Config::get().mainController()->setCanvasForegroundColor(c);
+    Config::get().mainInterface()->setCanvasForegroundColor(c);
 }
 
 const QColor &Turtle::getPenColor() const
@@ -337,7 +337,7 @@ void Turtle::setPenMode(PenModeEnum aPenMode)
     if (penMode != aPenMode)
     {
         penMode = aPenMode;
-        Config::get().mainController()->setPenmode(penMode);
+        Config::get().mainInterface()->setPenmode(penMode);
     }
 }
 
@@ -349,12 +349,12 @@ PenModeEnum Turtle::getPenMode() const
 void Turtle::setPenSize(double aPenSize)
 {
     penSize = aPenSize;
-    Config::get().mainController()->setPensize(penSize);
+    Config::get().mainInterface()->setPensize(penSize);
 }
 
 bool Turtle::isPenSizeValid(double aPenSize) const
 {
-    return Config::get().mainController()->isPenSizeValid(aPenSize);
+    return Config::get().mainInterface()->isPenSizeValid(aPenSize);
 }
 
 double Turtle::getPenSize() const
@@ -370,13 +370,13 @@ void Turtle::beginFillWithColor(const QColor &fillColor)
     }
     isFilling = true;
 
-    Config::get().mainController()->beginPolygon(fillColor);
+    Config::get().mainInterface()->beginPolygon(fillColor);
 }
 
 void Turtle::endFill()
 {
     isFilling = false;
-    Config::get().mainController()->endPolygon();
+    Config::get().mainInterface()->endPolygon();
 }
 
 DatumPtr Turtle::print()

@@ -16,7 +16,7 @@
 #include "exports.h"
 #include "astnode.h"
 #include "compiler_private.h"
-#include "controller/logocontroller.h"
+#include "controller/logointerface.h"
 #include "controller/textstream.h"
 #include "datum_types.h"
 #include "flowcontrol.h"
@@ -1427,7 +1427,7 @@ EXPORTC addr_t standout(addr_t eAddr, addr_t thingAddr)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     QString phrase = thing->toString();
-    QString retval = Config::get().mainController()->addStandoutToString(phrase);
+    QString retval = Config::get().mainInterface()->addStandoutToString(phrase);
     auto *retvalWord = new Word(retval);
     e->watch(retvalWord);
     return reinterpret_cast<addr_t>(retvalWord);
@@ -1583,7 +1583,7 @@ EXPORTC void setTurtleVisible(int visible)
 
 EXPORTC void clean(void)
 {
-    Config::get().mainController()->clearCanvas();
+    Config::get().mainInterface()->clearCanvas();
 }
 
 EXPORTC void setTurtleMode(int mode)
@@ -1593,15 +1593,15 @@ EXPORTC void setTurtleMode(int mode)
     {
         bool isCanvasBounded = (newMode == turtleWindow);
         Config::get().mainTurtle()->setMode(newMode);
-        Config::get().mainController()->setIsCanvasBounded(isCanvasBounded);
+        Config::get().mainInterface()->setIsCanvasBounded(isCanvasBounded);
     }
 }
 
 EXPORTC addr_t getBounds(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    double x = Config::get().mainController()->boundX();
-    double y = Config::get().mainController()->boundY();
+    double x = Config::get().mainInterface()->boundX();
+    double y = Config::get().mainInterface()->boundY();
 
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(x));
@@ -1613,7 +1613,7 @@ EXPORTC addr_t getBounds(addr_t eAddr)
 
 EXPORTC void setBounds(double x, double y)
 {
-    Config::get().mainController()->setBounds(x, y);
+    Config::get().mainInterface()->setBounds(x, y);
 }
 
 EXPORTC int32_t beginFilledWithColor(addr_t colorAddr)
@@ -1634,17 +1634,17 @@ EXPORTC void endFilled(void)
 EXPORTC void addLabel(addr_t textAddr)
 {
     auto *d = reinterpret_cast<Datum *>(textAddr);
-    Config::get().mainController()->drawLabel(d->toString());
+    Config::get().mainInterface()->drawLabel(d->toString());
 }
 
 EXPORTC void setLabelHeight(double height)
 {
-    Config::get().mainController()->setLabelFontSize(height);
+    Config::get().mainInterface()->setLabelFontSize(height);
 }
 
 EXPORTC void setScreenMode(int mode)
 {
-    Config::get().mainController()->setScreenMode(static_cast<ScreenModeEnum>(mode));
+    Config::get().mainInterface()->setScreenMode(static_cast<ScreenModeEnum>(mode));
 }
 
 EXPORTC bool isTurtleVisible(void)
@@ -1655,7 +1655,7 @@ EXPORTC bool isTurtleVisible(void)
 EXPORTC addr_t getScreenMode(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    ScreenModeEnum mode = Config::get().mainController()->getScreenMode();
+    ScreenModeEnum mode = Config::get().mainInterface()->getScreenMode();
     QString modeStr;
     switch (mode)
     {
@@ -1700,7 +1700,7 @@ EXPORTC addr_t getTurtleMode(addr_t eAddr)
 EXPORTC addr_t getLabelSize(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    double height = Config::get().mainController()->getLabelFontSize();
+    double height = Config::get().mainInterface()->getLabelFontSize();
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(height));
     retvalBuilder.append(DatumPtr(height));
@@ -1774,7 +1774,7 @@ EXPORTC bool setBackground(addr_t colorAddr)
     QColor color;
     if (!Config::get().mainKernel()->colorFromDatumPtr(color, DatumPtr(d)))
         return false;
-    Config::get().mainController()->setCanvasBackgroundColor(color);
+    Config::get().mainInterface()->setCanvasBackgroundColor(color);
     return true;
 }
 
@@ -1832,7 +1832,7 @@ EXPORTC double getPenSize(void)
 EXPORTC addr_t getBackground(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    const QColor &color = Config::get().mainController()->getCanvasBackgroundColor();
+    const QColor &color = Config::get().mainInterface()->getCanvasBackgroundColor();
     List *retval = listFromColor(color);
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
@@ -1843,7 +1843,7 @@ EXPORTC addr_t savePict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
     QString filepath = Config::get().mainKernel()->filepathForFilename(DatumPtr(filename));
-    QImage image = Config::get().mainController()->getCanvasImage();
+    QImage image = Config::get().mainInterface()->getCanvasImage();
     bool isSuccessful = image.save(filepath);
     auto *retval = reinterpret_cast<Datum *>(nodeAddr);
     if (!isSuccessful)
@@ -1859,7 +1859,7 @@ EXPORTC addr_t saveSvgpict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
     QString filepath = Config::get().mainKernel()->filepathForFilename(DatumPtr(filename));
-    QByteArray svgImage = Config::get().mainController()->getSvgImage();
+    QByteArray svgImage = Config::get().mainInterface()->getSvgImage();
 
     auto *retval = reinterpret_cast<Datum *>(nodeAddr);
     QFile file(filepath);
@@ -1891,14 +1891,14 @@ EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
         {
             retval = FCError::fileSystem();
         }
-        Config::get().mainController()->setCanvasBackgroundImage(image);
+        Config::get().mainInterface()->setCanvasBackgroundImage(image);
         goto done;
     }
     if (dFilename->isList())
     {
         if (dFilename->listValue()->isEmpty())
         {
-            Config::get().mainController()->setCanvasBackgroundImage(QImage());
+            Config::get().mainInterface()->setCanvasBackgroundImage(QImage());
             goto done;
         }
     }
@@ -1911,7 +1911,7 @@ done:
 EXPORTC addr_t getMousePos(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    QVector2D position = Config::get().mainController()->mousePosition();
+    QVector2D position = Config::get().mainInterface()->mousePosition();
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(position.x()));
     retvalBuilder.append(DatumPtr(position.y()));
@@ -1923,7 +1923,7 @@ EXPORTC addr_t getMousePos(addr_t eAddr)
 EXPORTC addr_t getClickPos(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    QVector2D position = Config::get().mainController()->lastMouseclickPosition();
+    QVector2D position = Config::get().mainInterface()->lastMouseclickPosition();
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(position.x()));
     retvalBuilder.append(DatumPtr(position.y()));
@@ -1934,12 +1934,12 @@ EXPORTC addr_t getClickPos(addr_t eAddr)
 
 EXPORTC bool isMouseButtonDown(void)
 {
-    return Config::get().mainController()->getIsMouseButtonDown();
+    return Config::get().mainInterface()->getIsMouseButtonDown();
 }
 
 EXPORTC double getMouseButton(void)
 {
-    return static_cast<double>(Config::get().mainController()->getAndResetButtonID());
+    return static_cast<double>(Config::get().mainInterface()->getAndResetButtonID());
 }
 
 /// @brief Get the value of the ERRORACT variable.

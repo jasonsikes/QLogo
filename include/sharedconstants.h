@@ -35,7 +35,7 @@ using message_t = quint8;
 class Turtle;
 class Kernel;
 class Procedures;
-class LogoController;
+class LogoInterface;
 class Compiler;
 
 enum messageCategory : message_t
@@ -102,14 +102,14 @@ class Config
         Q_ASSERT(mTurtle == nullptr);
         Q_ASSERT(mKernel == nullptr);
         Q_ASSERT(mProcedures == nullptr);
-        Q_ASSERT(mLogoController == nullptr);
+        Q_ASSERT(mLogoInterface == nullptr);
         Q_ASSERT(mCompiler == nullptr);
     }
 
     Turtle *mTurtle = nullptr;
     Kernel *mKernel = nullptr;
     Procedures *mProcedures = nullptr;
-    LogoController *mLogoController = nullptr;
+    LogoInterface *mLogoInterface = nullptr;
     Compiler *mCompiler = nullptr;
 
   public:
@@ -176,10 +176,10 @@ class Config
         return mProcedures;
     }
 
-    LogoController *mainController()
+    LogoInterface *mainInterface()
     {
-        Q_ASSERT(mLogoController != nullptr);
-        return mLogoController;
+        Q_ASSERT(mLogoInterface != nullptr);
+        return mLogoInterface;
     }
 
     Compiler *mainCompiler()
@@ -206,10 +206,10 @@ class Config
         mProcedures = aProcedures;
     }
 
-    void setMainLogoController(LogoController *aLogoController)
+    void setMainLogoInterface(LogoInterface *aLogoInterface)
     {
-        Q_ASSERT((mLogoController == nullptr) || (aLogoController == nullptr));
-        mLogoController = aLogoController;
+        Q_ASSERT((mLogoInterface == nullptr) || (aLogoInterface == nullptr));
+        mLogoInterface = aLogoInterface;
     }
 
     void setMainCompiler(Compiler *aCompiler)

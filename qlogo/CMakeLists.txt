@@ -8,8 +8,8 @@ set(QLOGO_SOURCES
   compiler/compiler_graphics.cpp
   compiler/compiler_specialvariables.cpp
   controller/inputqueue.cpp
-  controller/logocontroller.cpp
-  controller/logocontrollergui.cpp
+  controller/logointerface.cpp
+  controller/logointerfacegui.cpp
   controller/textstream.cpp
   datum/datum.cpp
   datum/datum_array.cpp
@@ -39,8 +39,8 @@ set(QLOGO_SOURCES
   ../include/compiler_private.h
   ../include/compiler_types.h
   ../include/controller/inputqueue.h
-  ../include/controller/logocontroller.h
-  ../include/controller/logocontrollergui.h
+  ../include/controller/logointerface.h
+  ../include/controller/logointerfacegui.h
   ../include/controller/textstream.h
   ../include/datum_core.h
   ../include/datum_ptr.h

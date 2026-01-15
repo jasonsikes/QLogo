@@ -49,7 +49,7 @@
 #include "astnode.h"
 #include "cmd_strings.h"
 #include "compiler.h"
-#include "controller/logocontroller.h"
+#include "controller/logointerface.h"
 #include "controller/textstream.h"
 #include "datum_types.h"
 #include "flowcontrol.h"

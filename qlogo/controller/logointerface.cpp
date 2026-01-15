@@ -1,0 +1,203 @@
+
+//===-- qlogo/logointerface.h - LogoInterface class definition -------*- C++ -*-===//
+//
+// Copyright 2017-2024 Jason Sikes
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted under the conditions specified in the
+// license found in the LICENSE file in the project root.
+//
+//===----------------------------------------------------------------------===//
+///
+/// \file
+/// This file contains the definition of the LogoInterface class, which is responsible for
+/// handling user interaction through standard input and output with no special control characters.
+///
+//===----------------------------------------------------------------------===//
+
+#include "controller/logointerface.h"
+#include "kernel.h"
+#include <QApplication>
+#include <QFile>
+#include <QIODevice>
+#include <csignal>
+/// @brief The most recent signal that was received.
+/// The value of this variable is set by the handle_signal function. When the latestSignal
+/// method is called, the value is reset to noSignal.
+SignalsEnum_t lastSignal = noSignal;
+
+#ifdef _WIN32
+
+static void initSignals()
+{
+    // TODO: I need to find out how to handle keyboard interrupts in Windows
+}
+
+static void restoreSignals()
+{
+}
+
+#else
+
+/// @brief Handles a signal.
+/// @param sig The signal to handle.
+/// The function sets lastSignal to the most recent signal that was received from the operating system.
+/// The LogoInterface class can query the last signal and take appropriate action.
+static void handle_signal(int sig)
+{
+    switch (sig)
+    {
+    case SIGINT:
+        lastSignal = toplevelSignal; // Ctrl+C
+        break;
+    case SIGTSTP:
+        lastSignal = pauseSignal; // Ctrl+Z
+        break;
+    case SIGQUIT:
+        lastSignal = systemSignal; // Ctrl+[backslash]
+        break;
+    default:
+        qWarning() << "Not expecting signal: " << sig;
+    }
+}
+
+/// @brief Initializes the signal handler.
+static void initSignals()
+{
+    signal(SIGINT, handle_signal);  // TOPLEVEL
+    signal(SIGTSTP, handle_signal); // PAUSE
+    signal(SIGQUIT, handle_signal); // SYSTEM
+}
+
+/// @brief Restores the default signal handlers.
+static void restoreSignals()
+{
+    signal(SIGINT, SIG_DFL);
+    signal(SIGTSTP, SIG_DFL);
+    signal(SIGQUIT, SIG_DFL);
+}
+
+#endif
+
+LogoInterface::LogoInterface(QObject *parent)
+{
+    dribbleStream = nullptr;
+    Config::get().setMainLogoInterface(this);
+    kernel = new Kernel;
+
+    inStream = new QTextStream(stdin, QIODevice::ReadOnly);
+    outStream = new QTextStream(stdout, QIODevice::WriteOnly);
+}
+
+LogoInterface::~LogoInterface()
+{
+    setDribble("");
+    delete inStream;
+    delete outStream;
+    delete kernel;
+    Config::get().setMainLogoInterface(nullptr);
+}
+
+void LogoInterface::printToConsole(const QString &s)
+{
+    *outStream << s;
+    if (dribbleStream)
+        *dribbleStream << s;
+}
+
+bool LogoInterface::atEnd()
+{
+    return inStream->atEnd();
+}
+
+bool LogoInterface::keyQueueHasChars()
+{
+    return !inStream->atEnd();
+}
+
+// This is READRAWLINE
+QString LogoInterface::inputRawlineWithPrompt(const QString &prompt)
+{
+    QString retval;
+    if (!inStream->atEnd())
+    {
+        printToConsole(prompt);
+        outStream->flush();
+        retval = inStream->readLine();
+        if (dribbleStream)
+            *dribbleStream << retval << '\n';
+    }
+    return retval;
+}
+
+// This is READCHAR
+DatumPtr LogoInterface::readchar()
+{
+    QChar c;
+    outStream->flush();
+    if (inStream->atEnd())
+        return nothing();
+    *inStream >> c;
+    QString retval = c;
+    DatumPtr retvalP = DatumPtr(retval);
+    return retvalP;
+}
+
+void LogoInterface::mwait(unsigned long msecs)
+{
+    outStream->flush();
+    QThread::msleep(msecs);
+}
+
+bool LogoInterface::setDribble(const QString &filePath)
+{
+    if (filePath == "")
+    {
+        if (dribbleStream)
+        {
+            QIODevice *file = dribbleStream->device();
+            dribbleStream->flush();
+            delete dribbleStream;
+            file->close();
+            delete file;
+        }
+        dribbleStream = nullptr;
+        return true;
+    }
+    auto *file = new QFile(filePath);
+    if (!file->open(QIODevice::Append))
+        return false;
+
+    dribbleStream = new QTextStream(file);
+    return true;
+}
+
+bool LogoInterface::isDribbling()
+{
+    return dribbleStream != nullptr;
+}
+
+SignalsEnum_t LogoInterface::latestSignal()
+{
+    SignalsEnum_t retval = lastSignal;
+    lastSignal = noSignal;
+    return retval;
+}
+
+int LogoInterface::run()
+{
+    initialize();
+
+    initSignals();
+
+    Config::get().mainKernel()->readEvalPrintLoop(false);
+
+    restoreSignals();
+
+    return 0;
+}
+
+void LogoInterface::systemStop()
+{
+    QApplication::quit();
+}
