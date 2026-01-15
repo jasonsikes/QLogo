@@ -7,10 +7,10 @@ set(QLOGO_SOURCES
   compiler/compiler_controlstructures.cpp
   compiler/compiler_graphics.cpp
   compiler/compiler_specialvariables.cpp
-  controller/inputqueue.cpp
-  controller/logointerface.cpp
-  controller/logointerfacegui.cpp
-  controller/textstream.cpp
+  interface/inputqueue.cpp
+  interface/logointerface.cpp
+  interface/logointerfacegui.cpp
+  interface/textstream.cpp
   datum/datum.cpp
   datum/datum_array.cpp
   datum/datum_astnode.cpp
@@ -38,10 +38,10 @@ set(QLOGO_SOURCES
   ../include/compiler.h
   ../include/compiler_private.h
   ../include/compiler_types.h
-  ../include/controller/inputqueue.h
-  ../include/controller/logointerface.h
-  ../include/controller/logointerfacegui.h
-  ../include/controller/textstream.h
+  ../include/interface/inputqueue.h
+  ../include/interface/logointerface.h
+  ../include/interface/logointerfacegui.h
+  ../include/interface/textstream.h
   ../include/datum_core.h
   ../include/datum_ptr.h
   ../include/datum_types.h

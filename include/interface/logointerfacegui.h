@@ -21,8 +21,8 @@
 #ifndef LOGOINTERFACEGUI_H
 #define LOGOINTERFACEGUI_H
 
-#include "controller/inputqueue.h"
-#include "controller/logointerface.h"
+#include "interface/inputqueue.h"
+#include "interface/logointerface.h"
 #include "sharedconstants.h"
 #include <QDataStream>
 #include <QFile>

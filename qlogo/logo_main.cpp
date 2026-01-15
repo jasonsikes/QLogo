@@ -17,7 +17,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "controller/logointerfacegui.h"
+#include "interface/logointerfacegui.h"
 #include <QCommandLineParser>
 #include <QCoreApplication>
 #include <unistd.h>

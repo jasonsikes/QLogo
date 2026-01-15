@@ -14,7 +14,7 @@
 /// from the input queue.
 //===----------------------------------------------------------------------===//
 
-#include "controller/inputqueue.h"
+#include "interface/inputqueue.h"
 #include <QDebug>
 #include <QMutex>
 #include <QQueue>

@@ -22,7 +22,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "controller/logointerface.h"
+#include "interface/logointerface.h"
 #include "sharedconstants.h"
 #include <QColor>
 #include <QTransform>

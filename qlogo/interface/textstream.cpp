@@ -15,8 +15,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "controller/textstream.h"
-#include "controller/logointerface.h"
+#include "interface/textstream.h"
+#include "interface/logointerface.h"
 #include "datum_types.h"
 
 /// @brief Find the last non-space character in a string

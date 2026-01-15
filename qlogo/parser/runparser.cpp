@@ -17,8 +17,8 @@
 
 #include "runparser.h"
 #include "QtCore/qiodevice.h"
-#include "controller/logointerface.h"
-#include "controller/textstream.h"
+#include "interface/logointerface.h"
+#include "interface/textstream.h"
 #include "datum_types.h"
 #include "op_strings.h"
 #include <qdatetime.h>

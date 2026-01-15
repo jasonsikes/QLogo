@@ -22,7 +22,7 @@
 #include "kernel.h"
 #include "astnode.h"
 #include "compiler.h"
-#include "controller/textstream.h"
+#include "interface/textstream.h"
 #include "datum_types.h"
 #include "sharedconstants.h"
 #include "treeifyer.h"
@@ -38,7 +38,7 @@
 #include "runparser.h"
 #include "turtle.h"
 
-#include "controller/logointerface.h"
+#include "interface/logointerface.h"
 
 // The maximum depth of procedure iterations before error is thrown.
 const int maxIterationDepth = 1000;

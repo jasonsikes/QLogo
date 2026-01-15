@@ -16,7 +16,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "turtle.h"
-#include "controller/logointerface.h"
+#include "interface/logointerface.h"
 #include "flowcontrol.h"
 
 // Some support functions for moving the turtle.

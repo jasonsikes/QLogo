@@ -15,7 +15,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "controller/logointerface.h"
+#include "interface/logointerface.h"
 #include "kernel.h"
 #include <QApplication>
 #include <QFile>
