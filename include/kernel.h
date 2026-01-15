@@ -76,20 +76,28 @@ class Kernel
     /// Initialize LOGO system variables
     void initVariables();
 
-  public:
-    /// @brief Treeifier.
-    Treeifier *treeifier;
-
-    /// @brief The current error, if any.
-    DatumPtr currentError;
-
-    /// @brief Constructor.
+    /// @brief Private constructor for singleton pattern.
     Kernel();
 
     Kernel(const Kernel &) = delete;
     Kernel(Kernel &&) = delete;
     Kernel &operator=(const Kernel &) = delete;
     Kernel &operator=(Kernel &&) = delete;
+
+  public:
+    /// @brief Get the singleton instance of the Kernel class.
+    /// @return The singleton instance of the Kernel class.
+    static Kernel &get()
+    {
+        static Kernel instance;
+        return instance;
+    }
+
+    /// @brief Treeifier.
+    Treeifier *treeifier;
+
+    /// @brief The current error, if any.
+    DatumPtr currentError;
 
     /// @brief Destructor.
     ~Kernel();

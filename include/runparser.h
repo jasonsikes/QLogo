@@ -22,7 +22,6 @@
 #include "datum_types.h"
 
 class Procedures;
-class Kernel;
 class TextStream;
 
 class Runparser

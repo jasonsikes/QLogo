@@ -396,7 +396,7 @@ Datum *Evaluator::subExec(Datum *aList)
 
 Datum *Evaluator::procedureExec(ASTNode *node, Datum **paramAry, uint32_t paramCount)
 {
-    CallFrameStack *frameStack = &Config::get().mainKernel()->callStack;
+    CallFrameStack *frameStack = &Kernel::get().callStack;
     CallFrame frame(frameStack, DatumPtr(node));
 
     return frame.exec(paramAry, paramCount);
@@ -417,7 +417,7 @@ Datum *Evaluator::watch(Datum *d)
 bool Evaluator::varCASEIGNOREDP()
 {
     QString name = QObject::tr("CASEIGNOREDP");
-    DatumPtr val = Config::get().mainKernel()->callStack.datumForName(name);
+    DatumPtr val = Kernel::get().callStack.datumForName(name);
     bool retval = false;
     if (val.isWord())
     {

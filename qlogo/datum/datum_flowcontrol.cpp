@@ -27,7 +27,7 @@
 
 void FCError::commonInit()
 {
-    Kernel *k = Config::get().mainKernel();
+    Kernel *k = &Kernel::get();
 
     // If the error is a bad default expression, don't report the procedure
     // or line.

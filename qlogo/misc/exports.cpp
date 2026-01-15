@@ -213,7 +213,7 @@ EXPORTC bool getValidityOfBoolForDatum(addr_t eAddr, addr_t datumAddr)
 EXPORTC addr_t getDatumForVarname(addr_t wordAddr)
 {
     auto name = reinterpret_cast<Word *>(wordAddr)->toString(Datum::ToStringFlags_Key);
-    Datum *val = Config::get().mainKernel()->callStack.datumForName(name).datumValue();
+    Datum *val = Kernel::get().callStack.datumForName(name).datumValue();
 
     return reinterpret_cast<addr_t>(val);
 }
@@ -226,7 +226,7 @@ EXPORTC addr_t stdWriteDatum(addr_t datumAddr, bool useShow)
     Datum::ToStringFlags writeFlags = useShow ? Datum::ToStringFlags_Show : Datum::ToStringFlags_None;
     auto *d = reinterpret_cast<Datum *>(datumAddr);
     QString output = d->toString(writeFlags) + "\n";
-    Config::get().mainKernel()->stdPrint(output);
+    Kernel::get().stdPrint(output);
     return nullptr;
 }
 
@@ -250,7 +250,7 @@ EXPORTC addr_t stdWriteDatumAry(addr_t datumAddr, uint32_t count, bool useShow, 
     }
     if (addWhitespace)
         output += "\n";
-    Config::get().mainKernel()->stdPrint(output);
+    Kernel::get().stdPrint(output);
     return nullptr;
 }
 
@@ -287,7 +287,7 @@ EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr)
 {
     auto d = DatumPtr(reinterpret_cast<Datum *>(datumAddr));
     auto *w = reinterpret_cast<Word *>(wordAddr);
-    Config::get().mainKernel()->callStack.setDatumForName(d, w->toString(Datum::ToStringFlags_Key));
+    Kernel::get().callStack.setDatumForName(d, w->toString(Datum::ToStringFlags_Key));
 }
 
 /// Run the given list. Output whatever the list outputs.
@@ -584,21 +584,21 @@ EXPORTC addr_t getFormForNumber(addr_t eAddr, double num, uint32_t width, int32_
 /// @brief return the address of the repcount variable.
 EXPORTC addr_t repcountAddr(void)
 {
-    void *retval = &Config::get().mainKernel()->callStack.repcount;
+    void *retval = &Kernel::get().callStack.repcount;
     return (addr_t)retval;
 }
 
 EXPORTC addr_t beginCatch(void)
 {
-    auto *erractWord = reinterpret_cast<Word *>(Config::get().mainKernel()->specialVar(SpecialNames::ERRACT));
+    auto *erractWord = reinterpret_cast<Word *>(Kernel::get().specialVar(SpecialNames::ERRACT));
     Datum *erractValue =
-        Config::get().mainKernel()->callStack.datumForName(erractWord->toString(Datum::ToStringFlags_Key)).datumValue();
+        Kernel::get().callStack.datumForName(erractWord->toString(Datum::ToStringFlags_Key)).datumValue();
 
     // Save the erract value.
     if (erractValue->isa != Datum::typeNothing)
     {
         erractValue->retainCount++;
-        Config::get().mainKernel()->callStack.setDatumForName(nothing(),
+        Kernel::get().callStack.setDatumForName(nothing(),
                                                               erractWord->toString(Datum::ToStringFlags_Key));
     }
     return reinterpret_cast<addr_t>(erractValue);
@@ -607,7 +607,7 @@ EXPORTC addr_t beginCatch(void)
 EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t resultAddr, addr_t tagAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *erractWord = reinterpret_cast<Word *>(Config::get().mainKernel()->specialVar(SpecialNames::ERRACT));
+    auto *erractWord = reinterpret_cast<Word *>(Kernel::get().specialVar(SpecialNames::ERRACT));
     auto *erractValue = reinterpret_cast<Datum *>(errActAddr);
     auto *result = reinterpret_cast<Datum *>(resultAddr);
     auto *tag = reinterpret_cast<Word *>(tagAddr);
@@ -616,7 +616,7 @@ EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t
     if (erractValue->isa != Datum::typeNothing)
     {
         DatumPtr erractValuePtr = DatumPtr(erractValue);
-        Config::get().mainKernel()->callStack.setDatumForName(erractValuePtr,
+        Kernel::get().callStack.setDatumForName(erractValuePtr,
                                                               erractWord->toString(Datum::ToStringFlags_Key));
         erractValue->retainCount--;
     }
@@ -638,7 +638,7 @@ EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t
         {
             e->watch(err);
             auto retval = reinterpret_cast<addr_t>(err->output().datumValue());
-            Config::get().mainKernel()->currentError = nothing();
+            Kernel::get().currentError = nothing();
             return retval;
         }
         return resultAddr;
@@ -650,7 +650,7 @@ EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t
 EXPORTC addr_t getCurrentError(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    DatumPtr errPtr = Config::get().mainKernel()->currentError;
+    DatumPtr errPtr = Kernel::get().currentError;
 
     ListBuilder retvalBuilder;
     if (!errPtr.isNothing())
@@ -669,7 +669,7 @@ EXPORTC addr_t getCurrentError(addr_t eAddr)
 EXPORTC addr_t callPause(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *retval = Config::get().mainKernel()->pause().datumValue();
+    Datum *retval = Kernel::get().pause().datumValue();
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
 }
@@ -709,17 +709,17 @@ EXPORTC addr_t processRunresult(addr_t eAddr, addr_t resultAddr)
 
 EXPORTC void saveTestResult(bool tf)
 {
-    Config::get().mainKernel()->callStack.setTest(tf);
+    Kernel::get().callStack.setTest(tf);
 }
 
 EXPORTC bool getIsTested(void)
 {
-    return Config::get().mainKernel()->callStack.isTested();
+    return Kernel::get().callStack.isTested();
 }
 
 EXPORTC bool getTestResult(void)
 {
-    return Config::get().mainKernel()->callStack.testedState();
+    return Kernel::get().callStack.testedState();
 }
 
 /// Compare a Datum with a bool.
@@ -1620,7 +1620,7 @@ EXPORTC int32_t beginFilledWithColor(addr_t colorAddr)
 {
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
-    if (!Config::get().mainKernel()->colorFromDatumPtr(color, DatumPtr(d)))
+    if (!Kernel::get().colorFromDatumPtr(color, DatumPtr(d)))
         return 0;
     Config::get().mainTurtle()->beginFillWithColor(color);
     return 1;
@@ -1723,7 +1723,7 @@ EXPORTC bool setPenColor(addr_t colorAddr)
 {
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
-    if (!Config::get().mainKernel()->colorFromDatumPtr(color, DatumPtr(d)))
+    if (!Kernel::get().colorFromDatumPtr(color, DatumPtr(d)))
         return false;
     Config::get().mainTurtle()->setPenColor(color);
     return true;
@@ -1749,7 +1749,7 @@ EXPORTC bool isColorIndexGood(addr_t colorIndexAddr, double lowerLimit)
     double colorIndex = w->numberValue();
 
     return (w->numberIsValid) && (colorIndex == floor(colorIndex)) && (colorIndex >= lowerLimit) &&
-           (colorIndex < Config::get().mainKernel()->palette.size());
+           (colorIndex < Kernel::get().palette.size());
 }
 
 EXPORTC bool setPalette(addr_t colorIndexAddr, addr_t colorAddr)
@@ -1757,9 +1757,9 @@ EXPORTC bool setPalette(addr_t colorIndexAddr, addr_t colorAddr)
     auto colorIndex = static_cast<int>((reinterpret_cast<Word *>(colorIndexAddr))->numberValue());
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
-    if (!Config::get().mainKernel()->colorFromDatumPtr(color, DatumPtr(d)))
+    if (!Kernel::get().colorFromDatumPtr(color, DatumPtr(d)))
         return false;
-    Config::get().mainKernel()->palette[colorIndex] = color;
+    Kernel::get().palette[colorIndex] = color;
     return true;
 }
 
@@ -1772,7 +1772,7 @@ EXPORTC bool setBackground(addr_t colorAddr)
 {
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
-    if (!Config::get().mainKernel()->colorFromDatumPtr(color, DatumPtr(d)))
+    if (!Kernel::get().colorFromDatumPtr(color, DatumPtr(d)))
         return false;
     Config::get().mainInterface()->setCanvasBackgroundColor(color);
     return true;
@@ -1818,7 +1818,7 @@ EXPORTC addr_t getPaletteColor(addr_t eAddr, addr_t colorIndexAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto colorIndex = static_cast<int>((reinterpret_cast<Word *>(colorIndexAddr))->numberValue());
-    const QColor &color = Config::get().mainKernel()->palette[colorIndex];
+    const QColor &color = Kernel::get().palette[colorIndex];
     List *retval = listFromColor(color);
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
@@ -1842,7 +1842,7 @@ EXPORTC addr_t savePict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
-    QString filepath = Config::get().mainKernel()->filepathForFilename(DatumPtr(filename));
+    QString filepath = Kernel::get().filepathForFilename(DatumPtr(filename));
     QImage image = Config::get().mainInterface()->getCanvasImage();
     bool isSuccessful = image.save(filepath);
     auto *retval = reinterpret_cast<Datum *>(nodeAddr);
@@ -1858,7 +1858,7 @@ EXPORTC addr_t saveSvgpict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
-    QString filepath = Config::get().mainKernel()->filepathForFilename(DatumPtr(filename));
+    QString filepath = Kernel::get().filepathForFilename(DatumPtr(filename));
     QByteArray svgImage = Config::get().mainInterface()->getSvgImage();
 
     auto *retval = reinterpret_cast<Datum *>(nodeAddr);
@@ -1885,7 +1885,7 @@ EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
     if (dFilename->isa == Datum::typeWord)
     {
         QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
-        QString filepath = Config::get().mainKernel()->filepathForFilename(DatumPtr(filename));
+        QString filepath = Kernel::get().filepathForFilename(DatumPtr(filename));
         QImage image = QImage(filepath);
         if (image.isNull())
         {
@@ -1954,7 +1954,7 @@ EXPORTC double getMouseButton(void)
 EXPORTC bool getvarErroract(void)
 {
     QString name = QObject::tr("ERRACT");
-    DatumPtr val = Config::get().mainKernel()->callStack.datumForName(name);
+    DatumPtr val = Kernel::get().callStack.datumForName(name);
     if (val.isWord())
     {
         QString word = val.toString(Datum::ToStringFlags_Key);
@@ -1975,7 +1975,7 @@ EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(nodeAddr);
-    const CallFrame *currentFrame = Config::get().mainKernel()->callStack.localFrame();
+    const CallFrame *currentFrame = Kernel::get().callStack.localFrame();
     DatumPtr currentProc = currentFrame->sourceNode;
     if (currentProc.isASTNode())
     {
@@ -1984,7 +1984,7 @@ EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
         return reinterpret_cast<addr_t>(err);
     }
 
-    Datum *retval = Config::get().mainKernel()->inputProcedure(node);
+    Datum *retval = Kernel::get().inputProcedure(node);
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
 }
@@ -1994,6 +1994,6 @@ EXPORTC void setVarAsLocal(addr_t varname)
 {
     auto *varName = reinterpret_cast<Word *>(varname);
     QString varNameStr = varName->toString(Datum::ToStringFlags_Key);
-    CallFrame *currentFrame = Config::get().mainKernel()->callStack.localFrame();
+    CallFrame *currentFrame = Kernel::get().callStack.localFrame();
     currentFrame->setVarAsLocal(varNameStr);
 }

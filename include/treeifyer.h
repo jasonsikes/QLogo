@@ -23,7 +23,6 @@
 #include <QHash>
 
 class Procedures;
-class Kernel;
 class TextStream;
 
 /// @brief The Treeifier class is responsible for treeifying a QLogo list into Abstract

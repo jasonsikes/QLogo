@@ -578,11 +578,6 @@ class LogoInterface : public QObject
         throw FCError::noGraphics();
     }
 
-    /// @brief The kernel.
-    /// This is a pointer to the kernel. The LogoInterface creates the Kernel object at
-    /// object instantiation and deletes it at LogoInterface destruction.
-    Kernel *kernel;
-
   protected:
     QTextStream *dribbleStream;
 

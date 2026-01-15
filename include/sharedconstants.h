@@ -33,7 +33,6 @@ constexpr double PI = 3.14159265358979323846;
 using message_t = quint8;
 
 class Turtle;
-class Kernel;
 class Procedures;
 class LogoInterface;
 class Compiler;
@@ -100,14 +99,12 @@ class Config
     ~Config()
     {
         Q_ASSERT(mTurtle == nullptr);
-        Q_ASSERT(mKernel == nullptr);
         Q_ASSERT(mProcedures == nullptr);
         Q_ASSERT(mLogoInterface == nullptr);
         Q_ASSERT(mCompiler == nullptr);
     }
 
     Turtle *mTurtle = nullptr;
-    Kernel *mKernel = nullptr;
     Procedures *mProcedures = nullptr;
     LogoInterface *mLogoInterface = nullptr;
     Compiler *mCompiler = nullptr;
@@ -164,12 +161,6 @@ class Config
         return mTurtle;
     }
 
-    Kernel *mainKernel()
-    {
-        Q_ASSERT(mKernel != nullptr);
-        return mKernel;
-    }
-
     Procedures *mainProcedures()
     {
         Q_ASSERT(mProcedures != nullptr);
@@ -192,12 +183,6 @@ class Config
     {
         Q_ASSERT((mTurtle == nullptr) || (aTurtle == nullptr));
         mTurtle = aTurtle;
-    }
-
-    void setMainKernel(Kernel *aKernel)
-    {
-        Q_ASSERT((mKernel == nullptr) || (aKernel == nullptr));
-        mKernel = aKernel;
     }
 
     void setMainProcedures(Procedures *aProcedures)

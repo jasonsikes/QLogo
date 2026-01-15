@@ -83,7 +83,6 @@ LogoInterface::LogoInterface(QObject *parent)
 {
     dribbleStream = nullptr;
     Config::get().setMainLogoInterface(this);
-    kernel = new Kernel;
 
     inStream = new QTextStream(stdin, QIODevice::ReadOnly);
     outStream = new QTextStream(stdout, QIODevice::WriteOnly);
@@ -94,7 +93,6 @@ LogoInterface::~LogoInterface()
     setDribble("");
     delete inStream;
     delete outStream;
-    delete kernel;
     Config::get().setMainLogoInterface(nullptr);
 }
 
@@ -190,7 +188,7 @@ int LogoInterface::run()
 
     initSignals();
 
-    Config::get().mainKernel()->readEvalPrintLoop(false);
+    Kernel::get().readEvalPrintLoop(false);
 
     restoreSignals();
 

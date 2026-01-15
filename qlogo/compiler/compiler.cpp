@@ -106,7 +106,7 @@ QString Compiler::getTagNameFromNode(const DatumPtr &node) const
 void Compiler::setTagToBlockIdInProcedure(const QList<DatumPtr> &tagList, int32_t blockId)
 {
     // Get the currently-executing procedure.
-    CallFrame *currentFrame = Config::get().mainKernel()->callStack.localFrame();
+    CallFrame *currentFrame = Kernel::get().callStack.localFrame();
 
     // If the current frame is not a procedure, there is no need to save the tag names
     // because we can't jump to them.
@@ -280,7 +280,7 @@ CompiledFunctionPtr Compiler::functionPtrFromList(List *aList)
 {
     if (aList->compileTimeStamp <= Config::get().mainProcedures()->timeOfLastProcedureCreation())
     {
-        QList<QList<DatumPtr>> parsedList = Config::get().mainKernel()->treeifier->astFromList(aList);
+        QList<QList<DatumPtr>> parsedList = Kernel::get().treeifier->astFromList(aList);
         return generateFunctionPtrFromASTList(parsedList, static_cast<Datum *>(aList));
     }
 

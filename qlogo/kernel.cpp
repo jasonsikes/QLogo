@@ -224,7 +224,7 @@ Datum *Kernel::inputProcedure(ASTNode *node)
 
         QString message = QObject::tr("%1 defined\n");
         message = message.arg(procnameP.toString());
-        Config::get().mainKernel()->sysPrint(message);
+        Kernel::get().sysPrint(message);
     }
     catch (FCError *err)
     {
@@ -319,7 +319,6 @@ void Kernel::initVariables()
 
 Kernel::Kernel()
 {
-    Config::get().setMainKernel(this);
     stdioStream = new TextStream(nullptr);
     readStream = stdioStream;
     systemReadStream = stdioStream;
@@ -351,7 +350,6 @@ Kernel::~Kernel()
 
     Q_ASSERT(callStack.size() == 1);
     callStack.stack.removeLast();
-    Config::get().setMainKernel(nullptr);
 }
 
 DatumPtr Kernel::runList(const DatumPtr &listP, const QString &startTag)
