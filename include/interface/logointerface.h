@@ -106,10 +106,6 @@ class LogoInterface : public QObject
     /// the interface will perform cleanup tasks and the run() method will return.
     virtual void systemStop();
 
-    /// @brief Waits for the given number of milliseconds.
-    /// @param ms The number of milliseconds to wait.
-    virtual void mwait(unsigned long ms);
-
     virtual QString fileDialogModal()
     {
         throw FCError::noGraphics();

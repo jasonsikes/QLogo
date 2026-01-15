@@ -318,10 +318,6 @@ class LogoInterfaceGUI : public LogoInterface
     /// @param aSize The new pen size.
     void setPensize(qreal) override;
 
-    /// @brief Waits for a number of milliseconds.
-    /// @param msecs The number of milliseconds to wait.
-    void mwait(unsigned long msecs) override;
-
     /// @brief Clears all of the text from the GUI console.
     void clearScreenText() override;
 };

@@ -141,12 +141,6 @@ DatumPtr LogoInterface::readchar()
     return retvalP;
 }
 
-void LogoInterface::mwait(unsigned long msecs)
-{
-    outStream->flush();
-    QThread::msleep(msecs);
-}
-
 bool LogoInterface::setDribble(const QString &filePath)
 {
     if (filePath == "")

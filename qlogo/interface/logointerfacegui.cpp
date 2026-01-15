@@ -459,8 +459,3 @@ void LogoInterfaceGUI::setPensize(qreal aSize)
     message(C_CANVAS_SET_PENSIZE) << (qreal)aSize;
     penSize = aSize;
 }
-
-void LogoInterfaceGUI::mwait(unsigned long msecs)
-{
-    QThread::msleep(msecs);
-}
