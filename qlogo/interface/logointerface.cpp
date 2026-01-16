@@ -21,10 +21,8 @@
 #include <QFile>
 #include <QIODevice>
 #include <csignal>
-/// @brief The most recent signal that was received.
-/// The value of this variable is set by the handle_signal function. When the latestSignal
-/// method is called, the value is reset to noSignal.
-SignalsEnum_t lastSignal = noSignal;
+
+volatile SignalsEnum_t LogoInterface::lastSignal = noSignal;
 
 /// @brief Handles a signal.
 /// @param sig The signal to handle.
@@ -35,13 +33,13 @@ static void handle_signal(int sig)
     switch (sig)
     {
     case SIGINT:
-        lastSignal = toplevelSignal; // Ctrl+C
+        LogoInterface::lastSignal = toplevelSignal; // Ctrl+C
         break;
     case SIGTSTP:
-        lastSignal = pauseSignal; // Ctrl+Z
+        LogoInterface::lastSignal = pauseSignal; // Ctrl+Z
         break;
     case SIGQUIT:
-        lastSignal = systemSignal; // Ctrl+[backslash]
+        LogoInterface::lastSignal = systemSignal; // Ctrl+[backslash]
         break;
     default:
         qWarning() << "Not expecting signal: " << sig;

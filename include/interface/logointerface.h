@@ -104,6 +104,12 @@ class LogoInterface : public QObject
     /// @note This method restores the default signal handlers for SIGINT, SIGTSTP, and SIGQUIT.
     static void restoreSignals();
 
+    /// @brief The most recent signal that was received.
+    /// The value of this variable is set by the handle_signal function. When the latestSignal
+    /// method is called, the value is reset to noSignal.
+    /// @note This is a static member to allow access from the signal handler.
+    static volatile SignalsEnum_t lastSignal;
+
     /// @brief Stops communication and initiates cleanup tasks.
     virtual void closeInterface();
 
