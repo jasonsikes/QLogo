@@ -174,7 +174,7 @@ static QString yamlEscape(const QString &str)
         else if (c == '\\')
             result += "\\\\";
         else if (c.unicode() < 32 || c.unicode() > 126)
-            result += QString("\\u%1").arg(c.unicode(), 4, 16, QChar('0'));
+            result += QString("\\u%1").arg(static_cast<int>(c.unicode()), 4, 16, QChar('0'));
         else
             result += c;
     }
