@@ -23,17 +23,8 @@
 #include <unistd.h>
 #endif
 
-/// @brief The mutex for the message queue
-QMutex &queueLock()
-{
-    static QMutex queueLockInstance;
-    return queueLockInstance;
-}
-
-/// @brief The message queue
-QQueue<QByteArray> messageQueue;
-
-InputQueueThread::InputQueueThread(QObject *parent) : QThread(parent)
+InputQueueThread::InputQueueThread(QQueue<QByteArray> *byteArrayQueue, QMutex *queueMutex, QObject *parent)
+    : QThread(parent), byteArrayQueue(byteArrayQueue), queueMutex(queueMutex)
 {
 }
 
@@ -65,14 +56,14 @@ void InputQueueThread::run()
             datalen -= dataread;
         }
         Q_ASSERT(0 == datalen);
-        queueLock().lock();
-        messageQueue.enqueue(message);
-        queueLock().unlock();
+        queueMutex->lock();
+        byteArrayQueue->enqueue(message);
+        queueMutex->unlock();
         emit sendMessageSignal();
     }
 }
 
-InputQueue::InputQueue(QObject *parent) : QObject(parent)
+InputQueue::InputQueue(QObject *parent) : QObject(parent), thread(&byteArrayQueue, &queueMutex, this)
 {
 }
 
@@ -87,12 +78,12 @@ QByteArray InputQueue::getMessage()
 {
     QByteArray message;
     // If there is a message already in the queue, return that.
-    queueLock().lock();
-    bool isMessageQueued = !messageQueue.isEmpty();
-    if (isMessageQueued)
-        message = messageQueue.dequeue();
-    queueLock().unlock();
-    if (isMessageQueued)
+    queueMutex.lock();
+    bool isbyteArrayQueued = !byteArrayQueue.isEmpty();
+    if (isbyteArrayQueued)
+        message = byteArrayQueue.dequeue();
+    queueMutex.unlock();
+    if (isbyteArrayQueued)
         return message;
 
     // Wait for a message.
@@ -100,21 +91,21 @@ QByteArray InputQueue::getMessage()
     {
         eventLoop.exec();
 
-        queueLock().lock();
-        isMessageQueued = !messageQueue.isEmpty();
-        if (isMessageQueued)
-            message = messageQueue.dequeue();
-        queueLock().unlock();
-        if (isMessageQueued)
+        queueMutex.lock();
+        isbyteArrayQueued = !byteArrayQueue.isEmpty();
+        if (isbyteArrayQueued)
+            message = byteArrayQueue.dequeue();
+        queueMutex.unlock();
+        if (isbyteArrayQueued)
             return message;
     }
 }
 
 bool InputQueue::isMessageAvailable()
 {
-    queueLock().lock();
-    bool retval = !messageQueue.isEmpty();
-    queueLock().unlock();
+    queueMutex.lock();
+    bool retval = !byteArrayQueue.isEmpty();
+    queueMutex.unlock();
     return retval;
 }
 

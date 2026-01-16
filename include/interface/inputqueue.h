@@ -19,6 +19,8 @@
 
 #include <QByteArray>
 #include <QEventLoop>
+#include <QMutex>
+#include <QQueue>
 #include <QThread>
 
 class InputQueueThread : public QThread
@@ -27,10 +29,15 @@ class InputQueueThread : public QThread
 
     void run() Q_DECL_OVERRIDE;
 
+    QQueue<QByteArray> *byteArrayQueue;
+    QMutex *queueMutex;
+
   public:
     /// @brief Constructor
+    /// @param byteArrayQueue Pointer to the message queue
+    /// @param queueMutex Pointer to the mutex protecting the queue
     /// @param parent The Qt parent object
-    explicit InputQueueThread(QObject *parent = nullptr);
+    explicit InputQueueThread(QQueue<QByteArray> *byteArrayQueue, QMutex *queueMutex, QObject *parent = nullptr);
 
   signals:
     /// @brief Signal to indicate that a message is available
@@ -43,6 +50,8 @@ class InputQueue : public QObject
     InputQueueThread thread;
     QByteArray message;
     QEventLoop eventLoop;
+    QQueue<QByteArray> byteArrayQueue;
+    QMutex queueMutex;
 
   private slots:
     // Connected to sendMessage signal from thread.
