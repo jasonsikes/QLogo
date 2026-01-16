@@ -358,7 +358,14 @@ Datum *Evaluator::exec(int32_t jumpLocation)
     {
         return Datum::getInstance();
     }
-    fn = Config::get().mainCompiler()->functionPtrFromList(list.listValue());
+    try
+    {
+        fn = Config::get().mainCompiler()->functionPtrFromList(list.listValue());
+    }
+    catch (FCError *e)
+    {
+        return watch(e);
+    }
     retval = static_cast<Datum *>(fn((addr_t)this, jumpLocation));
 
     return retval;
