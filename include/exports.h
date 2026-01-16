@@ -7,7 +7,7 @@
 #include <QString>
 
 #define generateCallExtern(RET_TYPE, FUNC_NAME, ...) \
-    ((void)FUNC_NAME, generateExternFunctionCall(RET_TYPE, #FUNC_NAME, {__VA_ARGS__}))
+    (generateExternFunctionCall(RET_TYPE, #FUNC_NAME, {__VA_ARGS__}))
 
 #ifdef _WIN32
 #define EXPORTC extern "C" __declspec(dllexport)
