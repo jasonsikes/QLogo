@@ -203,6 +203,76 @@ bool TextStream::finalizeResult(ListBuilder &builder, bool isBaseLevel, bool mak
     return false; // Don't continue, we have a result
 }
 
+void TextStream::addCurrentWordToBuilder(ListBuilder &builder, QString &currentWord, bool isCurrentWordVbarred)
+{
+    if (currentWord.size() > 0)
+    {
+        builder.append(DatumPtr(currentWord, isCurrentWordVbarred));
+        currentWord = "";
+    }
+}
+
+DatumPtr TextStream::handleDelimiterResult(DelimiterResult result, ListBuilder &builder)
+{
+    switch (result)
+    {
+    case DelimiterResult::ReturnList:
+        return builder.finishedList();
+    case DelimiterResult::ReturnArray:
+    {
+        int origin = processArrayOrigin();
+        auto *ary = new Array(origin, builder.finishedList().listValue());
+        return {ary};
+    }
+    case DelimiterResult::AppendSublist:
+    case DelimiterResult::AppendSubarray:
+    case DelimiterResult::Continue:
+        return nothing(); // Continue processing
+    }
+    Q_ASSERT(false);
+    return nothing(); // Should never reach here
+}
+
+DatumPtr TextStream::processCharacterLoop(ListBuilder &builder, QString &currentWord, bool &isCurrentWordVbarred,
+                                          bool isBaseLevel, bool makeArray, bool shouldRemoveComments)
+{
+    bool isVbarred = false;
+
+    while (listSourceWordIter != listSourceWord.end())
+    {
+        ushort c = listSourceWordIter->unicode();
+        ++listSourceWordIter;
+
+        // Process vbarred characters
+        if (processVbarredCharacter(c, isVbarred, isCurrentWordVbarred, currentWord))
+            continue;
+
+        // Process tilde continuation
+        if (c == '~' && processTildeContinuation())
+            continue;
+
+        // Process comments
+        if (processComments(c, shouldRemoveComments))
+            continue;
+
+        // Process delimiters
+        if ((c == ' ') || (c == '\t') || (c == '[') || (c == ']') || (c == '{') || (c == '}'))
+        {
+            DelimiterResult result = processDelimiter(c, builder, currentWord, isCurrentWordVbarred,
+                                                      isBaseLevel, makeArray, shouldRemoveComments);
+            DatumPtr returnValue = handleDelimiterResult(result, builder);
+            if (!returnValue.isNothing())
+                return returnValue;
+        }
+        else
+        {
+            currentWord.push_back(c);
+        }
+    }
+
+    return nothing(); // Continue processing
+}
+
 DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
                                             bool isBaseLevel,
                                             bool makeArray,
@@ -219,59 +289,16 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
 
     forever
     {
-        bool isVbarred = false;
         bool isCurrentWordVbarred = false;
 
-        while (listSourceWordIter != listSourceWord.end())
-        {
-            ushort c = listSourceWordIter->unicode();
-            ++listSourceWordIter;
-
-            // Process vbarred characters
-            if (processVbarredCharacter(c, isVbarred, isCurrentWordVbarred, currentWord))
-                continue;
-
-            // Process tilde continuation
-            if (c == '~' && processTildeContinuation())
-                continue;
-
-            // Process comments
-            if (processComments(c, shouldRemoveComments))
-                continue;
-
-            // Process delimiters
-            if ((c == ' ') || (c == '\t') || (c == '[') || (c == ']') || (c == '{') || (c == '}'))
-            {
-                DelimiterResult result = processDelimiter(c, builder, currentWord, isCurrentWordVbarred,
-                                                          isBaseLevel, makeArray, shouldRemoveComments);
-                switch (result)
-                {
-                case DelimiterResult::ReturnList:
-                    return builder.finishedList();
-                case DelimiterResult::ReturnArray:
-                {
-                    int origin = processArrayOrigin();
-                    auto *ary = new Array(origin, builder.finishedList().listValue());
-                    return {ary};
-                }
-                case DelimiterResult::AppendSublist:
-                case DelimiterResult::AppendSubarray:
-                case DelimiterResult::Continue:
-                    break;
-                }
-            }
-            else
-            {
-                currentWord.push_back(c);
-            }
-        }
+        // Process all characters in the current source word
+        DatumPtr earlyReturn = processCharacterLoop(builder, currentWord, isCurrentWordVbarred,
+                                                     isBaseLevel, makeArray, shouldRemoveComments);
+        if (!earlyReturn.isNothing())
+            return earlyReturn;
 
         // End of current source word. Add the last word to the list.
-        if (currentWord.size() > 0)
-        {
-            builder.append(DatumPtr(currentWord, isCurrentWordVbarred));
-            currentWord = "";
-        }
+        addCurrentWordToBuilder(builder, currentWord, isCurrentWordVbarred);
 
         // Try to finalize or get more input
         DatumPtr result;

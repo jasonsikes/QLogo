@@ -54,6 +54,12 @@ class TextStream
     int processArrayOrigin();
     bool finalizeResult(ListBuilder &builder, bool isBaseLevel, bool makeArray, DatumPtr &result);
 
+    // Additional helper methods for tokenizeListWithPrompt
+    DatumPtr processCharacterLoop(ListBuilder &builder, QString &currentWord, bool &isCurrentWordVbarred,
+                                   bool isBaseLevel, bool makeArray, bool shouldRemoveComments);
+    void addCurrentWordToBuilder(ListBuilder &builder, QString &currentWord, bool isCurrentWordVbarred);
+    DatumPtr handleDelimiterResult(DelimiterResult result, ListBuilder &builder);
+
     // The current source word for string parsing.
     QString listSourceWord;
     QString::iterator listSourceWordIter;
