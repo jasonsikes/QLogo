@@ -199,13 +199,13 @@ void LogoInterfaceGUI::setTextColor(const QColor &foregroundColor, const QColor 
 
 void LogoInterfaceGUI::setCursorOverwriteMode(bool isOverwriteMode)
 {
-    cursoreModeIsOverwrite = isOverwriteMode;
+    cursorModeIsOverwrite = isOverwriteMode;
     message(C_CONSOLE_SET_CURSOR_MODE) << isOverwriteMode;
 }
 
 bool LogoInterfaceGUI::cursorOverwriteMode()
 {
-    return cursoreModeIsOverwrite;
+    return cursorModeIsOverwrite;
 }
 
 QString LogoInterfaceGUI::editText(const QString &startText)

@@ -48,10 +48,8 @@ class LogoInterfaceGUI : public LogoInterface
     int cursorRow;
     int cursorCol;
 
-    // cursorOverwriteMode:
-    // true:  cursor overwrites previously-written text
-    // false: cursor inserts text (default)
-    bool cursoreModeIsOverwrite = false;
+    // cursorModeIsOverwrite is true if the cursor overwrites previously-written text, false if the cursor inserts text.
+    bool cursorModeIsOverwrite = false;
 
     // Text returned from editor winow
     QString editorText;
