@@ -163,7 +163,10 @@ int TextStream::processArrayOrigin()
             originStr += *listSourceWordIter;
             ++listSourceWordIter;
         }
-        origin = originStr.toInt();
+        bool ok;
+        origin = originStr.toInt(&ok);
+        if (!ok)
+            origin = 1;
     }
     return origin;
 }
