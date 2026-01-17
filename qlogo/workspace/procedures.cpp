@@ -46,7 +46,7 @@ Procedures::~Procedures()
 void Procedures::defineProcedure(const DatumPtr &cmd,
                                  const DatumPtr &procnameP,
                                  const DatumPtr &text,
-                                 const DatumPtr &sourceText)
+                                 const QList<DatumPtr> &sourceText)
 {
     procnameP.wordValue()->numberValue();
     if (procnameP.wordValue()->numberIsValid)
@@ -68,7 +68,7 @@ void Procedures::defineProcedure(const DatumPtr &cmd,
     // TODO: Is this an appropriate place to unbury a procedure?
 }
 
-DatumPtr Procedures::createProcedure(const DatumPtr &cmd, const DatumPtr &text, const DatumPtr &sourceText)
+DatumPtr Procedures::createProcedure(const DatumPtr &cmd, const DatumPtr &text, const QList<DatumPtr> &sourceText)
 {
     auto *body = new Procedure();
     DatumPtr bodyP(body);
@@ -309,7 +309,7 @@ DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldVal
         Procedure *body = procedureForName(procname).procedureValue();
 
         // If there is no source text, generate it from the instruction list.
-        if (body->sourceText.isNothing())
+        if (body->sourceText.isEmpty())
         {
             ListBuilder retvalBuilder;
             retvalBuilder.append(DatumPtr(procedureTitle(procnameP)));
@@ -327,7 +327,12 @@ DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldVal
         }
         else
         {
-            return body->sourceText;
+            ListBuilder retvalBuilder;
+            for (const auto &line : body->sourceText)
+            {
+                retvalBuilder.append(line);
+            }
+            return retvalBuilder.finishedList();
         }
     }
     else if (shouldValidate)

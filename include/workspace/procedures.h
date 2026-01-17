@@ -75,24 +75,24 @@ class Procedures
     /// @brief Create a procedure from a command and its text.
     /// @param cmd The name of the command.
     /// @param text The text to create a procedure from, in the form of a list of sublists.
-    /// @param sourceText The source text to create a procedure from, or 'nothing' if there
+    /// @param sourceText The source text to create a procedure from, or an empty list if there
     /// was no source text.
     /// @return A pointer to the created procedure.
     /// @note This creates and returns a Procedure object from a command and its text. It
     /// does not save the procedure to the procedures hash table.
-    DatumPtr createProcedure(const DatumPtr &cmd, const DatumPtr &text, const DatumPtr &sourceText);
+    DatumPtr createProcedure(const DatumPtr &cmd, const DatumPtr &text, const QList<DatumPtr> &sourceText);
 
     /// @brief Define a procedure.
     /// @param cmd The command used to define the procedure (TO or .MACRO).
     /// @param procnameP The name of the procedure to define.
     /// @param text The text to define a procedure from, in the form of a list of sublists.
-    /// @param sourceText The source text to define a procedure from, or 'nothing' if there
+    /// @param sourceText The source text to define a procedure from, or an empty list if there
     /// was no source text.
     /// @note This creates a Procedure object and saves it to the procedures hash table.
     void defineProcedure(const DatumPtr &cmd,
                          const DatumPtr &procnameP,
                          const DatumPtr &text,
-                         const DatumPtr &sourceText);
+                         const QList<DatumPtr> &sourceText);
 
     /// @brief Copy a procedure to a new name.
     /// @param newnameP The new name to copy the procedure to.
@@ -128,8 +128,8 @@ class Procedures
     /// @brief Get the full text of a procedure.
     /// @param procnameP The name of the procedure to get the full text of.
     /// @param shouldValidate Whether to validate the procedure.
-    /// @return A pointer to the full text of the procedure, in the form of a list of
-    /// sublists.
+    /// @return A list of the full text of the procedure, in the form of a list of
+    /// words.
     DatumPtr procedureFulltext(const DatumPtr &procnameP, bool shouldValidate = true) const;
 
     /// @brief Get the title of a procedure.
@@ -228,7 +228,7 @@ class Procedure : public Datum
     /// source text. The source text begins with the word 'TO' or '.MACRO' and ends with
     /// the word 'END'.
     // TODO: Should this be a list of words, since each line is a word?
-    DatumPtr sourceText;
+    QList<DatumPtr> sourceText;
 
     /// @brief The instruction list of the procedure.
     /// @note This is a list of lists, with each sublist representing a line of instruction.

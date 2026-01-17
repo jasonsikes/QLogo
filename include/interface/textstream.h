@@ -27,7 +27,7 @@ class TextStream
 {
     // Keep the most recent history in case it's needed as source material.
     // (This is a List of RawLines.)
-    DatumPtr recentLineHistory;
+    QList<DatumPtr> recentLineHistory;
 
     // Clear the recent Line History.
     void clearLineHistory();
@@ -87,7 +87,7 @@ class TextStream
 
     /// @brief Return the contents of the current line history.
     /// @return The line history as a List of RawLines.
-    DatumPtr recentHistory() const;
+    QList<DatumPtr> recentHistory() const;
 
     /// @brief Pass-through to the underlying QTextStream::seek()
     /// @param loc The position to seek to.

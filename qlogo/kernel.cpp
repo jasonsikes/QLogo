@@ -199,6 +199,7 @@ Datum *Kernel::inputProcedure(ASTNode *node)
         ListBuilder textBuilder;
         textBuilder.append(firstLine);
 
+        QList<DatumPtr> sourceText = systemReadStream->recentHistory();
         // Now read in the body
         forever
         {
@@ -207,6 +208,7 @@ Datum *Kernel::inputProcedure(ASTNode *node)
                 break;
             if (line.listValue()->isEmpty())
                 continue;
+            sourceText.append(systemReadStream->recentHistory());
             DatumPtr first = line.listValue()->head;
             if (first.isWord())
             {
@@ -218,9 +220,6 @@ Datum *Kernel::inputProcedure(ASTNode *node)
         }
         DatumPtr textP = textBuilder.finishedList();
 
-        // The sourcetext is the raw text from which the procedure was defined.
-        // We save it in case user executes `FULLTEXT`.
-        DatumPtr sourceText = systemReadStream->recentHistory();
         Config::get().mainProcedures()->defineProcedure(to, procnameP, textP, sourceText);
 
         QString message = QObject::tr("%1 defined\n");

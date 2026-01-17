@@ -42,7 +42,7 @@ TextStream::TextStream(QTextStream *aStream)
 
 void TextStream::clearLineHistory()
 {
-    recentLineHistory = emptyList();
+    recentLineHistory.clear();
 }
 
 bool TextStream::initializeBaseLevelReading(const QString &prompt)
@@ -404,7 +404,7 @@ DatumPtr TextStream::readChar()
     return DatumPtr(line);
 }
 
-DatumPtr TextStream::recentHistory() const
+QList<DatumPtr> TextStream::recentHistory() const
 {
     return recentLineHistory;
 }
