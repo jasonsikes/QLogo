@@ -39,6 +39,10 @@ class TextStream
     // sublists and subarrays.
     DatumPtr tokenizeListWithPrompt(const QString &prompt, bool isBaseLevel, bool makeArray, bool shouldRemoveComments);
 
+    DatumPtr tokenizeRawlineWithPrompt(const QString &prompt);
+
+    DatumPtr tokenizeWordWithPrompt(const QString &prompt);
+
     // Helper methods for tokenizeListWithPrompt
     bool initializeBaseLevelReading(const QString &prompt);
     bool processVbarredCharacter(ushort c, bool &isVbarred, bool &isCurrentWordVbarred, QString &currentWord);
@@ -62,23 +66,20 @@ class TextStream
     /// @brief Returns the exact string of characters as they appear
     /// in the line.
     /// @param prompt The prompt to display to the user.
-    /// @param shouldSavePreviousLines If true, do not delete the previous line(s) from the line history.
     /// @return The line as a Word object, or nothing if no input is available.
-    DatumPtr readrawlineWithPrompt(const QString &prompt, bool shouldSavePreviousLines = false);
+    DatumPtr readRawlineWithPrompt(const QString &prompt);
 
     /// @brief Returns a line read as a word. Backslashes, vertical bars, and tilde
     /// characters are processed.
     /// @param prompt The prompt to display to the user.
-    /// @param shouldSavePreviousLines If true, do not delete the previous line(s) from the line history.
     /// @return The line as a Word object, or nothing if no input is available.
-    DatumPtr readwordWithPrompt(const QString &prompt, bool shouldSavePreviousLines = false);
+    DatumPtr readWordWithPrompt(const QString &prompt);
 
     /// @brief Reads a line as a list.
     /// @param prompt The prompt to display to the user.
     /// @param shouldRemoveComments If true, remove QLogo-formatted comments from the list.
-    /// @param shouldSavePreviousLines If true, do not delete the previous line(s) from the line history.
     /// @return The line as a List object, or nothing if no input is available.
-    DatumPtr readlistWithPrompt(const QString &prompt, bool shouldRemoveComments, bool shouldSavePreviousLines = false);
+    DatumPtr readListWithPrompt(const QString &prompt, bool shouldRemoveComments);
 
     /// @brief Read a single character. No formatting is applied.
     /// @return The character as a Character object, or an empty List object if no input is available.

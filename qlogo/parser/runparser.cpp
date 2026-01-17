@@ -316,7 +316,7 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
         QString text = src.wordValue()->toString(Datum::ToStringFlags_Raw);
         QTextStream srcStream(&text, QIODevice::ReadOnly);
         TextStream stream(&srcStream);
-        src = stream.readlistWithPrompt("", false);
+        src = stream.readListWithPrompt(QString(), false);
     }
 
     if (src.isNothing())

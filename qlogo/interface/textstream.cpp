@@ -47,7 +47,7 @@ void TextStream::clearLineHistory()
 
 bool TextStream::initializeBaseLevelReading(const QString &prompt)
 {
-    DatumPtr lineP = readwordWithPrompt(prompt, true);
+    DatumPtr lineP = tokenizeWordWithPrompt(prompt);
     if (lineP.isNothing())
         return false;
     listSourceWord = lineP.wordValue()->toString(Datum::ToStringFlags_Raw);
@@ -179,9 +179,9 @@ bool TextStream::finalizeResult(ListBuilder &builder, bool isBaseLevel, bool mak
     // Get some more source material if we can
     DatumPtr lineP;
     if (makeArray)
-        lineP = readwordWithPrompt("{ ", true);
+        lineP = tokenizeWordWithPrompt("{ ");
     else
-        lineP = readwordWithPrompt("[ ", true);
+        lineP = tokenizeWordWithPrompt("[ ");
 
     if (!lineP.isNothing())
     {
@@ -281,7 +281,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
     } // /forever
 }
 
-DatumPtr TextStream::readrawlineWithPrompt(const QString &prompt, bool shouldSavePreviousLines)
+DatumPtr TextStream::tokenizeRawlineWithPrompt(const QString &prompt)
 {
     QString retval;
     if (stream == nullptr)
@@ -302,23 +302,16 @@ DatumPtr TextStream::readrawlineWithPrompt(const QString &prompt, bool shouldSav
     }
     DatumPtr retvalPtr(retval);
 
-    if (!shouldSavePreviousLines)
-    {
-        clearLineHistory();
-    }
-    // TODO: How to save input when running `TO`?
-    // recentLineHistory.listValue()->append(retvalPtr);
-
     return retvalPtr;
 }
 
-DatumPtr TextStream::readwordWithPrompt(const QString &prompt, bool shouldSavePreviousLines)
+DatumPtr TextStream::tokenizeWordWithPrompt(const QString &prompt)
 {
     QString retval = "";
     bool isVbarred = false;
     bool isEscaped = false;
 
-    DatumPtr line = readrawlineWithPrompt(prompt, shouldSavePreviousLines);
+    DatumPtr line = tokenizeRawlineWithPrompt(prompt);
     if (line.isNothing())
         return nothing();
 
@@ -353,19 +346,19 @@ DatumPtr TextStream::readwordWithPrompt(const QString &prompt, bool shouldSavePr
         {
             isEscaped = false;
             retval.push_back('\n');
-            line = readrawlineWithPrompt("\\ ", true);
+            line = tokenizeRawlineWithPrompt("\\ ");
             continue;
         }
         if (isVbarred)
         {
             retval.push_back(charToRaw('\n'));
-            line = readrawlineWithPrompt("| ", true);
+            line = tokenizeRawlineWithPrompt("| ");
             continue;
         }
         if (lastNonSpaceChar(t) == '~')
         {
             retval.push_back('\n');
-            line = readrawlineWithPrompt("~ ", true);
+            line = tokenizeRawlineWithPrompt("~ ");
             continue;
         }
 
@@ -374,15 +367,25 @@ DatumPtr TextStream::readwordWithPrompt(const QString &prompt, bool shouldSavePr
         if (line.wordValue()->toString(Datum::ToStringFlags_Raw) == retval)
             return line;
         return DatumPtr(retval);
-
     }; // forever
 }
 
-DatumPtr TextStream::readlistWithPrompt(const QString &prompt, bool shouldRemoveComments, bool shouldSavePreviousLines)
+DatumPtr TextStream::readRawlineWithPrompt(const QString &prompt)
+{
+    clearLineHistory();
+    return tokenizeRawlineWithPrompt(prompt);
+}
+
+DatumPtr TextStream::readWordWithPrompt(const QString &prompt)
+{
+    clearLineHistory();
+    return tokenizeWordWithPrompt(prompt);
+}
+
+DatumPtr TextStream::readListWithPrompt(const QString &prompt, bool shouldRemoveComments)
 {
 
-    if (!shouldSavePreviousLines)
-        clearLineHistory();
+    clearLineHistory();
     return tokenizeListWithPrompt(prompt, true, false, shouldRemoveComments);
 }
 

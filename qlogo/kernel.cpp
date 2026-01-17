@@ -108,7 +108,7 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
         DatumPtr result;
         try
         {
-            DatumPtr line = systemReadStream->readlistWithPrompt(localPrompt, true);
+            DatumPtr line = systemReadStream->readListWithPrompt(localPrompt, true);
             if (line.isNothing()) // EOF
                 return nothing();
             result = runList(line);
@@ -202,7 +202,7 @@ Datum *Kernel::inputProcedure(ASTNode *node)
         // Now read in the body
         forever
         {
-            DatumPtr line = systemReadStream->readlistWithPrompt("> ", true, true);
+            DatumPtr line = systemReadStream->readListWithPrompt("> ", true);
             if (!line.isList()) // this must be the end of the input
                 break;
             if (line.listValue()->isEmpty())

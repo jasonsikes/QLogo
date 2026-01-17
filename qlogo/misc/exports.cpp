@@ -1440,7 +1440,7 @@ EXPORTC addr_t parse(addr_t eAddr, addr_t wordAddr)
     QString phrase = word->toString(Datum::ToStringFlags_Raw);
     QTextStream stream(&phrase, QIODevice::ReadOnly);
     TextStream ts(&stream);
-    DatumPtr retvalPtr = ts.readlistWithPrompt("", false);
+    DatumPtr retvalPtr = ts.readListWithPrompt(QString(), false);
     List *retval = retvalPtr.listValue();
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
