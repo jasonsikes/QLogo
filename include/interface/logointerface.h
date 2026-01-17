@@ -205,7 +205,7 @@ class LogoInterface : public QObject
     /// @return The string with the standout added.
     /// @note The base method returns the original string. Subclasses can override this method to
     /// perform the necessary tasks to add a standout control characters to the string.
-    virtual QString addStandoutToString(QString src)
+    virtual QString addStandoutToString(const QString &src)
     {
         return src;
     };
@@ -286,7 +286,7 @@ class LogoInterface : public QObject
     /// @return The current background color of the canvas.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to return the background color of the canvas.
-    virtual const QColor getCanvasBackgroundColor()
+    virtual const QColor getCanvasBackgroundColor() const
     {
         throw FCError::noGraphics();
         return {};
@@ -451,7 +451,7 @@ class LogoInterface : public QObject
     /// @return True if the cursor is in overwrite mode, false indicates the cursor is in insert mode.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to return if the cursor is in overwrite mode.
-    virtual bool cursorOverwriteMode()
+    virtual bool cursorOverwriteMode() const
     {
         throw FCError::noGraphics();
         return false;
@@ -470,7 +470,7 @@ class LogoInterface : public QObject
     /// @return The label font point size.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to return the label font size.
-    virtual double getLabelFontSize()
+    virtual double getLabelFontSize() const
     {
         throw FCError::noGraphics();
         return 12;
@@ -480,7 +480,7 @@ class LogoInterface : public QObject
     /// @return The label font name.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to return the label font name.
-    virtual QString getLabelFontName()
+    virtual QString getLabelFontName() const
     {
         throw FCError::noGraphics();
         return {};
@@ -526,7 +526,7 @@ class LogoInterface : public QObject
     /// @return The screen mode.
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to return the screen mode.
-    virtual ScreenModeEnum getScreenMode()
+    virtual ScreenModeEnum getScreenMode() const
     {
         throw FCError::noGraphics();
         return textScreenMode;

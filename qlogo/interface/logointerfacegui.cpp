@@ -167,7 +167,7 @@ void LogoInterfaceGUI::printToConsole(const QString &s)
         *dribbleStream << s;
 }
 
-QString LogoInterfaceGUI::addStandoutToString(QString src)
+QString LogoInterfaceGUI::addStandoutToString(const QString &src)
 {
     QString retval = Config::get().escapeString + src + Config::get().escapeString;
     return retval;
@@ -203,7 +203,7 @@ void LogoInterfaceGUI::setCursorOverwriteMode(bool isOverwriteMode)
     message(C_CONSOLE_SET_CURSOR_MODE) << isOverwriteMode;
 }
 
-bool LogoInterfaceGUI::cursorOverwriteMode()
+bool LogoInterfaceGUI::cursorOverwriteMode() const
 {
     return cursorModeIsOverwrite;
 }
@@ -289,7 +289,7 @@ void LogoInterfaceGUI::setScreenMode(ScreenModeEnum newMode)
     message(W_SET_SCREENMODE) << newMode;
 }
 
-ScreenModeEnum LogoInterfaceGUI::getScreenMode()
+ScreenModeEnum LogoInterfaceGUI::getScreenMode() const
 {
     return screenMode;
 }
@@ -358,12 +358,12 @@ void LogoInterfaceGUI::setLabelFontSize(double aSize)
     message(C_CANVAS_SET_FONT_SIZE) << (qreal)labelFontSize;
 }
 
-QString LogoInterfaceGUI::getLabelFontName()
+QString LogoInterfaceGUI::getLabelFontName() const
 {
     return labelFontName;
 }
 
-double LogoInterfaceGUI::getLabelFontSize()
+double LogoInterfaceGUI::getLabelFontSize() const
 {
     return labelFontSize;
 }
@@ -388,7 +388,7 @@ void LogoInterfaceGUI::setCanvasBackgroundImage(const QImage &anImage)
     message(C_CANVAS_SET_BACKGROUND_IMAGE) << anImage;
 }
 
-const QColor LogoInterfaceGUI::getCanvasBackgroundColor()
+const QColor LogoInterfaceGUI::getCanvasBackgroundColor() const
 {
     return currentBackgroundColor;
 }

@@ -192,7 +192,7 @@ class LogoInterfaceGUI : public LogoInterface
 
     /// @brief Gets the current screen mode.
     /// @return The current screen mode.
-    ScreenModeEnum getScreenMode() override;
+    ScreenModeEnum getScreenMode() const override;
 
     /// @brief Sets the canvas bounds.
     /// @param x The X coordinate of the upper-right corner of the bounding box.
@@ -217,7 +217,7 @@ class LogoInterfaceGUI : public LogoInterface
 
     /// @brief Gets the canvas background color.
     /// @return The canvas background color.
-    const QColor getCanvasBackgroundColor() override;
+    const QColor getCanvasBackgroundColor() const override;
 
     /// @brief Sets if the canvas is bounded.
     /// @param aIsBounded True if the canvas should be bounded, false otherwise.
@@ -271,7 +271,7 @@ class LogoInterfaceGUI : public LogoInterface
     /// @brief Adds standout control characters to a string.
     /// @param src The string to add the standout to.
     /// @return The string with the standout control characters added.
-    QString addStandoutToString(QString src) override;
+    QString addStandoutToString(const QString &src) override;
 
     /// @brief Gets the text cursor position.
     /// @param row The row of the text cursor position.
@@ -294,7 +294,7 @@ class LogoInterfaceGUI : public LogoInterface
 
     /// @brief Gets if the cursor is in overwrite mode.
     /// @return True if the cursor is in overwrite mode, false otherwise.
-    bool cursorOverwriteMode() override;
+    bool cursorOverwriteMode() const override;
 
     /// @brief Sets the label font size.
     /// @param aSize The new font size.
@@ -302,11 +302,11 @@ class LogoInterfaceGUI : public LogoInterface
 
     /// @brief Gets the label font size.
     /// @return The current label font size.
-    double getLabelFontSize() override;
+    double getLabelFontSize() const override;
 
     /// @brief Gets the label font name.
     /// @return The current label font name.
-    QString getLabelFontName() override;
+    QString getLabelFontName() const override;
 
     /// @brief Sets the label font name.
     /// @param aName The new font name.
