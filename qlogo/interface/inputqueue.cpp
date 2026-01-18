@@ -111,6 +111,7 @@ bool InputQueue::isMessageAvailable()
 
 void InputQueue::receiveMessageSlot()
 {
+    // Exit the loop to process the message.
     eventLoop.exit(0);
 }
 
