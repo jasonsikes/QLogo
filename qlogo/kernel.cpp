@@ -115,8 +115,10 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
         }
         catch (FCError *e)
         {
-            sysPrint(e->toString() + "\n");
-            continue;
+            // While FCError objects can be returned from an execution in the form of a DatumPtr,
+            // Sometimes exceptions are thrown by a user interface action.
+            // Wrap it into a DatumPtr.
+            result = DatumPtr(e);
         }
         if ((result.datumValue()->isa & Datum::typeUnboundMask) != 0)
             continue;
