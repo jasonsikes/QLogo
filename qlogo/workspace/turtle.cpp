@@ -51,60 +51,30 @@ bool Turtle::wrapTurtle(double lineStartU,
     double crossV = lineStartV + (mult * boundU - lineStartU) * (lineEndV - lineStartV) / (lineEndU - lineStartU);
     if ((crossV >= -boundV) && (crossV <= boundV))
     {
-        QTransform tempTurtlePos = turtlePosition;
-        if (isXBoundary)
-        {
-            tempTurtlePos = QTransform(tempTurtlePos.m11(),
-                                       tempTurtlePos.m12(),
-                                       tempTurtlePos.m13(),
-                                       tempTurtlePos.m21(),
-                                       tempTurtlePos.m22(),
-                                       tempTurtlePos.m23(),
-                                       mult * boundU,
-                                       crossV,
-                                       tempTurtlePos.m33());
-        }
-        else
-        {
-            tempTurtlePos = QTransform(tempTurtlePos.m11(),
-                                       tempTurtlePos.m12(),
-                                       tempTurtlePos.m13(),
-                                       tempTurtlePos.m21(),
-                                       tempTurtlePos.m22(),
-                                       tempTurtlePos.m23(),
-                                       crossV,
-                                       mult * boundU,
-                                       tempTurtlePos.m33());
-        }
+        qreal m31 = isXBoundary ? mult * boundU : crossV;
+        qreal m32 = isXBoundary ? crossV : mult * boundU;
+        QTransform tempTurtlePos = QTransform(turtlePosition.m11(),
+                                              turtlePosition.m12(),
+                                              turtlePosition.m13(),
+                                              turtlePosition.m21(),
+                                              turtlePosition.m22(),
+                                              turtlePosition.m23(),
+                                              m31, m32, turtlePosition.m33());
         Config::get().mainInterface()->setTurtlePos(&tempTurtlePos);
         Config::get().mainInterface()->emitVertex();
         if (penIsDown)
             Config::get().mainInterface()->setPenIsDown(false);
 
-        if (isXBoundary)
-        {
-            turtlePosition = QTransform(turtlePosition.m11(),
-                                        turtlePosition.m12(),
-                                        turtlePosition.m13(),
-                                        turtlePosition.m21(),
-                                        turtlePosition.m22(),
-                                        turtlePosition.m23(),
-                                        -mult * boundU,
-                                        crossV,
-                                        turtlePosition.m33());
-        }
-        else
-        {
-            turtlePosition = QTransform(turtlePosition.m11(),
-                                        turtlePosition.m12(),
-                                        turtlePosition.m13(),
-                                        turtlePosition.m21(),
-                                        turtlePosition.m22(),
-                                        turtlePosition.m23(),
-                                        crossV,
-                                        -mult * boundU,
-                                        turtlePosition.m33());
-        }
+        m31 = isXBoundary ? -mult * boundU : crossV;
+        m32 = isXBoundary ? crossV : -mult * boundU;
+        turtlePosition = QTransform(turtlePosition.m11(),
+                                    turtlePosition.m12(),
+                                    turtlePosition.m13(),
+                                    turtlePosition.m21(),
+                                    turtlePosition.m22(),
+                                    turtlePosition.m23(),
+                                    m31, m32, turtlePosition.m33());
+
         Config::get().mainInterface()->setTurtlePos(&turtlePosition);
         Config::get().mainInterface()->emitVertex();
         if (penIsDown)
@@ -219,6 +189,10 @@ void Turtle::moveTurtle(const QTransform &newPosition)
         moveTurtleFence(newPosition);
         break;
     case turtleWindow:
+        moveTurtleWindow(newPosition);
+        break;
+    default:
+        qWarning() << "Invalid turtle mode: " << mode;
         moveTurtleWindow(newPosition);
         break;
     }
