@@ -21,7 +21,7 @@
 #include "kernel.h"
 #include <QCommandLineParser>
 #include <QCoreApplication>
-#include <unistd.h>
+#include <memory>
 
 /// Process command line options and set the configuration accordingly.
 ///
@@ -41,7 +41,7 @@ void processOptions(QCoreApplication *a)
     QCoreApplication::setApplicationName("qlogo");
     QCoreApplication::setApplicationVersion(LOGOVERSION);
 
-    commandlineParser.setApplicationDescription("UCBLOGO-compatable Logo language Interpreter.");
+    commandlineParser.setApplicationDescription("UCBLOGO-compatible Logo language Interpreter.");
     commandlineParser.addHelpOption();
     commandlineParser.addVersionOption();
 
@@ -126,16 +126,15 @@ int main(int argc, char **argv)
 
     processOptions(&application);
 
-    LogoInterface *mainInterface;
+    std::unique_ptr<LogoInterface> mainInterface;
     if (Config::get().hasGUI)
     {
-        mainInterface = new LogoInterfaceGUI;
+        mainInterface = std::make_unique<LogoInterfaceGUI>();
     }
     else
     {
-        mainInterface = new LogoInterface;
+        mainInterface = std::make_unique<LogoInterface>();
     }
     int retval = Kernel::get().run();
-    delete mainInterface;
     return retval;
 }
