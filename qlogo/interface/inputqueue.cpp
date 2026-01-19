@@ -117,6 +117,26 @@ void InputQueue::receiveMessageSlot()
 
 void InputQueue::stopQueue()
 {
-    // The QLogo GUI closes the pipe so there is nothing to do except wait.
-    thread.wait();
+    // Exit the event loop to unblock any waiting getMessage() calls
+    eventLoop.exit(0);
+
+    if (!thread.isRunning())
+    {
+        // Thread already terminated, just wait for cleanup
+        thread.wait();
+        return;
+    }
+
+    // The QLogo GUI closes the pipe so the thread should terminate naturally.
+    // Wait with a timeout to avoid hanging indefinitely if something goes wrong.
+    const unsigned long timeoutMs = 5000; // 5 second timeout
+    if (!thread.wait(timeoutMs))
+    {
+        qWarning() << "InputQueueThread did not terminate within timeout";
+        thread.terminate();
+        if (!thread.wait(1000))
+        {
+            qWarning() << "InputQueueThread failed to terminate even after request";
+        }
+    }
 }
