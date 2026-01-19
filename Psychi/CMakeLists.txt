@@ -9,7 +9,7 @@ set(GUI_SOURCES
   console.cpp
   editorwindow.cpp
   mainwindow.cpp
-  qlogo_main.cpp
+  psychi_main.cpp
 
   ../include/gui/canvas.h
   ../include/gui/console.h

@@ -32,7 +32,7 @@
 #include <QTimer>
 #include <iostream>
 
-// External declaration of logging flag from qlogo_main.cpp
+// External declaration of logging flag from psychi_main.cpp
 extern bool logging;
 
 /// @brief a pointer to the qlogo process.
