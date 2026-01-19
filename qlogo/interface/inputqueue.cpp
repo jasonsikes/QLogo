@@ -37,19 +37,19 @@ void InputQueueThread::run()
     {
         qint64 datareadSofar = 0;
         dataread = read(STDIN_FILENO, &datalen, sizeof(qint64));
-        if (dataread <= 0)
+        if (dataread != sizeof(qint64))
         {
-            // I guess we're done.
+            // For some reason we didn't get the data we expected. That likely means the pipe was closed.
             return;
         }
-        Q_ASSERT(dataread == sizeof(qint64));
         message.resize(datalen);
         while (datalen > 0)
         {
             dataread = read(STDIN_FILENO, message.data() + datareadSofar, datalen);
             if (dataread <= 0)
             {
-                // Like tears in rain, time to die.
+                // There was a problem reading the data. Likely means the pipe was closed.
+                // In any case, we are done. Exit the loop.
                 return;
             }
             datareadSofar += dataread;
