@@ -18,10 +18,10 @@
 #include "compiler.h"
 #include "compiler_private.h"
 #include "datum_types.h"
-#include "exports.h"
-#include "kernel.h"
+#include "workspace/exports.h"
+#include "workspace/kernel.h"
 #include "sharedconstants.h"
-#include "turtle.h"
+#include "workspace/turtle.h"
 #include "workspace/callframe.h"
 using namespace llvm;
 using namespace llvm::orc;

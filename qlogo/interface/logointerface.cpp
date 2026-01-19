@@ -16,7 +16,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "interface/logointerface.h"
-#include "kernel.h"
+#include "workspace/kernel.h"
 #include <QApplication>
 #include <QFile>
 #include <QIODevice>

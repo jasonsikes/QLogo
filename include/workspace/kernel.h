@@ -18,7 +18,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum_ptr.h"
-#include "library.h"
+#include "workspace/library.h"
 #include "workspace/callframe.h"
 #include "workspace/propertylists.h"
 #include <QColor>

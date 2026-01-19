@@ -53,7 +53,7 @@
 #include "interface/textstream.h"
 #include "datum_types.h"
 #include "flowcontrol.h"
-#include "kernel.h"
+#include "workspace/kernel.h"
 #include "op_strings.h"
 #include "runparser.h"
 #include "workspace/procedures.h"

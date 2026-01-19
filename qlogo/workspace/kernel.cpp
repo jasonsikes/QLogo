@@ -19,7 +19,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "kernel.h"
+#include "workspace/kernel.h"
 #include "astnode.h"
 #include "compiler.h"
 #include "interface/textstream.h"
@@ -36,7 +36,7 @@
 #include <cstdlib> // arc4random_uniform()
 
 #include "runparser.h"
-#include "turtle.h"
+#include "workspace/turtle.h"
 
 #include "interface/logointerface.h"
 

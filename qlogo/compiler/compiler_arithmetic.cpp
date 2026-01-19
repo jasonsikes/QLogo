@@ -18,7 +18,7 @@
 #include "compiler.h"
 #include "compiler_private.h"
 #include "datum_types.h"
-#include "exports.h"
+#include "workspace/exports.h"
 #include "sharedconstants.h"
 #include "workspace/callframe.h"
 

@@ -18,7 +18,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "library.h"
+#include "workspace/library.h"
 #include "flowcontrol.h"
 #include "sharedconstants.h"
 #include <QCoreApplication>

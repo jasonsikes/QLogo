@@ -2,7 +2,7 @@
 #define EXPORTS_H
 
 #include "compiler_types.h"
-#include "visited.h"
+#include "workspace/visited.h"
 
 #include <QString>
 

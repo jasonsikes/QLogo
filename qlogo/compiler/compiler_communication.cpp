@@ -17,7 +17,7 @@
 #include "astnode.h"
 #include "compiler.h"
 #include "compiler_private.h"
-#include "exports.h"
+#include "workspace/exports.h"
 
 using namespace llvm;
 using namespace llvm::orc;

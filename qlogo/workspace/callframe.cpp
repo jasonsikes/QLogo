@@ -18,7 +18,7 @@
 #include "astnode.h"
 #include "compiler.h"
 #include "flowcontrol.h"
-#include "kernel.h"
+#include "workspace/kernel.h"
 #include "runparser.h"
 #include "sharedconstants.h"
 #include "workspace/procedures.h"

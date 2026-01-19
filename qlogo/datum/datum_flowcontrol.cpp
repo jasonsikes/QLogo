@@ -20,7 +20,7 @@
 
 #include "astnode.h"
 #include "flowcontrol.h"
-#include "kernel.h"
+#include "workspace/kernel.h"
 #include "sharedconstants.h"
 #include "workspace/procedures.h"
 #include <QObject>

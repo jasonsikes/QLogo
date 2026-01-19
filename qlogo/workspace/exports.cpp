@@ -13,18 +13,18 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "exports.h"
+#include "workspace/exports.h"
 #include "astnode.h"
 #include "compiler_private.h"
 #include "interface/logointerface.h"
 #include "interface/textstream.h"
 #include "datum_types.h"
 #include "flowcontrol.h"
-#include "kernel.h"
+#include "workspace/kernel.h"
 #include "runparser.h"
 #include "sharedconstants.h"
-#include "turtle.h"
-#include "visited.h"
+#include "workspace/turtle.h"
+#include "workspace/visited.h"
 #include "workspace/callframe.h"
 
 #include <QFile>

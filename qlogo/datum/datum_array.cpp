@@ -16,7 +16,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum_types.h"
-#include "visited.h"
+#include "workspace/visited.h"
 
 Array::Array(int aOrigin, int aSize)
 {

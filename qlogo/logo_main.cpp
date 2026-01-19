@@ -18,7 +18,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "interface/logointerfacegui.h"
-#include "kernel.h"
+#include "workspace/kernel.h"
 #include <QCommandLineParser>
 #include <QCoreApplication>
 #include <memory>

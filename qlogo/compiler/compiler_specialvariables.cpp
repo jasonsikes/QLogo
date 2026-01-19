@@ -17,7 +17,7 @@
 #include "compiler.h"
 #include "compiler_private.h"
 #include "datum_types.h"
-#include "kernel.h"
+#include "workspace/kernel.h"
 #include "sharedconstants.h"
 
 using namespace llvm;

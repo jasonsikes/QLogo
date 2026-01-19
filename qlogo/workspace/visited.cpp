@@ -14,7 +14,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "visited.h"
+#include "workspace/visited.h"
 
 // VisitedSet implementation
 

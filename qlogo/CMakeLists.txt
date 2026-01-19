@@ -19,12 +19,12 @@ set(QLOGO_SOURCES
   datum/datum_list.cpp
   datum/datum_word.cpp
   datum/datum_flowcontrol.cpp
-  kernel.cpp
+  workspace/kernel.cpp
   logo_main.cpp
-  misc/library.cpp
-  misc/turtle.cpp
-  misc/exports.cpp
-  misc/visited.cpp
+  workspace/library.cpp
+  workspace/turtle.cpp
+  workspace/exports.cpp
+  workspace/visited.cpp
   parser/treeifyer.cpp
   parser/runparser.cpp
   parser/cmd_strings.cpp
@@ -47,15 +47,15 @@ set(QLOGO_SOURCES
   ../include/datum_types.h
   ../include/astnode.h
   ../include/flowcontrol.h
-  ../include/kernel.h
+  ../include/workspace/kernel.h
   ../include/primitives.h
-  ../include/exports.h
-  ../include/library.h
-  ../include/turtle.h
+  ../include/workspace/exports.h
+  ../include/workspace/library.h
+  ../include/workspace/turtle.h
   ../include/treeifyer.h
   ../include/runparser.h
   ../include/op_strings.h
-  ../include/visited.h
+  ../include/workspace/visited.h
   ../include/workspace/callframe.h
   ../include/workspace/primitivetable.h
   ../include/workspace/procedures.h
