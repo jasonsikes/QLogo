@@ -27,7 +27,7 @@ bool isNotPersistent(Datum *d)
     return (d != nullptr) && ((d->isa & Datum::typePersistentMask) == 0);
 }
 
-DatumPtr::DatumPtr() : d(Datum::getInstance())
+DatumPtr::DatumPtr() : d(Datum::notADatum())
 {
 }
 
@@ -178,6 +178,6 @@ QString DatumPtr::toString(Datum::ToStringFlags flags,
 // Use function-local static to avoid exceptions during global static initialization
 const DatumPtr &nothing()
 {
-    static const DatumPtr instance(Datum::getInstance());
+    static const DatumPtr instance(Datum::notADatum());
     return instance;
 }

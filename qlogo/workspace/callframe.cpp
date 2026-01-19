@@ -356,7 +356,7 @@ Datum *Evaluator::exec(int32_t jumpLocation)
 {
     if (list.listValue() == EmptyList::instance())
     {
-        return Datum::getInstance();
+        return Datum::notADatum();
     }
     try
     {
@@ -389,7 +389,7 @@ Datum *Evaluator::subExec(Datum *aList)
         }
         if (aList->listValue()->isEmpty())
         {
-            return Datum::getInstance();
+            return Datum::notADatum();
         }
         Evaluator e(aList, evalStack);
         retval = e.exec();

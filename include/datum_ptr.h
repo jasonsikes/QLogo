@@ -162,7 +162,7 @@ class DatumPtr
     /// @return True if the referred Datum is the singleton Datum instance, false otherwise.
     bool isNothing() const
     {
-        return d == Datum::getInstance();
+        return d == Datum::notADatum();
     }
 
     /// @brief Returns true if the referred Datum is a FlowControl, false otherwise.

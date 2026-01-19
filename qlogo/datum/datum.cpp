@@ -35,7 +35,7 @@ Datum::Datum()
         qDebug() << this << " con++: " << countOfNodes;
 }
 
-Datum *Datum::getInstance()
+Datum *Datum::notADatum()
 {
     static Datum singleton;
     return &singleton;

@@ -479,7 +479,7 @@ Value *Compiler::genThrow(const DatumPtr &node, RequestReturnType returnType)
 {
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnDatum);
     Value *tag = generateWordFromDatum(node.astnodeValue(), children[0]);
-    Value *output = (children.size() == 1) ? CoAddr(Datum::getInstance()) : children[1];
+    Value *output = (children.size() == 1) ? CoAddr(Datum::notADatum()) : children[1];
     Value *errObj = generateCallExtern(TyAddr, getErrorCustom, PaAddr(evaluator), PaAddr(tag), PaAddr(output));
     return generateImmediateReturn(errObj);
 }

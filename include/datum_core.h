@@ -69,7 +69,7 @@ class Datum
     /// can still be instantiated multiple times.
     ///
     /// @return A pointer to the singleton Datum instance.
-    static Datum *getInstance();
+    static Datum *notADatum();
 
     /// @brief Destructor.
     virtual ~Datum();
