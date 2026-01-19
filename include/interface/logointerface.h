@@ -28,10 +28,10 @@
 #include <QObject>
 #include <QThread>
 #include <QVector2D>
+#include <QTextStream>
 
 class QTransform;
 class Kernel;
-class QTextStream;
 
 enum SignalsEnum_t : int
 {
@@ -584,8 +584,8 @@ class LogoInterface : public QObject
   protected:
     QTextStream *dribbleStream;
 
-    QTextStream *inStream;
-    QTextStream *outStream;
+    QTextStream inStream;
+    QTextStream outStream;
 };
 
 #endif // LOGOINTERFACE_H

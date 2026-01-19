@@ -136,6 +136,7 @@ message_t LogoInterfaceGUI::getMessage()
         bufferStream >> mousePos;
         break;
     default:
+        // This should never happen. If it does, then there is a mess-up in the protocol.
         qDebug() << "I don't know how I got " << header;
         break;
     }

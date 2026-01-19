@@ -76,48 +76,45 @@ void LogoInterface::restoreSignals()
 #endif
 
 LogoInterface::LogoInterface(QObject *parent)
+    : inStream(stdin, QIODevice::ReadOnly),
+      outStream(stdout, QIODevice::WriteOnly)
 {
     dribbleStream = nullptr;
     Config::get().setMainLogoInterface(this);
-
-    inStream = new QTextStream(stdin, QIODevice::ReadOnly);
-    outStream = new QTextStream(stdout, QIODevice::WriteOnly);
 }
 
 LogoInterface::~LogoInterface()
 {
     setDribble("");
-    delete inStream;
-    delete outStream;
     Config::get().setMainLogoInterface(nullptr);
 }
 
 void LogoInterface::printToConsole(const QString &s)
 {
-    *outStream << s;
+    outStream << s;
     if (dribbleStream)
         *dribbleStream << s;
 }
 
 bool LogoInterface::atEnd()
 {
-    return inStream->atEnd();
+    return inStream.atEnd();
 }
 
 bool LogoInterface::keyQueueHasChars()
 {
-    return !inStream->atEnd();
+    return !inStream.atEnd();
 }
 
 // This is READRAWLINE
 QString LogoInterface::inputRawlineWithPrompt(const QString &prompt)
 {
     QString retval;
-    if (!inStream->atEnd())
+    if (!inStream.atEnd())
     {
         printToConsole(prompt);
-        outStream->flush();
-        retval = inStream->readLine();
+        outStream.flush();
+        retval = inStream.readLine();
         if (dribbleStream)
             *dribbleStream << retval << '\n';
     }
@@ -128,10 +125,10 @@ QString LogoInterface::inputRawlineWithPrompt(const QString &prompt)
 DatumPtr LogoInterface::readchar()
 {
     QChar c;
-    outStream->flush();
-    if (inStream->atEnd())
+    outStream.flush();
+    if (inStream.atEnd())
         return nothing();
-    *inStream >> c;
+    inStream >> c;
     QString retval = c;
     DatumPtr retvalP = DatumPtr(retval);
     return retvalP;
