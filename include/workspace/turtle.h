@@ -131,9 +131,8 @@ class Turtle
     double getHeading() const;
 
     /// @brief Get the turtle position.
-    /// @param x The x coordinate of the turtle.
-    /// @param y The y coordinate of the turtle.
-    void getxy(double &x, double &y) const;
+    /// @return A pair containing the x and y coordinates of the turtle.
+    std::pair<double, double> getxy() const;
 
     /// @brief Set the turtle position.
     /// @param x The new x coordinate of the turtle.

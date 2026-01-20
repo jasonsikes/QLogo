@@ -1521,8 +1521,7 @@ EXPORTC void drawTurtleArc(double angle, double radius)
 EXPORTC addr_t getTurtlePos(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    double x = 0, y = 0;
-    Config::get().mainTurtle()->getxy(x, y);
+    auto [x, y] = Config::get().mainTurtle()->getxy();
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(x));
     retvalBuilder.append(DatumPtr(y));
@@ -1547,8 +1546,7 @@ EXPORTC double getTurtleHeading(void)
 
 EXPORTC double getTurtleTowards(addr_t posAddr)
 {
-    double x = 0, y = 0;
-    Config::get().mainTurtle()->getxy(x, y);
+    auto [x, y] = Config::get().mainTurtle()->getxy();
     const auto *pos = reinterpret_cast<const double *>(posAddr);
     double vx = pos[0];
     double vy = pos[1];

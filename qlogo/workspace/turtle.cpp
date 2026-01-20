@@ -241,10 +241,9 @@ void Turtle::rotate(double angle)
     Config::get().mainInterface()->setTurtlePos(&turtleTransform);
 }
 
-void Turtle::getxy(double &x, double &y) const
+std::pair<double, double> Turtle::getxy() const
 {
-    x = turtleTransform.dx();
-    y = turtleTransform.dy();
+    return {turtleTransform.dx(), turtleTransform.dy()};
 }
 
 void Turtle::setMode(TurtleModeEnum newMode)
