@@ -18,6 +18,8 @@
 #include "workspace/turtle.h"
 #include "interface/logointerface.h"
 #include "flowcontrol.h"
+#include <cmath>
+#include <limits>
 
 // Some support functions for moving the turtle.
 
@@ -306,6 +308,27 @@ void Turtle::setPenColor(const QColor &c)
 const QColor &Turtle::getPenColor() const
 {
     return penColor;
+}
+
+std::pair<double, double> Turtle::getScale() const
+{
+    return {scaleX, scaleY};
+}
+
+void Turtle::setScale(double newScaleX, double newScaleY)
+{
+    Q_ASSERT(std::abs(scaleX) > std::numeric_limits<double>::epsilon());
+    Q_ASSERT(std::abs(scaleY) > std::numeric_limits<double>::epsilon());
+
+    double ratioX = newScaleX / scaleX;
+    double ratioY = newScaleY / scaleY;
+
+    turtleTransform.scale(ratioX, ratioY);
+
+    scaleX = newScaleX;
+    scaleY = newScaleY;
+
+    Config::get().mainInterface()->setTurtlePos(&turtleTransform);
 }
 
 void Turtle::setPenMode(PenModeEnum aPenMode)

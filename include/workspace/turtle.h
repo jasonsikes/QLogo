@@ -26,6 +26,7 @@
 #include "sharedconstants.h"
 #include <QColor>
 #include <QTransform>
+#include <utility>
 
 /// @brief The Turtle class is responsible for maintaining the state of the turtle,
 /// including its position, orientation, and pen state.
@@ -39,6 +40,9 @@ class Turtle
     PenModeEnum penMode = penModePaint;
 
     double penSize = Config::get().initialPensize;
+
+    double scaleX = 1.0;
+    double scaleY = 1.0;
 
     bool turtleIsVisible = true;
     bool penIsDown = true;
@@ -163,6 +167,18 @@ class Turtle
     /// @brief Get the pen color.
     /// @return The current pen color.
     const QColor &getPenColor() const;
+
+    /// @brief Get the current scale factors.
+    /// @return A pair containing the X and Y scale factors.
+    std::pair<double, double> getScale() const;
+
+    /// @brief Set the scale factors.
+    /// @param newScaleX The new X scale factor.
+    /// @param newScaleY The new Y scale factor.
+    /// @note The scaling is applied as a ratio relative to the current scale.
+    ///       For example, if the current X scale is 2.0 and newScaleX is 1.0,
+    ///       the transform will be scaled by 0.5 (1.0 / 2.0).
+    void setScale(double newScaleX, double newScaleY);
 
     /// @brief Move the turtle to the home position.
     void moveToHome();
