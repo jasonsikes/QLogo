@@ -259,11 +259,12 @@ TurtleModeEnum Turtle::getMode() const
 
 double Turtle::getHeading() const
 {
+    constexpr double RADIANS_TO_DEGREES = 180.0 / PI;
     double s = turtleTransform.m12();
     double c = turtleTransform.m11();
 
-    double retval = atan2(s, c) * (180.0 / PI);
-    if (retval < 0)
+    double retval = atan2(s, c) * RADIANS_TO_DEGREES;
+    while (retval < 0)
         retval += 360;
     return retval;
 }
