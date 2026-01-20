@@ -48,14 +48,15 @@ class Turtle
     bool penIsDown = true;
     bool isFilling = false;
 
-    bool wrapTurtle(double lineStartU,
+    double wrapTurtle(double lineStartU,
                     double lineStartV,
-                    double &lineEndU,
+                    double lineEndU,
                     double lineEndV,
                     double boundU,
                     double boundV,
                     bool isXBoundary,
                     double mult);
+
     void moveTurtle(const QTransform &newTransform);
     void moveTurtleWrap(const QTransform &newTransform);
     void moveTurtleFence(const QTransform &newTransform);

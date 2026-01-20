@@ -41,15 +41,17 @@ void Turtle::setPenIsDown(bool aIsPenDown)
 }
 
 // Move the turtle. If over a boundary, wrap.
-bool Turtle::wrapTurtle(double lineStartU,
+double Turtle::wrapTurtle(double lineStartU,
                         double lineStartV,
-                        double &lineEndU,
+                        double lineEndU,
                         double lineEndV,
                         double boundU,
                         double boundV,
                         bool isXBoundary,
                         double mult)
 {
+    Q_ASSERT (std::abs(lineEndU - lineStartU) > std::numeric_limits<double>::epsilon());
+
     double crossV = lineStartV + (mult * boundU - lineStartU) * (lineEndV - lineStartV) / (lineEndU - lineStartU);
     if ((crossV >= -boundV) && (crossV <= boundV))
     {
@@ -82,9 +84,8 @@ bool Turtle::wrapTurtle(double lineStartU,
         if (penIsDown)
             Config::get().mainInterface()->setPenIsDown(true);
         lineEndU -= 2 * mult * boundU;
-        return true;
     }
-    return false;
+    return lineEndU;
 }
 
 // Move the turtle to a new position, wrapping around the edges of the canvas if
@@ -104,25 +105,37 @@ void Turtle::moveTurtleWrap(const QTransform &newTransform)
 
         if (lineEndX > boundX)
         {
-            if (wrapTurtle(lineStartX, lineStartY, lineEndX, lineEndY, boundX, boundY, true, 1))
+            double newLineEndX = wrapTurtle(lineStartX, lineStartY, lineEndX, lineEndY, boundX, boundY, true, 1);
+            bool wrapped = (newLineEndX != lineEndX);
+            lineEndX = newLineEndX;
+            if (wrapped)
                 continue;
         }
 
         if (lineEndX < -boundX)
         {
-            if (wrapTurtle(lineStartX, lineStartY, lineEndX, lineEndY, boundX, boundY, true, -1))
+            double newLineEndX = wrapTurtle(lineStartX, lineStartY, lineEndX, lineEndY, boundX, boundY, true, -1);
+            bool wrapped = (newLineEndX != lineEndX);
+            lineEndX = newLineEndX;
+            if (wrapped)
                 continue;
         }
 
         if (lineEndY > boundY)
         {
-            if (wrapTurtle(lineStartY, lineStartX, lineEndY, lineEndX, boundY, boundX, false, 1))
+            double newLineEndY = wrapTurtle(lineStartY, lineStartX, lineEndY, lineEndX, boundY, boundX, false, 1);
+            bool wrapped = (newLineEndY != lineEndY);
+            lineEndY = newLineEndY;
+            if (wrapped)
                 continue;
         }
 
         if (lineEndY < -boundY)
         {
-            if (wrapTurtle(lineStartY, lineStartX, lineEndY, lineEndX, boundY, boundX, false, -1))
+            double newLineEndY = wrapTurtle(lineStartY, lineStartX, lineEndY, lineEndX, boundY, boundX, false, -1);
+            bool wrapped = (newLineEndY != lineEndY);
+            lineEndY = newLineEndY;
+            if (wrapped)
                 continue;
         }
     }
