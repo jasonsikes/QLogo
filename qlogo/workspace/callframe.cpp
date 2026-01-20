@@ -290,7 +290,7 @@ continueBody:
         jumpLocation = 0;
 
         // Do we need to halt execution for some reason?
-        if ((retval->isa & Datum::typeUnboundMask) == 0)
+        if ((retval->isa & Datum::typeFlowControlMask) != 0)
         {
             switch (retval->isa)
             {
