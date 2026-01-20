@@ -31,7 +31,7 @@
 /// including its position, orientation, and pen state.
 class Turtle
 {
-    QTransform turtlePosition;
+    QTransform turtleTransform;
 
     QColor penColor;
     TurtleModeEnum mode = turtleWindow;
@@ -52,10 +52,10 @@ class Turtle
                     double boundV,
                     bool isXBoundary,
                     double mult);
-    void moveTurtle(const QTransform &newPosition);
-    void moveTurtleWrap(const QTransform &newPosition);
-    void moveTurtleFence(const QTransform &newPosition);
-    void moveTurtleWindow(const QTransform &newPosition);
+    void moveTurtle(const QTransform &newTransform);
+    void moveTurtleWrap(const QTransform &newTransform);
+    void moveTurtleFence(const QTransform &newTransform);
+    void moveTurtleWindow(const QTransform &newTransform);
 
   public:
     /// @brief Constructor for the Turtle class.
@@ -68,7 +68,7 @@ class Turtle
     /// @return The current turtle position and orientation.
     const QTransform &getMatrix() const
     {
-        return turtlePosition;
+        return turtleTransform;
     }
 
     /// @brief Check if the turtle is visible.
