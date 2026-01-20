@@ -21,7 +21,6 @@
 #include <cmath>
 #include <limits>
 
-// Some support functions for moving the turtle.
 
 Turtle::Turtle() : turtleTransform(QTransform())
 {
