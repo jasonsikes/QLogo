@@ -23,6 +23,7 @@
 #include "sharedconstants.h"
 #include <QCoreApplication>
 #include <QDir>
+#include <QFileInfo>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QStringList>
@@ -38,15 +39,14 @@ QString findDBPath(const QString &defaultDBName)
 {
     // Build a list of candidate locations to try.
     QStringList candidates;
+    QString appDir = QCoreApplication::applicationDirPath();
 
-    // The share directory relative to wherever the app binary is.
-    candidates << QCoreApplication::applicationDirPath() + QDir::separator() + ".." + QDir::separator() + "share" +
-                      QDir::separator() + "qlogo" + QDir::separator() + defaultDBName;
-    // The Resources directory relative to wherever the app binary is.
-    candidates << QCoreApplication::applicationDirPath() + QDir::separator() + ".." + QDir::separator() + "Resources" +
-                      QDir::separator() + defaultDBName;
-    // The same directory as the app binary.
-    candidates << QCoreApplication::applicationDirPath() + QDir::separator() + defaultDBName;
+    // The share directory relative to wherever the app binary is. (Linux)
+    candidates << QDir::cleanPath(appDir + "/../share/qlogo/" + defaultDBName);
+    // The Resources directory relative to wherever the app binary is. (macOS)
+    candidates << QDir::cleanPath(appDir + "/../Resources/" + defaultDBName);
+    // The same directory as the app binary. (Windows)
+    candidates << QDir::cleanPath(appDir + "/" + defaultDBName);
 
     for (auto &c : candidates)
     {
@@ -67,7 +67,7 @@ QString findDBPath(const QString &defaultDBName)
 /// database file.
 bool initDBConnection(const QString &connectionName, const QString &paramFilePath, const QString &defaultFilePath)
 {
-    QString path = (!paramFilePath.isNull()) ? paramFilePath : findDBPath(defaultFilePath);
+    QString path = (!paramFilePath.isEmpty()) ? paramFilePath : findDBPath(defaultFilePath);
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
     db.setDatabaseName(path);
     bool isSuccessful = db.open();
@@ -84,7 +84,7 @@ Library::~Library()
         QSqlDatabase::removeDatabase(connectionName);
 }
 
-void Library::getConnection()
+void Library::getConnection() const
 {
     if (connectionIsValid)
         return;
@@ -146,7 +146,7 @@ QStringList Library::allProcedureNames() const
     //         }
     //     }
     // }
-    return allProcedures;
+    return {}; // Return allProcedures;
 }
 
 Help::~Help()
@@ -155,7 +155,7 @@ Help::~Help()
         QSqlDatabase::removeDatabase(connectionName);
 }
 
-void Help::getConnection()
+void Help::getConnection() const
 {
     if (connectionIsValid)
         return;
@@ -189,10 +189,6 @@ QStringList Help::allCommands()
             retval.append(query.value(0).toString());
         }
     }
-    else
-    {
-        throw FCError::fileSystem();
-    }
     return retval;
 }
 
@@ -213,14 +209,9 @@ QString Help::helpText(const QString &name)
         query.prepare("SELECT COMMAND FROM ALIASES WHERE ALIAS = ?");
         query.addBindValue(name);
         query.exec();
-        if (query.next())
-        {
-            cmdName = query.value(0).toString();
-        }
-        else
-        {
-            goto bailout;
-        }
+        if ( ! query.next())
+            return {};
+        cmdName = query.value(0).toString();
         query.finish();
 
         // Get the help text for the command name.
@@ -232,7 +223,5 @@ QString Help::helpText(const QString &name)
             retval = query.value(0).toString();
         }
     }
-
-bailout:
     return retval;
 }

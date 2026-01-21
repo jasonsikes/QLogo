@@ -26,11 +26,12 @@
 /// @brief The Library class provides access to the QLogo standard library.
 class Library
 {
-    bool connectionIsValid = false;
-    QStringList allProcedures;
+    mutable bool connectionIsValid = false;
+    // Commented out because it is never populated.
+    // QStringList allProcedures;
     const QString connectionName = "libDB";
 
-    void getConnection();
+    void getConnection() const;
 
   public:
     /// @brief Constructor for the Library class.
@@ -41,20 +42,20 @@ class Library
 
     /// @brief Return the text of library procedure of the given name.
     /// @param cmdName The name of the procedure to return the text of.
-    /// @returns Null string if no procedure found.
+    /// @return Null string if no procedure found.
     QString procedureText(const QString &cmdName);
 
     /// @brief Return a list of all procedure names available in the library.
-    /// @returns A list of all procedure names available in the library.
+    /// @return A list of all procedure names available in the library.
     QStringList allProcedureNames() const;
 };
 
 class Help
 {
-    bool connectionIsValid = false;
+    mutable bool connectionIsValid = false;
     const QString connectionName = "help";
 
-    void getConnection();
+    void getConnection() const;
 
   public:
     /// @brief Constructor for the Help class.
@@ -64,12 +65,12 @@ class Help
     ~Help();
 
     /// @brief Return a list of all command names that have a help text entry.
-    /// @returns A list of all command names that have a help text entry.
+    /// @return A list of all command names that have a help text entry.
     QStringList allCommands();
 
     /// @brief Return the help text for a command.
     /// @param cmdName The name of the command to return the help text for.
-    /// @returns The help text for the command.
+    /// @return The help text for the command.
     QString helpText(const QString &cmdName);
 };
 
