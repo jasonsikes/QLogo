@@ -22,11 +22,15 @@
 #include "compiler_types.h"
 #include "datum_ptr.h"
 
+#include <QList>
+#include <QHash>
+
 struct CallFrame;
 struct Evaluator;
 struct FCGoto;
+struct ASTNode;
 
-/// @brief  The call frame stack.
+/// @brief The call frame stack.
 ///
 /// The call frame stack is the stack of call frames, each representing the state
 /// of a procedure. The first of the list is the 'top' call frame. That is,
@@ -121,6 +125,13 @@ struct CallFrameStack
         Q_ASSERT(stack.size() >= 2);
         return stack[1];
     }
+
+    CallFrameStack() = default;
+    ~CallFrameStack() = default;
+    CallFrameStack(const CallFrameStack &) = delete;
+    CallFrameStack(CallFrameStack &&) = delete;
+    CallFrameStack &operator=(const CallFrameStack &) = delete;
+    CallFrameStack &operator=(CallFrameStack &&) = delete;
 };
 
 /// @brief The CallFrame object holds the state of execution of a procedure (or REPL).
@@ -128,7 +139,6 @@ struct CallFrameStack
 /// "?"), and the test state (for TEST, IFTRUE, IFFALSE).
 struct CallFrame
 {
-
     /// @brief A pointer to the call frame stack.
     /// @note The constructor and destructor will add and remove this frame to and
     /// from the stack.
@@ -190,28 +200,28 @@ struct CallFrame
     /// @brief Apply the given parameters to the procedure.
     /// @param paramAry The parameters to apply.
     /// @param paramCount The number of parameters to apply.
-    /// @returns nothing if successful, or an error if not.
+    /// @return nothing if successful, or an error if not.
     Datum *applyProcedureParams(Datum **paramAry, uint32_t paramCount);
 
     /// @brief End the current procedure by continuing with the given node and parameters.
     /// @param newNode The ASTNode of the new procedure to continue with.
     /// @param paramAry The parameters to apply to the new node.
-    /// @returns nothing if successful, or an error if not.
+    /// @return nothing if successful, or an error if not.
     Datum *applyContinuation(const DatumPtr &newNode, const QList<DatumPtr> &paramAry);
 
     /// @brief Jump to the line in the procedure containing the given tag.
     /// @param node The FCGoto node.
-    /// @returns Err if the tag is not found (or nothing if the tag is found).
+    /// @return Err if the tag is not found (or nothing if the tag is found).
     Datum *applyGoto(FCGoto *node);
 
     /// @brief Execute procedure referenced in the source node.
     /// @param paramAry The parameters to apply.
     /// @param paramCount The number of parameters to apply.
-    /// @returns the result of this execution.
+    /// @return the result of this execution.
     Datum *exec(Datum **paramAry, uint32_t paramCount);
 
     /// @brief Execute the body of the procedure referenced in the source node.
-    /// @returns the result of this execution.
+    /// @return the result of this execution.
     Datum *bodyExec();
 
     /// @brief Constructor.
@@ -228,9 +238,15 @@ struct CallFrame
     /// and restores the original values of the variables.
     /// @note This frame will be removed from the stack.
     ~CallFrame();
+
+    CallFrame() = delete;
+    CallFrame(const CallFrame &) = delete;
+    CallFrame(CallFrame &&) = delete;
+    CallFrame &operator=(const CallFrame &) = delete;
+    CallFrame &operator=(CallFrame &&) = delete;
 };
 
-/// @brief  The evaluator.
+/// @brief The Evaluator object handles the evaluation of a list.
 ///
 /// The evaluator handles the evaluation of a list. It provides support functionality
 /// for the list while it is executing.
@@ -244,14 +260,14 @@ struct Evaluator
     /// @brief The list to evaluate.
     DatumPtr list;
 
-    /// @brief a pointer to this list's compiled function.
+    /// @brief The pointer to this list's compiled function.
     CompiledFunctionPtr fn;
 
-    /// @brief the return value of this evaluation
+    /// @brief The return value of this evaluation.
     Datum *retval = nullptr;
 
     /// @brief A pool of objects for garbage collection.
-    std::list<Datum *> releasePool;
+    QList<Datum *> releasePool;
 
     /// @brief Constructor.
     /// @param aList The list to evaluate.
@@ -264,19 +280,23 @@ struct Evaluator
 
     /// @brief Execute this list. Will return when execution is complete.
     /// @param jumpLocation The location within the line to jump to.
-    /// @returns the result of this execution.
+    /// @return the result of this execution.
     Datum *exec(int32_t jumpLocation = 0);
 
     /// @brief Execute the given sublist. Will return when execution is complete.
-    /// @returns the result of this execution.
+    /// @param aList The list to execute.
+    /// @return the result of this execution.
     Datum *subExec(Datum *aList);
 
     /// @brief Execute the given procedure. Will return when execution is complete.
-    /// @returns the result of this execution.
+    /// @param node The ASTNode of the procedure to execute.
+    /// @param paramAry The parameters to apply to the procedure.
+    /// @param paramCount The number of parameters to apply.
+    /// @return the result of this execution.
     Datum *procedureExec(ASTNode *node, Datum **paramAry, uint32_t paramCount);
 
     /// @brief Add a Datum to the release pool
-    /// @returns the given pointer (pass-through).
+    /// @return the given pointer (pass-through).
     /// In other areas of code, memory management is handled by using the DatumPtr class.
     /// Among other things, the DatumPtr acts like std::shared_ptr. As long as there exists at least one DatumPtr
     /// pointing to a Datum, the Datum will not be deleted. In compiled code, we use the watch function to add a Datum
@@ -286,11 +306,17 @@ struct Evaluator
     Datum *watch(Datum *);
 
     /// @brief Add a Datum to the release pool
-    /// @returns the given pointer (pass-through).
+    /// @return the given pointer (pass-through).
     Datum *watch(const DatumPtr &);
 
-    /// @brief Returns TRUE if CASEIGNOREDP is "TRUE, "true, or any combination of the two.
+    /// @brief Returns TRUE if CASEIGNOREDP is TRUE
     bool varCASEIGNOREDP();
+
+    Evaluator() = delete;
+    Evaluator(const Evaluator &) = delete;
+    Evaluator(Evaluator &&) = delete;
+    Evaluator &operator=(const Evaluator &) = delete;
+    Evaluator &operator=(Evaluator &&) = delete;
 };
 
 #endif // CALLFRAME_H
