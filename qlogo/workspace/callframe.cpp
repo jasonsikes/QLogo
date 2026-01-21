@@ -97,32 +97,32 @@ DatumPtr CallFrameStack::explicitSlotList() const
 
 CallFrame::~CallFrame()
 {
-    Q_ASSERT(frameStack->stack.first() == this);
+    Q_ASSERT(frameStack.stack.first() == this);
     for (auto iter = localVars.begin(); iter != localVars.end(); ++iter)
     {
         const DatumPtr &value = iter.value();
         if (value.isNothing())
         {
-            frameStack->eraseVar(iter.key());
+            frameStack.eraseVar(iter.key());
         }
         else
         {
-            frameStack->setDatumForName(value, iter.key());
+            frameStack.setDatumForName(value, iter.key());
         }
     }
-    frameStack->stack.pop_front();
+    frameStack.stack.pop_front();
 }
 
 void CallFrame::setVarAsLocal(const QString &name)
 {
-    DatumPtr originalValue = frameStack->datumForName(name);
+    DatumPtr originalValue = frameStack.datumForName(name);
     localVars.insert(name, originalValue);
-    frameStack->setDatumForName(nothing(), name);
+    frameStack.setDatumForName(nothing(), name);
 }
 
 void CallFrame::setValueForName(const DatumPtr &value, const QString &name)
 {
-    frameStack->setDatumForName(value, name);
+    frameStack.setDatumForName(value, name);
 }
 
 Datum *CallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount)
@@ -405,7 +405,7 @@ Datum *Evaluator::subExec(Datum *aList)
 
 Datum *Evaluator::procedureExec(ASTNode *node, Datum **paramAry, uint32_t paramCount)
 {
-    CallFrameStack *frameStack = &Kernel::get().callStack;
+    CallFrameStack &frameStack = Kernel::get().callStack;
     CallFrame frame(frameStack, DatumPtr(node));
 
     return frame.exec(paramAry, paramCount);

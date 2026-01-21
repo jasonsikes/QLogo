@@ -102,6 +102,7 @@ struct CallFrameStack
     /// @return The global frame.
     CallFrame *globalFrame() const
     {
+        Q_ASSERT(stack.size() > 0);
         return stack.last();
     }
 
@@ -109,6 +110,7 @@ struct CallFrameStack
     /// @return The local frame.
     CallFrame *localFrame() const
     {
+        Q_ASSERT(stack.size() > 0);
         return stack.first();
     }
 
@@ -116,6 +118,7 @@ struct CallFrameStack
     /// @return The parent frame.
     CallFrame *parentFrame() const
     {
+        Q_ASSERT(stack.size() >= 2);
         return stack[1];
     }
 };
@@ -129,7 +132,7 @@ struct CallFrame
     /// @brief A pointer to the call frame stack.
     /// @note The constructor and destructor will add and remove this frame to and
     /// from the stack.
-    CallFrameStack *frameStack;
+    CallFrameStack &frameStack;
 
     /// @brief The ASTNode source of this running procedure.
     DatumPtr sourceNode;
@@ -140,7 +143,7 @@ struct CallFrame
     DatumPtr runningSourceList;
 
     /// @brief Set this value to set a jump location within a line.
-    int32_t jumpLocation;
+    int32_t jumpLocation = 0;
 
     /// @brief Set to true iff a TEST command has occurred.
     /// @note This is for the commands TEST, IFTRUE, and IFFALSE.
@@ -148,7 +151,7 @@ struct CallFrame
 
     /// @brief This holds the result of the most recent TEST.
     /// @note This is for the commands TEST, IFTRUE, and IFFALSE.
-    bool testResult;
+    bool testResult = false;
 
     /// @brief The explicit slot list, placeholders for "?".
     /// @note This is for the "explicit slot" APPLY command.
@@ -169,6 +172,7 @@ struct CallFrame
     /// @return The topmost Evaluator object.
     Evaluator *localEvaluator() const
     {
+        Q_ASSERT(evalStack.size() > 0);
         return evalStack.first();
     }
 
@@ -214,10 +218,10 @@ struct CallFrame
     /// @param aFrameStack A pointer to the call frame stack.
     /// @param aSourceNode The ASTNode source of this running procedure. 'nothing'
     /// is reserved for the global frame or PAUSE.
-    CallFrame(CallFrameStack *aFrameStack, const DatumPtr &aSourceNode = nothing())
+    CallFrame(CallFrameStack &aFrameStack, const DatumPtr &aSourceNode = nothing())
         : frameStack(aFrameStack), sourceNode(aSourceNode)
     {
-        frameStack->stack.push_front(this);
+        frameStack.stack.push_front(this);
     }
 
     /// @brief Destructor. Removes local variables from the frame stack variables hash,

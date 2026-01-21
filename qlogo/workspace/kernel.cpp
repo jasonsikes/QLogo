@@ -332,9 +332,9 @@ Kernel::Kernel()
     treeifier = new Treeifier;
     theCompiler = new Compiler();
 
-    // callStack holds a pointer to the new frame so it will be deleted when this
-    // Kernel is deleted.
-    new CallFrame(&callStack);
+    // callStack holds a pointer to the new frame so that the new CallFrame object will be
+    // deleted when the Kernel is deleted.
+    new CallFrame(callStack);
 
     initVariables();
     initPalette();
@@ -397,7 +397,7 @@ DatumPtr Kernel::pause()
         sourceNodeName = sourceNode.astnodeValue()->nodeName.toString();
     }
 
-    CallFrame frame(&callStack, nothing());
+    CallFrame frame(callStack, nothing());
 
     sysPrint(QObject::tr("Pausing...\n"));
 
