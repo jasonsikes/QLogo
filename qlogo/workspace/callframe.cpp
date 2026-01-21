@@ -9,7 +9,7 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the CallFrameStack,  class, which
+/// This file contains the implementation of the CallFrameStack, CallFrame, and Evaluator classes, which
 ///  holds the state of the execution of a procedure.
 ///
 //===----------------------------------------------------------------------===//
@@ -64,6 +64,7 @@ void CallFrameStack::eraseVar(const QString &name)
 
 void CallFrameStack::setTest(bool isTrue)
 {
+    Q_ASSERT(stack.size() > 0);
     stack.first()->isTested = true;
     stack.first()->testResult = isTrue;
 }
@@ -82,11 +83,13 @@ bool CallFrameStack::testedState() const
 
 void CallFrameStack::setExplicitSlotList(const DatumPtr &aList)
 {
+    Q_ASSERT(stack.size() > 0);
     stack.last()->explicitSlotList = aList;
 }
 
 DatumPtr CallFrameStack::explicitSlotList() const
 {
+    Q_ASSERT(stack.size() > 0);
     return stack.last()->explicitSlotList;
 }
 
@@ -290,6 +293,7 @@ continueBody:
         jumpLocation = 0;
 
         // Do we need to halt execution for some reason?
+        Q_ASSERT(retval != nullptr);
         if ((retval->isa & Datum::typeFlowControlMask) != 0)
         {
             switch (retval->isa)
@@ -337,18 +341,16 @@ Evaluator::~Evaluator()
 {
     Q_ASSERT(evalStack.first() == this);
 
-    // qDebug() << "draining pool";
     for (auto &d : releasePool)
     {
         if ((d->isa & Datum::typePersistentMask) == 0)
         {
             (d->retainCount)--;
-            if ((d != retval) && (d->retainCount < 1))
+            if ((d != retval) && (d->retainCount <= 0))
                 delete d;
         }
     }
 
-    // qDebug() << "drained pool";
     evalStack.removeFirst();
 }
 
