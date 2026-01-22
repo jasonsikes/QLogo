@@ -1,4 +1,4 @@
-//===-- qlogo/misc/visited.cpp - VisitedSet and VisitedMap class implementations --*- C++ -*-===//
+//===-- qlogo/workspace/visited.cpp - VisitedSet and VisitedMap class implementations --*- C++ -*-===//
 //
 // Copyright 2025 Jason Sikes
 //
@@ -38,11 +38,6 @@ void VisitedSet::clear()
     visited.clear();
 }
 
-int VisitedSet::size() const
-{
-    return visited.size();
-}
-
 // VisitedMap implementation
 
 void VisitedMap::add(const Datum *key, const Datum *value)
@@ -68,9 +63,4 @@ bool VisitedMap::contains(const Datum *key) const
 void VisitedMap::clear()
 {
     visited.clear();
-}
-
-int VisitedMap::size() const
-{
-    return visited.size();
 }

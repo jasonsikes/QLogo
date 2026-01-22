@@ -1,7 +1,7 @@
 #ifndef VISITED_H
 #define VISITED_H
 
-//===-- qlogo/visited.h - VisitedSet and VisitedMap class definitions -------*- C++ -*-===//
+//===-- workspace/visited.h - VisitedSet and VisitedMap class definitions -------*- C++ -*-===//
 //
 // Copyright 2025 Jason Sikes
 //
@@ -49,10 +49,6 @@ class VisitedSet
 
     /// @brief Clear all visited nodes from the set.
     void clear();
-
-    /// @brief Return the number of visited nodes.
-    /// @return The number of visited nodes.
-    int size() const;
 };
 
 /// @brief A map of visited nodes.
@@ -79,7 +75,7 @@ class VisitedMap
 
     /// @brief Get the value associated with a key in the visited map.
     /// @param key The key of the node to get the value of.
-    /// @return The value associated with the key.
+    /// @return The value associated with the key, or nullptr if the key is not found.
     const Datum *get(const Datum *key) const;
 
     /// @brief Check if a node has been visited.
@@ -89,10 +85,6 @@ class VisitedMap
 
     /// @brief Clear all visited nodes from the map.
     void clear();
-
-    /// @brief Return the number of visited nodes.
-    /// @return The number of visited nodes.
-    int size() const;
 };
 
-#endif // VISITEDSET_H
+#endif // VISITED_H
