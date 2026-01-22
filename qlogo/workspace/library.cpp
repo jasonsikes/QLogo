@@ -10,7 +10,7 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the declaration of the QLogo library interface, which
+/// This file contains the implementation of the QLogo library interface, which
 /// provides the standard library (supporting functions to the QLogo language),
 /// and the help facility interface, which provides access to the help text for
 /// QLogo library routines. Both classes are implemented using the SQLite
@@ -19,7 +19,6 @@
 //===----------------------------------------------------------------------===//
 
 #include "workspace/library.h"
-#include "flowcontrol.h"
 #include "sharedconstants.h"
 #include <QCoreApplication>
 #include <QDir>
@@ -78,31 +77,50 @@ bool initDBConnection(const QString &connectionName, const QString &paramFilePat
     return isSuccessful;
 }
 
-Library::~Library()
+DatabaseConnection::~DatabaseConnection()
 {
     if (connectionIsValid)
+    {
         QSqlDatabase::removeDatabase(connectionName);
+    }
 }
 
-void Library::getConnection() const
+void DatabaseConnection::getConnection() const
 {
     if (connectionIsValid)
+    {
         return;
-    bool isOpen = initDBConnection(
-        connectionName, Config::get().paramLibraryDatabaseFilepath, Config::get().defaultLibraryDbFilename);
+    }
+    bool isOpen = initDBConnection(connectionName, paramFilePath, defaultFilePath);
     if (isOpen)
     {
         QSqlDatabase db = QSqlDatabase::database(connectionName);
         QStringList tables = db.tables();
-        if (tables.contains("LIBRARY", Qt::CaseSensitive))
+        if (validateSchema(tables))
         {
             connectionIsValid = true;
         }
         else
         {
-            qDebug() << "library db format is wrong";
+            qWarning() << QString("Database connection '%1' has the wrong schema.").arg(connectionName);
         }
     }
+}
+
+Library::Library()
+    : DatabaseConnection("libDB", Config::get().paramLibraryDatabaseFilepath, Config::get().defaultLibraryDbFilename)
+{
+}
+
+Library &Library::get()
+{
+    static Library instance;
+    return instance;
+}
+
+bool Library::validateSchema(const QStringList &tables) const
+{
+    return tables.contains("LIBRARY", Qt::CaseSensitive);
 }
 
 QString Library::procedureText(const QString &cmdName)
@@ -149,31 +167,20 @@ QStringList Library::allProcedureNames() const
     return {}; // Return allProcedures;
 }
 
-Help::~Help()
+Help::Help()
+    : DatabaseConnection("help", Config::get().paramHelpDatabaseFilepath, Config::get().defaultHelpDbFilename)
 {
-    if (connectionIsValid)
-        QSqlDatabase::removeDatabase(connectionName);
 }
 
-void Help::getConnection() const
+Help &Help::get()
 {
-    if (connectionIsValid)
-        return;
-    bool isOpen =
-        initDBConnection(connectionName, Config::get().paramHelpDatabaseFilepath, Config::get().defaultHelpDbFilename);
-    if (isOpen)
-    {
-        QSqlDatabase db = QSqlDatabase::database(connectionName);
-        QStringList tables = db.tables();
-        if (tables.contains("ALIASES", Qt::CaseSensitive) && tables.contains("HELPTEXT", Qt::CaseSensitive))
-        {
-            connectionIsValid = true;
-        }
-        else
-        {
-            qDebug() << "help db format is wrong";
-        }
-    }
+    static Help instance;
+    return instance;
+}
+
+bool Help::validateSchema(const QStringList &tables) const
+{
+    return tables.contains("ALIASES", Qt::CaseSensitive) && tables.contains("HELPTEXT", Qt::CaseSensitive);
 }
 
 QStringList Help::allCommands()
@@ -210,7 +217,9 @@ QString Help::helpText(const QString &name)
         query.addBindValue(name);
         query.exec();
         if ( ! query.next())
+        {
             return {};
+        }
         cmdName = query.value(0).toString();
         query.finish();
 

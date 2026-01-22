@@ -23,22 +23,62 @@
 #include <QSqlDatabase>
 #include <QStringList>
 
-/// @brief The Library class provides access to the QLogo standard library.
-class Library
+/// @brief Base class for database connection management.
+///
+/// This class provides common functionality for managing SQLite database connections,
+/// including connection initialization, validation, and cleanup.
+class DatabaseConnection
 {
+  protected:
     mutable bool connectionIsValid = false;
-    // Commented out because it is never populated.
-    // QStringList allProcedures;
-    const QString connectionName = "libDB";
+    const QString connectionName;
+    const QString paramFilePath;
+    const QString defaultFilePath;
 
+    /// @brief Constructor for DatabaseConnection.
+    /// @param aConnectionName The name of the database connection.
+    /// @param paramFilePath The path to the database file, may be empty.
+    /// @param defaultFilePath The path to search for the database file if paramFilePath is empty.
+    explicit DatabaseConnection(const QString &aConnectionName, const QString &paramFilePath, const QString &defaultFilePath)
+        : connectionName(aConnectionName), paramFilePath(paramFilePath), defaultFilePath(defaultFilePath)
+    {
+    }
+
+    /// @brief Validate that the database has the correct schema.
+    /// @param tables The list of tables in the database.
+    /// @return True if the schema is valid, false otherwise.
+    virtual bool validateSchema(const QStringList &tables) const = 0;
+
+    /// @brief Initialize and validate the database connection.
     void getConnection() const;
 
   public:
-    /// @brief Constructor for the Library class.
-    Library() = default;
+    virtual ~DatabaseConnection();
+
+    DatabaseConnection(const DatabaseConnection &) = delete;
+    DatabaseConnection &operator=(const DatabaseConnection &) = delete;
+};
+
+/// @brief The Library class provides access to the QLogo standard library.
+class Library : public DatabaseConnection
+{
+    // Commented out because it is never populated. Restore it when we get it working again.
+    // QStringList allProcedures;
+
+    bool validateSchema(const QStringList &tables) const override;
+
+    /// @brief Private constructor - Singleton
+    Library();
+    Library(const Library &) = delete;
+    Library &operator=(const Library &) = delete;
+
+  public:
+    /// @brief Get the singleton instance of the Library class.
+    /// @return Reference to the singleton Library instance.
+    static Library &get();
 
     /// @brief Destructor for the Library class.
-    ~Library();
+    ~Library() override = default;
 
     /// @brief Return the text of library procedure of the given name.
     /// @param cmdName The name of the procedure to return the text of.
@@ -50,19 +90,23 @@ class Library
     QStringList allProcedureNames() const;
 };
 
-class Help
+/// @brief The Help class provides access to help text for QLogo commands.
+class Help : public DatabaseConnection
 {
-    mutable bool connectionIsValid = false;
-    const QString connectionName = "help";
+    bool validateSchema(const QStringList &tables) const override;
 
-    void getConnection() const;
+    /// @brief Private constructor - Singleton
+    Help();
+    Help(const Help &) = delete;
+    Help &operator=(const Help &) = delete;
 
   public:
-    /// @brief Constructor for the Help class.
-    Help() = default;
+    /// @brief Get the singleton instance of the Help class.
+    /// @return Reference to the singleton Help instance.
+    static Help &get();
 
     /// @brief Destructor for the Help class.
-    ~Help();
+    ~Help() override = default;
 
     /// @brief Return a list of all command names that have a help text entry.
     /// @return A list of all command names that have a help text entry.

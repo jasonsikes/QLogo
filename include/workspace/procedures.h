@@ -56,8 +56,6 @@ class Procedures
     DatumPtr procedureForName(const QString &aName) const;
     bool isNamedProcedure(const QString &aName) const;
 
-    Library stdLib;
-
   public:
     /// @brief Constructor.
     Procedures();

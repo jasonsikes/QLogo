@@ -401,7 +401,7 @@ DatumPtr Procedures::procedureForName(const QString &aName) const
 {
     if (!procedures.contains(aName))
     {
-        if (!stdLib.allProcedureNames().contains(aName))
+        if (!Library::get().allProcedureNames().contains(aName))
         {
             return nothing();
         }
@@ -413,7 +413,7 @@ DatumPtr Procedures::procedureForName(const QString &aName) const
 
 bool Procedures::isNamedProcedure(const QString &aName) const
 {
-    return procedures.contains(aName) || stdLib.allProcedureNames().contains(aName);
+    return procedures.contains(aName) || Library::get().allProcedureNames().contains(aName);
 }
 
 std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromPrimitive(const DatumPtr &cmdP)

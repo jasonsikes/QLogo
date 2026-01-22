@@ -54,8 +54,6 @@ class Kernel
 
     PropertyLists plists;
 
-    Help help;
-
     QHash<QString, TextStream *> fileStreams;
     QSet<TextStream *> writableStreams;
     QSet<TextStream *> readableStreams;
