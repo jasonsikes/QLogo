@@ -27,10 +27,10 @@ void PropertyLists::addProperty(const QString &plistname, const QString &propnam
         plists.insert(plistname, QHash<QString, DatumPtr>());
     }
 
-    plists[plistname][propname] = value;
+    plists[plistname][propname] = value; 
 }
 
-DatumPtr PropertyLists::getProperty(const QString &plistname, const QString &propname)
+DatumPtr PropertyLists::getProperty(const QString &plistname, const QString &propname) const
 {
     if (plists.contains(plistname) && plists[plistname].contains(propname))
         return plists[plistname][propname];
@@ -47,19 +47,16 @@ void PropertyLists::removeProperty(const QString &plistname, const QString &prop
     }
 }
 
-DatumPtr PropertyLists::getPropertyList(const QString &plistname)
+DatumPtr PropertyLists::getPropertyList(const QString &plistname) const
 {
     ListBuilder builder;
-    if (plists.contains(plistname))
+    const auto propertyList = plists.find(plistname);
+    if (propertyList != plists.end())
     {
-        QList<QString> keys = plists[plistname].keys();
-        QList<DatumPtr> values = plists[plistname].values();
-        QList<QString>::iterator kIter = keys.begin();
-        for (auto &vIter : values)
+        for (const auto [key, value] : propertyList->asKeyValueRange())
         {
-            builder.append(DatumPtr(*kIter));
-            builder.append(vIter);
-            ++kIter;
+            builder.append(DatumPtr(key));
+            builder.append(value);
         }
     }
     return builder.finishedList();
@@ -70,17 +67,17 @@ void PropertyLists::erasePropertyList(const QString &plistname)
     plists.remove(plistname);
 }
 
-bool PropertyLists::isPropertyList(const QString &plistname)
+bool PropertyLists::isPropertyList(const QString &plistname) const
 {
     return plists.contains(plistname);
 }
 
-DatumPtr PropertyLists::allPLists()
+DatumPtr PropertyLists::allPLists() const
 {
     ListBuilder builder;
-    for (auto name : plists.asKeyValueRange())
+    for (const auto name : plists.keys())
     {
-        builder.append(DatumPtr(name.first));
+        builder.append(DatumPtr(name));
     }
     return builder.finishedList();
 }
