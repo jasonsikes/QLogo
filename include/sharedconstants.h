@@ -32,8 +32,6 @@ constexpr double PI = 3.14159265358979323846;
 
 using message_t = quint8;
 
-class Turtle;
-class Procedures;
 class LogoInterface;
 class Compiler;
 
@@ -98,12 +96,10 @@ class Config
   private:
     ~Config()
     {
-        Q_ASSERT(mProcedures == nullptr);
         Q_ASSERT(mLogoInterface == nullptr);
         Q_ASSERT(mCompiler == nullptr);
     }
 
-    Procedures *mProcedures = nullptr;
     LogoInterface *mLogoInterface = nullptr;
     Compiler *mCompiler = nullptr;
 
@@ -153,12 +149,6 @@ class Config
     const float splitScreenSize = 0.8f;
     const float initScreenSize = textScreenSize;
 
-    Procedures *mainProcedures()
-    {
-        Q_ASSERT(mProcedures != nullptr);
-        return mProcedures;
-    }
-
     LogoInterface *mainInterface()
     {
         Q_ASSERT(mLogoInterface != nullptr);
@@ -169,12 +159,6 @@ class Config
     {
         Q_ASSERT(mCompiler != nullptr);
         return mCompiler;
-    }
-
-    void setMainProcedures(Procedures *aProcedures)
-    {
-        Q_ASSERT((mProcedures == nullptr) || (aProcedures == nullptr));
-        mProcedures = aProcedures;
     }
 
     void setMainLogoInterface(LogoInterface *aLogoInterface)

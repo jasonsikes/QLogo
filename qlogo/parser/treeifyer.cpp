@@ -459,7 +459,7 @@ DatumPtr Treeifier::treeifyCommand(bool isVararg)
     // - minParams: minimum required parameters (-1 means no minimum, raw token mode)
     // - defaultParams: default number of parameters to read (-1 means special form, read until EOL)
     // - maxParams: maximum allowed parameters (-1 means unlimited)
-    auto [node, minParams, defaultParams, maxParams] = Config::get().mainProcedures()->astnodeFromCommand(cmdP);
+    auto [node, minParams, defaultParams, maxParams] = Procedures::get().astnodeFromCommand(cmdP);
 
     advanceToken();
 

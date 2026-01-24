@@ -69,12 +69,25 @@ class Procedures
     void setupInstructionList(const DatumPtr &text, Procedure *body);
     void processTags(Procedure *body);
 
-  public:
-    /// @brief Constructor.
+    /// @brief Private constructor for singleton pattern.
     Procedures();
 
+    Procedures(const Procedures &) = delete;
+    Procedures(Procedures &&) = delete;
+    Procedures &operator=(const Procedures &) = delete;
+    Procedures &operator=(Procedures &&) = delete;
+
+  public:
+    /// @brief Get the singleton instance of the Procedures class.
+    /// @return The singleton instance of the Procedures class.
+    static Procedures &get()
+    {
+        static Procedures instance;
+        return instance;
+    }
+
     /// @brief Destructor.
-    ~Procedures();
+    ~Procedures() = default;
 
     /// @brief Return the timestamp of the last procedure creation.
     /// @return The timestamp of the last procedure creation.

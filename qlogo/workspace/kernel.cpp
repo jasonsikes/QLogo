@@ -188,7 +188,7 @@ Datum *Kernel::inputProcedure(ASTNode *node)
         if ((firstChar == '"') || (firstChar == ':') || (firstChar == '(') || (firstChar == ')'))
             throw FCError::doesntLike(to, procnameP);
 
-        if (Config::get().mainProcedures()->isProcedure(procname))
+        if (Procedures::get().isProcedure(procname))
             throw FCError::procDefined(procnameP);
 
         // Assign the procedure's parameter names and default values.
@@ -222,7 +222,7 @@ Datum *Kernel::inputProcedure(ASTNode *node)
         }
         DatumPtr textP = textBuilder.finishedList();
 
-        Config::get().mainProcedures()->defineProcedure(to, procnameP, textP, sourceText);
+        Procedures::get().defineProcedure(to, procnameP, textP, sourceText);
 
         QString message = QObject::tr("%1 defined\n");
         message = message.arg(procnameP.toString());
@@ -327,7 +327,6 @@ Kernel::Kernel()
     writeStream = stdioStream;
     systemWriteStream = stdioStream;
 
-    procedures = new Procedures;
     treeifier = new Treeifier;
     theCompiler = new Compiler();
 
@@ -346,7 +345,6 @@ Kernel::~Kernel()
     closeAll();
     delete theCompiler;
     delete treeifier;
-    delete procedures;
 
     Q_ASSERT(callStack.size() == 1);
     callStack.stack.removeLast();

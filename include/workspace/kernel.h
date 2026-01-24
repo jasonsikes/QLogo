@@ -26,11 +26,9 @@
 #include <QVector>
 
 class Treeifier;
-class Turtle;
 class ProcedureScope;
 class Compiler;
 class TextStream;
-class Procedures;
 
 /// @brief Special variables.
 /// @note These are variable names that are used to store special values.
@@ -40,13 +38,10 @@ enum SpecialNames
 };
 
 /// @brief The Kernel class does most of the work for the QLogo interpreter.
-/// @details The Kernel class is the core of the QLogo interpreter. It is the evaluator of the QLogo
-/// language. It maintains the state of execution of the Logo code. It owns the objects that
-/// support the execution of the code, such as the parser, the procedures, and
-/// the turtle.
+/// @details The Kernel class is the evaluator of the QLogo
+/// language and maintains the state of execution of the QLogo code.
 class Kernel
 {
-    Procedures *procedures;
     Compiler *theCompiler;
     DatumPtr filePrefix;
 
