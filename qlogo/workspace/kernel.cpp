@@ -25,7 +25,6 @@
 #include "interface/textstream.h"
 #include "datum_types.h"
 #include "sharedconstants.h"
-#include "treeifyer.h"
 #include "workspace/procedures.h"
 #include <QApplication> // quit()
 #include <QColor>
@@ -327,8 +326,6 @@ Kernel::Kernel()
     writeStream = stdioStream;
     systemWriteStream = stdioStream;
 
-    treeifier = new Treeifier;
-
     // callStack holds a pointer to the new frame so that the new CallFrame object will be
     // deleted when the Kernel is deleted.
     new CallFrame(callStack);
@@ -342,7 +339,6 @@ Kernel::Kernel()
 Kernel::~Kernel()
 {
     closeAll();
-    delete treeifier;
 
     Q_ASSERT(callStack.size() == 1);
     callStack.stack.removeLast();

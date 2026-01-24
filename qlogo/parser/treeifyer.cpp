@@ -75,25 +75,27 @@ bool isTag(const DatumPtr &node)
     return node.astnodeValue()->genExpression == &Compiler::genTag;
 }
 
-QList<QList<DatumPtr>> Treeifier::astFromList(List *aList)
+const QList<QList<DatumPtr>> &Treeifier::astFromList(List *aList)
 {
-    QList<QList<DatumPtr>> retval;
+    static Treeifier instance;
+    instance.retval.clear();
+
     // Mark the list with current timestamp to track compilation time
     aList->compileTimeStamp = QDateTime::currentMSecsSinceEpoch();
 
     DatumPtr runParsedList = runparse(aList);
 
-    listIter = runParsedList.listValue();
+    instance.listIter = runParsedList.listValue();
     QList<DatumPtr> astFlatList;
 
-    advanceToken();
+    instance.advanceToken();
 
     // Build a flat list of AST nodes by treeifying each root expression
     try
     {
-        while (!currentToken.isNothing())
+        while (!instance.currentToken.isNothing())
         {
-            astFlatList.push_back(treeifyRootExp());
+            astFlatList.push_back(instance.treeifyRootExp());
         }
     }
     catch (FCError *e)
@@ -129,14 +131,14 @@ QList<QList<DatumPtr>> Treeifier::astFromList(List *aList)
             else
             {
                 // Type changed: save current block and start a new one
-                retval.append(currentBlock);
+                instance.retval.append(currentBlock);
                 currentBlock = {node};
             }
         }
     }
     // Append the final block
-    retval.append(currentBlock);
-    return retval;
+    instance.retval.append(currentBlock);
+    return instance.retval;
 }
 
 // The remaining methods treeify into AST nodes.

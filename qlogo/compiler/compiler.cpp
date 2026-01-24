@@ -289,7 +289,7 @@ CompiledFunctionPtr Compiler::functionPtrFromList(List *aList)
 {
     if (aList->compileTimeStamp <= Procedures::get().timeOfLastProcedureCreation())
     {
-        QList<QList<DatumPtr>> parsedList = Kernel::get().treeifier->astFromList(aList);
+        QList<QList<DatumPtr>> parsedList = Treeifier::astFromList(aList);
         return generateFunctionPtrFromASTList(parsedList, static_cast<Datum *>(aList));
     }
 

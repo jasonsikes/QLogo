@@ -25,9 +25,7 @@
 #include <QSet>
 #include <QVector>
 
-class Treeifier;
 class ProcedureScope;
-class Compiler;
 class TextStream;
 
 /// @brief Special variables.
@@ -82,9 +80,6 @@ class Kernel
         static Kernel instance;
         return instance;
     }
-
-    /// @brief Treeifier.
-    Treeifier *treeifier;
 
     /// @brief The current error, if any.
     DatumPtr currentError;

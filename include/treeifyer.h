@@ -13,8 +13,7 @@
 ///
 /// \file
 /// This file contains the declaration of the Treeifier class, which is responsible
-/// for treeifying a QLogo list into Abstract Syntax Trees and for reading user-defined
-/// procedures from a text stream.
+/// for treeifying a QLogo list into an Abstract Syntax Tree.
 ///
 //===----------------------------------------------------------------------===//
 
@@ -25,13 +24,15 @@
 class Procedures;
 class TextStream;
 
-/// @brief The Treeifier class is responsible for treeifying a QLogo list into Abstract
-/// Syntax Trees and for reading user-defined procedures from a text stream.
+/// @brief The Treeifier class contains a singleton class with a single public method,
+/// astFromList(), which is used to treeify a QLogo list into an Abstract Syntax Tree.
 class Treeifier
 {
     DatumPtr currentToken;
 
     static QHash<List *, QList<QList<DatumPtr>>> astListTable;
+
+    QList<QList<DatumPtr>> retval;
 
     void advanceToken();
     List *listIter;
@@ -44,17 +45,27 @@ class Treeifier
     DatumPtr treeifyTermexp();
     DatumPtr treeifyCommand(bool isVararg);
 
+    /// @brief Private constructor for singleton pattern.
+    Treeifier() = default;
+
+    ~Treeifier() = default;
+    Treeifier(const Treeifier &) = delete;
+    Treeifier(Treeifier &&) = delete;
+    Treeifier &operator=(const Treeifier &) = delete;
+    Treeifier &operator=(Treeifier &&) = delete;
+
   public:
+
     /// @brief Treeify a QLogo list into a list of Abstract Syntax Trees.
     /// @param aList The list to treeify.
     /// @returns A list of AST nodes.
     /// @note A QLogo list may hold multiple trees. For example,
     /// `[HOME FORWARD 100]` is a list containing two trees, one for the `HOME`
     /// command and one for the `FORWARD` command.
-    QList<QList<DatumPtr>> astFromList(List *aList);
+    static const QList<QList<DatumPtr>> &astFromList(List *aList);
 };
 
-/// @brief Check if a node is a tag.
+/// @brief Convenience function to check if a node is a tag.
 /// @param node The node to check.
 /// @return True if the node is a tag, false otherwise.
 bool isTag(const DatumPtr &node);
