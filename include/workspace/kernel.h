@@ -42,7 +42,6 @@ enum SpecialNames
 /// language and maintains the state of execution of the QLogo code.
 class Kernel
 {
-    Compiler *theCompiler;
     DatumPtr filePrefix;
 
     PropertyLists plists;

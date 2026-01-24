@@ -247,7 +247,7 @@ Datum *CallFrame::applyGoto(FCGoto *node)
         List *list = runningSourceList.listValue()->head.listValue();
         try
         {
-            Config::get().mainCompiler()->functionPtrFromList(list);
+            Compiler::get().functionPtrFromList(list);
         }
         catch (FCError *e)
         {
@@ -362,7 +362,7 @@ Datum *Evaluator::exec(int32_t jumpLocation)
     }
     try
     {
-        fn = Config::get().mainCompiler()->functionPtrFromList(list.listValue());
+        fn = Compiler::get().functionPtrFromList(list.listValue());
     }
     catch (FCError *e)
     {

@@ -97,11 +97,9 @@ class Config
     ~Config()
     {
         Q_ASSERT(mLogoInterface == nullptr);
-        Q_ASSERT(mCompiler == nullptr);
     }
 
     LogoInterface *mLogoInterface = nullptr;
-    Compiler *mCompiler = nullptr;
 
   public:
     Config() = default;
@@ -155,22 +153,10 @@ class Config
         return mLogoInterface;
     }
 
-    Compiler *mainCompiler()
-    {
-        Q_ASSERT(mCompiler != nullptr);
-        return mCompiler;
-    }
-
     void setMainLogoInterface(LogoInterface *aLogoInterface)
     {
         Q_ASSERT((mLogoInterface == nullptr) || (aLogoInterface == nullptr));
         mLogoInterface = aLogoInterface;
-    }
-
-    void setMainCompiler(Compiler *aCompiler)
-    {
-        Q_ASSERT((mCompiler == nullptr) || (aCompiler == nullptr));
-        mCompiler = aCompiler;
     }
 
     // Set to true iff qlogo is communicating with Psychi.

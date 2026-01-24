@@ -328,7 +328,6 @@ Kernel::Kernel()
     systemWriteStream = stdioStream;
 
     treeifier = new Treeifier;
-    theCompiler = new Compiler();
 
     // callStack holds a pointer to the new frame so that the new CallFrame object will be
     // deleted when the Kernel is deleted.
@@ -343,7 +342,6 @@ Kernel::Kernel()
 Kernel::~Kernel()
 {
     closeAll();
-    delete theCompiler;
     delete treeifier;
 
     Q_ASSERT(callStack.size() == 1);

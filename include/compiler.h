@@ -217,8 +217,24 @@ class Compiler
     // Generate the TagId-to-Block Table of Contents.
     llvm::BasicBlock *generateTOC(QList<llvm::BasicBlock *> blocks, llvm::Function *theFunction);
 
-  public:
+    /// @brief Private constructor for singleton pattern.
     Compiler();
+
+    Compiler(const Compiler &) = delete;
+    Compiler(Compiler &&) = delete;
+    Compiler &operator=(const Compiler &) = delete;
+    Compiler &operator=(Compiler &&) = delete;
+
+  public:
+    /// @brief Get the singleton instance of the Compiler class.
+    /// @return The singleton instance of the Compiler class.
+    static Compiler &get()
+    {
+        static Compiler instance;
+        return instance;
+    }
+
+    /// @brief Destructor.
     ~Compiler();
 
     /// Get the compiled function pointer for a list.

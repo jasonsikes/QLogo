@@ -69,7 +69,12 @@ Scaffold::Scaffold(void *parent)
 
 CompiledText::~CompiledText()
 {
-    mainCompilerContext->exitOnErr(rt->remove());
+    // Only remove resource tracker if mainCompilerContext is still valid
+    // (it may have been destroyed if CompiledText outlives the Compiler singleton)
+    if (mainCompilerContext != nullptr && rt)
+    {
+        mainCompilerContext->exitOnErr(rt->remove());
+    }
 }
 
 Compiler::Compiler()
@@ -80,12 +85,16 @@ Compiler::Compiler()
     InitializeNativeTargetAsmParser();
 
     mainCompilerContext = CompilerContext::Create();
-    Config::get().setMainCompiler(this);
 }
 
 Compiler::~Compiler()
 {
-    Config::get().setMainCompiler(nullptr);
+    // Clear compiledTextTable first to ensure all CompiledText objects are destroyed
+    // while mainCompilerContext is still valid
+    compiledTextTable.clear();
+    
+    delete mainCompilerContext;
+    mainCompilerContext = nullptr;
 }
 
 QString Compiler::getTagNameFromNode(const DatumPtr &node) const
