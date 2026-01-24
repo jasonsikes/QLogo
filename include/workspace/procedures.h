@@ -27,16 +27,19 @@
 /// parameter counts, and return data type.
 struct Cmd_t
 {
-    /// @brief The compiler method to call for this command.
+    /// @brief The compiler method to generate code for this command.
     Generator method;
 
     /// @brief The minimum number of parameters this command expects.
+    /// @note -1 means no minimum number of tokens, all tokens are parsed without expression parsing, "raw" tokens.
     int countOfMinParams;
 
     /// @brief The number of default parameters this command expects.
+    /// @note -1 means special form, read until EOL.
     int countOfDefaultParams;
 
     /// @brief The maximum number of parameters this command expects.
+    /// @note -1 means unlimited.
     int countOfMaxParams;
 
     /// @brief The data type(s) that this procedure is expected to return.
@@ -55,6 +58,16 @@ class Procedures
 
     DatumPtr procedureForName(const QString &aName) const;
     bool isNamedProcedure(const QString &aName) const;
+
+    // Helper methods for createProcedure
+    Procedure* initializeProcedureBody(const DatumPtr &cmd, const QList<DatumPtr> &sourceText);
+    void parseProcedureParameters(const DatumPtr &cmd, const DatumPtr &text, Procedure *body);
+    void processWordParameter(const DatumPtr &cmd, const DatumPtr &currentParam, Procedure *body,
+                             bool &isOptionalDefined, bool &isRestDefined, bool &isDefaultDefined);
+    void processListParameter(const DatumPtr &cmd, const DatumPtr &currentParam, Procedure *body,
+                              bool &isOptionalDefined, bool &isRestDefined, bool &isDefaultDefined);
+    void setupInstructionList(const DatumPtr &text, Procedure *body);
+    void processTags(Procedure *body);
 
   public:
     /// @brief Constructor.
@@ -105,18 +118,18 @@ class Procedures
     /// @param cmdP The name of the procedure to search for.
     /// @return A tuple containing a pointer to the created AST node, and three integers representing the arity of the procedure.
     ///         If the procedure is not found, returns a tuple with nothing() as the first element.
-    std::tuple<DatumPtr, int, int, int> astnodeFromProcedure(const DatumPtr &cmdP);
+    std::tuple<DatumPtr, int, int, int> astnodeFromProcedure(const DatumPtr &cmdP) const;
 
     /// @brief Get an AST node from a primitive command.
     /// @param cmdP The name of the command to search for.
     /// @return A tuple containing a pointer to the created AST node, and three integers representing the arity of the command.
     ///         If the command is not found, returns a tuple with nothing() as the first element.
-    std::tuple<DatumPtr, int, int, int> astnodeFromPrimitive(const DatumPtr &cmdP);
+    std::tuple<DatumPtr, int, int, int> astnodeFromPrimitive(const DatumPtr &cmdP) const;
 
     /// @brief Get an AST node from a command, either a primitive or user-defined procedure.
     /// @param command The name of the command to search for.
     /// @return A tuple containing a pointer to the created AST node, and three integers representing the arity of the command.
-    std::tuple<DatumPtr, int, int, int> astnodeFromCommand(const DatumPtr &command);
+    std::tuple<DatumPtr, int, int, int> astnodeFromCommand(const DatumPtr &command) const;
 
     /// @brief Get the text of a procedure.
     /// @param procnameP The name of the procedure to get the text of.
@@ -209,7 +222,7 @@ class Procedure : public Datum
     int countOfMinParams = 0;
     /// @brief The number of default parameters this procedure expects.
     int countOfDefaultParams = 0;
-    /// @brief The maximum number of parameters this procedure accepts  .
+    /// @brief The maximum number of parameters this procedure accepts.
     int countOfMaxParams = -1;
 
     /// @brief A hash table to map tag names to the lines in the source text.
@@ -230,7 +243,7 @@ class Procedure : public Datum
 
     /// @brief The instruction list of the procedure.
     /// @note This is a list of lists, with each sublist representing a line of instruction.
-    /// @TODO This should be a deep copy of the source lists, to prevent direct modification.
+    /// TODO This should be a deep copy of the source lists, to prevent direct modification.
     DatumPtr instructionList;
 };
 
