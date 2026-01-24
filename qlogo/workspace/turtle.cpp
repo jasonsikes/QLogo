@@ -24,13 +24,7 @@
 
 Turtle::Turtle() : turtleTransform(QTransform())
 {
-    Config::get().setMainTurtle(this);
     penColor = Config::get().initialCanvasForegroundColor;
-}
-
-Turtle::~Turtle()
-{
-    Config::get().setMainTurtle(nullptr);
 }
 
 void Turtle::setPenIsDown(bool aIsPenDown)

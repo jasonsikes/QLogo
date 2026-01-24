@@ -50,8 +50,6 @@ class Kernel
     Compiler *theCompiler;
     DatumPtr filePrefix;
 
-    Turtle *turtle;
-
     PropertyLists plists;
 
     QHash<QString, TextStream *> fileStreams;

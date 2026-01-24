@@ -98,13 +98,11 @@ class Config
   private:
     ~Config()
     {
-        Q_ASSERT(mTurtle == nullptr);
         Q_ASSERT(mProcedures == nullptr);
         Q_ASSERT(mLogoInterface == nullptr);
         Q_ASSERT(mCompiler == nullptr);
     }
 
-    Turtle *mTurtle = nullptr;
     Procedures *mProcedures = nullptr;
     LogoInterface *mLogoInterface = nullptr;
     Compiler *mCompiler = nullptr;
@@ -155,12 +153,6 @@ class Config
     const float splitScreenSize = 0.8f;
     const float initScreenSize = textScreenSize;
 
-    Turtle *mainTurtle()
-    {
-        Q_ASSERT(mTurtle != nullptr);
-        return mTurtle;
-    }
-
     Procedures *mainProcedures()
     {
         Q_ASSERT(mProcedures != nullptr);
@@ -177,12 +169,6 @@ class Config
     {
         Q_ASSERT(mCompiler != nullptr);
         return mCompiler;
-    }
-
-    void setMainTurtle(Turtle *aTurtle)
-    {
-        Q_ASSERT((mTurtle == nullptr) || (aTurtle == nullptr));
-        mTurtle = aTurtle;
     }
 
     void setMainProcedures(Procedures *aProcedures)

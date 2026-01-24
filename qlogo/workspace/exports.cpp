@@ -1459,27 +1459,27 @@ EXPORTC addr_t runparseDatum(addr_t eAddr, addr_t wordorlistAddr)
 
 EXPORTC void moveTurtleForward(double distance)
 {
-    Config::get().mainTurtle()->forward(distance);
+    Turtle::get().forward(distance);
 }
 
 EXPORTC void moveTurtleRotate(double angle)
 {
-    Config::get().mainTurtle()->rotate(angle);
+    Turtle::get().rotate(angle);
 }
 
 EXPORTC void setTurtleXY(double x, double y)
 {
-    Config::get().mainTurtle()->setxy(x, y);
+    Turtle::get().setxy(x, y);
 }
 
 EXPORTC void setTurtleX(double x)
 {
-    Config::get().mainTurtle()->setx(x);
+    Turtle::get().setx(x);
 }
 
 EXPORTC void setTurtleY(double y)
 {
-    Config::get().mainTurtle()->sety(y);
+    Turtle::get().sety(y);
 }
 
 EXPORTC void setTurtlePos(addr_t posAddr)
@@ -1487,23 +1487,23 @@ EXPORTC void setTurtlePos(addr_t posAddr)
     const auto *pos = reinterpret_cast<const double *>(posAddr);
     double x = pos[0];
     double y = pos[1];
-    Config::get().mainTurtle()->setxy(x, y);
+    Turtle::get().setxy(x, y);
 }
 
 EXPORTC void setTurtleHeading(double newHeading)
 {
-    double oldHeading = Config::get().mainTurtle()->getHeading();
+    double oldHeading = Turtle::get().getHeading();
 
     // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
     newHeading = 360 - newHeading;
 
     double adjustment = oldHeading - newHeading;
-    Config::get().mainTurtle()->rotate(adjustment);
+    Turtle::get().rotate(adjustment);
 }
 
 EXPORTC void setTurtleMoveToHome(void)
 {
-    Config::get().mainTurtle()->moveToHome();
+    Turtle::get().moveToHome();
 }
 
 EXPORTC void drawTurtleArc(double angle, double radius)
@@ -1515,13 +1515,13 @@ EXPORTC void drawTurtleArc(double angle, double radius)
         angle = 360;
 
     if ((angle != 0) && (radius != 0))
-        Config::get().mainTurtle()->drawArc(angle, radius);
+        Turtle::get().drawArc(angle, radius);
 }
 
 EXPORTC addr_t getTurtlePos(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto [x, y] = Config::get().mainTurtle()->getxy();
+    auto [x, y] = Turtle::get().getxy();
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(x));
     retvalBuilder.append(DatumPtr(y));
@@ -1532,7 +1532,7 @@ EXPORTC addr_t getTurtlePos(addr_t eAddr)
 
 EXPORTC double getTurtleHeading(void)
 {
-    double retval = Config::get().mainTurtle()->getHeading();
+    double retval = Turtle::get().getHeading();
 
     // Heading should only show two decimal places.
     retval = round(retval * 100.0) / 100.0;
@@ -1546,7 +1546,7 @@ EXPORTC double getTurtleHeading(void)
 
 EXPORTC double getTurtleTowards(addr_t posAddr)
 {
-    auto [x, y] = Config::get().mainTurtle()->getxy();
+    auto [x, y] = Turtle::get().getxy();
     const auto *pos = reinterpret_cast<const double *>(posAddr);
     double vx = pos[0];
     double vy = pos[1];
@@ -1576,7 +1576,7 @@ EXPORTC addr_t getScrunch(addr_t eAddr)
 
 EXPORTC void setTurtleVisible(int visible)
 {
-    Config::get().mainTurtle()->setIsTurtleVisible(visible);
+    Turtle::get().setIsTurtleVisible(visible);
 }
 
 EXPORTC void clean(void)
@@ -1587,10 +1587,10 @@ EXPORTC void clean(void)
 EXPORTC void setTurtleMode(int mode)
 {
     auto newMode = static_cast<TurtleModeEnum>(mode);
-    if (Config::get().mainTurtle()->getMode() != newMode)
+    if (Turtle::get().getMode() != newMode)
     {
         bool isCanvasBounded = (newMode == turtleWindow);
-        Config::get().mainTurtle()->setMode(newMode);
+        Turtle::get().setMode(newMode);
         Config::get().mainInterface()->setIsCanvasBounded(isCanvasBounded);
     }
 }
@@ -1620,13 +1620,13 @@ EXPORTC int32_t beginFilledWithColor(addr_t colorAddr)
     QColor color;
     if (!Kernel::get().colorFromDatumPtr(color, DatumPtr(d)))
         return 0;
-    Config::get().mainTurtle()->beginFillWithColor(color);
+    Turtle::get().beginFillWithColor(color);
     return 1;
 }
 
 EXPORTC void endFilled(void)
 {
-    Config::get().mainTurtle()->endFill();
+    Turtle::get().endFill();
 }
 
 EXPORTC void addLabel(addr_t textAddr)
@@ -1647,7 +1647,7 @@ EXPORTC void setScreenMode(int mode)
 
 EXPORTC bool isTurtleVisible(void)
 {
-    return Config::get().mainTurtle()->isTurtleVisible();
+    return Turtle::get().isTurtleVisible();
 }
 
 EXPORTC addr_t getScreenMode(addr_t eAddr)
@@ -1676,7 +1676,7 @@ EXPORTC addr_t getScreenMode(addr_t eAddr)
 EXPORTC addr_t getTurtleMode(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    TurtleModeEnum mode = Config::get().mainTurtle()->getMode();
+    TurtleModeEnum mode = Turtle::get().getMode();
     QString modeStr;
     switch (mode)
     {
@@ -1709,12 +1709,12 @@ EXPORTC addr_t getLabelSize(addr_t eAddr)
 
 EXPORTC void setPenIsDown(bool isDown)
 {
-    Config::get().mainTurtle()->setPenIsDown(isDown);
+    Turtle::get().setPenIsDown(isDown);
 }
 
 EXPORTC void setPenMode(int32_t mode)
 {
-    Config::get().mainTurtle()->setPenMode(static_cast<PenModeEnum>(mode));
+    Turtle::get().setPenMode(static_cast<PenModeEnum>(mode));
 }
 
 EXPORTC bool setPenColor(addr_t colorAddr)
@@ -1723,7 +1723,7 @@ EXPORTC bool setPenColor(addr_t colorAddr)
     QColor color;
     if (!Kernel::get().colorFromDatumPtr(color, DatumPtr(d)))
         return false;
-    Config::get().mainTurtle()->setPenColor(color);
+    Turtle::get().setPenColor(color);
     return true;
 }
 
@@ -1763,7 +1763,7 @@ EXPORTC bool setPalette(addr_t colorIndexAddr, addr_t colorAddr)
 
 EXPORTC void setPenSize(double size)
 {
-    Config::get().mainTurtle()->setPenSize(size);
+    Turtle::get().setPenSize(size);
 }
 
 EXPORTC bool setBackground(addr_t colorAddr)
@@ -1778,13 +1778,13 @@ EXPORTC bool setBackground(addr_t colorAddr)
 
 EXPORTC bool isPenDown(void)
 {
-    return Config::get().mainTurtle()->isPenDown();
+    return Turtle::get().isPenDown();
 }
 
 EXPORTC addr_t getPenMode(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    PenModeEnum pm = Config::get().mainTurtle()->getPenMode();
+    PenModeEnum pm = Turtle::get().getPenMode();
     QString retval;
     switch (pm)
     {
@@ -1806,7 +1806,7 @@ EXPORTC addr_t getPenMode(addr_t eAddr)
 EXPORTC addr_t getPenColor(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    const QColor &color = Config::get().mainTurtle()->getPenColor();
+    const QColor &color = Turtle::get().getPenColor();
     List *retval = listFromColor(color);
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
@@ -1824,7 +1824,7 @@ EXPORTC addr_t getPaletteColor(addr_t eAddr, addr_t colorIndexAddr)
 
 EXPORTC double getPenSize(void)
 {
-    return Config::get().mainTurtle()->getPenSize();
+    return Turtle::get().getPenSize();
 }
 
 EXPORTC addr_t getBackground(addr_t eAddr)

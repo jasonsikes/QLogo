@@ -327,7 +327,6 @@ Kernel::Kernel()
     writeStream = stdioStream;
     systemWriteStream = stdioStream;
 
-    turtle = new Turtle;
     procedures = new Procedures;
     treeifier = new Treeifier;
     theCompiler = new Compiler();
@@ -348,7 +347,6 @@ Kernel::~Kernel()
     delete theCompiler;
     delete treeifier;
     delete procedures;
-    delete turtle;
 
     Q_ASSERT(callStack.size() == 1);
     callStack.stack.removeLast();

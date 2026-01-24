@@ -62,12 +62,25 @@ class Turtle
     void moveTurtleFence(const QTransform &newTransform);
     void moveTurtleWindow(const QTransform &newTransform);
 
-  public:
-    /// @brief Constructor for the Turtle class.
+    /// @brief Private constructor for singleton pattern.
     Turtle();
 
+    Turtle(const Turtle &) = delete;
+    Turtle(Turtle &&) = delete;
+    Turtle &operator=(const Turtle &) = delete;
+    Turtle &operator=(Turtle &&) = delete;
+
+  public:
+    /// @brief Get the singleton instance of the Turtle class.
+    /// @return The singleton instance of the Turtle class.
+    static Turtle &get()
+    {
+        static Turtle instance;
+        return instance;
+    }
+
     /// @brief Destructor for the Turtle class.
-    ~Turtle();
+    ~Turtle() = default;
 
     /// @brief Get the current turtle position and orientation.
     /// @return The current turtle position and orientation.
