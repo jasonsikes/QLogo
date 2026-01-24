@@ -75,6 +75,7 @@ bool isTag(const DatumPtr &node)
     return node.astnodeValue()->genExpression == &Compiler::genTag;
 }
 
+// Note that this static method maintains the singleton instance of the Treeifier class
 const QList<QList<DatumPtr>> &Treeifier::astFromList(List *aList)
 {
     static Treeifier instance;
@@ -324,6 +325,7 @@ DatumPtr Treeifier::treeifyMinusexp()
             throw FCError::notEnoughInputs(op);
 
         node.astnodeValue()->genExpression = &Compiler::genDifference;
+        node.astnodeValue()->returnType = RequestReturnReal;
         node.astnodeValue()->addChild(left);
         node.astnodeValue()->addChild(right);
         left = node;
@@ -367,6 +369,7 @@ DatumPtr Treeifier::treeifyTermexp()
         return node;
     }
 
+    // After Nothing, List, and Array, the token must be a Word.
     Q_ASSERT(currentToken.isa() == Datum::typeWord);
 
     // See if it's an open paren
@@ -527,7 +530,7 @@ DatumPtr Treeifier::treeifyCommand(bool isVararg)
         {
             // Check for premature end of input
             if (currentToken.isNothing())
-                throw FCError::notEnoughInputs(cmdP);
+                throw FCError::notEnoughInputs(node.astnodeValue()->nodeName);
             // Always parse as expression for fixed-parameter functions
             DatumPtr child = treeifyExp();
             node.astnodeValue()->addChild(child);

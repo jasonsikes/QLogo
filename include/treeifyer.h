@@ -30,8 +30,6 @@ class Treeifier
 {
     DatumPtr currentToken;
 
-    static QHash<List *, QList<QList<DatumPtr>>> astListTable;
-
     QList<QList<DatumPtr>> retval;
 
     void advanceToken();
