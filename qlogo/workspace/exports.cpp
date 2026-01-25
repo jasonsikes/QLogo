@@ -30,6 +30,7 @@
 #include <QFile>
 #include <QObject>
 #include <QRandomGenerator>
+#include <QStringBuilder>
 
 #include <algorithm>
 
@@ -52,7 +53,7 @@ bool isDatumInArray(VisitedSet &visited, Datum *value, Array *array, Qt::CaseSen
             return true;
         if (itemPtr->isArray() || itemPtr->isList())
         {
-            if (visited.contains(itemPtr))
+            if ( ! visited.contains(itemPtr))
             {
                 visited.add(itemPtr);
                 if (isDatumInContainer(visited, itemPtr, value, cs))
@@ -111,24 +112,22 @@ bool isDatumInContainer(VisitedSet &visited, Datum *value, Datum *container, Qt:
         Array *a = container->arrayValue();
         return isDatumInArray(visited, value, a, cs);
     }
-    else if (container->isList())
-    {
-        List *l = container->listValue();
-        return isDatumInList(visited, value, l, cs);
-    }
-    else
-    {
-        Q_ASSERT(false);
-    }
-    return false;
+
+    // If it's not an Array then it must be a List.
+    List *l = container->listValue();
+    return isDatumInList(visited, value, l, cs);
 }
 
+/// @brief Convert a QColor to a list of RGB values on a scale of 0 to 100.
+/// @param c the QColor to convert.
+/// @return a list of RGB values on a scale of 0 to 100.
 List *listFromColor(const QColor &c)
 {
     ListBuilder retvalBuilder;
-    retvalBuilder.append(DatumPtr(round(static_cast<double>(c.redF() * 100.0))));
-    retvalBuilder.append(DatumPtr(round(static_cast<double>(c.greenF() * 100.0))));
-    retvalBuilder.append(DatumPtr(round(static_cast<double>(c.blueF() * 100.0))));
+    // Each of the RGB values are on a scale of 0 to 100.
+    retvalBuilder.append(DatumPtr(c.redF() * 100.0));
+    retvalBuilder.append(DatumPtr(c.greenF() * 100.0));
+    retvalBuilder.append(DatumPtr(c.blueF() * 100.0));
     return retvalBuilder.finishedList().listValue();
 }
 
@@ -218,7 +217,7 @@ EXPORTC addr_t getDatumForVarname(addr_t wordAddr)
     return reinterpret_cast<addr_t>(val);
 }
 
-/// Write a Datum object to the standard ouput device.
+/// Write a Datum object to the standard output device.
 /// @param datumAddr a pointer to a Datum object to print.
 /// @param useShow set to true to generate output for SHOW, false for PRINT
 EXPORTC addr_t stdWriteDatum(addr_t datumAddr, bool useShow)
@@ -230,7 +229,7 @@ EXPORTC addr_t stdWriteDatum(addr_t datumAddr, bool useShow)
     return nullptr;
 }
 
-/// Write an array of Datum objects to the standard ouput device.
+/// Write an array of Datum objects to the standard output device.
 /// @param datumAddr a pointer to an array of pointers to Datum objects to print.
 /// @param count the number of Datum objects in the array
 /// @param useShow set to true to generate output for SHOW, false for PRINT
@@ -238,18 +237,17 @@ EXPORTC addr_t stdWriteDatum(addr_t datumAddr, bool useShow)
 EXPORTC addr_t stdWriteDatumAry(addr_t datumAddr, uint32_t count, bool useShow, bool addWhitespace)
 {
     Datum::ToStringFlags writeFlags = useShow ? Datum::ToStringFlags_Show : Datum::ToStringFlags_None;
-    int countOfWords = (int)count;
     auto **datumAry = reinterpret_cast<Datum **>(datumAddr);
-    QString output = "";
-    for (int i = 0; i < countOfWords; ++i)
+    QString output;
+    for (uint32_t i = 0; i < count; ++i)
     {
-        Datum *d = *(datumAry + i);
+        Datum *d = datumAry[i];
         if ((i != 0) && addWhitespace)
-            output += " ";
-        output += d->toString(writeFlags);
+            output = output % " ";
+        output = output % d->toString(writeFlags);
     }
     if (addWhitespace)
-        output += "\n";
+        output = output % "\n";
     Kernel::get().stdPrint(output);
     return nullptr;
 }
@@ -322,7 +320,7 @@ EXPORTC addr_t runProcedure(addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAdd
 }
 
 /// Create and return Error: "SYSTEM"
-/// @param aE a pointer to the Evaluator object context.
+/// @param eAddr a pointer to the Evaluator object context.
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorSystem(addr_t eAddr)
 {
@@ -333,7 +331,7 @@ EXPORTC addr_t getErrorSystem(addr_t eAddr)
 }
 
 /// Create and return Error: "X didn't like Y as input"
-/// @param aE a pointer to the Evaluator object context.
+/// @param eAddr a pointer to the Evaluator object context.
 /// @param whoAddr a pointer to the Datum object which rejected the input.
 /// @param whatAddr a pointer to the Datum object that was rejected.
 /// @return a pointer to the Error object that was generated.
@@ -348,7 +346,7 @@ EXPORTC addr_t getErrorNoLike(addr_t eAddr, addr_t whoAddr, addr_t whatAddr)
 }
 
 /// Create and return Error: "You don't say what to do with X"
-/// @param aE a pointer to the Evaluator object context.
+/// @param eAddr a pointer to the Evaluator object context.
 /// @param whatAddr a pointer to the Datum object that was orphaned.
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorNoSay(addr_t eAddr, addr_t whatAddr)
@@ -361,7 +359,7 @@ EXPORTC addr_t getErrorNoSay(addr_t eAddr, addr_t whatAddr)
 }
 
 /// Create and return Error: "X without TEST"
-/// @param aE a pointer to the Evaluator object context.
+/// @param eAddr a pointer to the Evaluator object context.
 /// @param xAddr a pointer to the Datum object that was called without a TEST.
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorNoTest(addr_t eAddr, addr_t whoAddr)
@@ -374,8 +372,8 @@ EXPORTC addr_t getErrorNoTest(addr_t eAddr, addr_t whoAddr)
 }
 
 /// Create and return Error: "X didn't output to Y"
-/// @param aE a pointer to the Evaluator object context.
-/// @param xAddr a pointer to the Datum object which didn't ouput.
+/// @param eAddr a pointer to the Evaluator object context.
+/// @param xAddr a pointer to the Datum object which didn't output.
 /// @param yAddr a pointer to the Datum object that expected input.
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorNoOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr)
@@ -395,7 +393,7 @@ EXPORTC addr_t getErrorNoOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr)
 }
 
 /// Create and return Error: "not enough inputs to X"
-/// @param aE a pointer to the Evaluator object context.
+/// @param eAddr a pointer to the Evaluator object context.
 /// @param xAddr a pointer to the Datum object that is deprived of inputs.
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorNotEnoughInputs(addr_t eAddr, addr_t xAddr)
@@ -408,7 +406,7 @@ EXPORTC addr_t getErrorNotEnoughInputs(addr_t eAddr, addr_t xAddr)
 }
 
 /// Create and return Error: "X has no value"
-/// @param aE a pointer to the Evaluator object context.
+/// @param eAddr a pointer to the Evaluator object context.
 /// @param whatAddr a pointer to the Word that was looked up.
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorNoValue(addr_t eAddr, addr_t whatAddr)
@@ -571,7 +569,7 @@ EXPORTC addr_t setRandom()
 /// @param width the minimum number of characters to use. Spaces may be added.
 /// @param precision the number of digits to add after the decimal point.
 /// @return A Word(string) with formatting applied.
-EXPORTC addr_t getFormForNumber(addr_t eAddr, double num, uint32_t width, int32_t precision)
+EXPORTC addr_t getFormForNumber(addr_t eAddr, double num, int32_t width, int32_t precision)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString retval = QString("%1").arg(num, width, 'f', precision);
@@ -598,8 +596,7 @@ EXPORTC addr_t beginCatch(void)
     if (erractValue->isa != Datum::typeNothing)
     {
         erractValue->retainCount++;
-        Kernel::get().callStack.setDatumForName(nothing(),
-                                                              erractWord->toString(Datum::ToStringFlags_Key));
+        Kernel::get().callStack.setDatumForName(nothing(), erractWord->toString(Datum::ToStringFlags_Key));
     }
     return reinterpret_cast<addr_t>(erractValue);
 }
@@ -616,8 +613,7 @@ EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t
     if (erractValue->isa != Datum::typeNothing)
     {
         DatumPtr erractValuePtr = DatumPtr(erractValue);
-        Kernel::get().callStack.setDatumForName(erractValuePtr,
-                                                              erractWord->toString(Datum::ToStringFlags_Key));
+        Kernel::get().callStack.setDatumForName(erractValuePtr, erractWord->toString(Datum::ToStringFlags_Key));
         erractValue->retainCount--;
     }
 
@@ -627,8 +623,8 @@ EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t
         QString tagStr = tag->toString(Datum::ToStringFlags_Key);
 
         if ((tagStr == QObject::tr("ERROR")) &&
-            ((err->code == ErrCode::ERR_NO_CATCH) &&
-                 (err->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("ERROR")) ||
+            (((err->code == ErrCode::ERR_NO_CATCH) &&
+                 (err->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("ERROR"))) ||
              (err->code != ErrCode::ERR_NO_CATCH)))
         {
             e->watch(err);
@@ -773,11 +769,11 @@ EXPORTC addr_t concatWord(addr_t eAddr, addr_t aryAddr, uint32_t count)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto **wordAry = reinterpret_cast<Word **>(aryAddr);
-    QString retval = "";
+    QString retval;
     for (uint32_t i = 0; i < count; ++i)
     {
         Word *w = *(wordAry + i);
-        retval += w->toString(Datum::ToStringFlags_Raw);
+        retval = retval % w->toString(Datum::ToStringFlags_Raw);
     }
     return reinterpret_cast<addr_t>(e->watch(new Word(retval)));
 }
@@ -793,15 +789,9 @@ EXPORTC bool isDatumEmpty(addr_t dAddr)
     {
         return d->listValue()->isEmpty();
     }
-    else if (d->isArray())
-    {
-        return false;
-    }
-    else
-    {
-        Q_ASSERT(false);
-    }
-    return false;
+
+    // If it's not a Word or a List then it must be an Array.
+    return d->arrayValue()->array.isEmpty();
 }
 
 EXPORTC addr_t createList(addr_t eAddr, addr_t aryAddr, uint32_t count)
@@ -931,14 +921,11 @@ EXPORTC addr_t firstOfDatum(addr_t eAddr, addr_t thingAddr)
         List *l = thing->listValue();
         retval = l->head.datumValue();
     }
-    else if (thing->isArray())
-    {
-        Array *a = thing->arrayValue();
-        retval = new Word(QString::number(a->origin));
-    }
     else
     {
-        Q_ASSERT(false);
+        // If it's not a Word or a List then it must be an Array.
+        Array *a = thing->arrayValue();
+        retval = new Word(QString::number(a->origin));
     }
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
@@ -965,14 +952,11 @@ EXPORTC addr_t lastOfDatum(addr_t eAddr, addr_t thingAddr)
         }
         retval = lastElement.datumValue();
     }
-    else if (thing->isArray())
-    {
-        Array *a = thing->arrayValue();
-        retval = new Word(a->origin);
-    }
     else
     {
-        Q_ASSERT(false);
+        // If it's not a Word or a List then it must be an Array.
+        Array *a = thing->arrayValue();
+        retval = new Word(a->origin);
     }
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
@@ -989,14 +973,11 @@ EXPORTC addr_t butFirstOfDatum(addr_t eAddr, addr_t thingAddr)
         QString rawValue = w->toString(Datum::ToStringFlags_Raw);
         retval = new Word(rawValue.sliced(1, rawValue.size() - 1));
     }
-    else if (thing->isList())
-    {
-        List *l = thing->listValue();
-        retval = l->tail.datumValue();
-    }
     else
     {
-        Q_ASSERT(false);
+        // If it's not a Word then it must be a List.
+        List *l = thing->listValue();
+        retval = l->tail.datumValue();
     }
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
@@ -1015,29 +996,22 @@ EXPORTC addr_t butLastOfDatum(addr_t eAddr, addr_t thingAddr)
         e->watch(retval);
         return reinterpret_cast<addr_t>(retval);
     }
-    else if (thing->isList())
+
+    // If it's not a Word then it must be a List.
+    List *l = thing->listValue();
+    ListIterator iter = l->newIterator();
+    ListBuilder builder;
+    while (iter.elementExists())
     {
-        List *l = thing->listValue();
-        ListIterator iter = l->newIterator();
-        ListBuilder builder;
-        while (iter.elementExists())
+        DatumPtr element = iter.element();
+        if (iter.elementExists())
         {
-            DatumPtr element = iter.element();
-            if (iter.elementExists())
-            {
-                builder.append(element);
-            }
+            builder.append(element);
         }
-        DatumPtr retval = builder.finishedList();
-        e->watch(retval);
-        return reinterpret_cast<addr_t>(retval.datumValue());
     }
-    else
-    {
-        Q_ASSERT(false);
-    }
-    Q_ASSERT(false);
-    return nullptr;
+    DatumPtr retval = builder.finishedList();
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
 EXPORTC bool isDatumIndexValid(addr_t thingAddr, double dIndex, addr_t listItemPtrAddr)
@@ -1069,18 +1043,12 @@ EXPORTC bool isDatumIndexValid(addr_t thingAddr, double dIndex, addr_t listItemP
         }
         return false;
     }
-    else if (thing->isArray())
-    {
-        Array *a = thing->arrayValue();
-        auto size = static_cast<int32_t>(a->array.size());
-        index = index - a->origin;
-        return (index >= 0) && (index < size);
-    }
-    else
-    {
-        Q_ASSERT(false);
-    }
-    return false;
+
+    // If it's not a Word or a List then it must be an Array.
+    Array *a = thing->arrayValue();
+    auto size = static_cast<int32_t>(a->array.size());
+    index = index - a->origin;
+    return (index >= 0) && (index < size);
 }
 
 EXPORTC addr_t itemOfDatum(addr_t eAddr, addr_t thingAddr, double dIndex, addr_t listItemPtrAddr)
@@ -1101,15 +1069,12 @@ EXPORTC addr_t itemOfDatum(addr_t eAddr, addr_t thingAddr, double dIndex, addr_t
         auto **retvalPtr = reinterpret_cast<Datum **>(listItemPtrAddr);
         retval = *retvalPtr;
     }
-    else if (thing->isArray())
+    else
     {
+        // If it's not a Word or a List then it must be an Array.
         Array *a = thing->arrayValue();
         index = index - a->origin;
         retval = a->array[index].datumValue();
-    }
-    else
-    {
-        Q_ASSERT(false);
     }
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
@@ -1150,15 +1115,10 @@ EXPORTC void setDatumAtIndexOfContainer(addr_t valueAddr, double dIndex, addr_t 
         }
         l->head = value;
     }
-    else if (container->isArray())
-    {
-        Array *a = container->arrayValue();
-        a->array[index - a->origin] = value;
-    }
-    else
-    {
-        Q_ASSERT(false);
-    }
+
+    // If it's not a List then it must be an Array.
+    Array *a = container->arrayValue();
+    a->array[index - a->origin] = value;
 }
 
 EXPORTC void setFirstOfList(addr_t listAddr, addr_t valueAddr)
@@ -1242,19 +1202,13 @@ EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
         }
         return false;
     }
-    else if (container->isArray())
-    {
-        const Array *array = container->arrayValue();
-        return std::any_of(array->array.begin(), array->array.end(), [eAddr, thingAddr](const auto &item) {
-            return cmpDatumToDatum(eAddr, thingAddr, reinterpret_cast<addr_t>(item.datumValue()));
-        });
-    }
-    else
-    {
-        Q_ASSERT(false);
-    }
-    Q_ASSERT(false);
-    return false;
+
+    // If it's not a Word or a List then it must be an Array.
+    const Array *array = container->arrayValue();
+
+    return std::any_of(array->array.begin(), array->array.end(), [eAddr, thingAddr](const auto &item) {
+        return cmpDatumToDatum(eAddr, thingAddr, reinterpret_cast<addr_t>(item.datumValue()));
+    });
 }
 
 EXPORTC bool isSubstring(addr_t thing1Addr, addr_t thing2Addr)
@@ -1319,13 +1273,10 @@ EXPORTC double datumCount(addr_t thingAddr)
         List *list = thing->listValue();
         return list->count();
     }
-    else if (thing->isArray())
-    {
-        Array *array = thing->arrayValue();
-        return array->array.size();
-    }
-    Q_ASSERT(false);
-    return 0;
+
+    // If it's not a Word or a List then it must be an Array.
+    Array *array = thing->arrayValue();
+    return array->array.size();
 }
 
 EXPORTC double ascii(addr_t cAddr)
@@ -1376,30 +1327,23 @@ EXPORTC addr_t member(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
         e->watch(retvalWord);
         return reinterpret_cast<addr_t>(retvalWord);
     }
-    else if (thing2->isList())
+
+    // If it's not a Word then it must be a list.
+    List *list = thing2->listValue();
+    while (!list->isEmpty())
     {
-        List *list = thing2->listValue();
-        while (!list->isEmpty())
+        auto listAddr = reinterpret_cast<addr_t>(list->head.datumValue());
+        if (cmpDatumToDatum(eAddr, listAddr, thing1Addr))
         {
-            auto listAddr = reinterpret_cast<addr_t>(list->head.datumValue());
-            if (cmpDatumToDatum(eAddr, listAddr, thing1Addr))
-            {
-                return reinterpret_cast<addr_t>(list);
-            }
-            list = list->tail.listValue();
+            return reinterpret_cast<addr_t>(list);
         }
-        // If we get here, thing1 was not found in thing2.
-        // Return an empty list.
-        List *retval = EmptyList::instance();
-        e->watch(retval);
-        return reinterpret_cast<addr_t>(retval);
+        list = list->tail.listValue();
     }
-    else
-    {
-        Q_ASSERT(false);
-    }
-    Q_ASSERT(false);
-    return nullptr;
+    // If we get here, thing1 was not found in thing2.
+    // Return an empty list.
+    List *retval = EmptyList::instance();
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
 }
 
 EXPORTC addr_t lowercase(addr_t eAddr, addr_t wordAddr)

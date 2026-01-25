@@ -1,5 +1,5 @@
-#ifndef EXPORTS_H
-#define EXPORTS_H
+#ifndef WORKSPACE_EXPORTS_H
+#define WORKSPACE_EXPORTS_H
 
 #include "compiler_types.h"
 #include "workspace/visited.h"
@@ -47,7 +47,7 @@ EXPORTC double random1(int32_t num);
 EXPORTC double random2(int32_t start, int32_t end);
 EXPORTC addr_t setRandomWithSeed(int32_t seed);
 EXPORTC addr_t setRandom();
-EXPORTC addr_t getFormForNumber(addr_t eAddr, double num, uint32_t width, int32_t precision);
+EXPORTC addr_t getFormForNumber(addr_t eAddr, double num, int32_t width, int32_t precision);
 EXPORTC addr_t repcountAddr(void);
 EXPORTC addr_t beginCatch(void);
 EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t resultAddr, addr_t tagAddr);
@@ -149,4 +149,4 @@ EXPORTC bool getvarErroract(void);
 EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr);
 EXPORTC void setVarAsLocal(addr_t varname);
 
-#endif // EXPORTS_H
+#endif // WORKSPACE_EXPORTS_H
