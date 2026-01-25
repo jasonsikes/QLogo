@@ -20,8 +20,6 @@
 #include "workspace/kernel.h"
 #include "sharedconstants.h"
 
-using namespace llvm;
-using namespace llvm::orc;
 
 /***DOC ERRACT
 ERRACT                          (variable)
@@ -31,3 +29,26 @@ ERRACT                          (variable)
     inspect the state of the program.
 
 COD***/
+
+/***DOC LOGOPLATFORM
+LOGOPLATFORM						(variable)
+
+    one of the following words: OSX, WINDOWS, or UNIX.
+
+
+COD***/
+
+/***DOC LOGOVERSION
+LOGOVERSION						(variable)
+
+    a real number indicating the Logo version number, e.g., 5.5
+
+COD***/
+
+/***DOC COMMANDLINE
+COMMANDLINE						(variable)
+
+    contains all text on the command line used to start Logo.
+
+COD***/
+

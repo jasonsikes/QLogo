@@ -1,5 +1,5 @@
-#ifndef EXECUTOR_H
-#define EXECUTOR_H
+#ifndef KERNEL_H
+#define KERNEL_H
 
 //===-- qlogo/kernel.h - Kernel class definition -------*- C++ -*-===//
 //
@@ -53,9 +53,7 @@ class Kernel
     TextStream *systemWriteStream;
     TextStream *stdioStream;
 
-    DatumPtr currentLine;
-    DatumPtr editFileName;
-    QString workspaceText;
+    bool isPausing;
 
     void closeAll();
 
@@ -88,8 +86,6 @@ class Kernel
     ~Kernel();
 
     /// @brief The procedure frame stack
-    ///
-    /// @todo
     CallFrameStack callStack;
 
     /// @brief The palette of colors.
@@ -113,17 +109,17 @@ class Kernel
     /// @param text The text to print.
     /// @details This method prints a string to the standard output. The standard
     /// output can either be the console or a file, or both in the case of dribbling.
-    void stdPrint(const QString &text);
+    void stdPrint(const QString &text) const;
 
     /// @brief Print a string to the system output.
     /// @param text The text to print.
-    void sysPrint(const QString &text);
+    void sysPrint(const QString &text) const;
 
     /// @brief Run a list.
     /// @param listP The list to run.
     /// @param startTag If not null, search for the tag in the list and run from there.
     /// @return The result of the last expression in the list.
-    DatumPtr runList(const DatumPtr &listP, const QString &startTag = QString());
+    DatumPtr runList(const DatumPtr &listP);
 
     /// @brief Convert a Datum to a QColor.
     /// @param colorP The Datum to convert.
@@ -143,7 +139,7 @@ class Kernel
     QString filepathForFilename(const DatumPtr &filenameP) const;
 
     // SPECIAL VARIABLES
-    Datum *specialVar(SpecialNames name);
+    Datum *specialVar(SpecialNames name) const;
 
     /// @brief Perform pause, essentially a REPL loop.
     /// @return The value passed to CONTINUE, if any.
@@ -156,4 +152,4 @@ class Kernel
     int run();
 };
 
-#endif // EXECUTOR_H
+#endif // KERNEL_H

@@ -26,6 +26,9 @@
 #include "datum_types.h"
 #include "sharedconstants.h"
 #include "workspace/procedures.h"
+#include "runparser.h"
+#include "workspace/turtle.h"
+#include "interface/logointerface.h"
 #include <QApplication> // quit()
 #include <QColor>
 #include <QDebug>
@@ -34,10 +37,6 @@
 #include <QImage>
 #include <cstdlib> // arc4random_uniform()
 
-#include "runparser.h"
-#include "workspace/turtle.h"
-
-#include "interface/logointerface.h"
 
 // The maximum depth of procedure iterations before error is thrown.
 const int maxIterationDepth = 1000;
@@ -164,28 +163,26 @@ Datum *Kernel::inputProcedure(ASTNode *node)
     Datum *retval = node;
     try
     {
-        // to is the command name that initiated inputProcedure(), it is the first
-        // word in the input line, 'TO' or '.MACRO'.
-        // TODO: rename this to "command"
-        DatumPtr to = node->nodeName;
+        // command is the first word in the input line, (".MACRO" or "TO").
+        DatumPtr command = node->nodeName;
         if (node->countOfChildren() == 0)
-            throw FCError::notEnoughInputs(to);
+            throw FCError::notEnoughInputs(command);
 
         // procnameP is the name of the procedure, the second word in the input line,
-        // following 'TO' or '.MACRO'.
+        // following ".MACRO" or "TO".
         DatumPtr procnameP = node->childAtIndex(0);
         if (!procnameP.isWord())
-            throw FCError::doesntLike(to, procnameP);
+            throw FCError::doesntLike(command, procnameP);
 
         procnameP.wordValue()->numberValue();
         if (procnameP.wordValue()->numberIsValid)
-            throw FCError::doesntLike(to, procnameP);
+            throw FCError::doesntLike(command, procnameP);
 
         QString procname = procnameP.toString(Datum::ToStringFlags_Key);
 
         QChar firstChar = (procname)[0];
         if ((firstChar == '"') || (firstChar == ':') || (firstChar == '(') || (firstChar == ')'))
-            throw FCError::doesntLike(to, procnameP);
+            throw FCError::doesntLike(command, procnameP);
 
         if (Procedures::get().isProcedure(procname))
             throw FCError::procDefined(procnameP);
@@ -221,7 +218,7 @@ Datum *Kernel::inputProcedure(ASTNode *node)
         }
         DatumPtr textP = textBuilder.finishedList();
 
-        Procedures::get().defineProcedure(to, procnameP, textP, sourceText);
+        Procedures::get().defineProcedure(command, procnameP, textP, sourceText);
 
         QString message = QObject::tr("%1 defined\n");
         message = message.arg(procnameP.toString());
@@ -237,7 +234,7 @@ Datum *Kernel::inputProcedure(ASTNode *node)
 /***DOC ERRACT
 ERRACT							(variable)
 
-    When set to a value that is not "False"false" nor an empty list,
+    When set to a value that is not FALSE nor an empty string nor an empty list,
     the command interpreter will execute PAUSE to enable the user to
     inspect the state of the program.
 
@@ -246,6 +243,7 @@ COD***/
 
 void Kernel::initPalette()
 {
+    // UCBLogo has 101 colors, from 0 to 100.
     const int paletteSize = 101;
     palette.clear();
     palette.reserve(paletteSize);
@@ -267,32 +265,6 @@ void Kernel::initPalette()
     palette.push_back(QColor(QStringLiteral("grey")));        // 15
     palette.resize(paletteSize);
 }
-
-// Documentation is here because it doesn't fit anywhere else.
-
-// TODO: move documentation to Compiler class
-
-/***DOC LOGOPLATFORM
-LOGOPLATFORM						(variable)
-
-    one of the following words: OSX, WINDOWS, or UNIX.
-
-
-COD***/
-
-/***DOC LOGOVERSION
-LOGOVERSION						(variable)
-
-    a real number indicating the Logo version number, e.g., 5.5
-
-COD***/
-
-/***DOC COMMANDLINE
-COMMANDLINE						(variable)
-
-    contains all text on the command line used to start Logo.
-
-COD***/
 
 void Kernel::initVariables()
 {
@@ -334,6 +306,7 @@ Kernel::Kernel()
     initPalette();
 
     filePrefix = emptyList();
+    isPausing = false;
 }
 
 Kernel::~Kernel()
@@ -344,7 +317,7 @@ Kernel::~Kernel()
     callStack.stack.removeLast();
 }
 
-DatumPtr Kernel::runList(const DatumPtr &listP, const QString &startTag)
+DatumPtr Kernel::runList(const DatumPtr &listP)
 {
     DatumPtr retval;
 
@@ -356,7 +329,7 @@ DatumPtr Kernel::runList(const DatumPtr &listP, const QString &startTag)
     return retval;
 }
 
-Datum *Kernel::specialVar(SpecialNames name)
+Datum *Kernel::specialVar(SpecialNames name) const
 {
     switch (name)
     {
@@ -372,10 +345,9 @@ Datum *Kernel::specialVar(SpecialNames name)
 
 DatumPtr Kernel::pause()
 {
-    static bool isPausing = false;
     if (isPausing)
     {
-        sysPrint(QObject::tr("Already Pausing"));
+        sysPrint(QObject::tr("Already Pausing\n"));
         return nothing();
     }
 
@@ -412,18 +384,18 @@ QString Kernel::filepathForFilename(const DatumPtr &filenameP) const
 void Kernel::closeAll()
 {
     QStringList names = fileStreams.keys();
-    for (const auto &iter : names)
+    for (const auto &filename : names)
     {
-        // close(iter);
+        // close(filename);
     }
 }
 
-void Kernel::stdPrint(const QString &text)
+void Kernel::stdPrint(const QString &text) const
 {
     writeStream->lprint(text);
 }
 
-void Kernel::sysPrint(const QString &text)
+void Kernel::sysPrint(const QString &text) const
 {
     systemWriteStream->lprint(text);
 }
