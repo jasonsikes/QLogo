@@ -16,7 +16,7 @@
 
 #include "astnode.h"
 #include "compiler.h"
-#include "compiler_private.h"
+#include "compiler_internal.h"
 #include "workspace/exports.h"
 
 using namespace llvm;

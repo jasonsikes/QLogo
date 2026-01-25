@@ -16,7 +16,7 @@
 
 #include "compiler.h"
 #include "astnode.h"
-#include "compiler_private.h"
+#include "compiler_internal.h"
 #include "datum_types.h"
 #include "workspace/exports.h"
 #include "workspace/kernel.h"

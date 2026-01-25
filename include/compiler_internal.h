@@ -1,7 +1,7 @@
-#ifndef COMPILER_PRIVATE_H
-#define COMPILER_PRIVATE_H
+#ifndef COMPILER_INTERNAL_H
+#define COMPILER_INTERNAL_H
 
-//===-- qlogo/compiler_private.h - Compiler class definition -------*- C++ -*-===//
+//===-- qlogo/compiler_internal.h - Compiler class definition -------*- C++ -*-===//
 //
 // Copyright 2017-2024 Jason Sikes
 //
@@ -159,4 +159,4 @@ struct Scaffold
 #define PaAddr(VAL)   {TyAddr, (VAL)}
 #define PaBool(VAL)   {TyBool, (VAL)}
 
-#endif // COMPILER_PRIVATE_H
+#endif // COMPILER_INTERNAL_H

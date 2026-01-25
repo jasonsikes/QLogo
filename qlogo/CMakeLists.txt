@@ -36,7 +36,7 @@ set(QLOGO_SOURCES
   ../include/sharedconstants.h
   ../include/cmd_strings.h
   ../include/compiler.h
-  ../include/compiler_private.h
+  ../include/compiler_internal.h
   ../include/compiler_types.h
   ../include/interface/inputqueue.h
   ../include/interface/logointerface.h

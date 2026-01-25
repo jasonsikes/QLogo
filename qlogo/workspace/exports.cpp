@@ -15,7 +15,6 @@
 
 #include "workspace/exports.h"
 #include "astnode.h"
-#include "compiler_private.h"
 #include "interface/logointerface.h"
 #include "interface/textstream.h"
 #include "datum_types.h"
