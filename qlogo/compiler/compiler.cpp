@@ -48,7 +48,7 @@ Scaffold::Scaffold(void *parent)
     theSI.registerCallbacks(thePIC, &theMAM);
 
     // Add transform passes.
-    // Do simple "peephole" optimizations and bit-twiddling optzns.
+    // Do simple "peephole" optimizations and bit-twiddling optimizations.
     theFPM.addPass(InstCombinePass());
     // Reassociate expressions.
     theFPM.addPass(ReassociatePass());
@@ -197,12 +197,12 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     blockId->setName("blockId");
 
     // The first block is number zero.
-    int blockId = 0;
+    int localBlockId = 0;
 
     // If the first block is a tag, save the tag names
     if (isTag(parsedList.first().first()))
     {
-        setTagToBlockIdInProcedure(parsedList.first(), blockId);
+        setTagToBlockIdInProcedure(parsedList.first(), localBlockId);
         // Remove the first tag block from the list.
         parsedList.removeFirst();
     }
@@ -217,14 +217,14 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     {
         if (isTag(srcBlock.first()))
         {
-            ++blockId;
+            ++localBlockId;
             BasicBlock *newBlock = BasicBlock::Create(*scaff->theContext, "Block", theFunction);
             blocks.append(newBlock);
             scaff->builder.SetInsertPoint(currentBlock);
             scaff->builder.CreateBr(newBlock);
             currentBlock = newBlock;
             scaff->builder.SetInsertPoint(newBlock);
-            setTagToBlockIdInProcedure(srcBlock, blockId);
+            setTagToBlockIdInProcedure(srcBlock, localBlockId);
         }
         else
         {
@@ -248,7 +248,7 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     }
 
     // Run the optimizer on the function.
-    // scaff->theFPM.run(*theFunction, scaff->theFAM);
+    scaff->theFPM.run(*theFunction, scaff->theFAM);
 
     std::string str;
     llvm::raw_string_ostream output(str);
@@ -523,14 +523,10 @@ Value *Compiler::genLiteral(const DatumPtr &node, RequestReturnType returnType)
         return CoAddr(literalPtr.datumValue());
     }
 
-    // If a Datum type was requested, return the node as is.
-    if (returnType && RequestReturnDatum)
-    {
-        Datum *val = literalPtr.datumValue();
-        return CoAddr(val);
-    }
-    Q_ASSERT(false);
-    return nullptr;
+    // If it's not Bool or Real then it must be a Datum or Nothing.
+    Q_ASSERT ((returnType & RequestReturnDN) != 0);
+    Datum *val = literalPtr.datumValue();
+    return CoAddr(val);
 }
 
 Value *Compiler::generateVoidRetval(const DatumPtr &node)
@@ -591,6 +587,12 @@ Value *Compiler::generateErrorSystem()
     return errObj;
 }
 
+Value *Compiler::generateErrorToplevel()
+{
+    Value *errObj = generateCallExtern(TyAddr, getErrorToplevel, PaAddr(evaluator));
+    return errObj;
+}
+
 Value *Compiler::generateErrorNoLike(ASTNode *who, Value *what)
 {
     Value *errWho = CoAddr(who->nodeName.datumValue());
@@ -634,6 +636,8 @@ Value *Compiler::generateImmediateReturn(llvm::Value *retval)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
 
+    // We are generating an immediate return value. Even though the code afterward will never be executed,
+    // we need to allow the compiler to finish generating the code.
     BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, "bailout", theFunction);
     BasicBlock *throwAwayBB = BasicBlock::Create(*scaff->theContext, "throw_away", theFunction);
     Value *cond = scaff->builder.CreateICmpEQ(CoInt64(1), CoInt64(0), "fakeTest");
@@ -765,7 +769,6 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
     BasicBlock *validateBB = BasicBlock::Create(*scaff->theContext, "validate", theFunction);
     BasicBlock *convertBB = BasicBlock::Create(*scaff->theContext, "convert", theFunction);
     BasicBlock *erractBB = BasicBlock::Create(*scaff->theContext, "errorAction", theFunction);
-    BasicBlock *wordCheckBB = BasicBlock::Create(*scaff->theContext, "wordCheck", theFunction);
     BasicBlock *doubleCheckBB = BasicBlock::Create(*scaff->theContext, "doubleCheck", theFunction);
     BasicBlock *notDatumBB = BasicBlock::Create(*scaff->theContext, "notDatum", theFunction);
     BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, "bailout", theFunction);
@@ -797,14 +800,7 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
     Value *datamIsa = generateGetDatumIsa(newCandidate);
     Value *isDatumMasked = scaff->builder.CreateAnd(datamIsa, CoInt32(Datum::typeDataMask), "isDatumMasked");
     Value *isDatumCond = scaff->builder.CreateICmpNE(isDatumMasked, CoInt32(0), "isDatumCond");
-    scaff->builder.CreateCondBr(isDatumCond, wordCheckBB, notDatumBB);
-
-    // TODO: getDoubleForDatum() makes this redundant.
-    // Check if the new candidate is a word.
-    scaff->builder.SetInsertPoint(wordCheckBB);
-    badValue->addIncoming(newCandidate, wordCheckBB);
-    Value *isWordCond = scaff->builder.CreateICmpEQ(datamIsa, CoInt32(Datum::typeWord), "isWordCond");
-    scaff->builder.CreateCondBr(isWordCond, doubleCheckBB, erractBB);
+    scaff->builder.CreateCondBr(isDatumCond, doubleCheckBB, notDatumBB);
 
     // Check if the new candidate is a double.
     scaff->builder.SetInsertPoint(doubleCheckBB);
@@ -817,8 +813,8 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
 
     // The new candidate is not a datum. Return it.
     scaff->builder.SetInsertPoint(notDatumBB);
-    // TODO: Should this be THROW "TOPLEVEL?"
-    scaff->builder.CreateRet(newCandidate);
+    Value *toplevelErrorObj = generateErrorToplevel();
+    scaff->builder.CreateRet(toplevelErrorObj);
 
     // The number is bad, and ERRACT is not set. Return an error.
     scaff->builder.SetInsertPoint(bailoutBB);

@@ -98,6 +98,9 @@ class Compiler
     // Generate a call to construct error: SYSTEM
     llvm::Value *generateErrorSystem();
 
+    // Generate a call to construct error: TOPLEVEL
+    llvm::Value *generateErrorToplevel();
+
     // Generate a call to construct error: "X doesn't like Y as input"
     llvm::Value *generateErrorNoLike(ASTNode *who, llvm::Value *what);
 

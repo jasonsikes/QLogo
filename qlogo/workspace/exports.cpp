@@ -329,6 +329,17 @@ EXPORTC addr_t getErrorSystem(addr_t eAddr)
     return reinterpret_cast<addr_t>(err);
 }
 
+/// Create and return Error: "TOPLEVEL"
+/// @param eAddr a pointer to the Evaluator object context.
+/// @return a pointer to the Error object that was generated.
+EXPORTC addr_t getErrorToplevel(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    FCError *err = FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")));
+    e->watch(err);
+    return reinterpret_cast<addr_t>(err);
+}
+
 /// Create and return Error: "X didn't like Y as input"
 /// @param eAddr a pointer to the Evaluator object context.
 /// @param whoAddr a pointer to the Datum object which rejected the input.
