@@ -31,6 +31,69 @@ QHash<Datum *, std::shared_ptr<CompiledText>> Compiler::compiledTextTable;
 using namespace llvm;
 using namespace llvm::orc;
 
+CompilerContext::CompilerContext(std::unique_ptr<llvm::orc::ExecutionSession> es,
+                                 llvm::orc::JITTargetMachineBuilder jtmb,
+                                 const llvm::DataLayout &dl)
+    : exeSession(std::move(es)), dataLayout(dl), mangler(*this->exeSession, this->dataLayout),
+      objectLayer(*this->exeSession, []() { return std::make_unique<llvm::SectionMemoryManager>(); }),
+      compileLayer(*this->exeSession,
+                   objectLayer,
+                   std::make_unique<llvm::orc::ConcurrentIRCompiler>(std::move(jtmb))),
+      jitLib(this->exeSession->createBareJITDylib("<main>"))
+{
+    jitLib.addGenerator(cantFail(llvm::orc::DynamicLibrarySearchGenerator::GetForCurrentProcess(dl.getGlobalPrefix())));
+    // Note: jtmb was moved in the initializer list, so we need to check the target triple
+    // from the ExecutionSession instead
+    if (exeSession->getExecutorProcessControl().getTargetTriple().isOSBinFormatCOFF())
+    {
+        objectLayer.setOverrideObjectFlagsWithResponsibilityFlags(true);
+        objectLayer.setAutoClaimResponsibilityForObjectSymbols(true);
+    }
+}
+
+CompilerContext::~CompilerContext() // NOLINT(modernize-use-equals-default) - not trivial, needs to call endSession()
+{
+    if (auto err = exeSession->endSession())
+        exeSession->reportError(std::move(err));
+}
+
+CompilerContext *CompilerContext::Create()
+{
+    auto epc = llvm::orc::SelfExecutorProcessControl::Create();
+    Q_ASSERT(epc);
+
+    auto es = std::make_unique<llvm::orc::ExecutionSession>(std::move(*epc));
+
+    llvm::orc::JITTargetMachineBuilder jtmb(es->getExecutorProcessControl().getTargetTriple());
+
+    auto dl = jtmb.getDefaultDataLayoutForTarget();
+    Q_ASSERT(dl);
+
+    return new CompilerContext(std::move(es), std::move(jtmb), *dl);
+}
+
+const llvm::DataLayout &CompilerContext::getDataLayout() const
+{
+    return dataLayout;
+}
+
+llvm::orc::JITDylib &CompilerContext::getMainJITDylib()
+{
+    return jitLib;
+}
+
+llvm::Error CompilerContext::addModule(llvm::orc::ThreadSafeModule tsm, llvm::orc::ResourceTrackerSP rt)
+{
+    if (!rt)
+        rt = jitLib.getDefaultResourceTracker();
+    return compileLayer.add(rt, std::move(tsm));
+}
+
+llvm::Expected<llvm::orc::ExecutorSymbolDef> CompilerContext::lookup(llvm::StringRef name)
+{
+    return exeSession->lookup({&jitLib}, mangler(name.str()));
+}
+
 Scaffold::Scaffold(void *parent, const llvm::DataLayout &dataLayout)
     : theContext(std::make_unique<LLVMContext>()), theModule(std::make_unique<Module>("QLogoJIT", *theContext)),
       builder(IRBuilder<>(*theContext)), theFPM(FunctionPassManager()), theLAM(LoopAnalysisManager()),

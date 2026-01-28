@@ -53,66 +53,19 @@ class CompilerContext
 
     CompilerContext(std::unique_ptr<llvm::orc::ExecutionSession> es,
                     llvm::orc::JITTargetMachineBuilder jtmb,
-                    const llvm::DataLayout &dl)
-        : exeSession(std::move(es)), dataLayout(dl), mangler(*this->exeSession, this->dataLayout),
-          objectLayer(*this->exeSession, []() { return std::make_unique<llvm::SectionMemoryManager>(); }),
-          compileLayer(
-              *this->exeSession, objectLayer, std::make_unique<llvm::orc::ConcurrentIRCompiler>(std::move(jtmb))),
-          jitLib(this->exeSession->createBareJITDylib("<main>"))
-    {
-        jitLib.addGenerator(
-            cantFail(llvm::orc::DynamicLibrarySearchGenerator::GetForCurrentProcess(dl.getGlobalPrefix())));
-        // Note: jtmb was moved in the initializer list, so we need to check the target triple
-        // from the ExecutionSession instead
-        if (exeSession->getExecutorProcessControl().getTargetTriple().isOSBinFormatCOFF())
-        {
-            objectLayer.setOverrideObjectFlagsWithResponsibilityFlags(true);
-            objectLayer.setAutoClaimResponsibilityForObjectSymbols(true);
-        }
-    }
+                    const llvm::DataLayout &dl);
 
-    ~CompilerContext() // NOLINT(modernize-use-equals-default) - not trivial, needs to call endSession()
-    {
-        if (auto err = exeSession->endSession())
-            exeSession->reportError(std::move(err));
-    }
+    ~CompilerContext();
 
-    static CompilerContext *Create()
-    {
-        auto epc = llvm::orc::SelfExecutorProcessControl::Create();
-        Q_ASSERT(epc);
+    static CompilerContext *Create();
 
-        auto es = std::make_unique<llvm::orc::ExecutionSession>(std::move(*epc));
+    const llvm::DataLayout &getDataLayout() const;
 
-        llvm::orc::JITTargetMachineBuilder jtmb(es->getExecutorProcessControl().getTargetTriple());
+    llvm::orc::JITDylib &getMainJITDylib();
 
-        auto dl = jtmb.getDefaultDataLayoutForTarget();
-        Q_ASSERT(dl);
+    llvm::Error addModule(llvm::orc::ThreadSafeModule tsm, llvm::orc::ResourceTrackerSP rt = nullptr);
 
-        return new CompilerContext(std::move(es), std::move(jtmb), *dl);
-    }
-
-    const llvm::DataLayout &getDataLayout() const
-    {
-        return dataLayout;
-    }
-
-    llvm::orc::JITDylib &getMainJITDylib()
-    {
-        return jitLib;
-    }
-
-    llvm::Error addModule(llvm::orc::ThreadSafeModule tsm, llvm::orc::ResourceTrackerSP rt = nullptr)
-    {
-        if (!rt)
-            rt = jitLib.getDefaultResourceTracker();
-        return compileLayer.add(rt, std::move(tsm));
-    }
-
-    llvm::Expected<llvm::orc::ExecutorSymbolDef> lookup(llvm::StringRef name)
-    {
-        return exeSession->lookup({&jitLib}, mangler(name.str()));
-    }
+    llvm::Expected<llvm::orc::ExecutorSymbolDef> lookup(llvm::StringRef name);
 };
 
 struct Scaffold
