@@ -23,7 +23,10 @@
 #include "llvm/Transforms/Scalar/GVN.h"
 #include "llvm/Transforms/Scalar/Reassociate.h"
 
+#include <memory>
+
 struct Scaffold;
+class CompilerContext;
 
 namespace llvm
 {
@@ -48,6 +51,8 @@ class Compiler
 
     // a pointer to the block ID argument of the compiled function.
     llvm::Value *blockId;
+
+    std::unique_ptr<CompilerContext> context_;
 
     // The hash table of compiled texts referenced by lists or ASTNodes.
     static QHash<Datum *, std::shared_ptr<CompiledText>> compiledTextTable;

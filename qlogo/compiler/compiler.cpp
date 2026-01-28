@@ -31,9 +31,7 @@ QHash<Datum *, std::shared_ptr<CompiledText>> Compiler::compiledTextTable;
 using namespace llvm;
 using namespace llvm::orc;
 
-static CompilerContext *mainCompilerContext = nullptr;
-
-Scaffold::Scaffold(void *parent)
+Scaffold::Scaffold(void *parent, const llvm::DataLayout &dataLayout)
     : theContext(std::make_unique<LLVMContext>()), theModule(std::make_unique<Module>("QLogoJIT", *theContext)),
       builder(IRBuilder<>(*theContext)), theFPM(FunctionPassManager()), theLAM(LoopAnalysisManager()),
       theFAM(FunctionAnalysisManager()), theCGAM(CGSCCAnalysisManager()), theMAM(ModuleAnalysisManager()),
@@ -42,7 +40,7 @@ Scaffold::Scaffold(void *parent)
 
 {
     // Open a new context and module.
-    theModule->setDataLayout(mainCompilerContext->getDataLayout());
+    theModule->setDataLayout(dataLayout);
 
     // Create new pass and analysis managers.
     theSI.registerCallbacks(thePIC, &theMAM);
@@ -69,32 +67,28 @@ Scaffold::Scaffold(void *parent)
 
 CompiledText::~CompiledText()
 {
-    // Only remove resource tracker if mainCompilerContext is still valid
+    // Only remove resource tracker if context is still valid
     // (it may have been destroyed if CompiledText outlives the Compiler singleton)
-    if (mainCompilerContext != nullptr && rt)
+    if (context != nullptr && rt)
     {
-        mainCompilerContext->exitOnErr(rt->remove());
+        context->exitOnErr(rt->remove());
     }
 }
 
 Compiler::Compiler()
 {
-    Q_ASSERT(mainCompilerContext == nullptr);
     InitializeNativeTarget();
     InitializeNativeTargetAsmPrinter();
     InitializeNativeTargetAsmParser();
 
-    mainCompilerContext = CompilerContext::Create();
+    context_ = std::unique_ptr<CompilerContext>(CompilerContext::Create());
 }
 
 Compiler::~Compiler()
 {
     // Clear compiledTextTable first to ensure all CompiledText objects are destroyed
-    // while mainCompilerContext is still valid
+    // while context_ is still valid
     compiledTextTable.clear();
-    
-    delete mainCompilerContext;
-    mainCompilerContext = nullptr;
 }
 
 QString Compiler::getTagNameFromNode(const DatumPtr &node) const
@@ -172,11 +166,12 @@ BasicBlock *Compiler::generateTOC(QList<BasicBlock *> blocks, Function *theFunct
 
 CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, Datum *key)
 {
-    Scaffold compilerScaffolding(reinterpret_cast<void *>(key));
+    Scaffold compilerScaffolding(reinterpret_cast<void *>(key), context_->getDataLayout());
     scaff = &compilerScaffolding;
 
     auto *compiledText = new CompiledText();
     compiledText->astList = parsedList;
+    compiledText->context = context_.get();
     compiledTextTable[key] = std::shared_ptr<CompiledText>(compiledText);
 
     // Generate the prototype and add it to the module.
@@ -272,12 +267,12 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
 
     // Create a ResourceTracker to track JIT'd memory allocated to our
     // anonymous expression -- that way we can free it with the source list.
-    compiledText->rt = mainCompilerContext->getMainJITDylib().createResourceTracker();
+    compiledText->rt = context_->getMainJITDylib().createResourceTracker();
     auto tsm = ThreadSafeModule(std::move(scaff->theModule), std::move(scaff->theContext));
-    mainCompilerContext->exitOnErr(mainCompilerContext->addModule(std::move(tsm), compiledText->rt));
+    context_->exitOnErr(context_->addModule(std::move(tsm), compiledText->rt));
 
     // Search the JIT for the expression by name.
-    ExecutorSymbolDef exprSymbol = mainCompilerContext->exitOnErr(mainCompilerContext->lookup(scaff->name));
+    ExecutorSymbolDef exprSymbol = context_->exitOnErr(context_->lookup(scaff->name));
 
     // Get the symbol's address and cast it to the right type so we can
     // call it as a native function.

@@ -13,6 +13,7 @@
 
 typedef uint64_t *addr_t;
 class Compiler;
+class CompilerContext;
 
 /// @brief Expression generator request type.
 ///
@@ -57,6 +58,8 @@ struct CompiledText
     // The AST list from which the compiled function was generated.
     // This is stored to ensure the AST nodes are kept alive as long as the compiled text exists.
     QList<QList<DatumPtr>> astList;
+
+    CompilerContext *context = nullptr;
 
     ~CompiledText();
 };
