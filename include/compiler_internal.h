@@ -101,7 +101,7 @@ struct Scaffold
 #define CoInt32(VAL)  (ConstantInt::get(*scaff->theContext, APInt(32, (uint32_t)(VAL))))
 #define CoInt64(VAL)  (ConstantInt::get(*scaff->theContext, APInt(64, (uint64_t)(VAL))))
 #define CoDouble(VAL) (ConstantFP::get(*scaff->theContext, APFloat((VAL))))
-#define CoAddr(VAL)   (scaff->builder.CreateIntToPtr(CoInt64(VAL), TyAddr))
+#define CoAddr(VAL)   (ConstantExpr::getIntToPtr(CoInt64(VAL), TyAddr))
 #define CoBool(VAL)   (ConstantInt::get(*scaff->theContext, APInt(1, VAL)))
 
 // Parameter combinations
