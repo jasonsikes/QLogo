@@ -841,7 +841,7 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
     Value *isValidCond = validator(candidate);
     scaff->builder.CreateCondBr(isValidCond, acceptBB, convertBB);
 
-    // The number is bad. Convert it to a word, and then decide what to do with it.
+    // The number is bad. Convert it to a word. Check if ERRACT is set.
     scaff->builder.SetInsertPoint(convertBB);
     Value *badWord = generateWordFromDouble(candidate);
     Value *varErroract = generateCallExtern(TyBool, getvarErroract);
@@ -869,17 +869,17 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
     Value *isDoubleCond = scaff->builder.CreateICmpEQ(dType, CoBool(true), "isDoubleCond");
     scaff->builder.CreateCondBr(isDoubleCond, validateBB, erractBB);
 
-    // The new candidate is not a datum. Return it.
+    // The new candidate is not a datum. Return a TOPLEVEL error.
     scaff->builder.SetInsertPoint(notDatumBB);
     Value *toplevelErrorObj = generateErrorToplevel();
     scaff->builder.CreateRet(toplevelErrorObj);
 
-    // The number is bad, and ERRACT is not set. Return an error.
+    // The number is bad, and ERRACT is not set. Return a DOESN'T LIKE error.
     scaff->builder.SetInsertPoint(bailoutBB);
     Value *errObj = generateErrorNoLike(parent, badWord);
     scaff->builder.CreateRet(errObj);
 
-    // The number is good. Run with it.
+    // The number is good. Continue.
     scaff->builder.SetInsertPoint(acceptBB);
     return candidate;
 }
@@ -898,17 +898,20 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
 
     scaff->builder.CreateBr(tryBB);
 
+    // Validate the datum.
     scaff->builder.SetInsertPoint(tryBB);
     PHINode *candidate = scaff->builder.CreatePHI(TyAddr, 2, "candidate");
     candidate->addIncoming(src, srcBB);
     Value *cond = validator(candidate);
     scaff->builder.CreateCondBr(cond, acceptBB, isNotValidBB);
 
+    // The datum is not valid. Check if ERRACT is set.
     scaff->builder.SetInsertPoint(isNotValidBB);
     Value *varErroract = generateCallExtern(TyBool, getvarErroract);
     Value *isTrue = scaff->builder.CreateICmpEQ(varErroract, CoBool(true), "isTrue");
     scaff->builder.CreateCondBr(isTrue, errorActionBB, bailoutBB);
 
+    // Perform ERRACT (PAUSE)
     scaff->builder.SetInsertPoint(errorActionBB);
     Value *errmsg = generateErrorNoLike(parent, src);
     generateCallExtern(TyAddr, stdWriteDatum, PaAddr(errmsg), PaBool(CoBool(true)));
@@ -919,13 +922,17 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
     candidate->addIncoming(newCandidate, errorActionBB);
     scaff->builder.CreateCondBr(isDatum, tryBB, notDatumBB);
 
+    // The new candidate is not a datum. Return a TOPLEVEL error.
     scaff->builder.SetInsertPoint(notDatumBB);
-    scaff->builder.CreateRet(newCandidate);
+    Value *toplevelErrorObj = generateErrorToplevel();
+    scaff->builder.CreateRet(toplevelErrorObj);
 
+    // The datum is bad, and ERRACT is not set. Return a DOESN'T LIKE error.
     scaff->builder.SetInsertPoint(bailoutBB);
     Value *errObj = generateErrorNoLike(parent, src);
     scaff->builder.CreateRet(errObj);
 
+    // The datum is good. Continue.
     scaff->builder.SetInsertPoint(acceptBB);
     return candidate;
 }
