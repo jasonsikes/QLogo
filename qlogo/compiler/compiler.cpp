@@ -936,14 +936,10 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
 // Generate code to return a datum type (isa) of a given object.
 Value *Compiler::generateGetDatumIsa(Value *objAddr)
 {
-    // The GEP instruction assumes that the offset value is in multiples of the size of the data type.
-    // However, offsetof() returns the offset in bytes.
-    const unsigned int isaOffset = offsetof(Datum, isa) / sizeof(addr_t);
-    Q_ASSERT((double)offsetof(Datum, isa) / sizeof(addr_t) - isaOffset == 0);
+    const unsigned int isaOffset = offsetof(Datum, isa);
+    Value *isaAddr = scaff->builder.CreatePtrAdd(objAddr, CoInt64(isaOffset), "isaAddr");
 
-    ConstantInt *isaOffsetofLoc = CoInt64(isaOffset);
-    Value *isaLoc = scaff->builder.CreateGEP(TyAddr, objAddr, isaOffsetofLoc, "isaLoc");
-    Value *dType = scaff->builder.CreateLoad(TyInt32, isaLoc, "isaLoad");
+    Value *dType = scaff->builder.CreateLoad(TyInt32, isaAddr, "isaLoad");
     return dType;
 }
 
