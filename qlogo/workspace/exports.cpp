@@ -1949,3 +1949,48 @@ EXPORTC void setVarAsLocal(addr_t varname)
     CallFrame *currentFrame = Kernel::get().callStack.localFrame();
     currentFrame->setVarAsLocal(varNameStr);
 }
+
+/// @brief Handle a bad double value. If ERRACT is set, call PAUSE. Otherwise, return an error.
+/// @param eAddr a pointer to the Evaluator object
+/// @param value the value to handle
+/// @return a pointer to the result
+EXPORTC addr_t handleBadDouble(addr_t eAddr, addr_t parentAddr, double value)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *parent = reinterpret_cast<ASTNode *>(parentAddr);
+
+    DatumPtr err = {FCError::doesntLike(parent->nodeName, DatumPtr(value))};
+    if ( ! getvarErroract())
+    {
+        e->watch(err.datumValue());
+        return reinterpret_cast<addr_t>(err.datumValue());
+    }
+
+    DatumPtr retval;
+    while (true)
+    {
+        Kernel::get().sysPrint(err.toString() + "\n");
+        retval = Kernel::get().pause();
+        if (retval.isWord())
+        {
+            Word *candidate = retval.wordValue();
+            candidate->numberValue();
+            if (candidate->numberIsValid)
+            {
+                break;
+            }
+        }
+        if (retval.isErr())
+        {
+            break;
+        }
+        if (retval.isASTNode())
+        {
+            retval = {FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")))};
+            break;
+        }
+        err = {FCError::doesntLike(parent->nodeName, retval)};
+    } // while (true)
+    e->watch(retval.datumValue());
+    return reinterpret_cast<addr_t>(retval.datumValue());
+}
