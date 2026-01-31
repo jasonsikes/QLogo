@@ -29,12 +29,8 @@ jobs:
           cmake \
           ninja-build \
           qt6-base-dev \
-          qt6-base-dev-tools \
           qt6-svg-dev \ 
-          libqt6sql6-sqlite \
-          libqt6svg6 \
-          llvm-19-dev \
-          clang
+          llvm-dev
         
     - name: Configure CMake
       run: |
