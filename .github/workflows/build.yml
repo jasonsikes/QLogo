@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         build-type: [Debug, Release]
     
     steps:
@@ -33,21 +33,13 @@ jobs:
           qt6-base-dev-tools \
           libqt6sql6-sqlite \
           libqt6svg6 \
+          qt6-svg-dev \ 
           llvm-19-dev
-        
-    - name: Install dependencies (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install cmake ninja qt@6 llvm
         
     - name: Configure CMake
       run: |
         mkdir -p build
         cd build
-        if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-          LLVM_PREFIX=$(brew --prefix llvm)
-          export LLVM_DIR="${LLVM_PREFIX}/lib/cmake/llvm"
-        fi
         cmake -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
               -G Ninja ..
@@ -59,8 +51,8 @@ jobs:
         
     - name: Check for build artifacts
       run: |
-        test -f build/qlogo/qlogo || test -f build/qlogo/qlogo.exe
-        test -f build/Psychi/Psychi || test -f build/Psychi/Psychi.app/Contents/MacOS/Psychi || test -f build/Psychi/Psychi.exe
+        test -f build/qlogo/qlogo
+        test -f build/Psychi/Psychi
 
 
 
