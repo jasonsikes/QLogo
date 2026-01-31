@@ -32,6 +32,7 @@
 #include <QStringBuilder>
 
 #include <algorithm>
+#include <functional>
 
 bool areDatumsEqual(VisitedMap &visited, Datum *d1, Datum *d2, Qt::CaseSensitivity cs);
 
@@ -1950,11 +1951,14 @@ EXPORTC void setVarAsLocal(addr_t varname)
     currentFrame->setVarAsLocal(varNameStr);
 }
 
-/// @brief Handle a bad double value. If ERRACT is set, call PAUSE. Otherwise, return an error.
+/// @brief Handle a bad value. If ERRACT is set, call PAUSE. Otherwise, return an error.
 /// @param eAddr a pointer to the Evaluator object
+/// @param parentAddr a pointer to the parent node
 /// @param value the value to handle
+/// @param datatypeTest a function that tests if the value is of the correct type
 /// @return a pointer to the result
-EXPORTC addr_t handleBadDouble(addr_t eAddr, addr_t parentAddr, double value)
+addr_t handleBadValue(addr_t eAddr, addr_t parentAddr, DatumPtr value,
+                              std::function<bool(DatumPtr)> datatypeTest)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *parent = reinterpret_cast<ASTNode *>(parentAddr);
@@ -1971,14 +1975,9 @@ EXPORTC addr_t handleBadDouble(addr_t eAddr, addr_t parentAddr, double value)
     {
         Kernel::get().sysPrint(err.toString() + "\n");
         retval = Kernel::get().pause();
-        if (retval.isWord())
+        if (datatypeTest(retval))
         {
-            Word *candidate = retval.wordValue();
-            candidate->numberValue();
-            if (candidate->numberIsValid)
-            {
-                break;
-            }
+            break;
         }
         if (retval.isErr())
         {
@@ -1993,4 +1992,23 @@ EXPORTC addr_t handleBadDouble(addr_t eAddr, addr_t parentAddr, double value)
     } // while (true)
     e->watch(retval.datumValue());
     return reinterpret_cast<addr_t>(retval.datumValue());
+}
+
+/// @brief Handle a bad double value. If ERRACT is set, call PAUSE. Otherwise, return an error.
+/// @param eAddr a pointer to the Evaluator object
+/// @param parentAddr a pointer to the parent node
+/// @param value the value to handle
+/// @return a pointer to the result
+EXPORTC addr_t handleBadDouble(addr_t eAddr, addr_t parentAddr, double value)
+{
+    return handleBadValue(eAddr, parentAddr, DatumPtr(value), [](DatumPtr p) {
+        if (p.isWord())
+        {
+            Word *word = p.wordValue();
+            word->numberValue();
+            return word->numberIsValid;
+        }
+        return false;
+    
+     });
 }
