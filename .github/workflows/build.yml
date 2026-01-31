@@ -31,7 +31,7 @@ jobs:
           cmake \
           ninja-build \
           qt6-base-dev \
-          qt6-svg-dev \ 
+          qt6-svg-dev \
           llvm-dev
         
     - name: Configure CMake
