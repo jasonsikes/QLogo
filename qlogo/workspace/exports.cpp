@@ -147,38 +147,38 @@ static QRandomGenerator &randomGenerator()
 addr_t handleBadValue(addr_t eAddr, addr_t parentAddr, DatumPtr value,
     std::function<bool(DatumPtr)> datatypeTest)
 {
-auto *e = reinterpret_cast<Evaluator *>(eAddr);
-auto *parent = reinterpret_cast<ASTNode *>(parentAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *parent = reinterpret_cast<ASTNode *>(parentAddr);
 
-DatumPtr err = {FCError::doesntLike(parent->nodeName, DatumPtr(value))};
-if ( ! getvarErroract())
-{
-e->watch(err.datumValue());
-return reinterpret_cast<addr_t>(err.datumValue());
-}
+    DatumPtr err = {FCError::doesntLike(parent->nodeName, DatumPtr(value))};
+    if ( ! getvarErroract())
+    {
+        e->watch(err.datumValue());
+        return reinterpret_cast<addr_t>(err.datumValue());
+    }
 
-DatumPtr retval;
-while (true)
-{
-Kernel::get().sysPrint(err.toString() + "\n");
-retval = Kernel::get().pause();
-if (datatypeTest(retval))
-{
-break;
-}
-if (retval.isErr())
-{
-break;
-}
-if (retval.isASTNode())
-{
-retval = {FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")))};
-break;
-}
-err = {FCError::doesntLike(parent->nodeName, retval)};
-} // while (true)
-e->watch(retval.datumValue());
-return reinterpret_cast<addr_t>(retval.datumValue());
+    DatumPtr retval;
+    while (true)
+    {
+        Kernel::get().sysPrint(err.toString() + "\n");
+        retval = Kernel::get().pause();
+        if (datatypeTest(retval))
+        {
+            break;
+        }
+        if (retval.isErr())
+        {
+            break;
+        }
+        if (retval.isASTNode())
+        {
+            retval = {FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")))};
+            break;
+        }
+        err = {FCError::doesntLike(parent->nodeName, retval)};
+    } // while (true)
+    e->watch(retval.datumValue());
+    return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
 /// Print an integer to the console.
