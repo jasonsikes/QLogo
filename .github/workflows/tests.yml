@@ -49,7 +49,8 @@ jobs:
     - name: Run tests
       working-directory: build/tests/console
       run: |
-        chmod +x tests/console/test.sh
+        cd build/tests/console
+        chmod +x test.sh
         ./test.sh || true  # Don't fail on first error to see all results
         
     - name: Upload test results
