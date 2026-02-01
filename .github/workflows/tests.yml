@@ -31,7 +31,8 @@ jobs:
           ninja-build \
           qt6-base-dev \
           qt6-svg-dev \
-          llvm-dev
+          llvm-dev \
+          zsh
         
     - name: Configure CMake
       run: |
