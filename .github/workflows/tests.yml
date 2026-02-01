@@ -47,7 +47,6 @@ jobs:
         cmake --build . --config ${{ matrix.build-type }}
         
     - name: Run tests
-      working-directory: build/tests/console
       run: |
         cd build/tests/console
         chmod +x test.sh
