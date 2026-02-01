@@ -138,6 +138,49 @@ static QRandomGenerator &randomGenerator()
     return randomGeneratorInstance;
 }
 
+/// @brief Handle a bad value. If ERRACT is set, call PAUSE. Otherwise, return an error.
+/// @param eAddr a pointer to the Evaluator object
+/// @param parentAddr a pointer to the parent node
+/// @param value the value to handle
+/// @param datatypeTest a function that tests if the value is of the correct type
+/// @return a pointer to the result
+addr_t handleBadValue(addr_t eAddr, addr_t parentAddr, DatumPtr value,
+    std::function<bool(DatumPtr)> datatypeTest)
+{
+auto *e = reinterpret_cast<Evaluator *>(eAddr);
+auto *parent = reinterpret_cast<ASTNode *>(parentAddr);
+
+DatumPtr err = {FCError::doesntLike(parent->nodeName, DatumPtr(value))};
+if ( ! getvarErroract())
+{
+e->watch(err.datumValue());
+return reinterpret_cast<addr_t>(err.datumValue());
+}
+
+DatumPtr retval;
+while (true)
+{
+Kernel::get().sysPrint(err.toString() + "\n");
+retval = Kernel::get().pause();
+if (datatypeTest(retval))
+{
+break;
+}
+if (retval.isErr())
+{
+break;
+}
+if (retval.isASTNode())
+{
+retval = {FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")))};
+break;
+}
+err = {FCError::doesntLike(parent->nodeName, retval)};
+} // while (true)
+e->watch(retval.datumValue());
+return reinterpret_cast<addr_t>(retval.datumValue());
+}
+
 /// Print an integer to the console.
 /// @param p the integer to print.
 /// @note For debugging.
@@ -1951,49 +1994,6 @@ EXPORTC void setVarAsLocal(addr_t varname)
     currentFrame->setVarAsLocal(varNameStr);
 }
 
-/// @brief Handle a bad value. If ERRACT is set, call PAUSE. Otherwise, return an error.
-/// @param eAddr a pointer to the Evaluator object
-/// @param parentAddr a pointer to the parent node
-/// @param value the value to handle
-/// @param datatypeTest a function that tests if the value is of the correct type
-/// @return a pointer to the result
-addr_t handleBadValue(addr_t eAddr, addr_t parentAddr, DatumPtr value,
-                              std::function<bool(DatumPtr)> datatypeTest)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *parent = reinterpret_cast<ASTNode *>(parentAddr);
-
-    DatumPtr err = {FCError::doesntLike(parent->nodeName, DatumPtr(value))};
-    if ( ! getvarErroract())
-    {
-        e->watch(err.datumValue());
-        return reinterpret_cast<addr_t>(err.datumValue());
-    }
-
-    DatumPtr retval;
-    while (true)
-    {
-        Kernel::get().sysPrint(err.toString() + "\n");
-        retval = Kernel::get().pause();
-        if (datatypeTest(retval))
-        {
-            break;
-        }
-        if (retval.isErr())
-        {
-            break;
-        }
-        if (retval.isASTNode())
-        {
-            retval = {FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")))};
-            break;
-        }
-        err = {FCError::doesntLike(parent->nodeName, retval)};
-    } // while (true)
-    e->watch(retval.datumValue());
-    return reinterpret_cast<addr_t>(retval.datumValue());
-}
-
 /// @brief Handle a bad double value. If ERRACT is set, call PAUSE. Otherwise, return an error.
 /// @param eAddr a pointer to the Evaluator object
 /// @param parentAddr a pointer to the parent node
@@ -2011,4 +2011,17 @@ EXPORTC addr_t handleBadDouble(addr_t eAddr, addr_t parentAddr, double value)
         return false;
     
      });
+}
+
+/// @brief Handle a bad datum value. If ERRACT is set, call PAUSE. Otherwise, return an error.
+/// @param eAddr a pointer to the Evaluator object
+/// @param parentAddr a pointer to the parent node
+/// @param valueAddr a pointer to a Datum object
+/// @return a pointer to the result
+EXPORTC addr_t handleBadDatum(addr_t eAddr, addr_t parentAddr, addr_t valueAddr)
+{
+    auto value = reinterpret_cast<Datum *>(valueAddr);
+    return handleBadValue(eAddr, parentAddr, DatumPtr(value), [](DatumPtr p) {
+        return (p.isa() & Datum::typeDataMask) != 0;
+    });
 }

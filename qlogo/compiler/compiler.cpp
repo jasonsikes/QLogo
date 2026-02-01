@@ -866,48 +866,32 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
     BasicBlock *srcBB = scaff->builder.GetInsertBlock();
     Function *theFunction = srcBB->getParent();
 
-    BasicBlock *tryBB = BasicBlock::Create(*scaff->theContext, "try", theFunction);
-    BasicBlock *isNotValidBB = BasicBlock::Create(*scaff->theContext, "notValid", theFunction);
-    BasicBlock *errorActionBB = BasicBlock::Create(*scaff->theContext, "errorAction", theFunction);
-    BasicBlock *notDatumBB = BasicBlock::Create(*scaff->theContext, "notDatum", theFunction);
+    BasicBlock *validateBB = BasicBlock::Create(*scaff->theContext, "validate", theFunction);
+    BasicBlock *erractBB = BasicBlock::Create(*scaff->theContext, "errorAction", theFunction);
     BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, "bailout", theFunction);
     BasicBlock *acceptBB = BasicBlock::Create(*scaff->theContext, "accept", theFunction);
 
-    scaff->builder.CreateBr(tryBB);
+    scaff->builder.CreateBr(validateBB);
 
     // Validate the datum.
-    scaff->builder.SetInsertPoint(tryBB);
+    scaff->builder.SetInsertPoint(validateBB);
     PHINode *candidate = scaff->builder.CreatePHI(TyAddr, 2, "candidate");
     candidate->addIncoming(src, srcBB);
     Value *cond = validator(candidate);
-    scaff->builder.CreateCondBr(cond, acceptBB, isNotValidBB);
+    scaff->builder.CreateCondBr(cond, acceptBB, erractBB);
 
-    // The datum is not valid. Check if ERRACT is set.
-    scaff->builder.SetInsertPoint(isNotValidBB);
-    Value *varErroract = generateCallExtern(TyBool, getvarErroract);
-    Value *isTrue = scaff->builder.CreateICmpEQ(varErroract, CoBool(true), "isTrue");
-    scaff->builder.CreateCondBr(isTrue, errorActionBB, bailoutBB);
-
-    // Perform ERRACT (PAUSE)
-    scaff->builder.SetInsertPoint(errorActionBB);
-    Value *errmsg = generateErrorNoLike(parent, src);
-    generateCallExtern(TyAddr, stdWriteDatum, PaAddr(errmsg), PaBool(CoBool(true)));
-    Value *newCandidate = generateCallExtern(TyAddr, callPause, PaAddr(evaluator));
-    Value *datamIsa = generateGetDatumIsa(newCandidate);
+    // The datum is bad. Pass control to handleBadDatum.
+    scaff->builder.SetInsertPoint(erractBB);
+    Value *handlerResult = generateCallExtern(TyAddr, handleBadDatum, PaAddr(evaluator), PaAddr(CoAddr(parent)), PaAddr(candidate));
+    Value *datamIsa = generateGetDatumIsa(handlerResult); // See if result is a datum.
     Value *isDatumMasked = scaff->builder.CreateAnd(datamIsa, CoInt32(Datum::typeDataMask), "isDatumMasked");
-    Value *isDatum = scaff->builder.CreateICmpNE(isDatumMasked, CoInt32(0), "isDatum");
-    candidate->addIncoming(newCandidate, errorActionBB);
-    scaff->builder.CreateCondBr(isDatum, tryBB, notDatumBB);
-
-    // The new candidate is not a datum. Return a TOPLEVEL error.
-    scaff->builder.SetInsertPoint(notDatumBB);
-    Value *toplevelErrorObj = generateErrorToplevel();
-    scaff->builder.CreateRet(toplevelErrorObj);
+    Value *isDatumCond = scaff->builder.CreateICmpNE(isDatumMasked, CoInt32(0), "isDatumCond");
+    candidate->addIncoming(handlerResult, erractBB);
+    scaff->builder.CreateCondBr(isDatumCond, validateBB, bailoutBB);
 
     // The datum is bad, and ERRACT is not set. Return a DOESN'T LIKE error.
     scaff->builder.SetInsertPoint(bailoutBB);
-    Value *errObj = generateErrorNoLike(parent, src);
-    scaff->builder.CreateRet(errObj);
+    scaff->builder.CreateRet(handlerResult);
 
     // The datum is good. Continue.
     scaff->builder.SetInsertPoint(acceptBB);

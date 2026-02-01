@@ -150,5 +150,5 @@ EXPORTC bool getvarErroract(void);
 EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr);
 EXPORTC void setVarAsLocal(addr_t varname);
 EXPORTC addr_t handleBadDouble(addr_t eAddr, addr_t parentAddr, double value);
-
+EXPORTC addr_t handleBadDatum(addr_t eAddr, addr_t parentAddr, addr_t valueAddr);
 #endif // WORKSPACE_EXPORTS_H
