@@ -8,6 +8,12 @@
 
 #include "datum_ptr.h"
 #include <QList>
+
+// llvm #defines "emit". Qt uses "emit" as a function name.
+#ifdef emit
+#undef emit
+#endif
+
 #include <llvm/ExecutionEngine/Orc/Core.h>
 #include <llvm/IR/Value.h>
 

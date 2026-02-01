@@ -19,6 +19,12 @@
 
 #include "compiler_types.h"
 #include "datum_ptr.h"
+
+// llvm #defines "emit". Qt uses "emit" as a function name.
+#ifdef emit
+#undef emit
+#endif
+
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/Transforms/Scalar/GVN.h"
 #include "llvm/Transforms/Scalar/Reassociate.h"
