@@ -108,6 +108,13 @@ class Config
     Config &operator=(const Config &other) = delete;
     Config &operator=(Config &&other) = delete;
 
+#ifdef DEBUG
+const bool debugBuild = true;
+#else
+const bool debugBuild = false;
+#endif
+    
+    
     /// @brief Get the singleton instance of the Config class.
     /// @return The singleton instance of the Config class.
     static Config &get()
@@ -171,7 +178,8 @@ class Config
     // Set to true if Compiler should verify the generated functions.
     // Use for development. Compiler may generate bad code in unreachable
     // sections, i.e. when handling parsing errors.
-    bool verifyIR = false;
+    // Default to true in debug build.
+    bool verifyIR = debugBuild;
 
     // Set to true iff compiler should show the CFG view.
     bool showCON = false;

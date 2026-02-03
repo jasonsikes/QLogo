@@ -17,6 +17,7 @@
 #include "compiler.h"
 #include "astnode.h"
 #include "compiler_internal.h"
+#include "flowcontrol.h"
 #include "datum_types.h"
 #include "workspace/exports.h"
 #include "workspace/kernel.h"
@@ -313,8 +314,8 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     // Validate the generated code, checking for consistency.
     if (Config::get().verifyIR && verifyFunction(*theFunction, &output))
     {
-        std::cout << str << "\n";
-        Q_ASSERT(false);
+        qCritical() << "IR verification failed: " << str << "\n";
+        throw FCError::fatalInternal();
     }
 
     if (Config::get().showIR)
@@ -339,7 +340,8 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
 
     // Get the symbol's address and cast it to the right type so we can
     // call it as a native function.
-    compiledText->functionPtr = reinterpret_cast<CompiledFunctionPtr>(exprSymbol.getAddress().getValue());
+    auto addr = exprSymbol.getAddress().getValue();
+    compiledText->functionPtr = reinterpret_cast<CompiledFunctionPtr>(addr);
     return compiledText->functionPtr;
 }
 
@@ -371,77 +373,77 @@ Value *Compiler::generateCast(Value *src, ASTNode *parent, const DatumPtr &node,
     Q_ASSERT(!src->getType()->isVoidTy());
     RequestReturnType srcReturnType = node.astnodeValue()->returnType;
 
-    // If the source and destination are the same type, no casting necessary.
     if (srcReturnType == destReturnType)
         return src;
 
-    // If src is a number(REAL)
     if (src->getType()->isDoubleTy())
-    {
-        if (destReturnType & RequestReturnReal)
-            return src;
-        Value *srcAsWord = generateWordFromDouble(src);
-        if (destReturnType & RequestReturnDatum)
-            return srcAsWord;
-        if (destReturnType & (RequestReturnBool))
-            return generateImmediateReturn(generateErrorNoLike(parent, srcAsWord));
-        if (destReturnType & RequestReturnNothing)
-            return generateImmediateReturn(generateErrorNoSay(srcAsWord));
-        Q_ASSERT(false);
-    }
-
-    // If src is a boolean
+        return generateCastFromDouble(src, parent, destReturnType);
     if (src->getType()->isIntegerTy(1))
-    {
-        if (destReturnType & RequestReturnBool)
-            return src;
-        Value *srcAsWord = generateWordFromBool(src);
-        if (destReturnType & RequestReturnDatum)
-            return srcAsWord;
-        if (destReturnType & (RequestReturnReal))
-            return generateImmediateReturn(generateErrorNoLike(parent, srcAsWord));
-        if (destReturnType & RequestReturnNothing)
-            return generateImmediateReturn(generateErrorNoSay(srcAsWord));
-        Q_ASSERT(false);
-    }
-
-    // If src is a Datum
+        return generateCastFromBool(src, parent, destReturnType);
     if (srcReturnType == RequestReturnDatum)
-    {
-        if (destReturnType & RequestReturnDatum)
-            return src;
-        if (destReturnType & RequestReturnBool)
-            return generateBoolFromDatum(parent, src);
-        if (destReturnType & RequestReturnReal)
-            return generateDoubleFromDatum(parent, src);
-        if (destReturnType & RequestReturnNothing)
-            return generateImmediateReturn(generateErrorNoSay(src));
-        Q_ASSERT(false);
-    }
-
+        return generateCastFromDatum(src, parent, destReturnType);
     if (srcReturnType == RequestReturnNothing)
-    {
-        if (destReturnType & RequestReturnNothing)
-            return src;
+        return generateCastFromNothing(src, parent, destReturnType);
 
-        return generateImmediateReturn(generateErrorNoOutput(src, parent));
-    }
+    Q_ASSERT(srcReturnType == RequestReturnDN);
+    return generateCastFromDN(src, parent, destReturnType);
+}
 
-    if (srcReturnType == RequestReturnDN)
-    {
-        if (destReturnType == RequestReturnNothing)
-            return generateNothingFromDatum(parent, src);
-        if (destReturnType == RequestReturnDatum)
-            return generateNotNothingFromDatum(parent, src);
-        if (destReturnType == RequestReturnReal)
-            return generateDoubleFromDatum(parent, src);
-        if (destReturnType == RequestReturnBool)
-            return generateBoolFromDatum(parent, src);
-        Q_ASSERT(false);
-    }
+Value *Compiler::generateCastFromDouble(Value *src, ASTNode *parent, RequestReturnType destReturnType)
+{
+    if (destReturnType & RequestReturnReal)
+        return src;
+    Value *srcAsWord = generateWordFromDouble(src);
+    if (destReturnType & RequestReturnDatum)
+        return srcAsWord;
+    if (destReturnType & RequestReturnBool)
+        return generateImmediateReturn(generateErrorNoLike(parent, srcAsWord));
+    Q_ASSERT(destReturnType & RequestReturnNothing);
+    return generateImmediateReturn(generateErrorNoSay(srcAsWord));
+}
 
-    Q_ASSERT(false);
-    return nullptr;
+Value *Compiler::generateCastFromBool(Value *src, ASTNode *parent, RequestReturnType destReturnType)
+{
+    if (destReturnType & RequestReturnBool)
+        return src;
+    Value *srcAsWord = generateWordFromBool(src);
+    if (destReturnType & RequestReturnDatum)
+        return srcAsWord;
+    if (destReturnType & RequestReturnReal)
+        return generateImmediateReturn(generateErrorNoLike(parent, srcAsWord));
+    Q_ASSERT(destReturnType & RequestReturnNothing);
+    return generateImmediateReturn(generateErrorNoSay(srcAsWord));
+}
+
+Value *Compiler::generateCastFromDatum(Value *src, ASTNode *parent, RequestReturnType destReturnType)
+{
+    if (destReturnType & RequestReturnDatum)
+        return src;
+    if (destReturnType & RequestReturnBool)
+        return generateBoolFromDatum(parent, src);
+    if (destReturnType & RequestReturnReal)
+        return generateDoubleFromDatum(parent, src);
+    Q_ASSERT(destReturnType & RequestReturnNothing);
+    return generateImmediateReturn(generateErrorNoSay(src));
+}
+
+Value *Compiler::generateCastFromNothing(Value *src, ASTNode *parent, RequestReturnType destReturnType)
+{
+    if (destReturnType & RequestReturnNothing)
+        return src;
+    return generateImmediateReturn(generateErrorNoOutput(src, parent));
+}
+
+Value *Compiler::generateCastFromDN(Value *src, ASTNode *parent, RequestReturnType destReturnType)
+{
+    if (destReturnType == RequestReturnNothing)
+        return generateNothingFromDatum(parent, src);
+    if (destReturnType == RequestReturnDatum)
+        return generateNotNothingFromDatum(parent, src);
+    if (destReturnType == RequestReturnReal)
+        return generateDoubleFromDatum(parent, src);
+    Q_ASSERT(destReturnType == RequestReturnBool);
+    return generateBoolFromDatum(parent, src);
 }
 
 Value *Compiler::generateChild(ASTNode *parent, const DatumPtr &node, RequestReturnType returnType)
@@ -558,31 +560,29 @@ Value *Compiler::generateArrayFromDatum(ASTNode *parent, Value *src)
 Value *Compiler::genLiteral(const DatumPtr &node, RequestReturnType returnType)
 {
     DatumPtr literalPtr = node.astnodeValue()->childAtIndex(0);
-    if (returnType == RequestReturnReal)
+
+    // A literal is a Word, List, or Array.
+    // However, the caller may want a Bool or Real.
+    // We can cast, but only if the literal is a Word and can be cast to the requested type.
+    if (literalPtr.isWord())
     {
-        if (literalPtr.isWord())
+        Word *wVal = literalPtr.wordValue();
+        if (returnType == RequestReturnReal)
         {
-            Word *wVal = literalPtr.wordValue();
             double val = wVal->numberValue();
             if (wVal->numberIsValid)
                 return CoDouble(val);
         }
-        return CoAddr(literalPtr.datumValue());
-    }
-    if (returnType == RequestReturnBool)
-    {
-        if (literalPtr.isWord())
+        if (returnType == RequestReturnBool)
         {
-            Word *wVal = literalPtr.wordValue();
             bool val = wVal->boolValue();
             if (wVal->boolIsValid)
                 return CoBool(val);
         }
-        return CoAddr(literalPtr.datumValue());
     }
 
-    // If it's not Bool or Real then it must be a Datum or Nothing.
-    Q_ASSERT ((returnType & RequestReturnDN) != 0);
+    // Casting has failed, or the caller simply requested a Datum.
+    // In any case, return the literal as a Datum.
     Datum *val = literalPtr.datumValue();
     return CoAddr(val);
 }
@@ -694,17 +694,24 @@ Value *Compiler::generateImmediateReturn(llvm::Value *retval)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
 
-    // We are generating an immediate return value. Even though the code afterward will never be executed,
-    // we need to allow the compiler to finish generating the code.
     BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, "bailout", theFunction);
-    BasicBlock *throwAwayBB = BasicBlock::Create(*scaff->theContext, "throw_away", theFunction);
-    Value *cond = scaff->builder.CreateICmpEQ(CoInt64(1), CoInt64(0), "fakeTest");
+    BasicBlock *throwAwayBB = BasicBlock::Create(*scaff->theContext, "throwAway", theFunction);
+
+    // UCBLogo allows code to execute up to the point of failure.
+    // Since the compiler has found the error, we need to:
+    // 1. Allow the code before the error location to execute.
+    // 2. Return the error value.
+    // 3. Ignore any code after the error location.
+    // To do this we allow the compiler to finish generating the code after this point,
+    // and insert it after a test that will always fail, so the code will never be executed.
+    Value *cond = scaff->builder.CreateICmpEQ(CoBool(1), CoBool(0), "fakeTest");
     scaff->builder.CreateCondBr(cond, throwAwayBB, bailoutBB);
 
     scaff->builder.SetInsertPoint(bailoutBB);
     scaff->builder.CreateRet(retval);
 
-    // This is never reached.
+    // Any code that the compiler has remaining to generate after the error location will
+    // be placed here, and then ignored.
     scaff->builder.SetInsertPoint(throwAwayBB);
     return retval;
 }
@@ -715,11 +722,9 @@ std::vector<Value *> Compiler::generateChildren(ASTNode *node, RequestReturnType
     retval.reserve(node->countOfChildren());
     for (int i = 0; i < node->countOfChildren(); ++i)
     {
-        retval.push_back(generateChildOfNode(node, node->childAtIndex(i), returnType));
-    }
-    for (int i = 0; i < node->countOfChildren(); ++i)
-    {
-        retval[i] = generateCast(retval[i], node, node->childAtIndex(i), returnType);
+        Value *v = generateChildOfNode(node, node->childAtIndex(i), returnType);
+        Value *casted = generateCast(v, node, node->childAtIndex(i), returnType);
+        retval.push_back(casted);
     }
 
     return retval;
@@ -734,7 +739,7 @@ AllocaInst *Compiler::generateChildrenAlloca(ASTNode *node, RequestReturnType re
 AllocaInst *Compiler::generateAllocaAry(const std::vector<llvm::Value *> &values, const std::string &name)
 {
     Value *childCount = CoInt32(values.size());
-    Value *offset = CoInt64(sizeof(addr_t));
+    Value *offset = CoInt64(context_->getDataLayout().getPointerSize());
     AllocaInst *retval = scaff->builder.CreateAlloca(TyAddr, childCount, name);
     Value *aryPtr = retval;
     for (int i = 0; i < values.size(); ++i)
@@ -839,14 +844,15 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
     Value *isValidCond = validator(candidate);
     scaff->builder.CreateCondBr(isValidCond, acceptBB, erractBB);
 
-    // The number is bad. Pass control to handleBadDouble.
+    // The number is bad. Call handleBadDouble and maybe retry with the result.
     scaff->builder.SetInsertPoint(erractBB);
     Value *handlerResult = generateCallExtern(TyAddr, handleBadDouble, PaAddr(evaluator), PaAddr(CoAddr(parent)), PaDouble(candidate));
-    Value *datamIsa = generateGetDatumIsa(handlerResult); // See if result is a word.
-    Value *isDatumCond = scaff->builder.CreateICmpEQ(datamIsa, CoInt32(Datum::typeWord), "isDatumCond");
+    Value *datamIsa = generateGetDatumIsa(handlerResult); // See if result is a datum.
+    Value *isDatumMasked = scaff->builder.CreateAnd(datamIsa, CoInt32(Datum::typeDataMask), "isDatumMasked");
+    Value *isDatumCond = scaff->builder.CreateICmpNE(isDatumMasked, CoInt32(0), "isDatumCond");
     scaff->builder.CreateCondBr(isDatumCond, convertBB, bailoutBB);
 
-    // A Word was returned. Convert it to a double.
+    // A Word was returned. Convert it to a double and try validating it again.
     scaff->builder.SetInsertPoint(convertBB);
     Value *dVal = generateCallExtern(TyDouble, getDoubleForDatum, PaAddr(evaluator), PaAddr(handlerResult));
     candidate->addIncoming(dVal, convertBB);
@@ -880,7 +886,7 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
     Value *cond = validator(candidate);
     scaff->builder.CreateCondBr(cond, acceptBB, erractBB);
 
-    // The datum is bad. Pass control to handleBadDatum.
+    // The datum is bad. Call handleBadDatum and maybe retry with the result.
     scaff->builder.SetInsertPoint(erractBB);
     Value *handlerResult = generateCallExtern(TyAddr, handleBadDatum, PaAddr(evaluator), PaAddr(CoAddr(parent)), PaAddr(candidate));
     Value *datamIsa = generateGetDatumIsa(handlerResult); // See if result is a datum.

@@ -80,6 +80,13 @@ class Compiler
     // Glue to ensure requested data type matches the type returned from child
     llvm::Value *generateCast(llvm::Value *child, ASTNode *parent, const DatumPtr &, RequestReturnType);
 
+    // Cast helpers: source type is known, emit code to produce destReturnType.
+    llvm::Value *generateCastFromDouble(llvm::Value *src, ASTNode *parent, RequestReturnType destReturnType);
+    llvm::Value *generateCastFromBool(llvm::Value *src, ASTNode *parent, RequestReturnType destReturnType);
+    llvm::Value *generateCastFromDatum(llvm::Value *src, ASTNode *parent, RequestReturnType destReturnType);
+    llvm::Value *generateCastFromNothing(llvm::Value *src, ASTNode *parent, RequestReturnType destReturnType);
+    llvm::Value *generateCastFromDN(llvm::Value *src, ASTNode *parent, RequestReturnType destReturnType);
+
     // Generate code for a child node and cast it to the requested data type.
     llvm::Value *generateChild(ASTNode *parent, const DatumPtr &, RequestReturnType);
 

@@ -114,6 +114,7 @@ struct FCContinuation : public FlowControl
 /// @brief The error code for an error.
 enum ErrCode : int
 {
+    ERR_FATAL_INTERNAL = 0,
     ERR_TURTLE_BOUNDS = 3,
     ERR_DOESNT_LIKE = 4,
     ERR_DIDNT_OUTPUT = 5,
@@ -289,6 +290,10 @@ struct FCError : public FlowControl
     /// @param message An optional message to accompany the error.
     /// @param output An optional output to accompany the error.
     static FCError *custom(const DatumPtr &tag, DatumPtr message = nothing(), const DatumPtr &output = nothing());
+
+    /// @brief Create an error object for a fatal internal error.
+    /// @details This is an error so bad that it cannot be caught.
+    static FCError *fatalInternal();
 
     /// @brief Create an error object for a turtle out of bounds error.
     static FCError *turtleOutOfBounds();

@@ -66,6 +66,13 @@ FCError *FCError::custom(const DatumPtr &tag, DatumPtr message, const DatumPtr &
     return new FCError(code, message, tag, output);
 }
 
+FCError *FCError::fatalInternal()
+{
+    auto *err = new FCError(ERR_FATAL_INTERNAL, QObject::tr("Fatal internal error"));
+    qFatal("%s\n", err->toString().toStdString().c_str());
+    return err;
+}
+
 FCError *FCError::turtleOutOfBounds()
 {
     return new FCError(ERR_TURTLE_BOUNDS, QObject::tr("Turtle out of bounds"));
