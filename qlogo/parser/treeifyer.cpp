@@ -76,10 +76,9 @@ bool isTag(const DatumPtr &node)
 }
 
 // Note that this static method maintains the singleton instance of the Treeifier class
-const QList<QList<DatumPtr>> &Treeifier::astFromList(List *aList)
+QList<DatumPtr> Treeifier::astFromList(List *aList)
 {
     static Treeifier instance;
-    instance.retval.clear();
 
     // Mark the list with current timestamp to track compilation time
     aList->compileTimeStamp = QDateTime::currentMSecsSinceEpoch();
@@ -87,7 +86,7 @@ const QList<QList<DatumPtr>> &Treeifier::astFromList(List *aList)
     DatumPtr runParsedList = runparse(aList);
 
     instance.listIter = runParsedList.listValue();
-    QList<DatumPtr> astFlatList;
+    QList<DatumPtr> retval;
 
     instance.advanceToken();
 
@@ -96,7 +95,7 @@ const QList<QList<DatumPtr>> &Treeifier::astFromList(List *aList)
     {
         while (!instance.currentToken.isNothing())
         {
-            astFlatList.push_back(instance.treeifyRootExp());
+            retval.push_back(instance.treeifyRootExp());
         }
     }
     catch (FCError *e)
@@ -105,41 +104,8 @@ const QList<QList<DatumPtr>> &Treeifier::astFromList(List *aList)
         aList->compileTimeStamp = 0;
         throw;
     }
-    // If the last ASTNode is a tag, generate a NOOP expression after it
-    // to ensure that there is an instruction to jump to.
-    Q_ASSERT(!astFlatList.isEmpty());
-    if (isTag(astFlatList.last()))
-    {
-        auto *noopNode = new ASTNode(DatumPtr(keywordNoop()));
-        noopNode->genExpression = &Compiler::genNoop;
-        noopNode->returnType = RequestReturnNothing;
-        astFlatList.append(DatumPtr(noopNode));
-    }
 
-    // Now create AST sublists for tag/block pairs.
-    // Group consecutive nodes of the same type (tag or non-tag) together
-    QList<DatumPtr> currentBlock;
-    for (auto &node : astFlatList)
-    {
-        if (currentBlock.isEmpty())
-            // Start a new block with the first node
-            currentBlock.append(node);
-        else
-        {
-            if (isTag(node) == isTag(currentBlock.last()))
-                // Same type as previous node: add to current block
-                currentBlock.append(node);
-            else
-            {
-                // Type changed: save current block and start a new one
-                instance.retval.append(currentBlock);
-                currentBlock = {node};
-            }
-        }
-    }
-    // Append the final block
-    instance.retval.append(currentBlock);
-    return instance.retval;
+    return retval;
 }
 
 // The remaining methods treeify into AST nodes.

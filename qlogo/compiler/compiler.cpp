@@ -21,6 +21,7 @@
 #include "datum_types.h"
 #include "workspace/exports.h"
 #include "workspace/kernel.h"
+#include "op_strings.h"
 #include "sharedconstants.h"
 #include "treeifyer.h"
 #include "workspace/callframe.h"
@@ -345,11 +346,51 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     return compiledText->functionPtr;
 }
 
+QList<QList<DatumPtr>> Compiler::groupConsecutiveExpressions(const QList<DatumPtr> &expressions)
+{
+    QList<QList<DatumPtr>> retval;
+    QList<DatumPtr> currentBlock;
+    for (auto &node : expressions)
+    {
+        if (currentBlock.isEmpty())
+            // Start a new block with this expression
+            currentBlock.append(node);
+        else
+        {
+            if (isTag(node) == isTag(currentBlock.last()))
+                // Same type as previous expression: add to current block
+                currentBlock.append(node);
+            else
+            {
+                // Type changed: save current block and start a new one with this expression
+                retval.append(currentBlock);
+                currentBlock = {node};
+            }
+        }
+    }
+    // Append the final block of expressions
+    retval.append(currentBlock);
+
+    // If the last block is a tag, append a NOOP expression to ensure that there is an instruction to jump to.
+    if (!currentBlock.isEmpty() && isTag(currentBlock.last()))
+    {
+        auto *noopNode = new ASTNode(DatumPtr(StringConstants::keywordNoop()));
+        noopNode->genExpression = &Compiler::genNoop;
+        noopNode->returnType = RequestReturnNothing;
+
+        currentBlock = {DatumPtr(noopNode)};
+        retval.append(currentBlock);
+    }
+
+    return retval;
+}
+
 CompiledFunctionPtr Compiler::functionPtrFromList(List *aList)
 {
     if (aList->compileTimeStamp <= Procedures::get().timeOfLastProcedureCreation())
     {
-        QList<QList<DatumPtr>> parsedList = Treeifier::astFromList(aList);
+        QList<DatumPtr> astFlatList = Treeifier::astFromList(aList);
+        QList<QList<DatumPtr>> parsedList = groupConsecutiveExpressions(astFlatList);
         return generateFunctionPtrFromASTList(parsedList, static_cast<Datum *>(aList));
     }
 

@@ -30,8 +30,6 @@ class Treeifier
 {
     DatumPtr currentToken;
 
-    QList<QList<DatumPtr>> retval;
-
     void advanceToken();
     List *listIter;
 
@@ -60,7 +58,7 @@ class Treeifier
     /// @note A QLogo list may hold multiple trees. For example,
     /// `[HOME FORWARD 100]` is a list containing two trees, one for the `HOME`
     /// command and one for the `FORWARD` command.
-    static const QList<QList<DatumPtr>> &astFromList(List *aList);
+    static QList<DatumPtr> astFromList(List *aList);
 };
 
 /// @brief Convenience function to check if a node is a tag.

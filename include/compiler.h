@@ -220,6 +220,9 @@ class Compiler
     // @param isAnd true if AND, false if OR
     llvm::Value *generateAndOr(const DatumPtr &node, RequestReturnType returnType, bool isAnd);
 
+    // Group consecutive expressions of the same type (tag or non-tag) together.
+    QList<QList<DatumPtr>> groupConsecutiveExpressions(const QList<DatumPtr> &expressions);
+
     // Get the compiled function pointer for a list of ASTNodes.
     CompiledFunctionPtr generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, Datum *key);
 
