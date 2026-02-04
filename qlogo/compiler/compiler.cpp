@@ -248,11 +248,11 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     FunctionType *ft = FunctionType::get(TyAddr, paramAry, false);
     Function *theFunction = Function::Create(ft, Function::ExternalLinkage, scaff->name, *scaff->theModule);
 
-    // Set the name for the evaluator argument
+    // The first argument is the evaluator pointer.
     evaluator = theFunction->getArg(0);
     evaluator->setName("evaluator");
 
-    // Set the name for the block ID argument
+    // The second argument is the block ID for the block to begin execution at.
     blockId = theFunction->getArg(1);
     blockId->setName("blockId");
 
@@ -267,7 +267,9 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
         parsedList.removeFirst();
     }
 
-    BasicBlock *currentBlock = BasicBlock::Create(*scaff->theContext, "Block", theFunction);
+    // At this point we know that the first block and last block are not tags.
+
+    BasicBlock *currentBlock = BasicBlock::Create(*scaff->theContext, "First Block", theFunction);
     QList<BasicBlock *> blocks = {currentBlock};
     scaff->builder.SetInsertPoint(currentBlock);
 
@@ -278,9 +280,9 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
         if (isTag(srcBlock.first()))
         {
             ++localBlockId;
-            BasicBlock *newBlock = BasicBlock::Create(*scaff->theContext, "Block", theFunction);
+            BasicBlock *newBlock = BasicBlock::Create(*scaff->theContext, "Next Block", theFunction);
             blocks.append(newBlock);
-            scaff->builder.SetInsertPoint(currentBlock);
+            scaff->builder.SetInsertPoint(scaff->builder.GetInsertBlock());
             scaff->builder.CreateBr(newBlock);
             currentBlock = newBlock;
             scaff->builder.SetInsertPoint(newBlock);
