@@ -396,7 +396,8 @@ Value *Compiler::genGoto(const DatumPtr &node, RequestReturnType returnType)
     Value *tag = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     tag = generateWordFromDatum(node.astnodeValue(), tag);
     Value *retObj = generateCallExtern(TyAddr, getCtrlGoto, PaAddr(evaluator), PaAddr(nodeAddr), PaAddr(tag));
-    return retObj;
+    generateImmediateReturn(retObj);
+    return generateVoidRetval(node);
 }
 
 /***DOC CATCH

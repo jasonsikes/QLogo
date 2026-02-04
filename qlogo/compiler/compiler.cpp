@@ -697,12 +697,13 @@ Value *Compiler::generateImmediateReturn(llvm::Value *retval)
     BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, "bailout", theFunction);
     BasicBlock *throwAwayBB = BasicBlock::Create(*scaff->theContext, "throwAway", theFunction);
 
-    // UCBLogo allows code to execute up to the point of failure.
-    // Since the compiler has found the error, we need to:
-    // 1. Allow the code before the error location to execute.
-    // 2. Return the error value.
-    // 3. Ignore any code after the error location.
-    // To do this we allow the compiler to finish generating the code after this point,
+    // We are going to return something at this point.
+    // However, there may be code after this point that we have to compile and then ignore.
+    // So we need to:
+    // 1. Allow the code before this point to execute.
+    // 2. Return the control operation.
+    // 3. Ignore any code after the return operation.
+    // To do this we allow the compiler to finish generating the code after the return operation,
     // and insert it after a test that will always fail, so the code will never be executed.
     Value *cond = scaff->builder.CreateICmpEQ(CoBool(1), CoBool(0), "fakeTest");
     scaff->builder.CreateCondBr(cond, throwAwayBB, bailoutBB);
@@ -710,7 +711,7 @@ Value *Compiler::generateImmediateReturn(llvm::Value *retval)
     scaff->builder.SetInsertPoint(bailoutBB);
     scaff->builder.CreateRet(retval);
 
-    // Any code that the compiler has remaining to generate after the error location will
+    // Any code that the compiler has remaining to generate after the return operation will
     // be placed here, and then ignored.
     scaff->builder.SetInsertPoint(throwAwayBB);
     return retval;
