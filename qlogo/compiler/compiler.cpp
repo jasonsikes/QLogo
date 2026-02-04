@@ -307,9 +307,6 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
         generateTOC(blocks, theFunction);
     }
 
-    // Run the optimizer on the function.
-    scaff->theFPM.run(*theFunction, scaff->theFAM);
-
     std::string str;
     llvm::raw_string_ostream output(str);
     // Validate the generated code, checking for consistency.
@@ -318,6 +315,9 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
         qCritical() << "IR verification failed: " << str << "\n";
         throw FCError::fatalInternal();
     }
+
+    // Run the optimizer on the function.
+    scaff->theFPM.run(*theFunction, scaff->theFAM);
 
     if (Config::get().showIR)
     {
