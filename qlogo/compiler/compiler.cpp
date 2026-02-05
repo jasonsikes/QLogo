@@ -201,32 +201,17 @@ BasicBlock *Compiler::generateTOC(QList<BasicBlock *> blocks, Function *theFunct
 {
     Q_ASSERT(blocks.size() > 1);
 
-    // The Tag-to-Block Table of Contents.
-    QList<BasicBlock *> tocEntries;
+    BasicBlock *tocBlock = BasicBlock::Create(*scaff->theContext, "Toc", theFunction, blocks[0]);
+    scaff->builder.SetInsertPoint(tocBlock);
 
-    // Since the TOC is prepended, insert them at the start of the function in reverse order.
-    BasicBlock *previousBlock = blocks[0];
-    for (int i = 1; i < blocks.size(); ++i)
+    llvm::SwitchInst *switchInst = scaff->builder.CreateSwitch(blockId, blocks[0], static_cast<unsigned>(blocks.size() - 1));
+    for (unsigned i = 1; i < blocks.size(); ++i)
     {
-        BasicBlock *tocBlock = BasicBlock::Create(*scaff->theContext, "Toc", theFunction, previousBlock);
-        tocEntries.prepend(tocBlock);
-        previousBlock = tocBlock;
+        switchInst->addCase(llvm::cast<llvm::ConstantInt>(
+                                ConstantInt::get(blockId->getType(), i)),
+                            blocks[i]);
     }
-
-    for (int i = 0; i < tocEntries.size(); ++i)
-    {
-        BasicBlock *tocEntry = tocEntries[i];
-        uint32_t tagId = i + 1;
-        BasicBlock *destBlock = blocks[tagId];
-        BasicBlock *nextBlock = (tagId == blocks.size() - 1) ? blocks[0] : tocEntries[tagId];
-
-        scaff->builder.SetInsertPoint(tocEntry);
-        Value *tagIdValue = CoInt32(tagId);
-
-        Value *cond = scaff->builder.CreateICmpEQ(blockId, tagIdValue, "tocCond");
-        scaff->builder.CreateCondBr(cond, destBlock, nextBlock);
-    }
-    return tocEntries[0];
+    return tocBlock;
 }
 
 CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, Datum *key)
