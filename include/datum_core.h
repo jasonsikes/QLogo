@@ -15,6 +15,15 @@ class Datum
     friend class DatumPtr;
     friend struct Evaluator;
 
+private:
+    // Explicitly private because Datums are not relocatable.
+    // Their addresses are used as key values for mapping operations.
+    Datum &operator=(const Datum &) = delete;
+    Datum &operator=(Datum &&) = delete;
+    Datum &operator=(Datum *) = delete;
+    Datum(const Datum &) = delete;
+    Datum(Datum &&) = delete;
+
   protected:
     /// @brief Protected constructor to prevent direct instantiation.
     ///
@@ -24,11 +33,6 @@ class Datum
     Datum();
 
   public:
-    Datum &operator=(const Datum &) = delete;
-    Datum &operator=(Datum &&) = delete;
-    Datum &operator=(Datum *) = delete;
-    Datum(const Datum &) = delete;
-    Datum(Datum &&) = delete;
 
     /// @brief Value stored in isa.
     enum DatumType : uint32_t
