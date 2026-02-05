@@ -27,8 +27,16 @@
 #include "workspace/callframe.h"
 #include "workspace/procedures.h"
 #include <iostream>
+#include <string>
 
 QHash<Datum *, std::shared_ptr<CompiledText>> Compiler::compiledTextTable;
+
+const char *dbgName(const char *enclosing, const char *name)
+{
+    static thread_local std::string storage;
+    storage = std::string(enclosing) + " " + name;
+    return storage.c_str();
+}
 
 using namespace llvm;
 using namespace llvm::orc;

@@ -104,6 +104,10 @@ struct Scaffold
 #define CoAddr(VAL)   (ConstantExpr::getIntToPtr(CoInt64(VAL), TyAddr))
 #define CoBool(VAL)   (ConstantInt::get(*scaff->theContext, APInt(1, VAL)))
 
+// Debug name mangler: prefix with enclosing C++ function name (e.g. "tocCond" -> "generateTOC tocCond")
+const char *dbgName(const char *enclosing, const char *name);
+#define M(name) (::dbgName(__func__, (name)))
+
 // Parameter combinations
 #define PaInt16(VAL)  {TyInt16, (VAL)}
 #define PaInt32(VAL)  {TyInt32, (VAL)}
