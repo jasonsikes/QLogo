@@ -96,7 +96,7 @@ llvm::Expected<llvm::orc::ExecutorSymbolDef> CompilerContext::lookup(llvm::Strin
     return exeSession->lookup({&jitLib}, mangler(name.str()));
 }
 
-Scaffold::Scaffold(void *parent, const llvm::DataLayout &dataLayout)
+Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
     : theContext(std::make_unique<LLVMContext>()), theModule(std::make_unique<Module>("QLogoJIT", *theContext)),
       builder(IRBuilder<>(*theContext)), theFPM(FunctionPassManager()), theLAM(LoopAnalysisManager()),
       theFAM(FunctionAnalysisManager()), theCGAM(CGSCCAnalysisManager()), theMAM(ModuleAnalysisManager()),
@@ -126,8 +126,9 @@ Scaffold::Scaffold(void *parent, const llvm::DataLayout &dataLayout)
     pb.registerFunctionAnalyses(theFAM);
     pb.crossRegisterProxies(theLAM, theFAM, theCGAM, theMAM);
 
-    // The name of the function is the address of the parent node.
-    name = std::to_string(reinterpret_cast<uint64_t>(parent));
+    // The name of the function is sequentially numbered.
+    static uint64_t functionCount = 1;
+    name = "function_" + std::to_string(functionCount++);
 }
 
 CompiledText::~CompiledText()
@@ -216,7 +217,7 @@ BasicBlock *Compiler::generateTOC(QList<BasicBlock *> blocks, Function *theFunct
 
 CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, Datum *key)
 {
-    Scaffold compilerScaffolding(reinterpret_cast<void *>(key), context_->getDataLayout());
+    Scaffold compilerScaffolding(context_->getDataLayout());
     scaff = &compilerScaffolding;
 
     auto *compiledText = new CompiledText();

@@ -82,7 +82,7 @@ struct Scaffold
     llvm::PassInstrumentationCallbacks thePIC;
     llvm::StandardInstrumentations theSI;
 
-    Scaffold(void *parent, const llvm::DataLayout &dataLayout);
+    Scaffold(const llvm::DataLayout &dataLayout);
 };
 
 // Some defines to reduce boilerplate
