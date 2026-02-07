@@ -17,7 +17,9 @@
 #include "compiler.h"
 #include "astnode.h"
 #include "compiler_internal.h"
+#include "llvm/ExecutionEngine/Orc/LLJIT.h"
 #include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
+#include "llvm/Support/Error.h"
 #include "flowcontrol.h"
 #include "datum_types.h"
 #include "workspace/exports.h"
@@ -33,50 +35,6 @@ QHash<Datum *, std::shared_ptr<CompiledText>> Compiler::compiledTextTable;
 
 using namespace llvm;
 using namespace llvm::orc;
-
-CompilerContext::CompilerContext()
-{
-    auto jitOrErr = llvm::orc::LLJITBuilder()
-                        .setNotifyCreatedCallback([](llvm::orc::LLJIT &J) -> llvm::Error {
-                            if (!J.getTargetTriple().isOSBinFormatCOFF())
-                                return llvm::Error::success();
-                            auto *rtdyld =
-                                llvm::dyn_cast<llvm::orc::RTDyldObjectLinkingLayer>(&J.getObjLinkingLayer());
-                            if (rtdyld)
-                            {
-                                rtdyld->setOverrideObjectFlagsWithResponsibilityFlags(true);
-                                rtdyld->setAutoClaimResponsibilityForObjectSymbols(true);
-                            }
-                            return llvm::Error::success();
-                        })
-                        .create();
-    jit = cantFail(std::move(jitOrErr));
-}
-
-const llvm::DataLayout &CompilerContext::getDataLayout() const
-{
-    return jit->getDataLayout();
-}
-
-llvm::orc::JITDylib &CompilerContext::getMainJITDylib()
-{
-    return jit->getMainJITDylib();
-}
-
-llvm::Error CompilerContext::addModule(llvm::orc::ThreadSafeModule tsm, llvm::orc::ResourceTrackerSP rt)
-{
-    if (!rt)
-        rt = jit->getMainJITDylib().getDefaultResourceTracker();
-    return jit->addIRModule(std::move(rt), std::move(tsm));
-}
-
-llvm::Expected<llvm::orc::ExecutorSymbolDef> CompilerContext::lookup(llvm::StringRef name)
-{
-    auto addrOrErr = jit->lookup(name);
-    if (!addrOrErr)
-        return addrOrErr.takeError();
-    return llvm::orc::ExecutorSymbolDef(*addrOrErr, llvm::JITSymbolFlags::None);
-}
 
 Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
     : theContext(std::make_unique<LLVMContext>()), theModule(std::make_unique<Module>("QLogoJIT", *theContext)),
@@ -115,11 +73,11 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
 
 CompiledText::~CompiledText()
 {
-    // Only remove resource tracker if context is still valid
+    // Only remove resource tracker if compiler is still valid
     // (it may have been destroyed if CompiledText outlives the Compiler singleton)
-    if (context != nullptr && rt)
+    if (compiler != nullptr && rt)
     {
-        context->exitOnErr(rt->remove());
+        cantFail(rt->remove());
     }
 }
 
@@ -129,13 +87,27 @@ Compiler::Compiler()
     InitializeNativeTargetAsmPrinter();
     InitializeNativeTargetAsmParser();
 
-    context_ = std::make_unique<CompilerContext>();
+    auto jitOrErr = llvm::orc::LLJITBuilder()
+                        .setNotifyCreatedCallback([](llvm::orc::LLJIT &J) -> llvm::Error {
+                            if (!J.getTargetTriple().isOSBinFormatCOFF())
+                                return llvm::Error::success();
+                            auto *rtdyld =
+                                llvm::dyn_cast<llvm::orc::RTDyldObjectLinkingLayer>(&J.getObjLinkingLayer());
+                            if (rtdyld)
+                            {
+                                rtdyld->setOverrideObjectFlagsWithResponsibilityFlags(true);
+                                rtdyld->setAutoClaimResponsibilityForObjectSymbols(true);
+                            }
+                            return llvm::Error::success();
+                        })
+                        .create();
+    lljit = cantFail(std::move(jitOrErr));
 }
 
 Compiler::~Compiler()
 {
     // Clear compiledTextTable first to ensure all CompiledText objects are destroyed
-    // while context_ is still valid
+    // while lljit is still valid
     compiledTextTable.clear();
 }
 
@@ -199,12 +171,12 @@ BasicBlock *Compiler::generateTOC(QList<BasicBlock *> blocks, Function *theFunct
 
 CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, Datum *key)
 {
-    Scaffold compilerScaffolding(context_->getDataLayout());
+    Scaffold compilerScaffolding(lljit->getDataLayout());
     scaff = &compilerScaffolding;
 
     auto *compiledText = new CompiledText();
     compiledText->astList = parsedList;
-    compiledText->context = context_.get();
+    compiledText->compiler = this;
     compiledTextTable[key] = std::shared_ptr<CompiledText>(compiledText);
 
     // Generate the prototype and add it to the module.
@@ -302,16 +274,12 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
 
     // Create a ResourceTracker to track JIT'd memory allocated to our
     // anonymous expression -- that way we can free it with the source list.
-    compiledText->rt = context_->getMainJITDylib().createResourceTracker();
+    compiledText->rt = lljit->getMainJITDylib().createResourceTracker();
     auto tsm = ThreadSafeModule(std::move(scaff->theModule), std::move(scaff->theContext));
-    context_->exitOnErr(context_->addModule(std::move(tsm), compiledText->rt));
+    cantFail(lljit->addIRModule(compiledText->rt, std::move(tsm)));
 
     // Search the JIT for the expression by name.
-    ExecutorSymbolDef exprSymbol = context_->exitOnErr(context_->lookup(scaff->name));
-
-    // Get the symbol's address and cast it to the right type so we can
-    // call it as a native function.
-    auto addr = exprSymbol.getAddress().getValue();
+    auto addr = cantFail(lljit->lookup(scaff->name)).getValue();
     compiledText->functionPtr = reinterpret_cast<CompiledFunctionPtr>(addr);
     return compiledText->functionPtr;
 }
@@ -751,7 +719,7 @@ AllocaInst *Compiler::generateChildrenAlloca(ASTNode *node, RequestReturnType re
 AllocaInst *Compiler::generateAllocaAry(const std::vector<llvm::Value *> &values, const std::string &name)
 {
     Value *childCount = CoInt32(values.size());
-    Value *offset = CoInt64(context_->getDataLayout().getPointerSize());
+    Value *offset = CoInt64(lljit->getDataLayout().getPointerSize());
     AllocaInst *retval = scaff->builder.CreateAlloca(TyAddr, childCount, name);
     Value *aryPtr = retval;
     for (int i = 0; i < values.size(); ++i)

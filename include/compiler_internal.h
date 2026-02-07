@@ -24,7 +24,6 @@
 #undef emit
 #endif
 
-#include "llvm/ExecutionEngine/Orc/LLJIT.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Verifier.h"
 #include "llvm/Passes/PassBuilder.h"
@@ -34,22 +33,6 @@
 #include "llvm/Transforms/Scalar/SimplifyCFG.h"
 
 #include <memory>
-
-/// Thin wrapper around LLJIT: owns the JIT and adapts lookup to return ExecutorSymbolDef.
-class CompilerContext
-{
-    std::unique_ptr<llvm::orc::LLJIT> jit;
-
-  public:
-    llvm::ExitOnError exitOnErr;
-
-    CompilerContext();
-
-    const llvm::DataLayout &getDataLayout() const;
-    llvm::orc::JITDylib &getMainJITDylib();
-    llvm::Error addModule(llvm::orc::ThreadSafeModule tsm, llvm::orc::ResourceTrackerSP rt = nullptr);
-    llvm::Expected<llvm::orc::ExecutorSymbolDef> lookup(llvm::StringRef name);
-};
 
 struct Scaffold
 {
