@@ -24,10 +24,7 @@
 #undef emit
 #endif
 
-#include "llvm/ExecutionEngine/Orc/CompileUtils.h"
-#include "llvm/ExecutionEngine/Orc/ExecutionUtils.h"
-#include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
-#include "llvm/ExecutionEngine/SectionMemoryManager.h"
+#include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Verifier.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/StandardInstrumentations.h"
@@ -36,37 +33,6 @@
 #include "llvm/Transforms/Scalar/SimplifyCFG.h"
 
 #include <memory>
-
-// The CompilerContext class holds information that is necessary for the compiler
-// but is not necessary for the objects using the compiler.
-class CompilerContext
-{
-    std::unique_ptr<llvm::orc::ExecutionSession> exeSession;
-    llvm::DataLayout dataLayout;
-    llvm::orc::MangleAndInterner mangler;
-    llvm::orc::RTDyldObjectLinkingLayer objectLayer;
-    llvm::orc::IRCompileLayer compileLayer;
-    llvm::orc::JITDylib &jitLib;
-
-  public:
-    llvm::ExitOnError exitOnErr;
-
-    CompilerContext(std::unique_ptr<llvm::orc::ExecutionSession> es,
-                    llvm::orc::JITTargetMachineBuilder jtmb,
-                    const llvm::DataLayout &dl);
-
-    ~CompilerContext();
-
-    static CompilerContext *Create();
-
-    const llvm::DataLayout &getDataLayout() const;
-
-    llvm::orc::JITDylib &getMainJITDylib();
-
-    llvm::Error addModule(llvm::orc::ThreadSafeModule tsm, llvm::orc::ResourceTrackerSP rt = nullptr);
-
-    llvm::Expected<llvm::orc::ExecutorSymbolDef> lookup(llvm::StringRef name);
-};
 
 struct Scaffold
 {
@@ -106,7 +72,7 @@ struct Scaffold
 
 // Debug name mangler: prefix with enclosing C++ function name (e.g. "tocCond" -> "generateTOC tocCond")
 const char *dbgName(const char *enclosing, const char *name);
-#define M(name) (::dbgName(__func__, (name)))
+#define DBG_NAME(name) (::dbgName(__func__, (name)))
 
 // Parameter combinations
 #define PaInt16(VAL)  {TyInt16, (VAL)}

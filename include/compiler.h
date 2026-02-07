@@ -32,12 +32,15 @@
 #include <memory>
 
 struct Scaffold;
-class CompilerContext;
 
 namespace llvm
 {
 class Value;
 class AllocaInst;
+namespace orc
+{
+class LLJIT;
+}
 }; // namespace llvm
 
 /// @brief A function that validates a value.
@@ -58,7 +61,7 @@ class Compiler
     // a pointer to the block ID argument of the compiled function.
     llvm::Value *blockId;
 
-    std::unique_ptr<CompilerContext> context_;
+    std::unique_ptr<llvm::orc::LLJIT> lljit;
 
     // The hash table of compiled texts referenced by lists or ASTNodes.
     static QHash<Datum *, std::shared_ptr<CompiledText>> compiledTextTable;

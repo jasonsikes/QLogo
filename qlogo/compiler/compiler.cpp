@@ -17,6 +17,9 @@
 #include "compiler.h"
 #include "astnode.h"
 #include "compiler_internal.h"
+#include "llvm/ExecutionEngine/Orc/LLJIT.h"
+#include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
+#include "llvm/Support/Error.h"
 #include "flowcontrol.h"
 #include "datum_types.h"
 #include "workspace/exports.h"
@@ -26,14 +29,13 @@
 #include "treeifyer.h"
 #include "workspace/callframe.h"
 #include "workspace/procedures.h"
-#include <iostream>
 #include <string>
 
 QHash<Datum *, std::shared_ptr<CompiledText>> Compiler::compiledTextTable;
 
 const char *dbgName(const char *enclosing, const char *name)
 {
-    static thread_local std::string storage;
+    static std::string storage;
     storage = std::string(enclosing) + " " + name;
     return storage.c_str();
 }
@@ -41,68 +43,56 @@ const char *dbgName(const char *enclosing, const char *name)
 using namespace llvm;
 using namespace llvm::orc;
 
-CompilerContext::CompilerContext(std::unique_ptr<llvm::orc::ExecutionSession> es,
-                                 llvm::orc::JITTargetMachineBuilder jtmb,
-                                 const llvm::DataLayout &dl)
-    : exeSession(std::move(es)), dataLayout(dl), mangler(*this->exeSession, this->dataLayout),
-      objectLayer(*this->exeSession, []() { return std::make_unique<llvm::SectionMemoryManager>(); }),
-      compileLayer(*this->exeSession,
-                   objectLayer,
-                   std::make_unique<llvm::orc::ConcurrentIRCompiler>(std::move(jtmb))),
-      jitLib(this->exeSession->createBareJITDylib("<main>"))
+namespace
 {
-    jitLib.addGenerator(cantFail(llvm::orc::DynamicLibrarySearchGenerator::GetForCurrentProcess(dl.getGlobalPrefix())));
-    // Note: jtmb was moved in the initializer list, so we need to check the target triple
-    // from the ExecutionSession instead
-    if (exeSession->getExecutorProcessControl().getTargetTriple().isOSBinFormatCOFF())
-    {
-        objectLayer.setOverrideObjectFlagsWithResponsibilityFlags(true);
-        objectLayer.setAutoClaimResponsibilityForObjectSymbols(true);
-    }
+std::unique_ptr<LLJIT> createLLJIT()
+{
+    auto jitOrErr = llvm::orc::LLJITBuilder()
+                        .setNotifyCreatedCallback([](llvm::orc::LLJIT &J) -> llvm::Error {
+                            if (!J.getTargetTriple().isOSBinFormatCOFF())
+                                return llvm::Error::success();
+                            auto *rtdyld =
+                                llvm::dyn_cast<llvm::orc::RTDyldObjectLinkingLayer>(&J.getObjLinkingLayer());
+                            if (rtdyld)
+                            {
+                                rtdyld->setOverrideObjectFlagsWithResponsibilityFlags(true);
+                                rtdyld->setAutoClaimResponsibilityForObjectSymbols(true);
+                            }
+                            return llvm::Error::success();
+                        })
+                        .create();
+    return cantFail(std::move(jitOrErr));
 }
 
-CompilerContext::~CompilerContext() // NOLINT(modernize-use-equals-default) - not trivial, needs to call endSession()
+/// Creates a resource tracker, adds the module to the JIT, and looks up the symbol.
+/// Returns (symbol address, resource tracker for later removal).
+std::pair<uint64_t, ResourceTrackerSP> addModuleAndLookup(LLJIT &jit, ThreadSafeModule tsm, StringRef name)
 {
-    if (auto err = exeSession->endSession())
-        exeSession->reportError(std::move(err));
+    auto rt = jit.getMainJITDylib().createResourceTracker();
+    cantFail(jit.addIRModule(rt, std::move(tsm)));
+    uint64_t addr = cantFail(jit.lookup(name)).getValue();
+    return {addr, std::move(rt)};
 }
 
-CompilerContext *CompilerContext::Create()
+void addDefaultPasses(FunctionPassManager &fpm)
 {
-    auto epc = llvm::orc::SelfExecutorProcessControl::Create();
-    Q_ASSERT(epc);
-
-    auto es = std::make_unique<llvm::orc::ExecutionSession>(std::move(*epc));
-
-    llvm::orc::JITTargetMachineBuilder jtmb(es->getExecutorProcessControl().getTargetTriple());
-
-    auto dl = jtmb.getDefaultDataLayoutForTarget();
-    Q_ASSERT(dl);
-
-    return new CompilerContext(std::move(es), std::move(jtmb), *dl);
+    fpm.addPass(InstCombinePass());
+    fpm.addPass(ReassociatePass());
+    fpm.addPass(GVNPass());
+    fpm.addPass(SimplifyCFGPass());
 }
 
-const llvm::DataLayout &CompilerContext::getDataLayout() const
+void setupPassManager(PassInstrumentationCallbacks &pic, ModuleAnalysisManager &mam,
+                      FunctionAnalysisManager &fam, LoopAnalysisManager &lam,
+                      CGSCCAnalysisManager &cgam, StandardInstrumentations &si)
 {
-    return dataLayout;
+    si.registerCallbacks(pic, &mam);
+    PassBuilder pb;
+    pb.registerModuleAnalyses(mam);
+    pb.registerFunctionAnalyses(fam);
+    pb.crossRegisterProxies(lam, fam, cgam, mam);
 }
-
-llvm::orc::JITDylib &CompilerContext::getMainJITDylib()
-{
-    return jitLib;
-}
-
-llvm::Error CompilerContext::addModule(llvm::orc::ThreadSafeModule tsm, llvm::orc::ResourceTrackerSP rt)
-{
-    if (!rt)
-        rt = jitLib.getDefaultResourceTracker();
-    return compileLayer.add(rt, std::move(tsm));
-}
-
-llvm::Expected<llvm::orc::ExecutorSymbolDef> CompilerContext::lookup(llvm::StringRef name)
-{
-    return exeSession->lookup({&jitLib}, mangler(name.str()));
-}
+} // namespace
 
 Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
     : theContext(std::make_unique<LLVMContext>()), theModule(std::make_unique<Module>("QLogoJIT", *theContext)),
@@ -112,40 +102,21 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
                                                                              /*DebugLogging*/ true))
 
 {
-    // Open a new context and module.
     theModule->setDataLayout(dataLayout);
+    addDefaultPasses(theFPM);
+    setupPassManager(thePIC, theMAM, theFAM, theLAM, theCGAM, theSI);
 
-    // Create new pass and analysis managers.
-    theSI.registerCallbacks(thePIC, &theMAM);
-
-    // Add transform passes.
-    // Do simple "peephole" optimizations and bit-twiddling optimizations.
-    theFPM.addPass(InstCombinePass());
-    // Reassociate expressions.
-    theFPM.addPass(ReassociatePass());
-    // Eliminate Common SubExpressions.
-    theFPM.addPass(GVNPass());
-    // Simplify the control flow graph (deleting unreachable blocks, etc).
-    theFPM.addPass(SimplifyCFGPass());
-
-    // Register analysis passes used in these transform passes.
-    PassBuilder pb;
-    pb.registerModuleAnalyses(theMAM);
-    pb.registerFunctionAnalyses(theFAM);
-    pb.crossRegisterProxies(theLAM, theFAM, theCGAM, theMAM);
-
-    // The name of the function is sequentially numbered.
     static uint64_t functionCount = 1;
     name = "function_" + std::to_string(functionCount++);
 }
 
 CompiledText::~CompiledText()
 {
-    // Only remove resource tracker if context is still valid
+    // Only remove resource tracker if compiler is still valid
     // (it may have been destroyed if CompiledText outlives the Compiler singleton)
-    if (context != nullptr && rt)
+    if (compiler != nullptr && rt)
     {
-        context->exitOnErr(rt->remove());
+        cantFail(rt->remove());
     }
 }
 
@@ -154,14 +125,13 @@ Compiler::Compiler()
     InitializeNativeTarget();
     InitializeNativeTargetAsmPrinter();
     InitializeNativeTargetAsmParser();
-
-    context_ = std::unique_ptr<CompilerContext>(CompilerContext::Create());
+    lljit = createLLJIT();
 }
 
 Compiler::~Compiler()
 {
     // Clear compiledTextTable first to ensure all CompiledText objects are destroyed
-    // while context_ is still valid
+    // while lljit is still valid
     compiledTextTable.clear();
 }
 
@@ -225,12 +195,12 @@ BasicBlock *Compiler::generateTOC(QList<BasicBlock *> blocks, Function *theFunct
 
 CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, Datum *key)
 {
-    Scaffold compilerScaffolding(context_->getDataLayout());
+    Scaffold compilerScaffolding(lljit->getDataLayout());
     scaff = &compilerScaffolding;
 
     auto *compiledText = new CompiledText();
     compiledText->astList = parsedList;
-    compiledText->context = context_.get();
+    compiledText->compiler = this;
     compiledTextTable[key] = std::shared_ptr<CompiledText>(compiledText);
 
     // Generate the prototype and add it to the module.
@@ -326,18 +296,9 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
         theFunction->viewCFG();
     }
 
-    // Create a ResourceTracker to track JIT'd memory allocated to our
-    // anonymous expression -- that way we can free it with the source list.
-    compiledText->rt = context_->getMainJITDylib().createResourceTracker();
     auto tsm = ThreadSafeModule(std::move(scaff->theModule), std::move(scaff->theContext));
-    context_->exitOnErr(context_->addModule(std::move(tsm), compiledText->rt));
-
-    // Search the JIT for the expression by name.
-    ExecutorSymbolDef exprSymbol = context_->exitOnErr(context_->lookup(scaff->name));
-
-    // Get the symbol's address and cast it to the right type so we can
-    // call it as a native function.
-    auto addr = exprSymbol.getAddress().getValue();
+    auto [addr, rt] = addModuleAndLookup(*lljit, std::move(tsm), scaff->name);
+    compiledText->rt = std::move(rt);
     compiledText->functionPtr = reinterpret_cast<CompiledFunctionPtr>(addr);
     return compiledText->functionPtr;
 }
@@ -777,7 +738,7 @@ AllocaInst *Compiler::generateChildrenAlloca(ASTNode *node, RequestReturnType re
 AllocaInst *Compiler::generateAllocaAry(const std::vector<llvm::Value *> &values, const std::string &name)
 {
     Value *childCount = CoInt32(values.size());
-    Value *offset = CoInt64(context_->getDataLayout().getPointerSize());
+    Value *offset = CoInt64(lljit->getDataLayout().getPointerSize());
     AllocaInst *retval = scaff->builder.CreateAlloca(TyAddr, childCount, name);
     Value *aryPtr = retval;
     for (int i = 0; i < values.size(); ++i)
