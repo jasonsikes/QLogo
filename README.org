@@ -24,11 +24,13 @@ https://github.com/jrincayc/ucblogo-code
 
 *** Psychi
 
-*Psychi* is the graphical user interface for QLogo. Psychi provides a command line, a text editor, and a turtle graphics window.
+*Psychi* is the graphical terminal window for QLogo. It provides a command line, a text editor, and a turtle graphics window.
 
 ** To build
 
-At this time I am developing QLogo on Linux (Debian 13) and macOS (Sequoia on Silicon, using LLVM provided by MacPorts).
+At this time I am developing QLogo on Linux (Fedora 43) using Qt 6.10 and LLVM 21.1.
+
+I just now updated my LLVM version from 19 to 21 on Linux, so this *PARTICULAR* version does not build for me on macOS (Tahoe on Silicon, using LLVM 19 and Qt 6.9 provided by MacPorts).
 
 I am no longer testing on MS Windows as I no longer have a Windows machine.
 
@@ -44,7 +46,7 @@ To the best of my memory, you will need the following packages:
 - Qt6 development packages, at least 6.5. Qt6 is big; your distribution may make some of the components "optional". Make sure you have:
   - The Qt6 SQLite development package
   - The Qt6 SVG development package.
-- LLVM development packages, at least version 19.
+- LLVM development packages, at least version 21.
 
 After you have downloaded the QLogo source code, "cd" into the source directory and issue the following commands.
 
