@@ -35,8 +35,7 @@
 
 #include <memory>
 
-// The CompilerContext class holds information that is necessary for the compiler
-// but is not necessary for the objects using the compiler.
+/// Thin wrapper around LLJIT: owns the JIT and adapts lookup to return ExecutorSymbolDef.
 class CompilerContext
 {
     std::unique_ptr<llvm::orc::LLJIT> jit;
@@ -44,16 +43,11 @@ class CompilerContext
   public:
     llvm::ExitOnError exitOnErr;
 
-    explicit CompilerContext(std::unique_ptr<llvm::orc::LLJIT> j);
-
-    static CompilerContext *Create();
+    CompilerContext();
 
     const llvm::DataLayout &getDataLayout() const;
-
     llvm::orc::JITDylib &getMainJITDylib();
-
     llvm::Error addModule(llvm::orc::ThreadSafeModule tsm, llvm::orc::ResourceTrackerSP rt = nullptr);
-
     llvm::Expected<llvm::orc::ExecutorSymbolDef> lookup(llvm::StringRef name);
 };
 

@@ -34,11 +34,7 @@ QHash<Datum *, std::shared_ptr<CompiledText>> Compiler::compiledTextTable;
 using namespace llvm;
 using namespace llvm::orc;
 
-CompilerContext::CompilerContext(std::unique_ptr<llvm::orc::LLJIT> j) : jit(std::move(j))
-{
-}
-
-CompilerContext *CompilerContext::Create()
+CompilerContext::CompilerContext()
 {
     auto jitOrErr = llvm::orc::LLJITBuilder()
                         .setNotifyCreatedCallback([](llvm::orc::LLJIT &J) -> llvm::Error {
@@ -54,7 +50,7 @@ CompilerContext *CompilerContext::Create()
                             return llvm::Error::success();
                         })
                         .create();
-    return new CompilerContext(std::move(cantFail(std::move(jitOrErr))));
+    jit = cantFail(std::move(jitOrErr));
 }
 
 const llvm::DataLayout &CompilerContext::getDataLayout() const
@@ -133,7 +129,7 @@ Compiler::Compiler()
     InitializeNativeTargetAsmPrinter();
     InitializeNativeTargetAsmParser();
 
-    context_ = std::unique_ptr<CompilerContext>(CompilerContext::Create());
+    context_ = std::make_unique<CompilerContext>();
 }
 
 Compiler::~Compiler()
