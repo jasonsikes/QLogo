@@ -36,6 +36,38 @@ QHash<Datum *, std::shared_ptr<CompiledText>> Compiler::compiledTextTable;
 using namespace llvm;
 using namespace llvm::orc;
 
+namespace
+{
+std::unique_ptr<LLJIT> createLLJIT()
+{
+    auto jitOrErr = llvm::orc::LLJITBuilder()
+                        .setNotifyCreatedCallback([](llvm::orc::LLJIT &J) -> llvm::Error {
+                            if (!J.getTargetTriple().isOSBinFormatCOFF())
+                                return llvm::Error::success();
+                            auto *rtdyld =
+                                llvm::dyn_cast<llvm::orc::RTDyldObjectLinkingLayer>(&J.getObjLinkingLayer());
+                            if (rtdyld)
+                            {
+                                rtdyld->setOverrideObjectFlagsWithResponsibilityFlags(true);
+                                rtdyld->setAutoClaimResponsibilityForObjectSymbols(true);
+                            }
+                            return llvm::Error::success();
+                        })
+                        .create();
+    return cantFail(std::move(jitOrErr));
+}
+
+/// Creates a resource tracker, adds the module to the JIT, and looks up the symbol.
+/// Returns (symbol address, resource tracker for later removal).
+std::pair<uint64_t, ResourceTrackerSP> addModuleAndLookup(LLJIT &jit, ThreadSafeModule tsm, StringRef name)
+{
+    auto rt = jit.getMainJITDylib().createResourceTracker();
+    cantFail(jit.addIRModule(rt, std::move(tsm)));
+    uint64_t addr = cantFail(jit.lookup(name)).getValue();
+    return {addr, std::move(rt)};
+}
+} // namespace
+
 Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
     : theContext(std::make_unique<LLVMContext>()), theModule(std::make_unique<Module>("QLogoJIT", *theContext)),
       builder(IRBuilder<>(*theContext)), theFPM(FunctionPassManager()), theLAM(LoopAnalysisManager()),
@@ -86,22 +118,7 @@ Compiler::Compiler()
     InitializeNativeTarget();
     InitializeNativeTargetAsmPrinter();
     InitializeNativeTargetAsmParser();
-
-    auto jitOrErr = llvm::orc::LLJITBuilder()
-                        .setNotifyCreatedCallback([](llvm::orc::LLJIT &J) -> llvm::Error {
-                            if (!J.getTargetTriple().isOSBinFormatCOFF())
-                                return llvm::Error::success();
-                            auto *rtdyld =
-                                llvm::dyn_cast<llvm::orc::RTDyldObjectLinkingLayer>(&J.getObjLinkingLayer());
-                            if (rtdyld)
-                            {
-                                rtdyld->setOverrideObjectFlagsWithResponsibilityFlags(true);
-                                rtdyld->setAutoClaimResponsibilityForObjectSymbols(true);
-                            }
-                            return llvm::Error::success();
-                        })
-                        .create();
-    lljit = cantFail(std::move(jitOrErr));
+    lljit = createLLJIT();
 }
 
 Compiler::~Compiler()
@@ -272,14 +289,9 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
         theFunction->viewCFG();
     }
 
-    // Create a ResourceTracker to track JIT'd memory allocated to our
-    // anonymous expression -- that way we can free it with the source list.
-    compiledText->rt = lljit->getMainJITDylib().createResourceTracker();
     auto tsm = ThreadSafeModule(std::move(scaff->theModule), std::move(scaff->theContext));
-    cantFail(lljit->addIRModule(compiledText->rt, std::move(tsm)));
-
-    // Search the JIT for the expression by name.
-    auto addr = cantFail(lljit->lookup(scaff->name)).getValue();
+    auto [addr, rt] = addModuleAndLookup(*lljit, std::move(tsm), scaff->name);
+    compiledText->rt = std::move(rt);
     compiledText->functionPtr = reinterpret_cast<CompiledFunctionPtr>(addr);
     return compiledText->functionPtr;
 }
