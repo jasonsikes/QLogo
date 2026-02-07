@@ -29,7 +29,6 @@
 #include "treeifyer.h"
 #include "workspace/callframe.h"
 #include "workspace/procedures.h"
-#include <iostream>
 
 QHash<Datum *, std::shared_ptr<CompiledText>> Compiler::compiledTextTable;
 
@@ -66,6 +65,25 @@ std::pair<uint64_t, ResourceTrackerSP> addModuleAndLookup(LLJIT &jit, ThreadSafe
     uint64_t addr = cantFail(jit.lookup(name)).getValue();
     return {addr, std::move(rt)};
 }
+
+void addDefaultPasses(FunctionPassManager &fpm)
+{
+    fpm.addPass(InstCombinePass());
+    fpm.addPass(ReassociatePass());
+    fpm.addPass(GVNPass());
+    fpm.addPass(SimplifyCFGPass());
+}
+
+void setupPassManager(PassInstrumentationCallbacks &pic, ModuleAnalysisManager &mam,
+                      FunctionAnalysisManager &fam, LoopAnalysisManager &lam,
+                      CGSCCAnalysisManager &cgam, StandardInstrumentations &si)
+{
+    si.registerCallbacks(pic, &mam);
+    PassBuilder pb;
+    pb.registerModuleAnalyses(mam);
+    pb.registerFunctionAnalyses(fam);
+    pb.crossRegisterProxies(lam, fam, cgam, mam);
+}
 } // namespace
 
 Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
@@ -76,29 +94,10 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
                                                                              /*DebugLogging*/ true))
 
 {
-    // Open a new context and module.
     theModule->setDataLayout(dataLayout);
+    addDefaultPasses(theFPM);
+    setupPassManager(thePIC, theMAM, theFAM, theLAM, theCGAM, theSI);
 
-    // Create new pass and analysis managers.
-    theSI.registerCallbacks(thePIC, &theMAM);
-
-    // Add transform passes.
-    // Do simple "peephole" optimizations and bit-twiddling optimizations.
-    theFPM.addPass(InstCombinePass());
-    // Reassociate expressions.
-    theFPM.addPass(ReassociatePass());
-    // Eliminate Common SubExpressions.
-    theFPM.addPass(GVNPass());
-    // Simplify the control flow graph (deleting unreachable blocks, etc).
-    theFPM.addPass(SimplifyCFGPass());
-
-    // Register analysis passes used in these transform passes.
-    PassBuilder pb;
-    pb.registerModuleAnalyses(theMAM);
-    pb.registerFunctionAnalyses(theFAM);
-    pb.crossRegisterProxies(theLAM, theFAM, theCGAM, theMAM);
-
-    // The name of the function is sequentially numbered.
     static uint64_t functionCount = 1;
     name = "function_" + std::to_string(functionCount++);
 }
