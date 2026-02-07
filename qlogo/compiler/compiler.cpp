@@ -36,7 +36,7 @@ QHash<Datum *, std::shared_ptr<CompiledText>> Compiler::compiledTextTable;
 const char *dbgName(const char *enclosing, const char *name)
 {
     static std::string storage;
-    storage = std::string(enclosing) + " " + name;
+    storage = std::string(enclosing) + "_" + name;
     return storage.c_str();
 }
 
@@ -462,7 +462,7 @@ Value *Compiler::generateDoubleFromDatum(ASTNode *parent, Value *src)
     auto realTest = [this, &retval](Value *src) {
         retval = generateCallExtern(TyDouble, getDoubleForDatum, PaAddr(evaluator), PaAddr(src));
         Value *dType = generateCallExtern(TyBool, getValidityOfDoubleForDatum, PaAddr(evaluator), PaAddr(src));
-        return scaff->builder.CreateICmpEQ(dType, CoBool(true), "isValidTest");
+        return scaff->builder.CreateICmpEQ(dType, CoBool(true), DBG_NAME("isValidTest"));
     };
     generateValidationDatum(parent, src, realTest);
     return retval;
@@ -474,7 +474,7 @@ Value *Compiler::generateBoolFromDatum(ASTNode *parent, Value *src)
     auto boolTest = [this, &retval](Value *src) {
         retval = generateCallExtern(TyBool, getBoolForDatum, PaAddr(evaluator), PaAddr(src));
         Value *dType = generateCallExtern(TyBool, getValidityOfBoolForDatum, PaAddr(evaluator), PaAddr(src));
-        return scaff->builder.CreateICmpEQ(dType, CoBool(true), "isValidTest");
+        return scaff->builder.CreateICmpEQ(dType, CoBool(true), DBG_NAME("isValidTest"));
     };
     generateValidationDatum(parent, src, boolTest);
     return retval;
@@ -484,8 +484,8 @@ Value *Compiler::generateFromDatum(Datum::DatumType t, ASTNode *parent, Value *s
 {
     auto typeTest = [this, t](Value *src) {
         Value *dType = generateGetDatumIsa(src);
-        Value *mask = scaff->builder.CreateAnd(dType, CoInt32(t), "dataTypeMask");
-        Value *cond = scaff->builder.CreateICmpNE(mask, CoInt32(0), "typeTest");
+        Value *mask = scaff->builder.CreateAnd(dType, CoInt32(t), DBG_NAME("dataTypeMask"));
+        Value *cond = scaff->builder.CreateICmpNE(mask, CoInt32(0), DBG_NAME("typeTest"));
         return cond;
     };
     return generateValidationDatum(parent, src, typeTest);
@@ -495,13 +495,13 @@ Value *Compiler::generateNotNothingFromDatum(ASTNode *parent, Value *src)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
 
-    BasicBlock *isNothingBB = BasicBlock::Create(*scaff->theContext, "isNothing", theFunction);
-    BasicBlock *notNothingBB = BasicBlock::Create(*scaff->theContext, "notNothing", theFunction);
+    BasicBlock *isNothingBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("isNothing"), theFunction);
+    BasicBlock *notNothingBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("notNothing"), theFunction);
 
     // isNothing?
     Value *dType = generateGetDatumIsa(src);
-    Value *mask = scaff->builder.CreateAnd(dType, CoInt32(Datum::typeDataMask), "dataTypeMask");
-    Value *cond = scaff->builder.CreateICmpEQ(mask, CoInt32(0), "dataTypeMaskTest");
+    Value *mask = scaff->builder.CreateAnd(dType, CoInt32(Datum::typeDataMask), DBG_NAME("dataTypeMask"));
+    Value *cond = scaff->builder.CreateICmpEQ(mask, CoInt32(0), DBG_NAME("dataTypeMaskTest"));
     scaff->builder.CreateCondBr(cond, isNothingBB, notNothingBB);
 
     // Bad
@@ -520,13 +520,13 @@ Value *Compiler::generateNothingFromDatum(ASTNode *parent, Value *src)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
 
-    BasicBlock *notNothingBB = BasicBlock::Create(*scaff->theContext, "notNothing", theFunction);
-    BasicBlock *isNothingBB = BasicBlock::Create(*scaff->theContext, "isNothing", theFunction);
+    BasicBlock *notNothingBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("notNothing"), theFunction);
+    BasicBlock *isNothingBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("isNothing"), theFunction);
 
     // isNothing?
     Value *dType = generateGetDatumIsa(src);
-    Value *mask = scaff->builder.CreateAnd(dType, CoInt32(Datum::typeDataMask), "dataTypeMask");
-    Value *cond = scaff->builder.CreateICmpEQ(mask, CoInt32(0), "dataTypeMaskTest");
+    Value *mask = scaff->builder.CreateAnd(dType, CoInt32(Datum::typeDataMask), DBG_NAME("dataTypeMask"));
+    Value *cond = scaff->builder.CreateICmpEQ(mask, CoInt32(0), DBG_NAME("dataTypeMaskTest"));
     scaff->builder.CreateCondBr(cond, isNothingBB, notNothingBB);
 
     // Bad
@@ -593,16 +593,16 @@ Value *Compiler::generateVoidRetval(const DatumPtr &node)
 Value *Compiler::genValueOf(const DatumPtr &node, RequestReturnType returnType)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-    BasicBlock *noValueBB = BasicBlock::Create(*scaff->theContext, "NoValue", theFunction);
-    BasicBlock *hasValueBB = BasicBlock::Create(*scaff->theContext, "hasValue", theFunction);
+    BasicBlock *noValueBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("NoValue"), theFunction);
+    BasicBlock *hasValueBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("hasValue"), theFunction);
 
     Word *varName = node.astnodeValue()->childAtIndex(0).wordValue();
     Value *nameAddr = CoAddr(varName);
     Value *retval = generateCallExtern(TyAddr, getDatumForVarname, PaAddr(nameAddr));
 
     Value *dType = generateGetDatumIsa(retval);
-    Value *mask = scaff->builder.CreateAnd(dType, CoInt32(Datum::typeDataMask), "dataMask");
-    Value *cond = scaff->builder.CreateICmpEQ(mask, CoInt32(0), "dataMaskTest");
+    Value *mask = scaff->builder.CreateAnd(dType, CoInt32(Datum::typeDataMask), DBG_NAME("dataMask"));
+    Value *cond = scaff->builder.CreateICmpEQ(mask, CoInt32(0), DBG_NAME("dataMaskTest"));
     scaff->builder.CreateCondBr(cond, noValueBB, hasValueBB);
 
     scaff->builder.SetInsertPoint(noValueBB);
@@ -615,7 +615,7 @@ Value *Compiler::genValueOf(const DatumPtr &node, RequestReturnType returnType)
 
 Value *Compiler::genExecProcedure(const DatumPtr &node, RequestReturnType returnType)
 {
-    AllocaInst *paramAry = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, "paramAry");
+    AllocaInst *paramAry = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, DBG_NAME("paramAry"));
     Value *vAstnodeValue = CoAddr(node.astnodeValue());
     Value *vParamArySize = CoInt32(node.astnodeValue()->countOfChildren());
     return generateCallExtern(
@@ -692,8 +692,8 @@ Value *Compiler::generateImmediateReturn(llvm::Value *retval)
 {
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
 
-    BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, "bailout", theFunction);
-    BasicBlock *throwAwayBB = BasicBlock::Create(*scaff->theContext, "throwAway", theFunction);
+    BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("bailout"), theFunction);
+    BasicBlock *throwAwayBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("throwAway"), theFunction);
 
     // We are going to return something at this point.
     // However, there may be code after this point that we have to compile and then ignore.
@@ -703,7 +703,7 @@ Value *Compiler::generateImmediateReturn(llvm::Value *retval)
     // 3. Ignore any code after the return operation.
     // To do this we allow the compiler to finish generating the code after the return operation,
     // and insert it after a test that will always fail, so the code will never be executed.
-    Value *cond = scaff->builder.CreateICmpEQ(CoBool(1), CoBool(0), "fakeTest");
+    Value *cond = scaff->builder.CreateICmpEQ(CoBool(1), CoBool(0), DBG_NAME("fakeTest"));
     scaff->builder.CreateCondBr(cond, throwAwayBB, bailoutBB);
 
     scaff->builder.SetInsertPoint(bailoutBB);
@@ -799,10 +799,10 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr
     Value *list = generateChild(parent, srcPtr, RequestReturnDatum);
     Value *count = generateCallExtern(TyInt32, getCountOfList, PaAddr(list));
     // There should be two doubles in the list
-    BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, "notGood", theFunction);
-    BasicBlock *continueBB = BasicBlock::Create(*scaff->theContext, "good", theFunction);
+    BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("notGood"), theFunction);
+    BasicBlock *continueBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("good"), theFunction);
 
-    Value *countGood = scaff->builder.CreateICmpEQ(count, vSize, "countTest");
+    Value *countGood = scaff->builder.CreateICmpEQ(count, vSize, DBG_NAME("countTest"));
     scaff->builder.CreateCondBr(countGood, continueBB, bailoutBB);
 
     scaff->builder.SetInsertPoint(bailoutBB);
@@ -811,12 +811,12 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr
     scaff->builder.CreateRet(errObj);
 
     scaff->builder.SetInsertPoint(continueBB);
-    AllocaInst *ary = scaff->builder.CreateAlloca(TyDouble, vSize, "ary");
+    AllocaInst *ary = scaff->builder.CreateAlloca(TyDouble, vSize, DBG_NAME("ary"));
 
     Value *isGood = generateCallExtern(TyInt32, getNumberAryFromList, PaAddr(list), PaAddr(ary));
-    BasicBlock *gotPosBB = BasicBlock::Create(*scaff->theContext, "gotPos", theFunction);
+    BasicBlock *gotPosBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("gotPos"), theFunction);
 
-    Value *countCond = scaff->builder.CreateICmpEQ(isGood, CoInt32(1), "countTest");
+    Value *countCond = scaff->builder.CreateICmpEQ(isGood, CoInt32(1), DBG_NAME("countTest"));
     scaff->builder.CreateCondBr(countCond, gotPosBB, bailoutBB);
 
     scaff->builder.SetInsertPoint(gotPosBB);
@@ -828,17 +828,17 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
     BasicBlock *srcBB = scaff->builder.GetInsertBlock();
     Function *theFunction = srcBB->getParent();
 
-    BasicBlock *validateBB = BasicBlock::Create(*scaff->theContext, "validate", theFunction);
-    BasicBlock *convertBB = BasicBlock::Create(*scaff->theContext, "convert", theFunction);
-    BasicBlock *erractBB = BasicBlock::Create(*scaff->theContext, "errorAction", theFunction);
-    BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, "bailout", theFunction);
-    BasicBlock *acceptBB = BasicBlock::Create(*scaff->theContext, "accept", theFunction);
+    BasicBlock *validateBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("validate"), theFunction);
+    BasicBlock *convertBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("convert"), theFunction);
+    BasicBlock *erractBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("errorAction"), theFunction);
+    BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("bailout"), theFunction);
+    BasicBlock *acceptBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("accept"), theFunction);
 
     scaff->builder.CreateBr(validateBB);
 
     // Validate the number.
     scaff->builder.SetInsertPoint(validateBB);
-    PHINode *candidate = scaff->builder.CreatePHI(TyDouble, 2, "candidate");
+    PHINode *candidate = scaff->builder.CreatePHI(TyDouble, 2, DBG_NAME("candidate"));
     candidate->addIncoming(src, srcBB);
     Value *isValidCond = validator(candidate);
     scaff->builder.CreateCondBr(isValidCond, acceptBB, erractBB);
@@ -847,8 +847,8 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
     scaff->builder.SetInsertPoint(erractBB);
     Value *handlerResult = generateCallExtern(TyAddr, handleBadDouble, PaAddr(evaluator), PaAddr(CoAddr(parent)), PaDouble(candidate));
     Value *datamIsa = generateGetDatumIsa(handlerResult); // See if result is a datum.
-    Value *isDatumMasked = scaff->builder.CreateAnd(datamIsa, CoInt32(Datum::typeDataMask), "isDatumMasked");
-    Value *isDatumCond = scaff->builder.CreateICmpNE(isDatumMasked, CoInt32(0), "isDatumCond");
+    Value *isDatumMasked = scaff->builder.CreateAnd(datamIsa, CoInt32(Datum::typeDataMask), DBG_NAME("isDatumMasked"));
+    Value *isDatumCond = scaff->builder.CreateICmpNE(isDatumMasked, CoInt32(0), DBG_NAME("isDatumCond"));
     scaff->builder.CreateCondBr(isDatumCond, convertBB, bailoutBB);
 
     // A Word was returned. Convert it to a double and try validating it again.
@@ -871,16 +871,16 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
     BasicBlock *srcBB = scaff->builder.GetInsertBlock();
     Function *theFunction = srcBB->getParent();
 
-    BasicBlock *validateBB = BasicBlock::Create(*scaff->theContext, "validate", theFunction);
-    BasicBlock *erractBB = BasicBlock::Create(*scaff->theContext, "errorAction", theFunction);
-    BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, "bailout", theFunction);
-    BasicBlock *acceptBB = BasicBlock::Create(*scaff->theContext, "accept", theFunction);
+    BasicBlock *validateBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("validate"), theFunction);
+    BasicBlock *erractBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("errorAction"), theFunction);
+    BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("bailout"), theFunction);
+    BasicBlock *acceptBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("accept"), theFunction);
 
     scaff->builder.CreateBr(validateBB);
 
     // Validate the datum.
     scaff->builder.SetInsertPoint(validateBB);
-    PHINode *candidate = scaff->builder.CreatePHI(TyAddr, 2, "candidate");
+    PHINode *candidate = scaff->builder.CreatePHI(TyAddr, 2, DBG_NAME("candidate"));
     candidate->addIncoming(src, srcBB);
     Value *cond = validator(candidate);
     scaff->builder.CreateCondBr(cond, acceptBB, erractBB);
@@ -889,8 +889,8 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
     scaff->builder.SetInsertPoint(erractBB);
     Value *handlerResult = generateCallExtern(TyAddr, handleBadDatum, PaAddr(evaluator), PaAddr(CoAddr(parent)), PaAddr(candidate));
     Value *datamIsa = generateGetDatumIsa(handlerResult); // See if result is a datum.
-    Value *isDatumMasked = scaff->builder.CreateAnd(datamIsa, CoInt32(Datum::typeDataMask), "isDatumMasked");
-    Value *isDatumCond = scaff->builder.CreateICmpNE(isDatumMasked, CoInt32(0), "isDatumCond");
+    Value *isDatumMasked = scaff->builder.CreateAnd(datamIsa, CoInt32(Datum::typeDataMask), DBG_NAME("isDatumMasked"));
+    Value *isDatumCond = scaff->builder.CreateICmpNE(isDatumMasked, CoInt32(0), DBG_NAME("isDatumCond"));
     candidate->addIncoming(handlerResult, erractBB);
     scaff->builder.CreateCondBr(isDatumCond, validateBB, bailoutBB);
 
@@ -910,9 +910,9 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
 Value *Compiler::generateGetDatumIsa(Value *objAddr)
 {
     const unsigned int isaOffset = offsetof(Datum, isa);
-    Value *isaAddr = scaff->builder.CreatePtrAdd(objAddr, CoInt64(isaOffset), "isaAddr");
+    Value *isaAddr = scaff->builder.CreatePtrAdd(objAddr, CoInt64(isaOffset), DBG_NAME("isaAddr"));
 
-    Value *dType = scaff->builder.CreateLoad(TyInt32, isaAddr, "isaLoad");
+    Value *dType = scaff->builder.CreateLoad(TyInt32, isaAddr, DBG_NAME("isaLoad"));
     return dType;
 }
 
