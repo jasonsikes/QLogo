@@ -24,10 +24,8 @@
 #undef emit
 #endif
 
-#include "llvm/ExecutionEngine/Orc/CompileUtils.h"
-#include "llvm/ExecutionEngine/Orc/ExecutionUtils.h"
-#include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
-#include "llvm/ExecutionEngine/SectionMemoryManager.h"
+#include "llvm/ExecutionEngine/Orc/LLJIT.h"
+#include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Verifier.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/StandardInstrumentations.h"
@@ -41,21 +39,12 @@
 // but is not necessary for the objects using the compiler.
 class CompilerContext
 {
-    std::unique_ptr<llvm::orc::ExecutionSession> exeSession;
-    llvm::DataLayout dataLayout;
-    llvm::orc::MangleAndInterner mangler;
-    llvm::orc::RTDyldObjectLinkingLayer objectLayer;
-    llvm::orc::IRCompileLayer compileLayer;
-    llvm::orc::JITDylib &jitLib;
+    std::unique_ptr<llvm::orc::LLJIT> jit;
 
   public:
     llvm::ExitOnError exitOnErr;
 
-    CompilerContext(std::unique_ptr<llvm::orc::ExecutionSession> es,
-                    llvm::orc::JITTargetMachineBuilder jtmb,
-                    const llvm::DataLayout &dl);
-
-    ~CompilerContext();
+    explicit CompilerContext(std::unique_ptr<llvm::orc::LLJIT> j);
 
     static CompilerContext *Create();
 

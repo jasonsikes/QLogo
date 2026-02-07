@@ -17,6 +17,7 @@
 #include "compiler.h"
 #include "astnode.h"
 #include "compiler_internal.h"
+#include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
 #include "flowcontrol.h"
 #include "datum_types.h"
 #include "workspace/exports.h"
@@ -33,67 +34,52 @@ QHash<Datum *, std::shared_ptr<CompiledText>> Compiler::compiledTextTable;
 using namespace llvm;
 using namespace llvm::orc;
 
-CompilerContext::CompilerContext(std::unique_ptr<llvm::orc::ExecutionSession> es,
-                                 llvm::orc::JITTargetMachineBuilder jtmb,
-                                 const llvm::DataLayout &dl)
-    : exeSession(std::move(es)), dataLayout(dl), mangler(*this->exeSession, this->dataLayout),
-      objectLayer(*this->exeSession, []() { return std::make_unique<llvm::SectionMemoryManager>(); }),
-      compileLayer(*this->exeSession,
-                   objectLayer,
-                   std::make_unique<llvm::orc::ConcurrentIRCompiler>(std::move(jtmb))),
-      jitLib(this->exeSession->createBareJITDylib("<main>"))
+CompilerContext::CompilerContext(std::unique_ptr<llvm::orc::LLJIT> j) : jit(std::move(j))
 {
-    jitLib.addGenerator(cantFail(llvm::orc::DynamicLibrarySearchGenerator::GetForCurrentProcess(dl.getGlobalPrefix())));
-    // Note: jtmb was moved in the initializer list, so we need to check the target triple
-    // from the ExecutionSession instead
-    if (exeSession->getExecutorProcessControl().getTargetTriple().isOSBinFormatCOFF())
-    {
-        objectLayer.setOverrideObjectFlagsWithResponsibilityFlags(true);
-        objectLayer.setAutoClaimResponsibilityForObjectSymbols(true);
-    }
-}
-
-CompilerContext::~CompilerContext() // NOLINT(modernize-use-equals-default) - not trivial, needs to call endSession()
-{
-    if (auto err = exeSession->endSession())
-        exeSession->reportError(std::move(err));
 }
 
 CompilerContext *CompilerContext::Create()
 {
-    auto epc = llvm::orc::SelfExecutorProcessControl::Create();
-    Q_ASSERT(epc);
-
-    auto es = std::make_unique<llvm::orc::ExecutionSession>(std::move(*epc));
-
-    llvm::orc::JITTargetMachineBuilder jtmb(es->getExecutorProcessControl().getTargetTriple());
-
-    auto dl = jtmb.getDefaultDataLayoutForTarget();
-    Q_ASSERT(dl);
-
-    return new CompilerContext(std::move(es), std::move(jtmb), *dl);
+    auto jitOrErr = llvm::orc::LLJITBuilder()
+                        .setNotifyCreatedCallback([](llvm::orc::LLJIT &J) -> llvm::Error {
+                            if (!J.getTargetTriple().isOSBinFormatCOFF())
+                                return llvm::Error::success();
+                            auto *rtdyld =
+                                llvm::dyn_cast<llvm::orc::RTDyldObjectLinkingLayer>(&J.getObjLinkingLayer());
+                            if (rtdyld)
+                            {
+                                rtdyld->setOverrideObjectFlagsWithResponsibilityFlags(true);
+                                rtdyld->setAutoClaimResponsibilityForObjectSymbols(true);
+                            }
+                            return llvm::Error::success();
+                        })
+                        .create();
+    return new CompilerContext(std::move(cantFail(std::move(jitOrErr))));
 }
 
 const llvm::DataLayout &CompilerContext::getDataLayout() const
 {
-    return dataLayout;
+    return jit->getDataLayout();
 }
 
 llvm::orc::JITDylib &CompilerContext::getMainJITDylib()
 {
-    return jitLib;
+    return jit->getMainJITDylib();
 }
 
 llvm::Error CompilerContext::addModule(llvm::orc::ThreadSafeModule tsm, llvm::orc::ResourceTrackerSP rt)
 {
     if (!rt)
-        rt = jitLib.getDefaultResourceTracker();
-    return compileLayer.add(rt, std::move(tsm));
+        rt = jit->getMainJITDylib().getDefaultResourceTracker();
+    return jit->addIRModule(std::move(rt), std::move(tsm));
 }
 
 llvm::Expected<llvm::orc::ExecutorSymbolDef> CompilerContext::lookup(llvm::StringRef name)
 {
-    return exeSession->lookup({&jitLib}, mangler(name.str()));
+    auto addrOrErr = jit->lookup(name);
+    if (!addrOrErr)
+        return addrOrErr.takeError();
+    return llvm::orc::ExecutorSymbolDef(*addrOrErr, llvm::JITSymbolFlags::None);
 }
 
 Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
