@@ -89,24 +89,24 @@ Value *Compiler::generateNotEmptyWordOrListFromDatum(ASTNode *parent, Value *src
         BasicBlock *startBB = scaff->builder.GetInsertBlock();
         Function *theFunction = startBB->getParent();
 
-        BasicBlock *wordOrListBB = BasicBlock::Create(*scaff->theContext, "wordOrListBlock", theFunction);
-        BasicBlock *endBB = BasicBlock::Create(*scaff->theContext, "endBlock", theFunction);
+        BasicBlock *wordOrListBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("wordOrListBlock"), theFunction);
+        BasicBlock *endBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("endBlock"), theFunction);
 
         Value *wordOrListType = generateGetDatumIsa(wordorlist);
         Value *maskCalc =
-            scaff->builder.CreateAnd(wordOrListType, CoInt32(Datum::typeWord | Datum::typeList), "maskCalc");
-        Value *wordOrListCond = scaff->builder.CreateICmpNE(maskCalc, CoInt32(0), "wordOrListCond");
+            scaff->builder.CreateAnd(wordOrListType, CoInt32(Datum::typeWord | Datum::typeList), DBG_NAME("maskCalc"));
+        Value *wordOrListCond = scaff->builder.CreateICmpNE(maskCalc, CoInt32(0), DBG_NAME("wordOrListCond"));
         scaff->builder.CreateCondBr(wordOrListCond, wordOrListBB, endBB);
 
         // Word or List block
         scaff->builder.SetInsertPoint(wordOrListBB);
         Value *isEmpty = generateCallExtern(TyBool, isDatumEmpty, PaAddr(wordorlist));
-        Value *isEmptyCond = scaff->builder.CreateICmpEQ(isEmpty, CoBool(false), "isDatumEmptyCond");
+        Value *isEmptyCond = scaff->builder.CreateICmpEQ(isEmpty, CoBool(false), DBG_NAME("isDatumEmptyCond"));
         scaff->builder.CreateBr(endBB);
 
         // Merge block
         scaff->builder.SetInsertPoint(endBB);
-        PHINode *phi = scaff->builder.CreatePHI(wordOrListCond->getType(), 2, "lastOfDatumResult");
+        PHINode *phi = scaff->builder.CreatePHI(wordOrListCond->getType(), 2, DBG_NAME("lastOfDatumResult"));
         phi->addIncoming(isEmptyCond, wordOrListBB);
         phi->addIncoming(wordOrListCond, startBB);
         return phi;
@@ -121,23 +121,23 @@ Value *Compiler::generateNotEmptyListFromDatum(ASTNode *parent, Value *src)
         BasicBlock *startBB = scaff->builder.GetInsertBlock();
         Function *theFunction = startBB->getParent();
 
-        BasicBlock *listBB = BasicBlock::Create(*scaff->theContext, "listBlock", theFunction);
-        BasicBlock *endBB = BasicBlock::Create(*scaff->theContext, "endBlock", theFunction);
+        BasicBlock *listBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("listBlock"), theFunction);
+        BasicBlock *endBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("endBlock"), theFunction);
 
         Value *wordOrListType = generateGetDatumIsa(wordorlist);
-        Value *maskCalc = scaff->builder.CreateAnd(wordOrListType, CoInt32(Datum::typeList), "maskCalc");
-        Value *wordOrListCond = scaff->builder.CreateICmpNE(maskCalc, CoInt32(0), "listCond");
+        Value *maskCalc = scaff->builder.CreateAnd(wordOrListType, CoInt32(Datum::typeList), DBG_NAME("maskCalc"));
+        Value *wordOrListCond = scaff->builder.CreateICmpNE(maskCalc, CoInt32(0), DBG_NAME("listCond"));
         scaff->builder.CreateCondBr(wordOrListCond, listBB, endBB);
 
         // Word or List block
         scaff->builder.SetInsertPoint(listBB);
         Value *isEmpty = generateCallExtern(TyBool, isDatumEmpty, PaAddr(wordorlist));
-        Value *isEmptyCond = scaff->builder.CreateICmpEQ(isEmpty, CoBool(false), "isDatumEmptyCond");
+        Value *isEmptyCond = scaff->builder.CreateICmpEQ(isEmpty, CoBool(false), DBG_NAME("isDatumEmptyCond"));
         scaff->builder.CreateBr(endBB);
 
         // Merge block
         scaff->builder.SetInsertPoint(endBB);
-        PHINode *phi = scaff->builder.CreatePHI(wordOrListCond->getType(), 2, "lastOfDatumResult");
+        PHINode *phi = scaff->builder.CreatePHI(wordOrListCond->getType(), 2, DBG_NAME("lastOfDatumResult"));
         phi->addIncoming(isEmptyCond, listBB);
         phi->addIncoming(wordOrListCond, startBB);
         return phi;
@@ -185,13 +185,13 @@ Value *Compiler::genEqualp(const DatumPtr &node, RequestReturnType returnType)
     // Both double? Compare them
     if (typeOfThing1->isDoubleTy() && typeOfThing2->isDoubleTy())
     {
-        return scaff->builder.CreateFCmpUEQ(thing1, thing2, "Fequalp");
+        return scaff->builder.CreateFCmpUEQ(thing1, thing2, DBG_NAME("Fequalp"));
     }
 
     // Both bool? Compare them
     if (typeOfThing1->isIntegerTy(1) && typeOfThing2->isIntegerTy(1))
     {
-        return scaff->builder.CreateICmpEQ(thing1, thing2, "Bequalp");
+        return scaff->builder.CreateICmpEQ(thing1, thing2, DBG_NAME("Bequalp"));
     }
 
     // At this point we know at least one of the inputs is a Datum.
@@ -246,7 +246,7 @@ COD***/
 Value *Compiler::genWord(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
-    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, "wordAry");
+    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, DBG_NAME("wordAry"));
     return generateCallExtern(TyAddr, concatWord, PaAddr(evaluator), PaAddr(ary), PaInt32(ary->getArraySize()));
 }
 
@@ -262,7 +262,7 @@ COD***/
 Value *Compiler::genList(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
-    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, "listAry");
+    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, DBG_NAME("listAry"));
     return generateCallExtern(TyAddr, createList, PaAddr(evaluator), PaAddr(ary), PaInt32(ary->getArraySize()));
 }
 
@@ -281,7 +281,7 @@ COD***/
 Value *Compiler::genSentence(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
-    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, "sentenceAry");
+    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, DBG_NAME("sentenceAry"));
     return generateCallExtern(TyAddr, createSentence, PaAddr(evaluator), PaAddr(ary), PaInt32(ary->getArraySize()));
 }
 /***DOC FPUT
@@ -324,28 +324,28 @@ Value *Compiler::generateFputlput(const DatumPtr &node, RequestReturnType return
 
     auto validator = [this, thing, &listWordTest](Value *list) {
         Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-        BasicBlock *wordBB = BasicBlock::Create(*scaff->theContext, "isWordBlock", theFunction);
-        BasicBlock *listBB = BasicBlock::Create(*scaff->theContext, "isListBlock", theFunction);
-        BasicBlock *endBB = BasicBlock::Create(*scaff->theContext, "endBlock", theFunction);
+        BasicBlock *wordBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("isWordBlock"), theFunction);
+        BasicBlock *listBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("isListBlock"), theFunction);
+        BasicBlock *endBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("endBlock"), theFunction);
 
         Value *listType = generateGetDatumIsa(list);
-        listWordTest = scaff->builder.CreateICmpEQ(listType, CoInt32(Datum::typeWord), "listWordTest");
+        listWordTest = scaff->builder.CreateICmpEQ(listType, CoInt32(Datum::typeWord), DBG_NAME("listWordTest"));
         scaff->builder.CreateCondBr(listWordTest, wordBB, listBB);
 
         // Word block
         scaff->builder.SetInsertPoint(wordBB);
         Value *thingType = generateGetDatumIsa(thing);
-        Value *thingWordTest = scaff->builder.CreateICmpEQ(thingType, CoInt32(Datum::typeWord), "thingWordTest");
+        Value *thingWordTest = scaff->builder.CreateICmpEQ(thingType, CoInt32(Datum::typeWord), DBG_NAME("thingWordTest"));
         scaff->builder.CreateBr(endBB);
 
         // List block
         scaff->builder.SetInsertPoint(listBB);
-        Value *mask = scaff->builder.CreateAnd(listType, CoInt32(Datum::typeList), "dataTypeMask");
-        Value *listListTest = scaff->builder.CreateICmpNE(mask, CoInt32(0), "dataTypeMaskTest");
+        Value *mask = scaff->builder.CreateAnd(listType, CoInt32(Datum::typeList), DBG_NAME("dataTypeMask"));
+        Value *listListTest = scaff->builder.CreateICmpNE(mask, CoInt32(0), DBG_NAME("dataTypeMaskTest"));
         scaff->builder.CreateBr(endBB);
 
         scaff->builder.SetInsertPoint(endBB);
-        PHINode *phi = scaff->builder.CreatePHI(listListTest->getType(), 2, "putResult");
+        PHINode *phi = scaff->builder.CreatePHI(listListTest->getType(), 2, DBG_NAME("putResult"));
         phi->addIncoming(listListTest, listBB);
         phi->addIncoming(thingWordTest, wordBB);
         return phi;
@@ -353,14 +353,14 @@ Value *Compiler::generateFputlput(const DatumPtr &node, RequestReturnType return
     list = generateValidationDatum(node.astnodeValue(), list, validator);
 
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-    BasicBlock *wordBB = BasicBlock::Create(*scaff->theContext, "isWordBB", theFunction);
-    BasicBlock *listBB = BasicBlock::Create(*scaff->theContext, "isListBB", theFunction);
-    BasicBlock *mergeBB = BasicBlock::Create(*scaff->theContext, "mergeBB", theFunction);
+    BasicBlock *wordBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("isWordBB"), theFunction);
+    BasicBlock *listBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("isListBB"), theFunction);
+    BasicBlock *mergeBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("mergeBB"), theFunction);
 
     scaff->builder.CreateCondBr(listWordTest, wordBB, listBB);
 
     scaff->builder.SetInsertPoint(wordBB);
-    AllocaInst *ary = generateAllocaAry(wordVector, "wordAry");
+    AllocaInst *ary = generateAllocaAry(wordVector, DBG_NAME("wordAry"));
     Value *wordRetval =
         generateCallExtern(TyAddr, concatWord, PaAddr(evaluator), PaAddr(ary), PaInt32(ary->getArraySize()));
     scaff->builder.CreateBr(mergeBB);
@@ -371,7 +371,7 @@ Value *Compiler::generateFputlput(const DatumPtr &node, RequestReturnType return
     scaff->builder.CreateBr(mergeBB);
 
     scaff->builder.SetInsertPoint(mergeBB);
-    PHINode *phi = scaff->builder.CreatePHI(list->getType(), 2, "putRetval");
+    PHINode *phi = scaff->builder.CreatePHI(list->getType(), 2, DBG_NAME("putRetval"));
     phi->addIncoming(listRetval, listBB);
     phi->addIncoming(wordRetval, wordBB);
     return phi;
@@ -471,7 +471,7 @@ Value *Compiler::genFirst(const DatumPtr &node, RequestReturnType returnType)
 
     auto validator = [this](Value *thing) {
         Value *isEmpty = generateCallExtern(TyBool, isDatumEmpty, PaAddr(thing));
-        return scaff->builder.CreateICmpEQ(isEmpty, CoBool(false), "isDatumEmptyCond");
+        return scaff->builder.CreateICmpEQ(isEmpty, CoBool(false), DBG_NAME("isDatumEmptyCond"));
     };
     thing = generateValidationDatum(node.astnodeValue(), thing, validator);
 
@@ -559,7 +559,7 @@ Value *Compiler::genItem(const DatumPtr &node, RequestReturnType returnType)
     auto validator = [this, listItemPtr, thing](Value *index) {
         Value *isValid =
             generateCallExtern(TyBool, isDatumIndexValid, PaAddr(thing), PaDouble(index), PaAddr(CoAddr(listItemPtr)));
-        return scaff->builder.CreateICmpEQ(isValid, CoBool(true), "isDatumIndexValidCond");
+        return scaff->builder.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isDatumIndexValidCond"));
     };
     index = generateValidationDouble(node.astnodeValue(), index, validator);
 
@@ -608,7 +608,7 @@ Value *Compiler::generateSetitem(const DatumPtr &node, RequestReturnType returnT
     auto indexValidator = [this, array](Value *index) {
         Value *isValid =
             generateCallExtern(TyBool, isDatumIndexValid, PaAddr(array), PaDouble(index), PaAddr(CoAddr(0)));
-        return scaff->builder.CreateICmpEQ(isValid, CoBool(true), "isDatumIndexValidCond");
+        return scaff->builder.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isDatumIndexValidCond"));
     };
     index = generateValidationDouble(node.astnodeValue(), index, indexValidator);
 
@@ -619,7 +619,7 @@ Value *Compiler::generateSetitem(const DatumPtr &node, RequestReturnType returnT
         auto valueValidator = [this, array](Value *value) {
             Value *isValid = generateCallExtern(
                 TyBool, isDatumContainerOrInContainer, PaAddr(evaluator), PaAddr(array), PaAddr(value));
-            return scaff->builder.CreateICmpEQ(isValid, CoBool(false), "isDatumInContainerCond");
+            return scaff->builder.CreateICmpEQ(isValid, CoBool(false), DBG_NAME("isDatumInContainerCond"));
         };
         value = generateValidationDatum(node.astnodeValue(), value, valueValidator);
     }
@@ -688,8 +688,8 @@ Value *Compiler::genWordp(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *thingType = generateGetDatumIsa(thing);
-    Value *isType = scaff->builder.CreateICmpEQ(thingType, CoInt32(Datum::typeWord), "isDatumTypeCond");
-    return scaff->builder.CreateSelect(isType, CoBool(true), CoBool(false), "isDatumTypeResult");
+    Value *isType = scaff->builder.CreateICmpEQ(thingType, CoInt32(Datum::typeWord), DBG_NAME("isDatumTypeCond"));
+    return scaff->builder.CreateSelect(isType, CoBool(true), CoBool(false), DBG_NAME("isDatumTypeResult"));
 }
 
 /***DOC ARRAYP ARRAY?
@@ -706,8 +706,8 @@ Value *Compiler::genArrayp(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *thingType = generateGetDatumIsa(thing);
-    Value *isType = scaff->builder.CreateICmpEQ(thingType, CoInt32(Datum::typeArray), "isDatumTypeCond");
-    return scaff->builder.CreateSelect(isType, CoBool(true), CoBool(false), "isDatumTypeResult");
+    Value *isType = scaff->builder.CreateICmpEQ(thingType, CoInt32(Datum::typeArray), DBG_NAME("isDatumTypeCond"));
+    return scaff->builder.CreateSelect(isType, CoBool(true), CoBool(false), DBG_NAME("isDatumTypeResult"));
 }
 
 /***DOC LISTP LIST?
@@ -724,9 +724,9 @@ Value *Compiler::genListp(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *thingType = generateGetDatumIsa(thing);
-    Value *mask = scaff->builder.CreateAnd(thingType, CoInt32(Datum::typeList), "dataTypeMask");
-    Value *cond = scaff->builder.CreateICmpNE(mask, CoInt32(0), "typeTest");
-    return scaff->builder.CreateSelect(cond, CoBool(true), CoBool(false), "isDatumTypeResult");
+    Value *mask = scaff->builder.CreateAnd(thingType, CoInt32(Datum::typeList), DBG_NAME("dataTypeMask"));
+    Value *cond = scaff->builder.CreateICmpNE(mask, CoInt32(0), DBG_NAME("typeTest"));
+    return scaff->builder.CreateSelect(cond, CoBool(true), CoBool(false), DBG_NAME("isDatumTypeResult"));
 }
 
 /***DOC EMPTYP EMPTY?
@@ -784,8 +784,8 @@ Value *Compiler::genDotEq(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing1 = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *thing2 = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
-    Value *isEqualCond = scaff->builder.CreateICmpEQ(thing1, thing2, "isEqualCond");
-    return scaff->builder.CreateSelect(isEqualCond, CoBool(true), CoBool(false), "isEqualResult");
+    Value *isEqualCond = scaff->builder.CreateICmpEQ(thing1, thing2, DBG_NAME("isEqualCond"));
+    return scaff->builder.CreateSelect(isEqualCond, CoBool(true), CoBool(false), DBG_NAME("isEqualResult"));
 }
 
 /***DOC MEMBERP MEMBER?
@@ -867,7 +867,7 @@ Value *Compiler::genVbarredp(const DatumPtr &node, RequestReturnType returnType)
 
     auto validator = [this](Value *candidate) {
         Value *isGoodChar = generateCallExtern(TyBool, isSingleCharWord, PaAddr(candidate));
-        return scaff->builder.CreateICmpEQ(isGoodChar, CoBool(true), "isGoodCond");
+        return scaff->builder.CreateICmpEQ(isGoodChar, CoBool(true), DBG_NAME("isGoodCond"));
     };
     c = generateValidationDatum(node.astnodeValue(), c, validator);
 
@@ -911,7 +911,7 @@ Value *Compiler::genAscii(const DatumPtr &node, RequestReturnType returnType)
 
     auto validator = [this](Value *candidate) {
         Value *isGoodChar = generateCallExtern(TyBool, isSingleCharWord, PaAddr(candidate));
-        return scaff->builder.CreateICmpEQ(isGoodChar, CoBool(true), "isGoodCond");
+        return scaff->builder.CreateICmpEQ(isGoodChar, CoBool(true), DBG_NAME("isGoodCond"));
     };
     c = generateValidationDatum(node.astnodeValue(), c, validator);
 
@@ -936,7 +936,7 @@ Value *Compiler::genRawascii(const DatumPtr &node, RequestReturnType returnType)
 
     auto validator = [this](Value *candidate) {
         Value *isGoodChar = generateCallExtern(TyBool, isSingleCharWord, PaAddr(candidate));
-        return scaff->builder.CreateICmpEQ(isGoodChar, CoBool(true), "isGoodCond");
+        return scaff->builder.CreateICmpEQ(isGoodChar, CoBool(true), DBG_NAME("isGoodCond"));
     };
     c = generateValidationDatum(node.astnodeValue(), c, validator);
 
@@ -959,10 +959,10 @@ Value *Compiler::genChar(const DatumPtr &node, RequestReturnType returnType)
 
     Value *retval = nullptr;
     auto validator = [this, &retval](Value *candidate) {
-        retval = scaff->builder.CreateFPToUI(candidate, TyInt32, "FpToInt");
-        retval = scaff->builder.CreateAnd(retval, CoInt32(65535), "intMask");
-        Value *retvalCheck = scaff->builder.CreateUIToFP(retval, TyDouble, "FpToIntCheck");
-        return scaff->builder.CreateFCmpOEQ(candidate, retvalCheck, "isValidTest");
+        retval = scaff->builder.CreateFPToUI(candidate, TyInt32, DBG_NAME("FpToInt"));
+        retval = scaff->builder.CreateAnd(retval, CoInt32(65535), DBG_NAME("intMask"));
+        Value *retvalCheck = scaff->builder.CreateUIToFP(retval, TyDouble, DBG_NAME("FpToIntCheck"));
+        return scaff->builder.CreateFCmpOEQ(candidate, retvalCheck, DBG_NAME("isValidTest"));
     };
     generateValidationDouble(node.astnodeValue(), c, validator);
     return generateCallExtern(TyAddr, chr, PaAddr(evaluator), PaInt32(retval));
