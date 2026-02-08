@@ -28,11 +28,12 @@ https://github.com/jrincayc/ucblogo-code
 
 ** To build
 
-At this time I am developing QLogo on Linux (Fedora 43) using Qt 6.10 and LLVM 21.1.
+At this time I am developing and testing QLogo on the following systems:
 
-I just now updated my LLVM version from 19 to 21 on Linux, so this *PARTICULAR* version does not build for me on macOS (Tahoe on Silicon, using LLVM 19 and Qt 6.9 provided by MacPorts).
+- Linux (Fedora 43 using Qt 6.10 and LLVM 21), and
+- macOS (Tahoe on Silicon, using LLVM 21 and Qt 6.10 provided by MacPorts).
 
-I am no longer testing on MS Windows as I no longer have a Windows machine.
+_I am no longer testing on MS Windows as I no longer have a Windows machine._
 
 *** To build in Linux
 
@@ -51,7 +52,6 @@ To the best of my memory, you will need the following packages:
 After you have downloaded the QLogo source code, "cd" into the source directory and issue the following commands.
 
 #+BEGIN_SRC shell
-cd QLogo
 cmake -S . -B build
 cd build
 make
