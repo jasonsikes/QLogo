@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/bin/sh
 
 # ./test.sh [OPTIONS] [FILENAMES...]
 #
@@ -18,12 +18,11 @@
 # in the tests directory.
 
 stop_on_first_failure=false
-filenames=()
-argc=0
 blacklisted=false
+verify_ir=false
 
 # Parse options
-while [[ $# -gt 0 ]]; do
+while [ $# -gt 0 ]; do
     case $1 in
         -first)
             stop_on_first_failure=true
@@ -39,12 +38,13 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         *)
-            filenames+=("$1")
-            ((argc++))
-            shift
+            break
             ;;
     esac
 done
+# Remaining arguments are filenames
+saved_filenames="$*"
+saved_argc=$#
 
 # Change to the directory of the test script.
 test_dir=$(dirname $0)
@@ -56,7 +56,7 @@ fi
 
 logo_binary=qlogo
 logo_path="../../../qlogo/$logo_binary"
-reported_tests=()
+reported_tests=""
 
 exe_opts=""
 if [ "$verify_ir" = true ]; then
@@ -65,22 +65,25 @@ fi
 
 run_test() {
     f="$1"
-    if [[ $f == *.lg ]]
-    then
-        echo $f
-        $logo_path $exe_opts < $f 2>&1 | diff "${f%.lg}.result" -
-        if [ $? -eq 1 ]
-        then
-            if [ "$blacklisted" != true ] && [ "$stop_on_first_failure" = true ]; then
-                exit 1
+    case $f in
+        *.lg)
+            echo $f
+            $logo_path $exe_opts < $f 2>&1 | diff "${f%.lg}.result" -
+            if [ $? -eq 1 ]
+            then
+                if [ "$blacklisted" != true ] && [ "$stop_on_first_failure" = true ]; then
+                    exit 1
+                fi
+                reported_tests="$reported_tests$f
+"
+            else
+                if [ "$blacklisted" = true ]; then
+                    reported_tests="$reported_tests$f
+"
+                fi
             fi
-            reported_tests+=($f)
-        else
-            if [ "$blacklisted" = true ]; then
-                reported_tests+=($f)
-            fi
-        fi
-    fi
+            ;;
+    esac
 }
 
 if [ ! -f "$logo_path" ]
@@ -102,9 +105,9 @@ has_gnu_date() {
     return 1
 }
 
-if (( $argc > 0 ))
+if [ $saved_argc -gt 0 ]
 then
-    for filename in ${filenames[*]}
+    for filename in $saved_filenames
     do
         run_test $filename
     done
@@ -118,56 +121,62 @@ else
     reported_test_file=$(mktemp /tmp/test_reported_XXXXXX)
     
     # Collect all .lg files first
-    test_files=()
+    test_files=""
     for a in *.lg; do
-        test_files+=("$a")
+        test_files="$test_files $a"
     done
     
     # Function to run a test in the background
     run_test_parallel() {
         f="$1"
-        if [[ $f == *.lg ]]
-        then
-            echo $f
-            # Run test in background
-            (
-                $logo_path $exe_opts < $f 2>&1 | diff "${f%.lg}.result" -
-                exit_code=$?
-                # Report: (blacklisted and passed) or (not blacklisted and failed)
-                if { [ "$blacklisted" = true ] && [ $exit_code -eq 0 ]; } || { [ "$blacklisted" != true ] && [ $exit_code -eq 1 ]; }; then
-                    echo "$f" >> "$reported_test_file"
-                fi
-            ) &
-        fi
+        case $f in
+            *.lg)
+                echo $f
+                # Run test in background
+                (
+                    $logo_path $exe_opts < $f 2>&1 | diff "${f%.lg}.result" -
+                    exit_code=$?
+                    # Report: (blacklisted and passed) or (not blacklisted and failed)
+                    if [ "$blacklisted" = true ] && [ $exit_code -eq 0 ]; then
+                        echo "$f" >> "$reported_test_file"
+                    elif [ "$blacklisted" != true ] && [ $exit_code -eq 1 ]; then
+                        echo "$f" >> "$reported_test_file"
+                    fi
+                ) &
+                ;;
+        esac
     }
     
     # Run tests in parallel, limiting to max_jobs concurrent processes
-    job_pids=()
-    for a in ${test_files[@]}; do
+    job_pids=""
+    for a in $test_files; do
         # Wait for a job slot if we've reached the limit
-        while (( ${#job_pids[@]} >= max_jobs )); do
-            # Wait for any job to complete
-            wait $job_pids[1]
-            # Remove completed job from array
-            job_pids=(${job_pids[2,-1]})
+        while true; do
+            n=0
+            for p in $job_pids; do
+                n=$((n + 1))
+            done
+            [ $n -lt $max_jobs ] && break
+            first_pid="${job_pids# }"
+            first_pid="${first_pid%% *}"
+            wait $first_pid 2>/dev/null
+            job_pids="${job_pids#$first_pid}"
+            job_pids="${job_pids# }"
         done
         
         run_test_parallel $a
-        # Store the PID of the background job (zsh stores it in $!)
-        job_pids+=($!)
-        ((++test_count))
+        job_pids="$job_pids $!"
+        test_count=$((test_count + 1))
     done
     
     # Wait for all remaining jobs to complete
     for pid in $job_pids; do
-        wait $pid
+        wait $pid 2>/dev/null
     done
     
     # Read test results from the temporary file
     if [ -f "$reported_test_file" ] && [ -s "$reported_test_file" ]; then
-        while IFS= read -r line; do
-            reported_tests+=("$line")
-        done < "$reported_test_file"
+        reported_tests=$(cat "$reported_test_file")
     fi
     rm -f "$reported_test_file"
     
@@ -176,7 +185,7 @@ else
         trt=$((end_time-start_time))
     fi
 
-    if (( ${#reported_tests[@]} )); then
+    if [ -n "$reported_tests" ]; then
         echo
         echo "============================"
         if [ "$blacklisted" = true ]; then
@@ -185,8 +194,7 @@ else
             echo "====" FAILED TESTS:
         fi
         echo "===="
-        for f in ${reported_tests[@]}
-        do
+        echo "$reported_tests" | while IFS= read -r f; do
             echo "====" $f
             echo "===="
         done
@@ -200,7 +208,7 @@ else
 fi
 
 # Exit with error code if not blacklisted and there are reported tests
-if [ "$blacklisted" != true ] && (( ${#reported_tests[@]} )); then
+if [ "$blacklisted" != true ] && [ -n "$reported_tests" ]; then
     exit 1
 fi
 exit 0
