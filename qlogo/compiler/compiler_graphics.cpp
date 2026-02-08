@@ -428,7 +428,7 @@ Value *Compiler::genFilled(const DatumPtr &node, RequestReturnType returnType)
     scaff->builder.SetInsertPoint(colorNotGoodBB);
     Value *errVal = generateCallExtern(
         TyAddr, getErrorNoLike, PaAddr(scaff->evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color));
-    scaff->builder.CreateRet(errVal);
+    generateReturn(errVal);
 
     // Color is good.
     scaff->builder.SetInsertPoint(colorGoodBB);
@@ -721,7 +721,7 @@ Value *Compiler::genSetpencolor(const DatumPtr &node, RequestReturnType returnTy
     scaff->builder.SetInsertPoint(colorNotGoodBB);
     Value *errVal = generateCallExtern(
         TyAddr, getErrorNoLike, PaAddr(scaff->evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color));
-    scaff->builder.CreateRet(errVal);
+    generateReturn(errVal);
 
     // Color is good.
     scaff->builder.SetInsertPoint(colorGoodBB);
@@ -766,7 +766,7 @@ Value *Compiler::genSetpalette(const DatumPtr &node, RequestReturnType returnTyp
     scaff->builder.SetInsertPoint(colorIndexNotGoodBB);
     Value *errVal = generateCallExtern(
         TyAddr, getErrorNoLike, PaAddr(scaff->evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(colorIndex));
-    scaff->builder.CreateRet(errVal);
+    generateReturn(errVal);
 
     // Color index is good.
     scaff->builder.SetInsertPoint(colorIndexGoodBB);
@@ -779,7 +779,7 @@ Value *Compiler::genSetpalette(const DatumPtr &node, RequestReturnType returnTyp
     scaff->builder.SetInsertPoint(colorNotGoodBB);
     errVal = generateCallExtern(
         TyAddr, getErrorNoLike, PaAddr(scaff->evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color));
-    scaff->builder.CreateRet(errVal);
+    generateReturn(errVal);
 
     // Color is good.
     scaff->builder.SetInsertPoint(colorGoodBB);
@@ -824,7 +824,7 @@ Value *Compiler::genSetbackground(const DatumPtr &node, RequestReturnType return
     scaff->builder.SetInsertPoint(colorNotGoodBB);
     Value *errVal = generateCallExtern(
         TyAddr, getErrorNoLike, PaAddr(scaff->evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color));
-    scaff->builder.CreateRet(errVal);
+    generateReturn(errVal);
 
     // Color is good.
     scaff->builder.SetInsertPoint(colorGoodBB);
@@ -895,7 +895,7 @@ Value *Compiler::genPalette(const DatumPtr &node, RequestReturnType returnType)
     scaff->builder.SetInsertPoint(colorIndexNotGoodBB);
     Value *errVal = generateCallExtern(
         TyAddr, getErrorNoLike, PaAddr(scaff->evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(colorIndex));
-    scaff->builder.CreateRet(errVal);
+    generateReturn(errVal);
 
     // Color index is good.
     scaff->builder.SetInsertPoint(colorIndexGoodBB);

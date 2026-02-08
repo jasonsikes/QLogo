@@ -271,7 +271,7 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     }
 
     // Finish off the function
-    scaff->builder.CreateRet(nodeResult);
+    generateReturn(nodeResult);
 
     if (blocks.size() > 1)
     {
@@ -513,7 +513,7 @@ Value *Compiler::generateNotNothingFromDatum(ASTNode *parent, Value *src)
     scaff->builder.SetInsertPoint(isNothingBB);
     Value *errWhat = src;
     Value *errObj = generateErrorNoOutput(errWhat, parent);
-    scaff->builder.CreateRet(errObj);
+    generateReturn(errObj);
 
     // Good
     scaff->builder.SetInsertPoint(notNothingBB);
@@ -537,7 +537,7 @@ Value *Compiler::generateNothingFromDatum(ASTNode *parent, Value *src)
     // Bad
     scaff->builder.SetInsertPoint(notNothingBB);
     Value *errObj = generateErrorNoSay(src);
-    scaff->builder.CreateRet(errObj);
+    generateReturn(errObj);
 
     // Good
     scaff->builder.SetInsertPoint(isNothingBB);
@@ -612,7 +612,7 @@ Value *Compiler::genValueOf(const DatumPtr &node, RequestReturnType returnType)
 
     scaff->builder.SetInsertPoint(noValueBB);
     Value *errObj = generateErrorNoValue(nameAddr);
-    scaff->builder.CreateRet(errObj);
+    generateReturn(errObj);
 
     scaff->builder.SetInsertPoint(hasValueBB);
     return retval;
@@ -712,7 +712,7 @@ Value *Compiler::generateImmediateReturn(llvm::Value *retval)
     scaff->builder.CreateCondBr(cond, throwAwayBB, bailoutBB);
 
     scaff->builder.SetInsertPoint(bailoutBB);
-    scaff->builder.CreateRet(retval);
+    generateReturn(retval);
 
     // Any code that the compiler has remaining to generate after the return operation will
     // be placed here, and then ignored.
@@ -813,7 +813,7 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr
     scaff->builder.SetInsertPoint(bailoutBB);
     Value *errWho = CoAddr(parent->nodeName.datumValue());
     Value *errObj = generateCallExtern(TyAddr, getErrorNoLike, PaAddr(scaff->evaluator), PaAddr(errWho), PaAddr(list));
-    scaff->builder.CreateRet(errObj);
+    generateReturn(errObj);
 
     scaff->builder.SetInsertPoint(continueBB);
     AllocaInst *ary = scaff->builder.CreateAlloca(TyDouble, vSize, DBG_NAME("ary"));
@@ -864,7 +864,7 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
 
     // The number is bad, and ERRACT is not set. Return a DOESN'T LIKE error.
     scaff->builder.SetInsertPoint(bailoutBB);
-    scaff->builder.CreateRet(handlerResult);
+    generateReturn(handlerResult);
 
     // The number is good. Continue.
     scaff->builder.SetInsertPoint(acceptBB);
@@ -901,11 +901,16 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
 
     // The datum is bad, and ERRACT is not set. Return a DOESN'T LIKE error.
     scaff->builder.SetInsertPoint(bailoutBB);
-    scaff->builder.CreateRet(handlerResult);
+    generateReturn(handlerResult);
 
     // The datum is good. Continue.
     scaff->builder.SetInsertPoint(acceptBB);
     return candidate;
+}
+
+ReturnInst *Compiler::generateReturn(Value *retval)
+{
+    return scaff->builder.CreateRet(retval);
 }
 
 #pragma GCC diagnostic push

@@ -26,6 +26,7 @@
 #endif
 
 #include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Instructions.h"
 #include "llvm/Transforms/Scalar/GVN.h"
 #include "llvm/Transforms/Scalar/Reassociate.h"
 
@@ -237,6 +238,9 @@ class Compiler
 
     // Generate the TagId-to-Block Table of Contents.
     llvm::BasicBlock *generateTOC(QList<llvm::BasicBlock *> blocks, llvm::Function *theFunction);
+
+    // Generate a return operation for the function.
+    llvm::ReturnInst *generateReturn(llvm::Value *retval);
 
     /// @brief Private constructor for singleton pattern.
     Compiler();

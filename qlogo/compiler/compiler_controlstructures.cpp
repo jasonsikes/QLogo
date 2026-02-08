@@ -221,7 +221,7 @@ Value *Compiler::genRepeat(const DatumPtr &node, RequestReturnType returnType)
     phiError->addIncoming(errNoSay, noSayErrorBB);
     phiError->addIncoming(result, whileBB);
     scaff->builder.CreateStore(shadowedRepcount, repcountAddress);
-    scaff->builder.CreateRet(phiError);
+    generateReturn(phiError);
 
     scaff->builder.SetInsertPoint(exitBB);
     PHINode *phiNode = scaff->builder.CreatePHI(TyAddr, 2, DBG_NAME("retval"));
@@ -626,7 +626,7 @@ Value *Compiler::genForever(const DatumPtr &node, RequestReturnType returnType)
     phiError->addIncoming(errNoSay, noSayErrorBB);
     phiError->addIncoming(result, whileBB);
     scaff->builder.CreateStore(shadowedRepcount, repcountAddress);
-    scaff->builder.CreateRet(phiError);
+    generateReturn(phiError);
 
     // We will never reach here, but the compiler requires a current block and a return value.
     scaff->builder.SetInsertPoint(throwawayBB);
@@ -697,7 +697,7 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, RequestReturnType ret
 
     scaff->builder.SetInsertPoint(notTestedBB);
     Value *errVal = generateErrorNoTest(CoAddr(node.astnodeValue()->nodeName.datumValue()));
-    scaff->builder.CreateRet(errVal);
+    generateReturn(errVal);
 
     scaff->builder.SetInsertPoint(isTestedBB);
     testResult = generateCallExtern(TyBool, getTestResult);

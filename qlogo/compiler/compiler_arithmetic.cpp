@@ -921,7 +921,7 @@ Value *Compiler::genRandom(const DatumPtr &node, RequestReturnType returnType)
     scaff->builder.SetInsertPoint(notGTBB);
     Value *errWhat = generateWordFromDouble(children[1]);
     Value *errObj = generateErrorNoLike(node.astnodeValue(), errWhat);
-    scaff->builder.CreateRet(errObj);
+    generateReturn(errObj);
 
     scaff->builder.SetInsertPoint(isGTBB);
 
@@ -1139,7 +1139,7 @@ Value *Compiler::generateListExecIfList(ASTNode *parent, Value *c)
     // List execution resulted in nothing.
     scaff->builder.SetInsertPoint(isNothingBB);
     Value *errNoOutput = generateErrorNoOutput(c, parent);
-    scaff->builder.CreateRet(errNoOutput);
+    generateReturn(errNoOutput);
 
     scaff->builder.SetInsertPoint(notListBB);
     PHINode *retval = scaff->builder.CreatePHI(TyAddr, 2, DBG_NAME("isWordPhi"));
