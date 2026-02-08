@@ -55,12 +55,6 @@ class Compiler
     // Scaffold is a collection of objects needed to compile a JIT module.
     Scaffold *scaff;
 
-    // a pointer to the Evaluator object that supports execution of the compiled function.
-    llvm::Value *evaluator;
-
-    // a pointer to the block ID argument of the compiled function.
-    llvm::Value *blockId;
-
     std::unique_ptr<llvm::orc::LLJIT> lljit;
 
     // The hash table of compiled texts referenced by lists or ASTNodes.

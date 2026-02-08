@@ -983,7 +983,7 @@ Value *Compiler::genForm(const DatumPtr &node, RequestReturnType returnType)
     precision = generateNotNegativeFromDouble(node.astnodeValue(), precision);
     precision = generateInt32FromDouble(node.astnodeValue(), precision, true);
     return generateCallExtern(
-        TyAddr, getFormForNumber, PaAddr(evaluator), PaDouble(num), PaInt32(width), PaInt32(precision));
+        TyAddr, getFormForNumber, PaAddr(scaff->evaluator), PaDouble(num), PaInt32(width), PaInt32(precision));
 }
 
 // Add infix entries to table. This will cause an error if they are used as

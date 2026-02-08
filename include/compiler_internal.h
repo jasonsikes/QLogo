@@ -47,8 +47,15 @@ struct Scaffold
     llvm::ModuleAnalysisManager theMAM;
     llvm::PassInstrumentationCallbacks thePIC;
     llvm::StandardInstrumentations theSI;
+    llvm::Function *theFunction;
 
     Scaffold(const llvm::DataLayout &dataLayout);
+
+    // a pointer to the Evaluator object that supports execution of the compiled function.
+    llvm::Value *evaluator;
+
+    // a pointer to the block ID argument of the compiled function.
+    llvm::Value *blockId;
 };
 
 // Some defines to reduce boilerplate

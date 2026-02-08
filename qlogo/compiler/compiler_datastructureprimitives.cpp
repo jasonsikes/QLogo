@@ -206,14 +206,14 @@ Value *Compiler::genEqualp(const DatumPtr &node, RequestReturnType returnType)
 
     if (typeOfThing2->isIntegerTy(1))
     {
-        return generateCallExtern(TyBool, cmpDatumToBool, PaAddr(evaluator), PaAddr(thing1), PaBool(thing2));
+        return generateCallExtern(TyBool, cmpDatumToBool, PaAddr(scaff->evaluator), PaAddr(thing1), PaBool(thing2));
     }
     if (typeOfThing2->isDoubleTy())
     {
-        return generateCallExtern(TyBool, cmpDatumToDouble, PaAddr(evaluator), PaAddr(thing1), PaDouble(thing2));
+        return generateCallExtern(TyBool, cmpDatumToDouble, PaAddr(scaff->evaluator), PaAddr(thing1), PaDouble(thing2));
     }
     Q_ASSERT(typeOfThing2->isPointerTy());
-    return generateCallExtern(TyBool, cmpDatumToDatum, PaAddr(evaluator), PaAddr(thing1), PaAddr(thing2));
+    return generateCallExtern(TyBool, cmpDatumToDatum, PaAddr(scaff->evaluator), PaAddr(thing1), PaAddr(thing2));
 }
 
 /***DOC NOTEQUALP NOTEQUAL?
@@ -247,7 +247,7 @@ Value *Compiler::genWord(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, DBG_NAME("wordAry"));
-    return generateCallExtern(TyAddr, concatWord, PaAddr(evaluator), PaAddr(ary), PaInt32(ary->getArraySize()));
+    return generateCallExtern(TyAddr, concatWord, PaAddr(scaff->evaluator), PaAddr(ary), PaInt32(ary->getArraySize()));
 }
 
 /***DOC LIST
@@ -263,7 +263,7 @@ Value *Compiler::genList(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, DBG_NAME("listAry"));
-    return generateCallExtern(TyAddr, createList, PaAddr(evaluator), PaAddr(ary), PaInt32(ary->getArraySize()));
+    return generateCallExtern(TyAddr, createList, PaAddr(scaff->evaluator), PaAddr(ary), PaInt32(ary->getArraySize()));
 }
 
 /***DOC SENTENCE SE
@@ -282,7 +282,7 @@ Value *Compiler::genSentence(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, DBG_NAME("sentenceAry"));
-    return generateCallExtern(TyAddr, createSentence, PaAddr(evaluator), PaAddr(ary), PaInt32(ary->getArraySize()));
+    return generateCallExtern(TyAddr, createSentence, PaAddr(scaff->evaluator), PaAddr(ary), PaInt32(ary->getArraySize()));
 }
 /***DOC FPUT
 FPUT thing list
@@ -362,12 +362,12 @@ Value *Compiler::generateFputlput(const DatumPtr &node, RequestReturnType return
     scaff->builder.SetInsertPoint(wordBB);
     AllocaInst *ary = generateAllocaAry(wordVector, DBG_NAME("wordAry"));
     Value *wordRetval =
-        generateCallExtern(TyAddr, concatWord, PaAddr(evaluator), PaAddr(ary), PaInt32(ary->getArraySize()));
+        generateCallExtern(TyAddr, concatWord, PaAddr(scaff->evaluator), PaAddr(ary), PaInt32(ary->getArraySize()));
     scaff->builder.CreateBr(mergeBB);
 
     scaff->builder.SetInsertPoint(listBB);
-    Value *listRetval = isLput ? generateCallExtern(TyAddr, lputList, PaAddr(evaluator), PaAddr(thing), PaAddr(list))
-                               : generateCallExtern(TyAddr, fputList, PaAddr(evaluator), PaAddr(thing), PaAddr(list));
+    Value *listRetval = isLput ? generateCallExtern(TyAddr, lputList, PaAddr(scaff->evaluator), PaAddr(thing), PaAddr(list))
+                               : generateCallExtern(TyAddr, fputList, PaAddr(scaff->evaluator), PaAddr(thing), PaAddr(list));
     scaff->builder.CreateBr(mergeBB);
 
     scaff->builder.SetInsertPoint(mergeBB);
@@ -409,7 +409,7 @@ Value *Compiler::genArray(const DatumPtr &node, RequestReturnType returnType)
     size = generateNotNegativeFromDouble(node.astnodeValue(), size);
     size = generateInt32FromDouble(node.astnodeValue(), size, true);
 
-    return generateCallExtern(TyAddr, createArray, PaAddr(evaluator), PaInt32(size), PaInt32(origin));
+    return generateCallExtern(TyAddr, createArray, PaAddr(scaff->evaluator), PaInt32(size), PaInt32(origin));
 }
 /***DOC LISTTOARRAY
 LISTTOARRAY list
@@ -436,7 +436,7 @@ Value *Compiler::genListtoarray(const DatumPtr &node, RequestReturnType returnTy
         origin = CoInt32(1);
     }
 
-    return generateCallExtern(TyAddr, listToArray, PaAddr(evaluator), PaAddr(list), PaInt32(origin));
+    return generateCallExtern(TyAddr, listToArray, PaAddr(scaff->evaluator), PaAddr(list), PaInt32(origin));
 }
 /***DOC ARRAYTOLIST
 ARRAYTOLIST array
@@ -452,7 +452,7 @@ Value *Compiler::genArraytolist(const DatumPtr &node, RequestReturnType returnTy
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *array = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     array = generateArrayFromDatum(node.astnodeValue(), array);
-    return generateCallExtern(TyAddr, arrayToList, PaAddr(evaluator), PaAddr(array));
+    return generateCallExtern(TyAddr, arrayToList, PaAddr(scaff->evaluator), PaAddr(array));
 }
 /***DOC FIRST
 FIRST thing
@@ -475,7 +475,7 @@ Value *Compiler::genFirst(const DatumPtr &node, RequestReturnType returnType)
     };
     thing = generateValidationDatum(node.astnodeValue(), thing, validator);
 
-    return generateCallExtern(TyAddr, firstOfDatum, PaAddr(evaluator), PaAddr(thing));
+    return generateCallExtern(TyAddr, firstOfDatum, PaAddr(scaff->evaluator), PaAddr(thing));
 }
 /***DOC LAST
 LAST wordorlist
@@ -492,7 +492,7 @@ Value *Compiler::genLast(const DatumPtr &node, RequestReturnType returnType)
 
     wordorlist = generateNotEmptyWordOrListFromDatum(node.astnodeValue(), wordorlist);
 
-    return generateCallExtern(TyAddr, lastOfDatum, PaAddr(evaluator), PaAddr(wordorlist));
+    return generateCallExtern(TyAddr, lastOfDatum, PaAddr(scaff->evaluator), PaAddr(wordorlist));
 }
 /***DOC BUTFIRST BF
 BUTFIRST wordorlist
@@ -512,7 +512,7 @@ Value *Compiler::genButfirst(const DatumPtr &node, RequestReturnType returnType)
 
     wordorlist = generateNotEmptyWordOrListFromDatum(node.astnodeValue(), wordorlist);
 
-    return generateCallExtern(TyAddr, butFirstOfDatum, PaAddr(evaluator), PaAddr(wordorlist));
+    return generateCallExtern(TyAddr, butFirstOfDatum, PaAddr(scaff->evaluator), PaAddr(wordorlist));
 }
 /***DOC BUTLAST BL
 BUTLAST wordorlist
@@ -532,7 +532,7 @@ Value *Compiler::genButlast(const DatumPtr &node, RequestReturnType returnType)
 
     wordorlist = generateNotEmptyWordOrListFromDatum(node.astnodeValue(), wordorlist);
 
-    return generateCallExtern(TyAddr, butLastOfDatum, PaAddr(evaluator), PaAddr(wordorlist));
+    return generateCallExtern(TyAddr, butLastOfDatum, PaAddr(scaff->evaluator), PaAddr(wordorlist));
 }
 /***DOC ITEM
 ITEM index thing
@@ -564,7 +564,7 @@ Value *Compiler::genItem(const DatumPtr &node, RequestReturnType returnType)
     index = generateValidationDouble(node.astnodeValue(), index, validator);
 
     return generateCallExtern(
-        TyAddr, itemOfDatum, PaAddr(evaluator), PaAddr(thing), PaDouble(index), PaAddr(CoAddr(listItemPtr)));
+        TyAddr, itemOfDatum, PaAddr(scaff->evaluator), PaAddr(thing), PaDouble(index), PaAddr(CoAddr(listItemPtr)));
 }
 /***DOC SETITEM
 SETITEM index array value
@@ -618,7 +618,7 @@ Value *Compiler::generateSetitem(const DatumPtr &node, RequestReturnType returnT
     {
         auto valueValidator = [this, array](Value *value) {
             Value *isValid = generateCallExtern(
-                TyBool, isDatumContainerOrInContainer, PaAddr(evaluator), PaAddr(array), PaAddr(value));
+                TyBool, isDatumContainerOrInContainer, PaAddr(scaff->evaluator), PaAddr(array), PaAddr(value));
             return scaff->builder.CreateICmpEQ(isValid, CoBool(false), DBG_NAME("isDatumInContainerCond"));
         };
         value = generateValidationDatum(node.astnodeValue(), value, valueValidator);
@@ -765,7 +765,7 @@ Value *Compiler::genBeforep(const DatumPtr &node, RequestReturnType returnType)
     Value *word2 = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
     word1 = generateWordFromDatum(node.astnodeValue(), word1);
     word2 = generateWordFromDatum(node.astnodeValue(), word2);
-    return generateCallExtern(TyBool, isBefore, PaAddr(evaluator), PaAddr(word1), PaAddr(word2));
+    return generateCallExtern(TyBool, isBefore, PaAddr(scaff->evaluator), PaAddr(word1), PaAddr(word2));
 }
 /***DOC .EQ
 .EQ thing1 thing2
@@ -805,7 +805,7 @@ Value *Compiler::genMemberp(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing1 = generateChild(node.astnodeValue(), 0, RequestReturnDatum); // thing
     Value *thing2 = generateChild(node.astnodeValue(), 1, RequestReturnDatum); // container
-    return generateCallExtern(TyBool, isMember, PaAddr(evaluator), PaAddr(thing1), PaAddr(thing2));
+    return generateCallExtern(TyBool, isMember, PaAddr(scaff->evaluator), PaAddr(thing1), PaAddr(thing2));
 }
 /***DOC SUBSTRINGP SUBSTRING?
 SUBSTRINGP thing1 thing2
@@ -965,7 +965,7 @@ Value *Compiler::genChar(const DatumPtr &node, RequestReturnType returnType)
         return scaff->builder.CreateFCmpOEQ(candidate, retvalCheck, DBG_NAME("isValidTest"));
     };
     generateValidationDouble(node.astnodeValue(), c, validator);
-    return generateCallExtern(TyAddr, chr, PaAddr(evaluator), PaInt32(retval));
+    return generateCallExtern(TyAddr, chr, PaAddr(scaff->evaluator), PaInt32(retval));
 }
 /***DOC MEMBER
 MEMBER thing1 thing2
@@ -985,7 +985,7 @@ Value *Compiler::genMember(const DatumPtr &node, RequestReturnType returnType)
     Value *thing2 = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
 
     thing2 = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), thing2);
-    return generateCallExtern(TyAddr, member, PaAddr(evaluator), PaAddr(thing1), PaAddr(thing2));
+    return generateCallExtern(TyAddr, member, PaAddr(scaff->evaluator), PaAddr(thing1), PaAddr(thing2));
 }
 /***DOC LOWERCASE
 LOWERCASE word
@@ -1000,7 +1000,7 @@ Value *Compiler::genLowercase(const DatumPtr &node, RequestReturnType returnType
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *word = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     word = generateFromDatum(Datum::typeWord, node.astnodeValue(), word);
-    return generateCallExtern(TyAddr, lowercase, PaAddr(evaluator), PaAddr(word));
+    return generateCallExtern(TyAddr, lowercase, PaAddr(scaff->evaluator), PaAddr(word));
 }
 /***DOC UPPERCASE
 UPPERCASE word
@@ -1015,7 +1015,7 @@ Value *Compiler::genUppercase(const DatumPtr &node, RequestReturnType returnType
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *word = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     word = generateFromDatum(Datum::typeWord, node.astnodeValue(), word);
-    return generateCallExtern(TyAddr, uppercase, PaAddr(evaluator), PaAddr(word), PaBool(CoBool(false)));
+    return generateCallExtern(TyAddr, uppercase, PaAddr(scaff->evaluator), PaAddr(word), PaBool(CoBool(false)));
 }
 /***DOC STANDOUT
 STANDOUT thing
@@ -1033,7 +1033,7 @@ Value *Compiler::genStandout(const DatumPtr &node, RequestReturnType returnType)
 {
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *thing = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    return generateCallExtern(TyAddr, standout, PaAddr(evaluator), PaAddr(thing));
+    return generateCallExtern(TyAddr, standout, PaAddr(scaff->evaluator), PaAddr(thing));
 }
 /***DOC PARSE
 PARSE word
@@ -1049,7 +1049,7 @@ Value *Compiler::genParse(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *word = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     word = generateFromDatum(Datum::typeWord, node.astnodeValue(), word);
-    return generateCallExtern(TyAddr, parse, PaAddr(evaluator), PaAddr(word));
+    return generateCallExtern(TyAddr, parse, PaAddr(scaff->evaluator), PaAddr(word));
 }
 /***DOC RUNPARSE
 RUNPARSE wordorlist
@@ -1067,5 +1067,5 @@ Value *Compiler::genRunparse(const DatumPtr &node, RequestReturnType returnType)
     Q_ASSERT(returnType && RequestReturnDatum);
     Value *wordorlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     wordorlist = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), wordorlist);
-    return generateCallExtern(TyAddr, runparseDatum, PaAddr(evaluator), PaAddr(wordorlist));
+    return generateCallExtern(TyAddr, runparseDatum, PaAddr(scaff->evaluator), PaAddr(wordorlist));
 }

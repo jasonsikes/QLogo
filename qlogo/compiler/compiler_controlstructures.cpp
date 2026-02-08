@@ -341,7 +341,7 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node,
             Value *retval = generateChild(node.astnodeValue(), child, paramRequestType);
 
             retval = generateCallExtern(
-                TyAddr, getCtrlReturn, PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
+                TyAddr, getCtrlReturn, PaAddr(scaff->evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
             return retval;
         }
         // Else it's a procedure. Generate a tail call to it.
@@ -351,7 +351,7 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node,
         AllocaInst *ary = generateChildrenAlloca(child.astnodeValue(), RequestReturnDatum, DBG_NAME("childAry"));
         Value *retObj = generateCallExtern(TyAddr,
                                            getCtrlContinuation,
-                                           PaAddr(evaluator),
+                                           PaAddr(scaff->evaluator),
                                            PaAddr(childAddr),
                                            PaAddr(ary),
                                            PaInt32(ary->getArraySize()));
@@ -360,7 +360,7 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node,
     // There is no child. Return nothing.
     Value *retval = generateVoidRetval(node);
     return generateCallExtern(
-        TyAddr, getCtrlReturn, PaAddr(evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
+        TyAddr, getCtrlReturn, PaAddr(scaff->evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
 }
 
 /***DOC TAG
@@ -395,7 +395,7 @@ Value *Compiler::genGoto(const DatumPtr &node, RequestReturnType returnType)
     Value *nodeAddr = CoAddr(node.astnodeValue());
     Value *tag = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     tag = generateWordFromDatum(node.astnodeValue(), tag);
-    Value *retObj = generateCallExtern(TyAddr, getCtrlGoto, PaAddr(evaluator), PaAddr(nodeAddr), PaAddr(tag));
+    Value *retObj = generateCallExtern(TyAddr, getCtrlGoto, PaAddr(scaff->evaluator), PaAddr(nodeAddr), PaAddr(tag));
     generateImmediateReturn(retObj);
     return generateVoidRetval(node);
 }
@@ -433,7 +433,7 @@ Value *Compiler::genCatch(const DatumPtr &node, RequestReturnType returnType)
 
     Value *retval = generateCallExtern(TyAddr,
                                        endCatch,
-                                       PaAddr(evaluator),
+                                       PaAddr(scaff->evaluator),
                                        PaAddr(CoAddr(node.astnodeValue())),
                                        PaAddr(errActStash),
                                        PaAddr(result),
@@ -481,7 +481,7 @@ Value *Compiler::genThrow(const DatumPtr &node, RequestReturnType returnType)
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnDatum);
     Value *tag = generateWordFromDatum(node.astnodeValue(), children[0]);
     Value *output = (children.size() == 1) ? CoAddr(Datum::notADatum()) : children[1];
-    Value *errObj = generateCallExtern(TyAddr, getErrorCustom, PaAddr(evaluator), PaAddr(tag), PaAddr(output));
+    Value *errObj = generateCallExtern(TyAddr, getErrorCustom, PaAddr(scaff->evaluator), PaAddr(tag), PaAddr(output));
     return generateImmediateReturn(errObj);
 }
 
@@ -500,7 +500,7 @@ COD***/
 // CMD ERROR 0 0 0 d
 Value *Compiler::genError(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, getCurrentError, PaAddr(evaluator));
+    return generateCallExtern(TyAddr, getCurrentError, PaAddr(scaff->evaluator));
 }
 /***DOC PAUSE
 PAUSE
@@ -519,7 +519,7 @@ COD***/
 // CMD PAUSE 0 0 0 dn
 Value *Compiler::genPause(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, callPause, PaAddr(evaluator));
+    return generateCallExtern(TyAddr, callPause, PaAddr(scaff->evaluator));
 }
 
 /***DOC CONTINUE CO
@@ -547,7 +547,7 @@ Value *Compiler::genContinue(const DatumPtr &node, RequestReturnType returnType)
     {
         output = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     }
-    return generateCallExtern(TyAddr, generateContinue, PaAddr(evaluator), PaAddr(output));
+    return generateCallExtern(TyAddr, generateContinue, PaAddr(scaff->evaluator), PaAddr(output));
 }
 /***DOC RUNRESULT
 RUNRESULT instructionlist
@@ -568,7 +568,7 @@ Value *Compiler::genRunresult(const DatumPtr &node, RequestReturnType returnType
 {
     Value *instructionlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *result = generateCallList(instructionlist, RequestReturnDN);
-    return generateCallExtern(TyAddr, processRunresult, PaAddr(evaluator), PaAddr(result));
+    return generateCallExtern(TyAddr, processRunresult, PaAddr(scaff->evaluator), PaAddr(result));
 }
 /***DOC FOREVER
 FOREVER instructionlist
