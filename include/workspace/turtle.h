@@ -25,8 +25,9 @@
 #include "interface/logointerface.h"
 #include "sharedconstants.h"
 #include <QColor>
+#include <QPointF>
+#include <QSizeF>
 #include <QTransform>
-#include <utility>
 
 /// @brief The Turtle class is responsible for maintaining the state of the turtle,
 /// including its position, orientation, and pen state.
@@ -144,8 +145,8 @@ class Turtle
     double getHeading() const;
 
     /// @brief Get the turtle position.
-    /// @return A pair containing the x and y coordinates of the turtle.
-    std::pair<double, double> getxy() const;
+    /// @return The x and y coordinates of the turtle.
+    QPointF getxy() const;
 
     /// @brief Set the turtle position.
     /// @param x The new x coordinate of the turtle.
@@ -182,8 +183,8 @@ class Turtle
     const QColor &getPenColor() const;
 
     /// @brief Get the current scale factors.
-    /// @return A pair containing the X and Y scale factors.
-    std::pair<double, double> getScale() const;
+    /// @return The X and Y scale factors (width and height).
+    QSizeF getScale() const;
 
     /// @brief Set the scale factors.
     /// @param newScaleX The new X scale factor.

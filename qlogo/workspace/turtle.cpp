@@ -234,9 +234,9 @@ void Turtle::rotate(double angle)
     Config::get().mainInterface()->setTurtlePos(&turtleTransform);
 }
 
-std::pair<double, double> Turtle::getxy() const
+QPointF Turtle::getxy() const
 {
-    return {turtleTransform.dx(), turtleTransform.dy()};
+    return QPointF(turtleTransform.dx(), turtleTransform.dy());
 }
 
 void Turtle::setMode(TurtleModeEnum newMode)
@@ -316,9 +316,9 @@ const QColor &Turtle::getPenColor() const
     return penColor;
 }
 
-std::pair<double, double> Turtle::getScale() const
+QSizeF Turtle::getScale() const
 {
-    return {scaleX, scaleY};
+    return QSizeF(scaleX, scaleY);
 }
 
 void Turtle::setScale(double newScaleX, double newScaleY)

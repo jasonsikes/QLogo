@@ -1519,10 +1519,10 @@ EXPORTC void drawTurtleArc(double angle, double radius)
 EXPORTC addr_t getTurtlePos(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto [x, y] = Turtle::get().getxy();
+    auto xy = Turtle::get().getxy();
     ListBuilder retvalBuilder;
-    retvalBuilder.append(DatumPtr(x));
-    retvalBuilder.append(DatumPtr(y));
+    retvalBuilder.append(DatumPtr(xy.x()));
+    retvalBuilder.append(DatumPtr(xy.y()));
     Datum *retval = retvalBuilder.finishedList().datumValue();
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
@@ -1544,11 +1544,11 @@ EXPORTC double getTurtleHeading(void)
 
 EXPORTC double getTurtleTowards(addr_t posAddr)
 {
-    auto [x, y] = Turtle::get().getxy();
+    auto xy = Turtle::get().getxy();
     const auto *pos = reinterpret_cast<const double *>(posAddr);
     double vx = pos[0];
     double vy = pos[1];
-    double retval = atan2(x - vx, vy - y) * (180 / PI);
+    double retval = atan2(xy.x() - vx, vy - xy.y()) * (180 / PI);
 
     // Heading should only show two decimal places.
     retval = round(retval * 100.0) / 100.0;
