@@ -114,8 +114,9 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
 
     // Generate the prototype and add it to the module.
     // Param1: pointer to the Evaluator object.
-    // Param2: ID of the block to begin execution at.
-    std::vector<Type *> paramAry = {addr_type, int32_type};
+    // Param2: address of the return value.
+    // Param3: ID of the block to begin execution at.
+    std::vector<Type *> paramAry = {addr_type, addr_type, int32_type};
 
     // Returning an int64* type, indicates pointer to a Datum.
     FunctionType *ft = FunctionType::get(addr_type, paramAry, false);
@@ -125,9 +126,13 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
     evaluator = theFunction->getArg(0);
     evaluator->setName("evaluator");
 
-    // The second argument is the block ID for the block to begin execution at.
+    // The second argument is the address of the return value.
+    returnValueAddress = theFunction->getArg(1);
+    returnValueAddress->setName("returnValueAddress");
+
+    // The third argument is the block ID for the block to begin execution at.
     // Needed when we build the Table of Contents for this function.
-    blockId = theFunction->getArg(1);
+    blockId = theFunction->getArg(2);
     blockId->setName("blockId");
 
 }
@@ -910,7 +915,8 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
 
 ReturnInst *Compiler::generateReturn(Value *retval)
 {
-    return scaff->builder.CreateRet(retval);
+    scaff->builder.CreateStore(retval, scaff->returnValueAddress);
+    return scaff->builder.CreateRetVoid();
 }
 
 #pragma GCC diagnostic push

@@ -368,7 +368,7 @@ Datum *Evaluator::exec(int32_t jumpLocation)
     {
         return watch(e);
     }
-    retval = static_cast<Datum *>(fn((addr_t)this, jumpLocation));
+    static_cast<Datum *>(fn((addr_t)this, (addr_t)&retval, jumpLocation));
 
     return retval;
 }

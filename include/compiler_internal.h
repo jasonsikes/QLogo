@@ -54,6 +54,9 @@ struct Scaffold
     // a pointer to the Evaluator object that supports execution of the compiled function.
     llvm::Value *evaluator;
 
+    // a pointer to the return value address argument of the compiled function.
+    llvm::Value *returnValueAddress;
+
     // a pointer to the block ID argument of the compiled function.
     llvm::Value *blockId;
 };
