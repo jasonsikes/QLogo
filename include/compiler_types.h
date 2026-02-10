@@ -20,6 +20,23 @@
 typedef uint64_t *addr_t;
 class Compiler;
 
+/// @brief Storage for a suspended coroutine's state.
+///
+/// When the compiled procedure suspends, it returns a handle (pointer) to
+/// a CoroutineState. When it completes, it returns nullptr (no state).
+/// blockId (the compiled function's third parameter) is only used for initial
+/// entry and GO/tag; on resume the coroutine continues from this state, not
+/// from blockId. Extend with evaluator/frame refs, etc., when adding suspend.
+struct CoroutineState
+{
+    /// Resume point used when the coroutine is re-entered (e.g. switch index
+    /// in the compiled body). Distinct from blockId; -1 when invalid.
+    int32_t resumePoint = -1;
+};
+
+/// @brief Handle returned by the compiled function. nullptr means "completed".
+typedef CoroutineState *coroutine_handle_t;
+
 /// @brief Expression generator request type.
 ///
 /// Request that the generator generate code that produces this output type.
@@ -47,8 +64,8 @@ enum RequestReturnType : int
     RequestReturnRDBN = 0x0F,
 };
 
-// Compiled function signature
-typedef Datum *(*CompiledFunctionPtr)(addr_t, addr_t, int32_t);
+// Compiled function signature: returns coroutine handle (nullptr = completed).
+typedef coroutine_handle_t (*CompiledFunctionPtr)(addr_t, addr_t, int32_t);
 
 /// Signature of method that generates IR code for a given node.
 typedef llvm::Value *(Compiler::*Generator)(const DatumPtr &, RequestReturnType);

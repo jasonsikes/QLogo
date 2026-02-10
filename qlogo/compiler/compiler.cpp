@@ -118,7 +118,7 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
     // Param3: ID of the block to begin execution at.
     std::vector<Type *> paramAry = {addr_type, addr_type, int32_type};
 
-    // Returning an int64* type, indicates pointer to a Datum.
+    // Return type: coroutine handle (addr_type).
     FunctionType *ft = FunctionType::get(addr_type, paramAry, false);
     theFunction = Function::Create(ft, Function::ExternalLinkage, name, *theModule);
 
@@ -916,7 +916,8 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
 ReturnInst *Compiler::generateReturn(Value *retval)
 {
     scaff->builder.CreateStore(retval, scaff->returnValueAddress);
-    return scaff->builder.CreateRetVoid();
+    // Return nullptr as coroutine handle to indicate "completed".
+    return scaff->builder.CreateRet(ConstantPointerNull::get(TyAddr));
 }
 
 #pragma GCC diagnostic push
