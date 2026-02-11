@@ -23,6 +23,7 @@ set(QLOGO_SOURCES
   logo_main.cpp
   workspace/library.cpp
   workspace/turtle.cpp
+  workspace/evaluator.cpp
   workspace/exports.cpp
   workspace/visited.cpp
   parser/treeifyer.cpp
@@ -49,6 +50,7 @@ set(QLOGO_SOURCES
   ../include/flowcontrol.h
   ../include/workspace/kernel.h
   ../include/primitives.h
+  ../include/workspace/evaluator.h
   ../include/workspace/exports.h
   ../include/workspace/library.h
   ../include/workspace/turtle.h

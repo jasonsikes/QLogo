@@ -20,13 +20,17 @@
 #include "datum_ptr.h"
 #include "workspace/library.h"
 #include "workspace/callframe.h"
+#include "workspace/evaluator.h"
 #include "workspace/propertylists.h"
 #include <QColor>
 #include <QSet>
+#include <QStack>
 #include <QVector>
+#include <memory>
 
 class ProcedureScope;
 class TextStream;
+class NewEvaluator;
 
 /// @brief Special variables.
 /// @note These are variable names that are used to store special values.
@@ -87,6 +91,11 @@ class Kernel
 
     /// @brief The procedure frame stack
     CallFrameStack callStack;
+
+    /// @brief The evaluation stack.
+    /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.
+    /// @todo This should be moved to the CallFrame class.
+    QStack<std::unique_ptr<NewEvaluator>> evaluationStack;
 
     /// @brief The palette of colors.
     /// @details The first 16 colors [0-15] are the standard Logo colors. The first 8
