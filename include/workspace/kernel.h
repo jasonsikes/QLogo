@@ -94,13 +94,12 @@ class Kernel
     /// @brief Destructor.
     ~Kernel();
 
-    /// @brief The procedure frame stack
+    /// @brief The OLD procedure frame stack
     CallFrameStack callStack;
 
-    /// @brief The evaluation stack.
+    /// @brief The call frame stack.
     /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.
-    /// @todo This should be moved to the CallFrame class.
-    std::stack<std::unique_ptr<NewEvaluator>> evaluationStack;
+    std::stack<std::unique_ptr<NewCallFrame>> callFrameStack;
 
     /// @brief The palette of colors.
     /// @details The first 16 colors [0-15] are the standard Logo colors. The first 8

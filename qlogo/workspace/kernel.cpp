@@ -319,9 +319,11 @@ Kernel::~Kernel()
 
 DatumPtr Kernel::runECE(const DatumPtr &listP)
 {
-    evaluationStack.push(std::make_unique<NewEvaluator>(listP));
-    
-    NewEvaluator *currentEvaluator = evaluationStack.top().get();
+    callFrameStack.push(std::make_unique<NewCallFrame>(nothing()));
+    NewCallFrame *currentCallFrame = callFrameStack.top().get();
+
+    currentCallFrame->evaluationStack.push(std::make_unique<NewEvaluator>(listP));
+    NewEvaluator *currentEvaluator = currentCallFrame->topEvaluator();
     DatumPtr retval;
 
     forever
@@ -331,7 +333,8 @@ DatumPtr Kernel::runECE(const DatumPtr &listP)
         break;
     }
 
-    evaluationStack.pop();
+    currentCallFrame->evaluationStack.pop();
+    callFrameStack.pop();
     return retval;
 }
 

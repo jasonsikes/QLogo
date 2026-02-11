@@ -20,6 +20,7 @@
 #include "datum_types.h"
 #include "workspace/exports.h"
 #include "sharedconstants.h"
+#include "workspace/kernel.h"
 #include "workspace/callframe.h"
 
 using namespace llvm;
