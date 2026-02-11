@@ -109,7 +109,7 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
             DatumPtr line = systemReadStream->readListWithPrompt(localPrompt, true);
             if (line.isNothing()) // EOF
                 return nothing();
-            result = runList(line);
+            result = runECE(line);
         }
         catch (FCError *e)
         {
@@ -317,15 +317,21 @@ Kernel::~Kernel()
     callStack.stack.removeLast();
 }
 
-DatumPtr Kernel::runList(const DatumPtr &listP)
+DatumPtr Kernel::runECE(const DatumPtr &listP)
 {
+    evaluationStack.push(std::make_unique<NewEvaluator>(listP));
+    
+    NewEvaluator *currentEvaluator = evaluationStack.top().get();
     DatumPtr retval;
 
-    Q_ASSERT(callStack.size() > 0);
-    Evaluator e(listP, callStack.localFrame()->evalStack);
+    forever
+    {
+        // For now just run the list and return the result.
+        retval = currentEvaluator->exec(0);
+        break;
+    }
 
-    retval = e.exec(0);
-
+    evaluationStack.pop();
     return retval;
 }
 

@@ -24,7 +24,7 @@
 #include "workspace/propertylists.h"
 #include <QColor>
 #include <QSet>
-#include <QStack>
+#include <stack>
 #include <QVector>
 #include <memory>
 
@@ -63,6 +63,11 @@ class Kernel
 
     void initPalette();
 
+    /// @brief Run the explicit control evaluator.
+    /// @param listP The list to run.
+    /// @return The result of the last expression in the list.
+    DatumPtr runECE(const DatumPtr &listP);
+
     /// Initialize LOGO system variables
     void initVariables();
 
@@ -95,7 +100,7 @@ class Kernel
     /// @brief The evaluation stack.
     /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.
     /// @todo This should be moved to the CallFrame class.
-    QStack<std::unique_ptr<NewEvaluator>> evaluationStack;
+    std::stack<std::unique_ptr<NewEvaluator>> evaluationStack;
 
     /// @brief The palette of colors.
     /// @details The first 16 colors [0-15] are the standard Logo colors. The first 8
@@ -123,12 +128,6 @@ class Kernel
     /// @brief Print a string to the system output.
     /// @param text The text to print.
     void sysPrint(const QString &text) const;
-
-    /// @brief Run a list.
-    /// @param listP The list to run.
-    /// @param startTag If not null, search for the tag in the list and run from there.
-    /// @return The result of the last expression in the list.
-    DatumPtr runList(const DatumPtr &listP);
 
     /// @brief Convert a Datum to a QColor.
     /// @param colorP The Datum to convert.

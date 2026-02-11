@@ -27,6 +27,8 @@
 /// for the list while it is executing.
 struct NewEvaluator
 {
+    // The members
+
     /// @brief The list to evaluate.
     DatumPtr list;
 
@@ -37,7 +39,12 @@ struct NewEvaluator
     Datum *retval = nullptr;
 
     /// @brief A pool of objects for garbage collection.
-    QList<Datum *> releasePool;
+    /// @note This is the reason the copy operators are deleted. If we enable them, the
+    ///  releasePool can be copied, and both copies will contain pointers to the same Datum objects.
+    ///  This will cause the Datum objects to be deleted twice.
+    std::vector<Datum *> releasePool;
+
+    // The methods
 
     /// @brief Constructor.
     /// @param aList The list to evaluate.
