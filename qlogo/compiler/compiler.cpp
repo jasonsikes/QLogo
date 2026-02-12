@@ -247,6 +247,35 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     QList<BasicBlock *> blocks = {currentBlock};
     scaff->builder.SetInsertPoint(currentBlock);
 
+    // Generate a coroutine call token.
+    // llvm.coro.id(i32 align, ptr promise, ptr coroutine, ptr info) -> token
+    //   align=0 (default), promise/coroutine/info=null for simple case
+    Function *coroIdFn = Intrinsic::getOrInsertDeclaration(scaff->theModule.get(), Intrinsic::coro_id);
+    Value *coroutineCallToken = scaff->builder.CreateCall(coroIdFn, {CoInt32(0), CoAddr(0), CoAddr(0), CoAddr(0)}, DBG_NAME("id"));
+    //   %size = call i32 @llvm.coro.size.i32()
+    Function *coroSizeFn = Intrinsic::getOrInsertDeclaration(scaff->theModule.get(), Intrinsic::coro_size, {TyInt32});
+    Value *coroutineSize = scaff->builder.CreateCall(coroSizeFn, {}, DBG_NAME("size"));
+    //   %alloc = call ptr @q_malloc(evaluator, i32 %size)
+    Value *coroutineAlloc = generateCallExtern(TyAddr, q_malloc, PaAddr(scaff->evaluator), PaInt32(coroutineSize));
+    //   %hdl = call noalias ptr @llvm.coro.begin(token %id, ptr %alloc)
+    Function *coroBeginFn = Intrinsic::getOrInsertDeclaration(scaff->theModule.get(), Intrinsic::coro_begin);
+    scaff->coroutineHandle = scaff->builder.CreateCall(coroBeginFn, {coroutineCallToken, coroutineAlloc}, DBG_NAME("hdl"));
+
+    // Generate a suspend for shits and giggles.
+    // %0 = call i8 @llvm.coro.suspend(token none, i1 false)
+    Function *coroSuspendFn = Intrinsic::getOrInsertDeclaration(scaff->theModule.get(), Intrinsic::coro_suspend);
+    Value *coroutineSuspend = scaff->builder.CreateCall(coroSuspendFn, {coroutineCallToken, CoBool(false)}, DBG_NAME("suspend"));
+    // switch i8 %0, label %suspend [i8 0, label %continue i8 1, label %cleanup]
+    scaff->suspendBB = BasicBlock::Create(*scaff->theContext, "suspend", scaff->theFunction);
+    scaff->cleanupBB = BasicBlock::Create(*scaff->theContext, "cleanup", scaff->theFunction);
+    BasicBlock *continueBB = BasicBlock::Create(*scaff->theContext, "continue", scaff->theFunction);
+    SwitchInst *sw = scaff->builder.CreateSwitch(coroutineSuspend, scaff->suspendBB, 2);
+    sw->addCase(CoBool(0), continueBB);
+    sw->addCase(CoBool(1), scaff->cleanupBB);
+
+    // Do everything after the function continues.
+    scaff->builder.SetInsertPoint(continueBB);
+
     Value *nodeResult;
     RequestReturnType returnTypeRequest = RequestReturnNothing;
     for (auto &srcBlock : parsedList)
@@ -277,6 +306,7 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
 
     // Finish off the function
     generateReturn(nodeResult);
+    generateWrapup();
 
     if (blocks.size() > 1)
     {
@@ -913,11 +943,31 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
     return candidate;
 }
 
-ReturnInst *Compiler::generateReturn(Value *retval)
+void Compiler::generateReturn(Value *retval)
 {
     scaff->builder.CreateStore(retval, scaff->returnValueAddress);
     // Return nullptr as coroutine handle to indicate "completed".
-    return scaff->builder.CreateRet(ConstantPointerNull::get(TyAddr));
+    scaff->builder.CreateBr(scaff->cleanupBB);
+}
+
+void Compiler::generateWrapup()
+{
+//     cleanup:
+    scaff->builder.SetInsertPoint(scaff->cleanupBB);
+//   %mem = call ptr @llvm.coro.free(token %id, ptr %hdl)
+    Function *coroFreeFn = Intrinsic::getOrInsertDeclaration(scaff->theModule.get(), Intrinsic::coro_free);
+    Value *coroFree = generateCallExtern(TyAddr, q_free, PaAddr(scaff->evaluator), PaAddr(scaff->coroutineHandle));
+//   call void @free(ptr %mem)
+//    Value *mem = generateCallExtern(TyAddr, free, PaAddr(coroFree));
+//   br label %suspend
+scaff->builder.CreateBr(scaff->suspendBB);
+// suspend:
+    scaff->builder.SetInsertPoint(scaff->suspendBB);
+//   call void @llvm.coro.end(ptr %hdl, i1 false, token none)
+    Function *coroEndFn = Intrinsic::getOrInsertDeclaration(scaff->theModule.get(), Intrinsic::coro_end);
+    scaff->builder.CreateCall(coroEndFn, {scaff->coroutineHandle, CoBool(false), CoAddr(0)}, DBG_NAME("end"));
+//   ret ptr %hdl
+    scaff->builder.CreateRet(scaff->coroutineHandle);
 }
 
 #pragma GCC diagnostic push

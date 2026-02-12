@@ -2025,3 +2025,16 @@ EXPORTC addr_t handleBadDatum(addr_t eAddr, addr_t parentAddr, addr_t valueAddr)
         return (p.isa() & Datum::typeDataMask) != 0;
     });
 }
+
+EXPORTC addr_t q_malloc(addr_t eAddr,  uint32_t size)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    void *ptr = malloc(size);
+    return reinterpret_cast<addr_t>(ptr);
+}
+
+EXPORTC void q_free(addr_t eAddr, addr_t ptr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    free(ptr);
+}

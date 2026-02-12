@@ -24,6 +24,7 @@
 #undef emit
 #endif
 
+#include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Verifier.h"
 #include "llvm/Passes/PassBuilder.h"
@@ -55,10 +56,21 @@ struct Scaffold
     llvm::Value *evaluator;
 
     // a pointer to the return value address argument of the compiled function.
+    // Instead of returning a value, the compiled function returns a coroutine handle
+    // So we store the return value here at this address.
     llvm::Value *returnValueAddress;
 
     // a pointer to the block ID argument of the compiled function.
+    // Since the function can be called immediately after a GOTO and the TAG can appear anywhere,
+    // we separate any code that occurs before and after a TAG into different blocks.
     llvm::Value *blockId;
+
+    // The suspend and cleanup blocks for the coroutine.
+    llvm::BasicBlock *suspendBB;
+    llvm::BasicBlock *cleanupBB;
+
+    // The coroutine handle for the compiled function, created at the beginning and returned at the end.
+    llvm::Value *coroutineHandle = nullptr;
 };
 
 // Some defines to reduce boilerplate

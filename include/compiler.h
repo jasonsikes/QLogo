@@ -240,7 +240,10 @@ class Compiler
     llvm::BasicBlock *generateTOC(QList<llvm::BasicBlock *> blocks, llvm::Function *theFunction);
 
     // Generate a return operation for the function.
-    llvm::ReturnInst *generateReturn(llvm::Value *retval);
+    void generateReturn(llvm::Value *retval);
+
+    // Generate the wrapup code for the function.
+    void generateWrapup();
 
     /// @brief Private constructor for singleton pattern.
     Compiler();
