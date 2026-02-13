@@ -24,6 +24,7 @@
 #undef emit
 #endif
 
+#include "llvm/IR/Constants.h"
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Verifier.h"
@@ -71,12 +72,16 @@ struct Scaffold
 
     // The coroutine handle for the compiled function, created at the beginning and returned at the end.
     llvm::Value *coroutineHandle = nullptr;
+
+    // The coroutine id token from llvm.coro.id, needed in cleanup for llvm.coro.free.
+    llvm::Value *coroutineToken = nullptr;
 };
 
 // Some defines to reduce boilerplate
 
 // Data types
 #define TyVoid   (Type::getVoidTy(*scaff->theContext))
+#define TyInt8   (Type::getInt8Ty(*scaff->theContext))
 #define TyInt16  (Type::getInt16Ty(*scaff->theContext))
 #define TyInt32  (Type::getInt32Ty(*scaff->theContext))
 #define TyInt64  (Type::getInt64Ty(*scaff->theContext))
@@ -85,6 +90,7 @@ struct Scaffold
 #define TyBool   (Type::getInt1Ty(*scaff->theContext))
 
 // Data value constants
+#define CoInt8(VAL)  (ConstantInt::get(*scaff->theContext, APInt(8, (uint8_t)(VAL))))
 #define CoInt16(VAL)  (ConstantInt::get(*scaff->theContext, APInt(16, (uint16_t)(VAL))))
 #define CoInt32(VAL)  (ConstantInt::get(*scaff->theContext, APInt(32, (uint32_t)(VAL))))
 #define CoInt64(VAL)  (ConstantInt::get(*scaff->theContext, APInt(64, (uint64_t)(VAL))))
@@ -93,6 +99,7 @@ struct Scaffold
 #define CoBool(VAL)   (ConstantInt::get(*scaff->theContext, APInt(1, VAL)))
 
 // Parameter combinations
+#define PaInt8(VAL)  {TyInt8, (VAL)}
 #define PaInt16(VAL)  {TyInt16, (VAL)}
 #define PaInt32(VAL)  {TyInt32, (VAL)}
 #define PaInt64(VAL)  {TyInt64, (VAL)}
