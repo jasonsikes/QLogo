@@ -121,6 +121,7 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
     // Return type: coroutine handle (addr_type).
     FunctionType *ft = FunctionType::get(addr_type, paramAry, false);
     theFunction = Function::Create(ft, Function::ExternalLinkage, name, *theModule);
+    theFunction->setPresplitCoroutine();
 
     // The first argument is the evaluator pointer.
     evaluator = theFunction->getArg(0);
@@ -243,7 +244,7 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
 
     // At this point we know that the first block and last block are not tags.
 
-    BasicBlock *currentBlock = BasicBlock::Create(*scaff->theContext, "First Block", scaff->theFunction);
+    BasicBlock *currentBlock = BasicBlock::Create(*scaff->theContext, "FirstBlock", scaff->theFunction);
     QList<BasicBlock *> blocks = {currentBlock};
     scaff->builder.SetInsertPoint(currentBlock);
 
@@ -260,7 +261,9 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     Value *coroutineAlloc = generateCallExtern(TyAddr, q_malloc, PaAddr(scaff->evaluator), PaInt32(coroutineSize));
     //   %hdl = call noalias ptr @llvm.coro.begin(token %id, ptr %alloc)
     Function *coroBeginFn = Intrinsic::getOrInsertDeclaration(scaff->theModule.get(), Intrinsic::coro_begin);
-    scaff->coroutineHandle = scaff->builder.CreateCall(coroBeginFn, {coroutineCallToken, coroutineAlloc}, DBG_NAME("hdl"));
+    CallInst *coroBeginCall = cast<CallInst>(scaff->builder.CreateCall(coroBeginFn, {coroutineCallToken, coroutineAlloc}, DBG_NAME("hdl")));
+    coroBeginCall->addRetAttr(Attribute::NoAlias);
+    scaff->coroutineHandle = coroBeginCall;
 
     // Generate a suspend for shits and giggles.
     // %0 = call i8 @llvm.coro.suspend(token none, i1 false)
