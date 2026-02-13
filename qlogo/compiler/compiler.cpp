@@ -265,7 +265,7 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     // Generate a suspend for shits and giggles.
     // %0 = call i8 @llvm.coro.suspend(token none, i1 false)
     Function *coroSuspendFn = Intrinsic::getOrInsertDeclaration(scaff->theModule.get(), Intrinsic::coro_suspend);
-    Value *coroutineSuspend = scaff->builder.CreateCall(coroSuspendFn, {coroutineCallToken, CoBool(false)}, DBG_NAME("suspend"));
+    Value *coroutineSuspend = scaff->builder.CreateCall(coroSuspendFn, {ConstantTokenNone::get(*scaff->theContext), CoBool(false)}, DBG_NAME("suspend"));
     // switch i8 %0, label %suspend [i8 0, label %continue i8 1, label %cleanup]
     scaff->suspendBB = BasicBlock::Create(*scaff->theContext, "suspend", scaff->theFunction);
     scaff->cleanupBB = BasicBlock::Create(*scaff->theContext, "cleanup", scaff->theFunction);
