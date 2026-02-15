@@ -66,6 +66,9 @@ struct Scaffold
     // we separate any code that occurs before and after a TAG into different blocks.
     llvm::Value *blockId;
 
+    // The fourth argument: resume handle (null = initial entry, non-null = resume from that state).
+    llvm::Value *resumeHandle;
+
     // The suspend and cleanup blocks for the coroutine.
     llvm::BasicBlock *suspendBB;
     llvm::BasicBlock *cleanupBB;

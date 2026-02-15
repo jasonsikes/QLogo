@@ -132,8 +132,9 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
     // Generate the prototype and add it to the module.
     // Param1: pointer to the Evaluator object.
     // Param2: address of the return value.
-    // Param3: ID of the block to begin execution at.
-    std::vector<Type *> paramAry = {addr_type, addr_type, int32_type};
+    // Param3: ID of the block to begin execution at (only when param4 is nullptr).
+    // Param4: resume handle; nullptr = initial entry (use blockId), non-null = resume from that state.
+    std::vector<Type *> paramAry = {addr_type, addr_type, int32_type, addr_type};
 
     // Return type: coroutine handle (addr_type).
     FunctionType *ft = FunctionType::get(addr_type, paramAry, false);
@@ -152,6 +153,10 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
     // Needed when we build the Table of Contents for this function.
     blockId = theFunction->getArg(2);
     blockId->setName("blockId");
+
+    // The fourth argument is the resume handle (null = start, non-null = resume).
+    resumeHandle = theFunction->getArg(3);
+    resumeHandle->setName("resumeHandle");
 
 }
 
