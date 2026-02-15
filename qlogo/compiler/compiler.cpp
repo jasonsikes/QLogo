@@ -89,8 +89,25 @@ void setupPassManager(PassInstrumentationCallbacks &pic, ModuleAnalysisManager &
     si.registerCallbacks(pic, &mam);
     PassBuilder pb;
     pb.registerModuleAnalyses(mam);
+    pb.registerCGSCCAnalyses(cgam);
     pb.registerFunctionAnalyses(fam);
     pb.crossRegisterProxies(lam, fam, cgam, mam);
+}
+
+/// Run the coroutine lowering pipeline so that llvm.coro.* intrinsics are
+/// lowered before the module is sent to the backend.
+void runCoroutinePasses(Module &M, ModuleAnalysisManager &mam,
+                        FunctionAnalysisManager &fam, LoopAnalysisManager &lam,
+                        CGSCCAnalysisManager &cgam)
+{
+    PassBuilder pb;
+    pb.registerModuleAnalyses(mam);
+    pb.registerCGSCCAnalyses(cgam);
+    pb.registerFunctionAnalyses(fam);
+    pb.crossRegisterProxies(lam, fam, cgam, mam);
+    ModulePassManager coroMPM;
+    cantFail(pb.parsePassPipeline(coroMPM, "coro-early,cgscc(coro-split),function(coro-elide),coro-cleanup"));
+    coroMPM.run(M, mam);
 }
 } // namespace
 
@@ -325,6 +342,9 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
         qCritical() << "IR verification failed: " << str << "\n";
         throw FCError::fatalInternal();
     }
+
+    // Lower coroutine intrinsics before backend.
+    runCoroutinePasses(*scaff->theModule, scaff->theMAM, scaff->theFAM, scaff->theLAM, scaff->theCGAM);
 
     // Run the optimizer on the function.
     scaff->theFPM.run(*(scaff->theFunction), scaff->theFAM);
