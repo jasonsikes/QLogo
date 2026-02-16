@@ -292,9 +292,9 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     Function *coroSuspendFn = Intrinsic::getOrInsertDeclaration(scaff->theModule.get(), Intrinsic::coro_suspend);
     Value *coroutineSuspend = scaff->builder.CreateCall(coroSuspendFn, {ConstantTokenNone::get(*scaff->theContext), CoBool(false)}, DBG_NAME("suspend"));
     // switch i8 %0, label %suspend [i8 0, label %continue i8 1, label %cleanup]
-    scaff->suspendBB = BasicBlock::Create(*scaff->theContext, "suspend", scaff->theFunction);
-    scaff->cleanupBB = BasicBlock::Create(*scaff->theContext, "cleanup", scaff->theFunction);
     BasicBlock *continueBB = BasicBlock::Create(*scaff->theContext, "continue", scaff->theFunction);
+    scaff->cleanupBB = BasicBlock::Create(*scaff->theContext, "cleanup", scaff->theFunction);
+    scaff->suspendBB = BasicBlock::Create(*scaff->theContext, "suspend", scaff->theFunction);
     SwitchInst *sw = scaff->builder.CreateSwitch(coroutineSuspend, scaff->suspendBB, 2);
     sw->addCase(CoInt8(0), continueBB);
     sw->addCase(CoInt8(1), scaff->cleanupBB);
@@ -348,14 +348,9 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
         throw FCError::fatalInternal();
     }
 
-    // Lower coroutine intrinsics before backend.
-    runCoroutinePasses(*scaff->theModule, scaff->theMAM, scaff->theFAM, scaff->theLAM, scaff->theCGAM);
-
-    // Run the optimizer on the function.
-    scaff->theFPM.run(*(scaff->theFunction), scaff->theFAM);
-
     if (Config::get().showIR)
     {
+        // Print the whole module so we see all functions after coroutine lowering (ramp, resume, destroy).
         scaff->theFunction->print(errs());
         fprintf(stderr, "\n");
     }
@@ -363,6 +358,19 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     if (Config::get().showCFG)
     {
         scaff->theFunction->viewCFG();
+    }
+
+    // Lower coroutine intrinsics before backend.
+    runCoroutinePasses(*scaff->theModule, scaff->theMAM, scaff->theFAM, scaff->theLAM, scaff->theCGAM);
+
+    // Run the optimizer on the function.
+    scaff->theFPM.run(*(scaff->theFunction), scaff->theFAM);
+
+    if (Config::get().showModuleIR)
+    {
+        // Print the whole module so we see all functions after coroutine lowering (ramp, resume, destroy).
+        scaff->theModule->print(errs(), nullptr);
+        fprintf(stderr, "\n");
     }
 
     auto tsm = ThreadSafeModule(std::move(scaff->theModule), std::move(scaff->theContext));

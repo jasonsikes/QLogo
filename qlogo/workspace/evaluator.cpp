@@ -37,12 +37,14 @@ Datum *NewEvaluator::exec(int32_t jumpLocation)
     }
     // Start: call the ramp once to get the coroutine handle (LLVM frame).
     coroutine_handle_t handle = fn((addr_t)this, (addr_t)&retval, jumpLocation, nullptr);
-    // Resume using the frame's resume function, not the ramp. Repeat until the coroutine completes.
+    // Resume using the frame's resume function, not the ramp.
+    // Completion is not "handle == null": the runtime never sets handle to null; we set it when done.
+    // To detect completion after resume() returns: have the compiler null the frame's resume pointer
+    // when the coroutine completes (before freeing the frame), then check frame->resume == nullptr.
+    // Until then we assume single run to completion: one resume(), then clear handle.
     while (handle != nullptr)
     {
         reinterpret_cast<LLVMCoroFrameHeader *>(handle)->resume(handle);
-        // TODO: detect completion (e.g. frame's resume ptr nulled, or done flag) and set handle = nullptr.
-        // For now assume single run to completion.
         handle = nullptr;
     }
     return retval;

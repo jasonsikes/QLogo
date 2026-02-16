@@ -175,6 +175,9 @@ const bool debugBuild = false;
     // Set to true iff compiler should show the CFG view.
     bool showCFG = false;
 
+    // Set to true iff compiler should show the full module IR (after coroutine lowering).
+    bool showModuleIR = false;
+
     // Set to true if Compiler should verify the generated functions.
     // Use for development. Compiler may generate bad code in unreachable
     // sections, i.e. when handling parsing errors.
