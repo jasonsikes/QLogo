@@ -10,6 +10,15 @@ NewEvaluator::NewEvaluator(const DatumPtr &aList) : list(aList)
 
 NewEvaluator::~NewEvaluator()
 {
+    // Destroy the coroutine frame if it exists.
+    if (handle != nullptr)
+    {
+        LLVMCoroFrameHeader *frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle);
+        Q_ASSERT(frame->resume == nullptr);
+        frame->destroy(handle);
+    }
+
+    // Release the objects in the release pool.
     for (auto &d : releasePool)
     {
         if ((d->isa & Datum::typePersistentMask) == 0)
@@ -23,6 +32,7 @@ NewEvaluator::~NewEvaluator()
 
 bool NewEvaluator::exec(int32_t jumpLocation)
 {
+    LLVMCoroFrameHeader *frame;
     if (handle == nullptr)
     {
         if (list.listValue() == EmptyList::instance())
@@ -41,18 +51,15 @@ bool NewEvaluator::exec(int32_t jumpLocation)
         }
         // Start: call the ramp once to get the coroutine handle (LLVM frame).
         handle = fn((addr_t)this, (addr_t)&retval, jumpLocation, nullptr);
+        frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle);
     } else {
         // Resume using the frame's resume function. Completion: compiler nulls the frame's
         // resume pointer; we check it after resume() returns, then call destroy to free.
-        LLVMCoroFrameHeader *frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle);
+        frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle);
         frame->resume(handle);
-        if (frame->resume == nullptr)
-        {
-            frame->destroy(handle);
-            handle = nullptr;
-        }
     }
-    return handle == nullptr;
+    Q_ASSERT(frame != nullptr);
+    return frame->resume == nullptr;
 }
 
 Datum *NewEvaluator::subExec(Datum *aList)
