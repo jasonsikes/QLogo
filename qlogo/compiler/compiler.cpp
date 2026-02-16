@@ -30,6 +30,7 @@
 #include "workspace/callframe.h"
 #include "workspace/procedures.h"
 #include <string>
+#include <iostream>
 
 QHash<Datum *, std::shared_ptr<CompiledText>> Compiler::compiledTextTable;
 
@@ -342,20 +343,23 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
         generateTOC(blocks, scaff->theFunction);
     }
 
-    std::string str;
-    llvm::raw_string_ostream output(str);
-    // Validate the generated code, checking for consistency.
-    if (Config::get().verifyIR && verifyFunction(*(scaff->theFunction), &output))
-    {
-        qCritical() << "IR verification failed: " << str << "\n";
-        throw FCError::fatalInternal();
-    }
-
     if (Config::get().showIR)
     {
         // Print the whole module so we see all functions after coroutine lowering (ramp, resume, destroy).
         scaff->theFunction->print(errs());
         fprintf(stderr, "\n");
+    }
+
+    if (Config::get().verifyIR)
+    {
+        std::string str;
+        llvm::raw_string_ostream output(str);
+        // Validate the generated code, checking for consistency.
+        if (verifyFunction(*(scaff->theFunction), &output))
+        {
+            std::cerr << "IR verification failed:\n" << str << "\n";
+            throw FCError::fatalInternal();
+        }
     }
 
     if (Config::get().showCFG)
@@ -704,7 +708,21 @@ Value *Compiler::genExecProcedure(const DatumPtr &node, RequestReturnType return
 
 Value *Compiler::generateCallList(Value *list, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, runList, PaAddr(scaff->evaluator), PaAddr(list));
+    // Explicit control: push list onto evaluation stack, suspend so driver can run it, then pop and return result.
+    generateCallExtern(TyVoid, pushListOntoEvaluationStack, PaAddr(scaff->evaluator), PaAddr(list));
+
+    Function *coroSuspendFn =
+        Intrinsic::getOrInsertDeclaration(scaff->theModule.get(), Intrinsic::coro_suspend);
+    Value *coroutineSuspend = scaff->builder.CreateCall(
+        coroSuspendFn, {ConstantTokenNone::get(*scaff->theContext), CoBool(false)}, DBG_NAME("suspendCallList"));
+
+    BasicBlock *afterResumeBB = BasicBlock::Create(*scaff->theContext, "callList.resumed", scaff->theFunction);
+    SwitchInst *sw = scaff->builder.CreateSwitch(coroutineSuspend, scaff->suspendBB, 2);
+    sw->addCase(CoInt8(0), afterResumeBB);
+    sw->addCase(CoInt8(1), scaff->cleanupBB);
+
+    scaff->builder.SetInsertPoint(afterResumeBB);
+    return generateCallExtern(TyAddr, popEvaluationStackAndGetResult, PaAddr(scaff->evaluator));
 }
 
 Value *Compiler::generateWordFromDouble(Value *val)

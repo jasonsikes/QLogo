@@ -374,6 +374,10 @@ struct Evaluator
     /// @brief The return value of this evaluation.
     Datum *retval = nullptr;
 
+    /// @brief Result of the most recently run sub-list (explicit control: push list, suspend, driver runs it, resume, pop).
+    /// Used by popEvaluationStackAndGetResult() after a coroutine suspend/resume for RUN/list call.
+    Datum *lastSubExecResult = nullptr;
+
     /// @brief A pool of objects for garbage collection.
     QList<Datum *> releasePool;
 

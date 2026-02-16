@@ -345,6 +345,57 @@ EXPORTC addr_t runList(addr_t eAddr, addr_t listAddr)
     return reinterpret_cast<addr_t>(result);
 }
 
+/// Push a list onto the evaluation stack for explicit-control evaluation.
+/// The caller will then suspend; the driver runs this list to completion, then resumes the caller.
+/// If the list is invalid (e.g. not a list, or word that runparses to error), sets lastSubExecResult and does not push.
+/// @param eAddr a pointer to the Evaluator object context.
+/// @param listAddr a pointer to the list (or word to runparse) to execute.
+EXPORTC void pushListOntoEvaluationStack(addr_t eAddr, addr_t listAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *aList = reinterpret_cast<Datum *>(listAddr);
+    try
+    {
+        if (aList->isWord())
+        {
+            DatumPtr runparsedList = runparse(DatumPtr(aList));
+            aList = runparsedList.datumValue();
+            e->watch(aList);
+        }
+        if (!aList->isList())
+        {
+            FCError *err = FCError::noHow(DatumPtr(aList));
+            e->watch(err);
+            e->lastSubExecResult = err;
+            return;
+        }
+        if (aList->listValue()->isEmpty())
+        {
+            e->lastSubExecResult = Datum::notADatum();
+            return;
+        }
+        new Evaluator(DatumPtr(aList), e->evalStack);
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        e->lastSubExecResult = err;
+    }
+}
+
+/// After a suspend that pushed a list, return the result of running that list and clear it.
+/// @param eAddr a pointer to the Evaluator object context.
+/// @return the result of the list execution (or error if pushListOntoEvaluationStack set one).
+EXPORTC addr_t popEvaluationStackAndGetResult(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    Datum *result = e->lastSubExecResult;
+    e->lastSubExecResult = nullptr;
+    if (result != nullptr)
+        e->watch(result);
+    return reinterpret_cast<addr_t>(result);
+}
+
 /// @brief Execute a procedure.
 /// @param eAddr a pointer to the Evaluator object context.
 /// @param astnodeAddr a pointer to the ASTNode object which is the procedure to execute.

@@ -624,6 +624,8 @@ Datum *Evaluator::exec(int32_t jumpLocation)
     coroutine_handle_t handle = fn((addr_t)this, (addr_t)&retval, jumpLocation, nullptr);
     // Resume using the frame's resume function. Completion: compiler nulls the frame's
     // resume pointer; we check it after resume() returns, then call destroy to free.
+    // When suspended for explicit control (e.g. RUN/list), another evaluator may have been
+    // pushed; run it to completion, then resume this coroutine.
     while (handle != nullptr)
     {
         LLVMCoroFrameHeader *frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle);
@@ -635,7 +637,15 @@ Datum *Evaluator::exec(int32_t jumpLocation)
         }
         else
         {
-            // Suspended: keep handle and loop to resume again.
+            // Suspended: if a list was pushed onto the evaluation stack, run it then resume.
+            Evaluator *top = evalStack.first();
+            if (top != this)
+            {
+                lastSubExecResult = top->exec();
+                watch(lastSubExecResult);
+                delete top;
+                // Loop to resume this coroutine.
+            }
         }
     }
     return retval;
