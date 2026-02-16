@@ -983,8 +983,11 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
 void Compiler::generateReturn(Value *retval)
 {
     scaff->builder.CreateStore(retval, scaff->returnValueAddress);
-    // Return nullptr as coroutine handle to indicate "completed".
-    scaff->builder.CreateBr(scaff->cleanupBB);
+    // Signal "completed" so the runtime can detect it: null the frame's resume pointer
+    // (first word of the handle). Then branch to suspend without running cleanup, so the
+    // frame stays valid; the runtime will call destroy(handle) to free.
+    scaff->builder.CreateStore(ConstantPointerNull::get(TyAddr), scaff->coroutineHandle);
+    scaff->builder.CreateBr(scaff->suspendBB);
 }
 
 void Compiler::generateWrapup()
