@@ -21,26 +21,29 @@ NewEvaluator::~NewEvaluator()
     }
 }
 
-Datum *NewEvaluator::exec(int32_t jumpLocation)
+bool NewEvaluator::exec(int32_t jumpLocation)
 {
-    if (list.listValue() == EmptyList::instance())
+    if (handle == nullptr)
     {
-        return Datum::notADatum();
-    }
-    try
-    {
-        fn = Compiler::get().functionPtrFromList(list.listValue());
-    }
-    catch (FCError *e)
-    {
-        return watch(e);
-    }
-    // Start: call the ramp once to get the coroutine handle (LLVM frame).
-    coroutine_handle_t handle = fn((addr_t)this, (addr_t)&retval, jumpLocation, nullptr);
-    // Resume using the frame's resume function. Completion: compiler nulls the frame's
-    // resume pointer; we check it after resume() returns, then call destroy to free.
-    while (handle != nullptr)
-    {
+        if (list.listValue() == EmptyList::instance())
+        {
+            retval = Datum::notADatum();
+            return false;
+        }
+        try
+        {
+            fn = Compiler::get().functionPtrFromList(list.listValue());
+        }
+        catch (FCError *e)
+        {
+            retval = e;
+            return false;
+        }
+        // Start: call the ramp once to get the coroutine handle (LLVM frame).
+        handle = fn((addr_t)this, (addr_t)&retval, jumpLocation, nullptr);
+    } else {
+        // Resume using the frame's resume function. Completion: compiler nulls the frame's
+        // resume pointer; we check it after resume() returns, then call destroy to free.
         LLVMCoroFrameHeader *frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle);
         frame->resume(handle);
         if (frame->resume == nullptr)
@@ -48,12 +51,8 @@ Datum *NewEvaluator::exec(int32_t jumpLocation)
             frame->destroy(handle);
             handle = nullptr;
         }
-        else
-        {
-            // Suspended: keep handle and loop to resume again.
-        }
     }
-    return retval;
+    return handle == nullptr;
 }
 
 Datum *NewEvaluator::subExec(Datum *aList)

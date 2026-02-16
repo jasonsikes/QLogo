@@ -98,7 +98,7 @@ Datum *NewCallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount)
             DatumPtr optExpression = optionalDefaults[i].listValue()->tail;
             // TODO: ensure that the generated ASTList has one root node.
             NewEvaluator e(optExpression);
-            value = e.exec();
+            // value = e.exec();
             if (value.isa() == Datum::typeError)
             {
                 return FCError::badDefault(optionalDefaults[i]);

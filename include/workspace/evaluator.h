@@ -35,6 +35,10 @@ struct NewEvaluator
     /// @brief The pointer to this list's compiled function.
     CompiledFunctionPtr fn;
 
+    /// @brief The coroutine handle for this evaluation.
+    /// @note Execution may resume until this value is nullptr.
+    coroutine_handle_t handle = nullptr;
+
     /// @brief The return value of this evaluation.
     Datum *retval = nullptr;
 
@@ -53,10 +57,10 @@ struct NewEvaluator
     /// @brief Destructor.
     ~NewEvaluator();
 
-    /// @brief Execute this list. Will return when execution is complete.
-    /// @param jumpLocation The location within the line to jump to.
-    /// @return the result of this execution.
-    Datum *exec(int32_t jumpLocation = 0);
+    /// @brief Begin or resume execution of this list. Will return when execution is complete or suspended.
+    /// @param jumpLocation The block number to start execution from when initiating execution.
+    /// @return true if execution is complete, false if suspended.
+    bool exec(int32_t jumpLocation = 0);
 
     /// @brief Execute the given sublist. Will return when execution is complete.
     /// @param aList The list to execute.
