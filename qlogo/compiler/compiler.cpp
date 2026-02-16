@@ -293,8 +293,8 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     Value *coroutineSuspend = scaff->builder.CreateCall(coroSuspendFn, {ConstantTokenNone::get(*scaff->theContext), CoBool(false)}, DBG_NAME("suspend"));
     // switch i8 %0, label %suspend [i8 0, label %continue i8 1, label %cleanup]
     BasicBlock *continueBB = BasicBlock::Create(*scaff->theContext, "continue", scaff->theFunction);
-    scaff->cleanupBB = BasicBlock::Create(*scaff->theContext, "cleanup", scaff->theFunction);
     scaff->suspendBB = BasicBlock::Create(*scaff->theContext, "suspend", scaff->theFunction);
+    scaff->cleanupBB = BasicBlock::Create(*scaff->theContext, "cleanup", scaff->theFunction);
     SwitchInst *sw = scaff->builder.CreateSwitch(coroutineSuspend, scaff->suspendBB, 2);
     sw->addCase(CoInt8(0), continueBB);
     sw->addCase(CoInt8(1), scaff->cleanupBB);
