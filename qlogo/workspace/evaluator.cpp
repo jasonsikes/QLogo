@@ -3,6 +3,7 @@
 #include "workspace/kernel.h"
 #include "compiler.h"
 #include "flowcontrol.h"
+#include "runparser.h"
 
 NewEvaluator::NewEvaluator(const DatumPtr &aList) : list(aList)
 {
@@ -62,35 +63,33 @@ bool NewEvaluator::exec(int32_t jumpLocation)
     return frame->resume == nullptr;
 }
 
-Datum *NewEvaluator::subExec(Datum *aList)
+void NewEvaluator::pushSublist(Datum *aList)
 {
-    // try
-    // {
-    //     if (aList->isWord())
-    //     {
-    //         DatumPtr runparsedList = runparse(DatumPtr(aList));
-    //         aList = runparsedList.datumValue();
-    //         watch(aList);
-    //     }
-    //     if (!aList->isList())
-    //     {
-    //         FCError *err = FCError::noHow(DatumPtr(aList));
-    //         watch(err);
-    //         return err;
-    //     }
-    //     if (aList->listValue()->isEmpty())
-    //     {
-    //         return Datum::notADatum();
-    //     }
-    //     NewEvaluator e(aList, evalStack);
-    //     retval = e.exec();
-    // }
-    // catch (FCError *err)
-    // {
-    //     retval = err;
-    // }
-    // return retval;
-    return nullptr;
+    try
+    {
+        if (aList->isWord())
+        {
+            DatumPtr runparsedList = runparse(DatumPtr(aList));
+            aList = runparsedList.datumValue();
+            watch(aList);
+        }
+        if (!aList->isList())
+        {
+            FCError *err = FCError::noHow(DatumPtr(aList));
+            retval = err;
+            return;
+        }
+        if (aList->listValue()->isEmpty())
+        {
+            retval = Datum::notADatum();
+            return;
+        }
+        Kernel::get().pushListOntoEvaluationStack(DatumPtr(aList));
+    }
+    catch (FCError *err)
+    {
+        retval = err;
+    }
 }
 
 Datum *NewEvaluator::procedureExec(ASTNode *node, Datum **paramAry, uint32_t paramCount)

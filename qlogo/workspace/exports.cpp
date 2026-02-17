@@ -147,7 +147,7 @@ static QRandomGenerator &randomGenerator()
 addr_t handleBadValue(addr_t eAddr, addr_t parentAddr, DatumPtr value,
     std::function<bool(DatumPtr)> datatypeTest)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *parent = reinterpret_cast<ASTNode *>(parentAddr);
 
     DatumPtr err = {FCError::doesntLike(parent->nodeName, DatumPtr(value))};
@@ -301,7 +301,7 @@ EXPORTC addr_t stdWriteDatumAry(addr_t datumAddr, uint32_t count, bool useShow, 
 /// @return the given value as a QLogo object
 EXPORTC addr_t getWordForDouble(addr_t eAddr, double val)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *w = new Word(val);
     e->watch(w);
 
@@ -314,7 +314,7 @@ EXPORTC addr_t getWordForDouble(addr_t eAddr, double val)
 /// @return the given value as a QLogo object
 EXPORTC addr_t getWordForBool(addr_t eAddr, bool val)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *w = new Word(val ? QObject::tr("true") : QObject::tr("false"));
     e->watch(w);
 
@@ -335,15 +335,15 @@ EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr)
 /// @param eAddr a pointer to the Evaluator object context.
 /// @param listAddr a pointer to a List object which contains QLogo instructions to run
 /// @return the result of the list execution
-EXPORTC addr_t runList(addr_t eAddr, addr_t listAddr)
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *list = reinterpret_cast<List *>(listAddr);
-    Datum *result = e->subExec(list);
-    e->watch(result);
+// EXPORTC addr_t runList(addr_t eAddr, addr_t listAddr)
+// {
+//     auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
+//     auto *list = reinterpret_cast<List *>(listAddr);
+//     Datum *result = e->subExec(list);
+//     e->watch(result);
 
-    return reinterpret_cast<addr_t>(result);
-}
+//     return reinterpret_cast<addr_t>(result);
+// }
 
 /// Push a list onto the evaluation stack for explicit-control evaluation.
 /// The caller will then suspend; the driver runs this list to completion, then resumes the caller.
@@ -352,43 +352,17 @@ EXPORTC addr_t runList(addr_t eAddr, addr_t listAddr)
 /// @param listAddr a pointer to the list (or word to runparse) to execute.
 EXPORTC void pushListOntoEvaluationStack(addr_t eAddr, addr_t listAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *aList = reinterpret_cast<Datum *>(listAddr);
-    try
-    {
-        if (aList->isWord())
-        {
-            DatumPtr runparsedList = runparse(DatumPtr(aList));
-            aList = runparsedList.datumValue();
-            e->watch(aList);
-        }
-        if (!aList->isList())
-        {
-            FCError *err = FCError::noHow(DatumPtr(aList));
-            e->watch(err);
-            e->lastSubExecResult = err;
-            return;
-        }
-        if (aList->listValue()->isEmpty())
-        {
-            e->lastSubExecResult = Datum::notADatum();
-            return;
-        }
-        new Evaluator(DatumPtr(aList), e->evalStack);
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        e->lastSubExecResult = err;
-    }
+    Kernel::get().pushListOntoEvaluationStack(DatumPtr(aList));
 }
 
 /// After a suspend that pushed a list, return the result of running that list and clear it.
 /// @param eAddr a pointer to the Evaluator object context.
-/// @return the result of the list execution (or error if pushListOntoEvaluationStack set one).
+/// @return the result of the list execution.
 EXPORTC addr_t popEvaluationStackAndGetResult(addr_t eAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     Datum *result = e->lastSubExecResult;
     e->lastSubExecResult = nullptr;
     if (result != nullptr)
@@ -404,7 +378,7 @@ EXPORTC addr_t popEvaluationStackAndGetResult(addr_t eAddr)
 /// @return the result of the procedure execution.
 EXPORTC addr_t runProcedure(addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAddr, uint32_t paramCount)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto **paramAry = reinterpret_cast<Datum **>(paramAryAddr);
     Datum *result = e->procedureExec(node, paramAry, paramCount);
@@ -418,7 +392,7 @@ EXPORTC addr_t runProcedure(addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAdd
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorSystem(addr_t eAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     FCError *err = FCError::custom(DatumPtr(QObject::tr("SYSTEM")));
     e->watch(err);
     return reinterpret_cast<addr_t>(err);
@@ -429,7 +403,7 @@ EXPORTC addr_t getErrorSystem(addr_t eAddr)
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorToplevel(addr_t eAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     FCError *err = FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")));
     e->watch(err);
     return reinterpret_cast<addr_t>(err);
@@ -442,7 +416,7 @@ EXPORTC addr_t getErrorToplevel(addr_t eAddr)
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorNoLike(addr_t eAddr, addr_t whoAddr, addr_t whatAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *who = reinterpret_cast<Datum *>(whoAddr);
     auto *what = reinterpret_cast<Datum *>(whatAddr);
     FCError *err = FCError::doesntLike(who, what);
@@ -456,7 +430,7 @@ EXPORTC addr_t getErrorNoLike(addr_t eAddr, addr_t whoAddr, addr_t whatAddr)
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorNoSay(addr_t eAddr, addr_t whatAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *what = reinterpret_cast<Datum *>(whatAddr);
     FCError *err = FCError::dontSay(DatumPtr(what->toString(Datum::ToStringFlags_Show)));
     e->watch(err);
@@ -469,7 +443,7 @@ EXPORTC addr_t getErrorNoSay(addr_t eAddr, addr_t whatAddr)
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorNoTest(addr_t eAddr, addr_t whoAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *who = reinterpret_cast<Datum *>(whoAddr);
     FCError *err = FCError::noTest(DatumPtr(who->toString(Datum::ToStringFlags_Show)));
     e->watch(err);
@@ -483,7 +457,7 @@ EXPORTC addr_t getErrorNoTest(addr_t eAddr, addr_t whoAddr)
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorNoOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *x = reinterpret_cast<Datum *>(xAddr);
     auto *y = reinterpret_cast<Datum *>(yAddr);
     // If the thing that didn't output is an ASTNode, use the name of the ASTNode.
@@ -503,7 +477,7 @@ EXPORTC addr_t getErrorNoOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr)
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorNotEnoughInputs(addr_t eAddr, addr_t xAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *x = reinterpret_cast<Datum *>(xAddr);
     FCError *err = FCError::notEnoughInputs(DatumPtr(x->toString(Datum::ToStringFlags_Show)));
     e->watch(err);
@@ -516,7 +490,7 @@ EXPORTC addr_t getErrorNotEnoughInputs(addr_t eAddr, addr_t xAddr)
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorNoValue(addr_t eAddr, addr_t whatAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *what = reinterpret_cast<Datum *>(whatAddr);
     FCError *err = FCError::noValue(DatumPtr(what->toString(Datum::ToStringFlags_Show)));
     e->watch(err);
@@ -530,7 +504,7 @@ EXPORTC addr_t getErrorNoValue(addr_t eAddr, addr_t whatAddr)
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorCustom(addr_t eAddr, addr_t tagAddr, addr_t outputAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *tag = reinterpret_cast<Datum *>(tagAddr);
     auto *output = reinterpret_cast<Datum *>(outputAddr);
     FCError *err = FCError::custom(DatumPtr(tag), nothing(), DatumPtr(output));
@@ -545,7 +519,7 @@ EXPORTC addr_t getErrorCustom(addr_t eAddr, addr_t tagAddr, addr_t outputAddr)
 /// @return a pointer to the RETURN control object that was generated.
 EXPORTC addr_t getCtrlReturn(addr_t eAddr, addr_t astNodeAddr, addr_t retvalAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto retval = DatumPtr(reinterpret_cast<Datum *>(retvalAddr));
     auto *control = new FCReturn(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), retval);
     e->watch(control);
@@ -560,7 +534,7 @@ EXPORTC addr_t getCtrlReturn(addr_t eAddr, addr_t astNodeAddr, addr_t retvalAddr
 /// @return a pointer to the CONTINUATION control object that was generated.
 EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t paramAryAddr, uint32_t paramCount)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astNodeAddr);
     auto nodePtr = DatumPtr(node);
 
@@ -582,7 +556,7 @@ EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t para
 /// @return a pointer to the GOTO control object that was generated.
 EXPORTC addr_t getCtrlGoto(addr_t eAddr, addr_t astNodeAddr, addr_t tagAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto tag = DatumPtr(reinterpret_cast<Datum *>(tagAddr));
 
     auto *control = new FCGoto(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), tag);
@@ -676,7 +650,7 @@ EXPORTC addr_t setRandom()
 /// @return A Word(string) with formatting applied.
 EXPORTC addr_t getFormForNumber(addr_t eAddr, double num, int32_t width, int32_t precision)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     QString retval = QString("%1").arg(num, width, 'f', precision);
     auto *w = new Word(retval);
     e->watch(w);
@@ -708,7 +682,7 @@ EXPORTC addr_t beginCatch(void)
 
 EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t resultAddr, addr_t tagAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *erractWord = reinterpret_cast<Word *>(Kernel::get().specialVar(SpecialNames::ERRACT));
     auto *erractValue = reinterpret_cast<Datum *>(errActAddr);
     auto *result = reinterpret_cast<Datum *>(resultAddr);
@@ -750,7 +724,7 @@ EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t
 
 EXPORTC addr_t getCurrentError(addr_t eAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     DatumPtr errPtr = Kernel::get().currentError;
 
     ListBuilder retvalBuilder;
@@ -769,7 +743,7 @@ EXPORTC addr_t getCurrentError(addr_t eAddr)
 
 EXPORTC addr_t callPause(addr_t eAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     Datum *retval = Kernel::get().pause().datumValue();
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
@@ -777,7 +751,7 @@ EXPORTC addr_t callPause(addr_t eAddr)
 
 EXPORTC addr_t generateContinue(addr_t eAddr, addr_t outputAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *output = reinterpret_cast<Datum *>(outputAddr);
 
     FCError *err = FCError::custom(DatumPtr(QObject::tr("PAUSE")), nothing(), DatumPtr(output));
@@ -787,7 +761,7 @@ EXPORTC addr_t generateContinue(addr_t eAddr, addr_t outputAddr)
 
 EXPORTC addr_t processRunresult(addr_t eAddr, addr_t resultAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *result = reinterpret_cast<Datum *>(resultAddr);
     Datum *retval;
 
@@ -864,7 +838,7 @@ EXPORTC bool cmpDatumToDatum(addr_t eAddr, addr_t d1, addr_t d2)
 {
     auto *dD1 = reinterpret_cast<Datum *>(d1);
     auto *dD2 = reinterpret_cast<Datum *>(d2);
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     Qt::CaseSensitivity cs = e->varCASEIGNOREDP() ? Qt::CaseInsensitive : Qt::CaseSensitive;
     VisitedMap visited;
     return areDatumsEqual(visited, dD1, dD2, cs);
@@ -872,7 +846,7 @@ EXPORTC bool cmpDatumToDatum(addr_t eAddr, addr_t d1, addr_t d2)
 
 EXPORTC addr_t concatWord(addr_t eAddr, addr_t aryAddr, uint32_t count)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto **wordAry = reinterpret_cast<Word **>(aryAddr);
     QString retval;
     for (uint32_t i = 0; i < count; ++i)
@@ -901,7 +875,7 @@ EXPORTC bool isDatumEmpty(addr_t dAddr)
 
 EXPORTC addr_t createList(addr_t eAddr, addr_t aryAddr, uint32_t count)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto **ary = reinterpret_cast<Datum **>(aryAddr);
     ListBuilder builder;
     for (uint32_t i = 0; i < count; ++i)
@@ -916,7 +890,7 @@ EXPORTC addr_t createList(addr_t eAddr, addr_t aryAddr, uint32_t count)
 
 EXPORTC addr_t createSentence(addr_t eAddr, addr_t aryAddr, uint32_t count)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto **ary = reinterpret_cast<Datum **>(aryAddr);
     ListBuilder builder;
     for (uint32_t i = 0; i < count; ++i)
@@ -942,7 +916,7 @@ EXPORTC addr_t createSentence(addr_t eAddr, addr_t aryAddr, uint32_t count)
 
 EXPORTC addr_t fputList(addr_t eAddr, addr_t thingAddr, addr_t listAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     auto *list = reinterpret_cast<List *>(listAddr);
 
@@ -953,7 +927,7 @@ EXPORTC addr_t fputList(addr_t eAddr, addr_t thingAddr, addr_t listAddr)
 
 EXPORTC addr_t lputList(addr_t eAddr, addr_t thingAddr, addr_t listAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     auto *list = reinterpret_cast<List *>(listAddr);
 
@@ -973,7 +947,7 @@ EXPORTC addr_t lputList(addr_t eAddr, addr_t thingAddr, addr_t listAddr)
 
 EXPORTC addr_t createArray(addr_t eAddr, int32_t size, int32_t origin)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *retval = new Array(origin, size);
     for (int i = 0; i < size; ++i)
     {
@@ -985,7 +959,7 @@ EXPORTC addr_t createArray(addr_t eAddr, int32_t size, int32_t origin)
 
 EXPORTC addr_t listToArray(addr_t eAddr, addr_t listAddr, int32_t origin)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *list = reinterpret_cast<List *>(listAddr);
     auto *retval = new Array(origin, list->count());
     ListIterator it = list->newIterator();
@@ -999,7 +973,7 @@ EXPORTC addr_t listToArray(addr_t eAddr, addr_t listAddr, int32_t origin)
 
 EXPORTC addr_t arrayToList(addr_t eAddr, addr_t arrayAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     const auto *array = reinterpret_cast<const Array *>(arrayAddr);
     ListBuilder builder;
     for (const auto &i : array->array)
@@ -1013,7 +987,7 @@ EXPORTC addr_t arrayToList(addr_t eAddr, addr_t arrayAddr)
 
 EXPORTC addr_t firstOfDatum(addr_t eAddr, addr_t thingAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     Datum *retval = nullptr;
     if (thing->isWord())
@@ -1038,7 +1012,7 @@ EXPORTC addr_t firstOfDatum(addr_t eAddr, addr_t thingAddr)
 
 EXPORTC addr_t lastOfDatum(addr_t eAddr, addr_t thingAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     Datum *retval = nullptr;
     if (thing->isWord())
@@ -1069,7 +1043,7 @@ EXPORTC addr_t lastOfDatum(addr_t eAddr, addr_t thingAddr)
 
 EXPORTC addr_t butFirstOfDatum(addr_t eAddr, addr_t thingAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     Datum *retval = nullptr;
     if (thing->isWord())
@@ -1090,7 +1064,7 @@ EXPORTC addr_t butFirstOfDatum(addr_t eAddr, addr_t thingAddr)
 
 EXPORTC addr_t butLastOfDatum(addr_t eAddr, addr_t thingAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
 
     if (thing->isWord())
@@ -1158,7 +1132,7 @@ EXPORTC bool isDatumIndexValid(addr_t thingAddr, double dIndex, addr_t listItemP
 
 EXPORTC addr_t itemOfDatum(addr_t eAddr, addr_t thingAddr, double dIndex, addr_t listItemPtrAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     Datum *retval = nullptr;
     auto index = static_cast<qsizetype>(dIndex);
@@ -1187,7 +1161,7 @@ EXPORTC addr_t itemOfDatum(addr_t eAddr, addr_t thingAddr, double dIndex, addr_t
 
 EXPORTC bool isDatumContainerOrInContainer(addr_t eAddr, addr_t valueAddr, addr_t containerAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *value = reinterpret_cast<Datum *>(valueAddr);
     auto *container = reinterpret_cast<Datum *>(containerAddr);
 
@@ -1260,7 +1234,7 @@ EXPORTC bool isEmpty(addr_t thingAddr)
 
 EXPORTC bool isBefore(addr_t eAddr, addr_t word1Addr, addr_t word2Addr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *word1 = reinterpret_cast<Word *>(word1Addr);
     auto *word2 = reinterpret_cast<Word *>(word2Addr);
 
@@ -1398,7 +1372,7 @@ EXPORTC double rawascii(addr_t cAddr)
 
 EXPORTC addr_t chr(addr_t eAddr, uint32_t c)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto qstr = QString(QChar(static_cast<uint16_t>(c)));
     auto *retval = new Word(qstr);
     e->watch(retval);
@@ -1407,7 +1381,7 @@ EXPORTC addr_t chr(addr_t eAddr, uint32_t c)
 
 EXPORTC addr_t member(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *thing1 = reinterpret_cast<Datum *>(thing1Addr);
     auto *thing2 = reinterpret_cast<Datum *>(thing2Addr);
     if (thing2->isWord())
@@ -1453,7 +1427,7 @@ EXPORTC addr_t member(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
 
 EXPORTC addr_t lowercase(addr_t eAddr, addr_t wordAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *word = reinterpret_cast<Word *>(wordAddr);
     QString retval = word->toString(Datum::ToStringFlags_Raw).toLower();
     auto *retvalWord = new Word(retval);
@@ -1463,7 +1437,7 @@ EXPORTC addr_t lowercase(addr_t eAddr, addr_t wordAddr)
 
 EXPORTC addr_t uppercase(addr_t eAddr, addr_t wordAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *word = reinterpret_cast<Word *>(wordAddr);
     QString retval = word->toString(Datum::ToStringFlags_Raw).toUpper();
     auto *retvalWord = new Word(retval);
@@ -1473,7 +1447,7 @@ EXPORTC addr_t uppercase(addr_t eAddr, addr_t wordAddr)
 
 EXPORTC addr_t standout(addr_t eAddr, addr_t thingAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     QString phrase = thing->toString();
     QString retval = Config::get().mainInterface()->addStandoutToString(phrase);
@@ -1484,7 +1458,7 @@ EXPORTC addr_t standout(addr_t eAddr, addr_t thingAddr)
 
 EXPORTC addr_t parse(addr_t eAddr, addr_t wordAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *word = reinterpret_cast<Word *>(wordAddr);
     QString phrase = word->toString(Datum::ToStringFlags_Raw);
     QTextStream stream(&phrase, QIODevice::ReadOnly);
@@ -1497,7 +1471,7 @@ EXPORTC addr_t parse(addr_t eAddr, addr_t wordAddr)
 
 EXPORTC addr_t runparseDatum(addr_t eAddr, addr_t wordorlistAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto wordorlist = DatumPtr(reinterpret_cast<Datum *>(wordorlistAddr));
 
     DatumPtr retvalPtr = runparse(wordorlist);
@@ -1569,7 +1543,7 @@ EXPORTC void drawTurtleArc(double angle, double radius)
 
 EXPORTC addr_t getTurtlePos(addr_t eAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto xy = Turtle::get().getxy();
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(xy.x()));
@@ -1614,7 +1588,7 @@ EXPORTC double getTurtleTowards(addr_t posAddr)
 
 EXPORTC addr_t getScrunch(addr_t eAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(1));
     retvalBuilder.append(DatumPtr(1));
@@ -1646,7 +1620,7 @@ EXPORTC void setTurtleMode(int mode)
 
 EXPORTC addr_t getBounds(addr_t eAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     double x = Config::get().mainInterface()->boundX();
     double y = Config::get().mainInterface()->boundY();
 
@@ -1701,7 +1675,7 @@ EXPORTC bool isTurtleVisible(void)
 
 EXPORTC addr_t getScreenMode(addr_t eAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     ScreenModeEnum mode = Config::get().mainInterface()->getScreenMode();
     QString modeStr;
     switch (mode)
@@ -1724,7 +1698,7 @@ EXPORTC addr_t getScreenMode(addr_t eAddr)
 
 EXPORTC addr_t getTurtleMode(addr_t eAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     TurtleModeEnum mode = Turtle::get().getMode();
     QString modeStr;
     switch (mode)
@@ -1746,7 +1720,7 @@ EXPORTC addr_t getTurtleMode(addr_t eAddr)
 
 EXPORTC addr_t getLabelSize(addr_t eAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     double height = Config::get().mainInterface()->getLabelFontSize();
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(height));
@@ -1778,7 +1752,7 @@ EXPORTC bool setPenColor(addr_t colorAddr)
 
 EXPORTC addr_t getAllColors(addr_t eAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     ListBuilder lb;
     QStringList colors = QColor::colorNames();
     for (const QString &i : colors)
@@ -1832,7 +1806,7 @@ EXPORTC bool isPenDown(void)
 
 EXPORTC addr_t getPenMode(addr_t eAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     PenModeEnum pm = Turtle::get().getPenMode();
     QString retval;
     switch (pm)
@@ -1854,7 +1828,7 @@ EXPORTC addr_t getPenMode(addr_t eAddr)
 
 EXPORTC addr_t getPenColor(addr_t eAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     const QColor &color = Turtle::get().getPenColor();
     List *retval = listFromColor(color);
     e->watch(retval);
@@ -1863,7 +1837,7 @@ EXPORTC addr_t getPenColor(addr_t eAddr)
 
 EXPORTC addr_t getPaletteColor(addr_t eAddr, addr_t colorIndexAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto colorIndex = static_cast<int>((reinterpret_cast<Word *>(colorIndexAddr))->numberValue());
     const QColor &color = Kernel::get().palette[colorIndex];
     List *retval = listFromColor(color);
@@ -1878,7 +1852,7 @@ EXPORTC double getPenSize(void)
 
 EXPORTC addr_t getBackground(addr_t eAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     const QColor &color = Config::get().mainInterface()->getCanvasBackgroundColor();
     List *retval = listFromColor(color);
     e->watch(retval);
@@ -1887,7 +1861,7 @@ EXPORTC addr_t getBackground(addr_t eAddr)
 
 EXPORTC addr_t savePict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
     QString filepath = Kernel::get().filepathForFilename(DatumPtr(filename));
     QImage image = Config::get().mainInterface()->getCanvasImage();
@@ -1903,7 +1877,7 @@ EXPORTC addr_t savePict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
 
 EXPORTC addr_t saveSvgpict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
     QString filepath = Kernel::get().filepathForFilename(DatumPtr(filename));
     QByteArray svgImage = Config::get().mainInterface()->getSvgImage();
@@ -1926,7 +1900,7 @@ EXPORTC addr_t saveSvgpict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
 
 EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *dFilename = reinterpret_cast<Datum *>(filenameAddr);
     auto *retval = reinterpret_cast<Datum *>(nodeAddr);
     if (dFilename->isa == Datum::typeWord)
@@ -1957,7 +1931,7 @@ done:
 
 EXPORTC addr_t getMousePos(addr_t eAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     QVector2D position = Config::get().mainInterface()->mousePosition();
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(position.x()));
@@ -1969,7 +1943,7 @@ EXPORTC addr_t getMousePos(addr_t eAddr)
 
 EXPORTC addr_t getClickPos(addr_t eAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     QVector2D position = Config::get().mainInterface()->lastMouseclickPosition();
     ListBuilder retvalBuilder;
     retvalBuilder.append(DatumPtr(position.x()));
@@ -2020,7 +1994,7 @@ EXPORTC bool getvarErroract(void)
 /// @return ASTNode on success, else Err.
 EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(nodeAddr);
     const CallFrame *currentFrame = Kernel::get().callStack.localFrame();
     DatumPtr currentProc = currentFrame->sourceNode;
@@ -2079,13 +2053,13 @@ EXPORTC addr_t handleBadDatum(addr_t eAddr, addr_t parentAddr, addr_t valueAddr)
 
 EXPORTC addr_t q_malloc(addr_t eAddr,  uint32_t size)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     void *ptr = malloc(size);
     return reinterpret_cast<addr_t>(ptr);
 }
 
 EXPORTC void q_free(addr_t eAddr, addr_t ptr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     free(ptr);
 }

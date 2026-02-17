@@ -13,7 +13,7 @@ class Datum
 {
     friend class ListIterator;
     friend class DatumPtr;
-    friend struct Evaluator;
+    // friend struct Evaluator;
 
 private:
     // Explicitly private because Datums are not relocatable.

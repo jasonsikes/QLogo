@@ -413,8 +413,8 @@ Datum *CallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount)
         {
             DatumPtr optExpression = optionalDefaults[i].listValue()->tail;
             // TODO: ensure that the generated ASTList has one root node.
-            Evaluator e(optExpression, evalStack);
-            value = e.exec();
+            NewEvaluator e(optExpression);
+            // value = e.exec();
             if (value.isa() == Datum::typeError)
             {
                 return FCError::badDefault(optionalDefaults[i]);
@@ -540,8 +540,8 @@ continueBody:
         }
         DatumPtr instruction = runningSourceList.listValue()->head;
 
-        Evaluator e = Evaluator(instruction, evalStack);
-        retval = e.exec(jumpLocation);
+        NewEvaluator e(instruction);
+        // retval = e.exec(jumpLocation);
         jumpLocation = 0;
 
         // Do we need to halt execution for some reason?
@@ -584,132 +584,132 @@ continueBody:
     return retval;
 }
 
-Evaluator::Evaluator(const DatumPtr &aList, QList<Evaluator *> &anEvalStack) : evalStack(anEvalStack), list(aList)
-{
-    evalStack.push_front(this);
-}
+// Evaluator::Evaluator(const DatumPtr &aList, QList<Evaluator *> &anEvalStack) : evalStack(anEvalStack), list(aList)
+// {
+//     evalStack.push_front(this);
+// }
 
-Evaluator::~Evaluator()
-{
-    Q_ASSERT(evalStack.first() == this);
+// Evaluator::~Evaluator()
+// {
+//     Q_ASSERT(evalStack.first() == this);
 
-    for (auto &d : releasePool)
-    {
-        if ((d->isa & Datum::typePersistentMask) == 0)
-        {
-            (d->retainCount)--;
-            if ((d != retval) && (d->retainCount <= 0))
-                delete d;
-        }
-    }
+//     for (auto &d : releasePool)
+//     {
+//         if ((d->isa & Datum::typePersistentMask) == 0)
+//         {
+//             (d->retainCount)--;
+//             if ((d != retval) && (d->retainCount <= 0))
+//                 delete d;
+//         }
+//     }
 
-    evalStack.removeFirst();
-}
+//     evalStack.removeFirst();
+// }
 
-Datum *Evaluator::exec(int32_t jumpLocation)
-{
-    if (list.listValue() == EmptyList::instance())
-    {
-        return Datum::notADatum();
-    }
-    try
-    {
-        fn = Compiler::get().functionPtrFromList(list.listValue());
-    }
-    catch (FCError *e)
-    {
-        return watch(e);
-    }
-    // Start: call the ramp once to get the coroutine handle (LLVM frame).
-    coroutine_handle_t handle = fn((addr_t)this, (addr_t)&retval, jumpLocation, nullptr);
-    // Resume using the frame's resume function. Completion: compiler nulls the frame's
-    // resume pointer; we check it after resume() returns, then call destroy to free.
-    // When suspended for explicit control (e.g. RUN/list), another evaluator may have been
-    // pushed; run it to completion, then resume this coroutine.
-    while (handle != nullptr)
-    {
-        LLVMCoroFrameHeader *frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle);
-        frame->resume(handle);
-        if (frame->resume == nullptr)
-        {
-            frame->destroy(handle);
-            handle = nullptr;
-        }
-        else
-        {
-            // Suspended: if a list was pushed onto the evaluation stack, run it then resume.
-            Evaluator *top = evalStack.first();
-            if (top != this)
-            {
-                lastSubExecResult = top->exec();
-                watch(lastSubExecResult);
-                delete top;
-                // Loop to resume this coroutine.
-            }
-        }
-    }
-    return retval;
-}
+// Datum *Evaluator::exec(int32_t jumpLocation)
+// {
+//     if (list.listValue() == EmptyList::instance())
+//     {
+//         return Datum::notADatum();
+//     }
+//     try
+//     {
+//         fn = Compiler::get().functionPtrFromList(list.listValue());
+//     }
+//     catch (FCError *e)
+//     {
+//         return watch(e);
+//     }
+//     // Start: call the ramp once to get the coroutine handle (LLVM frame).
+//     coroutine_handle_t handle = fn((addr_t)this, (addr_t)&retval, jumpLocation, nullptr);
+//     // Resume using the frame's resume function. Completion: compiler nulls the frame's
+//     // resume pointer; we check it after resume() returns, then call destroy to free.
+//     // When suspended for explicit control (e.g. RUN/list), another evaluator may have been
+//     // pushed; run it to completion, then resume this coroutine.
+//     while (handle != nullptr)
+//     {
+//         LLVMCoroFrameHeader *frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle);
+//         frame->resume(handle);
+//         if (frame->resume == nullptr)
+//         {
+//             frame->destroy(handle);
+//             handle = nullptr;
+//         }
+//         else
+//         {
+//             // Suspended: if a list was pushed onto the evaluation stack, run it then resume.
+//             Evaluator *top = evalStack.first();
+//             if (top != this)
+//             {
+//                 lastSubExecResult = top->exec();
+//                 watch(lastSubExecResult);
+//                 delete top;
+//                 // Loop to resume this coroutine.
+//             }
+//         }
+//     }
+//     return retval;
+// }
 
-Datum *Evaluator::subExec(Datum *aList)
-{
-    try
-    {
-        if (aList->isWord())
-        {
-            DatumPtr runparsedList = runparse(DatumPtr(aList));
-            aList = runparsedList.datumValue();
-            watch(aList);
-        }
-        if (!aList->isList())
-        {
-            FCError *err = FCError::noHow(DatumPtr(aList));
-            watch(err);
-            return err;
-        }
-        if (aList->listValue()->isEmpty())
-        {
-            return Datum::notADatum();
-        }
-        Evaluator e(aList, evalStack);
-        retval = e.exec();
-    }
-    catch (FCError *err)
-    {
-        retval = err;
-    }
-    return retval;
-}
+// Datum *Evaluator::subExec(Datum *aList)
+// {
+//     try
+//     {
+//         if (aList->isWord())
+//         {
+//             DatumPtr runparsedList = runparse(DatumPtr(aList));
+//             aList = runparsedList.datumValue();
+//             watch(aList);
+//         }
+//         if (!aList->isList())
+//         {
+//             FCError *err = FCError::noHow(DatumPtr(aList));
+//             watch(err);
+//             return err;
+//         }
+//         if (aList->listValue()->isEmpty())
+//         {
+//             return Datum::notADatum();
+//         }
+//         Evaluator e(aList, evalStack);
+//         retval = e.exec();
+//     }
+//     catch (FCError *err)
+//     {
+//         retval = err;
+//     }
+//     return retval;
+// }
 
-Datum *Evaluator::procedureExec(ASTNode *node, Datum **paramAry, uint32_t paramCount)
-{
-    CallFrameStack &frameStack = Kernel::get().callStack;
-    CallFrame frame(frameStack, DatumPtr(node));
+// Datum *Evaluator::procedureExec(ASTNode *node, Datum **paramAry, uint32_t paramCount)
+// {
+//     CallFrameStack &frameStack = Kernel::get().callStack;
+//     CallFrame frame(frameStack, DatumPtr(node));
 
-    return frame.exec(paramAry, paramCount);
-}
+//     return frame.exec(paramAry, paramCount);
+// }
 
-Datum *Evaluator::watch(const DatumPtr &d)
-{
-    return watch(d.datumValue());
-}
+// Datum *Evaluator::watch(const DatumPtr &d)
+// {
+//     return watch(d.datumValue());
+// }
 
-Datum *Evaluator::watch(Datum *d)
-{
-    (d->retainCount)++;
-    releasePool.push_back(d);
-    return d;
-}
+// Datum *Evaluator::watch(Datum *d)
+// {
+//     (d->retainCount)++;
+//     releasePool.push_back(d);
+//     return d;
+// }
 
-bool Evaluator::varCASEIGNOREDP()
-{
-    QString name = QObject::tr("CASEIGNOREDP");
-    DatumPtr val = Kernel::get().callStack.datumForName(name);
-    bool retval = false;
-    if (val.isWord())
-    {
-        QString word = val.toString(Datum::ToStringFlags_Key);
-        retval = word == QObject::tr("TRUE");
-    }
-    return retval;
-}
+// bool Evaluator::varCASEIGNOREDP()
+// {
+//     QString name = QObject::tr("CASEIGNOREDP");
+//     DatumPtr val = Kernel::get().callStack.datumForName(name);
+//     bool retval = false;
+//     if (val.isWord())
+//     {
+//         QString word = val.toString(Datum::ToStringFlags_Key);
+//         retval = word == QObject::tr("TRUE");
+//     }
+//     return retval;
+// }

@@ -42,6 +42,10 @@ struct NewEvaluator
     /// @brief The return value of this evaluation.
     Datum *retval = nullptr;
 
+    /// @brief Result of the most recently run sub-list (explicit control: push list, suspend, driver runs it, resume, pop).
+    /// Used by popEvaluationStackAndGetResult() after a coroutine suspend/resume for RUN/list call.
+    Datum *lastSubExecResult = nullptr;
+
     /// @brief A pool of objects for garbage collection.
     /// @note This is the reason the copy operators are deleted. If we enable them, the
     ///  releasePool can be copied, and both copies will contain pointers to the same Datum objects.
@@ -62,10 +66,9 @@ struct NewEvaluator
     /// @return true if execution is complete, false if suspended.
     bool exec(int32_t jumpLocation = 0);
 
-    /// @brief Execute the given sublist. Will return when execution is complete.
-    /// @param aList The list to execute.
-    /// @return the result of this execution.
-    Datum *subExec(Datum *aList);
+    /// @brief Push the given sublist onto the evaluation stack and prepare it for execution.
+    /// @param aList The list to push onto the evaluation stack.
+    void pushSublist(Datum *aList);
 
     /// @brief Execute the given procedure. Will return when execution is complete.
     /// @param node The ASTNode of the procedure to execute.

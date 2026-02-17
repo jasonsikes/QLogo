@@ -1130,8 +1130,9 @@ Value *Compiler::generateListExecIfList(ASTNode *parent, Value *c)
     scaff->builder.CreateCondBr(cond, isListBB, notListBB);
 
     scaff->builder.SetInsertPoint(isListBB);
-    // The list gets executed.
+    // The list gets executed (push/suspend/resume/pop); on return we are in the resume block.
     Value *listRunResult = generateCallList(c, RequestReturnDatum);
+    BasicBlock *listRunResultBB = scaff->builder.GetInsertBlock();
     Value *listRunResultType = generateGetDatumIsa(listRunResult);
     Value *listRunResultCond =
         scaff->builder.CreateICmpEQ(listRunResultType, CoInt32(Datum::typeASTNode), DBG_NAME("listRunResultTypeTest"));
@@ -1144,7 +1145,7 @@ Value *Compiler::generateListExecIfList(ASTNode *parent, Value *c)
 
     scaff->builder.SetInsertPoint(notListBB);
     PHINode *retval = scaff->builder.CreatePHI(TyAddr, 2, DBG_NAME("isWordPhi"));
-    retval->addIncoming(listRunResult, isListBB);
+    retval->addIncoming(listRunResult, listRunResultBB);
     retval->addIncoming(c, listTestBB);
 
     return retval;

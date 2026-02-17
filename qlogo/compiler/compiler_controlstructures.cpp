@@ -706,6 +706,7 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, RequestReturnType ret
 
     scaff->builder.SetInsertPoint(runListBB);
     Value *listRetval = generateCallList(instructionlist, returnType);
+    BasicBlock *listRetvalBB = scaff->builder.GetInsertBlock();
     scaff->builder.CreateBr(returnBB);
 
     scaff->builder.SetInsertPoint(noRunListBB);
@@ -714,7 +715,7 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, RequestReturnType ret
 
     scaff->builder.SetInsertPoint(returnBB);
     PHINode *retval = scaff->builder.CreatePHI(TyAddr, 2, DBG_NAME("retval"));
-    retval->addIncoming(listRetval, runListBB);
+    retval->addIncoming(listRetval, listRetvalBB);
     retval->addIncoming(noRetval, noRunListBB);
     return retval;
 }

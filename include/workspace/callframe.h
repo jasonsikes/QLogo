@@ -29,7 +29,7 @@
 
 struct CallFrame;
 struct NewEvaluator;
-struct Evaluator;
+// struct Evaluator;
 struct FCGoto;
 struct ASTNode;
 
@@ -284,15 +284,15 @@ struct CallFrame
     /// It will stay on the stack as long as it is executing. When it is done, it is popped
     /// from the stack. A list may call a sublist for execution (e.g. RUN, IF, or REPEAT), which
     /// will also create an Evaluator and push it onto the stack.
-    QList<Evaluator *> evalStack;
+    // QList<Evaluator *> evalStack;
 
     /// @brief Return the topmost Evaluator object.
     /// @return The topmost Evaluator object.
-    Evaluator *localEvaluator() const
-    {
-        Q_ASSERT(evalStack.size() > 0);
-        return evalStack.first();
-    }
+    // Evaluator *localEvaluator() const
+    // {
+    //     Q_ASSERT(evalStack.size() > 0);
+    //     return evalStack.first();
+    // }
 
     /// @brief Insert an entry for 'name' in the variables hash. Save the previous value
     /// of the variable in the localVars hash. Store 'nothing' for the entry if name wasn't
@@ -354,81 +354,81 @@ struct CallFrame
     CallFrame &operator=(CallFrame &&) = delete;
 };
 
-/// @brief The Evaluator object handles the evaluation of a list.
-///
-/// The evaluator handles the evaluation of a list. It provides support functionality
-/// for the list while it is executing.
-/// @note The constructor and destructor will add and remove this evaluator to and
-/// from the evaluation stack.
-struct Evaluator
-{
-    /// @brief A reference to the evaluation stack.
-    QList<Evaluator *> &evalStack;
+// /// @brief The Evaluator object handles the evaluation of a list.
+// ///
+// /// The evaluator handles the evaluation of a list. It provides support functionality
+// /// for the list while it is executing.
+// /// @note The constructor and destructor will add and remove this evaluator to and
+// /// from the evaluation stack.
+// struct Evaluator
+// {
+//     /// @brief A reference to the evaluation stack.
+//     QList<Evaluator *> &evalStack;
 
-    /// @brief The list to evaluate.
-    DatumPtr list;
+//     /// @brief The list to evaluate.
+//     DatumPtr list;
 
-    /// @brief The pointer to this list's compiled function.
-    CompiledFunctionPtr fn;
+//     /// @brief The pointer to this list's compiled function.
+//     CompiledFunctionPtr fn;
 
-    /// @brief The return value of this evaluation.
-    Datum *retval = nullptr;
+//     /// @brief The return value of this evaluation.
+//     Datum *retval = nullptr;
 
-    /// @brief Result of the most recently run sub-list (explicit control: push list, suspend, driver runs it, resume, pop).
-    /// Used by popEvaluationStackAndGetResult() after a coroutine suspend/resume for RUN/list call.
-    Datum *lastSubExecResult = nullptr;
+//     /// @brief Result of the most recently run sub-list (explicit control: push list, suspend, driver runs it, resume, pop).
+//     /// Used by popEvaluationStackAndGetResult() after a coroutine suspend/resume for RUN/list call.
+//     Datum *lastSubExecResult = nullptr;
 
-    /// @brief A pool of objects for garbage collection.
-    QList<Datum *> releasePool;
+//     /// @brief A pool of objects for garbage collection.
+//     QList<Datum *> releasePool;
 
-    /// @brief Constructor.
-    /// @param aList The list to evaluate.
-    /// @param anEvalStack A reference to the evaluation stack.
-    Evaluator(const DatumPtr &aList, QList<Evaluator *> &anEvalStack);
+//     /// @brief Constructor.
+//     /// @param aList The list to evaluate.
+//     /// @param anEvalStack A reference to the evaluation stack.
+//     Evaluator(const DatumPtr &aList, QList<Evaluator *> &anEvalStack);
 
-    /// @brief Destructor.
-    /// @note This will remove this evaluator from the evaluation stack and empty the releasePool.
-    ~Evaluator();
+//     /// @brief Destructor.
+//     /// @note This will remove this evaluator from the evaluation stack and empty the releasePool.
+//     ~Evaluator();
 
-    /// @brief Execute this list. Will return when execution is complete.
-    /// @param jumpLocation The location within the line to jump to.
-    /// @return the result of this execution.
-    Datum *exec(int32_t jumpLocation = 0);
+//     /// @brief Execute this list. Will return when execution is complete.
+//     /// @param jumpLocation The location within the line to jump to.
+//     /// @return the result of this execution.
+//     Datum *exec(int32_t jumpLocation = 0);
 
-    /// @brief Execute the given sublist. Will return when execution is complete.
-    /// @param aList The list to execute.
-    /// @return the result of this execution.
-    Datum *subExec(Datum *aList);
+//     /// @brief Execute the given sublist. Will return when execution is complete.
+//     /// @param aList The list to execute.
+//     /// @return the result of this execution.
+//     Datum *subExec(Datum *aList);
 
-    /// @brief Execute the given procedure. Will return when execution is complete.
-    /// @param node The ASTNode of the procedure to execute.
-    /// @param paramAry The parameters to apply to the procedure.
-    /// @param paramCount The number of parameters to apply.
-    /// @return the result of this execution.
-    Datum *procedureExec(ASTNode *node, Datum **paramAry, uint32_t paramCount);
+//     /// @brief Execute the given procedure. Will return when execution is complete.
+//     /// @param node The ASTNode of the procedure to execute.
+//     /// @param paramAry The parameters to apply to the procedure.
+//     /// @param paramCount The number of parameters to apply.
+//     /// @return the result of this execution.
+//     Datum *procedureExec(ASTNode *node, Datum **paramAry, uint32_t paramCount);
 
-    /// @brief Add a Datum to the release pool
-    /// @return the given pointer (pass-through).
-    /// In other areas of code, memory management is handled by using the DatumPtr class.
-    /// Among other things, the DatumPtr acts like std::shared_ptr. As long as there exists at least one DatumPtr
-    /// pointing to a Datum, the Datum will not be deleted. In compiled code, we use the watch function to add a Datum
-    /// to the release pool. The release pool acts as an array of DatumPtrs. When the Evaluator is destroyed, it will
-    /// iterate through the release pool and decrement the retain count of each Datum. If any retain count reaches 0,
-    /// the Datum will be deleted.
-    Datum *watch(Datum *);
+//     /// @brief Add a Datum to the release pool
+//     /// @return the given pointer (pass-through).
+//     /// In other areas of code, memory management is handled by using the DatumPtr class.
+//     /// Among other things, the DatumPtr acts like std::shared_ptr. As long as there exists at least one DatumPtr
+//     /// pointing to a Datum, the Datum will not be deleted. In compiled code, we use the watch function to add a Datum
+//     /// to the release pool. The release pool acts as an array of DatumPtrs. When the Evaluator is destroyed, it will
+//     /// iterate through the release pool and decrement the retain count of each Datum. If any retain count reaches 0,
+//     /// the Datum will be deleted.
+//     Datum *watch(Datum *);
 
-    /// @brief Add a Datum to the release pool
-    /// @return the given pointer (pass-through).
-    Datum *watch(const DatumPtr &);
+//     /// @brief Add a Datum to the release pool
+//     /// @return the given pointer (pass-through).
+//     Datum *watch(const DatumPtr &);
 
-    /// @brief Returns TRUE if CASEIGNOREDP is TRUE
-    bool varCASEIGNOREDP();
+//     /// @brief Returns TRUE if CASEIGNOREDP is TRUE
+//     bool varCASEIGNOREDP();
 
-    Evaluator() = delete;
-    Evaluator(const Evaluator &) = delete;
-    Evaluator(Evaluator &&) = delete;
-    Evaluator &operator=(const Evaluator &) = delete;
-    Evaluator &operator=(Evaluator &&) = delete;
-};
+//     Evaluator() = delete;
+//     Evaluator(const Evaluator &) = delete;
+//     Evaluator(Evaluator &&) = delete;
+//     Evaluator &operator=(const Evaluator &) = delete;
+//     Evaluator &operator=(Evaluator &&) = delete;
+// };
 
 #endif // CALLFRAME_H

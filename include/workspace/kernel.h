@@ -101,6 +101,12 @@ class Kernel
     /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.
     std::stack<std::unique_ptr<NewCallFrame>> callFrameStack;
 
+
+    /// @brief Push a list to be evaluated onto the evaluation stack.
+    /// @param listP The list to add to the evaluation stack.
+    /// @note The list and its evaluator will be removed when the evaluation is complete.
+    void pushListOntoEvaluationStack(const DatumPtr &listP);
+
     /// @brief The palette of colors.
     /// @details The first 16 colors [0-15] are the standard Logo colors. The first 8
     /// are immutable. The rest [8-100] are user-assignable.
