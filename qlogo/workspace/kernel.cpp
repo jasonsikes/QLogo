@@ -330,12 +330,16 @@ DatumPtr Kernel::runECE(const DatumPtr &listP)
     {
         // For now just run the list and return the result.
         NewEvaluator *topEvaluator = currentCallFrame->topEvaluator();
-        isComplete = topEvaluator->exec(0) && topEvaluator == baseEvaluator;
+        if (topEvaluator->exec(0))
+        {
+            currentCallFrame->evaluationStack.pop();
+            topEvaluator = currentCallFrame->topEvaluator();
+            isComplete = topEvaluator == baseEvaluator;
+        }
     }
 
     DatumPtr retval = DatumPtr(baseEvaluator->retval);
 
-    currentCallFrame->evaluationStack.pop();
     callFrameStack.pop();
     return retval;
 }

@@ -55,9 +55,12 @@ bool NewEvaluator::exec(int32_t jumpLocation)
         frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle);
     } else {
         // Resume using the frame's resume function. Completion: compiler nulls the frame's
-        // resume pointer; we check it after resume() returns, then call destroy to free.
+        // resume pointer.
         frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle);
-        frame->resume(handle);
+        if (frame->resume != nullptr)
+        {
+            frame->resume(handle);
+        }
     }
     Q_ASSERT(frame != nullptr);
     return frame->resume == nullptr;
