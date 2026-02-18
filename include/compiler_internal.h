@@ -69,9 +69,12 @@ struct Scaffold
     // The fourth argument: resume handle (null = initial entry, non-null = resume from that state).
     llvm::Value *resumeHandle;
 
-    // The suspend and cleanup blocks for the coroutine.
-    llvm::BasicBlock *suspendBB;
-    llvm::BasicBlock *cleanupBB;
+    // The suspend and cleanup blocks for the coroutine (null when function never suspends).
+    llvm::BasicBlock *suspendBB = nullptr;
+    llvm::BasicBlock *cleanupBB = nullptr;
+
+    // When coroutineHandle is null (no coroutine frame), returns go here and we ret null.
+    llvm::BasicBlock *exitBB = nullptr;
 
     // The coroutine handle for the compiled function, created at the beginning and returned at the end.
     llvm::Value *coroutineHandle = nullptr;

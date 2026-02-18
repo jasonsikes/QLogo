@@ -36,6 +36,7 @@ bool NewEvaluator::exec(int32_t jumpLocation)
     LLVMCoroFrameHeader *frame;
     if (handle == nullptr)
     {
+        // Generate and execute the function. Might return a coroutine handle.
         if (list.listValue() == EmptyList::instance())
         {
             retval = Datum::notADatum();
@@ -50,20 +51,17 @@ bool NewEvaluator::exec(int32_t jumpLocation)
             retval = e;
             return false;
         }
-        // Start: call the ramp once to get the coroutine handle (LLVM frame).
         handle = fn((addr_t)this, (addr_t)&retval, jumpLocation, nullptr);
         frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle);
     } else {
-        // Resume using the frame's resume function. Completion: compiler nulls the frame's
-        // resume pointer.
+        // Resume using the frame's resume function.
         frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle);
         if (frame->resume != nullptr)
         {
             frame->resume(handle);
         }
     }
-    Q_ASSERT(frame != nullptr);
-    return frame->resume == nullptr;
+    return (frame == nullptr) || (frame->resume == nullptr);
 }
 
 void NewEvaluator::pushSublist(Datum *aList)

@@ -333,8 +333,7 @@ DatumPtr Kernel::runECE(const DatumPtr &listP)
         if (topEvaluator->exec(0))
         {
             currentCallFrame->evaluationStack.pop();
-            topEvaluator = currentCallFrame->topEvaluator();
-            isComplete = topEvaluator == baseEvaluator;
+            isComplete = currentCallFrame->evaluationStack.size() == 0;
         }
     }
 
