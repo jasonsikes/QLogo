@@ -76,10 +76,15 @@ Value *Compiler::genIfelse(const DatumPtr &node, RequestReturnType returnType)
     // If input is a Datum type (can be word or list)
     if (cond->getType()->isPointerTy())
     {
+        // TODO: We should not execute a list.
         cond = generateListExecIfList(node.astnodeValue(), cond);
         cond = generateBoolFromDatum(node.astnodeValue(), cond);
         // bool continues.
     }
+
+    // Ensure coroutine frame (and handle) exists in this block so it dominates both branches.
+    // Then the merge and suspend blocks can use the handle even when the else path (no suspend) is taken.
+    ensureCoroutineFrame();
 
     cond = scaff->builder.CreateICmpEQ(cond, CoBool(1), DBG_NAME("ifcond"));
     scaff->builder.CreateCondBr(cond, thenBB, elseBB);

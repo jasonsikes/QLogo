@@ -673,11 +673,10 @@ Value *Compiler::genExecProcedure(const DatumPtr &node, RequestReturnType return
         TyAddr, runProcedure, PaAddr(scaff->evaluator), PaAddr(vAstnodeValue), PaAddr(paramAry), PaInt32(vParamArySize));
 }
 
-Value *Compiler::generateCallList(Value *list, RequestReturnType returnType)
+Value *Compiler::ensureCoroutineFrame()
 {
-    // Explicit control: push list onto evaluation stack, suspend so driver can run it, then pop and return result.
-    generateCallExtern(TyVoid, pushListOntoEvaluationStack, PaAddr(scaff->evaluator), PaAddr(list));
-
+    if (scaff->suspendBB != nullptr)
+        return scaff->coroutineHandle;
     scaff->suspendBB = BasicBlock::Create(*scaff->theContext, "suspend", scaff->theFunction);
     scaff->cleanupBB = BasicBlock::Create(*scaff->theContext, "cleanup", scaff->theFunction);
     // Coroutine frame: id -> size -> alloc -> begin
@@ -696,6 +695,15 @@ Value *Compiler::generateCallList(Value *list, RequestReturnType returnType)
         scaff->builder.CreateCall(coroBeginFn, {coroutineCallToken, coroutineAlloc}, DBG_NAME("handle")));
     coroBeginCall->addRetAttr(Attribute::NoAlias);
     scaff->coroutineHandle = coroBeginCall;
+    return scaff->coroutineHandle;
+}
+
+Value *Compiler::generateCallList(Value *list, RequestReturnType returnType)
+{
+    // Explicit control: push list onto evaluation stack, suspend so driver can run it, then pop and return result.
+    generateCallExtern(TyVoid, pushListOntoEvaluationStack, PaAddr(scaff->evaluator), PaAddr(list));
+
+    ensureCoroutineFrame();
 
     // Suspend point: llvm.coro.suspend(token none, i1 false) -> i8 (0=resume, 1=destroy, default=suspend)
     Function *coroSuspendFn = Intrinsic::getOrInsertDeclaration(scaff->theModule.get(), Intrinsic::coro_suspend);

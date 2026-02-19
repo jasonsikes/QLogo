@@ -105,6 +105,10 @@ class Compiler
     // Generate a void return value using the ASTNode to represent the source (for blame).
     llvm::Value *generateVoidRetval(const DatumPtr &node);
 
+    // Ensure coroutine frame exists (create once per function if needed). Returns handle; use before
+    // control flow that may take a path with no suspend so the handle is defined on all paths.
+    llvm::Value *ensureCoroutineFrame();
+
     // Generate a call to execute a list.
     llvm::Value *generateCallList(llvm::Value *list, RequestReturnType returnType);
 
