@@ -82,10 +82,6 @@ Value *Compiler::genIfelse(const DatumPtr &node, RequestReturnType returnType)
         // bool continues.
     }
 
-    // Ensure coroutine frame (and handle) exists in this block so it dominates both branches.
-    // Then the merge and suspend blocks can use the handle even when the else path (no suspend) is taken.
-    ensureCoroutineFrame();
-
     cond = scaff->builder.CreateICmpEQ(cond, CoBool(1), DBG_NAME("ifcond"));
     scaff->builder.CreateCondBr(cond, thenBB, elseBB);
 

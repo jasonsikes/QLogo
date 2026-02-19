@@ -242,6 +242,14 @@ BasicBlock *Compiler::generateTOC(QList<BasicBlock *> blocks, Function *theFunct
                                 ConstantInt::get(scaff->blockId->getType(), i)),
                             blocks[i]);
     }
+
+    // Coroutine prologue was inserted before the body entry; redirect it to Toc so execution
+    // goes CoroPrologue -> Toc -> body (or suspend).
+    if (scaff->coroPrologueBB)
+    {
+        llvm::BranchInst *prologueBr = llvm::cast<llvm::BranchInst>(scaff->coroPrologueBB->getTerminator());
+        prologueBr->setSuccessor(0, tocBlock);
+    }
     return tocBlock;
 }
 
@@ -677,6 +685,16 @@ Value *Compiler::ensureCoroutineFrame()
 {
     if (scaff->suspendBB != nullptr)
         return scaff->coroutineHandle;
+
+    // Emit the coroutine frame at the beginning of the function so it runs on every path (including
+    // paths that never suspend). Place it before the current entry block; if generateTOC runs later,
+    // it will redirect this prologue's branch to Toc.
+    BasicBlock *bodyEntry = &scaff->theFunction->getEntryBlock();
+    scaff->coroPrologueBB =
+        BasicBlock::Create(*scaff->theContext, "CoroPrologue", scaff->theFunction, bodyEntry);
+    BasicBlock *savedBlock = scaff->builder.GetInsertBlock();
+    scaff->builder.SetInsertPoint(scaff->coroPrologueBB);
+
     scaff->suspendBB = BasicBlock::Create(*scaff->theContext, "suspend", scaff->theFunction);
     scaff->cleanupBB = BasicBlock::Create(*scaff->theContext, "cleanup", scaff->theFunction);
     // Coroutine frame: id -> size -> alloc -> begin
@@ -695,6 +713,9 @@ Value *Compiler::ensureCoroutineFrame()
         scaff->builder.CreateCall(coroBeginFn, {coroutineCallToken, coroutineAlloc}, DBG_NAME("handle")));
     coroBeginCall->addRetAttr(Attribute::NoAlias);
     scaff->coroutineHandle = coroBeginCall;
+
+    scaff->builder.CreateBr(bodyEntry);
+    scaff->builder.SetInsertPoint(savedBlock);
     return scaff->coroutineHandle;
 }
 
