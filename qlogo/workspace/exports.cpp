@@ -357,7 +357,7 @@ EXPORTC void pushListOntoEvaluationStack(addr_t eAddr, addr_t listAddr)
     Kernel::get().pushListOntoEvaluationStack(DatumPtr(aList));
 }
 
-/// After a suspend that pushed a list, return the result of running that list and clear it.
+/// After a suspend that pushed a list, return the result of running that list.
 /// @param eAddr a pointer to the Evaluator object context.
 /// @return the result of the list execution.
 EXPORTC addr_t popEvaluationStackAndGetResult(addr_t eAddr)
@@ -365,6 +365,7 @@ EXPORTC addr_t popEvaluationStackAndGetResult(addr_t eAddr)
     auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     Datum *result = e->lastSubExecResult;
     e->lastSubExecResult = nullptr;
+    Q_ASSERT(result != nullptr);
     if (result != nullptr)
         e->watch(result);
     return reinterpret_cast<addr_t>(result);

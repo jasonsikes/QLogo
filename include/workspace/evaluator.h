@@ -40,7 +40,7 @@ struct NewEvaluator
     coroutine_handle_t handle = nullptr;
 
     /// @brief The return value of this evaluation.
-    Datum *retval = nullptr;
+    Datum *retval = Datum::notADatum();
 
     /// @brief Result of the most recently run sub-list (explicit control: push list, suspend, driver runs it, resume, pop).
     /// Used by popEvaluationStackAndGetResult() after a coroutine suspend/resume for RUN/list call.

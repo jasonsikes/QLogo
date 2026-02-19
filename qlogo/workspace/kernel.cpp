@@ -323,21 +323,25 @@ DatumPtr Kernel::runECE(const DatumPtr &listP)
     NewCallFrame *currentCallFrame = callFrameStack.top().get();
 
     currentCallFrame->evaluationStack.push(std::move(std::make_unique<NewEvaluator>(listP)));
-    NewEvaluator *baseEvaluator = currentCallFrame->topEvaluator();
-    bool isComplete = false;
 
-    while (!isComplete)
+    DatumPtr retval;
+
+    while (true)
     {
-        // For now just run the list and return the result.
         NewEvaluator *topEvaluator = currentCallFrame->topEvaluator();
+        // For now just run the list and return the result.
         if (topEvaluator->exec(0))
         {
+            retval = DatumPtr(topEvaluator->retval);
             currentCallFrame->evaluationStack.pop();
-            isComplete = currentCallFrame->evaluationStack.size() == 0;
+            if (currentCallFrame->evaluationStack.size() < 1)
+            {
+                break;
+            }
+            topEvaluator = currentCallFrame->topEvaluator();
+            topEvaluator->lastSubExecResult = retval.datumValue();
         }
     }
-
-    DatumPtr retval = DatumPtr(baseEvaluator->retval);
 
     callFrameStack.pop();
     return retval;
