@@ -67,7 +67,7 @@ Value *Compiler::genIfelse(const DatumPtr &node, RequestReturnType returnType)
     Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     BasicBlock *thenBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("then"), theFunction);
     BasicBlock *elseBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("else"), theFunction);
-    BasicBlock *mergeBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("ifcont"), theFunction);
+    BasicBlock *mergeBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("merge"), theFunction);
 
     Value *cond = children[0];
     Value *ift;
@@ -194,6 +194,7 @@ Value *Compiler::genRepeat(const DatumPtr &node, RequestReturnType returnType)
 
     scaff->builder.SetInsertPoint(whileBB);
     Value *result = generateCallList(list, RequestReturnDatum);
+    whileBB = scaff->builder.GetInsertBlock(); // Update the whileBB for the PHI since the call list changes the block.
     Value *resultType = generateGetDatumIsa(result);
     Value *mask = scaff->builder.CreateAnd(resultType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
     Value *cond = scaff->builder.CreateICmpEQ(mask, CoInt32(0), DBG_NAME("flowControlCond"));
