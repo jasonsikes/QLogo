@@ -37,7 +37,7 @@ struct NewEvaluator
 
     /// @brief The coroutine handle for this evaluation.
     /// @note Execution may resume until this value is nullptr.
-    coroutine_handle_t handle = nullptr;
+    LLVMCoroFrameHeader *handle = nullptr;
 
     /// @brief The return value of this evaluation.
     Datum *retval = Datum::notADatum();

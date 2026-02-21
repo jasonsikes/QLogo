@@ -33,7 +33,6 @@ NewEvaluator::~NewEvaluator()
 
 bool NewEvaluator::exec(int32_t jumpLocation)
 {
-    LLVMCoroFrameHeader *frame;
     if (handle == nullptr)
     {
         // Generate and execute the function. Might return a coroutine handle.
@@ -52,16 +51,14 @@ bool NewEvaluator::exec(int32_t jumpLocation)
             return true;
         }
         handle = fn((addr_t)this, (addr_t)&retval, jumpLocation, nullptr);
-        frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle);
     } else {
         // Resume using the frame's resume function.
-        frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle);
-        if (frame->resume != nullptr)
+        if (handle->resume != nullptr)
         {
-            frame->resume(handle);
+            handle->resume(handle);
         }
     }
-    return (handle == nullptr) || (frame->resume == nullptr);
+    return (handle == nullptr) || (handle->resume == nullptr);
 }
 
 void NewEvaluator::pushSublist(Datum *aList)
