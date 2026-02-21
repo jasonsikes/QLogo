@@ -40,7 +40,7 @@ bool NewEvaluator::exec(int32_t jumpLocation)
         if (list.listValue() == EmptyList::instance())
         {
             retval = Datum::notADatum();
-            return false;
+            return true;
         }
         try
         {
@@ -49,7 +49,7 @@ bool NewEvaluator::exec(int32_t jumpLocation)
         catch (FCError *e)
         {
             retval = e;
-            return false;
+            return true;
         }
         handle = fn((addr_t)this, (addr_t)&retval, jumpLocation, nullptr);
         frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle);
@@ -61,7 +61,7 @@ bool NewEvaluator::exec(int32_t jumpLocation)
             frame->resume(handle);
         }
     }
-    return (frame == nullptr) || (frame->resume == nullptr);
+    return (handle == nullptr) || (frame->resume == nullptr);
 }
 
 void NewEvaluator::pushSublist(Datum *aList)

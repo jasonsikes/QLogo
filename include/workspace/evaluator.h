@@ -63,7 +63,7 @@ struct NewEvaluator
 
     /// @brief Begin or resume execution of this list. Will return when execution is complete or suspended.
     /// @param jumpLocation The block number to start execution from when initiating execution.
-    /// @return true if execution is complete, false if suspended.
+    /// @return true if execution is complete, false if suspended and expected to resume.
     bool exec(int32_t jumpLocation = 0);
 
     /// @brief Push the given sublist onto the evaluation stack and prepare it for execution.
