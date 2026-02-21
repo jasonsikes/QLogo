@@ -278,6 +278,9 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
 
     BasicBlock *currentBlock = BasicBlock::Create(*scaff->theContext, "FirstBlock", scaff->theFunction);
 
+    // TODO: move this to the end of the function.
+    scaff->mainBailoutBB = BasicBlock::Create(*scaff->theContext, "MainBailout", scaff->theFunction);
+
     QList<BasicBlock *> blocks = {currentBlock};
     scaff->builder.SetInsertPoint(currentBlock);
 
@@ -1019,47 +1022,17 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
 void Compiler::generateReturn(Value *retval)
 {
     scaff->builder.CreateStore(retval, scaff->returnValueAddress);
-    if (scaff->coroutineHandlePhi)
-    {
-        BasicBlock *hasCoroBB = BasicBlock::Create(*scaff->theContext, "returnWithCoro", scaff->theFunction);
-        BasicBlock *noCoroBB = BasicBlock::Create(*scaff->theContext, "returnNoCoro", scaff->theFunction);
-        Value *hasHandle =
-            scaff->builder.CreateICmpNE(scaff->coroutineHandlePhi, ConstantPointerNull::get(TyAddr), DBG_NAME("hasHandle"));
-        scaff->builder.CreateCondBr(hasHandle, hasCoroBB, noCoroBB);
-
-        scaff->builder.SetInsertPoint(hasCoroBB);
-        scaff->builder.CreateStore(ConstantPointerNull::get(TyAddr), scaff->coroutineHandlePhi);
-        scaff->builder.CreateBr(scaff->suspendBB);
-
-        scaff->builder.SetInsertPoint(noCoroBB);
-        scaff->builder.CreateRet(ConstantPointerNull::get(TyAddr));
-
-        scaff->hasCoroBB = hasCoroBB;
-    }
-    else if (scaff->coroutineHandle)
-    {
-        scaff->builder.CreateStore(ConstantPointerNull::get(TyAddr), scaff->coroutineHandle);
-        scaff->builder.CreateBr(scaff->suspendBB);
-    }
-    else
-    {
-        // No coroutine frame: function never suspended. Return null (completed).
-        BasicBlock *mergeBlock = scaff->builder.GetInsertBlock();
-        if (!scaff->exitBB)
-        {
-            scaff->exitBB = BasicBlock::Create(*scaff->theContext, "exit", scaff->theFunction);
-            scaff->builder.SetInsertPoint(scaff->exitBB);
-            scaff->builder.CreateRet(ConstantPointerNull::get(TyAddr));
-            scaff->builder.SetInsertPoint(mergeBlock);
-        }
-        scaff->builder.CreateBr(scaff->exitBB);
-    }
+    scaff->builder.CreateBr(scaff->mainBailoutBB);
 }
 
 void Compiler::generateWrapup()
 {
+    scaff->builder.SetInsertPoint(scaff->mainBailoutBB);
+ 
     if (scaff->coroutineHandle)
     {
+        scaff->builder.CreateStore(ConstantPointerNull::get(TyAddr), scaff->coroutineHandle);
+        scaff->builder.CreateBr(scaff->suspendBB);
         // cleanup:
         scaff->builder.SetInsertPoint(scaff->cleanupBB);
         //   %mem = call ptr @llvm.coro.free(token %id, ptr %hdl)
@@ -1077,41 +1050,16 @@ void Compiler::generateWrapup()
         //   br label %suspend
         scaff->builder.CreateBr(scaff->suspendBB);
 
-        // suspend: may be reached from hasCoroBB (handle phi), cleanup.end, or switch
-        Value *handleForSuspend = scaff->coroutineHandle;
-        if (scaff->coroutineHandlePhi && scaff->hasCoroBB)
-        {
-            BasicBlock *suspendBB = scaff->suspendBB;
-            unsigned predCount = 0;
-            for ([[maybe_unused]] BasicBlock *pred : predecessors(suspendBB))
-                ++predCount;
-            PHINode *suspendHandlePhi =
-                PHINode::Create(scaff->coroutineHandle->getType(), predCount, DBG_NAME("suspendHandle"), suspendBB);
-            for (BasicBlock *pred : predecessors(suspendBB))
-            {
-                Value *incoming = (pred == scaff->hasCoroBB) ? scaff->coroutineHandlePhi : scaff->coroutineHandle;
-                suspendHandlePhi->addIncoming(incoming, pred);
-            }
-            handleForSuspend = suspendHandlePhi;
-            scaff->coroutineHandlePhi = nullptr;
-            scaff->hasCoroBB = nullptr;
-        }
-
         scaff->builder.SetInsertPoint(scaff->suspendBB);
         //   call i1 @llvm.coro.end(ptr %hdl, i1 false, token none)  -- result unused; intrinsic returns i1 in current LLVM
         Function *coroEndFn = Intrinsic::getOrInsertDeclaration(scaff->theModule.get(), Intrinsic::coro_end);
-        scaff->builder.CreateCall(coroEndFn, {handleForSuspend, CoBool(false), ConstantTokenNone::get(*scaff->theContext)}, DBG_NAME("end"));
+        scaff->builder.CreateCall(coroEndFn, {scaff->coroutineHandle, CoBool(false), ConstantTokenNone::get(*scaff->theContext)}, DBG_NAME("end"));
         //   ret ptr %hdl
-        scaff->builder.CreateRet(handleForSuspend);
+        scaff->builder.CreateRet(scaff->coroutineHandle);
     }
     else
     {
-        // No coroutine frame: emit ret in exit block if not already present.
-        if (scaff->exitBB && !scaff->exitBB->getTerminator())
-        {
-            scaff->builder.SetInsertPoint(scaff->exitBB);
-            scaff->builder.CreateRet(ConstantPointerNull::get(TyAddr));
-        }
+        scaff->builder.CreateRet(ConstantPointerNull::get(TyAddr));
     }
 }
 

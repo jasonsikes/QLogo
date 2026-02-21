@@ -73,17 +73,12 @@ struct Scaffold
     llvm::BasicBlock *suspendBB = nullptr;
     llvm::BasicBlock *cleanupBB = nullptr;
 
-    // When coroutineHandle is null (no coroutine frame), returns go here and we ret null.
-    llvm::BasicBlock *exitBB = nullptr;
+    // The main bailout block. All "bailout" operations should branch here.
+    // Note: be sure to store the return value in the return value address.
+    llvm::BasicBlock *mainBailoutBB = nullptr;
 
     // The coroutine handle for the compiled function, created at the beginning and returned at the end.
     llvm::Value *coroutineHandle = nullptr;
-
-    // When set, a phi merging (coroutineHandle, null) for control flow paths where one branch
-    // (e.g. if/else) has no coroutine. generateReturn uses this to branch correctly.
-    llvm::Value *coroutineHandlePhi = nullptr;
-
-    llvm::BasicBlock *hasCoroBB = nullptr;
 
     // The coroutine id token from llvm.coro.id, needed in cleanup for llvm.coro.free.
     llvm::Value *coroutineToken = nullptr;
