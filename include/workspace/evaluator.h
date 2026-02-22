@@ -91,7 +91,7 @@ struct NewEvaluator
     /// @return the given pointer (pass-through).
     Datum *watch(const DatumPtr &);
 
-    /// @brief Returns TRUE if CASEIGNOREDP is TRUE
+    /// @brief Returns TRUE if CASEIGNOREDP is TRUE, otherwise FALSE.
     bool varCASEIGNOREDP();
 
     NewEvaluator() = delete;

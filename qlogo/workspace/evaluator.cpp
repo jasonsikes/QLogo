@@ -112,13 +112,13 @@ Datum *NewEvaluator::watch(Datum *d)
 
 bool NewEvaluator::varCASEIGNOREDP()
 {
-    // QString name = QObject::tr("CASEIGNOREDP");
-    // DatumPtr val = Kernel::get().callStack.datumForName(name);
-    // bool retval = false;
-    // if (val.isWord())
-    // {
-    //     QString word = val.toString(Datum::ToStringFlags_Key);
-    //     retval = word == QObject::tr("TRUE");
-    // }
-    // return retval;
+    QString name = QObject::tr("CASEIGNOREDP");
+    DatumPtr val = Kernel::get().datumForName(name);
+    bool retval = false;
+    if (val.isWord())
+    {
+        QString word = val.toString(Datum::ToStringFlags_Key);
+        retval = word == QObject::tr("TRUE");
+    }
+    return retval;
 }
