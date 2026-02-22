@@ -662,8 +662,8 @@ EXPORTC addr_t getFormForNumber(addr_t eAddr, double num, int32_t width, int32_t
 /// @brief return the address of the repcount variable.
 EXPORTC addr_t repcountAddr(void)
 {
-    // void *retval = &Kernel::get().callStack.repcount;
-    // return (addr_t)retval;
+    void *retval = &Kernel::get().repcount;
+    return (addr_t)retval;
 }
 
 EXPORTC addr_t beginCatch(void)
