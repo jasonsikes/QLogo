@@ -254,10 +254,10 @@ EXPORTC bool getValidityOfBoolForDatum(addr_t eAddr, addr_t datumAddr)
 /// @return the stored value as a QLogo object
 EXPORTC addr_t getDatumForVarname(addr_t wordAddr)
 {
-    auto name = reinterpret_cast<Word *>(wordAddr)->toString(Datum::ToStringFlags_Key);
-    Datum *val = Kernel::get().callStack.datumForName(name).datumValue();
+    // auto name = reinterpret_cast<Word *>(wordAddr)->toString(Datum::ToStringFlags_Key);
+    // Datum *val = Kernel::get().callStack.datumForName(name).datumValue();
 
-    return reinterpret_cast<addr_t>(val);
+    // return reinterpret_cast<addr_t>(val);
 }
 
 /// Write a Datum object to the standard output device.
@@ -326,9 +326,9 @@ EXPORTC addr_t getWordForBool(addr_t eAddr, bool val)
 /// @param wordAddr a pointer to a Word object which contains the name of the variable
 EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr)
 {
-    auto d = DatumPtr(reinterpret_cast<Datum *>(datumAddr));
-    auto *w = reinterpret_cast<Word *>(wordAddr);
-    Kernel::get().callStack.setDatumForName(d, w->toString(Datum::ToStringFlags_Key));
+    // auto d = DatumPtr(reinterpret_cast<Datum *>(datumAddr));
+    // auto *w = reinterpret_cast<Word *>(wordAddr);
+    // Kernel::get().callStack.setDatumForName(d, w->toString(Datum::ToStringFlags_Key));
 }
 
 /// Run the given list. Output whatever the list outputs.
@@ -662,65 +662,65 @@ EXPORTC addr_t getFormForNumber(addr_t eAddr, double num, int32_t width, int32_t
 /// @brief return the address of the repcount variable.
 EXPORTC addr_t repcountAddr(void)
 {
-    void *retval = &Kernel::get().callStack.repcount;
-    return (addr_t)retval;
+    // void *retval = &Kernel::get().callStack.repcount;
+    // return (addr_t)retval;
 }
 
 EXPORTC addr_t beginCatch(void)
 {
-    auto *erractWord = reinterpret_cast<Word *>(Kernel::get().specialVar(SpecialNames::ERRACT));
-    Datum *erractValue =
-        Kernel::get().callStack.datumForName(erractWord->toString(Datum::ToStringFlags_Key)).datumValue();
+    // auto *erractWord = reinterpret_cast<Word *>(Kernel::get().specialVar(SpecialNames::ERRACT));
+    // Datum *erractValue =
+    //     Kernel::get().callStack.datumForName(erractWord->toString(Datum::ToStringFlags_Key)).datumValue();
 
-    // Save the erract value.
-    if (erractValue->isa != Datum::typeNothing)
-    {
-        erractValue->retainCount++;
-        Kernel::get().callStack.setDatumForName(nothing(), erractWord->toString(Datum::ToStringFlags_Key));
-    }
-    return reinterpret_cast<addr_t>(erractValue);
+    // // Save the erract value.
+    // if (erractValue->isa != Datum::typeNothing)
+    // {
+    //     erractValue->retainCount++;
+    //     Kernel::get().callStack.setDatumForName(nothing(), erractWord->toString(Datum::ToStringFlags_Key));
+    // }
+    // return reinterpret_cast<addr_t>(erractValue);
 }
 
 EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t resultAddr, addr_t tagAddr)
 {
-    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
-    auto *erractWord = reinterpret_cast<Word *>(Kernel::get().specialVar(SpecialNames::ERRACT));
-    auto *erractValue = reinterpret_cast<Datum *>(errActAddr);
-    auto *result = reinterpret_cast<Datum *>(resultAddr);
-    auto *tag = reinterpret_cast<Word *>(tagAddr);
+    // auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
+    // auto *erractWord = reinterpret_cast<Word *>(Kernel::get().specialVar(SpecialNames::ERRACT));
+    // auto *erractValue = reinterpret_cast<Datum *>(errActAddr);
+    // auto *result = reinterpret_cast<Datum *>(resultAddr);
+    // auto *tag = reinterpret_cast<Word *>(tagAddr);
 
-    // Restore the erract value.
-    if (erractValue->isa != Datum::typeNothing)
-    {
-        DatumPtr erractValuePtr = DatumPtr(erractValue);
-        Kernel::get().callStack.setDatumForName(erractValuePtr, erractWord->toString(Datum::ToStringFlags_Key));
-        erractValue->retainCount--;
-    }
+    // // Restore the erract value.
+    // if (erractValue->isa != Datum::typeNothing)
+    // {
+    //     DatumPtr erractValuePtr = DatumPtr(erractValue);
+    //     Kernel::get().callStack.setDatumForName(erractValuePtr, erractWord->toString(Datum::ToStringFlags_Key));
+    //     erractValue->retainCount--;
+    // }
 
-    if (result->isa == Datum::typeError)
-    {
-        auto *err = reinterpret_cast<FCError *>(result);
-        QString tagStr = tag->toString(Datum::ToStringFlags_Key);
+    // if (result->isa == Datum::typeError)
+    // {
+    //     auto *err = reinterpret_cast<FCError *>(result);
+    //     QString tagStr = tag->toString(Datum::ToStringFlags_Key);
 
-        if ((tagStr == QObject::tr("ERROR")) &&
-            (((err->code == ErrCode::ERR_NO_CATCH) &&
-                 (err->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("ERROR"))) ||
-             (err->code != ErrCode::ERR_NO_CATCH)))
-        {
-            e->watch(err);
-            return nodeAddr;
-        }
-        else if ((err->code == ErrCode::ERR_NO_CATCH) && (err->tag().toString(Datum::ToStringFlags_Key) == tagStr))
-        {
-            e->watch(err);
-            auto retval = reinterpret_cast<addr_t>(err->output().datumValue());
-            Kernel::get().currentError = nothing();
-            return retval;
-        }
-        return resultAddr;
-    }
+    //     if ((tagStr == QObject::tr("ERROR")) &&
+    //         (((err->code == ErrCode::ERR_NO_CATCH) &&
+    //              (err->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("ERROR"))) ||
+    //          (err->code != ErrCode::ERR_NO_CATCH)))
+    //     {
+    //         e->watch(err);
+    //         return nodeAddr;
+    //     }
+    //     else if ((err->code == ErrCode::ERR_NO_CATCH) && (err->tag().toString(Datum::ToStringFlags_Key) == tagStr))
+    //     {
+    //         e->watch(err);
+    //         auto retval = reinterpret_cast<addr_t>(err->output().datumValue());
+    //         Kernel::get().currentError = nothing();
+    //         return retval;
+    //     }
+    //     return resultAddr;
+    // }
 
-    return reinterpret_cast<addr_t>(result);
+    // return reinterpret_cast<addr_t>(result);
 }
 
 EXPORTC addr_t getCurrentError(addr_t eAddr)
@@ -785,17 +785,17 @@ EXPORTC addr_t processRunresult(addr_t eAddr, addr_t resultAddr)
 
 EXPORTC void saveTestResult(bool tf)
 {
-    Kernel::get().callStack.setTest(tf);
+    // Kernel::get().callStack.setTest(tf);
 }
 
 EXPORTC bool getIsTested(void)
 {
-    return Kernel::get().callStack.isTested();
+    // return Kernel::get().callStack.isTested();
 }
 
 EXPORTC bool getTestResult(void)
 {
-    return Kernel::get().callStack.testedState();
+    // return Kernel::get().callStack.testedState();
 }
 
 /// Compare a Datum with a bool.
@@ -1975,18 +1975,18 @@ EXPORTC double getMouseButton(void)
 /// 2 b. The value is a list AND the list is not empty.
 EXPORTC bool getvarErroract(void)
 {
-    QString name = QObject::tr("ERRACT");
-    DatumPtr val = Kernel::get().callStack.datumForName(name);
-    if (val.isWord())
-    {
-        QString word = val.toString(Datum::ToStringFlags_Key);
-        return (word != "FALSE") && (word != "");
-    }
-    if (val.isList())
-    {
-        return !val.listValue()->isEmpty();
-    }
-    return false;
+    // QString name = QObject::tr("ERRACT");
+    // DatumPtr val = Kernel::get().callStack.datumForName(name);
+    // if (val.isWord())
+    // {
+    //     QString word = val.toString(Datum::ToStringFlags_Key);
+    //     return (word != "FALSE") && (word != "");
+    // }
+    // if (val.isList())
+    // {
+    //     return !val.listValue()->isEmpty();
+    // }
+    // return false;
 }
 
 /// @brief input a procedure using the system read stream.
@@ -1995,29 +1995,29 @@ EXPORTC bool getvarErroract(void)
 /// @return ASTNode on success, else Err.
 EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
 {
-    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
-    auto *node = reinterpret_cast<ASTNode *>(nodeAddr);
-    const CallFrame *currentFrame = Kernel::get().callStack.localFrame();
-    DatumPtr currentProc = currentFrame->sourceNode;
-    if (currentProc.isASTNode())
-    {
-        FCError *err = FCError::toInProc(node->nodeName);
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
+    // auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
+    // auto *node = reinterpret_cast<ASTNode *>(nodeAddr);
+    // const CallFrame *currentFrame = Kernel::get().callStack.localFrame();
+    // DatumPtr currentProc = currentFrame->sourceNode;
+    // if (currentProc.isASTNode())
+    // {
+    //     FCError *err = FCError::toInProc(node->nodeName);
+    //     e->watch(err);
+    //     return reinterpret_cast<addr_t>(err);
+    // }
 
-    Datum *retval = Kernel::get().inputProcedure(node);
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
+    // Datum *retval = Kernel::get().inputProcedure(node);
+    // e->watch(retval);
+    // return reinterpret_cast<addr_t>(retval);
 }
 
 // TODO: Should the executor be passed in here instead of getting the local frame from the call stack?
 EXPORTC void setVarAsLocal(addr_t varname)
 {
-    auto *varName = reinterpret_cast<Word *>(varname);
-    QString varNameStr = varName->toString(Datum::ToStringFlags_Key);
-    CallFrame *currentFrame = Kernel::get().callStack.localFrame();
-    currentFrame->setVarAsLocal(varNameStr);
+    // auto *varName = reinterpret_cast<Word *>(varname);
+    // QString varNameStr = varName->toString(Datum::ToStringFlags_Key);
+    // CallFrame *currentFrame = Kernel::get().callStack.localFrame();
+    // currentFrame->setVarAsLocal(varNameStr);
 }
 
 /// @brief Handle a bad double value. If ERRACT is set, call PAUSE. Otherwise, return an error.

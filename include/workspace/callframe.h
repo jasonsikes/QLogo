@@ -143,6 +143,7 @@ struct NewCallFrame
 /// of a procedure. The first of the list is the 'top' call frame. That is,
 /// new frames are pushed to the front of the stack, and the oldest, 'global'
 /// frame is the last element of the list.
+/*
 struct CallFrameStack
 {
     /// @brief The call frame stack.
@@ -240,10 +241,12 @@ struct CallFrameStack
     CallFrameStack &operator=(const CallFrameStack &) = delete;
     CallFrameStack &operator=(CallFrameStack &&) = delete;
 };
+*/
 
 /// @brief The CallFrame object holds the state of execution of a procedure (or REPL).
 /// @note The state includes named variables, anonymous variables (explicit slot, or
 /// "?"), and the test state (for TEST, IFTRUE, IFFALSE).
+/*
 struct CallFrame
 {
     /// @brief A pointer to the call frame stack.
@@ -319,7 +322,7 @@ struct CallFrame
     /// @param aFrameStack A pointer to the call frame stack.
     /// @param aSourceNode The ASTNode source of this running procedure. 'nothing'
     /// is reserved for the global frame or PAUSE.
-    CallFrame(CallFrameStack &aFrameStack, const DatumPtr &aSourceNode = nothing())
+    CallFrame(const DatumPtr &aSourceNode = nothing())
         : frameStack(aFrameStack), sourceNode(aSourceNode)
     {
         frameStack.stack.push_front(this);
@@ -336,5 +339,6 @@ struct CallFrame
     CallFrame &operator=(const CallFrame &) = delete;
     CallFrame &operator=(CallFrame &&) = delete;
 };
+*/
 
 #endif // CALLFRAME_H

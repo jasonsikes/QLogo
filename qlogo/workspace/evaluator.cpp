@@ -92,10 +92,10 @@ void NewEvaluator::pushSublist(Datum *aList)
 
 Datum *NewEvaluator::procedureExec(ASTNode *node, Datum **paramAry, uint32_t paramCount)
 {
-    CallFrameStack &frameStack = Kernel::get().callStack;
-    CallFrame frame(frameStack, DatumPtr(node));
+    // CallFrameStack &frameStack = Kernel::get().callStack;
+    // CallFrame frame(frameStack, DatumPtr(node));
 
-    return frame.exec(paramAry, paramCount);
+    // return frame.exec(paramAry, paramCount);
 }
 
 Datum *NewEvaluator::watch(const DatumPtr &d)
@@ -112,13 +112,13 @@ Datum *NewEvaluator::watch(Datum *d)
 
 bool NewEvaluator::varCASEIGNOREDP()
 {
-    QString name = QObject::tr("CASEIGNOREDP");
-    DatumPtr val = Kernel::get().callStack.datumForName(name);
-    bool retval = false;
-    if (val.isWord())
-    {
-        QString word = val.toString(Datum::ToStringFlags_Key);
-        retval = word == QObject::tr("TRUE");
-    }
-    return retval;
+    // QString name = QObject::tr("CASEIGNOREDP");
+    // DatumPtr val = Kernel::get().callStack.datumForName(name);
+    // bool retval = false;
+    // if (val.isWord())
+    // {
+    //     QString word = val.toString(Datum::ToStringFlags_Key);
+    //     retval = word == QObject::tr("TRUE");
+    // }
+    // return retval;
 }

@@ -95,7 +95,7 @@ class Kernel
     ~Kernel();
 
     /// @brief The OLD procedure frame stack
-    CallFrameStack callStack;
+    // CallFrameStack callStack;
 
     /// @brief The call frame stack.
     /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.

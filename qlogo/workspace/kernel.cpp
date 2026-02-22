@@ -279,10 +279,10 @@ void Kernel::initVariables()
     DatumPtr trueDatumPtr(QObject::tr("true"));
     DatumPtr commandLine = builder.finishedList();
 
-    callStack.setDatumForName(commandLine, QObject::tr("COMMANDLINE"));
-    callStack.setDatumForName(platform, QObject::tr("LOGOPLATFORM"));
-    callStack.setDatumForName(version, QObject::tr("LOGOVERSION"));
-    callStack.setDatumForName(trueDatumPtr, QObject::tr("ALLOWGETSET"));
+    // callStack.setDatumForName(commandLine, QObject::tr("COMMANDLINE"));
+    // callStack.setDatumForName(platform, QObject::tr("LOGOPLATFORM"));
+    // callStack.setDatumForName(version, QObject::tr("LOGOVERSION"));
+    // callStack.setDatumForName(trueDatumPtr, QObject::tr("ALLOWGETSET"));
     // TODO: Bury these variables:
     // "LOGOPLATFORM"
     // "LOGOVERSION"
@@ -298,10 +298,6 @@ Kernel::Kernel()
     writeStream = stdioStream;
     systemWriteStream = stdioStream;
 
-    // callStack holds a pointer to the new frame so that the new CallFrame object will be
-    // deleted when the Kernel is deleted.
-    new CallFrame(callStack);
-
     initVariables();
     initPalette();
 
@@ -313,8 +309,8 @@ Kernel::~Kernel()
 {
     closeAll();
 
-    Q_ASSERT(callStack.size() == 1);
-    callStack.stack.removeLast();
+    Q_ASSERT(callFrameStack.size() == 0);
+    // callFrameStack.pop();
 }
 
 DatumPtr Kernel::runECE(const DatumPtr &listP)
@@ -369,28 +365,29 @@ Datum *Kernel::specialVar(SpecialNames name) const
 
 DatumPtr Kernel::pause()
 {
-    if (isPausing)
-    {
-        sysPrint(QObject::tr("Already Pausing\n"));
-        return nothing();
-    }
+    // if (isPausing)
+    // {
+    //     sysPrint(QObject::tr("Already Pausing\n"));
+    //     return nothing();
+    // }
 
-    isPausing = true;
-    DatumPtr sourceNode = callStack.localFrame()->sourceNode;
-    QString sourceNodeName;
-    if (sourceNode.isASTNode())
-    {
-        sourceNodeName = sourceNode.astnodeValue()->nodeName.toString();
-    }
+    // isPausing = true;
+    // DatumPtr sourceNode = callStack.localFrame()->sourceNode;
+    // QString sourceNodeName;
+    // if (sourceNode.isASTNode())
+    // {
+    //     sourceNodeName = sourceNode.astnodeValue()->nodeName.toString();
+    // }
 
-    CallFrame frame(callStack, nothing());
+    // CallFrame frame(callStack, nothing());
 
-    sysPrint(QObject::tr("Pausing...\n"));
+    // sysPrint(QObject::tr("Pausing...\n"));
 
-    DatumPtr result = readEvalPrintLoop(true, sourceNodeName);
+    // DatumPtr result = readEvalPrintLoop(true, sourceNodeName);
 
-    isPausing = false;
-    return result;
+    // isPausing = false;
+    // return result;
+    return nothing();
 }
 
 QString Kernel::filepathForFilename(const DatumPtr &filenameP) const
