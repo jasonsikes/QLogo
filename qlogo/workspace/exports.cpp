@@ -254,10 +254,10 @@ EXPORTC bool getValidityOfBoolForDatum(addr_t eAddr, addr_t datumAddr)
 /// @return the stored value as a QLogo object
 EXPORTC addr_t getDatumForVarname(addr_t wordAddr)
 {
-    // auto name = reinterpret_cast<Word *>(wordAddr)->toString(Datum::ToStringFlags_Key);
-    // Datum *val = Kernel::get().callStack.datumForName(name).datumValue();
+    auto name = reinterpret_cast<Word *>(wordAddr)->toString(Datum::ToStringFlags_Key);
+    Datum *val = Kernel::get().datumForName(name).datumValue();
 
-    // return reinterpret_cast<addr_t>(val);
+    return reinterpret_cast<addr_t>(val);
 }
 
 /// Write a Datum object to the standard output device.
@@ -326,9 +326,9 @@ EXPORTC addr_t getWordForBool(addr_t eAddr, bool val)
 /// @param wordAddr a pointer to a Word object which contains the name of the variable
 EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr)
 {
-    // auto d = DatumPtr(reinterpret_cast<Datum *>(datumAddr));
-    // auto *w = reinterpret_cast<Word *>(wordAddr);
-    // Kernel::get().callStack.setDatumForName(d, w->toString(Datum::ToStringFlags_Key));
+    auto d = DatumPtr(reinterpret_cast<Datum *>(datumAddr));
+    auto *w = reinterpret_cast<Word *>(wordAddr);
+    Kernel::get().setDatumForName(d, w->toString(Datum::ToStringFlags_Key));
 }
 
 /// Run the given list. Output whatever the list outputs.

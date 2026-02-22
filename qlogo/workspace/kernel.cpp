@@ -279,16 +279,52 @@ void Kernel::initVariables()
     DatumPtr trueDatumPtr(QObject::tr("true"));
     DatumPtr commandLine = builder.finishedList();
 
-    // callStack.setDatumForName(commandLine, QObject::tr("COMMANDLINE"));
-    // callStack.setDatumForName(platform, QObject::tr("LOGOPLATFORM"));
-    // callStack.setDatumForName(version, QObject::tr("LOGOVERSION"));
-    // callStack.setDatumForName(trueDatumPtr, QObject::tr("ALLOWGETSET"));
+    setDatumForName(commandLine, QObject::tr("COMMANDLINE"));
+    setDatumForName(platform, QObject::tr("LOGOPLATFORM"));
+    setDatumForName(version, QObject::tr("LOGOVERSION"));
+    setDatumForName(trueDatumPtr, QObject::tr("ALLOWGETSET"));
     // TODO: Bury these variables:
     // "LOGOPLATFORM"
     // "LOGOVERSION"
     // "ALLOWGETSET"
     // "COMMANDLINE"
 }
+
+void Kernel::eraseVar(const QString &name)
+{
+    variables.remove(name);
+}
+
+void Kernel::setDatumForName(const DatumPtr &aDatum, const QString &name)
+{
+    variables.insert(name, aDatum);
+}
+
+DatumPtr Kernel::datumForName(const QString &name) const
+{
+    auto result = variables.find(name);
+    if (result != variables.end())
+    {
+        return *result;
+    }
+    return nothing();
+}
+
+bool Kernel::doesExist(const QString &name) const
+{
+    return variables.contains(name);
+}
+
+DatumPtr Kernel::allVariables() const
+{
+    ListBuilder builder;
+    for (auto &varname : variables.keys())
+    {
+        builder.append(DatumPtr(varname));
+    }
+    return builder.finishedList();
+}
+
 
 Kernel::Kernel()
 {
@@ -310,7 +346,6 @@ Kernel::~Kernel()
     closeAll();
 
     Q_ASSERT(callFrameStack.size() == 0);
-    // callFrameStack.pop();
 }
 
 DatumPtr Kernel::runECE(const DatumPtr &listP)

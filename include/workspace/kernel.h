@@ -88,29 +88,63 @@ class Kernel
         return instance;
     }
 
-    /// @brief The current error, if any.
-    DatumPtr currentError;
-
     /// @brief Destructor.
     ~Kernel();
 
-    /// @brief The OLD procedure frame stack
-    // CallFrameStack callStack;
+    /************ call frame stack ************/
 
     /// @brief The call frame stack.
     /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.
     std::stack<std::unique_ptr<NewCallFrame>> callFrameStack;
-
 
     /// @brief Push a list to be evaluated onto the evaluation stack.
     /// @param listP The list to add to the evaluation stack.
     /// @note The list and its evaluator will be removed when the evaluation is complete.
     void pushListOntoEvaluationStack(const DatumPtr &listP);
 
+    /************ variables ************/
+
+    /// @brief The variables hash.
+    QHash<QString, DatumPtr> variables;
+
+    // SPECIAL VARIABLES
+    Datum *specialVar(SpecialNames name) const;
+
+    /// @brief Set a value for a variable.
+    /// @param aDatum The value to store.
+    /// @param name The name of the variable to set.
+    void setDatumForName(const DatumPtr &aDatum, const QString &name);
+
+    /// @brief Return the value of a variable.
+    /// @param name The name of the variable to search for.
+    /// @return The stored value associated with 'name' or 'nothing' if the variable is not found.
+    DatumPtr datumForName(const QString &name) const;
+
+    /// @brief Return true if value keyed by name exists in the variables hash.
+    /// @param name The name of the variable to search for.
+    /// @return True if the variable exists, false otherwise.
+    bool doesExist(const QString &name) const;
+
+    /// @brief Erase name and its value from the variables hash.
+    /// @param name The name of the variable to erase.
+    void eraseVar(const QString &name);
+
+    /// @brief Return a list of all variables defined.
+    /// @return A list of all variables defined.
+    DatumPtr allVariables() const;
+
+    /// @brief Repcount is for use in looping functions (e.g. REPEAT)
+    double repcount = -1;
+
+    /************ miscellaneous ************/
+
     /// @brief The palette of colors.
     /// @details The first 16 colors [0-15] are the standard Logo colors. The first 8
     /// are immutable. The rest [8-100] are user-assignable.
     QVector<QColor> palette;
+
+    /// @brief The current error, if any.
+    DatumPtr currentError;
 
     /// @brief READ a line of input, EVALUATE it, PRINT the result, LOOP.
     /// @param isPausing Whether we are in a PAUSE loop.
@@ -151,8 +185,6 @@ class Kernel
     /// @return The filepath for the filename with the current file prefix.
     QString filepathForFilename(const DatumPtr &filenameP) const;
 
-    // SPECIAL VARIABLES
-    Datum *specialVar(SpecialNames name) const;
 
     /// @brief Perform pause, essentially a REPL loop.
     /// @return The value passed to CONTINUE, if any.

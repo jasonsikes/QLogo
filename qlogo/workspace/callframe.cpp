@@ -29,36 +29,26 @@
 
 
 
-
-
-// CallFrame methods
-
 NewCallFrame::~NewCallFrame()
 {
-    // for (auto iter = localVars.begin(); iter != localVars.end(); ++iter)
-    // {
-    //     const DatumPtr &value = iter.value();
-    //     if (value.isNothing())
-    //     {
-    //         Kernel::get().callStack.eraseVar(iter.key());
-    //     }
-    //     else
-    //     {
-    //         Kernel::get().callStack.setDatumForName(value, iter.key());
-    //     }
-    // }
+    for (auto iter = localVars.begin(); iter != localVars.end(); ++iter)
+    {
+        if (iter.value().isNothing())
+        {
+            Kernel::get().eraseVar(iter.key());
+        }
+        else
+        {
+            Kernel::get().setDatumForName(iter.value(), iter.key());
+        }
+    }
 }
 
 void NewCallFrame::setVarAsLocal(const QString &name)
 {
-    // DatumPtr originalValue = Kernel::get().callStack.datumForName(name);
-    // localVars.insert(name, originalValue);
-    // Kernel::get().callStack.setDatumForName(nothing(), name);
-}
-
-void NewCallFrame::setValueForName(const DatumPtr &value, const QString &name)
-{
-    // Kernel::get().callStack.setDatumForName(value, name);
+    DatumPtr originalValue = Kernel::get().datumForName(name);
+    localVars.insert(name, originalValue);
+    Kernel::get().setDatumForName(nothing(), name);
 }
 
 Datum *NewCallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount)
@@ -77,7 +67,7 @@ Datum *NewCallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount)
         Q_ASSERT(paramIndex < paramCount);
         setVarAsLocal(inputName);
         DatumPtr value(*(paramAry + paramIndex));
-        setValueForName(value, inputName);
+        Kernel::get().setDatumForName(value, inputName);
         paramIndex++;
     }
 
@@ -105,7 +95,7 @@ Datum *NewCallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount)
             }
         }
         setVarAsLocal(name);
-        setValueForName(value, name);
+        Kernel::get().setDatumForName(value, name);
         paramIndex++;
     }
 
@@ -121,7 +111,7 @@ Datum *NewCallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount)
         }
         setVarAsLocal(name);
         DatumPtr restList = builder.finishedList();
-        setValueForName(restList, name);
+        Kernel::get().setDatumForName(restList, name);
     }
     return nullptr;
 }
@@ -279,41 +269,6 @@ Datum *NewCallFrame::bodyExec()
 
 
 /*
-void CallFrameStack::setDatumForName(const DatumPtr &aDatum, const QString &name)
-{
-    variables.insert(name, aDatum);
-}
-
-DatumPtr CallFrameStack::datumForName(const QString &name) const
-{
-    auto result = variables.find(name);
-    if (result != variables.end())
-    {
-        return *result;
-    }
-    return nothing();
-}
-
-bool CallFrameStack::doesExist(const QString &name) const
-{
-    return variables.contains(name);
-}
-
-DatumPtr CallFrameStack::allVariables() const
-{
-    ListBuilder builder;
-    for (auto &varname : variables.keys())
-    {
-        builder.append(DatumPtr(varname));
-    }
-    return builder.finishedList();
-}
-
-void CallFrameStack::eraseVar(const QString &name)
-{
-    variables.remove(name);
-}
-
 void CallFrameStack::setTest(bool isTrue)
 {
     Q_ASSERT(stack.size() > 0);
