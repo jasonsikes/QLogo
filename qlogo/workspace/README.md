@@ -6,7 +6,7 @@ This directory contains the supporting components of the QLogo workspace functio
 
 ### callframe.cpp
 
-Contains the implementations for `CallFrame` and `Evaluator` structures. These are for managing the QLogo variables and evaluation stack for QLogo procedures.
+Contains the implementations for `CallFrame` structure. This is for managing QLogo variables and the procedure stack for QLogo procedures.
 
 ### exports.cpp
 

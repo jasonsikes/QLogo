@@ -83,8 +83,8 @@ struct NewEvaluator
     /// Among other things, the DatumPtr acts like std::shared_ptr. As long as there exists at least one DatumPtr
     /// pointing to a Datum, the Datum will not be deleted. In compiled code, we use the watch function to add a Datum
     /// to the release pool. The release pool acts as an array of DatumPtrs. When the Evaluator is destroyed, it will
-    /// iterate through the release pool and decrement the retain count of each Datum. If any retain count reaches 0,
-    /// the Datum will be deleted.
+    /// iterate through the release pool and decrement the retain count of each Datum that is not the return value.
+    ///  If any retain count reaches 0, the Datum will be deleted.
     Datum *watch(Datum *);
 
     /// @brief Add a Datum to the release pool
