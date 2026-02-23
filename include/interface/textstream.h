@@ -27,13 +27,13 @@ class TextStream
 {
     // Keep the most recent history in case it's needed as source material.
     // (This is a List of RawLines.)
-    QList<DatumPtr> recentLineHistory;
+    QList<DatumPtr> recentLineHistory_;
 
     // Clear the recent Line History.
     void clearLineHistory();
 
     // The stream source/destination. If nullptr then use standard Input and Output.
-    QTextStream *stream;
+    QTextStream *stream_;
 
     // The work of List/Array reading is done here. Will call itself to process
     // sublists and subarrays.
@@ -61,8 +61,8 @@ class TextStream
     DatumPtr handleDelimiterResult(DelimiterResult result, ListBuilder &builder);
 
     // The current source word for string parsing.
-    QString listSourceWord;
-    QString::iterator listSourceWordIter;
+    QString listSourceWord_;
+    QString::iterator listSourceWordIter_;
 
   public:
     /// @brief Create a TextStream object using a QTextStream as source/destination.

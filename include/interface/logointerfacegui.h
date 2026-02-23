@@ -35,49 +35,49 @@ class QTransform;
 /// QLogo-GUI terminal application.
 class LogoInterfaceGUI : public LogoInterface
 {
-    InputQueue messageQueue;
+    InputQueue messageQueue_;
     message_t getMessage();
     void waitForMessage(message_t expectedType);
 
     // Return values from getMessage()
-    QString rawLine;
-    QChar rawChar;
+    QString rawLine_;
+    QChar rawChar_;
 
-    QString filePath;
+    QString filePath_;
 
-    int cursorRow;
-    int cursorCol;
+    int cursorRow_;
+    int cursorCol_;
 
     // cursorModeIsOverwrite is true if the cursor overwrites previously-written text, false if the cursor inserts text.
-    bool cursorModeIsOverwrite = false;
+    bool cursorModeIsOverwrite_ = false;
 
     // Text returned from editor winow
-    QString editorText;
+    QString editorText_;
 
-    double penSize;
+    double penSize_;
 
-    double xbound = Config::get().initialBoundX;
-    double ybound = Config::get().initialBoundY;
-    bool canvasIsBounded = true;
+    double xbound_ = Config::get().initialBoundX;
+    double ybound_ = Config::get().initialBoundY;
+    bool canvasIsBounded_ = true;
 
-    QVector2D mousePos = QVector2D(0, 0);
-    QVector2D clickPos = QVector2D(0, 0);
-    int lastButtonpressID = 0;
-    bool isMouseButtonDown = false;
+    QVector2D mousePos_ = QVector2D(0, 0);
+    QVector2D clickPos_ = QVector2D(0, 0);
+    int lastButtonpressID_ = 0;
+    bool isMouseButtonDown_ = false;
 
-    QColor currentBackgroundColor = Config::get().initialCanvasBackgroundColor;
-    QColor currentForegroundColor = Config::get().initialCanvasForegroundColor;
-    QImage canvasImage;
-    QByteArray canvasSvg;
+    QColor currentBackgroundColor_ = Config::get().initialCanvasBackgroundColor;
+    QColor currentForegroundColor_ = Config::get().initialCanvasForegroundColor;
+    QImage canvasImage_;
+    QByteArray canvasSvg_;
 
-    QStringList allFontNames;
-    QString textFontName;
-    double textFontSize;
+    QStringList allFontNames_;
+    QString textFontName_;
+    double textFontSize_;
 
-    ScreenModeEnum screenMode;
+    ScreenModeEnum screenMode_;
 
-    QString labelFontName;
-    double labelFontSize;
+    QString labelFontName_;
+    double labelFontSize_;
 
     void processInputMessageQueue() override;
 
@@ -205,14 +205,14 @@ class LogoInterfaceGUI : public LogoInterface
     /// @return The X coordinate of the upper-right corner of the bounding box.
     double boundX() const override
     {
-        return xbound;
+        return xbound_;
     }
 
     /// @brief Gets the Y coordinate of the upper-right corner of the bounding box.
     /// @return The Y coordinate of the upper-right corner of the bounding box.
     double boundY() const override
     {
-        return ybound;
+        return ybound_;
     }
 
     /// @brief Gets the canvas background color.
@@ -265,7 +265,7 @@ class LogoInterfaceGUI : public LogoInterface
     /// @return A list of all available font names.
     QStringList getAllFontNames() const override
     {
-        return allFontNames;
+        return allFontNames_;
     }
 
     /// @brief Adds standout control characters to a string.

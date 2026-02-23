@@ -36,13 +36,13 @@ char lastNonSpaceChar(const QString &line)
 
 TextStream::TextStream(QTextStream *aStream)
 {
-    stream = aStream;
+    stream_ = aStream;
     clearLineHistory();
 }
 
 void TextStream::clearLineHistory()
 {
-    recentLineHistory.clear();
+    recentLineHistory_.clear();
 }
 
 bool TextStream::initializeBaseLevelReading(const QString &prompt)
@@ -50,8 +50,8 @@ bool TextStream::initializeBaseLevelReading(const QString &prompt)
     DatumPtr lineP = tokenizeWordWithPrompt(prompt);
     if (lineP.isNothing())
         return false;
-    listSourceWord = lineP.wordValue()->toString(Datum::ToStringFlags_Raw);
-    listSourceWordIter = listSourceWord.begin();
+    listSourceWord_ = lineP.wordValue()->toString(Datum::ToStringFlags_Raw);
+    listSourceWordIter_ = listSourceWord_.begin();
     return true;
 }
 
@@ -78,13 +78,13 @@ bool TextStream::processVbarredCharacter(ushort c, bool &isVbarred, bool &isCurr
 
 bool TextStream::processTildeContinuation()
 {
-    QString::iterator lookAhead = listSourceWordIter;
-    while (lookAhead != listSourceWord.end() && *lookAhead == ' ')
+    QString::iterator lookAhead = listSourceWordIter_;
+    while (lookAhead != listSourceWord_.end() && *lookAhead == ' ')
         ++lookAhead;
-    if (lookAhead != listSourceWord.end() && *lookAhead == '\n')
+    if (lookAhead != listSourceWord_.end() && *lookAhead == '\n')
     {
         ++lookAhead;
-        listSourceWordIter = lookAhead;
+        listSourceWordIter_ = lookAhead;
         return true; // Handled, continue
     }
     return false; // Not a continuation, continue normal processing
@@ -96,15 +96,15 @@ bool TextStream::processComments(ushort c, bool shouldRemoveComments)
         return false;
 
     // Check for ; comment or #! comment
-    if (c == ';' || (c == '#' && listSourceWordIter != listSourceWord.end() &&
-                     listSourceWordIter->unicode() == '!'))
+    if (c == ';' || (c == '#' && listSourceWordIter_ != listSourceWord_.end() &&
+                     listSourceWordIter_->unicode() == '!'))
     {
         // Skip to end of line
-        while ((listSourceWordIter != listSourceWord.end()) && (*listSourceWordIter != '\n'))
-            ++listSourceWordIter;
+        while ((listSourceWordIter_ != listSourceWord_.end()) && (*listSourceWordIter_ != '\n'))
+            ++listSourceWordIter_;
         // Consume the eol
-        if (listSourceWordIter != listSourceWord.end())
-            ++listSourceWordIter;
+        if (listSourceWordIter_ != listSourceWord_.end())
+            ++listSourceWordIter_;
         return true; // Handled, continue
     }
     return false; // Not a comment, continue normal processing
@@ -153,15 +153,15 @@ TextStream::DelimiterResult TextStream::processDelimiter(ushort c, ListBuilder &
 int TextStream::processArrayOrigin()
 {
     int origin = 1;
-    if (listSourceWordIter != listSourceWord.end() && *listSourceWordIter == '@')
+    if (listSourceWordIter_ != listSourceWord_.end() && *listSourceWordIter_ == '@')
     {
         QString originStr = "";
-        ++listSourceWordIter;
-        while (listSourceWordIter != listSourceWord.end() && (*listSourceWordIter >= '0') &&
-               (*listSourceWordIter <= '9'))
+        ++listSourceWordIter_;
+        while (listSourceWordIter_ != listSourceWord_.end() && (*listSourceWordIter_ >= '0') &&
+               (*listSourceWordIter_ <= '9'))
         {
-            originStr += *listSourceWordIter;
-            ++listSourceWordIter;
+            originStr += *listSourceWordIter_;
+            ++listSourceWordIter_;
         }
         bool ok;
         origin = originStr.toInt(&ok);
@@ -188,8 +188,8 @@ bool TextStream::finalizeResult(ListBuilder &builder, bool isBaseLevel, bool mak
 
     if (!lineP.isNothing())
     {
-        listSourceWord = lineP.wordValue()->toString(Datum::ToStringFlags_Raw);
-        listSourceWordIter = listSourceWord.begin();
+        listSourceWord_ = lineP.wordValue()->toString(Datum::ToStringFlags_Raw);
+        listSourceWordIter_ = listSourceWord_.begin();
         return true; // Continue processing
     }
 
@@ -241,10 +241,10 @@ DatumPtr TextStream::processCharacterLoop(ListBuilder &builder, QString &current
 {
     bool isVbarred = false;
 
-    while (listSourceWordIter != listSourceWord.end())
+    while (listSourceWordIter_ != listSourceWord_.end())
     {
-        ushort c = listSourceWordIter->unicode();
-        ++listSourceWordIter;
+        ushort c = listSourceWordIter_->unicode();
+        ++listSourceWordIter_;
 
         // Process vbarred characters
         if (processVbarredCharacter(c, isVbarred, isCurrentWordVbarred, currentWord))
@@ -314,7 +314,7 @@ DatumPtr TextStream::tokenizeListWithPrompt(const QString &prompt,
 DatumPtr TextStream::tokenizeRawlineWithPrompt(const QString &prompt)
 {
     QString retval;
-    if (stream == nullptr)
+    if (stream_ == nullptr)
     {
         retval = Config::get().mainInterface()->inputRawlineWithPrompt(prompt);
         if (retval.isNull())
@@ -322,12 +322,12 @@ DatumPtr TextStream::tokenizeRawlineWithPrompt(const QString &prompt)
     }
     else
     {
-        if (stream->atEnd())
+        if (stream_->atEnd())
         {
             return nothing();
         }
-        retval = stream->readLine();
-        if (stream->status() != QTextStream::Ok)
+        retval = stream_->readLine();
+        if (stream_->status() != QTextStream::Ok)
             throw FCError::fileSystem();
     }
     DatumPtr retvalPtr(retval);
@@ -421,64 +421,64 @@ DatumPtr TextStream::readListWithPrompt(const QString &prompt, bool shouldRemove
 
 DatumPtr TextStream::readChar()
 {
-    if (stream == nullptr)
+    if (stream_ == nullptr)
     {
         return Config::get().mainInterface()->readchar();
     }
 
-    if (stream->atEnd())
+    if (stream_->atEnd())
         return emptyList();
-    QString line = stream->read(1);
-    if (stream->status() != QTextStream::Ok)
+    QString line = stream_->read(1);
+    if (stream_->status() != QTextStream::Ok)
         throw FCError::fileSystem();
     return DatumPtr(line);
 }
 
 QList<DatumPtr> TextStream::recentHistory() const
 {
-    return recentLineHistory;
+    return recentLineHistory_;
 }
 
 bool TextStream::seek(qint64 loc)
 {
-    return stream->seek(loc);
+    return stream_->seek(loc);
 }
 
 qint64 TextStream::pos() const
 {
-    return stream->pos();
+    return stream_->pos();
 }
 
 bool TextStream::atEnd() const
 {
-    return stream->atEnd();
+    return stream_->atEnd();
 }
 
 void TextStream::flush()
 {
-    stream->flush();
+    stream_->flush();
 }
 
 void TextStream::lprint(const QString &text)
 {
-    if (stream == nullptr)
+    if (stream_ == nullptr)
     {
         Config::get().mainInterface()->printToConsole(text);
     }
     else
     {
-        *stream << text;
-        if (stream->status() != QTextStream::Ok)
+        *stream_ << text;
+        if (stream_->status() != QTextStream::Ok)
             throw FCError::fileSystem();
     }
 }
 
 QIODevice *TextStream::device() const
 {
-    return stream->device();
+    return stream_->device();
 }
 
 QString *TextStream::string() const
 {
-    return stream->string();
+    return stream_->string();
 }

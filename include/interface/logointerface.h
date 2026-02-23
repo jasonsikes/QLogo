@@ -108,7 +108,7 @@ class LogoInterface : public QObject
     /// The value of this variable is set by the handle_signal function. When the latestSignal
     /// method is called, the value is reset to noSignal.
     /// @note This is a static member to allow access from the signal handler.
-    static volatile SignalsEnum_t lastSignal;
+    static volatile SignalsEnum_t lastSignal_;
 
     /// @brief Stops communication and initiates cleanup tasks.
     virtual void closeInterface();
@@ -582,10 +582,10 @@ class LogoInterface : public QObject
     }
 
   protected:
-    QTextStream *dribbleStream;
+    QTextStream *dribbleStream_;
 
-    QTextStream inStream;
-    QTextStream outStream;
+    QTextStream inStream_;
+    QTextStream outStream_;
 };
 
 #endif // LOGOINTERFACE_H

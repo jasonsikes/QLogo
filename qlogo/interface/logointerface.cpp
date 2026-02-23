@@ -22,7 +22,7 @@
 #include <QIODevice>
 #include <csignal>
 
-volatile SignalsEnum_t LogoInterface::lastSignal = noSignal;
+volatile SignalsEnum_t LogoInterface::lastSignal_ = noSignal;
 
 /// @brief Handles a signal.
 /// @param sig The signal to handle.
@@ -33,13 +33,13 @@ static void handle_signal(int sig)
     switch (sig)
     {
     case SIGINT:
-        LogoInterface::lastSignal = toplevelSignal; // Ctrl+C
+        LogoInterface::lastSignal_ = toplevelSignal; // Ctrl+C
         break;
     case SIGTSTP:
-        LogoInterface::lastSignal = pauseSignal; // Ctrl+Z
+        LogoInterface::lastSignal_ = pauseSignal; // Ctrl+Z
         break;
     case SIGQUIT:
-        LogoInterface::lastSignal = systemSignal; // Ctrl+[backslash]
+        LogoInterface::lastSignal_ = systemSignal; // Ctrl+[backslash]
         break;
     default:
         qWarning() << "Not expecting signal: " << sig;
@@ -76,10 +76,10 @@ void LogoInterface::restoreSignals()
 #endif
 
 LogoInterface::LogoInterface(QObject *parent)
-    : inStream(stdin, QIODevice::ReadOnly),
-      outStream(stdout, QIODevice::WriteOnly)
+    : inStream_(stdin, QIODevice::ReadOnly),
+      outStream_(stdout, QIODevice::WriteOnly)
 {
-    dribbleStream = nullptr;
+    dribbleStream_ = nullptr;
     Config::get().setMainLogoInterface(this);
 }
 
@@ -91,32 +91,32 @@ LogoInterface::~LogoInterface()
 
 void LogoInterface::printToConsole(const QString &s)
 {
-    outStream << s;
-    if (dribbleStream)
-        *dribbleStream << s;
+    outStream_ << s;
+    if (dribbleStream_)
+        *dribbleStream_ << s;
 }
 
 bool LogoInterface::atEnd()
 {
-    return inStream.atEnd();
+    return inStream_.atEnd();
 }
 
 bool LogoInterface::keyQueueHasChars()
 {
-    return !inStream.atEnd();
+    return !inStream_.atEnd();
 }
 
 // This is READRAWLINE
 QString LogoInterface::inputRawlineWithPrompt(const QString &prompt)
 {
     QString retval;
-    if (!inStream.atEnd())
+    if (!inStream_.atEnd())
     {
         printToConsole(prompt);
-        outStream.flush();
-        retval = inStream.readLine();
-        if (dribbleStream)
-            *dribbleStream << retval << '\n';
+        outStream_.flush();
+        retval = inStream_.readLine();
+        if (dribbleStream_)
+            *dribbleStream_ << retval << '\n';
     }
     return retval;
 }
@@ -125,10 +125,10 @@ QString LogoInterface::inputRawlineWithPrompt(const QString &prompt)
 DatumPtr LogoInterface::readchar()
 {
     QChar c;
-    outStream.flush();
-    if (inStream.atEnd())
+    outStream_.flush();
+    if (inStream_.atEnd())
         return nothing();
-    inStream >> c;
+    inStream_ >> c;
     QString retval = c;
     DatumPtr retvalP = DatumPtr(retval);
     return retvalP;
@@ -138,34 +138,34 @@ bool LogoInterface::setDribble(const QString &filePath)
 {
     if (filePath == "")
     {
-        if (dribbleStream)
+        if (dribbleStream_)
         {
-            QIODevice *file = dribbleStream->device();
-            dribbleStream->flush();
-            delete dribbleStream;
+            QIODevice *file = dribbleStream_->device();
+            dribbleStream_->flush();
+            delete dribbleStream_;
             file->close();
             delete file;
         }
-        dribbleStream = nullptr;
+        dribbleStream_ = nullptr;
         return true;
     }
     auto *file = new QFile(filePath);
     if (!file->open(QIODevice::Append))
         return false;
 
-    dribbleStream = new QTextStream(file);
+    dribbleStream_ = new QTextStream(file);
     return true;
 }
 
 bool LogoInterface::isDribbling()
 {
-    return dribbleStream != nullptr;
+    return dribbleStream_ != nullptr;
 }
 
 SignalsEnum_t LogoInterface::latestSignal()
 {
-    SignalsEnum_t retval = lastSignal;
-    lastSignal = noSignal;
+    SignalsEnum_t retval = lastSignal_;
+    lastSignal_ = noSignal;
     return retval;
 }
 

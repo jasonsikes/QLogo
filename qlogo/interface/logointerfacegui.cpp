@@ -54,7 +54,7 @@ void LogoInterfaceGUI::closeInterface()
 {
     message(W_CLOSE_PIPE);
 
-    messageQueue.stopQueue();
+    messageQueue_.stopQueue();
 
     setDribble("");
 }
@@ -63,7 +63,7 @@ LogoInterfaceGUI::~LogoInterfaceGUI() = default;
 
 void LogoInterfaceGUI::initialize()
 {
-    messageQueue.startQueue();
+    messageQueue_.startQueue();
 
     message(W_INITIALIZE);
     waitForMessage(W_INITIALIZE);
@@ -78,7 +78,7 @@ message_t LogoInterfaceGUI::getMessage()
 {
     message_t header;
 
-    QByteArray buffer = messageQueue.getMessage();
+    QByteArray buffer = messageQueue_.getMessage();
     QDataStream bufferStream(&buffer, QIODevice::ReadOnly);
 
     bufferStream >> header;
@@ -90,9 +90,9 @@ message_t LogoInterfaceGUI::getMessage()
         break;
     case W_INITIALIZE:
     {
-        bufferStream >> allFontNames >> textFontName >> textFontSize;
-        labelFontName = textFontName;
-        labelFontSize = textFontSize;
+        bufferStream >> allFontNames_ >> textFontName_ >> textFontSize_;
+        labelFontName_ = textFontName_;
+        labelFontSize_ = textFontSize_;
         break;
     }
     case S_SYSTEM:
@@ -105,35 +105,35 @@ message_t LogoInterfaceGUI::getMessage()
         throw FCError::custom(DatumPtr(QObject::tr("PAUSE")));
         break;
     case C_CONSOLE_RAWLINE_READ:
-        bufferStream >> rawLine;
+        bufferStream >> rawLine_;
         break;
     case C_CONSOLE_CHAR_READ:
-        bufferStream >> rawChar;
+        bufferStream >> rawChar_;
         break;
     case W_FILE_DIALOG_GET_PATH:
-        bufferStream >> filePath;
+        bufferStream >> filePath_;
         break;
     case C_CONSOLE_END_EDIT_TEXT:
-        bufferStream >> editorText;
+        bufferStream >> editorText_;
         break;
     case C_CONSOLE_TEXT_CURSOR_POS:
-        bufferStream >> cursorRow >> cursorCol;
+        bufferStream >> cursorRow_ >> cursorCol_;
         break;
     case C_CANVAS_GET_IMAGE:
-        bufferStream >> canvasImage;
+        bufferStream >> canvasImage_;
         break;
     case C_CANVAS_GET_SVG:
-        bufferStream >> canvasSvg;
+        bufferStream >> canvasSvg_;
         break;
     case C_CANVAS_MOUSE_BUTTON_DOWN:
-        bufferStream >> clickPos >> lastButtonpressID;
-        isMouseButtonDown = true;
+        bufferStream >> clickPos_ >> lastButtonpressID_;
+        isMouseButtonDown_ = true;
         break;
     case C_CANVAS_MOUSE_BUTTON_UP:
-        isMouseButtonDown = false;
+        isMouseButtonDown_ = false;
         break;
     case C_CANVAS_MOUSE_MOVED:
-        bufferStream >> mousePos;
+        bufferStream >> mousePos_;
         break;
     default:
         // This should never happen. If it does, then there is a mess-up in the protocol.
@@ -145,7 +145,7 @@ message_t LogoInterfaceGUI::getMessage()
 
 void LogoInterfaceGUI::processInputMessageQueue()
 {
-    while (messageQueue.isMessageAvailable())
+    while (messageQueue_.isMessageAvailable())
     {
         getMessage();
     }
@@ -164,8 +164,8 @@ void LogoInterfaceGUI::printToConsole(const QString &s)
 {
     message(C_CONSOLE_PRINT_STRING) << s;
 
-    if (dribbleStream)
-        *dribbleStream << s;
+    if (dribbleStream_)
+        *dribbleStream_ << s;
 }
 
 QString LogoInterfaceGUI::addStandoutToString(const QString &src)
@@ -184,8 +184,8 @@ void LogoInterfaceGUI::getTextCursorPos(int &row, int &col)
     message(C_CONSOLE_TEXT_CURSOR_POS);
 
     waitForMessage(C_CONSOLE_TEXT_CURSOR_POS);
-    row = cursorRow;
-    col = cursorCol;
+    row = cursorRow_;
+    col = cursorCol_;
 }
 
 void LogoInterfaceGUI::setTextCursorPos(int row, int col)
@@ -200,13 +200,13 @@ void LogoInterfaceGUI::setTextColor(const QColor &foregroundColor, const QColor 
 
 void LogoInterfaceGUI::setCursorOverwriteMode(bool isOverwriteMode)
 {
-    cursorModeIsOverwrite = isOverwriteMode;
+    cursorModeIsOverwrite_ = isOverwriteMode;
     message(C_CONSOLE_SET_CURSOR_MODE) << isOverwriteMode;
 }
 
 bool LogoInterfaceGUI::cursorOverwriteMode() const
 {
-    return cursorModeIsOverwrite;
+    return cursorModeIsOverwrite_;
 }
 
 QString LogoInterfaceGUI::editText(const QString &startText)
@@ -215,45 +215,45 @@ QString LogoInterfaceGUI::editText(const QString &startText)
 
     waitForMessage(C_CONSOLE_END_EDIT_TEXT);
 
-    return editorText;
+    return editorText_;
 }
 
 void LogoInterfaceGUI::setTextFontName(const QString &aFontName)
 {
-    if (textFontName == aFontName)
+    if (textFontName_ == aFontName)
         return;
     // TODO: Validate font name
-    textFontName = aFontName;
-    message(C_CONSOLE_SET_FONT_NAME) << textFontName;
+    textFontName_ = aFontName;
+    message(C_CONSOLE_SET_FONT_NAME) << textFontName_;
 }
 
 void LogoInterfaceGUI::setTextFontSize(double aSize)
 {
-    if (textFontSize == aSize)
+    if (textFontSize_ == aSize)
         return;
-    textFontSize = aSize;
-    message(C_CONSOLE_SET_FONT_SIZE) << textFontSize;
+    textFontSize_ = aSize;
+    message(C_CONSOLE_SET_FONT_SIZE) << textFontSize_;
 }
 
 double LogoInterfaceGUI::getTextFontSize() const
 {
-    return textFontSize;
+    return textFontSize_;
 }
 
 QString LogoInterfaceGUI::getTextFontName() const
 {
-    return textFontName;
+    return textFontName_;
 }
 
 QString LogoInterfaceGUI::inputRawlineWithPrompt(const QString &prompt)
 {
-    if (dribbleStream)
-        *dribbleStream << prompt;
+    if (dribbleStream_)
+        *dribbleStream_ << prompt;
 
     message(C_CONSOLE_REQUEST_LINE) << prompt;
     waitForMessage(C_CONSOLE_RAWLINE_READ);
 
-    return rawLine;
+    return rawLine_;
 }
 
 DatumPtr LogoInterfaceGUI::readchar()
@@ -262,7 +262,7 @@ DatumPtr LogoInterfaceGUI::readchar()
 
     waitForMessage(C_CONSOLE_CHAR_READ);
 
-    return DatumPtr(rawChar);
+    return DatumPtr(rawChar_);
 }
 
 QString LogoInterfaceGUI::fileDialogModal()
@@ -271,7 +271,7 @@ QString LogoInterfaceGUI::fileDialogModal()
 
     waitForMessage(W_FILE_DIALOG_GET_PATH);
 
-    return filePath;
+    return filePath_;
 }
 
 void LogoInterfaceGUI::setTurtlePos(QTransform *newTurtlePosPtr)
@@ -286,26 +286,26 @@ void LogoInterfaceGUI::setPenmode(PenModeEnum aMode)
 
 void LogoInterfaceGUI::setScreenMode(ScreenModeEnum newMode)
 {
-    screenMode = newMode;
+    screenMode_ = newMode;
     message(W_SET_SCREENMODE) << newMode;
 }
 
 ScreenModeEnum LogoInterfaceGUI::getScreenMode() const
 {
-    return screenMode;
+    return screenMode_;
 }
 
 void LogoInterfaceGUI::setIsCanvasBounded(bool aIsBounded)
 {
-    if (canvasIsBounded == aIsBounded)
+    if (canvasIsBounded_ == aIsBounded)
         return;
-    canvasIsBounded = aIsBounded;
+    canvasIsBounded_ = aIsBounded;
     message(C_CANVAS_SET_IS_BOUNDED) << aIsBounded;
 }
 
 bool LogoInterfaceGUI::isCanvasBounded() const
 {
-    return canvasIsBounded;
+    return canvasIsBounded_;
 }
 
 void LogoInterfaceGUI::setTurtleIsVisible(int isVisible)
@@ -345,41 +345,41 @@ void LogoInterfaceGUI::drawArc(double angle, double radius)
 
 void LogoInterfaceGUI::setLabelFontName(const QString &aName)
 {
-    if (aName == labelFontName)
+    if (aName == labelFontName_)
         return;
-    labelFontName = aName;
+    labelFontName_ = aName;
     message(C_CANVAS_SET_FONT_NAME) << aName;
 }
 
 void LogoInterfaceGUI::setLabelFontSize(double aSize)
 {
-    if (aSize == labelFontSize)
+    if (aSize == labelFontSize_)
         return;
-    labelFontSize = aSize;
-    message(C_CANVAS_SET_FONT_SIZE) << (qreal)labelFontSize;
+    labelFontSize_ = aSize;
+    message(C_CANVAS_SET_FONT_SIZE) << (qreal)labelFontSize_;
 }
 
 QString LogoInterfaceGUI::getLabelFontName() const
 {
-    return labelFontName;
+    return labelFontName_;
 }
 
 double LogoInterfaceGUI::getLabelFontSize() const
 {
-    return labelFontSize;
+    return labelFontSize_;
 }
 
 void LogoInterfaceGUI::setCanvasBackgroundColor(const QColor &aColor)
 {
-    currentBackgroundColor = aColor;
+    currentBackgroundColor_ = aColor;
     message(C_CANVAS_SET_BACKGROUND_COLOR) << aColor;
 }
 
 void LogoInterfaceGUI::setCanvasForegroundColor(const QColor &aColor)
 {
-    if (currentForegroundColor != aColor)
+    if (currentForegroundColor_ != aColor)
     {
-        currentForegroundColor = aColor;
+        currentForegroundColor_ = aColor;
         message(C_CANVAS_SET_FOREGROUND_COLOR) << aColor;
     }
 }
@@ -391,7 +391,7 @@ void LogoInterfaceGUI::setCanvasBackgroundImage(const QImage &anImage)
 
 const QColor LogoInterfaceGUI::getCanvasBackgroundColor() const
 {
-    return currentBackgroundColor;
+    return currentBackgroundColor_;
 }
 
 void LogoInterfaceGUI::clearCanvas()
@@ -405,7 +405,7 @@ QImage LogoInterfaceGUI::getCanvasImage()
 
     waitForMessage(C_CANVAS_GET_IMAGE);
 
-    return canvasImage;
+    return canvasImage_;
 }
 
 QByteArray LogoInterfaceGUI::getSvgImage()
@@ -414,48 +414,48 @@ QByteArray LogoInterfaceGUI::getSvgImage()
 
     waitForMessage(C_CANVAS_GET_SVG);
 
-    return canvasSvg;
+    return canvasSvg_;
 }
 
 bool LogoInterfaceGUI::getIsMouseButtonDown()
 {
     processInputMessageQueue();
-    return isMouseButtonDown;
+    return isMouseButtonDown_;
 }
 
 QVector2D LogoInterfaceGUI::lastMouseclickPosition()
 {
     processInputMessageQueue();
-    return clickPos;
+    return clickPos_;
 }
 
 int LogoInterfaceGUI::getAndResetButtonID()
 {
     processInputMessageQueue();
-    int retval = lastButtonpressID;
-    lastButtonpressID = 0;
+    int retval = lastButtonpressID_;
+    lastButtonpressID_ = 0;
     return retval;
 }
 
 QVector2D LogoInterfaceGUI::mousePosition()
 {
     processInputMessageQueue();
-    return mousePos;
+    return mousePos_;
 }
 
 void LogoInterfaceGUI::setBounds(double x, double y)
 {
-    if ((xbound == x) && (ybound == y))
+    if ((xbound_ == x) && (ybound_ == y))
         return;
-    xbound = x;
-    ybound = y;
-    message(C_CANVAS_SETBOUNDS) << (qreal)xbound << (qreal)ybound;
+    xbound_ = x;
+    ybound_ = y;
+    message(C_CANVAS_SETBOUNDS) << (qreal)xbound_ << (qreal)ybound_;
 }
 
 void LogoInterfaceGUI::setPensize(qreal aSize)
 {
-    if (aSize == penSize)
+    if (aSize == penSize_)
         return;
     message(C_CANVAS_SET_PENSIZE) << (qreal)aSize;
-    penSize = aSize;
+    penSize_ = aSize;
 }

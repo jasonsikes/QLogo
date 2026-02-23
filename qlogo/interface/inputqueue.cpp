@@ -24,7 +24,7 @@
 #endif
 
 InputQueueThread::InputQueueThread(QQueue<QByteArray> *byteArrayQueue, QMutex *queueMutex, QObject *parent)
-    : QThread(parent), byteArrayQueue(byteArrayQueue), queueMutex(queueMutex)
+    : QThread(parent), byteArrayQueue_(byteArrayQueue), queueMutex_(queueMutex)
 {
 }
 
@@ -56,21 +56,21 @@ void InputQueueThread::run()
             datalen -= dataread;
         }
         Q_ASSERT(0 == datalen);
-        queueMutex->lock();
-        byteArrayQueue->enqueue(message);
-        queueMutex->unlock();
+        queueMutex_->lock();
+        byteArrayQueue_->enqueue(message);
+        queueMutex_->unlock();
         emit sendMessageSignal();
     }
 }
 
-InputQueue::InputQueue(QObject *parent) : QObject(parent), thread(&byteArrayQueue, &queueMutex, this)
+InputQueue::InputQueue(QObject *parent) : QObject(parent), thread_(&byteArrayQueue_, &queueMutex_, this)
 {
 }
 
 void InputQueue::startQueue()
 {
-    connect(&thread, SIGNAL(sendMessageSignal()), this, SLOT(receiveMessageSlot()), Qt::QueuedConnection);
-    thread.start();
+    connect(&thread_, SIGNAL(sendMessageSignal()), this, SLOT(receiveMessageSlot()), Qt::QueuedConnection);
+    thread_.start();
 }
 
 // TODO: The names getMessage() and receiveMessage() are ambiguous.
@@ -78,24 +78,24 @@ QByteArray InputQueue::getMessage()
 {
     QByteArray message;
     // If there is a message already in the queue, return that.
-    queueMutex.lock();
-    bool isbyteArrayQueued = !byteArrayQueue.isEmpty();
+    queueMutex_.lock();
+    bool isbyteArrayQueued = !byteArrayQueue_.isEmpty();
     if (isbyteArrayQueued)
-        message = byteArrayQueue.dequeue();
-    queueMutex.unlock();
+        message = byteArrayQueue_.dequeue();
+    queueMutex_.unlock();
     if (isbyteArrayQueued)
         return message;
 
     // Wait for a message.
     forever
     {
-        eventLoop.exec();
+        eventLoop_.exec();
 
-        queueMutex.lock();
-        isbyteArrayQueued = !byteArrayQueue.isEmpty();
+        queueMutex_.lock();
+        isbyteArrayQueued = !byteArrayQueue_.isEmpty();
         if (isbyteArrayQueued)
-            message = byteArrayQueue.dequeue();
-        queueMutex.unlock();
+            message = byteArrayQueue_.dequeue();
+        queueMutex_.unlock();
         if (isbyteArrayQueued)
             return message;
     }
@@ -103,38 +103,38 @@ QByteArray InputQueue::getMessage()
 
 bool InputQueue::isMessageAvailable()
 {
-    queueMutex.lock();
-    bool retval = !byteArrayQueue.isEmpty();
-    queueMutex.unlock();
+    queueMutex_.lock();
+    bool retval = !byteArrayQueue_.isEmpty();
+    queueMutex_.unlock();
     return retval;
 }
 
 void InputQueue::receiveMessageSlot()
 {
     // Exit the loop to process the message.
-    eventLoop.exit(0);
+    eventLoop_.exit(0);
 }
 
 void InputQueue::stopQueue()
 {
     // Exit the event loop to unblock any waiting getMessage() calls
-    eventLoop.exit(0);
+    eventLoop_.exit(0);
 
-    if (!thread.isRunning())
+    if (!thread_.isRunning())
     {
         // Thread already terminated, just wait for cleanup
-        thread.wait();
+        thread_.wait();
         return;
     }
 
     // The QLogo GUI closes the pipe so the thread should terminate naturally.
     // Wait with a timeout to avoid hanging indefinitely if something goes wrong.
     const unsigned long timeoutMs = 5000; // 5 second timeout
-    if (!thread.wait(timeoutMs))
+    if (!thread_.wait(timeoutMs))
     {
         qWarning() << "InputQueueThread did not terminate within timeout";
-        thread.terminate();
-        if (!thread.wait(1000))
+        thread_.terminate();
+        if (!thread_.wait(1000))
         {
             qWarning() << "InputQueueThread failed to terminate even after request";
         }
