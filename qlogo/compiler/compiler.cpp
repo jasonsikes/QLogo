@@ -37,9 +37,14 @@ QHash<Datum *, std::shared_ptr<CompiledText>> Compiler::compiledTextTable;
 
 const char *dbgName(const char *enclosing, const char *name)
 {
-    static std::string storage;
-    storage = std::string(enclosing) + "_" + name;
-    return storage.c_str();
+    static bool shouldMangle = Config::get().showIR || Config::get().showCFG || Config::get().showModuleIR;
+    if (shouldMangle)
+    {
+        static std::string storage;
+        storage = std::string(enclosing) + "_" + name;
+        return storage.c_str();
+    }
+    return name;
 }
 
 using namespace llvm;
