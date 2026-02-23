@@ -14,9 +14,8 @@ NewEvaluator::~NewEvaluator()
     // Destroy the coroutine frame if it exists.
     if (handle_ != nullptr)
     {
-        LLVMCoroFrameHeader *frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle_);
-        Q_ASSERT(frame->resume == nullptr);
-        frame->destroy(handle_);
+        Q_ASSERT(handle_->resume == nullptr);
+        handle_->destroy(handle_);
     }
 
     // Release the objects in the release pool.
