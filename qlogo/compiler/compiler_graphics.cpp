@@ -59,7 +59,7 @@ COD***/
 Value *Compiler::genBack(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *reverseDistance = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    Value *distance = scaff->builder_.CreateFNeg(reverseDistance, DBG_NAME("negativeDistance"));
+    Value *distance = scaff_->builder_.CreateFNeg(reverseDistance, DBG_NAME("negativeDistance"));
     generateCallExtern(TyVoid, moveTurtleForward, PaDouble(distance));
     return generateVoidRetval(node);
 }
@@ -76,7 +76,7 @@ COD***/
 Value *Compiler::genLeft(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *angle = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    Value *negativeAngle = scaff->builder_.CreateFNeg(angle, DBG_NAME("negativeAngle"));
+    Value *negativeAngle = scaff_->builder_.CreateFNeg(angle, DBG_NAME("negativeAngle"));
     generateCallExtern(TyVoid, moveTurtleRotate, PaDouble(negativeAngle));
     return generateVoidRetval(node);
 }
@@ -214,7 +214,7 @@ COD***/
 // CMD POS 0 0 0 d
 Value *Compiler::genPos(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, getTurtlePos, PaAddr(scaff->evaluator_));
+    return generateCallExtern(TyAddr, getTurtlePos, PaAddr(scaff_->evaluator_));
 }
 /***DOC HEADING
 HEADING
@@ -254,7 +254,7 @@ COD***/
 // CMD SCRUNCH 0 0 0 d
 Value *Compiler::genScrunch(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, getScrunch, PaAddr(scaff->evaluator_));
+    return generateCallExtern(TyAddr, getScrunch, PaAddr(scaff_->evaluator_));
 }
 // TURTLE AND WINDOW CONTROL
 
@@ -380,7 +380,7 @@ COD***/
 // CMD BOUNDS 0 0 0 d
 Value *Compiler::genBounds(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, getBounds, PaAddr(scaff->evaluator_));
+    return generateCallExtern(TyAddr, getBounds, PaAddr(scaff_->evaluator_));
 }
 /***DOC SETBOUNDS
 SETBOUNDS x y
@@ -415,25 +415,25 @@ COD***/
 // CMD FILLED 2 2 2 n
 Value *Compiler::genFilled(const DatumPtr &node, RequestReturnType returnType)
 {
-    BasicBlock *colorNotGoodBB = scaff->createBasicBlock(DBG_NAME("colorNotGood"));
-    BasicBlock *colorGoodBB = scaff->createBasicBlock(DBG_NAME("colorGood"));
+    BasicBlock *colorNotGoodBB = scaff_->createBasicBlock(DBG_NAME("colorNotGood"));
+    BasicBlock *colorGoodBB = scaff_->createBasicBlock(DBG_NAME("colorGood"));
 
-    scaff->addColdPathBlocks(colorNotGoodBB);
+    scaff_->addColdPathBlocks(colorNotGoodBB);
 
     Value *color = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *instructions = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
     Value *isGood = generateCallExtern(TyInt32, beginFilledWithColor, PaAddr(color));
-    Value *isGoodCmp = scaff->builder_.CreateICmpEQ(isGood, CoInt32(1), DBG_NAME("isGood"));
-    scaff->builder_.CreateCondBr(isGoodCmp, colorGoodBB, colorNotGoodBB);
+    Value *isGoodCmp = scaff_->builder_.CreateICmpEQ(isGood, CoInt32(1), DBG_NAME("isGood"));
+    scaff_->builder_.CreateCondBr(isGoodCmp, colorGoodBB, colorNotGoodBB);
 
     // Color is not good.
-    scaff->builder_.SetInsertPoint(colorNotGoodBB);
+    scaff_->builder_.SetInsertPoint(colorNotGoodBB);
     Value *errVal = generateCallExtern(
-        TyAddr, getErrorNoLike, PaAddr(scaff->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color));
+        TyAddr, getErrorNoLike, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color));
     generateReturn(errVal);
 
     // Color is good.
-    scaff->builder_.SetInsertPoint(colorGoodBB);
+    scaff_->builder_.SetInsertPoint(colorGoodBB);
     Value *result = generateCallList(instructions, RequestReturnDatum);
     generateCallExtern(TyVoid, endFilled);
     return result;
@@ -564,7 +564,7 @@ COD***/
 // CMD SCREENMODE 0 0 0 d
 Value *Compiler::genScreenmode(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, getScreenMode, PaAddr(scaff->evaluator_));
+    return generateCallExtern(TyAddr, getScreenMode, PaAddr(scaff_->evaluator_));
 }
 /***DOC TURTLEMODE
 TURTLEMODE
@@ -576,7 +576,7 @@ COD***/
 // CMD TURTLEMODE 0 0 0 d
 Value *Compiler::genTurtlemode(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, getTurtleMode, PaAddr(scaff->evaluator_));
+    return generateCallExtern(TyAddr, getTurtleMode, PaAddr(scaff_->evaluator_));
 }
 /***DOC LABELSIZE
 LABELSIZE
@@ -592,7 +592,7 @@ COD***/
 // CMD LABELSIZE 0 0 0 d
 Value *Compiler::genLabelsize(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, getLabelSize, PaAddr(scaff->evaluator_));
+    return generateCallExtern(TyAddr, getLabelSize, PaAddr(scaff_->evaluator_));
 }
 // PEN AND BACKGROUND CONTROL
 
@@ -711,24 +711,24 @@ COD***/
 // CMD SETPC 1 1 1 n
 Value *Compiler::genSetpencolor(const DatumPtr &node, RequestReturnType returnType)
 {
-    BasicBlock *colorNotGoodBB = scaff->createBasicBlock(DBG_NAME("colorNotGood"));
-    BasicBlock *colorGoodBB = scaff->createBasicBlock(DBG_NAME("colorGood"));
+    BasicBlock *colorNotGoodBB = scaff_->createBasicBlock(DBG_NAME("colorNotGood"));
+    BasicBlock *colorGoodBB = scaff_->createBasicBlock(DBG_NAME("colorGood"));
 
-    scaff->addColdPathBlocks(colorNotGoodBB);
+    scaff_->addColdPathBlocks(colorNotGoodBB);
 
     Value *color = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *isGood = generateCallExtern(TyBool, setPenColor, PaAddr(color));
-    Value *isGoodCmp = scaff->builder_.CreateICmpEQ(isGood, CoBool(true), DBG_NAME("isGood"));
-    scaff->builder_.CreateCondBr(isGoodCmp, colorGoodBB, colorNotGoodBB);
+    Value *isGoodCmp = scaff_->builder_.CreateICmpEQ(isGood, CoBool(true), DBG_NAME("isGood"));
+    scaff_->builder_.CreateCondBr(isGoodCmp, colorGoodBB, colorNotGoodBB);
 
     // Color is not good.
-    scaff->builder_.SetInsertPoint(colorNotGoodBB);
+    scaff_->builder_.SetInsertPoint(colorNotGoodBB);
     Value *errVal = generateCallExtern(
-        TyAddr, getErrorNoLike, PaAddr(scaff->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color));
+        TyAddr, getErrorNoLike, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color));
     generateReturn(errVal);
 
     // Color is good.
-    scaff->builder_.SetInsertPoint(colorGoodBB);
+    scaff_->builder_.SetInsertPoint(colorGoodBB);
     return generateVoidRetval(node);
 }
 /***DOC ALLCOLORS
@@ -740,7 +740,7 @@ COD***/
 // CMD ALLCOLORS 0 0 0 d
 Value *Compiler::genAllcolors(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, getAllColors, PaAddr(scaff->evaluator_));
+    return generateCallExtern(TyAddr, getAllColors, PaAddr(scaff_->evaluator_));
 }
 /***DOC SETPALETTE
 SETPALETTE colornumber color
@@ -755,40 +755,40 @@ COD***/
 // CMD SETPALETTE 2 2 2 n
 Value *Compiler::genSetpalette(const DatumPtr &node, RequestReturnType returnType)
 {
-    BasicBlock *colorIndexNotGoodBB = scaff->createBasicBlock(DBG_NAME("colorIndexNotGood"));
-    BasicBlock *colorIndexGoodBB = scaff->createBasicBlock(DBG_NAME("colorIndexGood"));
-    BasicBlock *colorNotGoodBB = scaff->createBasicBlock(DBG_NAME("colorNotGood"));
-    BasicBlock *colorGoodBB = scaff->createBasicBlock(DBG_NAME("colorGood"));
+    BasicBlock *colorIndexNotGoodBB = scaff_->createBasicBlock(DBG_NAME("colorIndexNotGood"));
+    BasicBlock *colorIndexGoodBB = scaff_->createBasicBlock(DBG_NAME("colorIndexGood"));
+    BasicBlock *colorNotGoodBB = scaff_->createBasicBlock(DBG_NAME("colorNotGood"));
+    BasicBlock *colorGoodBB = scaff_->createBasicBlock(DBG_NAME("colorGood"));
 
-    scaff->addColdPathBlocks(colorIndexNotGoodBB, colorNotGoodBB);
+    scaff_->addColdPathBlocks(colorIndexNotGoodBB, colorNotGoodBB);
 
     Value *colorIndex = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *isColorIndexGoodResult =
         generateCallExtern(TyBool, isColorIndexGood, PaAddr(colorIndex), PaDouble(CoDouble(8.0)));
-    Value *isColorIndexGoodCmp = scaff->builder_.CreateICmpEQ(isColorIndexGoodResult, CoBool(true), DBG_NAME("isColorIndexGood"));
-    scaff->builder_.CreateCondBr(isColorIndexGoodCmp, colorIndexGoodBB, colorIndexNotGoodBB);
+    Value *isColorIndexGoodCmp = scaff_->builder_.CreateICmpEQ(isColorIndexGoodResult, CoBool(true), DBG_NAME("isColorIndexGood"));
+    scaff_->builder_.CreateCondBr(isColorIndexGoodCmp, colorIndexGoodBB, colorIndexNotGoodBB);
 
     // Color index is not good.
-    scaff->builder_.SetInsertPoint(colorIndexNotGoodBB);
+    scaff_->builder_.SetInsertPoint(colorIndexNotGoodBB);
     Value *errVal = generateCallExtern(
-        TyAddr, getErrorNoLike, PaAddr(scaff->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(colorIndex));
+        TyAddr, getErrorNoLike, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(colorIndex));
     generateReturn(errVal);
 
     // Color index is good.
-    scaff->builder_.SetInsertPoint(colorIndexGoodBB);
+    scaff_->builder_.SetInsertPoint(colorIndexGoodBB);
     Value *color = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
     Value *colorIsGood = generateCallExtern(TyBool, setPalette, PaAddr(colorIndex), PaAddr(color));
-    Value *colorIsGoodCmp = scaff->builder_.CreateICmpEQ(colorIsGood, CoBool(true), DBG_NAME("colorIsGood"));
-    scaff->builder_.CreateCondBr(colorIsGoodCmp, colorGoodBB, colorNotGoodBB);
+    Value *colorIsGoodCmp = scaff_->builder_.CreateICmpEQ(colorIsGood, CoBool(true), DBG_NAME("colorIsGood"));
+    scaff_->builder_.CreateCondBr(colorIsGoodCmp, colorGoodBB, colorNotGoodBB);
 
     // Color is not good.
-    scaff->builder_.SetInsertPoint(colorNotGoodBB);
+    scaff_->builder_.SetInsertPoint(colorNotGoodBB);
     errVal = generateCallExtern(
-        TyAddr, getErrorNoLike, PaAddr(scaff->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color));
+        TyAddr, getErrorNoLike, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color));
     generateReturn(errVal);
 
     // Color is good.
-    scaff->builder_.SetInsertPoint(colorGoodBB);
+    scaff_->builder_.SetInsertPoint(colorGoodBB);
     return generateVoidRetval(node);
 }
 /***DOC SETPENSIZE
@@ -818,24 +818,24 @@ COD***/
 // CMD SETBG 1 1 1 n
 Value *Compiler::genSetbackground(const DatumPtr &node, RequestReturnType returnType)
 {
-    BasicBlock *colorNotGoodBB = scaff->createBasicBlock(DBG_NAME("colorNotGood"));
-    BasicBlock *colorGoodBB = scaff->createBasicBlock(DBG_NAME("colorGood"));
+    BasicBlock *colorNotGoodBB = scaff_->createBasicBlock(DBG_NAME("colorNotGood"));
+    BasicBlock *colorGoodBB = scaff_->createBasicBlock(DBG_NAME("colorGood"));
 
-    scaff->addColdPathBlocks(colorNotGoodBB);
+    scaff_->addColdPathBlocks(colorNotGoodBB);
 
     Value *color = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *isGood = generateCallExtern(TyBool, setBackground, PaAddr(color));
-    Value *isGoodCmp = scaff->builder_.CreateICmpEQ(isGood, CoBool(true), DBG_NAME("isGood"));
-    scaff->builder_.CreateCondBr(isGoodCmp, colorGoodBB, colorNotGoodBB);
+    Value *isGoodCmp = scaff_->builder_.CreateICmpEQ(isGood, CoBool(true), DBG_NAME("isGood"));
+    scaff_->builder_.CreateCondBr(isGoodCmp, colorGoodBB, colorNotGoodBB);
 
     // Color is not good.
-    scaff->builder_.SetInsertPoint(colorNotGoodBB);
+    scaff_->builder_.SetInsertPoint(colorNotGoodBB);
     Value *errVal = generateCallExtern(
-        TyAddr, getErrorNoLike, PaAddr(scaff->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color));
+        TyAddr, getErrorNoLike, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(color));
     generateReturn(errVal);
 
     // Color is good.
-    scaff->builder_.SetInsertPoint(colorGoodBB);
+    scaff_->builder_.SetInsertPoint(colorGoodBB);
     return generateVoidRetval(node);
 }
 // PEN QUERIES
@@ -863,7 +863,7 @@ COD***/
 // CMD PENMODE 0 0 0 d
 Value *Compiler::genPenmode(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, getPenMode, PaAddr(scaff->evaluator_));
+    return generateCallExtern(TyAddr, getPenMode, PaAddr(scaff_->evaluator_));
 }
 /***DOC PENCOLOR PC
 PENCOLOR
@@ -878,7 +878,7 @@ COD***/
 // CMD PC 0 0 0 d
 Value *Compiler::genPencolor(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, getPenColor, PaAddr(scaff->evaluator_));
+    return generateCallExtern(TyAddr, getPenColor, PaAddr(scaff_->evaluator_));
 }
 /***DOC PALETTE
 PALETTE colornumber
@@ -891,25 +891,25 @@ COD***/
 // CMD PALETTE 1 1 1 d
 Value *Compiler::genPalette(const DatumPtr &node, RequestReturnType returnType)
 {
-    BasicBlock *colorIndexNotGoodBB = scaff->createBasicBlock(DBG_NAME("colorIndexNotGood"));
-    BasicBlock *colorIndexGoodBB = scaff->createBasicBlock(DBG_NAME("colorIndexGood"));
+    BasicBlock *colorIndexNotGoodBB = scaff_->createBasicBlock(DBG_NAME("colorIndexNotGood"));
+    BasicBlock *colorIndexGoodBB = scaff_->createBasicBlock(DBG_NAME("colorIndexGood"));
 
-    scaff->addColdPathBlocks(colorIndexNotGoodBB);
+    scaff_->addColdPathBlocks(colorIndexNotGoodBB);
 
     Value *colorIndex = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *isColorIndexGood = generateCallExtern(TyBool, isColorIndexGood, PaAddr(colorIndex), PaDouble(CoDouble(0.0)));
-    Value *isColorIndexGoodCmp = scaff->builder_.CreateICmpEQ(isColorIndexGood, CoBool(true), DBG_NAME("isColorIndexGood"));
-    scaff->builder_.CreateCondBr(isColorIndexGoodCmp, colorIndexGoodBB, colorIndexNotGoodBB);
+    Value *isColorIndexGoodCmp = scaff_->builder_.CreateICmpEQ(isColorIndexGood, CoBool(true), DBG_NAME("isColorIndexGood"));
+    scaff_->builder_.CreateCondBr(isColorIndexGoodCmp, colorIndexGoodBB, colorIndexNotGoodBB);
 
     // Color index is not good.
-    scaff->builder_.SetInsertPoint(colorIndexNotGoodBB);
+    scaff_->builder_.SetInsertPoint(colorIndexNotGoodBB);
     Value *errVal = generateCallExtern(
-        TyAddr, getErrorNoLike, PaAddr(scaff->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(colorIndex));
+        TyAddr, getErrorNoLike, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(colorIndex));
     generateReturn(errVal);
 
     // Color index is good.
-    scaff->builder_.SetInsertPoint(colorIndexGoodBB);
-    Value *color = generateCallExtern(TyAddr, getPaletteColor, PaAddr(scaff->evaluator_), PaAddr(colorIndex));
+    scaff_->builder_.SetInsertPoint(colorIndexGoodBB);
+    Value *color = generateCallExtern(TyAddr, getPaletteColor, PaAddr(scaff_->evaluator_), PaAddr(colorIndex));
     return color;
 }
 /***DOC PENSIZE
@@ -938,7 +938,7 @@ COD***/
 // CMD BG 0 0 0 d
 Value *Compiler::genBackground(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, getBackground, PaAddr(scaff->evaluator_));
+    return generateCallExtern(TyAddr, getBackground, PaAddr(scaff_->evaluator_));
 }
 // SAVING AND LOADING PICTURES
 
@@ -956,7 +956,7 @@ Value *Compiler::genSavepict(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *filename = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     return generateCallExtern(
-        TyAddr, savePict, PaAddr(scaff->evaluator_), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue())));
+        TyAddr, savePict, PaAddr(scaff_->evaluator_), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue())));
 }
 /***DOC SVGPICT
 SVGPICT filename
@@ -971,7 +971,7 @@ Value *Compiler::genSvgpict(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *filename = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     return generateCallExtern(
-        TyAddr, saveSvgpict, PaAddr(scaff->evaluator_), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue())));
+        TyAddr, saveSvgpict, PaAddr(scaff_->evaluator_), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue())));
 }
 /***DOC LOADPICT
 LOADPICT filename
@@ -989,7 +989,7 @@ Value *Compiler::genLoadpict(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *filename = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     return generateCallExtern(
-        TyAddr, loadPict, PaAddr(scaff->evaluator_), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue())));
+        TyAddr, loadPict, PaAddr(scaff_->evaluator_), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue())));
 }
 // MOUSE QUERIES
 
@@ -1007,7 +1007,7 @@ COD***/
 // CMD MOUSEPOS 0 0 0 d
 Value *Compiler::genMousepos(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, getMousePos, PaAddr(scaff->evaluator_));
+    return generateCallExtern(TyAddr, getMousePos, PaAddr(scaff_->evaluator_));
 }
 /***DOC CLICKPOS
 CLICKPOS
@@ -1020,7 +1020,7 @@ COD***/
 // CMD CLICKPOS 0 0 0 d
 Value *Compiler::genClickpos(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, getClickPos, PaAddr(scaff->evaluator_));
+    return generateCallExtern(TyAddr, getClickPos, PaAddr(scaff_->evaluator_));
 }
 /***DOC BUTTONP BUTTON?
 BUTTONP

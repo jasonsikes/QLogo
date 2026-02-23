@@ -108,23 +108,23 @@ struct Scaffold
 // Some defines to reduce boilerplate
 
 // Data types
-#define TyVoid   (Type::getVoidTy(*scaff->theContext_))
-#define TyInt8   (Type::getInt8Ty(*scaff->theContext_))
-#define TyInt16  (Type::getInt16Ty(*scaff->theContext_))
-#define TyInt32  (Type::getInt32Ty(*scaff->theContext_))
-#define TyInt64  (Type::getInt64Ty(*scaff->theContext_))
-#define TyDouble (Type::getDoubleTy(*scaff->theContext_))
-#define TyAddr   (PointerType::get(*scaff->theContext_, 0))
-#define TyBool   (Type::getInt1Ty(*scaff->theContext_))
+#define TyVoid   (Type::getVoidTy(*scaff_->theContext_))
+#define TyInt8   (Type::getInt8Ty(*scaff_->theContext_))
+#define TyInt16  (Type::getInt16Ty(*scaff_->theContext_))
+#define TyInt32  (Type::getInt32Ty(*scaff_->theContext_))
+#define TyInt64  (Type::getInt64Ty(*scaff_->theContext_))
+#define TyDouble (Type::getDoubleTy(*scaff_->theContext_))
+#define TyAddr   (PointerType::get(*scaff_->theContext_, 0))
+#define TyBool   (Type::getInt1Ty(*scaff_->theContext_))
 
 // Data value constants
-#define CoInt8(VAL)  (ConstantInt::get(*scaff->theContext_, APInt(8, (uint8_t)(VAL))))
-#define CoInt16(VAL)  (ConstantInt::get(*scaff->theContext_, APInt(16, (uint16_t)(VAL))))
-#define CoInt32(VAL)  (ConstantInt::get(*scaff->theContext_, APInt(32, (uint32_t)(VAL))))
-#define CoInt64(VAL)  (ConstantInt::get(*scaff->theContext_, APInt(64, (uint64_t)(VAL))))
-#define CoDouble(VAL) (ConstantFP::get(*scaff->theContext_, APFloat((VAL))))
+#define CoInt8(VAL)  (ConstantInt::get(*scaff_->theContext_, APInt(8, (uint8_t)(VAL))))
+#define CoInt16(VAL)  (ConstantInt::get(*scaff_->theContext_, APInt(16, (uint16_t)(VAL))))
+#define CoInt32(VAL)  (ConstantInt::get(*scaff_->theContext_, APInt(32, (uint32_t)(VAL))))
+#define CoInt64(VAL)  (ConstantInt::get(*scaff_->theContext_, APInt(64, (uint64_t)(VAL))))
+#define CoDouble(VAL) (ConstantFP::get(*scaff_->theContext_, APFloat((VAL))))
 #define CoAddr(VAL)   (ConstantExpr::getIntToPtr(CoInt64(VAL), TyAddr))
-#define CoBool(VAL)   (ConstantInt::get(*scaff->theContext_, APInt(1, VAL)))
+#define CoBool(VAL)   (ConstantInt::get(*scaff_->theContext_, APInt(1, VAL)))
 
 // Parameter combinations
 #define PaInt8(VAL)  {TyInt8, (VAL)}

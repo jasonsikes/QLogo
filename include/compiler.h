@@ -53,13 +53,13 @@ typedef std::function<llvm::Value *(llvm::Value *)> validatorFunction;
 
 class Compiler
 {
-    // Scaffold is a collection of objects needed to compile a JIT module.
-    Scaffold *scaff;
+    // Scaffold is a collection of objects needed to compile a function (JIT module).
+    Scaffold *scaff_;
 
-    std::unique_ptr<llvm::orc::LLJIT> lljit;
+    std::unique_ptr<llvm::orc::LLJIT> lljit_;
 
     // The hash table of compiled texts referenced by lists or ASTNodes.
-    static QHash<Datum *, std::shared_ptr<CompiledText>> compiledTextTable;
+    static QHash<Datum *, std::shared_ptr<CompiledText>> compiledTextTable_;
 
     // Child node generation.
 

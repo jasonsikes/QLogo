@@ -142,7 +142,7 @@ Value *Compiler::genInputProcedure(const DatumPtr &node, RequestReturnType retur
     Q_ASSERT(returnType && RequestReturnNothing);
     // We take the parameters as literals; we don't generate children.
     // Pass the node directly to the input function.
-    return generateCallExtern(TyAddr, inputProcedure, PaAddr(scaff->evaluator_), PaAddr(CoAddr(node.datumValue())));
+    return generateCallExtern(TyAddr, inputProcedure, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.datumValue())));
 }
 
 /***DOC MAKE
