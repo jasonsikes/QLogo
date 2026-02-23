@@ -25,8 +25,8 @@
 
 Console::Console(QWidget *parent) : QTextEdit(parent)
 {
-    consoleMode = consoleModeNoWait;
-    textFormat.setForeground(QBrush(QWidget::palette().color(QPalette::Text)));
+    consoleMode_ = consoleModeNoWait;
+    textFormat_.setForeground(QBrush(QWidget::palette().color(QPalette::Text)));
 }
 
 // Write a fragment of text
@@ -53,23 +53,23 @@ void Console::writeTextFragment(const QString &text)
             }
         }
     }
-    tc.setCharFormat(textFormat);
+    tc.setCharFormat(textFormat_);
     tc.insertText(text);
 }
 
 void Console::standout()
 {
-    if (isPrintingStandout)
+    if (isPrintingStandout_)
     {
-        textFormat.setForeground(textFormat.background());
-        textFormat.setBackground(QBrush(Qt::transparent));
+        textFormat_.setForeground(textFormat_.background());
+        textFormat_.setBackground(QBrush(Qt::transparent));
     }
     else
     {
-        textFormat.setBackground(textFormat.foreground());
-        textFormat.setForeground(palette().brush(QPalette::Base));
+        textFormat_.setBackground(textFormat_.foreground());
+        textFormat_.setForeground(palette().brush(QPalette::Base));
     }
-    isPrintingStandout = !isPrintingStandout;
+    isPrintingStandout_ = !isPrintingStandout_;
 }
 
 void Console::printString(const QString &text)
@@ -91,21 +91,21 @@ void Console::printString(const QString &text)
 
 void Console::setTextFontName(const QString &aName)
 {
-    QFont f = textFormat.font();
+    QFont f = textFormat_.font();
     f.setFamily(aName);
-    textFormat.setFont(f);
+    textFormat_.setFont(f);
 }
 
 void Console::setTextFontSize(qreal aSize)
 {
-    QFont f = textFormat.font();
+    QFont f = textFormat_.font();
     f.setPointSizeF(aSize);
-    textFormat.setFont(f);
+    textFormat_.setFont(f);
 }
 
 void Console::setTextFontColor(QColor foreground, QColor background)
 {
-    textFormat.setForeground(QBrush(foreground));
+    textFormat_.setForeground(QBrush(foreground));
     if (background.isValid())
     {
         QBrush brush = QBrush(background);
@@ -117,20 +117,20 @@ void Console::setTextFontColor(QColor foreground, QColor background)
 
 void Console::requestRawlineWithPrompt(const QString &prompt)
 {
-    consoleMode = consoleModeWaitingForRawline;
+    consoleMode_ = consoleModeWaitingForRawline;
     moveCursor(QTextCursor::End);
     printString(prompt);
     beginningOfRawline = textCursor().position();
     beginningOfRawlineInBlock = textCursor().positionInBlock();
-    lineInputHistory.push_back("");
-    lineInputHistoryScrollingCurrentIndex = lineInputHistory.size() - 1;
+    lineInputHistory_.push_back("");
+    lineInputHistoryScrollingCurrentIndex_ = lineInputHistory_.size() - 1;
 
     insertNextLineFromQueue();
 }
 
 void Console::requestChar()
 {
-    consoleMode = consoleModeWaitingForChar;
+    consoleMode_ = consoleModeWaitingForChar;
 
     insertNextCharFromQueue();
 }
@@ -183,7 +183,7 @@ void Console::setTextCursorPosition(int row, int col)
 void Console::keyPressEvent(QKeyEvent *event)
 {
     // TODO: User interface interrupt event handling
-    switch (consoleMode)
+    switch (consoleMode_)
     {
     case consoleModeWaitingForRawline:
         processLineModeKeyPressEvent(event);
@@ -201,10 +201,10 @@ void Console::processCharModeKeyPressEvent(QKeyEvent *event)
     QString t = event->text();
     if (t.length() > 0)
     {
-        consoleMode = consoleModeNoWait;
+        consoleMode_ = consoleModeNoWait;
         if (t.length() > 1)
         {
-            keyQueue.push_back(t.right(t.length() - 1));
+            keyQueue_.push_back(t.right(t.length() - 1));
         }
         emit sendCharSignal(t[0]);
     }
@@ -212,7 +212,7 @@ void Console::processCharModeKeyPressEvent(QKeyEvent *event)
 
 void Console::processNoWaitKeyPressEvent(QKeyEvent *event)
 {
-    keyQueue.push_back(event->text());
+    keyQueue_.push_back(event->text());
 }
 
 // Process a key press event in line mode. We try to keep the cursor within
@@ -243,17 +243,17 @@ void Console::processLineModeKeyPressEvent(QKeyEvent *event)
     {
         if (event->matches(QKeySequence::MoveToPreviousLine))
         {
-            if (lineInputHistoryScrollingCurrentIndex > 0)
+            if (lineInputHistoryScrollingCurrentIndex_ > 0)
             {
-                replaceLineWithHistoryIndex(lineInputHistoryScrollingCurrentIndex - 1);
+                replaceLineWithHistoryIndex(lineInputHistoryScrollingCurrentIndex_ - 1);
             }
             return;
         }
         if (event->matches(QKeySequence::MoveToNextLine))
         {
-            if (lineInputHistoryScrollingCurrentIndex < lineInputHistory.size() - 1)
+            if (lineInputHistoryScrollingCurrentIndex_ < lineInputHistory_.size() - 1)
             {
-                replaceLineWithHistoryIndex(lineInputHistoryScrollingCurrentIndex + 1);
+                replaceLineWithHistoryIndex(lineInputHistoryScrollingCurrentIndex_ + 1);
             }
             return;
         }
@@ -305,12 +305,12 @@ void Console::processLineModeKeyPressEvent(QKeyEvent *event)
     // Send the raw line to the interpreter
     if (event->matches(QKeySequence::InsertLineSeparator) || event->matches(QKeySequence::InsertParagraphSeparator))
     {
-        consoleMode = consoleModeNoWait;
+        consoleMode_ = consoleModeNoWait;
         QString block = tc.block().text();
         QString line = block.right(block.size() - beginningOfRawlineInBlock);
         moveCursor(QTextCursor::End);
         textCursor().insertBlock();
-        lineInputHistory.last() = line;
+        lineInputHistory_.last() = line;
         emit sendRawlineSignal(line);
         return;
     }
@@ -324,41 +324,41 @@ void Console::replaceLineWithHistoryIndex(int newIndex)
     // the line at the current index, save it at the last.
     QString block = document()->lastBlock().text();
     QString line = block.right(block.size() - beginningOfRawlineInBlock);
-    QString historyLine = lineInputHistory[lineInputHistoryScrollingCurrentIndex];
+    QString historyLine = lineInputHistory_[lineInputHistoryScrollingCurrentIndex_];
     if (line != historyLine)
     {
-        lineInputHistory.last() = line;
+        lineInputHistory_.last() = line;
     }
     // Now replace the line with that at newIndex
-    historyLine = lineInputHistory[newIndex];
+    historyLine = lineInputHistory_[newIndex];
     QTextCursor cursor = textCursor();
     cursor.setPosition(beginningOfRawline);
     cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
     cursor.removeSelectedText();
     cursor.insertText(historyLine);
-    lineInputHistoryScrollingCurrentIndex = newIndex;
+    lineInputHistoryScrollingCurrentIndex_ = newIndex;
 }
 
 void Console::insertNextLineFromQueue()
 {
-    if (keyQueue.size() > 0)
+    if (keyQueue_.size() > 0)
     {
-        int loc = keyQueue.indexOf("\n");
+        int loc = keyQueue_.indexOf("\n");
         if (loc < 0)
-            loc = keyQueue.size();
+            loc = keyQueue_.size();
 
         moveCursor(QTextCursor::End);
-        textCursor().insertText(keyQueue.left(loc));
-        keyQueue = keyQueue.right(keyQueue.size() - loc);
+        textCursor().insertText(keyQueue_.left(loc));
+        keyQueue_ = keyQueue_.right(keyQueue_.size() - loc);
         moveCursor(QTextCursor::End);
         ensureCursorVisible();
-        if ((keyQueue.size() > 0) && (keyQueue[0] == '\n'))
+        if ((keyQueue_.size() > 0) && (keyQueue_[0] == '\n'))
         {
-            consoleMode = consoleModeNoWait;
+            consoleMode_ = consoleModeNoWait;
             QString block = document()->lastBlock().text();
             QString line = block.right(block.size() - beginningOfRawlineInBlock);
             textCursor().insertBlock();
-            keyQueue = keyQueue.right(keyQueue.size() - 1);
+            keyQueue_ = keyQueue_.right(keyQueue_.size() - 1);
             emit sendRawlineSignal(line);
         }
     }
@@ -366,16 +366,16 @@ void Console::insertNextLineFromQueue()
 
 void Console::insertNextCharFromQueue()
 {
-    if (keyQueue.size() > 0)
+    if (keyQueue_.size() > 0)
     {
-        consoleMode = consoleModeNoWait;
-        QChar c = keyQueue[0];
-        keyQueue = keyQueue.right(keyQueue.size() - 1);
+        consoleMode_ = consoleModeNoWait;
+        QChar c = keyQueue_[0];
+        keyQueue_ = keyQueue_.right(keyQueue_.size() - 1);
         emit sendCharSignal(c);
     }
 }
 
 void Console::insertFromMimeData(const QMimeData *source)
 {
-    keyQueue += source->text();
+    keyQueue_ += source->text();
 }

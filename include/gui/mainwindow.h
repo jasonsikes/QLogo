@@ -52,14 +52,14 @@ class MainWindow : public QMainWindow
         windowMode_waitForRawline,
     };
 
-    Ui::MainWindow *ui;
+    Ui::MainWindow *ui_;
 
-    QByteArray readBuffer;
-    qint64 readBufferLen = 0;
+    QByteArray readBuffer_;
+    qint64 readBufferLen_ = 0;
 
-    windowMode_t windowMode;
-    bool hasShownCanvas = false;
-    EditorWindow *editWindow = nullptr;
+    windowMode_t windowMode_;
+    bool hasShownCanvas_ = false;
+    EditorWindow *editWindow_ = nullptr;
 
     int startLogo();
     void beginReadRawlineWithPrompt(const QString &prompt);

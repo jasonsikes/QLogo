@@ -34,7 +34,7 @@ class EditorWindow : public QMainWindow
 {
     Q_OBJECT
 
-    Ui::EditorWindow *ui;
+    Ui::EditorWindow *ui_;
     bool eventFilter(QObject *watched, QEvent *event) override;
 
   public:

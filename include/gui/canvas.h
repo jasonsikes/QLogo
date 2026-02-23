@@ -29,15 +29,15 @@ class MainWindow;
 /// Contains the information that describes a label's appearance on the Canvas.
 struct Label
 {
-    QPointF position;
-    QStaticText text;
-    QFont font;
+    QPointF position_;
+    QStaticText text_;
+    QFont font_;
 
     /// @brief Constructor.
     /// @param aText The text to display.
     /// @param aPosition The position to display the text.
     /// @param aFont The font to use for the text.
-    Label(const QString &aText, QPointF aPosition, const QFont &aFont) : text(aText), position(aPosition), font(aFont)
+    Label(const QString &aText, QPointF aPosition, const QFont &aFont) : text_(aText), position_(aPosition), font_(aFont)
     {
     }
 };
@@ -45,8 +45,8 @@ struct Label
 /// Contains the information that describes a polygon.
 struct Polygon
 {
-    QColor color;
-    QPolygonF points;
+    QColor color_;
+    QPolygonF points_;
 };
 
 /// Contains the information that describes a change in how a turtle draws.
@@ -55,19 +55,19 @@ struct TurtleWriteInfo
     /// @brief The composition mode to use for drawing.
     ///
     /// Acceptable values are either SourceOver or Difference.
-    QPainter::CompositionMode composingMode;
+    QPainter::CompositionMode composingMode_;
     /// @brief The pen to use for drawing.
     ///
     /// The only relevant fields are color and width.
-    QPen pen;
+    QPen pen_;
 };
 
 /// Contains the information that describes how to draw an arc.
 struct Arc
 {
-    QRectF rectangle;
-    int startAngle;
-    int spanAngle;
+    QRectF rectangle_;
+    int startAngle_;
+    int spanAngle_;
     Arc(QPointF center, qreal a, qreal span, qreal radius);
 };
 
@@ -94,8 +94,8 @@ enum DrawingElementID
 /// The variant structure for the individual drawing elements.
 struct DrawingElement
 {
-    DrawingElementID elementID;
-    DrawingElementVariant element;
+    DrawingElementID elementID_;
+    DrawingElementVariant element_;
 };
 
 /// @brief The canvas widget, the main widget for the turtle graphics.
@@ -107,46 +107,46 @@ class Canvas : public QWidget
     Q_OBJECT
 
     // Turtle vars:
-    QTransform turtleMatrix; // The location and orientation of the turtle.
-    bool turtleIsVisible;
+    QTransform turtleMatrix_; // The location and orientation of the turtle.
+    bool turtleIsVisible_;
 
-    QTransform turtleImageMatrix; // The matrix applied when drawing the turtle
-    QImage turtleImage;
+    QTransform turtleImageMatrix_; // The matrix applied when drawing the turtle
+    QImage turtleImage_;
 
-    bool canvasIsBounded = true;
-    bool mouseButtonPressed = false;
-    QTransform drawingMatrix;        // For mapping cartesian to widget.
-    QTransform inverseDrawingMatrix; // For mapping mouse to cartesian.
+    bool canvasIsBounded_ = true;
+    bool mouseButtonPressed_ = false;
+    QTransform drawingMatrix_;        // For mapping cartesian to widget.
+    QTransform inverseDrawingMatrix_; // For mapping mouse to cartesian.
 
     // Visible vertices on the X axis range from -boundsX to +boundsX
-    qreal boundsX;
+    qreal boundsX_;
     // Visible vertices on the Y axis range from -boundsY to +boundsY
-    qreal boundsY;
+    qreal boundsY_;
 
-    QColor foregroundColor;
-    QColor backgroundColor;
-    TurtleWriteInfo currentWriteInfo;
-    PenModeEnum penMode = penModePaint; // paint,erase,reverse
-    bool penIsDown = true;
+    QColor foregroundColor_;
+    QColor backgroundColor_;
+    TurtleWriteInfo currentWriteInfo_;
+    PenModeEnum penMode_ = penModePaint; // paint,erase,reverse
+    bool penIsDown_ = true;
 
     // The main data structure for all of the drawn elements on the canvas.
-    QList<DrawingElement> drawingElementList;
+    QList<DrawingElement> drawingElementList_;
 
     // The currently-constructing line sequence.
-    QPolygonF lineGroup;
+    QPolygonF lineGroup_;
 
     // The currently-constructing polygon.
-    bool isConstructingPolygon = false;
-    QColor polygonColor;
-    QPolygonF polygonGroup;
+    bool isConstructingPolygon_ = false;
+    QColor polygonColor_;
+    QPolygonF polygonGroup_;
 
-    QImage backgroundImage;
+    QImage backgroundImage_;
 
     // The QPainter object. This is only valid during the paintEvent().
     QPainter *painter;
 
     // The current label drawing font
-    QFont labelFont;
+    QFont labelFont_;
 
     void initDrawingElementList();
     void initTurtleImage();
@@ -292,7 +292,7 @@ class Canvas : public QWidget
     /// minimum X bound is negative of the maximum.
     qreal xbound()
     {
-        return boundsX;
+        return boundsX_;
     }
 
     /// @brief Get the maximum Y bound
@@ -302,7 +302,7 @@ class Canvas : public QWidget
     /// minimum Y bound is negative of the maximum.
     qreal ybound()
     {
-        return boundsY;
+        return boundsY_;
     }
 
     /// @brief Set the maximum X and Y bounds
@@ -321,7 +321,7 @@ class Canvas : public QWidget
     /// the widget draws the entirety of the widget the background color.
     void setIsBounded(bool aIsBounded)
     {
-        canvasIsBounded = aIsBounded;
+        canvasIsBounded_ = aIsBounded;
         update();
     }
 
@@ -331,7 +331,7 @@ class Canvas : public QWidget
     /// more details.
     bool isBounded()
     {
-        return canvasIsBounded;
+        return canvasIsBounded_;
     }
 
   signals:

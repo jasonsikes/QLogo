@@ -26,49 +26,49 @@ const QKeySequence::StandardKey revertChangesKey = QKeySequence::Close;
 /// @brief The key sequence for saving changes.
 const QKeySequence::StandardKey saveChangesKey = QKeySequence::Save;
 
-EditorWindow::EditorWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::EditorWindow)
+EditorWindow::EditorWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::EditorWindow)
 {
-    ui->setupUi(this);
+    ui_->setupUi(this);
 
     Qt::WindowFlags flags = windowFlags();
     Qt::WindowFlags closeFlag = Qt::WindowCloseButtonHint;
     flags = flags & (~closeFlag);
     setWindowFlags(flags);
 
-    connect(ui->acceptButton, SIGNAL(clicked(bool)), this, SLOT(acceptChanges()));
-    connect(ui->revertButton, SIGNAL(clicked(bool)), this, SLOT(revertChanges()));
-    ui->plainTextEdit->installEventFilter(this);
+    connect(ui_->acceptButton, SIGNAL(clicked(bool)), this, SLOT(acceptChanges()));
+    connect(ui_->revertButton, SIGNAL(clicked(bool)), this, SLOT(revertChanges()));
+    ui_->plainTextEdit->installEventFilter(this);
 }
 
 EditorWindow::~EditorWindow()
 {
-    delete ui;
+    delete ui_;
 }
 
 void EditorWindow::setContents(const QString &startingText)
 {
-    ui->plainTextEdit->setPlainText(startingText);
+    ui_->plainTextEdit->setPlainText(startingText);
 }
 
 void EditorWindow::setTextFormat(const QTextCharFormat &qtcf)
 {
-    ui->plainTextEdit->setFont(qtcf.font());
-    QPalette palette = ui->plainTextEdit->palette();
+    ui_->plainTextEdit->setFont(qtcf.font());
+    QPalette palette = ui_->plainTextEdit->palette();
     palette.setBrush(QPalette::Text, qtcf.foreground());
     palette.setBrush(QPalette::Base, qtcf.background());
-    ui->plainTextEdit->setPalette(palette);
+    ui_->plainTextEdit->setPalette(palette);
 }
 
 void EditorWindow::show()
 {
     QMainWindow::show();
 
-    QTimer::singleShot(0, ui->plainTextEdit, SLOT(setFocus()));
+    QTimer::singleShot(0, ui_->plainTextEdit, SLOT(setFocus()));
 }
 
 void EditorWindow::acceptChanges()
 {
-    QString text = ui->plainTextEdit->toPlainText();
+    QString text = ui_->plainTextEdit->toPlainText();
     emit editingHasEndedSignal(text);
     close();
 }

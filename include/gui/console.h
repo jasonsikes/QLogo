@@ -31,20 +31,20 @@ class Console : public QTextEdit
         consoleModeWaitingForChar,
         consoleModeWaitingForRawline,
     };
-    consoleMode_t consoleMode;
+    consoleMode_t consoleMode_;
     int beginningOfRawline;
     int beginningOfRawlineInBlock;
 
     // Line input history
-    QStringList lineInputHistory;
-    int lineInputHistoryScrollingCurrentIndex;
+    QStringList lineInputHistory_;
+    int lineInputHistoryScrollingCurrentIndex_;
 
     // Keypress and paste buffers
-    QString keyQueue;
+    QString keyQueue_;
 
-    QTextCharFormat textFormat;
+    QTextCharFormat textFormat_;
 
-    bool isPrintingStandout = false;
+    bool isPrintingStandout_ = false;
     void writeTextFragment(const QString &text);
     void standout();
 
@@ -106,7 +106,7 @@ class Console : public QTextEdit
     /// @return The font
     const QTextCharFormat getFont()
     {
-        return textFormat;
+        return textFormat_;
     }
 
   signals:
