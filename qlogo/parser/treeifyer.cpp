@@ -85,7 +85,7 @@ QList<DatumPtr> Treeifier::astFromList(List *aList)
 
     DatumPtr runParsedList = runparse(aList);
 
-    instance.listIter = runParsedList.listValue();
+    instance.listIter_ = runParsedList.listValue();
     QList<DatumPtr> retval;
 
     instance.advanceToken();
@@ -93,7 +93,7 @@ QList<DatumPtr> Treeifier::astFromList(List *aList)
     // Build a flat list of AST nodes by treeifying each root expression
     try
     {
-        while (!instance.currentToken.isNothing())
+        while (!instance.currentToken_.isNothing())
         {
             retval.push_back(instance.treeifyRootExp());
         }
@@ -121,10 +121,10 @@ DatumPtr Treeifier::treeifyRootExp()
     // and because of tail recursion optimization, we must trampoline the expression when terminating the procedure.
     // Thus, the expression becomes a child of the STOP node.
     // e.g. [PRINT 2+2 STOP] becomes [STOP [PRINT 2+2]]
-    if ((currentToken.isa() == Datum::typeWord) &&
-        (currentToken.toString(Datum::ToStringFlags_Key) == cmdStrSTOP()))
+    if ((currentToken_.isa() == Datum::typeWord) &&
+        (currentToken_.toString(Datum::ToStringFlags_Key) == cmdStrSTOP()))
     {
-        auto newNode = DatumPtr(new ASTNode(currentToken));
+        auto newNode = DatumPtr(new ASTNode(currentToken_));
         newNode.astnodeValue()->genExpression_ = &Compiler::genStop;
         newNode.astnodeValue()->returnType_ = RequestReturnNothing;
         newNode.astnodeValue()->addChild(node);
@@ -142,14 +142,14 @@ DatumPtr Treeifier::treeifyRootExp()
 DatumPtr Treeifier::treeifyExp()
 {
     DatumPtr left = treeifySumexp();
-    while ((currentToken.isa() == Datum::typeWord) && ((currentToken.toString() == opEqual()) ||
-                                                       (currentToken.toString() == opNotEqual()) ||
-                                                       (currentToken.toString() == opGreaterThan()) ||
-                                                       (currentToken.toString() == opLessThan()) ||
-                                                       (currentToken.toString() == opGreaterEqual()) ||
-                                                       (currentToken.toString() == opLessEqual())))
+    while ((currentToken_.isa() == Datum::typeWord) && ((currentToken_.toString() == opEqual()) ||
+                                                       (currentToken_.toString() == opNotEqual()) ||
+                                                       (currentToken_.toString() == opGreaterThan()) ||
+                                                       (currentToken_.toString() == opLessThan()) ||
+                                                       (currentToken_.toString() == opGreaterEqual()) ||
+                                                       (currentToken_.toString() == opLessEqual())))
     {
-        DatumPtr op = currentToken;
+        DatumPtr op = currentToken_;
         advanceToken();
         DatumPtr right = treeifySumexp();
 
@@ -202,10 +202,10 @@ DatumPtr Treeifier::treeifyExp()
 DatumPtr Treeifier::treeifySumexp()
 {
     DatumPtr left = treeifyMulexp();
-    while ((currentToken.isa() == Datum::typeWord) && ((currentToken.toString() == opPlus()) ||
-                                                       (currentToken.toString() == opMinus())))
+    while ((currentToken_.isa() == Datum::typeWord) && ((currentToken_.toString() == opPlus()) ||
+                                                       (currentToken_.toString() == opMinus())))
     {
-        DatumPtr op = currentToken;
+        DatumPtr op = currentToken_;
         advanceToken();
         DatumPtr right = treeifyMulexp();
 
@@ -238,11 +238,11 @@ DatumPtr Treeifier::treeifySumexp()
 DatumPtr Treeifier::treeifyMulexp()
 {
     DatumPtr left = treeifyMinusexp();
-    while ((currentToken.isa() == Datum::typeWord) && ((currentToken.toString() == opMultiply()) ||
-                                                       (currentToken.toString() == opDivide()) ||
-                                                       (currentToken.toString() == opModulo())))
+    while ((currentToken_.isa() == Datum::typeWord) && ((currentToken_.toString() == opMultiply()) ||
+                                                       (currentToken_.toString() == opDivide()) ||
+                                                       (currentToken_.toString() == opModulo())))
     {
-        DatumPtr op = currentToken;
+        DatumPtr op = currentToken_;
         advanceToken();
         DatumPtr right = treeifyMinusexp();
 
@@ -280,9 +280,9 @@ DatumPtr Treeifier::treeifyMulexp()
 DatumPtr Treeifier::treeifyMinusexp()
 {
     DatumPtr left = treeifyTermexp();
-    while ((currentToken.isa() == Datum::typeWord) && ((currentToken.toString() == opDoubleMinus())))
+    while ((currentToken_.isa() == Datum::typeWord) && ((currentToken_.toString() == opDoubleMinus())))
     {
-        DatumPtr op = currentToken;
+        DatumPtr op = currentToken_;
         advanceToken();
         DatumPtr right = treeifyTermexp();
 
@@ -312,42 +312,42 @@ DatumPtr Treeifier::treeifyMinusexp()
 /// @return AST node representing the terminal expression.
 DatumPtr Treeifier::treeifyTermexp()
 {
-    if (currentToken.isNothing())
+    if (currentToken_.isNothing())
         return nothing();
 
-    if (currentToken.isList())
+    if (currentToken_.isList())
     {
         DatumPtr node(new ASTNode(astNodeTypeList()));
         node.astnodeValue()->genExpression_ = &Compiler::genLiteral;
         node.astnodeValue()->returnType_ = RequestReturnDatum;
-        node.astnodeValue()->addChild(currentToken);
+        node.astnodeValue()->addChild(currentToken_);
         advanceToken();
         return node;
     }
 
-    if (currentToken.isa() == Datum::typeArray)
+    if (currentToken_.isa() == Datum::typeArray)
     {
         DatumPtr node(new ASTNode(astNodeTypeArray()));
         node.astnodeValue()->genExpression_ = &Compiler::genLiteral;
         node.astnodeValue()->returnType_ = RequestReturnDatum;
-        node.astnodeValue()->addChild(currentToken);
+        node.astnodeValue()->addChild(currentToken_);
         advanceToken();
         return node;
     }
 
     // After Nothing, List, and Array, the token must be a Word.
-    Q_ASSERT(currentToken.isa() == Datum::typeWord);
+    Q_ASSERT(currentToken_.isa() == Datum::typeWord);
 
     // See if it's an open paren
-    if (currentToken.toString() == opOpenParen())
+    if (currentToken_.toString() == opOpenParen())
     {
         // This may be an expression or a vararg function
         DatumPtr retval;
 
         advanceToken();
-        if (currentToken.isWord())
+        if (currentToken_.isWord())
         {
-            QString cmdString = currentToken.toString(Datum::ToStringFlags_Key);
+            QString cmdString = currentToken_.toString(Datum::ToStringFlags_Key);
             QChar firstChar = (cmdString)[0];
             if ((firstChar != '"') && (firstChar != ':') && ((firstChar < '0') || (firstChar > '9')) &&
                 !specialChars().contains(firstChar))
@@ -365,18 +365,18 @@ DatumPtr Treeifier::treeifyTermexp()
         }
 
         // Make sure there is a closing paren
-        if ((!currentToken.isWord()) || (currentToken.toString() != opCloseParen()))
+        if ((!currentToken_.isWord()) || (currentToken_.toString() != opCloseParen()))
             throw FCError::parenNf();
 
         advanceToken();
         return retval;
     }
 
-    QChar firstChar = currentToken.toString(Datum::ToStringFlags_Raw).at(0);
+    QChar firstChar = currentToken_.toString(Datum::ToStringFlags_Raw).at(0);
     if ((firstChar == opQuote().at(0)) || (firstChar == opColon().at(0)))
     {
-        QString name = currentToken.toString(Datum::ToStringFlags_Raw).mid(1);
-        if (!currentToken.wordValue()->isForeverSpecial)
+        QString name = currentToken_.toString(Datum::ToStringFlags_Raw).mid(1);
+        if (!currentToken_.wordValue()->isForeverSpecial)
         {
             rawToChar(name);
         }
@@ -385,7 +385,7 @@ DatumPtr Treeifier::treeifyTermexp()
             DatumPtr node(new ASTNode(astNodeTypeQuotedWord()));
             node.astnodeValue()->genExpression_ = &Compiler::genLiteral;
             node.astnodeValue()->returnType_ = RequestReturnDatum;
-            node.astnodeValue()->addChild(DatumPtr(DatumPtr(name, currentToken.wordValue()->isForeverSpecial)));
+            node.astnodeValue()->addChild(DatumPtr(DatumPtr(name, currentToken_.wordValue()->isForeverSpecial)));
             advanceToken();
             return node;
         }
@@ -401,8 +401,8 @@ DatumPtr Treeifier::treeifyTermexp()
     }
 
     // See if it's a number
-    double number = currentToken.wordValue()->numberValue();
-    if (currentToken.wordValue()->numberIsValid)
+    double number = currentToken_.wordValue()->numberValue();
+    if (currentToken_.wordValue()->numberIsValid)
     {
         DatumPtr node(new ASTNode(astNodeTypeNumber()));
         node.astnodeValue()->genExpression_ = &Compiler::genLiteral;
@@ -418,9 +418,9 @@ DatumPtr Treeifier::treeifyTermexp()
 
 DatumPtr Treeifier::treeifyCommand(bool isVararg)
 {
-    if (currentToken.isNothing())
+    if (currentToken_.isNothing())
         return nothing();
-    DatumPtr cmdP = currentToken;
+    DatumPtr cmdP = currentToken_;
     QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
 
     if (cmdString == opCloseParen())
@@ -442,8 +442,8 @@ DatumPtr Treeifier::treeifyCommand(bool isVararg)
     {
         // Continue reading while there are tokens and we haven't seen the closing paren
         // Condition: token exists AND (it's not a word OR it's not the closing paren)
-        while ((!currentToken.isNothing()) &&
-               ((!currentToken.isWord()) || (currentToken.toString() != opCloseParen())))
+        while ((!currentToken_.isNothing()) &&
+               ((!currentToken_.isWord()) || (currentToken_.toString() != opCloseParen())))
         {
             DatumPtr child;
             // If minParams < 0, this command takes raw tokens (no expression parsing)
@@ -451,7 +451,7 @@ DatumPtr Treeifier::treeifyCommand(bool isVararg)
             if (minParams < 0)
             {
                 // Raw token mode: use token as-is without parsing
-                child = currentToken;
+                child = currentToken_;
                 advanceToken();
             }
             else
@@ -468,14 +468,14 @@ DatumPtr Treeifier::treeifyCommand(bool isVararg)
     else if (defaultParams < 0)
     {
         // Special forms consume all remaining tokens until nothing is left
-        while (!currentToken.isNothing())
+        while (!currentToken_.isNothing())
         {
             DatumPtr child;
             // Same raw token vs expression logic as vararg case
             if (minParams < 0)
             {
                 // Raw token mode: use token as-is
-                child = currentToken;
+                child = currentToken_;
                 advanceToken();
             }
             else
@@ -495,7 +495,7 @@ DatumPtr Treeifier::treeifyCommand(bool isVararg)
         for (int i = defaultParams; i > 0; --i)
         {
             // Check for premature end of input
-            if (currentToken.isNothing())
+            if (currentToken_.isNothing())
                 throw FCError::notEnoughInputs(node.astnodeValue()->nodeName_);
             // Always parse as expression for fixed-parameter functions
             DatumPtr child = treeifyExp();
@@ -517,13 +517,13 @@ DatumPtr Treeifier::treeifyCommand(bool isVararg)
 
 void Treeifier::advanceToken()
 {
-    if (listIter != EmptyList::instance())
+    if (listIter_ != EmptyList::instance())
     {
-        currentToken = listIter->head;
-        listIter = listIter->tail.listValue();
+        currentToken_ = listIter_->head;
+        listIter_ = listIter_->tail.listValue();
     }
     else
     {
-        currentToken = nothing();
+        currentToken_ = nothing();
     }
 }
