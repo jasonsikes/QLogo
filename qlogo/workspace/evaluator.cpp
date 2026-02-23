@@ -82,7 +82,8 @@ void NewEvaluator::pushSublist(Datum *aList)
             retval = Datum::notADatum();
             return;
         }
-        Kernel::get().pushListOntoEvaluationStack(DatumPtr(aList));
+    NewCallFrame *topCallFrame = Kernel::get().callFrameStack.top().get();
+    topCallFrame->evaluationStack_.push(std::move(std::make_unique<NewEvaluator>(DatumPtr(aList))));
     }
     catch (FCError *err)
     {

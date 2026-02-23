@@ -378,12 +378,6 @@ DatumPtr Kernel::runECE(const DatumPtr &listP)
     return retval;
 }
 
-void Kernel::pushListOntoEvaluationStack(const DatumPtr &listP)
-{
-    NewCallFrame *topCallFrame = callFrameStack.top().get();
-    topCallFrame->evaluationStack_.push(std::move(std::make_unique<NewEvaluator>(listP)));
-}
-
 Datum *Kernel::specialVar(SpecialNames name) const
 {
     switch (name)

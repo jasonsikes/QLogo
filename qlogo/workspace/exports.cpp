@@ -354,7 +354,7 @@ EXPORTC void pushListOntoEvaluationStack(addr_t eAddr, addr_t listAddr)
 {
     auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *aList = reinterpret_cast<Datum *>(listAddr);
-    Kernel::get().pushListOntoEvaluationStack(DatumPtr(aList));
+    e->pushSublist(aList);
 }
 
 /// After a suspend that pushed a list, return the result of running that list.

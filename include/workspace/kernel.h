@@ -91,16 +91,9 @@ class Kernel
     /// @brief Destructor.
     ~Kernel();
 
-    /************ call frame stack ************/
-
     /// @brief The call frame stack.
-    /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.
+    /// @note This stack is used to store the evaluation state of lists which contain sublists while they are executing.
     std::stack<std::unique_ptr<NewCallFrame>> callFrameStack;
-
-    /// @brief Push a list to be evaluated onto the evaluation stack.
-    /// @param listP The list to add to the evaluation stack.
-    /// @note The list and its evaluator will be removed when the evaluation is complete.
-    void pushListOntoEvaluationStack(const DatumPtr &listP);
 
     /************ variables ************/
 

@@ -66,7 +66,6 @@ struct NewCallFrame
 
     /// @brief The evaluation stack.
     /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.
-    /// @todo This should be moved to the CallFrame class.
     std::stack<std::unique_ptr<NewEvaluator>> evaluationStack_;
 
 
