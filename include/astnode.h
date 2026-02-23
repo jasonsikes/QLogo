@@ -29,27 +29,33 @@
 class ASTNode : public Datum
 {
   protected:
-    QList<DatumPtr> children;
+    QList<DatumPtr> children_;
 
   public:
+    /// @brief A human-readable string. Usually the command name.
+    DatumPtr nodeName_;
+
+    /// @brief A pointer to the procedure that this node represents.
+    /// @note IFF this node represents a procedure, this will be a pointer to the procedure.
+    DatumPtr procedure_;
+
+    /// @brief A pointer to the Compiler method that generates code to execute this node.
+    Generator genExpression_ = nullptr;
+
+    /// @brief a bitfield containing the type(s) of value that this function is expected to return.
+    RequestReturnType returnType_ = RequestReturnVoid;
+
+    /// @brief Create an invalid ASTNode.
+    ASTNode() = default;
+
+    /// @brief Destructor.
+    ~ASTNode() override;
+
     /// @brief Allocate an ASTNode with the node's name as a Word.
     ASTNode(const DatumPtr &aNodeName);
 
     /// @brief Allocate an ASTNode with the node's name as a QString.
     ASTNode(const QString &aNodeName);
-
-    /// @brief A human-readable string. Usually the command name.
-    DatumPtr nodeName;
-
-    /// @brief A pointer to the procedure that this node represents.
-    /// @note IFF this node represents a procedure, this will be a pointer to the procedure.
-    DatumPtr procedure;
-
-    /// @brief A pointer to the Compiler method that generates code to execute this node.
-    Generator genExpression = nullptr;
-
-    /// @brief a bitfield containing the type(s) of value that this function is expected to return.
-    RequestReturnType returnType = RequestReturnVoid;
 
     /// @brief Add a child to the node. Child will be added to the end of the children list.
     /// @param aChild The child to add.
@@ -63,12 +69,6 @@ class ASTNode : public Datum
     /// @brief Returns the number of children that this node owns.
     /// @return The number of children that this node owns.
     int countOfChildren() const;
-
-    /// @brief Create an invalid ASTNode.
-    ASTNode() = default;
-
-    /// @brief Destructor.
-    ~ASTNode() override;
 
     /// @brief For debugging. To be used when printing out the AST. Parameters are ignored.
     /// @return A string representation of this node.

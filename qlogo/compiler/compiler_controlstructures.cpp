@@ -81,18 +81,18 @@ Value *Compiler::genIfelse(const DatumPtr &node, RequestReturnType returnType)
         // bool continues.
     }
 
-    cond = scaff->builder.CreateICmpEQ(cond, CoBool(1), DBG_NAME("ifcond"));
-    scaff->builder.CreateCondBr(cond, thenBB, elseBB);
+    cond = scaff->builder_.CreateICmpEQ(cond, CoBool(1), DBG_NAME("ifcond"));
+    scaff->builder_.CreateCondBr(cond, thenBB, elseBB);
 
     // Emit then value.
-    scaff->builder.SetInsertPoint(thenBB);
+    scaff->builder_.SetInsertPoint(thenBB);
     ift = generateCallList(children[1], returnType);
-    scaff->builder.CreateBr(mergeBB);
+    scaff->builder_.CreateBr(mergeBB);
     // Codegen of 'Then' can change the current block, update thenBB for the PHI.
-    thenBB = scaff->builder.GetInsertBlock();
+    thenBB = scaff->builder_.GetInsertBlock();
 
     // Emit else block.
-    scaff->builder.SetInsertPoint(elseBB);
+    scaff->builder_.SetInsertPoint(elseBB);
 
     // What we do here depends on if this is an IF or IFELSE
     if (children.size() == 3)
@@ -104,13 +104,13 @@ Value *Compiler::genIfelse(const DatumPtr &node, RequestReturnType returnType)
         iff = CoAddr(node.astnodeValue());
     }
 
-    scaff->builder.CreateBr(mergeBB);
+    scaff->builder_.CreateBr(mergeBB);
     // Codegen of 'Else' can change the current block, update elseBB for the PHI.
-    elseBB = scaff->builder.GetInsertBlock();
+    elseBB = scaff->builder_.GetInsertBlock();
 
     // Emit merge block.
-    scaff->builder.SetInsertPoint(mergeBB);
-    PHINode *phiNode = scaff->builder.CreatePHI(TyAddr, 2, DBG_NAME("iftmp"));
+    scaff->builder_.SetInsertPoint(mergeBB);
+    PHINode *phiNode = scaff->builder_.CreatePHI(TyAddr, 2, DBG_NAME("iftmp"));
 
     phiNode->addIncoming(ift, thenBB);
     phiNode->addIncoming(iff, elseBB);
@@ -144,22 +144,22 @@ Value *Compiler::genRepeat(const DatumPtr &node, RequestReturnType returnType)
     Value *list = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
 
     auto countValidator = [this](Value *candidate) {
-        BasicBlock *intCheckBB = scaff->builder.GetInsertBlock();
+        BasicBlock *intCheckBB = scaff->builder_.GetInsertBlock();
 
         BasicBlock *negativeCheckBB = scaff->createBasicBlock(DBG_NAME("negativeCheck"));
         BasicBlock *mergeBB = scaff->createBasicBlock(DBG_NAME("merge"));
 
-        Value *candidateInt = scaff->builder.CreateFPToSI(candidate, TyInt32, DBG_NAME("FpToInt"));
-        Value *candidateCheck = scaff->builder.CreateSIToFP(candidateInt, TyDouble, DBG_NAME("FpToIntCheck"));
-        Value *intCheckCond = scaff->builder.CreateFCmpOEQ(candidate, candidateCheck, DBG_NAME("isIntTest"));
-        scaff->builder.CreateCondBr(intCheckCond, negativeCheckBB, mergeBB);
+        Value *candidateInt = scaff->builder_.CreateFPToSI(candidate, TyInt32, DBG_NAME("FpToInt"));
+        Value *candidateCheck = scaff->builder_.CreateSIToFP(candidateInt, TyDouble, DBG_NAME("FpToIntCheck"));
+        Value *intCheckCond = scaff->builder_.CreateFCmpOEQ(candidate, candidateCheck, DBG_NAME("isIntTest"));
+        scaff->builder_.CreateCondBr(intCheckCond, negativeCheckBB, mergeBB);
 
-        scaff->builder.SetInsertPoint(negativeCheckBB);
-        Value *isNegativeCond = scaff->builder.CreateFCmpOGE(candidate, CoDouble(0.0), DBG_NAME("isNotNegative"));
-        scaff->builder.CreateBr(mergeBB);
+        scaff->builder_.SetInsertPoint(negativeCheckBB);
+        Value *isNegativeCond = scaff->builder_.CreateFCmpOGE(candidate, CoDouble(0.0), DBG_NAME("isNotNegative"));
+        scaff->builder_.CreateBr(mergeBB);
 
-        scaff->builder.SetInsertPoint(mergeBB);
-        PHINode *phiNode = scaff->builder.CreatePHI(isNegativeCond->getType(), 2, DBG_NAME("isNotNegativeIntResult"));
+        scaff->builder_.SetInsertPoint(mergeBB);
+        PHINode *phiNode = scaff->builder_.CreatePHI(isNegativeCond->getType(), 2, DBG_NAME("isNotNegativeIntResult"));
         phiNode->addIncoming(intCheckCond, intCheckBB);
         phiNode->addIncoming(isNegativeCond, negativeCheckBB);
         return phiNode;
@@ -169,9 +169,9 @@ Value *Compiler::genRepeat(const DatumPtr &node, RequestReturnType returnType)
 
     // Get the current value of repcount since we are shadowing it.
     Value *repcountAddress = generateCallExtern(TyAddr, repcountAddr);
-    Value *shadowedRepcount = scaff->builder.CreateLoad(TyDouble, repcountAddress, DBG_NAME("shadowedRepcount"));
+    Value *shadowedRepcount = scaff->builder_.CreateLoad(TyDouble, repcountAddress, DBG_NAME("shadowedRepcount"));
 
-    scaff->builder.CreateStore(CoDouble(1.0), repcountAddress);
+    scaff->builder_.CreateStore(CoDouble(1.0), repcountAddress);
 
     BasicBlock *loopBB = scaff->createBasicBlock(DBG_NAME("loop"));
     BasicBlock *whileBB = scaff->createBasicBlock(DBG_NAME("while"));
@@ -183,51 +183,51 @@ Value *Compiler::genRepeat(const DatumPtr &node, RequestReturnType returnType)
     BasicBlock *exitBB = scaff->createBasicBlock(DBG_NAME("exit"));
 
     scaff->addColdPathBlocks(noSayErrorBB, bailoutBB);
-    scaff->builder.CreateBr(loopBB);
+    scaff->builder_.CreateBr(loopBB);
 
-    scaff->builder.SetInsertPoint(loopBB);
-    Value *repcount = scaff->builder.CreateLoad(TyDouble, repcountAddress, DBG_NAME("repcount"));
-    Value *isLast = scaff->builder.CreateFCmpULE(repcount, count, DBG_NAME("isLast"));
-    scaff->builder.CreateCondBr(isLast, whileBB, exitBB);
+    scaff->builder_.SetInsertPoint(loopBB);
+    Value *repcount = scaff->builder_.CreateLoad(TyDouble, repcountAddress, DBG_NAME("repcount"));
+    Value *isLast = scaff->builder_.CreateFCmpULE(repcount, count, DBG_NAME("isLast"));
+    scaff->builder_.CreateCondBr(isLast, whileBB, exitBB);
 
-    scaff->builder.SetInsertPoint(whileBB);
+    scaff->builder_.SetInsertPoint(whileBB);
     Value *result = generateCallList(list, RequestReturnDatum);
-    whileBB = scaff->builder.GetInsertBlock(); // Update the whileBB for the PHI since the call list changes the block.
+    whileBB = scaff->builder_.GetInsertBlock(); // Update the whileBB for the PHI since the call list changes the block.
     Value *resultType = generateGetDatumIsa(result);
-    Value *mask = scaff->builder.CreateAnd(resultType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
-    Value *cond = scaff->builder.CreateICmpEQ(mask, CoInt32(0), DBG_NAME("flowControlCond"));
-    scaff->builder.CreateCondBr(cond, datumCheckBB, bailoutBB);
+    Value *mask = scaff->builder_.CreateAnd(resultType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
+    Value *cond = scaff->builder_.CreateICmpEQ(mask, CoInt32(0), DBG_NAME("flowControlCond"));
+    scaff->builder_.CreateCondBr(cond, datumCheckBB, bailoutBB);
 
-    scaff->builder.SetInsertPoint(datumCheckBB);
-    Value *isDatum = scaff->builder.CreateAnd(resultType, CoInt32(Datum::typeDataMask), DBG_NAME("isDatumMask"));
-    Value *isDatumCond = scaff->builder.CreateICmpEQ(isDatum, CoInt32(0), DBG_NAME("isDatumCond"));
-    scaff->builder.CreateCondBr(isDatumCond, loopNextBB, datumIsLastBB);
+    scaff->builder_.SetInsertPoint(datumCheckBB);
+    Value *isDatum = scaff->builder_.CreateAnd(resultType, CoInt32(Datum::typeDataMask), DBG_NAME("isDatumMask"));
+    Value *isDatumCond = scaff->builder_.CreateICmpEQ(isDatum, CoInt32(0), DBG_NAME("isDatumCond"));
+    scaff->builder_.CreateCondBr(isDatumCond, loopNextBB, datumIsLastBB);
 
-    scaff->builder.SetInsertPoint(loopNextBB);
-    Value *incrRepcount = scaff->builder.CreateFAdd(repcount, CoDouble(1.0), DBG_NAME("incrRepcount"));
-    scaff->builder.CreateStore(incrRepcount, repcountAddress);
-    scaff->builder.CreateBr(loopBB);
+    scaff->builder_.SetInsertPoint(loopNextBB);
+    Value *incrRepcount = scaff->builder_.CreateFAdd(repcount, CoDouble(1.0), DBG_NAME("incrRepcount"));
+    scaff->builder_.CreateStore(incrRepcount, repcountAddress);
+    scaff->builder_.CreateBr(loopBB);
 
-    scaff->builder.SetInsertPoint(datumIsLastBB);
-    Value *isLastCount = scaff->builder.CreateFCmpUEQ(repcount, count, DBG_NAME("isLastCount"));
-    scaff->builder.CreateCondBr(isLastCount, exitBB, noSayErrorBB);
+    scaff->builder_.SetInsertPoint(datumIsLastBB);
+    Value *isLastCount = scaff->builder_.CreateFCmpUEQ(repcount, count, DBG_NAME("isLastCount"));
+    scaff->builder_.CreateCondBr(isLastCount, exitBB, noSayErrorBB);
 
-    scaff->builder.SetInsertPoint(noSayErrorBB);
+    scaff->builder_.SetInsertPoint(noSayErrorBB);
     Value *errNoSay = generateErrorNoSay(result);
-    scaff->builder.CreateBr(bailoutBB);
+    scaff->builder_.CreateBr(bailoutBB);
 
-    scaff->builder.SetInsertPoint(bailoutBB);
-    PHINode *phiError = scaff->builder.CreatePHI(TyAddr, 2, DBG_NAME("errVal"));
+    scaff->builder_.SetInsertPoint(bailoutBB);
+    PHINode *phiError = scaff->builder_.CreatePHI(TyAddr, 2, DBG_NAME("errVal"));
     phiError->addIncoming(errNoSay, noSayErrorBB);
     phiError->addIncoming(result, whileBB);
-    scaff->builder.CreateStore(shadowedRepcount, repcountAddress);
+    scaff->builder_.CreateStore(shadowedRepcount, repcountAddress);
     generateReturn(phiError);
 
-    scaff->builder.SetInsertPoint(exitBB);
-    PHINode *phiNode = scaff->builder.CreatePHI(TyAddr, 2, DBG_NAME("retval"));
+    scaff->builder_.SetInsertPoint(exitBB);
+    PHINode *phiNode = scaff->builder_.CreatePHI(TyAddr, 2, DBG_NAME("retval"));
     phiNode->addIncoming(generateVoidRetval(node), loopBB);
     phiNode->addIncoming(result, datumIsLastBB);
-    scaff->builder.CreateStore(shadowedRepcount, repcountAddress);
+    scaff->builder_.CreateStore(shadowedRepcount, repcountAddress);
     return phiNode;
 }
 
@@ -248,7 +248,7 @@ COD***/
 Value *Compiler::genRepcount(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *repcountAddress = generateCallExtern(TyAddr, repcountAddr);
-    Value *repcount = scaff->builder.CreateLoad(TyDouble, repcountAddress, DBG_NAME("repcount"));
+    Value *repcount = scaff->builder_.CreateLoad(TyDouble, repcountAddress, DBG_NAME("repcount"));
     return repcount;
 }
 
@@ -333,7 +333,7 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node,
     if (node.astnodeValue()->countOfChildren() > 0)
     {
         DatumPtr child = node.astnodeValue()->childAtIndex(0);
-        DatumPtr proc = child.astnodeValue()->procedure;
+        DatumPtr proc = child.astnodeValue()->procedure_;
         if (proc.isNothing())
         {
             // It's a primitive, not a procedure. Generate a call to it.
@@ -341,7 +341,7 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node,
             Value *retval = generateChild(node.astnodeValue(), child, paramRequestType);
 
             retval = generateCallExtern(
-                TyAddr, getCtrlReturn, PaAddr(scaff->evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
+                TyAddr, getCtrlReturn, PaAddr(scaff->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
             return retval;
         }
         // Else it's a procedure. Generate a tail call to it.
@@ -351,7 +351,7 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node,
         AllocaInst *ary = generateChildrenAlloca(child.astnodeValue(), RequestReturnDatum, DBG_NAME("childAry"));
         Value *retObj = generateCallExtern(TyAddr,
                                            getCtrlContinuation,
-                                           PaAddr(scaff->evaluator),
+                                           PaAddr(scaff->evaluator_),
                                            PaAddr(childAddr),
                                            PaAddr(ary),
                                            PaInt32(ary->getArraySize()));
@@ -360,7 +360,7 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node,
     // There is no child. Return nothing.
     Value *retval = generateVoidRetval(node);
     return generateCallExtern(
-        TyAddr, getCtrlReturn, PaAddr(scaff->evaluator), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
+        TyAddr, getCtrlReturn, PaAddr(scaff->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
 }
 
 /***DOC TAG
@@ -395,7 +395,7 @@ Value *Compiler::genGoto(const DatumPtr &node, RequestReturnType returnType)
     Value *nodeAddr = CoAddr(node.astnodeValue());
     Value *tag = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     tag = generateWordFromDatum(node.astnodeValue(), tag);
-    Value *retObj = generateCallExtern(TyAddr, getCtrlGoto, PaAddr(scaff->evaluator), PaAddr(nodeAddr), PaAddr(tag));
+    Value *retObj = generateCallExtern(TyAddr, getCtrlGoto, PaAddr(scaff->evaluator_), PaAddr(nodeAddr), PaAddr(tag));
     generateImmediateReturn(retObj);
     return generateVoidRetval(node);
 }
@@ -433,7 +433,7 @@ Value *Compiler::genCatch(const DatumPtr &node, RequestReturnType returnType)
 
     Value *retval = generateCallExtern(TyAddr,
                                        endCatch,
-                                       PaAddr(scaff->evaluator),
+                                       PaAddr(scaff->evaluator_),
                                        PaAddr(CoAddr(node.astnodeValue())),
                                        PaAddr(errActStash),
                                        PaAddr(result),
@@ -481,7 +481,7 @@ Value *Compiler::genThrow(const DatumPtr &node, RequestReturnType returnType)
     std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnDatum);
     Value *tag = generateWordFromDatum(node.astnodeValue(), children[0]);
     Value *output = (children.size() == 1) ? CoAddr(Datum::notADatum()) : children[1];
-    Value *errObj = generateCallExtern(TyAddr, getErrorCustom, PaAddr(scaff->evaluator), PaAddr(tag), PaAddr(output));
+    Value *errObj = generateCallExtern(TyAddr, getErrorCustom, PaAddr(scaff->evaluator_), PaAddr(tag), PaAddr(output));
     return generateImmediateReturn(errObj);
 }
 
@@ -500,7 +500,7 @@ COD***/
 // CMD ERROR 0 0 0 d
 Value *Compiler::genError(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, getCurrentError, PaAddr(scaff->evaluator));
+    return generateCallExtern(TyAddr, getCurrentError, PaAddr(scaff->evaluator_));
 }
 /***DOC PAUSE
 PAUSE
@@ -519,7 +519,7 @@ COD***/
 // CMD PAUSE 0 0 0 dn
 Value *Compiler::genPause(const DatumPtr &node, RequestReturnType returnType)
 {
-    return generateCallExtern(TyAddr, callPause, PaAddr(scaff->evaluator));
+    return generateCallExtern(TyAddr, callPause, PaAddr(scaff->evaluator_));
 }
 
 /***DOC CONTINUE CO
@@ -547,7 +547,7 @@ Value *Compiler::genContinue(const DatumPtr &node, RequestReturnType returnType)
     {
         output = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     }
-    return generateCallExtern(TyAddr, generateContinue, PaAddr(scaff->evaluator), PaAddr(output));
+    return generateCallExtern(TyAddr, generateContinue, PaAddr(scaff->evaluator_), PaAddr(output));
 }
 /***DOC RUNRESULT
 RUNRESULT instructionlist
@@ -568,7 +568,7 @@ Value *Compiler::genRunresult(const DatumPtr &node, RequestReturnType returnType
 {
     Value *instructionlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *result = generateCallList(instructionlist, RequestReturnDN);
-    return generateCallExtern(TyAddr, processRunresult, PaAddr(scaff->evaluator), PaAddr(result));
+    return generateCallExtern(TyAddr, processRunresult, PaAddr(scaff->evaluator_), PaAddr(result));
 }
 /***DOC FOREVER
 FOREVER instructionlist
@@ -585,9 +585,9 @@ Value *Compiler::genForever(const DatumPtr &node, RequestReturnType returnType)
 
     // Get the current value of repcount since we are shadowing it.
     Value *repcountAddress = generateCallExtern(TyAddr, repcountAddr);
-    Value *shadowedRepcount = scaff->builder.CreateLoad(TyDouble, repcountAddress, DBG_NAME("shadowedRepcount"));
+    Value *shadowedRepcount = scaff->builder_.CreateLoad(TyDouble, repcountAddress, DBG_NAME("shadowedRepcount"));
 
-    scaff->builder.CreateStore(CoDouble(1.0), repcountAddress);
+    scaff->builder_.CreateStore(CoDouble(1.0), repcountAddress);
 
     BasicBlock *whileBB = scaff->createBasicBlock(DBG_NAME("while"));
     BasicBlock *datumCheckBB = scaff->createBasicBlock(DBG_NAME("datumCheck"));
@@ -598,39 +598,39 @@ Value *Compiler::genForever(const DatumPtr &node, RequestReturnType returnType)
 
     scaff->addColdPathBlocks(noSayErrorBB, bailoutBB);
 
-    scaff->builder.CreateBr(whileBB);
+    scaff->builder_.CreateBr(whileBB);
 
-    scaff->builder.SetInsertPoint(whileBB);
+    scaff->builder_.SetInsertPoint(whileBB);
     Value *result = generateCallList(list, RequestReturnDatum);
     Value *resultType = generateGetDatumIsa(result);
-    Value *mask = scaff->builder.CreateAnd(resultType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
-    Value *cond = scaff->builder.CreateICmpEQ(mask, CoInt32(0), DBG_NAME("flowControlCond"));
-    scaff->builder.CreateCondBr(cond, datumCheckBB, bailoutBB);
+    Value *mask = scaff->builder_.CreateAnd(resultType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
+    Value *cond = scaff->builder_.CreateICmpEQ(mask, CoInt32(0), DBG_NAME("flowControlCond"));
+    scaff->builder_.CreateCondBr(cond, datumCheckBB, bailoutBB);
 
-    scaff->builder.SetInsertPoint(datumCheckBB);
-    Value *isDatum = scaff->builder.CreateAnd(resultType, CoInt32(Datum::typeDataMask), DBG_NAME("isDatumMask"));
-    Value *isDatumCond = scaff->builder.CreateICmpEQ(isDatum, CoInt32(0), DBG_NAME("isDatumCond"));
-    scaff->builder.CreateCondBr(isDatumCond, loopNextBB, noSayErrorBB);
+    scaff->builder_.SetInsertPoint(datumCheckBB);
+    Value *isDatum = scaff->builder_.CreateAnd(resultType, CoInt32(Datum::typeDataMask), DBG_NAME("isDatumMask"));
+    Value *isDatumCond = scaff->builder_.CreateICmpEQ(isDatum, CoInt32(0), DBG_NAME("isDatumCond"));
+    scaff->builder_.CreateCondBr(isDatumCond, loopNextBB, noSayErrorBB);
 
-    scaff->builder.SetInsertPoint(loopNextBB);
-    Value *repcount = scaff->builder.CreateLoad(TyDouble, repcountAddress, DBG_NAME("repcount"));
-    Value *incrRepcount = scaff->builder.CreateFAdd(repcount, CoDouble(1.0), DBG_NAME("incrRepcount"));
-    scaff->builder.CreateStore(incrRepcount, repcountAddress);
-    scaff->builder.CreateBr(whileBB);
+    scaff->builder_.SetInsertPoint(loopNextBB);
+    Value *repcount = scaff->builder_.CreateLoad(TyDouble, repcountAddress, DBG_NAME("repcount"));
+    Value *incrRepcount = scaff->builder_.CreateFAdd(repcount, CoDouble(1.0), DBG_NAME("incrRepcount"));
+    scaff->builder_.CreateStore(incrRepcount, repcountAddress);
+    scaff->builder_.CreateBr(whileBB);
 
-    scaff->builder.SetInsertPoint(noSayErrorBB);
+    scaff->builder_.SetInsertPoint(noSayErrorBB);
     Value *errNoSay = generateErrorNoSay(result);
-    scaff->builder.CreateBr(bailoutBB);
+    scaff->builder_.CreateBr(bailoutBB);
 
-    scaff->builder.SetInsertPoint(bailoutBB);
-    PHINode *phiError = scaff->builder.CreatePHI(TyAddr, 2, DBG_NAME("errVal"));
+    scaff->builder_.SetInsertPoint(bailoutBB);
+    PHINode *phiError = scaff->builder_.CreatePHI(TyAddr, 2, DBG_NAME("errVal"));
     phiError->addIncoming(errNoSay, noSayErrorBB);
     phiError->addIncoming(result, whileBB);
-    scaff->builder.CreateStore(shadowedRepcount, repcountAddress);
+    scaff->builder_.CreateStore(shadowedRepcount, repcountAddress);
     generateReturn(phiError);
 
     // We will never reach here, but the compiler requires a current block and a return value.
-    scaff->builder.SetInsertPoint(throwawayBB);
+    scaff->builder_.SetInsertPoint(throwawayBB);
     return generateVoidRetval(node);
 }
 
@@ -694,29 +694,29 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, RequestReturnType ret
 
     Value *instructionlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *testResult = generateCallExtern(TyBool, getIsTested);
-    Value *cond = scaff->builder.CreateICmpEQ(testResult, CoBool(1), DBG_NAME("isTested"));
-    scaff->builder.CreateCondBr(cond, isTestedBB, notTestedBB);
+    Value *cond = scaff->builder_.CreateICmpEQ(testResult, CoBool(1), DBG_NAME("isTested"));
+    scaff->builder_.CreateCondBr(cond, isTestedBB, notTestedBB);
 
-    scaff->builder.SetInsertPoint(notTestedBB);
-    Value *errVal = generateErrorNoTest(CoAddr(node.astnodeValue()->nodeName.datumValue()));
+    scaff->builder_.SetInsertPoint(notTestedBB);
+    Value *errVal = generateErrorNoTest(CoAddr(node.astnodeValue()->nodeName_.datumValue()));
     generateReturn(errVal);
 
-    scaff->builder.SetInsertPoint(isTestedBB);
+    scaff->builder_.SetInsertPoint(isTestedBB);
     testResult = generateCallExtern(TyBool, getTestResult);
-    cond = scaff->builder.CreateICmpEQ(testResult, CoBool(testForTrue), DBG_NAME("testResult"));
-    scaff->builder.CreateCondBr(cond, runListBB, noRunListBB);
+    cond = scaff->builder_.CreateICmpEQ(testResult, CoBool(testForTrue), DBG_NAME("testResult"));
+    scaff->builder_.CreateCondBr(cond, runListBB, noRunListBB);
 
-    scaff->builder.SetInsertPoint(runListBB);
+    scaff->builder_.SetInsertPoint(runListBB);
     Value *listRetval = generateCallList(instructionlist, returnType);
-    BasicBlock *listRetvalBB = scaff->builder.GetInsertBlock();
-    scaff->builder.CreateBr(returnBB);
+    BasicBlock *listRetvalBB = scaff->builder_.GetInsertBlock();
+    scaff->builder_.CreateBr(returnBB);
 
-    scaff->builder.SetInsertPoint(noRunListBB);
+    scaff->builder_.SetInsertPoint(noRunListBB);
     Value *noRetval = generateVoidRetval(node);
-    scaff->builder.CreateBr(returnBB);
+    scaff->builder_.CreateBr(returnBB);
 
-    scaff->builder.SetInsertPoint(returnBB);
-    PHINode *retval = scaff->builder.CreatePHI(TyAddr, 2, DBG_NAME("retval"));
+    scaff->builder_.SetInsertPoint(returnBB);
+    PHINode *retval = scaff->builder_.CreatePHI(TyAddr, 2, DBG_NAME("retval"));
     retval->addIncoming(listRetval, listRetvalBB);
     retval->addIncoming(noRetval, noRunListBB);
     return retval;

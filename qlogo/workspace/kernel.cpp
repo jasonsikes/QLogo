@@ -164,7 +164,7 @@ Datum *Kernel::inputProcedure(ASTNode *node)
     try
     {
         // command is the first word in the input line, (".MACRO" or "TO").
-        DatumPtr command = node->nodeName;
+        DatumPtr command = node->nodeName_;
         if (node->countOfChildren() == 0)
             throw FCError::notEnoughInputs(command);
 

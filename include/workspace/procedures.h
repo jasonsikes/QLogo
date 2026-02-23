@@ -51,7 +51,7 @@ struct Cmd_t
 /// user-defined and library procedures.
 class Procedures
 {
-    QHash<QString, Cmd_t> stringToCmd_;
+    QHash<QString, Cmd_t> stringToCmd;
 
     QHash<QString, DatumPtr> procedures_;
     qint64 lastProcedureCreatedTimestamp_;

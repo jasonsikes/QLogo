@@ -53,7 +53,7 @@ void NewCallFrame::setVarAsLocal(const QString &name)
 
 Datum *NewCallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount)
 {
-    Procedure *proc = sourceNode_.astnodeValue()->procedure.procedureValue();
+    Procedure *proc = sourceNode_.astnodeValue()->procedure_.procedureValue();
 
     QStringList &requiredInputs = proc->requiredInputs_;
     QStringList &optionalInputs = proc->optionalInputs_;

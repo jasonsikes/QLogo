@@ -150,7 +150,7 @@ addr_t handleBadValue(addr_t eAddr, addr_t parentAddr, DatumPtr value,
     auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *parent = reinterpret_cast<ASTNode *>(parentAddr);
 
-    DatumPtr err = {FCError::doesntLike(parent->nodeName, DatumPtr(value))};
+    DatumPtr err = {FCError::doesntLike(parent->nodeName_, DatumPtr(value))};
     if ( ! getvarErroract())
     {
         e->watch(err.datumValue());
@@ -175,7 +175,7 @@ addr_t handleBadValue(addr_t eAddr, addr_t parentAddr, DatumPtr value,
             retval = {FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")))};
             break;
         }
-        err = {FCError::doesntLike(parent->nodeName, retval)};
+        err = {FCError::doesntLike(parent->nodeName_, retval)};
     } // while (true)
     e->watch(retval.datumValue());
     return reinterpret_cast<addr_t>(retval.datumValue());
@@ -464,7 +464,7 @@ EXPORTC addr_t getErrorNoOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr)
     // If the thing that didn't output is an ASTNode, use the name of the ASTNode.
     if (x->isa == Datum::typeASTNode)
     {
-        x = reinterpret_cast<ASTNode *>(x)->nodeName.datumValue();
+        x = reinterpret_cast<ASTNode *>(x)->nodeName_.datumValue();
     }
     FCError *err = FCError::didntOutput(DatumPtr(x->toString(Datum::ToStringFlags_Show)),
                                         DatumPtr(y->toString(Datum::ToStringFlags_Show)));
@@ -1924,7 +1924,7 @@ EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
             goto done;
         }
     }
-    retval = FCError::doesntLike(DatumPtr(reinterpret_cast<ASTNode *>(nodeAddr)->nodeName), DatumPtr(dFilename));
+    retval = FCError::doesntLike(DatumPtr(reinterpret_cast<ASTNode *>(nodeAddr)->nodeName_), DatumPtr(dFilename));
 done:
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);

@@ -69,15 +69,15 @@ typedef llvm::Value *(Compiler::*Generator)(const DatumPtr &, RequestReturnType)
 // The information to store the generated function and to destroy later
 struct CompiledText
 {
-    llvm::orc::ResourceTrackerSP rt;
+    llvm::orc::ResourceTrackerSP rt_;
 
-    CompiledFunctionPtr functionPtr = nullptr;
+    CompiledFunctionPtr functionPtr_ = nullptr;
 
     // The AST list from which the compiled function was generated.
     // This is stored to ensure the AST nodes are kept alive as long as the compiled text exists.
-    QList<QList<DatumPtr>> astList;
+    QList<QList<DatumPtr>> astList_;
 
-    Compiler *compiler = nullptr;
+    Compiler *compiler_ = nullptr;
 
     ~CompiledText();
 };

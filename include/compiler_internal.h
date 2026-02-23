@@ -40,58 +40,58 @@
 struct Scaffold
 {
     // The name of the function.
-    std::string name;
+    std::string name_;
 
-    std::unique_ptr<llvm::LLVMContext> theContext;
-    std::unique_ptr<llvm::Module> theModule;
-    llvm::IRBuilder<> builder;
-    llvm::FunctionPassManager theFPM;
-    llvm::LoopAnalysisManager theLAM;
-    llvm::FunctionAnalysisManager theFAM;
-    llvm::CGSCCAnalysisManager theCGAM;
-    llvm::ModuleAnalysisManager theMAM;
-    llvm::PassInstrumentationCallbacks thePIC;
-    llvm::StandardInstrumentations theSI;
-    llvm::Function *theFunction;
+    std::unique_ptr<llvm::LLVMContext> theContext_;
+    std::unique_ptr<llvm::Module> theModule_;
+    llvm::IRBuilder<> builder_;
+    llvm::FunctionPassManager theFPM_;
+    llvm::LoopAnalysisManager theLAM_;
+    llvm::FunctionAnalysisManager theFAM_;
+    llvm::CGSCCAnalysisManager theCGAM_;
+    llvm::ModuleAnalysisManager theMAM_;
+    llvm::PassInstrumentationCallbacks thePIC_;
+    llvm::StandardInstrumentations theSI_;
+    llvm::Function *theFunction_;
 
     // A list of basic blocks that make up the "cold path" of execution.
-    QList<llvm::BasicBlock *> coldPathBlocks;
+    QList<llvm::BasicBlock *> coldPathBlocks_;
 
     Scaffold(const llvm::DataLayout &dataLayout);
 
     // a pointer to the Evaluator object that supports execution of the compiled function.
-    llvm::Value *evaluator;
+    llvm::Value *evaluator_;
 
     // a pointer to the return value address argument of the compiled function.
     // Instead of returning a value, the compiled function returns a coroutine handle
     // So we store the return value here at this address.
-    llvm::Value *returnValueAddress;
+    llvm::Value *returnValueAddress_;
 
     // a pointer to the block ID argument of the compiled function.
     // Since the function can be called immediately after a GOTO and the TAG can appear anywhere,
     // we separate any code that occurs before and after a TAG into different blocks.
-    llvm::Value *blockId;
+    llvm::Value *blockId_;
 
     // The fourth argument: resume handle (null = initial entry, non-null = resume from that state).
-    llvm::Value *resumeHandle;
+    llvm::Value *resumeHandle_;
 
     // The suspend and cleanup blocks for the coroutine (null when function never suspends).
-    llvm::BasicBlock *suspendBB = nullptr;
-    llvm::BasicBlock *cleanupBB = nullptr;
+    llvm::BasicBlock *suspendBB_ = nullptr;
+    llvm::BasicBlock *cleanupBB_ = nullptr;
 
     // The main bailout block. All "bailout" operations should branch here.
     // Note: be sure to store the return value in the return value address.
-    llvm::BasicBlock *mainBailoutBB = nullptr;
+    llvm::BasicBlock *mainBailoutBB_ = nullptr;
 
     // The coroutine handle for the compiled function, created at the beginning and returned at the end.
-    llvm::Value *coroutineHandle = nullptr;
+    llvm::Value *coroutineHandle_ = nullptr;
 
     // The coroutine id token from llvm.coro.id, needed in cleanup for llvm.coro.free.
-    llvm::Value *coroutineToken = nullptr;
+    llvm::Value *coroutineToken_ = nullptr;
 
     // When set, the coroutine frame is emitted in this block at the start of the function (before TOC
     // if present). generateTOC redirects its branch to Toc when the table of contents is generated.
-    llvm::BasicBlock *coroPrologueBB = nullptr;
+    llvm::BasicBlock *coroPrologueBB_ = nullptr;
 
     // create a new basic block with the given name.
     // The new block is inserted after the last block of the function.
@@ -101,30 +101,30 @@ struct Scaffold
     template <typename... Blocks>
     std::enable_if_t<(std::is_same_v<Blocks, llvm::BasicBlock> && ...)>
     addColdPathBlocks(Blocks *...blocks) {
-        (coldPathBlocks.append(blocks), ...);
+        (coldPathBlocks_.append(blocks), ...);
     }
 };
 
 // Some defines to reduce boilerplate
 
 // Data types
-#define TyVoid   (Type::getVoidTy(*scaff->theContext))
-#define TyInt8   (Type::getInt8Ty(*scaff->theContext))
-#define TyInt16  (Type::getInt16Ty(*scaff->theContext))
-#define TyInt32  (Type::getInt32Ty(*scaff->theContext))
-#define TyInt64  (Type::getInt64Ty(*scaff->theContext))
-#define TyDouble (Type::getDoubleTy(*scaff->theContext))
-#define TyAddr   (PointerType::get(*scaff->theContext, 0))
-#define TyBool   (Type::getInt1Ty(*scaff->theContext))
+#define TyVoid   (Type::getVoidTy(*scaff->theContext_))
+#define TyInt8   (Type::getInt8Ty(*scaff->theContext_))
+#define TyInt16  (Type::getInt16Ty(*scaff->theContext_))
+#define TyInt32  (Type::getInt32Ty(*scaff->theContext_))
+#define TyInt64  (Type::getInt64Ty(*scaff->theContext_))
+#define TyDouble (Type::getDoubleTy(*scaff->theContext_))
+#define TyAddr   (PointerType::get(*scaff->theContext_, 0))
+#define TyBool   (Type::getInt1Ty(*scaff->theContext_))
 
 // Data value constants
-#define CoInt8(VAL)  (ConstantInt::get(*scaff->theContext, APInt(8, (uint8_t)(VAL))))
-#define CoInt16(VAL)  (ConstantInt::get(*scaff->theContext, APInt(16, (uint16_t)(VAL))))
-#define CoInt32(VAL)  (ConstantInt::get(*scaff->theContext, APInt(32, (uint32_t)(VAL))))
-#define CoInt64(VAL)  (ConstantInt::get(*scaff->theContext, APInt(64, (uint64_t)(VAL))))
-#define CoDouble(VAL) (ConstantFP::get(*scaff->theContext, APFloat((VAL))))
+#define CoInt8(VAL)  (ConstantInt::get(*scaff->theContext_, APInt(8, (uint8_t)(VAL))))
+#define CoInt16(VAL)  (ConstantInt::get(*scaff->theContext_, APInt(16, (uint16_t)(VAL))))
+#define CoInt32(VAL)  (ConstantInt::get(*scaff->theContext_, APInt(32, (uint32_t)(VAL))))
+#define CoInt64(VAL)  (ConstantInt::get(*scaff->theContext_, APInt(64, (uint64_t)(VAL))))
+#define CoDouble(VAL) (ConstantFP::get(*scaff->theContext_, APFloat((VAL))))
 #define CoAddr(VAL)   (ConstantExpr::getIntToPtr(CoInt64(VAL), TyAddr))
-#define CoBool(VAL)   (ConstantInt::get(*scaff->theContext, APInt(1, VAL)))
+#define CoBool(VAL)   (ConstantInt::get(*scaff->theContext_, APInt(1, VAL)))
 
 // Parameter combinations
 #define PaInt8(VAL)  {TyInt8, (VAL)}
