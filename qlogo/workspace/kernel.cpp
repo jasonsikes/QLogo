@@ -123,7 +123,7 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
         if (result.isErr())
         {
             FCError *e = result.errValue();
-            if (e->tag().isWord() && (e->code == ErrCode::ERR_NO_CATCH))
+            if (e->tag().isWord() && (e->code_ == ErrCode::ERR_NO_CATCH))
             {
                 if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("TOPLEVEL"))
                 {
@@ -150,7 +150,7 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
         {
             // The other flow control types are OUTPUT/STOP and GOTO,
             // which are not allowed here.
-            result = DatumPtr(FCError::notInsideProcedure(result.flowControlValue()->sourceNode));
+            result = DatumPtr(FCError::notInsideProcedure(result.flowControlValue()->sourceNode_));
         }
 
         // If we are here that means something was output, but not handled.
@@ -269,7 +269,7 @@ void Kernel::initPalette()
 void Kernel::initVariables()
 {
     ListBuilder builder;
-    for (auto &arg : Config::get().ARGV)
+    for (auto &arg : Config::get().ARGV_)
     {
         builder.append(DatumPtr(arg));
     }

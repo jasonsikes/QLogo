@@ -170,7 +170,7 @@ void LogoInterfaceGUI::printToConsole(const QString &s)
 
 QString LogoInterfaceGUI::addStandoutToString(const QString &src)
 {
-    QString retval = Config::get().escapeString + src + Config::get().escapeString;
+    QString retval = Config::get().escapeString_ + src + Config::get().escapeString_;
     return retval;
 }
 

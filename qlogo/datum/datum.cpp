@@ -31,7 +31,7 @@ Datum::Datum()
 {
     ++countOfNodes;
     maxCountOfNodes = std::max(maxCountOfNodes, countOfNodes);
-    if (Config::get().showCON)
+    if (Config::get().showCON_)
         qDebug() << this << " con++: " << countOfNodes;
 }
 
@@ -44,7 +44,7 @@ Datum *Datum::notADatum()
 Datum::~Datum()
 {
     --countOfNodes;
-    if (Config::get().showCON)
+    if (Config::get().showCON_)
         qDebug() << this << " --con: " << countOfNodes;
 }
 

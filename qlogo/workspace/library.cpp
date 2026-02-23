@@ -108,7 +108,7 @@ void DatabaseConnection::getConnection() const
 }
 
 Library::Library()
-    : DatabaseConnection("libDB", Config::get().paramLibraryDatabaseFilepath, Config::get().defaultLibraryDbFilename)
+    : DatabaseConnection("libDB", Config::get().paramLibraryDatabaseFilepath_, Config::get().defaultLibraryDbFilename_)
 {
 }
 
@@ -168,7 +168,7 @@ QStringList Library::allProcedureNames() const
 }
 
 Help::Help()
-    : DatabaseConnection("help", Config::get().paramHelpDatabaseFilepath, Config::get().defaultHelpDbFilename)
+    : DatabaseConnection("help", Config::get().paramHelpDatabaseFilepath_, Config::get().defaultHelpDbFilename_)
 {
 }
 

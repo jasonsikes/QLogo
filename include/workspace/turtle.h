@@ -40,7 +40,7 @@ class Turtle
 
     PenModeEnum penMode_ = penModePaint;
 
-    double penSize_ = Config::get().initialPensize;
+    double penSize_ = Config::get().initialPensize_;
 
     double scaleX_ = 1.0;
     double scaleY_ = 1.0;

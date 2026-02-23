@@ -30,46 +30,46 @@ using namespace StringConstants;
 
 void Runparser::runparseSpecialchars()
 {
-    QString retval = *runparseCIter;
-    ++runparseCIter;
-    if (runparseCIter != runparseCEnd)
+    QString retval = *runparseCIter_;
+    ++runparseCIter_;
+    if (runparseCIter_ != runparseCEnd_)
     {
-        QChar c = *runparseCIter;
+        QChar c = *runparseCIter_;
         // there are some cases where special chars are combined
         if (((retval == opLessThan()) && (c == '=')) || ((retval == opLessThan()) && (c == '>')) || ((retval == opGreaterThan()) && (c == '=')))
         {
             retval += c;
-            ++runparseCIter;
+            ++runparseCIter_;
         }
     }
-    runparseBuilder->append(DatumPtr(retval));
+    runparseBuilder_->append(DatumPtr(retval));
 }
 
 void Runparser::runparseString()
 {
     QString retval;
 
-    if (*runparseCIter == '?')
+    if (*runparseCIter_ == '?')
     {
         retval = opQuestion();
-        ++runparseCIter;
+        ++runparseCIter_;
         DatumPtr number = runparseNumber();
         if (!number.isNothing())
         {
-            runparseBuilder->append(DatumPtr(opOpenParen()));
-            runparseBuilder->append(DatumPtr(opQuestion()));
-            runparseBuilder->append(number);
-            runparseBuilder->append(DatumPtr(opCloseParen()));
+            runparseBuilder_->append(DatumPtr(opOpenParen()));
+            runparseBuilder_->append(DatumPtr(opQuestion()));
+            runparseBuilder_->append(number);
+            runparseBuilder_->append(DatumPtr(opCloseParen()));
             return;
         }
     }
 
-    while ((runparseCIter != runparseCEnd) && (!specialChars().contains(*runparseCIter)))
+    while ((runparseCIter_ != runparseCEnd_) && (!specialChars().contains(*runparseCIter_)))
     {
-        retval += *runparseCIter;
-        ++runparseCIter;
+        retval += *runparseCIter_;
+        ++runparseCIter_;
     }
-    runparseBuilder->append(DatumPtr(retval, isRunparseSourceSpecial));
+    runparseBuilder_->append(DatumPtr(retval, isRunparseSourceSpecial_));
 }
 
 /// @brief Check if a minus sign at the start of a word should be treated as
@@ -104,9 +104,9 @@ static bool shouldParseMinusAtWordStart(QChar c, QString::iterator iter, QString
 DatumPtr Runparser::tryParseNegativeNumber()
 {
     // Check if there's at least one more character after the minus
-    QString::iterator nextCharIter = runparseCIter;
+    QString::iterator nextCharIter = runparseCIter_;
     ++nextCharIter;
-    if (nextCharIter == runparseCEnd)
+    if (nextCharIter == runparseCEnd_)
     {
         // Just a minus sign with nothing after it - not a valid number
         return nothing();
@@ -126,9 +126,9 @@ void Runparser::parseUnaryMinus()
 {
     // Output "0" and "--" to represent unary minus
     // The treeifier will interpret this as: 0 - x, which is equivalent to MINUS x
-    runparseBuilder->append(DatumPtr(opNumberZero()));
-    runparseBuilder->append(DatumPtr(opDoubleMinus()));
-    ++runparseCIter;
+    runparseBuilder_->append(DatumPtr(opNumberZero()));
+    runparseBuilder_->append(DatumPtr(opDoubleMinus()));
+    ++runparseCIter_;
 }
 
 /// @brief Handle a minus sign that appears at the start of a word.
@@ -141,7 +141,7 @@ void Runparser::runparseMinus()
     if (!number.isNothing())
     {
         // Successfully parsed a negative number
-        runparseBuilder->append(number);
+        runparseBuilder_->append(number);
         return;
     }
 
@@ -227,10 +227,10 @@ static bool parseExponent(QString::iterator &iter, const QString::iterator &end,
 
 DatumPtr Runparser::runparseNumber()
 {
-    if (runparseCIter == runparseCEnd)
+    if (runparseCIter_ == runparseCEnd_)
         return nothing();
 
-    QString::iterator iter = runparseCIter;
+    QString::iterator iter = runparseCIter_;
     QString result;
     bool hasIntegerPart = false;
     bool hasDecimalPart = false;
@@ -241,18 +241,18 @@ DatumPtr Runparser::runparseNumber()
     {
         result = opMinus();
         ++iter;
-        if (iter == runparseCEnd)
+        if (iter == runparseCEnd_)
             return nothing();
     }
 
     // Parse integer part (digits before decimal point)
-    hasIntegerPart = parseIntegerPart(iter, runparseCEnd, result);
+    hasIntegerPart = parseIntegerPart(iter, runparseCEnd_, result);
 
     // Parse decimal part (optional)
-    if (iter != runparseCEnd && *iter == '.')
+    if (iter != runparseCEnd_ && *iter == '.')
     {
         bool hadDigitsBeforeDecimal = hasIntegerPart;
-        hasDecimalPart = parseDecimalPart(iter, runparseCEnd, result);
+        hasDecimalPart = parseDecimalPart(iter, runparseCEnd_, result);
 
         // Edge case: ".5" is valid (0.5), but "." alone is not
         // Edge case: "1.2.3" should fail - if we see another '.' after parsing decimal, fail
@@ -263,7 +263,7 @@ DatumPtr Runparser::runparseNumber()
         }
 
         // Check for multiple decimal points
-        if (iter != runparseCEnd && *iter == '.')
+        if (iter != runparseCEnd_ && *iter == '.')
         {
             return nothing();
         }
@@ -274,9 +274,9 @@ DatumPtr Runparser::runparseNumber()
         return nothing();
 
     // Parse exponent (optional)
-    if (iter != runparseCEnd && (*iter == 'e' || *iter == 'E'))
+    if (iter != runparseCEnd_ && (*iter == 'e' || *iter == 'E'))
     {
-        if (!parseExponent(iter, runparseCEnd, result))
+        if (!parseExponent(iter, runparseCEnd_, result))
         {
             // Invalid exponent (e.g., "1e" or "1e+")
             return nothing();
@@ -285,26 +285,26 @@ DatumPtr Runparser::runparseNumber()
 
     // Check that the next character (if any) is a special character
     // This ensures we've parsed a complete number token
-    if (iter != runparseCEnd && !specialChars().contains(*iter))
+    if (iter != runparseCEnd_ && !specialChars().contains(*iter))
     {
         return nothing();
     }
 
     // Successfully parsed a number
     double value = result.toDouble();
-    runparseCIter = iter;
+    runparseCIter_ = iter;
     return DatumPtr(value);
 }
 
 void Runparser::runparseQuotedWord()
 {
     QString retval;
-    while ((runparseCIter != runparseCEnd) && (*runparseCIter != '(') && (*runparseCIter != ')'))
+    while ((runparseCIter_ != runparseCEnd_) && (*runparseCIter_ != '(') && (*runparseCIter_ != ')'))
     {
-        retval += *runparseCIter;
-        ++runparseCIter;
+        retval += *runparseCIter_;
+        ++runparseCIter_;
     }
-    runparseBuilder->append(DatumPtr(retval, isRunparseSourceSpecial));
+    runparseBuilder_->append(DatumPtr(retval, isRunparseSourceSpecial_));
 }
 
 DatumPtr Runparser::doRunparse(DatumPtr src)
@@ -325,7 +325,7 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
     }
 
     ListBuilder builder;
-    runparseBuilder = &builder;
+    runparseBuilder_ = &builder;
 
     ListIterator iter = src.listValue()->newIterator();
 
@@ -335,18 +335,18 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
         if (element.isWord())
         {
             QString oldWord = element.wordValue()->toString(Datum::ToStringFlags_Raw);
-            isRunparseSourceSpecial = element.wordValue()->isForeverSpecial;
+            isRunparseSourceSpecial_ = element.wordValue()->isForeverSpecial;
 
-            runparseCIter = oldWord.begin();
-            runparseCEnd = oldWord.end();
-            while (runparseCIter != runparseCEnd)
+            runparseCIter_ = oldWord.begin();
+            runparseCEnd_ = oldWord.end();
+            while (runparseCIter_ != runparseCEnd_)
             {
-                QChar c = *runparseCIter;
+                QChar c = *runparseCIter_;
                 if (specialChars().contains(c))
                 {
                     // Check if this minus sign at the start of a word should be
                     // treated as a potential negative number or unary minus operator
-                    if (shouldParseMinusAtWordStart(c, runparseCIter, oldWord.begin(), oldWord))
+                    if (shouldParseMinusAtWordStart(c, runparseCIter_, oldWord.begin(), oldWord))
                     {
                         runparseMinus();
                     }
@@ -370,17 +370,17 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
                 }
                 else
                 {
-                    runparseBuilder->append(number);
+                    runparseBuilder_->append(number);
                 }
             } // while (cIter != oldWord.end())
         }
         else
         {
             // Do not parse arrays or sublists. Just append them as is.
-            runparseBuilder->append(element);
+            runparseBuilder_->append(element);
         }
     }
-    return runparseBuilder->finishedList();
+    return runparseBuilder_->finishedList();
 }
 
 /// @brief Parse a QLogo word or list into a list of tokens.

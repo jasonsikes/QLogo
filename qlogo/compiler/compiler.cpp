@@ -37,7 +37,7 @@ QHash<Datum *, std::shared_ptr<CompiledText>> Compiler::compiledTextTable_;
 
 const char *dbgName(const char *enclosing, const char *name)
 {
-    static bool shouldMangle = Config::get().showIR || Config::get().showCFG || Config::get().showModuleIR;
+    static bool shouldMangle = Config::get().showIR_ || Config::get().showCFG_ || Config::get().showModuleIR_;
     if (shouldMangle)
     {
         static std::string storage;
@@ -336,14 +336,14 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
         generateTOC(blocks, scaff_->theFunction_);
     }
 
-    if (Config::get().showIR)
+    if (Config::get().showIR_)
     {
         // Print the whole module so we see all functions after coroutine lowering (ramp, resume, destroy).
         scaff_->theFunction_->print(errs());
         fprintf(stderr, "\n");
     }
 
-    if (Config::get().verifyIR)
+    if (Config::get().verifyIR_)
     {
         std::string str;
         llvm::raw_string_ostream output(str);
@@ -355,7 +355,7 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
         }
     }
 
-    if (Config::get().showCFG)
+    if (Config::get().showCFG_)
     {
         scaff_->theFunction_->viewCFG();
     }
@@ -366,7 +366,7 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     // Run the optimizer on the function.
     scaff_->theFPM_.run(*(scaff_->theFunction_), scaff_->theFAM_);
 
-    if (Config::get().showModuleIR)
+    if (Config::get().showModuleIR_)
     {
         // Print the whole module so we see all functions after coroutine lowering (ramp, resume, destroy).
         scaff_->theModule_->print(errs(), nullptr);

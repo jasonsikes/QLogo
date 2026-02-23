@@ -26,10 +26,10 @@ class TextStream;
 
 class Runparser
 {
-    ListBuilder *runparseBuilder = nullptr;
-    QString::iterator runparseCIter;
-    QString::iterator runparseCEnd;
-    bool isRunparseSourceSpecial;
+    ListBuilder *runparseBuilder_ = nullptr;
+    QString::iterator runparseCIter_;
+    QString::iterator runparseCEnd_;
+    bool isRunparseSourceSpecial_;
     void runparseSpecialchars();
     void runparseMinus();
     DatumPtr tryParseNegativeNumber();
@@ -38,7 +38,7 @@ class Runparser
     void runparseQuotedWord();
     void runparseString();
 
-    ListIterator listIter;
+    ListIterator listIter_;
 
   public:
     /// @brief Parse a QLogo word or list into a list of tokens.

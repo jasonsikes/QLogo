@@ -54,7 +54,7 @@ static void outputYamlHeaderIfNeeded()
     }
 }
 
-QProcess *ProcessMessageWriter::process = nullptr;
+QProcess *ProcessMessageWriter::process_ = nullptr;
 
 /// @brief Get the name of a message type for logging
 static QString getMessageTypeName(message_t type)
@@ -529,7 +529,7 @@ qint64 ProcessMessageWriter::write(const QByteArray &buffer)
         }
     }
 
-    return process->write(buffer);
+    return process_->write(buffer);
 }
 
 #define message(X) (MessageTemplate<ProcessMessageWriter>(X))
@@ -591,7 +591,7 @@ int MainWindow::startLogo()
     arguments << "--Psychi";
 
     logoProcess = new QProcess(this);
-    ProcessMessageWriter::process = logoProcess;
+    ProcessMessageWriter::process_ = logoProcess;
 
     connect(
         logoProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &MainWindow::processFinished);
@@ -1015,16 +1015,16 @@ void MainWindow::setSplitterforMode(ScreenModeEnum mode)
     switch (mode)
     {
     case initScreenMode:
-        canvasSize = Config::get().initScreenSize;
+        canvasSize = Config::get().initScreenSize_;
         break;
     case textScreenMode:
-        canvasSize = Config::get().textScreenSize;
+        canvasSize = Config::get().textScreenSize_;
         break;
     case fullScreenMode:
-        canvasSize = Config::get().fullScreenSize;
+        canvasSize = Config::get().fullScreenSize_;
         break;
     case splitScreenMode:
-        canvasSize = Config::get().splitScreenSize;
+        canvasSize = Config::get().splitScreenSize_;
         break;
     }
     QList<int> sizes = ui_->splitter->sizes();

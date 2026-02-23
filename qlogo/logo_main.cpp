@@ -85,42 +85,42 @@ void processOptions(QCoreApplication *a)
 
     if (commandlineParser.isSet(optPsychi))
     {
-        Config::get().hasGUI = true;
+        Config::get().hasGUI_ = true;
     }
 
     if (commandlineParser.isSet(optsetlibloc))
     {
-        Config::get().paramLibraryDatabaseFilepath = commandlineParser.value(optsetlibloc);
+        Config::get().paramLibraryDatabaseFilepath_ = commandlineParser.value(optsetlibloc);
     }
 
     if (commandlineParser.isSet(optsethelploc))
     {
-        Config::get().paramHelpDatabaseFilepath = commandlineParser.value(optsethelploc);
+        Config::get().paramHelpDatabaseFilepath_ = commandlineParser.value(optsethelploc);
     }
 
     if (commandlineParser.isSet(optshowIR))
     {
-        Config::get().showIR = true;
+        Config::get().showIR_ = true;
     }
 
     if (commandlineParser.isSet(optverifyIR))
     {
-        Config::get().verifyIR = true;
+        Config::get().verifyIR_ = true;
     }
 
     if (commandlineParser.isSet(optshowCFG))
     {
-        Config::get().showCFG = true;
+        Config::get().showCFG_ = true;
     }
 
     if (commandlineParser.isSet(optshowModuleIR))
     {
-        Config::get().showModuleIR = true;
+        Config::get().showModuleIR_ = true;
     }
 
     if (commandlineParser.isSet(optshowCON))
     {
-        Config::get().showCON = true;
+        Config::get().showCON_ = true;
     }
 }
 
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
     // Pass all the command line arguments to Config in case they are queried later.
     for (int i = 0; i < argc; ++i)
     {
-        Config::get().ARGV.push_back(QString(argv[i]));
+        Config::get().ARGV_.push_back(QString(argv[i]));
     }
 
     QCoreApplication application(argc, argv);
@@ -137,7 +137,7 @@ int main(int argc, char **argv)
     processOptions(&application);
 
     std::unique_ptr<LogoInterface> mainInterface;
-    if (Config::get().hasGUI)
+    if (Config::get().hasGUI_)
     {
         mainInterface = std::make_unique<LogoInterfaceGUI>();
     }

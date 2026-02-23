@@ -56,8 +56,8 @@ class LogoInterfaceGUI : public LogoInterface
 
     double penSize_;
 
-    double xbound_ = Config::get().initialBoundX;
-    double ybound_ = Config::get().initialBoundY;
+    double xbound_ = Config::get().initialBoundX_;
+    double ybound_ = Config::get().initialBoundY_;
     bool canvasIsBounded_ = true;
 
     QVector2D mousePos_ = QVector2D(0, 0);
@@ -65,8 +65,8 @@ class LogoInterfaceGUI : public LogoInterface
     int lastButtonpressID_ = 0;
     bool isMouseButtonDown_ = false;
 
-    QColor currentBackgroundColor_ = Config::get().initialCanvasBackgroundColor;
-    QColor currentForegroundColor_ = Config::get().initialCanvasForegroundColor;
+    QColor currentBackgroundColor_ = Config::get().initialCanvasBackgroundColor_;
+    QColor currentForegroundColor_ = Config::get().initialCanvasForegroundColor_;
     QImage canvasImage_;
     QByteArray canvasSvg_;
 

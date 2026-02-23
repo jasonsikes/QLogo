@@ -96,10 +96,10 @@ class Config
   private:
     ~Config()
     {
-        Q_ASSERT(mLogoInterface == nullptr);
+        Q_ASSERT(mLogoInterface_ == nullptr);
     }
 
-    LogoInterface *mLogoInterface = nullptr;
+    LogoInterface *mLogoInterface_ = nullptr;
 
   public:
     Config() = default;
@@ -109,9 +109,9 @@ class Config
     Config &operator=(Config &&other) = delete;
 
 #ifdef DEBUG
-const bool debugBuild = true;
+const bool debugBuild_ = true;
 #else
-const bool debugBuild = false;
+const bool debugBuild_ = false;
 #endif
     
     
@@ -126,83 +126,83 @@ const bool debugBuild = false;
     /// The escape character is the separator between Console messages and
     /// Console control characters. Currently, the only control is switching
     /// STANDOUT modes.
-    const QChar escapeChar = QChar(27);
+    const QChar escapeChar_ = QChar(27);
 
     /// @brief The escape string is the escape character as a string.
-    const QString escapeString = QString(escapeChar);
+    const QString escapeString_ = QString(escapeChar_);
 
     /// @brief The initial X bound of the canvas.
-    const float initialBoundX = 150;
+    const float initialBoundX_ = 150;
 
     /// @brief The initial Y bound of the canvas.
-    const float initialBoundY = 150;
+    const float initialBoundY_ = 150;
 
     /// @brief The initial pen size of the canvas.
-    const float initialPensize = 1;
+    const float initialPensize_ = 1;
 
     /// @brief The initial foreground color of the canvas.
-    const QColor initialCanvasForegroundColor = QColorConstants::White;
+    const QColor initialCanvasForegroundColor_ = QColorConstants::White;
 
     /// @brief The initial background color of the canvas.
-    const QColor initialCanvasBackgroundColor = QColorConstants::Black;
+    const QColor initialCanvasBackgroundColor_ = QColorConstants::Black;
 
     // The canvas size proportions for each mode. 0.0 means Canvas is
     // completely hidden. 0.8 means Canvas takes up 80% of available space (remaining
     // 20% belongs to the Console).
-    const float textScreenSize = 0.0f;
-    const float fullScreenSize = 0.8f;
-    const float splitScreenSize = 0.8f;
-    const float initScreenSize = textScreenSize;
+    const float textScreenSize_ = 0.0f;
+    const float fullScreenSize_ = 0.8f;
+    const float splitScreenSize_ = 0.8f;
+    const float initScreenSize_ = textScreenSize_;
 
     LogoInterface *mainInterface()
     {
-        Q_ASSERT(mLogoInterface != nullptr);
-        return mLogoInterface;
+        Q_ASSERT(mLogoInterface_ != nullptr);
+        return mLogoInterface_;
     }
 
     void setMainLogoInterface(LogoInterface *aLogoInterface)
     {
-        Q_ASSERT((mLogoInterface == nullptr) || (aLogoInterface == nullptr));
-        mLogoInterface = aLogoInterface;
+        Q_ASSERT((mLogoInterface_ == nullptr) || (aLogoInterface == nullptr));
+        mLogoInterface_ = aLogoInterface;
     }
 
     // Set to true iff qlogo is communicating with Psychi.
-    bool hasGUI = false;
+    bool hasGUI_ = false;
 
     // Set to true iff compiler should show IR code.
-    bool showIR = false;
+    bool showIR_ = false;
 
     // Set to true iff compiler should show the CFG view.
-    bool showCFG = false;
+    bool showCFG_ = false;
 
     // Set to true iff compiler should show the full module IR (after coroutine lowering).
-    bool showModuleIR = false;
+    bool showModuleIR_ = false;
 
     // Set to true if Compiler should verify the generated functions.
     // Use for development. Compiler may generate bad code in unreachable
     // sections, i.e. when handling parsing errors.
     // Default to true in debug build.
-    bool verifyIR = debugBuild;
+    bool verifyIR_ = debugBuild_;
 
     // Set to true iff compiler should show the CFG view.
-    bool showCON = false;
+    bool showCON_ = false;
 
     // ARGV initialization parameters
-    QStringList ARGV;
+    QStringList ARGV_;
 
     /// @brief The path to the library database file.
-    QString paramLibraryDatabaseFilepath;
+    QString paramLibraryDatabaseFilepath_;
 
     /// @brief The path to the help database file.
-    QString paramHelpDatabaseFilepath;
+    QString paramHelpDatabaseFilepath_;
 
     // TODO: These should be set in the CMake file
 
     /// @brief The default library database filename.
-    const char *defaultLibraryDbFilename = "qlogo_library.db";
+    const char *defaultLibraryDbFilename_ = "qlogo_library.db";
 
     /// @brief The default help database filename.
-    const char *defaultHelpDbFilename = "qlogo_help.db";
+    const char *defaultHelpDbFilename_ = "qlogo_help.db";
 };
 
 enum PenModeEnum
@@ -253,7 +253,7 @@ class QProcess;
 /// Include <QProcess> where implementing write().
 struct ProcessMessageWriter
 {
-    static QProcess *process;
+    static QProcess *process_;
 
     static qint64 write(const QByteArray &buffer);
 };
@@ -275,30 +275,30 @@ struct StdoutMessageWriter
 template <typename WriterPolicy>
 struct MessageTemplate
 {
-    MessageTemplate(message_t header) : bufferStream(&buffer, QIODevice::WriteOnly)
+    MessageTemplate(message_t header) : bufferStream_(&buffer_, QIODevice::WriteOnly)
     {
-        buffer.clear();
-        bufferStream << header;
+        buffer_.clear();
+        bufferStream_ << header;
     }
 
     ~MessageTemplate()
     {
-        qint64 datalen = buffer.size();
-        buffer.prepend(reinterpret_cast<const char *>(&datalen), sizeof(qint64));
-        qint64 datawritten = WriterPolicy::write(buffer);
-        Q_ASSERT(datawritten == buffer.size());
+        qint64 datalen = buffer_.size();
+        buffer_.prepend(reinterpret_cast<const char *>(&datalen), sizeof(qint64));
+        qint64 datawritten = WriterPolicy::write(buffer_);
+        Q_ASSERT(datawritten == buffer_.size());
     }
 
     template <class T>
     MessageTemplate &operator<<(const T &x)
     {
-        bufferStream << x;
+        bufferStream_ << x;
         return *this;
     }
 
   private:
-    QByteArray buffer;
-    QDataStream bufferStream;
+    QByteArray buffer_;
+    QDataStream bufferStream_;
 };
 
 #endif // CONSTANTS_H

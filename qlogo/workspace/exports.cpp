@@ -732,7 +732,7 @@ EXPORTC addr_t getCurrentError(addr_t eAddr)
     if (!errPtr.isNothing())
     {
         auto *err = reinterpret_cast<FCError *>(errPtr.datumValue());
-        retvalBuilder.append(DatumPtr(err->code));
+        retvalBuilder.append(DatumPtr(err->code_));
         retvalBuilder.append(err->message());
         retvalBuilder.append(err->procedure());
         retvalBuilder.append(err->line());
