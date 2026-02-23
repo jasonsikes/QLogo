@@ -28,22 +28,22 @@
 struct Cmd_t
 {
     /// @brief The compiler method to generate code for this command.
-    Generator method;
+    Generator method_;
 
     /// @brief The minimum number of parameters this command expects.
     /// @note -1 means no minimum number of tokens, all tokens are parsed without expression parsing, "raw" tokens.
-    int countOfMinParams;
+    int countOfMinParams_;
 
     /// @brief The number of default parameters this command expects.
     /// @note -1 means special form, read until EOL.
-    int countOfDefaultParams;
+    int countOfDefaultParams_;
 
     /// @brief The maximum number of parameters this command expects.
     /// @note -1 means unlimited.
-    int countOfMaxParams;
+    int countOfMaxParams_;
 
     /// @brief The data type(s) that this procedure is expected to return.
-    RequestReturnType returnType;
+    RequestReturnType returnType_;
 };
 
 /// @brief The procedures class.
@@ -51,10 +51,10 @@ struct Cmd_t
 /// user-defined and library procedures.
 class Procedures
 {
-    QHash<QString, Cmd_t> stringToCmd;
+    QHash<QString, Cmd_t> stringToCmd_;
 
-    QHash<QString, DatumPtr> procedures;
-    qint64 lastProcedureCreatedTimestamp;
+    QHash<QString, DatumPtr> procedures_;
+    qint64 lastProcedureCreatedTimestamp_;
 
     DatumPtr procedureForName(const QString &aName) const;
     bool isNamedProcedure(const QString &aName) const;
@@ -93,7 +93,7 @@ class Procedures
     /// @return The timestamp of the last procedure creation.
     qint64 timeOfLastProcedureCreation() const
     {
-        return lastProcedureCreatedTimestamp;
+        return lastProcedureCreatedTimestamp_;
     }
 
     /// @brief Create a procedure from a command and its text.
@@ -220,44 +220,44 @@ class Procedure : public Datum
     }
 
     /// @brief The parameter names of the required inputs of the procedure.
-    QStringList requiredInputs;
+    QStringList requiredInputs_;
 
     /// @brief The parameter names of the optional inputs of the procedure.
-    QStringList optionalInputs;
+    QStringList optionalInputs_;
 
     /// @brief The default values of the optional inputs of the procedure.
-    QList<DatumPtr> optionalDefaults;
+    QList<DatumPtr> optionalDefaults_;
 
     /// @brief The parameter name for the rest of the inputs.
-    QString restInput;
+    QString restInput_;
 
     /// @brief The minimum number of parameters this procedure accepts.
-    int countOfMinParams = 0;
+    int countOfMinParams_ = 0;
     /// @brief The number of default parameters this procedure expects.
-    int countOfDefaultParams = 0;
+    int countOfDefaultParams_ = 0;
     /// @brief The maximum number of parameters this procedure accepts.
-    int countOfMaxParams = -1;
+    int countOfMaxParams_ = -1;
 
     /// @brief A hash table to map tag names to the lines in the source text.
-    QHash<QString, DatumPtr> tagToLine;
+    QHash<QString, DatumPtr> tagToLine_;
 
     /// @brief A hash table to map tag names to the block ID for efficient execution.
-    QHash<QString, int32_t> tagToBlockId;
+    QHash<QString, int32_t> tagToBlockId_;
 
     /// @brief Whether this procedure is a macro.
-    bool isMacro = false;
+    bool isMacro_ = false;
 
     /// @brief The source text of the procedure.
     /// @note This is a list of sublists, with each sublist representing a line of the
     /// source text. The source text begins with the word 'TO' or '.MACRO' and ends with
     /// the word 'END'.
     // TODO: Should this be a list of words, since each line is a word?
-    QList<DatumPtr> sourceText;
+    QList<DatumPtr> sourceText_;
 
     /// @brief The instruction list of the procedure.
     /// @note This is a list of lists, with each sublist representing a line of instruction.
     /// TODO This should be a deep copy of the source lists, to prevent direct modification.
-    DatumPtr instructionList;
+    DatumPtr instructionList_;
 };
 
 #endif // PROCEDURES_H

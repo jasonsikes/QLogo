@@ -106,7 +106,7 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
         DatumPtr result;
         try
         {
-            DatumPtr line = systemReadStream->readListWithPrompt(localPrompt, true);
+            DatumPtr line = systemReadStream_->readListWithPrompt(localPrompt, true);
             if (line.isNothing()) // EOF
                 return nothing();
             result = runECE(line);
@@ -197,16 +197,16 @@ Datum *Kernel::inputProcedure(ASTNode *node)
         ListBuilder textBuilder;
         textBuilder.append(firstLine);
 
-        QList<DatumPtr> sourceText = systemReadStream->recentHistory();
+        QList<DatumPtr> sourceText = systemReadStream_->recentHistory();
         // Now read in the body
         forever
         {
-            DatumPtr line = systemReadStream->readListWithPrompt("> ", true);
+            DatumPtr line = systemReadStream_->readListWithPrompt("> ", true);
             if (!line.isList()) // this must be the end of the input
                 break;
             if (line.listValue()->isEmpty())
                 continue;
-            sourceText.append(systemReadStream->recentHistory());
+            sourceText.append(systemReadStream_->recentHistory());
             DatumPtr first = line.listValue()->head;
             if (first.isWord())
             {
@@ -328,17 +328,17 @@ DatumPtr Kernel::allVariables() const
 
 Kernel::Kernel()
 {
-    stdioStream = new TextStream(nullptr);
-    readStream = stdioStream;
-    systemReadStream = stdioStream;
-    writeStream = stdioStream;
-    systemWriteStream = stdioStream;
+    stdioStream_ = new TextStream(nullptr);
+    readStream_ = stdioStream_;
+    systemReadStream_ = stdioStream_;
+    writeStream_ = stdioStream_;
+    systemWriteStream_ = stdioStream_;
 
     initVariables();
     initPalette();
 
-    filePrefix = emptyList();
-    isPausing = false;
+    filePrefix_ = emptyList();
+    isPausing_ = false;
 }
 
 Kernel::~Kernel()
@@ -353,7 +353,7 @@ DatumPtr Kernel::runECE(const DatumPtr &listP)
     callFrameStack.push(std::move(std::make_unique<NewCallFrame>(nothing())));
     NewCallFrame *currentCallFrame = callFrameStack.top().get();
 
-    currentCallFrame->evaluationStack.push(std::move(std::make_unique<NewEvaluator>(listP)));
+    currentCallFrame->evaluationStack_.push(std::move(std::make_unique<NewEvaluator>(listP)));
 
     DatumPtr retval;
 
@@ -364,13 +364,13 @@ DatumPtr Kernel::runECE(const DatumPtr &listP)
         if (topEvaluator->exec(0))
         {
             retval = DatumPtr(topEvaluator->retval);
-            currentCallFrame->evaluationStack.pop();
-            if (currentCallFrame->evaluationStack.size() < 1)
+            currentCallFrame->evaluationStack_.pop();
+            if (currentCallFrame->evaluationStack_.size() < 1)
             {
                 break;
             }
             topEvaluator = currentCallFrame->topEvaluator();
-            topEvaluator->lastSubExecResult = retval.datumValue();
+            topEvaluator->lastSubExecResult_ = retval.datumValue();
         }
     }
 
@@ -381,7 +381,7 @@ DatumPtr Kernel::runECE(const DatumPtr &listP)
 void Kernel::pushListOntoEvaluationStack(const DatumPtr &listP)
 {
     NewCallFrame *topCallFrame = callFrameStack.top().get();
-    topCallFrame->evaluationStack.push(std::move(std::make_unique<NewEvaluator>(listP)));
+    topCallFrame->evaluationStack_.push(std::move(std::make_unique<NewEvaluator>(listP)));
 }
 
 Datum *Kernel::specialVar(SpecialNames name) const
@@ -429,9 +429,9 @@ QString Kernel::filepathForFilename(const DatumPtr &filenameP) const
 {
     QString filename = filenameP.wordValue()->toString();
 
-    if (filePrefix.isWord())
+    if (filePrefix_.isWord())
     {
-        QString prefix = filePrefix.wordValue()->toString();
+        QString prefix = filePrefix_.wordValue()->toString();
         return prefix + QDir::separator() + filename;
     }
     return filename;
@@ -439,7 +439,7 @@ QString Kernel::filepathForFilename(const DatumPtr &filenameP) const
 
 void Kernel::closeAll()
 {
-    QStringList names = fileStreams.keys();
+    QStringList names = fileStreams_.keys();
     for (const auto &filename : names)
     {
         // close(filename);
@@ -448,12 +448,12 @@ void Kernel::closeAll()
 
 void Kernel::stdPrint(const QString &text) const
 {
-    writeStream->lprint(text);
+    writeStream_->lprint(text);
 }
 
 void Kernel::sysPrint(const QString &text) const
 {
-    systemWriteStream->lprint(text);
+    systemWriteStream_->lprint(text);
 }
 
 int Kernel::run()

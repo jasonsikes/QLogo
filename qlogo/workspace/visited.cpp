@@ -20,47 +20,47 @@
 
 void VisitedSet::add(const Datum *node)
 {
-    visited.insert(node);
+    visited_.insert(node);
 }
 
 void VisitedSet::remove(const Datum *node)
 {
-    visited.remove(node);
+    visited_.remove(node);
 }
 
 bool VisitedSet::contains(const Datum *node) const
 {
-    return visited.contains(node);
+    return visited_.contains(node);
 }
 
 void VisitedSet::clear()
 {
-    visited.clear();
+    visited_.clear();
 }
 
 // VisitedMap implementation
 
 void VisitedMap::add(const Datum *key, const Datum *value)
 {
-    visited.insert(key, value);
+    visited_.insert(key, value);
 }
 
 void VisitedMap::remove(const Datum *key)
 {
-    visited.remove(key);
+    visited_.remove(key);
 }
 
 const Datum *VisitedMap::get(const Datum *key) const
 {
-    return visited.value(key);
+    return visited_.value(key);
 }
 
 bool VisitedMap::contains(const Datum *key) const
 {
-    return visited.contains(key);
+    return visited_.contains(key);
 }
 
 void VisitedMap::clear()
 {
-    visited.clear();
+    visited_.clear();
 }

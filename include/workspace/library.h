@@ -30,17 +30,17 @@
 class DatabaseConnection
 {
   protected:
-    mutable bool connectionIsValid = false;
-    const QString connectionName;
-    const QString paramFilePath;
-    const QString defaultFilePath;
+    mutable bool connectionIsValid_ = false;
+    const QString connectionName_;
+    const QString paramFilePath_;
+    const QString defaultFilePath_;
 
     /// @brief Constructor for DatabaseConnection.
     /// @param aConnectionName The name of the database connection.
     /// @param paramFilePath The path to the database file, may be empty.
     /// @param defaultFilePath The path to search for the database file if paramFilePath is empty.
     explicit DatabaseConnection(const QString &aConnectionName, const QString &paramFilePath, const QString &defaultFilePath)
-        : connectionName(aConnectionName), paramFilePath(paramFilePath), defaultFilePath(defaultFilePath)
+        : connectionName_(aConnectionName), paramFilePath_(paramFilePath), defaultFilePath_(defaultFilePath)
     {
     }
 

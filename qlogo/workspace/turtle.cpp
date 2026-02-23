@@ -22,15 +22,15 @@
 #include <limits>
 
 
-Turtle::Turtle() : turtleTransform(QTransform())
+Turtle::Turtle() : turtleTransform_(QTransform())
 {
-    penColor = Config::get().initialCanvasForegroundColor;
+    penColor_ = Config::get().initialCanvasForegroundColor;
 }
 
 void Turtle::setPenIsDown(bool aIsPenDown)
 {
-    penIsDown = aIsPenDown;
-    Config::get().mainInterface()->setPenIsDown(penIsDown);
+    penIsDown_ = aIsPenDown;
+    Config::get().mainInterface()->setPenIsDown(penIsDown_);
 }
 
 // Move the turtle. If over a boundary, wrap.
@@ -50,31 +50,31 @@ double Turtle::wrapTurtle(double lineStartU,
     {
         qreal m31 = isXBoundary ? mult * boundU : crossV;
         qreal m32 = isXBoundary ? crossV : mult * boundU;
-        QTransform tempTurtleTransform(turtleTransform.m11(),
-                                       turtleTransform.m12(),
-                                       turtleTransform.m13(),
-                                       turtleTransform.m21(),
-                                       turtleTransform.m22(),
-                                       turtleTransform.m23(),
-                                       m31, m32, turtleTransform.m33());
+        QTransform tempTurtleTransform(turtleTransform_.m11(),
+                                       turtleTransform_.m12(),
+                                       turtleTransform_.m13(),
+                                       turtleTransform_.m21(),
+                                       turtleTransform_.m22(),
+                                       turtleTransform_.m23(),
+                                       m31, m32, turtleTransform_.m33());
         Config::get().mainInterface()->setTurtlePos(&tempTurtleTransform);
         Config::get().mainInterface()->emitVertex();
-        if (penIsDown)
+        if (penIsDown_)
             Config::get().mainInterface()->setPenIsDown(false);
 
         m31 = isXBoundary ? -mult * boundU : crossV;
         m32 = isXBoundary ? crossV : -mult * boundU;
-        turtleTransform = QTransform{turtleTransform.m11(),
-                                    turtleTransform.m12(),
-                                    turtleTransform.m13(),
-                                    turtleTransform.m21(),
-                                    turtleTransform.m22(),
-                                    turtleTransform.m23(),
-                                    m31, m32, turtleTransform.m33()};
+        turtleTransform_ = QTransform{turtleTransform_.m11(),
+                                    turtleTransform_.m12(),
+                                    turtleTransform_.m13(),
+                                    turtleTransform_.m21(),
+                                    turtleTransform_.m22(),
+                                    turtleTransform_.m23(),
+                                    m31, m32, turtleTransform_.m33()};
 
-        Config::get().mainInterface()->setTurtlePos(&turtleTransform);
+        Config::get().mainInterface()->setTurtlePos(&turtleTransform_);
         Config::get().mainInterface()->emitVertex();
-        if (penIsDown)
+        if (penIsDown_)
             Config::get().mainInterface()->setPenIsDown(true);
         lineEndU -= 2 * mult * boundU;
     }
@@ -93,8 +93,8 @@ void Turtle::moveTurtleWrap(const QTransform &newTransform)
 
     while ((lineEndX < -boundX) || (lineEndX > boundX) || (lineEndY < -boundY) || (lineEndY > boundY))
     {
-        double lineStartX = turtleTransform.dx();
-        double lineStartY = turtleTransform.dy();
+        double lineStartX = turtleTransform_.dx();
+        double lineStartY = turtleTransform_.dy();
 
         if (lineEndX > boundX)
         {
@@ -133,7 +133,7 @@ void Turtle::moveTurtleWrap(const QTransform &newTransform)
         }
     }
 
-    turtleTransform = QTransform{newTransform.m11(),
+    turtleTransform_ = QTransform{newTransform.m11(),
                                  newTransform.m12(),
                                  newTransform.m13(),
                                  newTransform.m21(),
@@ -142,7 +142,7 @@ void Turtle::moveTurtleWrap(const QTransform &newTransform)
                                  lineEndX,
                                  lineEndY,
                                  newTransform.m33()};
-    Config::get().mainInterface()->setTurtlePos(&turtleTransform);
+    Config::get().mainInterface()->setTurtlePos(&turtleTransform_);
     Config::get().mainInterface()->emitVertex();
 }
 
@@ -160,8 +160,8 @@ void Turtle::moveTurtleFence(const QTransform &newTransform)
     {
         throw FCError::turtleOutOfBounds();
     }
-    turtleTransform = newTransform;
-    Config::get().mainInterface()->setTurtlePos(&turtleTransform);
+    turtleTransform_ = newTransform;
+    Config::get().mainInterface()->setTurtlePos(&turtleTransform_);
     Config::get().mainInterface()->emitVertex();
 }
 
@@ -169,8 +169,8 @@ void Turtle::moveTurtleFence(const QTransform &newTransform)
 // if needed.
 void Turtle::moveTurtleWindow(const QTransform &newTransform)
 {
-    double candidateX = std::abs(newTransform.dx()) + penSize;
-    double candidateY = std::abs(newTransform.dy()) + penSize;
+    double candidateX = std::abs(newTransform.dx()) + penSize_;
+    double candidateY = std::abs(newTransform.dy()) + penSize_;
     double boundX = Config::get().mainInterface()->boundX();
     double boundY = Config::get().mainInterface()->boundY();
 
@@ -181,14 +181,14 @@ void Turtle::moveTurtleWindow(const QTransform &newTransform)
         Config::get().mainInterface()->setBounds(boundX, boundY);
     }
 
-    turtleTransform = newTransform;
-    Config::get().mainInterface()->setTurtlePos(&turtleTransform);
+    turtleTransform_ = newTransform;
+    Config::get().mainInterface()->setTurtlePos(&turtleTransform_);
     Config::get().mainInterface()->emitVertex();
 }
 
 void Turtle::moveTurtle(const QTransform &newTransform)
 {
-    switch (mode)
+    switch (mode_)
     {
     case turtleWrap:
         moveTurtleWrap(newTransform);
@@ -200,7 +200,7 @@ void Turtle::moveTurtle(const QTransform &newTransform)
         moveTurtleWindow(newTransform);
         break;
     default:
-        qWarning() << "Invalid turtle mode: " << mode;
+        qWarning() << "Invalid turtle mode: " << mode_;
         moveTurtleWindow(newTransform);
         break;
     }
@@ -213,15 +213,15 @@ void Turtle::drawArc(double angle, double radius)
 
 void Turtle::forward(double steps)
 {
-    QTransform newTransform(turtleTransform.m11(),
-                           turtleTransform.m12(),
-                           turtleTransform.m13(),
-                           turtleTransform.m21(),
-                           turtleTransform.m22(),
-                           turtleTransform.m23(),
-                           turtleTransform.dx() + steps * turtleTransform.m21(),
-                           turtleTransform.dy() + steps * turtleTransform.m22(),
-                           turtleTransform.m33());
+    QTransform newTransform(turtleTransform_.m11(),
+                           turtleTransform_.m12(),
+                           turtleTransform_.m13(),
+                           turtleTransform_.m21(),
+                           turtleTransform_.m22(),
+                           turtleTransform_.m23(),
+                           turtleTransform_.dx() + steps * turtleTransform_.m21(),
+                           turtleTransform_.dy() + steps * turtleTransform_.m22(),
+                           turtleTransform_.m33());
     moveTurtle(newTransform);
 }
 
@@ -230,24 +230,24 @@ void Turtle::rotate(double angle)
     // Logo uses clockwise rotation (positive angles rotate clockwise),
     // but QTransform::rotate() uses counter-clockwise rotation (standard math convention).
     // Negate the angle to match Logo's behavior.
-    turtleTransform.rotate(-angle);
-    Config::get().mainInterface()->setTurtlePos(&turtleTransform);
+    turtleTransform_.rotate(-angle);
+    Config::get().mainInterface()->setTurtlePos(&turtleTransform_);
 }
 
 QPointF Turtle::getxy() const
 {
-    return QPointF(turtleTransform.dx(), turtleTransform.dy());
+    return QPointF(turtleTransform_.dx(), turtleTransform_.dy());
 }
 
 void Turtle::setMode(TurtleModeEnum newMode)
 {
-    mode = newMode;
-    if (mode != turtleWindow)
+    mode_ = newMode;
+    if (mode_ != turtleWindow)
     {
         double boundX = Config::get().mainInterface()->boundX();
         double boundY = Config::get().mainInterface()->boundY();
-        double posX = turtleTransform.dx();
-        double posY = turtleTransform.dy();
+        double posX = turtleTransform_.dx();
+        double posY = turtleTransform_.dy();
         if ((posX < -boundX) || (posX > boundX) || (posY < -boundY) || (posY > boundY))
         {
             // Move the turtle to the home position when switching to bounded mode
@@ -259,14 +259,14 @@ void Turtle::setMode(TurtleModeEnum newMode)
 
 TurtleModeEnum Turtle::getMode() const
 {
-    return mode;
+    return mode_;
 }
 
 double Turtle::getHeading() const
 {
     constexpr double RADIANS_TO_DEGREES = 180.0 / PI;
-    double s = turtleTransform.m12();
-    double c = turtleTransform.m11();
+    double s = turtleTransform_.m12();
+    double c = turtleTransform_.m11();
 
     double retval = atan2(s, c) * RADIANS_TO_DEGREES;
     while (retval < 0)
@@ -276,27 +276,27 @@ double Turtle::getHeading() const
 
 void Turtle::setxy(double x, double y)
 {
-    QTransform newTransform(turtleTransform.m11(),
-                           turtleTransform.m12(),
-                           turtleTransform.m13(),
-                           turtleTransform.m21(),
-                           turtleTransform.m22(),
-                           turtleTransform.m23(),
+    QTransform newTransform(turtleTransform_.m11(),
+                           turtleTransform_.m12(),
+                           turtleTransform_.m13(),
+                           turtleTransform_.m21(),
+                           turtleTransform_.m22(),
+                           turtleTransform_.m23(),
                            x,
                            y,
-                           turtleTransform.m33());
+                           turtleTransform_.m33());
     moveTurtle(newTransform);
 }
 
 void Turtle::setx(double x)
 {
-    double y = turtleTransform.dy();
+    double y = turtleTransform_.dy();
     setxy(x, y);
 }
 
 void Turtle::sety(double y)
 {
-    double x = turtleTransform.dx();
+    double x = turtleTransform_.dx();
     setxy(x, y);
 }
 
@@ -307,54 +307,54 @@ void Turtle::moveToHome()
 
 void Turtle::setPenColor(const QColor &c)
 {
-    penColor = c;
+    penColor_ = c;
     Config::get().mainInterface()->setCanvasForegroundColor(c);
 }
 
 const QColor &Turtle::getPenColor() const
 {
-    return penColor;
+    return penColor_;
 }
 
 QSizeF Turtle::getScale() const
 {
-    return QSizeF(scaleX, scaleY);
+    return QSizeF(scaleX_, scaleY_);
 }
 
 void Turtle::setScale(double newScaleX, double newScaleY)
 {
-    Q_ASSERT(std::abs(scaleX) > std::numeric_limits<double>::epsilon());
-    Q_ASSERT(std::abs(scaleY) > std::numeric_limits<double>::epsilon());
+    Q_ASSERT(std::abs(scaleX_) > std::numeric_limits<double>::epsilon());
+    Q_ASSERT(std::abs(scaleY_) > std::numeric_limits<double>::epsilon());
 
-    double ratioX = newScaleX / scaleX;
-    double ratioY = newScaleY / scaleY;
+    double ratioX = newScaleX / scaleX_;
+    double ratioY = newScaleY / scaleY_;
 
-    turtleTransform.scale(ratioX, ratioY);
+    turtleTransform_.scale(ratioX, ratioY);
 
-    scaleX = newScaleX;
-    scaleY = newScaleY;
+    scaleX_ = newScaleX;
+    scaleY_ = newScaleY;
 
-    Config::get().mainInterface()->setTurtlePos(&turtleTransform);
+    Config::get().mainInterface()->setTurtlePos(&turtleTransform_);
 }
 
 void Turtle::setPenMode(PenModeEnum aPenMode)
 {
-    if (penMode != aPenMode)
+    if (penMode_ != aPenMode)
     {
-        penMode = aPenMode;
-        Config::get().mainInterface()->setPenmode(penMode);
+        penMode_ = aPenMode;
+        Config::get().mainInterface()->setPenmode(penMode_);
     }
 }
 
 PenModeEnum Turtle::getPenMode() const
 {
-    return penMode;
+    return penMode_;
 }
 
 void Turtle::setPenSize(double aPenSize)
 {
-    penSize = aPenSize;
-    Config::get().mainInterface()->setPensize(penSize);
+    penSize_ = aPenSize;
+    Config::get().mainInterface()->setPensize(penSize_);
 }
 
 bool Turtle::isPenSizeValid(double aPenSize) const
@@ -364,23 +364,23 @@ bool Turtle::isPenSizeValid(double aPenSize) const
 
 double Turtle::getPenSize() const
 {
-    return penSize;
+    return penSize_;
 }
 
 void Turtle::beginFillWithColor(const QColor &fillColor)
 {
-    if (isFilling)
+    if (isFilling_)
     {
         throw FCError::alreadyFilling();
     }
-    isFilling = true;
+    isFilling_ = true;
 
     Config::get().mainInterface()->beginPolygon(fillColor);
 }
 
 void Turtle::endFill()
 {
-    isFilling = false;
+    isFilling_ = false;
     Config::get().mainInterface()->endPolygon();
 }
 
@@ -389,15 +389,15 @@ DatumPtr Turtle::print()
     QString s = QString("%1 %2 %3\n"
                         "%4 %5 %6\n"
                         "%7 %8 %9\n")
-                    .arg(turtleTransform.m11())
-                    .arg(turtleTransform.m12())
-                    .arg(turtleTransform.m13())
-                    .arg(turtleTransform.m21())
-                    .arg(turtleTransform.m22())
-                    .arg(turtleTransform.m23())
-                    .arg(turtleTransform.dx())
-                    .arg(turtleTransform.dy())
-                    .arg(turtleTransform.m33());
+                    .arg(turtleTransform_.m11())
+                    .arg(turtleTransform_.m12())
+                    .arg(turtleTransform_.m13())
+                    .arg(turtleTransform_.m21())
+                    .arg(turtleTransform_.m22())
+                    .arg(turtleTransform_.m23())
+                    .arg(turtleTransform_.dx())
+                    .arg(turtleTransform_.dy())
+                    .arg(turtleTransform_.m33());
 
     return DatumPtr(s);
 }

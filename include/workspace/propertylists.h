@@ -27,7 +27,7 @@
 class PropertyLists
 {
     /// @brief The hash table of property lists.
-    QHash<QString, QHash<QString, DatumPtr>> plists;
+    QHash<QString, QHash<QString, DatumPtr>> plists_;
 
   public:
     /// @brief Constructor.

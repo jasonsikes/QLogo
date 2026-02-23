@@ -5,22 +5,22 @@
 #include "flowcontrol.h"
 #include "runparser.h"
 
-NewEvaluator::NewEvaluator(const DatumPtr &aList) : list(aList)
+NewEvaluator::NewEvaluator(const DatumPtr &aList) : list_(aList)
 {
 }
 
 NewEvaluator::~NewEvaluator()
 {
     // Destroy the coroutine frame if it exists.
-    if (handle != nullptr)
+    if (handle_ != nullptr)
     {
-        LLVMCoroFrameHeader *frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle);
+        LLVMCoroFrameHeader *frame = reinterpret_cast<LLVMCoroFrameHeader *>(handle_);
         Q_ASSERT(frame->resume == nullptr);
-        frame->destroy(handle);
+        frame->destroy(handle_);
     }
 
     // Release the objects in the release pool.
-    for (auto &d : releasePool)
+    for (auto &d : releasePool_)
     {
         if ((d->isa & Datum::typePersistentMask) == 0)
         {
@@ -33,32 +33,32 @@ NewEvaluator::~NewEvaluator()
 
 bool NewEvaluator::exec(int32_t jumpLocation)
 {
-    if (handle == nullptr)
+    if (handle_ == nullptr)
     {
         // Generate and execute the function. Might return a coroutine handle.
-        if (list.listValue() == EmptyList::instance())
+        if (list_.listValue() == EmptyList::instance())
         {
             retval = Datum::notADatum();
             return true;
         }
         try
         {
-            fn = Compiler::get().functionPtrFromList(list.listValue());
+            fn_ = Compiler::get().functionPtrFromList(list_.listValue());
         }
         catch (FCError *e)
         {
             retval = e;
             return true;
         }
-        handle = fn((addr_t)this, (addr_t)&retval, jumpLocation, nullptr);
+        handle_ = fn_((addr_t)this, (addr_t)&retval, jumpLocation, nullptr);
     } else {
         // Resume using the frame's resume function.
-        if (handle->resume != nullptr)
+        if (handle_->resume != nullptr)
         {
-            handle->resume(handle);
+            handle_->resume(handle_);
         }
     }
-    return (handle == nullptr) || (handle->resume == nullptr);
+    return (handle_ == nullptr) || (handle_->resume == nullptr);
 }
 
 void NewEvaluator::pushSublist(Datum *aList)
@@ -106,7 +106,7 @@ Datum *NewEvaluator::watch(const DatumPtr &d)
 Datum *NewEvaluator::watch(Datum *d)
 {
     (d->retainCount)++;
-    releasePool.push_back(d);
+    releasePool_.push_back(d);
     return d;
 }
 

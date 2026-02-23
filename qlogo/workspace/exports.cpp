@@ -363,8 +363,8 @@ EXPORTC void pushListOntoEvaluationStack(addr_t eAddr, addr_t listAddr)
 EXPORTC addr_t popEvaluationStackAndGetResult(addr_t eAddr)
 {
     auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
-    Datum *result = e->lastSubExecResult;
-    e->lastSubExecResult = nullptr;
+    Datum *result = e->lastSubExecResult_;
+    e->lastSubExecResult_ = nullptr;
     Q_ASSERT(result != nullptr);
     if (result != nullptr)
         e->watch(result);

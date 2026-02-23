@@ -33,21 +33,21 @@
 /// including its position, orientation, and pen state.
 class Turtle
 {
-    QTransform turtleTransform;
+    QTransform turtleTransform_;
 
-    QColor penColor;
-    TurtleModeEnum mode = turtleWindow;
+    QColor penColor_;
+    TurtleModeEnum mode_ = turtleWindow;
 
-    PenModeEnum penMode = penModePaint;
+    PenModeEnum penMode_ = penModePaint;
 
-    double penSize = Config::get().initialPensize;
+    double penSize_ = Config::get().initialPensize;
 
-    double scaleX = 1.0;
-    double scaleY = 1.0;
+    double scaleX_ = 1.0;
+    double scaleY_ = 1.0;
 
-    bool turtleIsVisible = true;
-    bool penIsDown = true;
-    bool isFilling = false;
+    bool turtleIsVisible_ = true;
+    bool penIsDown_ = true;
+    bool isFilling_ = false;
 
     double wrapTurtle(double lineStartU,
                     double lineStartV,
@@ -87,21 +87,21 @@ class Turtle
     /// @return The current turtle position and orientation.
     const QTransform &getMatrix() const
     {
-        return turtleTransform;
+        return turtleTransform_;
     }
 
     /// @brief Check if the turtle is visible.
     /// @return True if the turtle is visible, false otherwise.
     bool isTurtleVisible() const
     {
-        return turtleIsVisible;
+        return turtleIsVisible_;
     }
 
     /// @brief Set the visibility of the turtle.
     /// @param aIsVisible The new visibility state of the turtle.
     void setIsTurtleVisible(bool aIsVisible)
     {
-        turtleIsVisible = aIsVisible;
+        turtleIsVisible_ = aIsVisible;
         Config::get().mainInterface()->setTurtleIsVisible(aIsVisible);
     }
 
@@ -109,7 +109,7 @@ class Turtle
     /// @return True if the pen is down, false otherwise.
     bool isPenDown() const
     {
-        return penIsDown;
+        return penIsDown_;
     }
 
     /// @brief Set the pen down state.

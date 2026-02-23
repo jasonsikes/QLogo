@@ -79,30 +79,30 @@ bool initDBConnection(const QString &connectionName, const QString &paramFilePat
 
 DatabaseConnection::~DatabaseConnection()
 {
-    if (connectionIsValid)
+    if (connectionIsValid_)
     {
-        QSqlDatabase::removeDatabase(connectionName);
+        QSqlDatabase::removeDatabase(connectionName_);
     }
 }
 
 void DatabaseConnection::getConnection() const
 {
-    if (connectionIsValid)
+    if (connectionIsValid_)
     {
         return;
     }
-    bool isOpen = initDBConnection(connectionName, paramFilePath, defaultFilePath);
+    bool isOpen = initDBConnection(connectionName_, paramFilePath_, defaultFilePath_);
     if (isOpen)
     {
-        QSqlDatabase db = QSqlDatabase::database(connectionName);
+        QSqlDatabase db = QSqlDatabase::database(connectionName_);
         QStringList tables = db.tables();
         if (validateSchema(tables))
         {
-            connectionIsValid = true;
+            connectionIsValid_ = true;
         }
         else
         {
-            qWarning() << QString("Database connection '%1' has the wrong schema.").arg(connectionName);
+            qWarning() << QString("Database connection '%1' has the wrong schema.").arg(connectionName_);
         }
     }
 }
@@ -129,9 +129,9 @@ QString Library::procedureText(const QString &cmdName)
 
     getConnection();
 
-    if (connectionIsValid)
+    if (connectionIsValid_)
     {
-        QSqlDatabase db = QSqlDatabase::database(connectionName);
+        QSqlDatabase db = QSqlDatabase::database(connectionName_);
         QSqlQuery query(db);
         query.prepare("SELECT CODE FROM LIBRARY WHERE COMMAND = ?");
         query.addBindValue(cmdName);
@@ -187,9 +187,9 @@ QStringList Help::allCommands()
 {
     getConnection();
     QStringList retval;
-    if (connectionIsValid)
+    if (connectionIsValid_)
     {
-        QSqlDatabase db = QSqlDatabase::database(connectionName);
+        QSqlDatabase db = QSqlDatabase::database(connectionName_);
         QSqlQuery query("SELECT ALIAS FROM ALIASES", db);
         while (query.next())
         {
@@ -206,9 +206,9 @@ QString Help::helpText(const QString &name)
 
     getConnection();
 
-    if (connectionIsValid)
+    if (connectionIsValid_)
     {
-        QSqlDatabase db = QSqlDatabase::database(connectionName);
+        QSqlDatabase db = QSqlDatabase::database(connectionName_);
         // Every command has an alias
         // even if the alias is the same as the command.
         // Use the alias to get the command name.

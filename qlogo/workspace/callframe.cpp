@@ -31,7 +31,7 @@
 
 NewCallFrame::~NewCallFrame()
 {
-    for (auto iter = localVars.begin(); iter != localVars.end(); ++iter)
+    for (auto iter = localVars_.begin(); iter != localVars_.end(); ++iter)
     {
         if (iter.value().isNothing())
         {
@@ -47,17 +47,17 @@ NewCallFrame::~NewCallFrame()
 void NewCallFrame::setVarAsLocal(const QString &name)
 {
     DatumPtr originalValue = Kernel::get().datumForName(name);
-    localVars.insert(name, originalValue);
+    localVars_.insert(name, originalValue);
     Kernel::get().setDatumForName(nothing(), name);
 }
 
 Datum *NewCallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount)
 {
-    Procedure *proc = sourceNode.astnodeValue()->procedure.procedureValue();
+    Procedure *proc = sourceNode_.astnodeValue()->procedure.procedureValue();
 
-    QStringList &requiredInputs = proc->requiredInputs;
-    QStringList &optionalInputs = proc->optionalInputs;
-    QList<DatumPtr> &optionalDefaults = proc->optionalDefaults;
+    QStringList &requiredInputs = proc->requiredInputs_;
+    QStringList &optionalInputs = proc->optionalInputs_;
+    QList<DatumPtr> &optionalDefaults = proc->optionalDefaults_;
 
     // Assign the given name/value pairs to the local variables.
 
@@ -100,9 +100,9 @@ Datum *NewCallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount)
     }
 
     // Finally, take in the remainder (if any) as a list.
-    if (proc->restInput != "")
+    if (proc->restInput_ != "")
     {
-        QString name = proc->restInput;
+        QString name = proc->restInput_;
         ListBuilder builder;
         while (paramIndex < paramCount)
         {

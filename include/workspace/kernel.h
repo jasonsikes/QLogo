@@ -44,20 +44,20 @@ enum SpecialNames
 /// language and maintains the state of execution of the QLogo code.
 class Kernel
 {
-    DatumPtr filePrefix;
+    DatumPtr filePrefix_;
 
-    PropertyLists plists;
+    PropertyLists plists_;
 
-    QHash<QString, TextStream *> fileStreams;
-    QSet<TextStream *> writableStreams;
-    QSet<TextStream *> readableStreams;
-    TextStream *readStream;
-    TextStream *systemReadStream;
-    TextStream *writeStream;
-    TextStream *systemWriteStream;
-    TextStream *stdioStream;
+    QHash<QString, TextStream *> fileStreams_;
+    QSet<TextStream *> writableStreams_;
+    QSet<TextStream *> readableStreams_;
+    TextStream *readStream_;
+    TextStream *systemReadStream_;
+    TextStream *writeStream_;
+    TextStream *systemWriteStream_;
+    TextStream *stdioStream_;
 
-    bool isPausing;
+    bool isPausing_;
 
     void closeAll();
 

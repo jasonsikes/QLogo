@@ -30,27 +30,27 @@ struct NewEvaluator
     // The members
 
     /// @brief The list to evaluate.
-    DatumPtr list;
+    DatumPtr list_;
 
     /// @brief The pointer to this list's compiled function.
-    CompiledFunctionPtr fn;
+    CompiledFunctionPtr fn_;
 
     /// @brief The coroutine handle for this evaluation.
     /// @note Execution may resume until this value is nullptr.
-    LLVMCoroFrameHeader *handle = nullptr;
+    LLVMCoroFrameHeader *handle_ = nullptr;
 
     /// @brief The return value of this evaluation.
     Datum *retval = Datum::notADatum();
 
     /// @brief Result of the most recently run sub-list (explicit control: push list, suspend, driver runs it, resume, pop).
     /// Used by popEvaluationStackAndGetResult() after a coroutine suspend/resume for RUN/list call.
-    Datum *lastSubExecResult = nullptr;
+    Datum *lastSubExecResult_ = nullptr;
 
     /// @brief A pool of objects for garbage collection.
     /// @note This is the reason the copy operators are deleted. If we enable them, the
     ///  releasePool can be copied, and both copies will contain pointers to the same Datum objects.
     ///  This will cause the Datum objects to be deleted twice.
-    std::vector<Datum *> releasePool;
+    std::vector<Datum *> releasePool_;
 
     // The methods
 

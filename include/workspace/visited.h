@@ -28,7 +28,7 @@ class Datum;
 class VisitedSet
 {
   protected:
-    QSet<const Datum *> visited;
+    QSet<const Datum *> visited_;
 
   public:
     /// @brief Create an empty VisitedSet.
@@ -58,7 +58,7 @@ class VisitedSet
 class VisitedMap
 {
   protected:
-    QMap<const Datum *, const Datum *> visited;
+    QMap<const Datum *, const Datum *> visited_;
 
   public:
     /// @brief Create an empty VisitedMap.

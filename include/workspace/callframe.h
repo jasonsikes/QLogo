@@ -39,43 +39,43 @@ struct ASTNode;
 struct NewCallFrame
 {
     /// @brief The ASTNode source of this running procedure.
-    DatumPtr sourceNode;
+    DatumPtr sourceNode_;
 
     /// @brief The current source list being executed.
     /// The head of this list is the current line being executed.
     /// The tail is the lines following the current line.
-    DatumPtr runningSourceList;
+    DatumPtr runningSourceList_;
 
     /// @brief Set this value to set a jump location within a line.
-    int32_t jumpLocation = 0;
+    int32_t jumpLocation_ = 0;
 
     /// @brief Set to true iff a TEST command has occurred.
     /// @note This is for the commands TEST, IFTRUE, and IFFALSE.
-    bool isTested = false;
+    bool isTested_ = false;
 
     /// @brief This holds the result of the most recent TEST.
     /// @note This is for the commands TEST, IFTRUE, and IFFALSE.
-    bool testResult = false;
+    bool testResult_ = false;
 
     /// @brief The explicit slot list, placeholders for "?".
     /// @note This is for the "explicit slot" APPLY command.
-    DatumPtr explicitSlotList;
+    DatumPtr explicitSlotList_;
 
     /// @brief Variable names held in this scope and the values held prior to the invocation of this scope.
-    QHash<QString, DatumPtr> localVars;
+    QHash<QString, DatumPtr> localVars_;
 
     /// @brief The evaluation stack.
     /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.
     /// @todo This should be moved to the CallFrame class.
-    std::stack<std::unique_ptr<NewEvaluator>> evaluationStack;
+    std::stack<std::unique_ptr<NewEvaluator>> evaluationStack_;
 
 
     /// @brief Return the topmost Evaluator object.
     /// @return The topmost Evaluator object.
     NewEvaluator *topEvaluator() const
     {
-        Q_ASSERT(evaluationStack.size() > 0);
-        return evaluationStack.top().get();
+        Q_ASSERT(evaluationStack_.size() > 0);
+        return evaluationStack_.top().get();
     }
 
     /// @brief Insert an entry for 'name' in the variables hash. Save the previous value
@@ -115,7 +115,7 @@ struct NewCallFrame
     /// @param aSourceNode The ASTNode source of this running procedure. 'nothing'
     /// is reserved for the global frame or PAUSE.
     explicit NewCallFrame(const DatumPtr &aSourceNode)
-        : sourceNode(aSourceNode)
+        : sourceNode_(aSourceNode)
     {
     }
 
