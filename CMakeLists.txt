@@ -4,6 +4,8 @@ project(QLogo VERSION 0.961 LANGUAGES CXX C)
 
 include(GNUInstallDirs)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(QLOGO_BIN qlogo)
 set(QLOGO_GUI Psychi)
 set(QLOGO_HELP qlogo_help.db)
