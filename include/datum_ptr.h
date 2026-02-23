@@ -18,7 +18,7 @@ class VisitedSet;
 class DatumPtr
 {
   protected:
-    Datum *d;
+    Datum *datumValue_;
 
     void destroy();
 
@@ -79,7 +79,7 @@ class DatumPtr
     /// @return A pointer to the referred Datum or any of Datum's subclasses.
     Datum *datumValue() const
     {
-        return d;
+        return datumValue_;
     }
 
     /// @brief Returns a pointer to the referred Datum as a Word.
@@ -122,7 +122,7 @@ class DatumPtr
     /// @return True if the referred Datum is a Word, false otherwise.
     bool isWord() const
     {
-        return d->isa == Datum::typeWord;
+        return datumValue_->isa_ == Datum::typeWord;
     }
 
     /// @brief Returns true if the referred Datum is a List, false otherwise.
@@ -130,7 +130,7 @@ class DatumPtr
     /// @return True if the referred Datum is a List, false otherwise.
     bool isList() const
     {
-        return (d->isa & Datum::typeList) != 0;
+        return (datumValue_->isa_ & Datum::typeList) != 0;
     }
 
     /// @brief Returns true if the referred Datum is an ASTNode, false otherwise.
@@ -138,7 +138,7 @@ class DatumPtr
     /// @return True if the referred Datum is an ASTNode, false otherwise.
     bool isASTNode() const
     {
-        return d->isa == Datum::typeASTNode;
+        return datumValue_->isa_ == Datum::typeASTNode;
     }
 
     /// @brief Returns true if the referred Datum is an Array, false otherwise.
@@ -146,7 +146,7 @@ class DatumPtr
     /// @return True if the referred Datum is an Array, false otherwise.
     bool isArray() const
     {
-        return d->isa == Datum::typeArray;
+        return datumValue_->isa_ == Datum::typeArray;
     }
 
     /// @brief Returns true if the referred Datum is an Err, false otherwise.
@@ -154,7 +154,7 @@ class DatumPtr
     /// @return True if the referred Datum is an Err, false otherwise.
     bool isErr() const
     {
-        return d->isa == Datum::typeError;
+        return datumValue_->isa_ == Datum::typeError;
     }
 
     /// @brief Returns true if the referred Datum is the singleton Datum instance, false otherwise.
@@ -162,7 +162,7 @@ class DatumPtr
     /// @return True if the referred Datum is the singleton Datum instance, false otherwise.
     bool isNothing() const
     {
-        return d == Datum::notADatum();
+        return datumValue_ == Datum::notADatum();
     }
 
     /// @brief Returns true if the referred Datum is a FlowControl, false otherwise.
@@ -170,7 +170,7 @@ class DatumPtr
     /// @return True if the referred Datum is a FlowControl, false otherwise.
     bool isFlowControl() const
     {
-        return (d->isa & Datum::typeFlowControlMask) != 0;
+        return (datumValue_->isa_ & Datum::typeFlowControlMask) != 0;
     }
 
     /// @brief Reassign the pointer to refer to the other object.
@@ -211,7 +211,7 @@ class DatumPtr
     /// @return The DatumType of the referenced object.
     Datum::DatumType isa() const
     {
-        return d->isa;
+        return datumValue_->isa_;
     }
 
     /// @brief Set a mark on the datum so that debug message will print when datum is
@@ -221,8 +221,8 @@ class DatumPtr
     /// a mark on the datum so that a debug message will be printed when the datum is destroyed.
     void alertOnDelete()
     {
-        qDebug() << "MARKED: " << d << " " << d->toString(Datum::ToStringFlags_Show);
-        d->alertOnDelete = true;
+        qDebug() << "MARKED: " << datumValue_ << " " << datumValue_->toString(Datum::ToStringFlags_Show);
+        datumValue_->alertOnDelete_ = true;
     }
 };
 

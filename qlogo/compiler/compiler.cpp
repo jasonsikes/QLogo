@@ -1084,7 +1084,7 @@ void Compiler::generateWrapup()
 // Generate code to return a datum type (isa) of a given object.
 Value *Compiler::generateGetDatumIsa(Value *objAddr)
 {
-    const unsigned int isaOffset = offsetof(Datum, isa);
+    const unsigned int isaOffset = offsetof(Datum, isa_);
     Value *isaAddr = scaff_->builder_.CreatePtrAdd(objAddr, CoInt64(isaOffset), DBG_NAME("isaAddr"));
 
     Value *dType = scaff_->builder_.CreateLoad(TyInt32, isaAddr, DBG_NAME("isaLoad"));

@@ -118,7 +118,7 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
             // Wrap it into a DatumPtr.
             result = DatumPtr(e);
         }
-        if ((result.datumValue()->isa & Datum::typeUnboundMask) != 0)
+        if ((result.datumValue()->isa_ & Datum::typeUnboundMask) != 0)
             continue;
         if (result.isErr())
         {

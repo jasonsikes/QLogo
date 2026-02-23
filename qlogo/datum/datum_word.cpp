@@ -234,7 +234,7 @@ QString toBackslashedString(const QString &src)
 
 Word::Word()
 {
-    isa = Datum::typeWord;
+    isa_ = Datum::typeWord;
     number = nan("");
     rawString = QString();
     printableString = QString();
@@ -245,7 +245,7 @@ Word::Word()
 
 Word::Word(const QString &other, bool aIsForeverSpecial)
 {
-    isa = Datum::typeWord;
+    isa_ = Datum::typeWord;
     number = nan("");
     isForeverSpecial = aIsForeverSpecial;
     rawString = other;
@@ -257,7 +257,7 @@ Word::Word(const QString &other, bool aIsForeverSpecial)
 
 Word::Word(double other)
 {
-    isa = Datum::typeWord;
+    isa_ = Datum::typeWord;
     numberIsValid = !std::isnan(other);
     number = other;
     rawString = QString();

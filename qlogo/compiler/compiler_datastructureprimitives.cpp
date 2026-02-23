@@ -36,7 +36,7 @@ bool areDatumsEqual(VisitedMap &visited, Datum *d1, Datum *d2, Qt::CaseSensitivi
 {
     if (d1 == d2)
         return true;
-    if (d1->isa != d2->isa)
+    if (d1->isa_ != d2->isa_)
         return false;
 
     if (d1->isWord())

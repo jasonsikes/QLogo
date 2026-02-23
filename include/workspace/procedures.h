@@ -216,7 +216,7 @@ class Procedure : public Datum
     /// @brief Constructor.
     Procedure()
     {
-        isa = typeProcedure;
+        isa_ = typeProcedure;
     }
 
     /// @brief The parameter names of the required inputs of the procedure.

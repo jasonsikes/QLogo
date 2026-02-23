@@ -22,10 +22,10 @@ NewEvaluator::~NewEvaluator()
     // Release the objects in the release pool.
     for (auto &d : releasePool_)
     {
-        if ((d->isa & Datum::typePersistentMask) == 0)
+        if ((d->isa_ & Datum::typePersistentMask) == 0)
         {
-            (d->retainCount)--;
-            if ((d != retval) && (d->retainCount <= 0))
+            (d->retainCount_)--;
+            if ((d != retval) && (d->retainCount_ <= 0))
                 delete d;
         }
     }
@@ -105,7 +105,7 @@ Datum *NewEvaluator::watch(const DatumPtr &d)
 
 Datum *NewEvaluator::watch(Datum *d)
 {
-    (d->retainCount)++;
+    (d->retainCount_)++;
     releasePool_.push_back(d);
     return d;
 }

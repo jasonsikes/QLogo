@@ -53,7 +53,7 @@ struct FCGoto : public FlowControl
 
     FCGoto(const DatumPtr &aSourceNode, const DatumPtr &aTag)
     {
-        isa = Datum::typeGoto;
+        isa_ = Datum::typeGoto;
         data = aTag;
         sourceNode = aSourceNode;
     }
@@ -61,7 +61,7 @@ struct FCGoto : public FlowControl
     /// @brief The tag to goto.
     DatumPtr &tag()
     {
-        Q_ASSERT(isa == Datum::typeGoto);
+        Q_ASSERT(isa_ == Datum::typeGoto);
         Q_ASSERT(dataAry.isEmpty());
         return data;
     }
@@ -72,7 +72,7 @@ struct FCReturn : public FlowControl
 
     FCReturn(const DatumPtr &aSourceNode, const DatumPtr &aValue)
     {
-        isa = Datum::typeReturn;
+        isa_ = Datum::typeReturn;
         data = aValue;
         sourceNode = aSourceNode;
     }
@@ -80,7 +80,7 @@ struct FCReturn : public FlowControl
     /// @brief The value to return.
     DatumPtr &returnValue()
     {
-        Q_ASSERT(isa == Datum::typeReturn);
+        Q_ASSERT(isa_ == Datum::typeReturn);
         return data;
     }
 };
@@ -90,7 +90,7 @@ struct FCContinuation : public FlowControl
 
     FCContinuation(const DatumPtr &aSourceNode, const DatumPtr &aProcedure, const QList<DatumPtr> &aParams)
     {
-        isa = Datum::typeContinuation;
+        isa_ = Datum::typeContinuation;
         data = aProcedure;
         dataAry = aParams;
         sourceNode = aSourceNode;
@@ -99,14 +99,14 @@ struct FCContinuation : public FlowControl
     /// @brief The procedure to continue.
     DatumPtr &procedure()
     {
-        Q_ASSERT(isa == Datum::typeContinuation);
+        Q_ASSERT(isa_ == Datum::typeContinuation);
         return data;
     }
 
     /// @brief The parameters to pass to the procedure.
     QList<DatumPtr> &params()
     {
-        Q_ASSERT(isa == Datum::typeContinuation);
+        Q_ASSERT(isa_ == Datum::typeContinuation);
         return dataAry;
     }
 };
@@ -164,7 +164,7 @@ struct FCError : public FlowControl
     /// @brief The text string message of the error.
     DatumPtr &message()
     {
-        Q_ASSERT(isa == Datum::typeError);
+        Q_ASSERT(isa_ == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
         return dataAry[0];
     }
@@ -172,7 +172,7 @@ struct FCError : public FlowControl
     /// @brief The text string message of the error (const version).
     const DatumPtr &message() const
     {
-        Q_ASSERT(isa == Datum::typeError);
+        Q_ASSERT(isa_ == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
         return dataAry[0];
     }
@@ -180,7 +180,7 @@ struct FCError : public FlowControl
     /// @brief The error tag.
     DatumPtr &tag()
     {
-        Q_ASSERT(isa == Datum::typeError);
+        Q_ASSERT(isa_ == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
         return dataAry[1];
     }
@@ -188,7 +188,7 @@ struct FCError : public FlowControl
     /// @brief The error tag (const version).
     const DatumPtr &tag() const
     {
-        Q_ASSERT(isa == Datum::typeError);
+        Q_ASSERT(isa_ == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
         return dataAry[1];
     }
@@ -199,7 +199,7 @@ struct FCError : public FlowControl
     /// The output is the value that is thrown to and used by the catch block.
     DatumPtr &output()
     {
-        Q_ASSERT(isa == Datum::typeError);
+        Q_ASSERT(isa_ == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
         return dataAry[2];
     }
@@ -207,7 +207,7 @@ struct FCError : public FlowControl
     /// @brief The output of the error (const version).
     const DatumPtr &output() const
     {
-        Q_ASSERT(isa == Datum::typeError);
+        Q_ASSERT(isa_ == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
         return dataAry[2];
     }
@@ -215,7 +215,7 @@ struct FCError : public FlowControl
     /// @brief The line where the error occurred.
     DatumPtr &line()
     {
-        Q_ASSERT(isa == Datum::typeError);
+        Q_ASSERT(isa_ == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
         return dataAry[3];
     }
@@ -223,7 +223,7 @@ struct FCError : public FlowControl
     /// @brief The line where the error occurred (const version).
     const DatumPtr &line() const
     {
-        Q_ASSERT(isa == Datum::typeError);
+        Q_ASSERT(isa_ == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
         return dataAry[3];
     }
@@ -231,7 +231,7 @@ struct FCError : public FlowControl
     /// @brief The procedure where the error occurred.
     DatumPtr &procedure()
     {
-        Q_ASSERT(isa == Datum::typeError);
+        Q_ASSERT(isa_ == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
         return dataAry[4];
     }
@@ -239,7 +239,7 @@ struct FCError : public FlowControl
     /// @brief The procedure where the error occurred (const version).
     const DatumPtr &procedure() const
     {
-        Q_ASSERT(isa == Datum::typeError);
+        Q_ASSERT(isa_ == Datum::typeError);
         Q_ASSERT(dataAry.size() == 5);
         return dataAry[4];
     }
@@ -256,7 +256,7 @@ struct FCError : public FlowControl
             const DatumPtr &aOutput = nothing())
         : code(aCode)
     {
-        isa = Datum::typeError;
+        isa_ = Datum::typeError;
         dataAry.resize(5);
         tag() = aTag;
         message() = aMessage;
@@ -276,7 +276,7 @@ struct FCError : public FlowControl
             const DatumPtr &aOutput = nothing())
         : code(aCode)
     {
-        isa = Datum::typeError;
+        isa_ = Datum::typeError;
         dataAry.resize(5);
         tag() = aTag;
         message() = DatumPtr(aMessage);

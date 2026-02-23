@@ -25,7 +25,7 @@
 
 List::List(const DatumPtr &item, List *srcList)
 {
-    isa = Datum::typeList;
+    isa_ = Datum::typeList;
     head = item;
     tail = DatumPtr(srcList);
 }
@@ -158,7 +158,7 @@ EmptyList *EmptyList::instance_ = nullptr;
 
 EmptyList::EmptyList() : List(nothing(), nullptr)
 {
-    isa = Datum::typeEmptyList;
+    isa_ = Datum::typeEmptyList;
 }
 
 EmptyList *EmptyList::instance()

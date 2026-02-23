@@ -198,7 +198,7 @@ EXPORTC void printInt(int32_t p)
 EXPORTC double getDoubleForDatum(addr_t eAddr, addr_t datumAddr)
 {
     auto *w = reinterpret_cast<Word *>(datumAddr);
-    if (w->isa == Datum::typeWord)
+    if (w->isa_ == Datum::typeWord)
     {
         return w->numberValue();
     }
@@ -213,7 +213,7 @@ EXPORTC double getDoubleForDatum(addr_t eAddr, addr_t datumAddr)
 EXPORTC bool getValidityOfDoubleForDatum(addr_t eAddr, addr_t datumAddr)
 {
     auto *w = reinterpret_cast<Word *>(datumAddr);
-    if (w->isa == Datum::typeWord)
+    if (w->isa_ == Datum::typeWord)
     {
         return w->numberIsValid;
     }
@@ -227,7 +227,7 @@ EXPORTC bool getValidityOfDoubleForDatum(addr_t eAddr, addr_t datumAddr)
 EXPORTC bool getBoolForDatum(addr_t eAddr, addr_t datumAddr)
 {
     auto *w = reinterpret_cast<Word *>(datumAddr);
-    if (w->isa == Datum::typeWord)
+    if (w->isa_ == Datum::typeWord)
     {
         return w->boolValue();
     }
@@ -242,7 +242,7 @@ EXPORTC bool getBoolForDatum(addr_t eAddr, addr_t datumAddr)
 EXPORTC bool getValidityOfBoolForDatum(addr_t eAddr, addr_t datumAddr)
 {
     auto *w = reinterpret_cast<Word *>(datumAddr);
-    if (w->isa == Datum::typeWord)
+    if (w->isa_ == Datum::typeWord)
     {
         return w->boolIsValid;
     }
@@ -462,7 +462,7 @@ EXPORTC addr_t getErrorNoOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr)
     auto *x = reinterpret_cast<Datum *>(xAddr);
     auto *y = reinterpret_cast<Datum *>(yAddr);
     // If the thing that didn't output is an ASTNode, use the name of the ASTNode.
-    if (x->isa == Datum::typeASTNode)
+    if (x->isa_ == Datum::typeASTNode)
     {
         x = reinterpret_cast<ASTNode *>(x)->nodeName_.datumValue();
     }
@@ -766,11 +766,11 @@ EXPORTC addr_t processRunresult(addr_t eAddr, addr_t resultAddr)
     auto *result = reinterpret_cast<Datum *>(resultAddr);
     Datum *retval;
 
-    if ((result->isa & Datum::typeDataMask) != 0)
+    if ((result->isa_ & Datum::typeDataMask) != 0)
     {
         retval = new List(result, EmptyList::instance());
     }
-    else if ((result->isa & Datum::typeUnboundMask) != 0)
+    else if ((result->isa_ & Datum::typeUnboundMask) != 0)
     {
         retval = EmptyList::instance();
     }
@@ -805,7 +805,7 @@ EXPORTC bool getTestResult(void)
 EXPORTC bool cmpDatumToBool(addr_t d, bool b)
 {
     auto *dD = reinterpret_cast<Datum *>(d);
-    if (dD->isa != Datum::typeWord)
+    if (dD->isa_ != Datum::typeWord)
         return false;
     auto *dW = reinterpret_cast<Word *>(dD);
     bool dB = dW->boolValue();
@@ -821,7 +821,7 @@ EXPORTC bool cmpDatumToBool(addr_t d, bool b)
 EXPORTC bool cmpDatumToDouble(addr_t d, double n)
 {
     auto *dD = reinterpret_cast<Datum *>(d);
-    if (dD->isa != Datum::typeWord)
+    if (dD->isa_ != Datum::typeWord)
         return false;
     auto *dW = reinterpret_cast<Word *>(dD);
     double dN = dW->numberValue();
@@ -1167,7 +1167,7 @@ EXPORTC bool isDatumContainerOrInContainer(addr_t eAddr, addr_t valueAddr, addr_
     auto *container = reinterpret_cast<Datum *>(containerAddr);
 
     // If not a container then there's no container to search.
-    if (container->isa == Datum::typeWord)
+    if (container->isa_ == Datum::typeWord)
         return false;
 
     // If value and container are the same then it's in the container.
@@ -1296,7 +1296,7 @@ EXPORTC bool isSubstring(addr_t thing1Addr, addr_t thing2Addr)
     auto *thing1 = reinterpret_cast<Datum *>(thing1Addr);
     auto *thing2 = reinterpret_cast<Datum *>(thing2Addr);
 
-    if (thing1->isa == Datum::typeWord && thing2->isa == Datum::typeWord)
+    if (thing1->isa_ == Datum::typeWord && thing2->isa_ == Datum::typeWord)
     {
         auto *word1 = reinterpret_cast<Word *>(thing1);
         auto *word2 = reinterpret_cast<Word *>(thing2);
@@ -1310,7 +1310,7 @@ EXPORTC bool isSubstring(addr_t thing1Addr, addr_t thing2Addr)
 EXPORTC bool isNumber(addr_t thingAddr)
 {
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
-    if (thing->isa != Datum::typeWord)
+    if (thing->isa_ != Datum::typeWord)
     {
         return false;
     }
@@ -1322,7 +1322,7 @@ EXPORTC bool isNumber(addr_t thingAddr)
 EXPORTC bool isSingleCharWord(addr_t candidateAddr)
 {
     auto *candidate = reinterpret_cast<Datum *>(candidateAddr);
-    if (candidate->isa != Datum::typeWord)
+    if (candidate->isa_ != Datum::typeWord)
     {
         return false;
     }
@@ -1904,7 +1904,7 @@ EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
     auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *dFilename = reinterpret_cast<Datum *>(filenameAddr);
     auto *retval = reinterpret_cast<Datum *>(nodeAddr);
-    if (dFilename->isa == Datum::typeWord)
+    if (dFilename->isa_ == Datum::typeWord)
     {
         QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
         QString filepath = Kernel::get().filepathForFilename(DatumPtr(filename));

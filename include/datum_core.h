@@ -58,12 +58,12 @@ private:
         typePersistentMask = 0x00010000,    // OR this value to prevent the datum from being destroyed
     };
 
-    DatumType isa = typeNothingPersistent; // Subclasses must set this to a valid value.
+    DatumType isa_ = typeNothingPersistent; // Subclasses must set this to a valid value.
 
-    int retainCount = 0;
+    int retainCount_ = 0;
 
     /// @brief If set to 'true', DatumPtr will send qDebug message when this is deleted.
-    bool alertOnDelete = false;
+    bool alertOnDelete_ = false;
 
     /// @brief Get the singleton instance of Datum.
     ///
@@ -109,7 +109,7 @@ private:
     /// @return True if the referred Datum is a List, false otherwise.
     bool isList() const
     {
-        return (isa & Datum::typeList) != 0;
+        return (isa_ & Datum::typeList) != 0;
     }
 
     /// @brief Returns true if the referred Datum is an Array, false otherwise.
@@ -117,7 +117,7 @@ private:
     /// @return True if the referred Datum is an Array, false otherwise.
     bool isArray() const
     {
-        return (isa & Datum::typeArray) != 0;
+        return (isa_ & Datum::typeArray) != 0;
     }
 
     /// @brief Returns true if the referred Datum is a Word, false otherwise.
@@ -125,7 +125,7 @@ private:
     /// @return True if the referred Datum is a Word, false otherwise.
     bool isWord() const
     {
-        return (isa & Datum::typeWord) != 0;
+        return (isa_ & Datum::typeWord) != 0;
     }
 
     /// @brief Performs an assertion check that the referred Datum is a Word. Returns a pointer to the referred Datum as

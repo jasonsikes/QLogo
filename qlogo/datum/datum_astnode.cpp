@@ -35,14 +35,14 @@ DatumPtr ASTNode::childAtIndex(unsigned index) const
 
 ASTNode::ASTNode(const DatumPtr &aNodeName)
 {
-    isa = Datum::typeASTNode;
+    isa_ = Datum::typeASTNode;
     children_.clear();
     nodeName_ = aNodeName;
 }
 
 ASTNode::ASTNode(const QString &aNodeName)
 {
-    isa = Datum::typeASTNode;
+    isa_ = Datum::typeASTNode;
     children_.clear();
     nodeName_ = DatumPtr(aNodeName);
 }

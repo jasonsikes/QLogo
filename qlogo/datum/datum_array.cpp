@@ -20,14 +20,14 @@
 
 Array::Array(int aOrigin, int aSize)
 {
-    isa = Datum::typeArray;
+    isa_ = Datum::typeArray;
     origin = aOrigin;
     array.reserve(aSize);
 }
 
 Array::Array(int aOrigin, List *source)
 {
-    isa = Datum::typeArray;
+    isa_ = Datum::typeArray;
     origin = aOrigin;
     VisitedSet visited;
     while (source != EmptyList::instance())
