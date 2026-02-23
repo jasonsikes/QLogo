@@ -118,8 +118,7 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
       builder(IRBuilder<>(*theContext)), theFPM(FunctionPassManager()), theLAM(LoopAnalysisManager()),
       theFAM(FunctionAnalysisManager()), theCGAM(CGSCCAnalysisManager()), theMAM(ModuleAnalysisManager()),
       thePIC(PassInstrumentationCallbacks()), theSI(StandardInstrumentations(*theContext,
-                                                                             /*DebugLogging*/ true))
-
+                                                                               /*DebugLogging*/ true))
 {
     theModule->setDataLayout(dataLayout);
     addDefaultPasses(theFPM);
@@ -321,6 +320,11 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     // Finish off the function
     generateReturn(nodeResult);
     generateWrapup();
+
+    // Move the cold path blocks to the end of the function.
+    for (auto *block : scaff->coldPathBlocks) {
+        block->moveAfter(&scaff->theFunction->back());
+    }
 
     if (blocks.size() > 1)
     {
@@ -564,6 +568,8 @@ Value *Compiler::generateNotNothingFromDatum(ASTNode *parent, Value *src)
     BasicBlock *isNothingBB = scaff->createBasicBlock(DBG_NAME("isNothing"));
     BasicBlock *notNothingBB = scaff->createBasicBlock(DBG_NAME("notNothing"));
 
+    scaff->addColdPathBlocks(isNothingBB);
+
     // isNothing?
     Value *dType = generateGetDatumIsa(src);
     Value *mask = scaff->builder.CreateAnd(dType, CoInt32(Datum::typeDataMask), DBG_NAME("dataTypeMask"));
@@ -586,6 +592,8 @@ Value *Compiler::generateNothingFromDatum(ASTNode *parent, Value *src)
 {
     BasicBlock *notNothingBB = scaff->createBasicBlock(DBG_NAME("notNothing"));
     BasicBlock *isNothingBB = scaff->createBasicBlock(DBG_NAME("isNothing"));
+
+    scaff->addColdPathBlocks(notNothingBB);
 
     // isNothing?
     Value *dType = generateGetDatumIsa(src);
@@ -658,6 +666,8 @@ Value *Compiler::genValueOf(const DatumPtr &node, RequestReturnType returnType)
 {
     BasicBlock *noValueBB = scaff->createBasicBlock(DBG_NAME("NoValue"));
     BasicBlock *hasValueBB = scaff->createBasicBlock(DBG_NAME("hasValue"));
+
+    scaff->addColdPathBlocks(noValueBB);
 
     Word *varName = node.astnodeValue()->childAtIndex(0).wordValue();
     Value *nameAddr = CoAddr(varName);
@@ -913,25 +923,25 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr
     Value *list = generateChild(parent, srcPtr, RequestReturnDatum);
     Value *count = generateCallExtern(TyInt32, getCountOfList, PaAddr(list));
     // There should be two doubles in the list
-    BasicBlock *bailoutBB = scaff->createBasicBlock(DBG_NAME("notGood"));
+    BasicBlock *noLikeBB = scaff->createBasicBlock(DBG_NAME("noLike"));
     BasicBlock *continueBB = scaff->createBasicBlock(DBG_NAME("good"));
+    BasicBlock *gotPosBB = scaff->createBasicBlock(DBG_NAME("gotPos"));
+
+    scaff->addColdPathBlocks(noLikeBB);
 
     Value *countGood = scaff->builder.CreateICmpEQ(count, vSize, DBG_NAME("countTest"));
-    scaff->builder.CreateCondBr(countGood, continueBB, bailoutBB);
+    scaff->builder.CreateCondBr(countGood, continueBB, noLikeBB);
 
-    scaff->builder.SetInsertPoint(bailoutBB);
+    scaff->builder.SetInsertPoint(noLikeBB);
     Value *errWho = CoAddr(parent->nodeName.datumValue());
     Value *errObj = generateCallExtern(TyAddr, getErrorNoLike, PaAddr(scaff->evaluator), PaAddr(errWho), PaAddr(list));
     generateReturn(errObj);
 
     scaff->builder.SetInsertPoint(continueBB);
     AllocaInst *ary = scaff->builder.CreateAlloca(TyDouble, vSize, DBG_NAME("ary"));
-
     Value *isGood = generateCallExtern(TyInt32, getNumberAryFromList, PaAddr(list), PaAddr(ary));
-    BasicBlock *gotPosBB = scaff->createBasicBlock(DBG_NAME("gotPos"));
-
     Value *countCond = scaff->builder.CreateICmpEQ(isGood, CoInt32(1), DBG_NAME("countTest"));
-    scaff->builder.CreateCondBr(countCond, gotPosBB, bailoutBB);
+    scaff->builder.CreateCondBr(countCond, gotPosBB, noLikeBB);
 
     scaff->builder.SetInsertPoint(gotPosBB);
     return ary;
@@ -946,6 +956,8 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
     BasicBlock *erractBB = scaff->createBasicBlock(DBG_NAME("errorAction"));
     BasicBlock *bailoutBB = scaff->createBasicBlock(DBG_NAME("bailout"));
     BasicBlock *acceptBB = scaff->createBasicBlock(DBG_NAME("accept"));
+
+    scaff->addColdPathBlocks(erractBB, convertBB, bailoutBB);
 
     scaff->builder.CreateBr(validateBB);
 
@@ -987,6 +999,8 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
     BasicBlock *erractBB = scaff->createBasicBlock(DBG_NAME("errorAction"));
     BasicBlock *bailoutBB = scaff->createBasicBlock(DBG_NAME("bailout"));
     BasicBlock *acceptBB = scaff->createBasicBlock(DBG_NAME("accept"));
+
+    scaff->addColdPathBlocks(erractBB, bailoutBB);
 
     scaff->builder.CreateBr(validateBB);
 

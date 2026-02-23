@@ -35,10 +35,13 @@
 #include "llvm/Transforms/Scalar/SimplifyCFG.h"
 
 #include <memory>
+#include <type_traits>
 
 struct Scaffold
 {
+    // The name of the function.
     std::string name;
+
     std::unique_ptr<llvm::LLVMContext> theContext;
     std::unique_ptr<llvm::Module> theModule;
     llvm::IRBuilder<> builder;
@@ -50,6 +53,9 @@ struct Scaffold
     llvm::PassInstrumentationCallbacks thePIC;
     llvm::StandardInstrumentations theSI;
     llvm::Function *theFunction;
+
+    // A list of basic blocks that make up the "cold path" of execution.
+    QList<llvm::BasicBlock *> coldPathBlocks;
 
     Scaffold(const llvm::DataLayout &dataLayout);
 
@@ -90,6 +96,13 @@ struct Scaffold
     // create a new basic block with the given name.
     // The new block is inserted after the last block of the function.
     llvm::BasicBlock *createBasicBlock(const std::string &name);
+
+    // add one or more basic blocks to the cold path.
+    template <typename... Blocks>
+    std::enable_if_t<(std::is_same_v<Blocks, llvm::BasicBlock> && ...)>
+    addColdPathBlocks(Blocks *...blocks) {
+        (coldPathBlocks.append(blocks), ...);
+    }
 };
 
 // Some defines to reduce boilerplate

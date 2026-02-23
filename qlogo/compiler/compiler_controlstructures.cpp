@@ -181,6 +181,8 @@ Value *Compiler::genRepeat(const DatumPtr &node, RequestReturnType returnType)
     BasicBlock *noSayErrorBB = scaff->createBasicBlock(DBG_NAME("noSayError"));
     BasicBlock *bailoutBB = scaff->createBasicBlock(DBG_NAME("bailout"));
     BasicBlock *exitBB = scaff->createBasicBlock(DBG_NAME("exit"));
+
+    scaff->addColdPathBlocks(noSayErrorBB, bailoutBB);
     scaff->builder.CreateBr(loopBB);
 
     scaff->builder.SetInsertPoint(loopBB);
@@ -593,6 +595,9 @@ Value *Compiler::genForever(const DatumPtr &node, RequestReturnType returnType)
     BasicBlock *noSayErrorBB = scaff->createBasicBlock(DBG_NAME("noSayError"));
     BasicBlock *bailoutBB = scaff->createBasicBlock(DBG_NAME("bailout"));
     BasicBlock *throwawayBB = scaff->createBasicBlock(DBG_NAME("throwaway"));
+
+    scaff->addColdPathBlocks(noSayErrorBB, bailoutBB);
+
     scaff->builder.CreateBr(whileBB);
 
     scaff->builder.SetInsertPoint(whileBB);
@@ -684,6 +689,8 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, RequestReturnType ret
     BasicBlock *runListBB = scaff->createBasicBlock(DBG_NAME("runList"));
     BasicBlock *noRunListBB = scaff->createBasicBlock(DBG_NAME("noRunList"));
     BasicBlock *returnBB = scaff->createBasicBlock(DBG_NAME("return"));
+
+    scaff->addColdPathBlocks(notTestedBB);
 
     Value *instructionlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *testResult = generateCallExtern(TyBool, getIsTested);

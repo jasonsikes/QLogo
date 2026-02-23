@@ -903,6 +903,8 @@ Value *Compiler::genRandom(const DatumPtr &node, RequestReturnType returnType)
     BasicBlock *notGTBB = scaff->createBasicBlock(DBG_NAME("notGT"));
     BasicBlock *isGTBB = scaff->createBasicBlock(DBG_NAME("isGT"));
 
+    scaff->addColdPathBlocks(notGTBB);
+
     Value *start = iChildren[0];
     Value *end = iChildren[1];
 
@@ -1110,6 +1112,8 @@ Value *Compiler::generateListExecIfList(ASTNode *parent, Value *c)
     BasicBlock *isListBB = scaff->createBasicBlock(DBG_NAME("isList"));
     BasicBlock *isNothingBB = scaff->createBasicBlock(DBG_NAME("isNothing"));
     BasicBlock *notListBB = scaff->createBasicBlock(DBG_NAME("notList"));
+
+    scaff->addColdPathBlocks(isNothingBB);
 
     BasicBlock *listTestBB = scaff->builder.GetInsertBlock();
     Value *dType = generateGetDatumIsa(c);
