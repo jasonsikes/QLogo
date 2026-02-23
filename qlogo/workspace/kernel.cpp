@@ -68,11 +68,11 @@ bool Kernel::colorFromDatumPtr(QColor &retval, const DatumPtr &colorP) const
         double colorNum = colorP.wordValue()->numberValue();
         if (colorP.wordValue()->numberIsValid)
         {
-            if ((colorNum != round(colorNum)) || (colorNum < 0) || (colorNum >= palette.size()))
+            if ((colorNum != round(colorNum)) || (colorNum < 0) || (colorNum >= palette_.size()))
                 return false;
-            retval = palette[colorNum];
+            retval = palette_[colorNum];
             if (!retval.isValid())
-                retval = palette[0];
+                retval = palette_[0];
             return true;
         }
         retval = QColor(colorP.wordValue()->toString().toLower());
@@ -245,25 +245,25 @@ void Kernel::initPalette()
 {
     // UCBLogo has 101 colors, from 0 to 100.
     const int paletteSize = 101;
-    palette.clear();
-    palette.reserve(paletteSize);
-    palette.push_back(QColor(QStringLiteral("black")));       // 0
-    palette.push_back(QColor(QStringLiteral("blue")));        // 1
-    palette.push_back(QColor(QStringLiteral("green")));       // 2
-    palette.push_back(QColor(QStringLiteral("cyan")));        // 3
-    palette.push_back(QColor(QStringLiteral("red")));         // 4
-    palette.push_back(QColor(QStringLiteral("magenta")));     // 5
-    palette.push_back(QColor(QStringLiteral("yellow")));      // 6
-    palette.push_back(QColor(QStringLiteral("white")));       // 7
-    palette.push_back(QColor(QStringLiteral("brown")));       // 8
-    palette.push_back(QColor(QStringLiteral("tan")));         // 9
-    palette.push_back(QColor(QStringLiteral("forestgreen"))); // 10
-    palette.push_back(QColor(QStringLiteral("aqua")));        // 11
-    palette.push_back(QColor(QStringLiteral("salmon")));      // 12
-    palette.push_back(QColor(QStringLiteral("purple")));      // 13
-    palette.push_back(QColor(QStringLiteral("orange")));      // 14
-    palette.push_back(QColor(QStringLiteral("grey")));        // 15
-    palette.resize(paletteSize);
+    palette_.clear();
+    palette_.reserve(paletteSize);
+    palette_.push_back(QColor(QStringLiteral("black")));       // 0
+    palette_.push_back(QColor(QStringLiteral("blue")));        // 1
+    palette_.push_back(QColor(QStringLiteral("green")));       // 2
+    palette_.push_back(QColor(QStringLiteral("cyan")));        // 3
+    palette_.push_back(QColor(QStringLiteral("red")));         // 4
+    palette_.push_back(QColor(QStringLiteral("magenta")));     // 5
+    palette_.push_back(QColor(QStringLiteral("yellow")));      // 6
+    palette_.push_back(QColor(QStringLiteral("white")));       // 7
+    palette_.push_back(QColor(QStringLiteral("brown")));       // 8
+    palette_.push_back(QColor(QStringLiteral("tan")));         // 9
+    palette_.push_back(QColor(QStringLiteral("forestgreen"))); // 10
+    palette_.push_back(QColor(QStringLiteral("aqua")));        // 11
+    palette_.push_back(QColor(QStringLiteral("salmon")));      // 12
+    palette_.push_back(QColor(QStringLiteral("purple")));      // 13
+    palette_.push_back(QColor(QStringLiteral("orange")));      // 14
+    palette_.push_back(QColor(QStringLiteral("grey")));        // 15
+    palette_.resize(paletteSize);
 }
 
 void Kernel::initVariables()
@@ -292,18 +292,18 @@ void Kernel::initVariables()
 
 void Kernel::eraseVar(const QString &name)
 {
-    variables.remove(name);
+    variables_.remove(name);
 }
 
 void Kernel::setDatumForName(const DatumPtr &aDatum, const QString &name)
 {
-    variables.insert(name, aDatum);
+    variables_.insert(name, aDatum);
 }
 
 DatumPtr Kernel::datumForName(const QString &name) const
 {
-    auto result = variables.find(name);
-    if (result != variables.end())
+    auto result = variables_.find(name);
+    if (result != variables_.end())
     {
         return *result;
     }
@@ -312,13 +312,13 @@ DatumPtr Kernel::datumForName(const QString &name) const
 
 bool Kernel::doesExist(const QString &name) const
 {
-    return variables.contains(name);
+    return variables_.contains(name);
 }
 
 DatumPtr Kernel::allVariables() const
 {
     ListBuilder builder;
-    for (auto &varname : variables.keys())
+    for (auto &varname : variables_.keys())
     {
         builder.append(DatumPtr(varname));
     }
@@ -345,13 +345,13 @@ Kernel::~Kernel()
 {
     closeAll();
 
-    Q_ASSERT(callFrameStack.size() == 0);
+    Q_ASSERT(callFrameStack_.size() == 0);
 }
 
 DatumPtr Kernel::runECE(const DatumPtr &listP)
 {
-    callFrameStack.push(std::move(std::make_unique<NewCallFrame>(nothing())));
-    NewCallFrame *currentCallFrame = callFrameStack.top().get();
+    callFrameStack_.push(std::move(std::make_unique<NewCallFrame>(nothing())));
+    NewCallFrame *currentCallFrame = callFrameStack_.top().get();
 
     currentCallFrame->pushEvaluator(listP);
 
@@ -374,7 +374,7 @@ DatumPtr Kernel::runECE(const DatumPtr &listP)
         }
     }
 
-    callFrameStack.pop();
+    callFrameStack_.pop();
     return retval;
 }
 

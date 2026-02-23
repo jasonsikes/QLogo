@@ -93,12 +93,12 @@ class Kernel
 
     /// @brief The call frame stack.
     /// @note This stack is used to store the evaluation state of procedures and subprocedures while they are executing.
-    std::stack<std::unique_ptr<NewCallFrame>> callFrameStack;
+    std::stack<std::unique_ptr<NewCallFrame>> callFrameStack_;
 
     /************ variables ************/
 
     /// @brief The variables hash.
-    QHash<QString, DatumPtr> variables;
+    QHash<QString, DatumPtr> variables_;
 
     // SPECIAL VARIABLES
     Datum *specialVar(SpecialNames name) const;
@@ -127,17 +127,17 @@ class Kernel
     DatumPtr allVariables() const;
 
     /// @brief Repcount is for use in looping functions (e.g. REPEAT)
-    double repcount = -1;
+    double repcount_ = -1;
 
     /************ miscellaneous ************/
 
     /// @brief The palette of colors.
     /// @details The first 16 colors [0-15] are the standard Logo colors. The first 8
     /// are immutable. The rest [8-100] are user-assignable.
-    QVector<QColor> palette;
+    QVector<QColor> palette_;
 
     /// @brief The current error, if any.
-    DatumPtr currentError;
+    DatumPtr currentError_;
 
     /// @brief READ a line of input, EVALUATE it, PRINT the result, LOOP.
     /// @param isPausing Whether we are in a PAUSE loop.

@@ -662,7 +662,7 @@ EXPORTC addr_t getFormForNumber(addr_t eAddr, double num, int32_t width, int32_t
 /// @brief return the address of the repcount variable.
 EXPORTC addr_t repcountAddr(void)
 {
-    void *retval = &Kernel::get().repcount;
+    void *retval = &Kernel::get().repcount_;
     return (addr_t)retval;
 }
 
@@ -726,7 +726,7 @@ EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t
 EXPORTC addr_t getCurrentError(addr_t eAddr)
 {
     auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
-    DatumPtr errPtr = Kernel::get().currentError;
+    DatumPtr errPtr = Kernel::get().currentError_;
 
     ListBuilder retvalBuilder;
     if (!errPtr.isNothing())
@@ -1771,7 +1771,7 @@ EXPORTC bool isColorIndexGood(addr_t colorIndexAddr, double lowerLimit)
     double colorIndex = w->numberValue();
 
     return (w->numberIsValid) && (colorIndex == floor(colorIndex)) && (colorIndex >= lowerLimit) &&
-           (colorIndex < Kernel::get().palette.size());
+           (colorIndex < Kernel::get().palette_.size());
 }
 
 EXPORTC bool setPalette(addr_t colorIndexAddr, addr_t colorAddr)
@@ -1781,7 +1781,7 @@ EXPORTC bool setPalette(addr_t colorIndexAddr, addr_t colorAddr)
     QColor color;
     if (!Kernel::get().colorFromDatumPtr(color, DatumPtr(d)))
         return false;
-    Kernel::get().palette[colorIndex] = color;
+    Kernel::get().palette_[colorIndex] = color;
     return true;
 }
 
@@ -1840,7 +1840,7 @@ EXPORTC addr_t getPaletteColor(addr_t eAddr, addr_t colorIndexAddr)
 {
     auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto colorIndex = static_cast<int>((reinterpret_cast<Word *>(colorIndexAddr))->numberValue());
-    const QColor &color = Kernel::get().palette[colorIndex];
+    const QColor &color = Kernel::get().palette_[colorIndex];
     List *retval = listFromColor(color);
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
