@@ -20,6 +20,7 @@
 #include "compiler_types.h"
 #include "datum_ptr.h"
 
+class NewCallFrame;
 
 /// @brief The Evaluator object handles the evaluation of a list.
 ///
@@ -27,7 +28,8 @@
 /// for the list while it is executing.
 struct NewEvaluator
 {
-    // The members
+    /// @brief The call frame containing this evaluator.
+    NewCallFrame *owningFrame_;
 
     /// @brief The list to evaluate.
     DatumPtr list_;
@@ -56,7 +58,7 @@ struct NewEvaluator
 
     /// @brief Constructor.
     /// @param aList The list to evaluate.
-    NewEvaluator(const DatumPtr &aList);
+    NewEvaluator(NewCallFrame *owningFrame, const DatumPtr &aList);
 
     /// @brief Destructor.
     ~NewEvaluator();

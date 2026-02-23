@@ -5,7 +5,7 @@
 #include "flowcontrol.h"
 #include "runparser.h"
 
-NewEvaluator::NewEvaluator(const DatumPtr &aList) : list_(aList)
+NewEvaluator::NewEvaluator(NewCallFrame *aOwningFrame, const DatumPtr &aList) : owningFrame_(aOwningFrame), list_(aList)
 {
 }
 
@@ -81,8 +81,7 @@ void NewEvaluator::pushSublist(Datum *aList)
             retval = Datum::notADatum();
             return;
         }
-    NewCallFrame *topCallFrame = Kernel::get().callFrameStack.top().get();
-    topCallFrame->evaluationStack_.push(std::move(std::make_unique<NewEvaluator>(DatumPtr(aList))));
+    owningFrame_->pushEvaluator(DatumPtr(aList));
     }
     catch (FCError *err)
     {

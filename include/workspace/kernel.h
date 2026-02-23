@@ -92,7 +92,7 @@ class Kernel
     ~Kernel();
 
     /// @brief The call frame stack.
-    /// @note This stack is used to store the evaluation state of lists which contain sublists while they are executing.
+    /// @note This stack is used to store the evaluation state of procedures and subprocedures while they are executing.
     std::stack<std::unique_ptr<NewCallFrame>> callFrameStack;
 
     /************ variables ************/

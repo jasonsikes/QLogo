@@ -353,7 +353,7 @@ DatumPtr Kernel::runECE(const DatumPtr &listP)
     callFrameStack.push(std::move(std::make_unique<NewCallFrame>(nothing())));
     NewCallFrame *currentCallFrame = callFrameStack.top().get();
 
-    currentCallFrame->evaluationStack_.push(std::move(std::make_unique<NewEvaluator>(listP)));
+    currentCallFrame->pushEvaluator(listP);
 
     DatumPtr retval;
 
@@ -364,8 +364,8 @@ DatumPtr Kernel::runECE(const DatumPtr &listP)
         if (topEvaluator->exec(0))
         {
             retval = DatumPtr(topEvaluator->retval);
-            currentCallFrame->evaluationStack_.pop();
-            if (currentCallFrame->evaluationStack_.size() < 1)
+            currentCallFrame->popEvaluator();
+            if (currentCallFrame->evaluationStackSize() < 1)
             {
                 break;
             }

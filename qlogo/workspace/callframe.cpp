@@ -44,6 +44,21 @@ NewCallFrame::~NewCallFrame()
     }
 }
 
+void NewCallFrame::pushEvaluator(const DatumPtr &aList)
+{
+    evaluationStack_.push(std::make_unique<NewEvaluator>(this, aList));
+}
+
+void NewCallFrame::popEvaluator()
+{
+    evaluationStack_.pop();
+}
+
+size_t NewCallFrame::evaluationStackSize() const
+{
+    return evaluationStack_.size();
+}
+
 void NewCallFrame::setVarAsLocal(const QString &name)
 {
     DatumPtr originalValue = Kernel::get().datumForName(name);
@@ -87,7 +102,7 @@ Datum *NewCallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount)
         {
             DatumPtr optExpression = optionalDefaults[i].listValue()->tail;
             // TODO: ensure that the generated ASTList has one root node.
-            NewEvaluator e(optExpression);
+            NewEvaluator e(this, optExpression);
             // value = e.exec();
             if (value.isa() == Datum::typeError)
             {

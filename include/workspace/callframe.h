@@ -27,7 +27,6 @@
 #include <memory>
 #include <stack>
 
-struct CallFrame;
 struct NewEvaluator;
 struct FCGoto;
 struct ASTNode;
@@ -36,8 +35,14 @@ struct ASTNode;
 /// @brief The CallFrame object holds the state of execution of a procedure (or REPL).
 /// @note The state includes named variables, anonymous variables (explicit slot, or
 /// "?"), and the test state (for TEST, IFTRUE, IFFALSE).
-struct NewCallFrame
+class NewCallFrame
 {
+    /// @brief The evaluation stack.
+    /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.
+    std::stack<std::unique_ptr<NewEvaluator>> evaluationStack_;
+
+public:
+
     /// @brief The ASTNode source of this running procedure.
     DatumPtr sourceNode_;
 
@@ -64,10 +69,16 @@ struct NewCallFrame
     /// @brief Variable names held in this scope and the values held prior to the invocation of this scope.
     QHash<QString, DatumPtr> localVars_;
 
-    /// @brief The evaluation stack.
-    /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.
-    std::stack<std::unique_ptr<NewEvaluator>> evaluationStack_;
+    /// @brief Add an evaluator to the evaluation stack.
+    /// @param aList The list to evaluate.
+    void pushEvaluator(const DatumPtr &aList);
 
+    /// @brief Pop the topmost evaluator from the evaluation stack.
+    void popEvaluator();
+
+    /// @brief Get the size of the evaluation stack.
+    /// @return The size of the evaluation stack.
+    size_t evaluationStackSize() const;
 
     /// @brief Return the topmost Evaluator object.
     /// @return The topmost Evaluator object.
