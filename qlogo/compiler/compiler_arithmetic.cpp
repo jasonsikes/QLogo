@@ -45,10 +45,9 @@ Value *Compiler::generateNotNegativeInt32FromDouble(ASTNode *parent, Value *src)
     Value *retvalInt = nullptr;
     auto validator = [this, &retvalInt](Value *candidate) {
         BasicBlock *intTestBB = scaff->builder.GetInsertBlock();
-        Function *theFunction = intTestBB->getParent();
 
-        BasicBlock *zeroTestBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("zeroTestBB"), theFunction);
-        BasicBlock *resumeBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("resumeBB"), theFunction);
+        BasicBlock *zeroTestBB = scaff->createBasicBlock(DBG_NAME("zeroTestBB"));
+        BasicBlock *resumeBB = scaff->createBasicBlock(DBG_NAME("resumeBB"));
 
         retvalInt = scaff->builder.CreateFPToSI(candidate, TyInt32, DBG_NAME("FpToInt"));
         Value *retvalIntCheck = scaff->builder.CreateSIToFP(retvalInt, TyDouble, DBG_NAME("FpToIntCheck"));
@@ -74,10 +73,9 @@ Value *Compiler::generateNotZeroInt32FromDouble(ASTNode *parent, Value *src)
     Value *retvalInt = nullptr;
     auto validator = [this, &retvalInt](Value *candidate) {
         BasicBlock *intTestBB = scaff->builder.GetInsertBlock();
-        Function *theFunction = intTestBB->getParent();
 
-        BasicBlock *zeroTestBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("zeroTestBB"), theFunction);
-        BasicBlock *resumeBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("resumeBB"), theFunction);
+        BasicBlock *zeroTestBB = scaff->createBasicBlock(DBG_NAME("zeroTestBB"));
+        BasicBlock *resumeBB = scaff->createBasicBlock(DBG_NAME("resumeBB"));
 
         retvalInt = scaff->builder.CreateFPToSI(candidate, TyInt32, DBG_NAME("FpToInt"));
         Value *retvalIntCheck = scaff->builder.CreateSIToFP(retvalInt, TyDouble, DBG_NAME("FpToIntCheck"));
@@ -166,11 +164,9 @@ Value *Compiler::genAshift(const DatumPtr &node, RequestReturnType returnType)
     num2 = generateInt32FromDouble(node.astnodeValue(), num2, true);
     Value *retval = scaff->builder.CreateAlloca(TyInt32, CoInt32(1), DBG_NAME("ashiftAlloca"));
 
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-
-    BasicBlock *leftShiftBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("leftShiftBB"), theFunction);
-    BasicBlock *rightShiftBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("rightShiftBB"), theFunction);
-    BasicBlock *mergeBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("shiftCont"), theFunction);
+    BasicBlock *leftShiftBB = scaff->createBasicBlock(DBG_NAME("leftShiftBB"));
+    BasicBlock *rightShiftBB = scaff->createBasicBlock(DBG_NAME("rightShiftBB"));
+    BasicBlock *mergeBB = scaff->createBasicBlock(DBG_NAME("shiftCont"));
 
     Value *cond = scaff->builder.CreateICmpSGE(num2, CoInt32(0), DBG_NAME("isGE0"));
     scaff->builder.CreateCondBr(cond, leftShiftBB, rightShiftBB);
@@ -210,11 +206,9 @@ Value *Compiler::genLshift(const DatumPtr &node, RequestReturnType returnType)
     num2 = generateInt32FromDouble(node.astnodeValue(), num2, true);
     Value *retval = scaff->builder.CreateAlloca(TyInt32, CoInt32(1), DBG_NAME("lshiftAlloca"));
 
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-
-    BasicBlock *leftShiftBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("leftShiftBB"), theFunction);
-    BasicBlock *rightShiftBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("rightShiftBB"), theFunction);
-    BasicBlock *mergeBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("shiftCont"), theFunction);
+    BasicBlock *leftShiftBB = scaff->createBasicBlock(DBG_NAME("leftShiftBB"));
+    BasicBlock *rightShiftBB = scaff->createBasicBlock(DBG_NAME("rightShiftBB"));
+    BasicBlock *mergeBB = scaff->createBasicBlock(DBG_NAME("shiftCont"));
 
     Value *cond = scaff->builder.CreateICmpSGE(num2, CoInt32(0), DBG_NAME("isGE0"));
     scaff->builder.CreateCondBr(cond, leftShiftBB, rightShiftBB);
@@ -367,14 +361,12 @@ Value *Compiler::genModulo(const DatumPtr &node, RequestReturnType returnType)
     num = generateInt32FromDouble(node.astnodeValue(), num, true);
     denom = generateNotZeroInt32FromDouble(node.astnodeValue(), denom);
 
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-
     Value *retvalLoc = scaff->builder.CreateAlloca(TyInt32, CoInt32(1), DBG_NAME("retvalLoc"));
 
-    BasicBlock *pos1BB = BasicBlock::Create(*scaff->theContext, DBG_NAME("pos1BB"), theFunction);
-    BasicBlock *neg1BB = BasicBlock::Create(*scaff->theContext, DBG_NAME("neg1BB"), theFunction);
-    BasicBlock *addbBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("addbBB"), theFunction);
-    BasicBlock *contBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("contBB"), theFunction);
+    BasicBlock *pos1BB = scaff->createBasicBlock(DBG_NAME("pos1BB"));
+    BasicBlock *neg1BB = scaff->createBasicBlock(DBG_NAME("neg1BB"));
+    BasicBlock *addbBB = scaff->createBasicBlock(DBG_NAME("addbBB"));
+    BasicBlock *contBB = scaff->createBasicBlock(DBG_NAME("contBB"));
 
     Value *r = scaff->builder.CreateSRem(num, denom, DBG_NAME("remainder"));
     scaff->builder.CreateStore(r, retvalLoc);
@@ -435,7 +427,7 @@ Value *Compiler::genPower(const DatumPtr &node, RequestReturnType returnType)
     BasicBlock *startBB = scaff->builder.GetInsertBlock();
     Function *theFunction = startBB->getParent();
 
-    BasicBlock *isNegativeBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("isNegative"), theFunction);
+    BasicBlock *isNegativeBB = scaff->createBasicBlock(DBG_NAME("isNegative"));
     BasicBlock *notNegativeBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("notNegative"));
 
     Value *cond = scaff->builder.CreateFCmpOGE(num1, CoDouble(0.0), DBG_NAME("isNegativeTest"));
@@ -908,10 +900,8 @@ Value *Compiler::genRandom(const DatumPtr &node, RequestReturnType returnType)
         return generateCallExtern(TyDouble, random1, PaInt32(iChildren[0]));
     }
 
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-
-    BasicBlock *notGTBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("notGT"), theFunction);
-    BasicBlock *isGTBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("isGT"), theFunction);
+    BasicBlock *notGTBB = scaff->createBasicBlock(DBG_NAME("notGT"));
+    BasicBlock *isGTBB = scaff->createBasicBlock(DBG_NAME("isGT"));
 
     Value *start = iChildren[0];
     Value *end = iChildren[1];
@@ -1116,12 +1106,10 @@ Value *Compiler::generateAndOr(const DatumPtr &node, RequestReturnType returnTyp
 
 Value *Compiler::generateListExecIfList(ASTNode *parent, Value *c)
 {
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-
     // Test that this is a List object
-    BasicBlock *isListBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("isList"), theFunction);
-    BasicBlock *isNothingBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("isNothing"), theFunction);
-    BasicBlock *notListBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("notList"), theFunction);
+    BasicBlock *isListBB = scaff->createBasicBlock(DBG_NAME("isList"));
+    BasicBlock *isNothingBB = scaff->createBasicBlock(DBG_NAME("isNothing"));
+    BasicBlock *notListBB = scaff->createBasicBlock(DBG_NAME("notList"));
 
     BasicBlock *listTestBB = scaff->builder.GetInsertBlock();
     Value *dType = generateGetDatumIsa(c);

@@ -555,10 +555,8 @@ Value *Compiler::generateFromDatum(Datum::DatumType t, ASTNode *parent, Value *s
 
 Value *Compiler::generateNotNothingFromDatum(ASTNode *parent, Value *src)
 {
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-
-    BasicBlock *isNothingBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("isNothing"), theFunction);
-    BasicBlock *notNothingBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("notNothing"), theFunction);
+    BasicBlock *isNothingBB = scaff->createBasicBlock(DBG_NAME("isNothing"));
+    BasicBlock *notNothingBB = scaff->createBasicBlock(DBG_NAME("notNothing"));
 
     // isNothing?
     Value *dType = generateGetDatumIsa(src);
@@ -580,10 +578,8 @@ Value *Compiler::generateNotNothingFromDatum(ASTNode *parent, Value *src)
 
 Value *Compiler::generateNothingFromDatum(ASTNode *parent, Value *src)
 {
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-
-    BasicBlock *notNothingBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("notNothing"), theFunction);
-    BasicBlock *isNothingBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("isNothing"), theFunction);
+    BasicBlock *notNothingBB = scaff->createBasicBlock(DBG_NAME("notNothing"));
+    BasicBlock *isNothingBB = scaff->createBasicBlock(DBG_NAME("isNothing"));
 
     // isNothing?
     Value *dType = generateGetDatumIsa(src);
@@ -654,9 +650,8 @@ Value *Compiler::generateVoidRetval(const DatumPtr &node)
 
 Value *Compiler::genValueOf(const DatumPtr &node, RequestReturnType returnType)
 {
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-    BasicBlock *noValueBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("NoValue"), theFunction);
-    BasicBlock *hasValueBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("hasValue"), theFunction);
+    BasicBlock *noValueBB = scaff->createBasicBlock(DBG_NAME("NoValue"));
+    BasicBlock *hasValueBB = scaff->createBasicBlock(DBG_NAME("hasValue"));
 
     Word *varName = node.astnodeValue()->childAtIndex(0).wordValue();
     Value *nameAddr = CoAddr(varName);
@@ -806,10 +801,8 @@ Value *Compiler::generateErrorNotEnoughInputs(ASTNode *x)
 
 Value *Compiler::generateImmediateReturn(llvm::Value *retval)
 {
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-
-    BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("bailout"), theFunction);
-    BasicBlock *throwAwayBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("throwAway"), theFunction);
+    BasicBlock *bailoutBB = scaff->createBasicBlock(DBG_NAME("bailout"));
+    BasicBlock *throwAwayBB = scaff->createBasicBlock(DBG_NAME("throwAway"));
 
     // We are going to return something at this point.
     // However, there may be code after this point that we have to compile and then ignore.
@@ -911,12 +904,11 @@ Value *Compiler::generateExternFunctionCall(Type *returnType,
 AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr &srcPtr, int32_t size)
 {
     Value *vSize = CoInt32(size);
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
     Value *list = generateChild(parent, srcPtr, RequestReturnDatum);
     Value *count = generateCallExtern(TyInt32, getCountOfList, PaAddr(list));
     // There should be two doubles in the list
-    BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("notGood"), theFunction);
-    BasicBlock *continueBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("good"), theFunction);
+    BasicBlock *bailoutBB = scaff->createBasicBlock(DBG_NAME("notGood"));
+    BasicBlock *continueBB = scaff->createBasicBlock(DBG_NAME("good"));
 
     Value *countGood = scaff->builder.CreateICmpEQ(count, vSize, DBG_NAME("countTest"));
     scaff->builder.CreateCondBr(countGood, continueBB, bailoutBB);
@@ -930,7 +922,7 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr
     AllocaInst *ary = scaff->builder.CreateAlloca(TyDouble, vSize, DBG_NAME("ary"));
 
     Value *isGood = generateCallExtern(TyInt32, getNumberAryFromList, PaAddr(list), PaAddr(ary));
-    BasicBlock *gotPosBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("gotPos"), theFunction);
+    BasicBlock *gotPosBB = scaff->createBasicBlock(DBG_NAME("gotPos"));
 
     Value *countCond = scaff->builder.CreateICmpEQ(isGood, CoInt32(1), DBG_NAME("countTest"));
     scaff->builder.CreateCondBr(countCond, gotPosBB, bailoutBB);
@@ -942,13 +934,12 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr
 Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const validatorFunction &validator)
 {
     BasicBlock *srcBB = scaff->builder.GetInsertBlock();
-    Function *theFunction = srcBB->getParent();
 
-    BasicBlock *validateBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("validate"), theFunction);
-    BasicBlock *convertBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("convert"), theFunction);
-    BasicBlock *erractBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("errorAction"), theFunction);
-    BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("bailout"), theFunction);
-    BasicBlock *acceptBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("accept"), theFunction);
+    BasicBlock *validateBB = scaff->createBasicBlock(DBG_NAME("validate"));
+    BasicBlock *convertBB = scaff->createBasicBlock(DBG_NAME("convert"));
+    BasicBlock *erractBB = scaff->createBasicBlock(DBG_NAME("errorAction"));
+    BasicBlock *bailoutBB = scaff->createBasicBlock(DBG_NAME("bailout"));
+    BasicBlock *acceptBB = scaff->createBasicBlock(DBG_NAME("accept"));
 
     scaff->builder.CreateBr(validateBB);
 
@@ -985,12 +976,11 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
 Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const validatorFunction &validator)
 {
     BasicBlock *srcBB = scaff->builder.GetInsertBlock();
-    Function *theFunction = srcBB->getParent();
 
-    BasicBlock *validateBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("validate"), theFunction);
-    BasicBlock *erractBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("errorAction"), theFunction);
-    BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("bailout"), theFunction);
-    BasicBlock *acceptBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("accept"), theFunction);
+    BasicBlock *validateBB = scaff->createBasicBlock(DBG_NAME("validate"));
+    BasicBlock *erractBB = scaff->createBasicBlock(DBG_NAME("errorAction"));
+    BasicBlock *bailoutBB = scaff->createBasicBlock(DBG_NAME("bailout"));
+    BasicBlock *acceptBB = scaff->createBasicBlock(DBG_NAME("accept"));
 
     scaff->builder.CreateBr(validateBB);
 
