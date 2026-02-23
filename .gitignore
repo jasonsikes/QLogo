@@ -68,3 +68,5 @@ compile_commands.json
 share/
 util/__pycache__/
 pvt/
+*.orig
+*.rej
