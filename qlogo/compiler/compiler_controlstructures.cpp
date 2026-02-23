@@ -64,10 +64,9 @@ Value *Compiler::genIfelse(const DatumPtr &node, RequestReturnType returnType)
     }
     std::vector<Value *> children = generateChildren(node.astnodeValue(), returnTypeAry);
 
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-    BasicBlock *thenBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("then"), theFunction);
-    BasicBlock *elseBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("else"), theFunction);
-    BasicBlock *mergeBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("merge"), theFunction);
+    BasicBlock *thenBB = scaff->createBasicBlock(DBG_NAME("then"));
+    BasicBlock *elseBB = scaff->createBasicBlock(DBG_NAME("else"));
+    BasicBlock *mergeBB = scaff->createBasicBlock(DBG_NAME("merge"));
 
     Value *cond = children[0];
     Value *ift;
@@ -146,10 +145,9 @@ Value *Compiler::genRepeat(const DatumPtr &node, RequestReturnType returnType)
 
     auto countValidator = [this](Value *candidate) {
         BasicBlock *intCheckBB = scaff->builder.GetInsertBlock();
-        Function *theFunction = intCheckBB->getParent();
 
-        BasicBlock *negativeCheckBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("negativeCheck"), theFunction);
-        BasicBlock *mergeBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("merge"), theFunction);
+        BasicBlock *negativeCheckBB = scaff->createBasicBlock(DBG_NAME("negativeCheck"));
+        BasicBlock *mergeBB = scaff->createBasicBlock(DBG_NAME("merge"));
 
         Value *candidateInt = scaff->builder.CreateFPToSI(candidate, TyInt32, DBG_NAME("FpToInt"));
         Value *candidateCheck = scaff->builder.CreateSIToFP(candidateInt, TyDouble, DBG_NAME("FpToIntCheck"));
@@ -169,22 +167,20 @@ Value *Compiler::genRepeat(const DatumPtr &node, RequestReturnType returnType)
     count = generateValidationDouble(node.astnodeValue(), count, countValidator);
     list = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), list);
 
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-
     // Get the current value of repcount since we are shadowing it.
     Value *repcountAddress = generateCallExtern(TyAddr, repcountAddr);
     Value *shadowedRepcount = scaff->builder.CreateLoad(TyDouble, repcountAddress, DBG_NAME("shadowedRepcount"));
 
     scaff->builder.CreateStore(CoDouble(1.0), repcountAddress);
 
-    BasicBlock *loopBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("loop"), theFunction);
-    BasicBlock *whileBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("while"), theFunction);
-    BasicBlock *datumCheckBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("datumCheck"), theFunction);
-    BasicBlock *loopNextBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("loopNext"), theFunction);
-    BasicBlock *datumIsLastBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("datumIsLast"), theFunction);
-    BasicBlock *noSayErrorBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("noSayError"), theFunction);
-    BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("bailout"), theFunction);
-    BasicBlock *exitBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("exit"), theFunction);
+    BasicBlock *loopBB = scaff->createBasicBlock(DBG_NAME("loop"));
+    BasicBlock *whileBB = scaff->createBasicBlock(DBG_NAME("while"));
+    BasicBlock *datumCheckBB = scaff->createBasicBlock(DBG_NAME("datumCheck"));
+    BasicBlock *loopNextBB = scaff->createBasicBlock(DBG_NAME("loopNext"));
+    BasicBlock *datumIsLastBB = scaff->createBasicBlock(DBG_NAME("datumIsLast"));
+    BasicBlock *noSayErrorBB = scaff->createBasicBlock(DBG_NAME("noSayError"));
+    BasicBlock *bailoutBB = scaff->createBasicBlock(DBG_NAME("bailout"));
+    BasicBlock *exitBB = scaff->createBasicBlock(DBG_NAME("exit"));
     scaff->builder.CreateBr(loopBB);
 
     scaff->builder.SetInsertPoint(loopBB);
@@ -585,20 +581,18 @@ Value *Compiler::genForever(const DatumPtr &node, RequestReturnType returnType)
     Value *list = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     list = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), list);
 
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-
     // Get the current value of repcount since we are shadowing it.
     Value *repcountAddress = generateCallExtern(TyAddr, repcountAddr);
     Value *shadowedRepcount = scaff->builder.CreateLoad(TyDouble, repcountAddress, DBG_NAME("shadowedRepcount"));
 
     scaff->builder.CreateStore(CoDouble(1.0), repcountAddress);
 
-    BasicBlock *whileBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("while"), theFunction);
-    BasicBlock *datumCheckBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("datumCheck"), theFunction);
-    BasicBlock *loopNextBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("loopNext"), theFunction);
-    BasicBlock *noSayErrorBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("noSayError"), theFunction);
-    BasicBlock *bailoutBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("bailout"), theFunction);
-    BasicBlock *throwawayBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("throwaway"), theFunction);
+    BasicBlock *whileBB = scaff->createBasicBlock(DBG_NAME("while"));
+    BasicBlock *datumCheckBB = scaff->createBasicBlock(DBG_NAME("datumCheck"));
+    BasicBlock *loopNextBB = scaff->createBasicBlock(DBG_NAME("loopNext"));
+    BasicBlock *noSayErrorBB = scaff->createBasicBlock(DBG_NAME("noSayError"));
+    BasicBlock *bailoutBB = scaff->createBasicBlock(DBG_NAME("bailout"));
+    BasicBlock *throwawayBB = scaff->createBasicBlock(DBG_NAME("throwaway"));
     scaff->builder.CreateBr(whileBB);
 
     scaff->builder.SetInsertPoint(whileBB);
@@ -685,12 +679,11 @@ Value *Compiler::generateIffalse(const DatumPtr &node, RequestReturnType returnT
 
 Value *Compiler::generateIftruefalse(const DatumPtr &node, RequestReturnType returnType, bool testForTrue)
 {
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-    BasicBlock *notTestedBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("notTested"), theFunction);
-    BasicBlock *isTestedBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("isTested"), theFunction);
-    BasicBlock *runListBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("runList"), theFunction);
-    BasicBlock *noRunListBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("noRunList"), theFunction);
-    BasicBlock *returnBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("return"), theFunction);
+    BasicBlock *notTestedBB = scaff->createBasicBlock(DBG_NAME("notTested"));
+    BasicBlock *isTestedBB = scaff->createBasicBlock(DBG_NAME("isTested"));
+    BasicBlock *runListBB = scaff->createBasicBlock(DBG_NAME("runList"));
+    BasicBlock *noRunListBB = scaff->createBasicBlock(DBG_NAME("noRunList"));
+    BasicBlock *returnBB = scaff->createBasicBlock(DBG_NAME("return"));
 
     Value *instructionlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     Value *testResult = generateCallExtern(TyBool, getIsTested);

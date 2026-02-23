@@ -86,6 +86,10 @@ struct Scaffold
     // When set, the coroutine frame is emitted in this block at the start of the function (before TOC
     // if present). generateTOC redirects its branch to Toc when the table of contents is generated.
     llvm::BasicBlock *coroPrologueBB = nullptr;
+
+    // create a new basic block with the given name.
+    // The new block is inserted after the last block of the function.
+    llvm::BasicBlock *createBasicBlock(const std::string &name);
 };
 
 // Some defines to reduce boilerplate

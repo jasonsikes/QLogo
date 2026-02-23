@@ -87,10 +87,9 @@ Value *Compiler::generateNotEmptyWordOrListFromDatum(ASTNode *parent, Value *src
 {
     auto validator = [this](Value *wordorlist) {
         BasicBlock *startBB = scaff->builder.GetInsertBlock();
-        Function *theFunction = startBB->getParent();
 
-        BasicBlock *wordOrListBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("wordOrListBlock"), theFunction);
-        BasicBlock *endBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("endBlock"), theFunction);
+        BasicBlock *wordOrListBB = scaff->createBasicBlock(DBG_NAME("wordOrListBlock"));
+        BasicBlock *endBB = scaff->createBasicBlock(DBG_NAME("endBlock"));
 
         Value *wordOrListType = generateGetDatumIsa(wordorlist);
         Value *maskCalc =
@@ -119,10 +118,9 @@ Value *Compiler::generateNotEmptyListFromDatum(ASTNode *parent, Value *src)
 {
     auto validator = [this](Value *wordorlist) {
         BasicBlock *startBB = scaff->builder.GetInsertBlock();
-        Function *theFunction = startBB->getParent();
 
-        BasicBlock *listBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("listBlock"), theFunction);
-        BasicBlock *endBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("endBlock"), theFunction);
+        BasicBlock *listBB = scaff->createBasicBlock(DBG_NAME("listBlock"));
+        BasicBlock *endBB = scaff->createBasicBlock(DBG_NAME("endBlock"));
 
         Value *wordOrListType = generateGetDatumIsa(wordorlist);
         Value *maskCalc = scaff->builder.CreateAnd(wordOrListType, CoInt32(Datum::typeList), DBG_NAME("maskCalc"));
@@ -323,10 +321,9 @@ Value *Compiler::generateFputlput(const DatumPtr &node, RequestReturnType return
     auto wordVector = isLput ? std::vector<Value *>{list, thing} : std::vector<Value *>{thing, list};
 
     auto validator = [this, thing, &listWordTest](Value *list) {
-        Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-        BasicBlock *wordBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("isWordBlock"), theFunction);
-        BasicBlock *listBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("isListBlock"), theFunction);
-        BasicBlock *endBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("endBlock"), theFunction);
+        BasicBlock *wordBB = scaff->createBasicBlock(DBG_NAME("isWordBlock"));
+        BasicBlock *listBB = scaff->createBasicBlock(DBG_NAME("isListBlock"));
+        BasicBlock *endBB = scaff->createBasicBlock(DBG_NAME("endBlock"));
 
         Value *listType = generateGetDatumIsa(list);
         listWordTest = scaff->builder.CreateICmpEQ(listType, CoInt32(Datum::typeWord), DBG_NAME("listWordTest"));
@@ -352,10 +349,9 @@ Value *Compiler::generateFputlput(const DatumPtr &node, RequestReturnType return
     };
     list = generateValidationDatum(node.astnodeValue(), list, validator);
 
-    Function *theFunction = scaff->builder.GetInsertBlock()->getParent();
-    BasicBlock *wordBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("isWordBB"), theFunction);
-    BasicBlock *listBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("isListBB"), theFunction);
-    BasicBlock *mergeBB = BasicBlock::Create(*scaff->theContext, DBG_NAME("mergeBB"), theFunction);
+    BasicBlock *wordBB = scaff->createBasicBlock(DBG_NAME("isWordBB"));
+    BasicBlock *listBB = scaff->createBasicBlock(DBG_NAME("isListBB"));
+    BasicBlock *mergeBB = scaff->createBasicBlock(DBG_NAME("mergeBB"));
 
     scaff->builder.CreateCondBr(listWordTest, wordBB, listBB);
 

@@ -162,6 +162,12 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
 
 }
 
+BasicBlock *Scaffold::createBasicBlock(const std::string &name)
+{
+    return BasicBlock::Create(*theContext, name, theFunction);
+}
+
+
 CompiledText::~CompiledText()
 {
     // Only remove resource tracker if compiler is still valid
