@@ -66,7 +66,7 @@ class Kernel
     /// @brief Run the explicit control evaluator.
     /// @param listP The list to run.
     /// @return The result of the last expression in the list.
-    DatumPtr runECE(const DatumPtr &listP);
+    DatumPtr runECE();
 
     /// Initialize LOGO system variables
     void initVariables();
@@ -128,6 +128,22 @@ class Kernel
 
     /// @brief Repcount is for use in looping functions (e.g. REPEAT)
     double repcount_ = -1;
+
+    /************ ECE ************/
+
+    /// @brief The next operation to perform.
+    void(Kernel::*nextOperation_)() = nullptr;
+    /// @brief The jump location to start execution from.
+    int32_t jumpLocation_ = 0;
+    /// @brief The return value when an operation completes.
+    DatumPtr retval_;
+
+
+    /// @brief Begin or continue evaluating a list. Will return when execution is suspended.
+    void ece_evaluateList();
+
+    /// @brief Decide what to do next after emptying the evaluation stack.
+    void ece_decideEmptyEvaluationStack();
 
     /************ miscellaneous ************/
 

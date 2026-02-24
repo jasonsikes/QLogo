@@ -100,16 +100,18 @@ bool Kernel::colorFromDatumPtr(QColor &retval, const DatumPtr &colorP) const
 
 DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
 {
+    callFrameStack_.push(std::move(std::make_unique<NewCallFrame>(nothing())));
     QString localPrompt = prompt + "? ";
+    DatumPtr result;
     forever
     {
-        DatumPtr result;
         try
         {
             DatumPtr line = systemReadStream_->readListWithPrompt(localPrompt, true);
-            if (line.isNothing()) // EOF
-                return nothing();
-            result = runECE(line);
+            Q_ASSERT(callFrameStack_.top()->evaluationStackSize() == 0);
+            Q_ASSERT(callFrameStack_.top()->sourceNode_.isNothing());
+            callFrameStack_.top()->pushEvaluator(line);
+            result = runECE();
         }
         catch (FCError *e)
         {
@@ -117,9 +119,12 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
             // Sometimes exceptions are thrown by a user interface action.
             // Wrap it into a DatumPtr.
             result = DatumPtr(e);
+            goto bailout;
         }
         if ((result.datumValue()->isa_ & Datum::typeUnboundMask) != 0)
+        {
             continue;
+        }
         if (result.isErr())
         {
             FCError *e = result.errValue();
@@ -135,11 +140,13 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
                     sysPrint("\n");
                     Config::get().mainInterface()->closeInterface();
                     QApplication::quit();
-                    return result;
+                    result = nothing();
+                    goto bailout;
                 }
                 if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("PAUSE") && isPausing)
                 {
-                    return e->output();
+                    result = e->output();
+                    goto bailout;
                 }
             }
             sysPrint(e->toString() + "\n");
@@ -156,6 +163,10 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
         // If we are here that means something was output, but not handled.
         sysPrint(QString("You don't say what to do with %1\n").arg(result.toString(Datum::ToStringFlags_Show)));
     }
+
+bailout:
+    callFrameStack_.pop();
+    return result;
 }
 
 Datum *Kernel::inputProcedure(ASTNode *node)
@@ -348,34 +359,54 @@ Kernel::~Kernel()
     Q_ASSERT(callFrameStack_.size() == 0);
 }
 
-DatumPtr Kernel::runECE(const DatumPtr &listP)
+DatumPtr Kernel::runECE()
 {
-    callFrameStack_.push(std::move(std::make_unique<NewCallFrame>(nothing())));
-    NewCallFrame *currentCallFrame = callFrameStack_.top().get();
+    nextOperation_ = &Kernel::ece_evaluateList;
+    jumpLocation_ = 0;
+    retval_ = nothing();
 
-    currentCallFrame->pushEvaluator(listP);
-
-    DatumPtr retval;
-
-    while (true)
+    while (nextOperation_ != nullptr)
     {
-        NewEvaluator *topEvaluator = currentCallFrame->topEvaluator();
-        // For now just run the list and return the result.
-        if (topEvaluator->exec(0))
-        {
-            retval = DatumPtr(topEvaluator->retval);
-            currentCallFrame->popEvaluator();
-            if (currentCallFrame->evaluationStackSize() < 1)
-            {
-                break;
-            }
-            topEvaluator = currentCallFrame->topEvaluator();
-            topEvaluator->lastSubExecResult_ = retval.datumValue();
-        }
+        (this->*nextOperation_)();
     }
 
-    callFrameStack_.pop();
-    return retval;
+    return retval_;
+}
+
+void Kernel::ece_evaluateList()
+{
+    NewCallFrame *currentCallFrame = callFrameStack_.top().get();
+    NewEvaluator *topEvaluator = currentCallFrame->topEvaluator();
+
+    // exec() returns true if execution is complete.
+    if (topEvaluator->exec(jumpLocation_))
+    {
+        // TODO: consider if popEvaluator should be its own operation.
+        retval_ = DatumPtr(topEvaluator->retval);
+        currentCallFrame->popEvaluator();
+        if (currentCallFrame->evaluationStackSize() >= 1)
+        {
+            currentCallFrame->topEvaluator()->lastSubExecResult_ = retval_.datumValue();
+        } else {
+            nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
+        }
+    }
+    jumpLocation_ = 0;
+}
+
+void Kernel::ece_decideEmptyEvaluationStack()
+{
+    NewCallFrame *currentCallFrame = callFrameStack_.top().get();
+
+    // TODO: move logic to callframe.
+    if (currentCallFrame->sourceNode_.isNothing())
+    {
+        // Empty source node means this frame is REPL. Return to the caller.
+        nextOperation_ = nullptr;
+        return;
+    }
+    Q_ASSERT(false);
+    // Get the next line from the procedure list.
 }
 
 Datum *Kernel::specialVar(SpecialNames name) const
