@@ -1995,20 +1995,20 @@ EXPORTC bool getvarErroract(void)
 /// @return ASTNode on success, else Err.
 EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
 {
-    // auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
-    // auto *node = reinterpret_cast<ASTNode *>(nodeAddr);
-    // const CallFrame *currentFrame = Kernel::get().callStack.localFrame();
-    // DatumPtr currentProc = currentFrame->sourceNode;
-    // if (currentProc.isASTNode())
-    // {
-    //     FCError *err = FCError::toInProc(node->nodeName);
-    //     e->watch(err);
-    //     return reinterpret_cast<addr_t>(err);
-    // }
+    auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(nodeAddr);
+    const NewCallFrame *currentFrame = Kernel::get().currentCallFrame();
+    DatumPtr currentProc = currentFrame->sourceNode_;
+    if (currentProc.isASTNode())
+    {
+        FCError *err = FCError::toInProc(currentProc.astnodeValue()->nodeName_);
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
 
-    // Datum *retval = Kernel::get().inputProcedure(node);
-    // e->watch(retval);
-    // return reinterpret_cast<addr_t>(retval);
+    Datum *retval = Kernel::get().inputProcedure(node);
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
 }
 
 // TODO: Should the executor be passed in here instead of getting the local frame from the call stack?
