@@ -54,6 +54,17 @@ void NewCallFrame::popEvaluator()
     evaluationStack_.pop();
 }
 
+void NewCallFrame::decideEmptyEvaluationStack()
+{
+    if (sourceNode_.isNothing())
+    {
+        // Empty source node means this frame is REPL. Return to the caller.
+        Kernel::get().nextOperation_ = nullptr;
+        return;
+    }
+    Q_ASSERT(false);
+}
+
 size_t NewCallFrame::evaluationStackSize() const
 {
     return evaluationStack_.size();

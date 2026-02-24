@@ -76,6 +76,9 @@ public:
     /// @brief Pop the topmost evaluator from the evaluation stack.
     void popEvaluator();
 
+    /// @brief Decide what to do next after emptying the evaluation stack.
+    void decideEmptyEvaluationStack();
+
     /// @brief Get the size of the evaluation stack.
     /// @return The size of the evaluation stack.
     size_t evaluationStackSize() const;

@@ -406,15 +406,7 @@ void Kernel::ece_evaluateList()
 void Kernel::ece_decideEmptyEvaluationStack()
 {
     ece_trace("ece_decideEmptyEvaluationStack");
-    // TODO: move logic to callframe.
-    if (currentCallFrame()->sourceNode_.isNothing())
-    {
-        // Empty source node means this frame is REPL. Return to the caller.
-        nextOperation_ = nullptr;
-        return;
-    }
-    Q_ASSERT(false);
-    // TODO: Get the next line from the procedure list.
+    currentCallFrame()->decideEmptyEvaluationStack();
 }
 
 void Kernel::ece_popEvaluator()
