@@ -145,6 +145,9 @@ class Kernel
     /// @brief Decide what to do next after emptying the evaluation stack.
     void ece_decideEmptyEvaluationStack();
 
+    /// @brief Pop the topmost evaluator from the evaluation stack.
+    void ece_popEvaluator();
+
     /************ miscellaneous ************/
 
     /// @brief The palette of colors.

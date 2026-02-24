@@ -381,15 +381,7 @@ void Kernel::ece_evaluateList()
     // exec() returns true if execution is complete.
     if (topEvaluator->exec(jumpLocation_))
     {
-        // TODO: consider if popEvaluator should be its own operation.
-        retval_ = DatumPtr(topEvaluator->retval);
-        currentCallFrame->popEvaluator();
-        if (currentCallFrame->evaluationStackSize() >= 1)
-        {
-            currentCallFrame->topEvaluator()->lastSubExecResult_ = retval_.datumValue();
-        } else {
-            nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
-        }
+        nextOperation_ = &Kernel::ece_popEvaluator;
     }
     jumpLocation_ = 0;
 }
@@ -406,7 +398,24 @@ void Kernel::ece_decideEmptyEvaluationStack()
         return;
     }
     Q_ASSERT(false);
-    // Get the next line from the procedure list.
+    // TODO: Get the next line from the procedure list.
+}
+
+void Kernel::ece_popEvaluator()
+{
+    NewCallFrame *currentCallFrame = callFrameStack_.top().get();
+    NewEvaluator *topEvaluator = currentCallFrame->topEvaluator();
+    retval_ = DatumPtr(topEvaluator->retval);
+
+    currentCallFrame->popEvaluator();
+
+    if (currentCallFrame->evaluationStackSize() > 0)
+    {
+        currentCallFrame->topEvaluator()->lastSubExecResult_ = retval_.datumValue();
+        nextOperation_ = &Kernel::ece_evaluateList;
+    } else {
+        nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
+    }
 }
 
 Datum *Kernel::specialVar(SpecialNames name) const
