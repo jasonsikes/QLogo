@@ -35,11 +35,21 @@
 #include <QDir>
 #include <QFont>
 #include <QImage>
+#include <iostream>
 #include <cstdlib> // arc4random_uniform()
 
 
 // The maximum depth of procedure iterations before error is thrown.
 const int maxIterationDepth = 1000;
+
+void ece_trace(const char *msg)
+{
+    static bool doTrace = Config::get().traceEvaluator_;
+    if (doTrace)
+    {
+        std::cerr << "ece_trace: " << msg << std::endl;
+    }
+}
 
 bool Kernel::numbersFromList(QVector<double> &retval, const DatumPtr &listP) const
 {
@@ -385,6 +395,7 @@ NewEvaluator *Kernel::topEvaluator() const
 
 void Kernel::ece_evaluateList()
 {
+    ece_trace("ece_evaluateList");
     if (topEvaluator()->exec(jumpLocation_))
     {
         nextOperation_ = &Kernel::ece_popEvaluator;
@@ -394,6 +405,7 @@ void Kernel::ece_evaluateList()
 
 void Kernel::ece_decideEmptyEvaluationStack()
 {
+    ece_trace("ece_decideEmptyEvaluationStack");
     // TODO: move logic to callframe.
     if (currentCallFrame()->sourceNode_.isNothing())
     {
@@ -407,6 +419,7 @@ void Kernel::ece_decideEmptyEvaluationStack()
 
 void Kernel::ece_popEvaluator()
 {
+    ece_trace("ece_popEvaluator");
     retval_ = DatumPtr(topEvaluator()->retval);
 
     currentCallFrame()->popEvaluator();

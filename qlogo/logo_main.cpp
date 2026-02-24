@@ -18,6 +18,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "interface/logointerfacegui.h"
+#include "sharedconstants.h"
 #include "workspace/kernel.h"
 #include <QCommandLineParser>
 #include <QCoreApplication>
@@ -36,6 +37,7 @@ void processOptions(QCoreApplication *a)
     QString optshowModuleIR = "showModuleIR";
     QString optverifyIR = "verifyIR";
     QString optshowCON = "showCON";
+    QString optTraceEvaluator = "traceEvaluator";
 
     QCommandLineParser commandlineParser;
 
@@ -79,6 +81,9 @@ void processOptions(QCoreApplication *a)
          QCoreApplication::translate("main",
                                      "Show every change in the Count Of Nodes. "
                                      "(for debugging).")},
+        {optTraceEvaluator,
+         QCoreApplication::translate("main",
+                                     "Trace evaluator execution (for debugging).")},
     });
 
     commandlineParser.process(*a);
@@ -121,6 +126,11 @@ void processOptions(QCoreApplication *a)
     if (commandlineParser.isSet(optshowCON))
     {
         Config::get().showCON_ = true;
+    }
+
+    if (commandlineParser.isSet(optTraceEvaluator))
+    {
+        Config::get().traceEvaluator_ = true;
     }
 }
 
