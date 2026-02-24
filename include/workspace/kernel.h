@@ -138,6 +138,11 @@ class Kernel
     /// @brief The return value when an operation completes.
     DatumPtr retval_;
 
+    /// @brief Get the current call frame.
+    NewCallFrame *currentCallFrame() const;
+
+    /// @brief Get the topmost evaluator from the evaluation stack.
+    NewEvaluator *topEvaluator() const;
 
     /// @brief Begin or continue evaluating a list. Will return when execution is suspended.
     void ece_evaluateList();

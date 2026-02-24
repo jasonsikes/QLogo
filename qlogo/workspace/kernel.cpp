@@ -373,13 +373,19 @@ DatumPtr Kernel::runECE()
     return retval_;
 }
 
+NewCallFrame *Kernel::currentCallFrame() const
+{
+    return callFrameStack_.top().get();
+}
+
+NewEvaluator *Kernel::topEvaluator() const
+{
+    return currentCallFrame()->topEvaluator();
+}
+
 void Kernel::ece_evaluateList()
 {
-    NewCallFrame *currentCallFrame = callFrameStack_.top().get();
-    NewEvaluator *topEvaluator = currentCallFrame->topEvaluator();
-
-    // exec() returns true if execution is complete.
-    if (topEvaluator->exec(jumpLocation_))
+    if (topEvaluator()->exec(jumpLocation_))
     {
         nextOperation_ = &Kernel::ece_popEvaluator;
     }
@@ -388,10 +394,8 @@ void Kernel::ece_evaluateList()
 
 void Kernel::ece_decideEmptyEvaluationStack()
 {
-    NewCallFrame *currentCallFrame = callFrameStack_.top().get();
-
     // TODO: move logic to callframe.
-    if (currentCallFrame->sourceNode_.isNothing())
+    if (currentCallFrame()->sourceNode_.isNothing())
     {
         // Empty source node means this frame is REPL. Return to the caller.
         nextOperation_ = nullptr;
@@ -403,15 +407,13 @@ void Kernel::ece_decideEmptyEvaluationStack()
 
 void Kernel::ece_popEvaluator()
 {
-    NewCallFrame *currentCallFrame = callFrameStack_.top().get();
-    NewEvaluator *topEvaluator = currentCallFrame->topEvaluator();
-    retval_ = DatumPtr(topEvaluator->retval);
+    retval_ = DatumPtr(topEvaluator()->retval);
 
-    currentCallFrame->popEvaluator();
+    currentCallFrame()->popEvaluator();
 
-    if (currentCallFrame->evaluationStackSize() > 0)
+    if (currentCallFrame()->evaluationStackSize() > 0)
     {
-        currentCallFrame->topEvaluator()->lastSubExecResult_ = retval_.datumValue();
+        currentCallFrame()->topEvaluator()->lastSubExecResult_ = retval_.datumValue();
         nextOperation_ = &Kernel::ece_evaluateList;
     } else {
         nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
