@@ -51,6 +51,50 @@ void ece_trace(const char *msg)
     }
 }
 
+/// @brief Clean a procedure argument by removing ':' and '"' from the argument name if it is a word.
+/// @param argument The argument to clean.
+/// @return The cleaned argument.
+DatumPtr cleanProcArgumentWord(const DatumPtr &argument)
+{
+    Q_ASSERT (argument.isWord());
+    QString argumentName = argument.wordValue()->toString();
+    if (argumentName.startsWith(':') || argumentName.startsWith('"'))
+    {
+        argumentName.remove(0, 1);
+        return DatumPtr(argumentName);
+    }
+    return argument;
+}
+
+/// Clean a procedure argument by removing ':' and '"' from the argument name if it is a word or list.
+DatumPtr cleanProcArgument(ASTNode *node, const DatumPtr &argument)
+{
+    DatumPtr first;
+
+    // The argument can be a word.
+    if (argument.isWord())
+    {
+        return cleanProcArgumentWord(argument);
+    }
+
+    // If not a word, the argument must be a list with the head being a word.
+    if ( ! argument.isList())
+    {
+        goto error;
+    }
+
+    first = argument.listValue()->head;
+    if ( ! first.isWord())
+    {
+        goto error;
+    }
+    first = cleanProcArgumentWord(first);
+    return new List(first, argument.listValue()->tail.listValue());
+
+error:
+    throw FCError::doesntLike(node, argument);
+}
+
 bool Kernel::numbersFromList(QVector<double> &retval, const DatumPtr &listP) const
 {
     if (!listP.isList())
@@ -179,6 +223,37 @@ bailout:
     return result;
 }
 
+DatumPtr Kernel::procnameFromNode(ASTNode *node)
+{
+    DatumPtr command = node->nodeName_;
+
+    DatumPtr procnameP = node->childAtIndex(0);
+    if (!procnameP.isWord())
+        throw FCError::doesntLike(command, procnameP);
+
+    procnameP.wordValue()->numberValue();
+    if (procnameP.wordValue()->numberIsValid)
+        throw FCError::doesntLike(command, procnameP);
+
+    QString procname = procnameP.toString(Datum::ToStringFlags_Key);
+
+    QChar firstChar = (procname)[0];
+    if ((firstChar == '"') || (firstChar == ':') || (firstChar == '(') || (firstChar == ')'))
+        throw FCError::doesntLike(command, procnameP);
+
+    return procnameP;
+}
+
+DatumPtr Kernel::procArgumentsFromNode(ASTNode *node)
+{
+    ListBuilder argumentsBuilder;
+    for (int i = 1; i < node->countOfChildren(); ++i)
+    {
+        argumentsBuilder.append(cleanProcArgument(node, node->childAtIndex(i)));
+    }
+    return argumentsBuilder.finishedList();
+}
+
 Datum *Kernel::inputProcedure(ASTNode *node)
 {
     Datum *retval = node;
@@ -191,43 +266,32 @@ Datum *Kernel::inputProcedure(ASTNode *node)
 
         // procnameP is the name of the procedure, the second word in the input line,
         // following ".MACRO" or "TO".
-        DatumPtr procnameP = node->childAtIndex(0);
-        if (!procnameP.isWord())
-            throw FCError::doesntLike(command, procnameP);
-
-        procnameP.wordValue()->numberValue();
-        if (procnameP.wordValue()->numberIsValid)
-            throw FCError::doesntLike(command, procnameP);
-
+        DatumPtr procnameP = procnameFromNode(node);
         QString procname = procnameP.toString(Datum::ToStringFlags_Key);
 
-        QChar firstChar = (procname)[0];
-        if ((firstChar == '"') || (firstChar == ':') || (firstChar == '(') || (firstChar == ')'))
-            throw FCError::doesntLike(command, procnameP);
-
+        // TODO: Enable conditional redefinition of procedures, such as after editing.
         if (Procedures::get().isProcedure(procname))
             throw FCError::procDefined(procnameP);
 
         // Assign the procedure's parameter names and default values.
-        ListBuilder firstLineBuilder;
-        for (int i = 1; i < node->countOfChildren(); ++i)
-        {
-            firstLineBuilder.append(node->childAtIndex(i));
-        }
-        DatumPtr firstLine = firstLineBuilder.finishedList();
-        ListBuilder textBuilder;
-        textBuilder.append(firstLine);
+        DatumPtr argumentsList = procArgumentsFromNode(node);
 
-        QList<DatumPtr> sourceText = systemReadStream_->recentHistory();
+        Procedures::get().validateArguments(command, argumentsList);
+
+        QList<DatumPtr> sourceText = systemReadStream_->listReaderLineHistory();
         // Now read in the body
+        ListBuilder textBuilder;
+        textBuilder.append(argumentsList);
+
         forever
         {
             DatumPtr line = systemReadStream_->readListWithPrompt("> ", true);
             if (!line.isList()) // this must be the end of the input
                 break;
+            sourceText.append(systemReadStream_->listReaderLineHistory());
             if (line.listValue()->isEmpty())
                 continue;
-            sourceText.append(systemReadStream_->recentHistory());
+
             DatumPtr first = line.listValue()->head;
             if (first.isWord())
             {

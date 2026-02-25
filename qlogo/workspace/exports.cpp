@@ -1999,6 +1999,8 @@ EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
     auto *node = reinterpret_cast<ASTNode *>(nodeAddr);
     const NewCallFrame *currentFrame = Kernel::get().currentCallFrame();
     DatumPtr currentProc = currentFrame->sourceNode_;
+
+    // We don't allow inputting a procedure while in a procedure.
     if (currentProc.isASTNode())
     {
         FCError *err = FCError::toInProc(currentProc.astnodeValue()->nodeName_);
@@ -2007,6 +2009,7 @@ EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
     }
 
     Datum *retval = Kernel::get().inputProcedure(node);
+
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
 }

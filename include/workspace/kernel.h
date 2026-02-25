@@ -170,6 +170,16 @@ class Kernel
     /// @note The return value is useful only in the case of PAUSE.
     DatumPtr readEvalPrintLoop(bool isPausing, const QString &prompt = QString());
 
+    /// @brief Get the procedure name from a TO or .MACRO node.
+    /// @param node The ASTNode that holds the command, the procedure name and parameters.
+    /// @return The procedure name.
+    DatumPtr procnameFromNode(ASTNode *node);
+
+    /// @brief Get the procedure arguments from a TO or .MACRO node.
+    /// @param node The ASTNode that holds the command, the procedure name and parameters.
+    /// @return The procedure parameters as a list with ':' and '"' filered out from the parameter names.
+    DatumPtr procArgumentsFromNode(ASTNode *node);
+
     /// @brief Input the body of a procedure.
     /// @param node the ASTNode that holds the command, the procedure name and parameters.
     /// @return the given node on success or Error on error.

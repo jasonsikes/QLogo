@@ -79,66 +79,66 @@ void NewCallFrame::setVarAsLocal(const QString &name)
 
 Datum *NewCallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount)
 {
-    Procedure *proc = sourceNode_.astnodeValue()->procedure_.procedureValue();
+    // Procedure *proc = sourceNode_.astnodeValue()->procedure_.procedureValue();
 
-    QStringList &requiredInputs = proc->requiredInputs_;
-    QStringList &optionalInputs = proc->optionalInputs_;
-    QList<DatumPtr> &optionalDefaults = proc->optionalDefaults_;
+    // QStringList &requiredInputs = proc->requiredInputs_;
+    // QStringList &optionalInputs = proc->optionalInputs_;
+    // QList<DatumPtr> &optionalDefaults = proc->optionalDefaults_;
 
-    // Assign the given name/value pairs to the local variables.
+    // // Assign the given name/value pairs to the local variables.
 
-    size_t paramIndex = 0;
-    for (auto &inputName : requiredInputs)
-    {
-        Q_ASSERT(paramIndex < paramCount);
-        setVarAsLocal(inputName);
-        DatumPtr value(*(paramAry + paramIndex));
-        Kernel::get().setDatumForName(value, inputName);
-        paramIndex++;
-    }
+    // size_t paramIndex = 0;
+    // for (auto &inputName : requiredInputs)
+    // {
+    //     Q_ASSERT(paramIndex < paramCount);
+    //     setVarAsLocal(inputName);
+    //     DatumPtr value(*(paramAry + paramIndex));
+    //     Kernel::get().setDatumForName(value, inputName);
+    //     paramIndex++;
+    // }
 
-    // Handle optional inputs as name/value pairs.
-    // Note that optionalInputs are lists with the tail being the default expression.
-    // The head is the name of the optional input, but we saved it earlier in a key form.
-    // We retain the whole expression in optionalDefaults in case there is an error.
-    for (int i = 0; i < optionalInputs.size(); i++)
-    {
-        QString name = optionalInputs[i];
-        DatumPtr value;
-        if (paramIndex < paramCount)
-        {
-            value = *(paramAry + paramIndex);
-        }
-        else
-        {
-            DatumPtr optExpression = optionalDefaults[i].listValue()->tail;
-            // TODO: ensure that the generated ASTList has one root node.
-            NewEvaluator e(this, optExpression);
-            // value = e.exec();
-            if (value.isa() == Datum::typeError)
-            {
-                return FCError::badDefault(optionalDefaults[i]);
-            }
-        }
-        setVarAsLocal(name);
-        Kernel::get().setDatumForName(value, name);
-        paramIndex++;
-    }
+    // // Handle optional inputs as name/value pairs.
+    // // Note that optionalInputs are lists with the tail being the default expression.
+    // // The head is the name of the optional input, but we saved it earlier in a key form.
+    // // We retain the whole expression in optionalDefaults in case there is an error.
+    // for (int i = 0; i < optionalInputs.size(); i++)
+    // {
+    //     QString name = optionalInputs[i];
+    //     DatumPtr value;
+    //     if (paramIndex < paramCount)
+    //     {
+    //         value = *(paramAry + paramIndex);
+    //     }
+    //     else
+    //     {
+    //         DatumPtr optExpression = optionalDefaults[i].listValue()->tail;
+    //         // TODO: ensure that the generated ASTList has one root node.
+    //         NewEvaluator e(this, optExpression);
+    //         // value = e.exec();
+    //         if (value.isa() == Datum::typeError)
+    //         {
+    //             return FCError::badDefault(optionalDefaults[i]);
+    //         }
+    //     }
+    //     setVarAsLocal(name);
+    //     Kernel::get().setDatumForName(value, name);
+    //     paramIndex++;
+    // }
 
-    // Finally, take in the remainder (if any) as a list.
-    if (proc->restInput_ != "")
-    {
-        QString name = proc->restInput_;
-        ListBuilder builder;
-        while (paramIndex < paramCount)
-        {
-            builder.append(*(paramAry + paramIndex));
-            paramIndex++;
-        }
-        setVarAsLocal(name);
-        DatumPtr restList = builder.finishedList();
-        Kernel::get().setDatumForName(restList, name);
-    }
+    // // Finally, take in the remainder (if any) as a list.
+    // if (proc->restInput_ != "")
+    // {
+    //     QString name = proc->restInput_;
+    //     ListBuilder builder;
+    //     while (paramIndex < paramCount)
+    //     {
+    //         builder.append(*(paramAry + paramIndex));
+    //         paramIndex++;
+    //     }
+    //     setVarAsLocal(name);
+    //     DatumPtr restList = builder.finishedList();
+    //     Kernel::get().setDatumForName(restList, name);
+    // }
     return nullptr;
 }
 

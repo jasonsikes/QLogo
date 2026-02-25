@@ -59,15 +59,6 @@ class Procedures
     DatumPtr procedureForName(const QString &aName) const;
     bool isNamedProcedure(const QString &aName) const;
 
-    // Helper methods for createProcedure
-    Procedure* initializeProcedureBody(const DatumPtr &cmd, const QList<DatumPtr> &sourceText);
-    void parseProcedureParameters(const DatumPtr &cmd, const DatumPtr &text, Procedure *body);
-    void processWordParameter(const DatumPtr &cmd, const DatumPtr &currentParam, Procedure *body,
-                             bool &isOptionalDefined, bool &isRestDefined, bool &isDefaultDefined);
-    void processListParameter(const DatumPtr &cmd, const DatumPtr &currentParam, Procedure *body,
-                              bool &isOptionalDefined, bool &isRestDefined, bool &isDefaultDefined);
-    void setupInstructionList(const DatumPtr &text, Procedure *body);
-    void processTags(Procedure *body);
 
     /// @brief Private constructor for singleton pattern.
     Procedures();
@@ -96,23 +87,18 @@ class Procedures
         return lastProcedureCreatedTimestamp_;
     }
 
-    /// @brief Create a procedure from a command and its text.
-    /// @param cmd The name of the command.
-    /// @param text The text to create a procedure from, in the form of a list of sublists.
-    /// @param sourceText The source text to create a procedure from, or an empty list if there
-    /// was no source text.
-    /// @return A pointer to the created procedure.
-    /// @note This creates and returns a Procedure object from a command and its text. It
-    /// does not save the procedure to the procedures hash table.
-    DatumPtr createProcedure(const DatumPtr &cmd, const DatumPtr &text, const QList<DatumPtr> &sourceText);
+    /// @brief Validate a procedure arguments list.
+    /// @param cmd The command to validate the arguments list for.
+    /// @param argumentsList The arguments list to validate.
+    /// @return A tuple representing the arity of the procedure. Throws an exception if the arguments list is invalid.
+    std::tuple<int, int, int> validateArguments(const DatumPtr &cmd, const DatumPtr &argumentsList) const;
 
-    /// @brief Define a procedure.
+    /// @brief Create a Procedure object and save it to the procedures hash table.
     /// @param cmd The command used to define the procedure (TO or .MACRO).
     /// @param procnameP The name of the procedure to define.
     /// @param text The text to define a procedure from, in the form of a list of sublists.
     /// @param sourceText The source text to define a procedure from, or an empty list if there
     /// was no source text.
-    /// @note This creates a Procedure object and saves it to the procedures hash table.
     void defineProcedure(const DatumPtr &cmd,
                          const DatumPtr &procnameP,
                          const DatumPtr &text,
@@ -156,11 +142,11 @@ class Procedures
     /// words.
     DatumPtr procedureFulltext(const DatumPtr &procnameP, bool shouldValidate = true) const;
 
-    /// @brief Get the title of a procedure.
-    /// @param procnameP The name of the procedure to get the title of.
+    /// @brief Generate the title line of a procedure.
+    /// @param procnameP The name of the procedure to generate the title line for.
     /// @return A string containing the title of the procedure. A title is the first line
-    /// of the procedure's source text, starting with 'TO' or '>MACRO'.
-    QString procedureTitle(const DatumPtr &procnameP) const;
+    /// of the procedure's source text, starting with 'to' or '.macro'.
+    QString generateProcedureTitleLine(const DatumPtr &procnameP) const;
 
     /// @brief Check if a name is a procedure.
     /// @param procname The name to check.
@@ -219,18 +205,6 @@ class Procedure : public Datum
         isa_ = typeProcedure;
     }
 
-    /// @brief The parameter names of the required inputs of the procedure.
-    QStringList requiredInputs_;
-
-    /// @brief The parameter names of the optional inputs of the procedure.
-    QStringList optionalInputs_;
-
-    /// @brief The default values of the optional inputs of the procedure.
-    QList<DatumPtr> optionalDefaults_;
-
-    /// @brief The parameter name for the rest of the inputs.
-    QString restInput_;
-
     /// @brief The minimum number of parameters this procedure accepts.
     int countOfMinParams_ = 0;
     /// @brief The number of default parameters this procedure expects.
@@ -238,11 +212,8 @@ class Procedure : public Datum
     /// @brief The maximum number of parameters this procedure accepts.
     int countOfMaxParams_ = -1;
 
-    /// @brief A hash table to map tag names to the lines in the source text.
-    QHash<QString, DatumPtr> tagToLine_;
-
-    /// @brief A hash table to map tag names to the block ID for efficient execution.
-    QHash<QString, int32_t> tagToBlockId_;
+    /// @brief A mapping of tag names to source lines and block IDs.
+    QHash<QString, std::pair<DatumPtr, int32_t>> tagToLineAndBlockId_;
 
     /// @brief Whether this procedure is a macro.
     bool isMacro_ = false;
@@ -255,7 +226,8 @@ class Procedure : public Datum
     QList<DatumPtr> sourceText_;
 
     /// @brief The instruction list of the procedure.
-    /// @note This is a list of lists, with each sublist representing a line of instruction.
+    /// @note This is a list of lists.
+    /// The first list is the arguments list, and the rest are the instruction lists.
     /// TODO This should be a deep copy of the source lists, to prevent direct modification.
     DatumPtr instructionList_;
 };

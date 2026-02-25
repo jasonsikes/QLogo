@@ -36,9 +36,95 @@ Procedures::Procedures()
 #include "workspace/primitivetable.h"
 }
 
+std::tuple<int, int, int> Procedures::validateArguments(const DatumPtr &cmd, const DatumPtr &argumentsList) const
+{
+    ListIterator iter = argumentsList.listValue()->newIterator();
+    std::tuple<int, int, int> retval(0, 0, 0);
+    int &minimumInputs = std::get<0>(retval);
+    int &defaultInputs = std::get<1>(retval);
+    int &maximumInputs = std::get<2>(retval);
+
+    if ( ! iter.elementExists()) return retval;
+    DatumPtr param = iter.element();
+
+    // Parameters are defined in the following format, and are processed in the following order:
+    // Required Inputs, e.g. :FOO
+    // Optional inputs, e.g. [:BAZ 87]
+    // Rest input, e.g. [:GARPLY]
+    // Default number, e.g. 5
+
+    // Required Inputs, e.g. :FOO
+    while (param.isWord())
+    {
+        ++minimumInputs;
+        ++defaultInputs;
+        ++maximumInputs;
+        QString paramName = param.toString(Datum::ToStringFlags_Key);
+        if ((paramName.isEmpty()) || paramName.startsWith(':') || paramName.startsWith('"'))
+            throw FCError::doesntLike(cmd, param);
+
+        if ( ! iter.elementExists()) return retval;
+        param = iter.element();
+    }
+
+    // Optional inputs, e.g. [:BAZ 87]
+    while (param.isList() && (param.listValue()->count() > 1))
+    {
+        ++maximumInputs;
+        List *list = param.listValue();
+        DatumPtr head = list->head;
+        if ( ! head.isWord())
+            throw FCError::doesntLike(cmd, param);
+        QString paramName = head.toString(Datum::ToStringFlags_Key);
+        if ((paramName.isEmpty()) || paramName.startsWith(':') || paramName.startsWith('"'))
+            throw FCError::doesntLike(cmd, param);
+
+        if ( ! iter.elementExists()) return retval;
+        param = iter.element();
+    }
+
+        // Rest input, e.g. [:GARPLY]
+    if (param.isList())
+    {
+        maximumInputs = -1;
+        List *list = param.listValue();
+        if (list->count() != 1)
+            throw FCError::doesntLike(cmd, param);
+        DatumPtr head = list->head;
+        if ( ! head.isWord())
+            throw FCError::doesntLike(cmd, param);
+
+        QString paramName = head.toString(Datum::ToStringFlags_Key);
+        if ((paramName.isEmpty()) || paramName.startsWith(':') || paramName.startsWith('"'))
+            throw FCError::doesntLike(cmd, param);
+
+        if ( ! iter.elementExists()) return retval;
+        param = iter.element();
+    }
+
+    // Default number, e.g. 5
+    if (param.isWord())
+    {
+        double paramAsNumber = param.wordValue()->numberValue();
+        if ( ! param.wordValue()->numberIsValid)
+            throw FCError::doesntLike(cmd, param);
+
+        defaultInputs = paramAsNumber;
+        if ((paramAsNumber != floor(paramAsNumber)) || (defaultInputs < minimumInputs)
+         || ((defaultInputs > maximumInputs) && (maximumInputs != -1)))
+            throw FCError::doesntLike(cmd, param);
+    }
+
+    // There should be no more parameters.
+    if (iter.elementExists())
+        throw FCError::doesntLike(cmd, iter.element());
+
+    return retval;
+}
+
 void Procedures::defineProcedure(const DatumPtr &cmd,
                                  const DatumPtr &procnameP,
-                                 const DatumPtr &text,
+                                 const DatumPtr &textP,
                                  const QList<DatumPtr> &sourceText)
 {
     procnameP.wordValue()->numberValue();
@@ -51,203 +137,37 @@ void Procedures::defineProcedure(const DatumPtr &cmd,
     if ((firstChar == '"') || (firstChar == ':'))
         throw FCError::doesntLike(cmd, procnameP);
 
+    // TODO: We should allow conditional redefinition of procedures, such as after editing.
     if (stringToCmd.contains(procname))
         throw FCError::isPrimitive(procnameP);
 
-    DatumPtr procBody = createProcedure(cmd, text, sourceText);
+    if ( ! textP.isList())
+        throw FCError::doesntLike(cmd, textP);
 
-    procedures_[procname] = procBody;
-}
+    List *text = textP.listValue();
+    if (text->isEmpty())
+        throw FCError::doesntLike(cmd, textP);
+    DatumPtr argumentsList = text->head;
+    if ( ! argumentsList.isList())
+        throw FCError::doesntLike(cmd, argumentsList);
 
-DatumPtr Procedures::createProcedure(const DatumPtr &cmd, const DatumPtr &text, const QList<DatumPtr> &sourceText)
-{
-    Procedure *body = initializeProcedureBody(cmd, sourceText);
-    DatumPtr bodyP(body);
-
-    parseProcedureParameters(cmd, text, body);
-    setupInstructionList(text, body);
-    processTags(body);
-
-    return bodyP;
-}
-
-Procedure* Procedures::initializeProcedureBody(const DatumPtr &cmd, const QList<DatumPtr> &sourceText)
-{
-    auto *body = new Procedure();
-    lastProcedureCreatedTimestamp_ = QDateTime::currentMSecsSinceEpoch();
-
+    std::tuple<int, int, int> arity = validateArguments(cmd, argumentsList);
     QString cmdString = cmd.toString(Datum::ToStringFlags_Key);
     bool isMacro = ((cmdString == QObject::tr(".MACRO")) || (cmdString == QObject::tr(".DEFMACRO")));
 
-    body->countOfDefaultParams_ = 0;
-    body->countOfMinParams_ = 0;
-    body->countOfMaxParams_ = 0;
+    auto *body = new Procedure();
+    DatumPtr bodyP(body);
+    body->countOfMinParams_ = std::get<0>(arity);
+    body->countOfDefaultParams_ = std::get<1>(arity);
+    body->countOfMaxParams_ = std::get<2>(arity);
     body->isMacro_ = isMacro;
     body->sourceText_ = sourceText;
+    body->instructionList_ = textP;
+    lastProcedureCreatedTimestamp_ = QDateTime::currentMSecsSinceEpoch();
 
-    return body;
+    procedures_[procname] = bodyP;
 }
 
-void Procedures::parseProcedureParameters(const DatumPtr &cmd, const DatumPtr &text, Procedure *body)
-{
-    bool isOptionalDefined = false;
-    bool isRestDefined = false;
-    bool isDefaultDefined = false;
-
-    // Parameters are defined in the following format, and are processed in the following order:
-    // Required Inputs, e.g. :FOO
-    // Optional inputs, e.g. [:BAZ 87]
-    // Rest input, e.g. [:GARPLY]
-    // Default number, e.g. 5
-
-    ListIterator paramIter = text.listValue()->head.listValue()->newIterator();
-
-    while (paramIter.elementExists())
-    {
-        DatumPtr currentParam = paramIter.element();
-
-        if (currentParam.isWord())
-        {
-            processWordParameter(cmd, currentParam, body, isOptionalDefined, isRestDefined, isDefaultDefined);
-        }
-        else if (currentParam.isList())
-        {
-            processListParameter(cmd, currentParam, body, isOptionalDefined, isRestDefined, isDefaultDefined);
-        }
-        else
-        {
-            throw FCError::doesntLike(cmd, currentParam);
-        }
-    }
-}
-
-void Procedures::processWordParameter(const DatumPtr &cmd, const DatumPtr &currentParam, Procedure *body,
-                                      bool &isOptionalDefined, bool &isRestDefined, bool &isDefaultDefined)
-{
-    // This is a default number, or a required input.
-    double paramAsNumber = currentParam.wordValue()->numberValue();
-    if (currentParam.wordValue()->numberIsValid)
-    {
-        // This is a default number, e.g. 5
-        if (isDefaultDefined)
-            throw FCError::doesntLike(cmd, currentParam);
-
-        bool isNotInteger = (paramAsNumber != floor(paramAsNumber));
-        bool isBelowMinimum = (paramAsNumber < body->countOfMinParams_);
-        bool isAboveMaximum = (body->countOfMaxParams_ >= 0) && 
-                                  (paramAsNumber > body->countOfMaxParams_);
-        if (isNotInteger || isBelowMinimum || isAboveMaximum)
-            throw FCError::doesntLike(cmd, currentParam);
-        body->countOfDefaultParams_ = paramAsNumber;
-        isDefaultDefined = true;
-    }
-    else
-    {
-        // This is a required input, e.g. :FOO
-        if (isDefaultDefined || isRestDefined || isOptionalDefined)
-            throw FCError::doesntLike(cmd, currentParam);
-        QString paramName = currentParam.toString(Datum::ToStringFlags_Key);
-        if (paramName.startsWith(':') || paramName.startsWith('"'))
-            paramName.remove(0, 1);
-        if (paramName.size() < 1)
-            throw FCError::doesntLike(cmd, currentParam);
-        body->requiredInputs_.append(paramName);
-        body->countOfDefaultParams_ += 1;
-        body->countOfMinParams_ += 1;
-        body->countOfMaxParams_ += 1;
-    }
-}
-
-void Procedures::processListParameter(const DatumPtr &cmd, const DatumPtr &currentParam, Procedure *body,
-                                      bool &isOptionalDefined, bool &isRestDefined, bool &isDefaultDefined)
-{
-    // This is an optional input or a rest input.
-    List *paramList = currentParam.listValue();
-
-    if (paramList->isEmpty())
-        throw FCError::doesntLike(cmd, currentParam);
-
-    if (paramList->count() == 1)
-    {
-        // This is a rest input, e.g. [:GARPLY]
-        if (isRestDefined)
-            throw FCError::doesntLike(cmd, currentParam);
-        DatumPtr param = paramList->head;
-        if (param.isWord())
-        {
-            QString restName = param.toString(Datum::ToStringFlags_Key);
-            if (restName.startsWith(':') || restName.startsWith('"'))
-                restName.remove(0, 1);
-            if (restName.size() < 1)
-                throw FCError::doesntLike(cmd, param);
-            body->restInput_ = restName;
-            isRestDefined = true;
-            body->countOfMaxParams_ = -1;
-        }
-        else
-        {
-            throw FCError::doesntLike(cmd, param);
-        }
-    }
-    else
-    {
-        // This is an optional input, e.g. [:BAZ 87]
-        if (isRestDefined || isDefaultDefined)
-            throw FCError::doesntLike(cmd, currentParam);
-        DatumPtr param = paramList->head;
-        if (param.isWord())
-        {
-            QString name = param.toString(Datum::ToStringFlags_Key);
-            if (name.startsWith(':') || name.startsWith('"'))
-                name.remove(0, 1);
-            if (name.size() < 1)
-                throw FCError::doesntLike(cmd, param);
-            body->optionalInputs_.append(name);
-            body->optionalDefaults_.append(paramList);
-            isOptionalDefined = true;
-            body->countOfMaxParams_ += 1;
-        }
-        else
-        {
-            throw FCError::doesntLike(cmd, param);
-        }
-    }
-}
-
-void Procedures::setupInstructionList(const DatumPtr &text, Procedure *body)
-{
-    body->instructionList_ = text.listValue()->tail;
-    if (body->instructionList_.isNothing())
-        body->instructionList_ = emptyList();
-}
-
-void Procedures::processTags(Procedure *body)
-{
-    // Iterate over the instruction list and add tags to the tagToLine map.
-    ListIterator lineIter = body->instructionList_.listValue()->newIterator();
-    while (lineIter.elementExists())
-    {
-        DatumPtr lineP = lineIter.element();
-        ListIterator wordIter = lineP.listValue()->newIterator();
-        while (wordIter.elementExists())
-        {
-            DatumPtr d = wordIter.element();
-            if (d.isWord() && (d.toString(Datum::ToStringFlags_Key) == QObject::tr("TAG")) && wordIter.elementExists())
-            {
-                DatumPtr tag = wordIter.element();
-                if (tag.isWord())
-                {
-                    QString param = tag.toString(Datum::ToStringFlags_Key);
-                    if ((param.size() > 1) && param[0] == '"')
-                    {
-                        QString tagName = param.right(param.size() - 1);
-                        body->tagToLine_[tagName] = lineP;
-                    }
-                }
-            }
-        }
-    }
-}
 
 void Procedures::copyProcedure(const DatumPtr &newnameP, const DatumPtr &oldnameP)
 {
@@ -290,45 +210,8 @@ DatumPtr Procedures::procedureText(const DatumPtr &procnameP) const
         throw FCError::noHow(procnameP);
     Procedure *body = procedureForName(procname).procedureValue();
 
-    ListBuilder retvalBuilder;
-    ListBuilder inputsBuilder;
 
-    // Generate the parameters interface.
-    for (auto &i : body->requiredInputs_)
-    {
-        inputsBuilder.append(DatumPtr(i));
-    }
-
-    QList<DatumPtr>::iterator d = body->optionalDefaults_.begin();
-    for (auto &i : body->optionalInputs_)
-    {
-        List *optInput = d->listValue()->tail.listValue();
-        ++d;
-        inputsBuilder.append(new List(DatumPtr(i), optInput));
-    }
-
-    if (body->restInput_ != "")
-    {
-        auto *restInput = new List(DatumPtr(body->restInput_), EmptyList::instance());
-        inputsBuilder.append(DatumPtr(restInput));
-    }
-
-    if (body->countOfDefaultParams_ != body->requiredInputs_.size())
-    {
-        inputsBuilder.append(DatumPtr(body->countOfDefaultParams_));
-    }
-
-    retvalBuilder.append(inputsBuilder.finishedList());
-
-    // Generate and append the instruction list.
-    ListIterator b = body->instructionList_.listValue()->newIterator();
-
-    while (b.elementExists())
-    {
-        retvalBuilder.append(b.element());
-    }
-
-    return retvalBuilder.finishedList();
+    return body->instructionList_;
 }
 
 DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldValidate) const
@@ -345,7 +228,7 @@ DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldVal
         if (body->sourceText_.isEmpty())
         {
             ListBuilder retvalBuilder;
-            retvalBuilder.append(DatumPtr(procedureTitle(procnameP)));
+            retvalBuilder.append(DatumPtr(generateProcedureTitleLine(procnameP)));
 
             ListIterator b = body->instructionList_.listValue()->newIterator();
 
@@ -380,7 +263,7 @@ DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldVal
     return retvalBuilder.finishedList();
 }
 
-QString Procedures::procedureTitle(const DatumPtr &procnameP) const
+QString Procedures::generateProcedureTitleLine(const DatumPtr &procnameP) const
 {
     QString procname = procnameP.toString(Datum::ToStringFlags_Key);
 
@@ -391,43 +274,12 @@ QString Procedures::procedureTitle(const DatumPtr &procnameP) const
 
     Procedure *body = procedureForName(procname).procedureValue();
 
-    ListBuilder firstLineBuilder;
-
-    if (body->isMacro_)
-        firstLineBuilder.append(DatumPtr(QObject::tr(".macro")));
-    else
-        firstLineBuilder.append(DatumPtr(QObject::tr("to")));
-    firstLineBuilder.append(procnameP);
-
-    QString paramName;
-
-    for (const auto &i : body->requiredInputs_)
-    {
-        paramName = i;
-        paramName.prepend(':');
-        firstLineBuilder.append(DatumPtr(paramName));
-    }
-
-    for (const auto &i : body->optionalDefaults_)
-    {
-        firstLineBuilder.append(i);
-    }
-
-    paramName = body->restInput_;
-    if (paramName != "")
-    {
-        paramName.push_front(':');
-        DatumPtr restInput = new List(DatumPtr(paramName), EmptyList::instance());
-        firstLineBuilder.append(restInput);
-    }
-
-    if (body->countOfDefaultParams_ != body->requiredInputs_.size())
-    {
-        firstLineBuilder.append(DatumPtr(body->countOfDefaultParams_));
-    }
-
-    QString retval = firstLineBuilder.finishedList().toString(Datum::ToStringFlags_Show);
-    return retval;
+    List *retvalL = body->instructionList_.listValue()->head.listValue();
+    retvalL = new List(DatumPtr(procnameP), retvalL);
+    DatumPtr cmd = DatumPtr((body->isMacro_) ? QObject::tr(".macro") : QObject::tr("to"));
+    retvalL = new List(cmd, retvalL);
+    DatumPtr retvalP = DatumPtr(retvalL);
+    return retvalP.toString(Datum::ToStringFlags_None);
 }
 
 DatumPtr Procedures::procedureForName(const QString &aName) const
