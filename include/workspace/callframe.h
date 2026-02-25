@@ -97,32 +97,32 @@ public:
     /// @param name The name of the variable to insert.
     void setVarAsLocal(const QString &name);
 
-    /// @brief Apply the given parameters to the procedure.
-    /// @param paramAry The parameters to apply.
-    /// @param paramCount The number of parameters to apply.
-    /// @return nothing if successful, or an error if not.
-    Datum *applyProcedureParams(Datum **paramAry, uint32_t paramCount);
+    // /// @brief Apply the given parameters to the procedure.
+    // /// @param paramAry The parameters to apply.
+    // /// @param paramCount The number of parameters to apply.
+    // /// @return nothing if successful, or an error if not.
+    // Datum *applyProcedureParams(Datum **paramAry, uint32_t paramCount);
 
-    /// @brief End the current procedure by continuing with the given node and parameters.
-    /// @param newNode The ASTNode of the new procedure to continue with.
-    /// @param paramAry The parameters to apply to the new node.
-    /// @return nothing if successful, or an error if not.
-    Datum *applyContinuation(const DatumPtr &newNode, const QList<DatumPtr> &paramAry);
+    // /// @brief End the current procedure by continuing with the given node and parameters.
+    // /// @param newNode The ASTNode of the new procedure to continue with.
+    // /// @param paramAry The parameters to apply to the new node.
+    // /// @return nothing if successful, or an error if not.
+    // Datum *applyContinuation(const DatumPtr &newNode, const QList<DatumPtr> &paramAry);
 
-    /// @brief Jump to the line in the procedure containing the given tag.
-    /// @param node The FCGoto node.
-    /// @return Err if the tag is not found (or nothing if the tag is found).
-    Datum *applyGoto(FCGoto *node);
+    // /// @brief Jump to the line in the procedure containing the given tag.
+    // /// @param node The FCGoto node.
+    // /// @return Err if the tag is not found (or nothing if the tag is found).
+    // Datum *applyGoto(FCGoto *node);
 
-    /// @brief Execute procedure referenced in the source node.
-    /// @param paramAry The parameters to apply.
-    /// @param paramCount The number of parameters to apply.
-    /// @return the result of this execution.
-    Datum *exec(Datum **paramAry, uint32_t paramCount);
+    // /// @brief Execute procedure referenced in the source node.
+    // /// @param paramAry The parameters to apply.
+    // /// @param paramCount The number of parameters to apply.
+    // /// @return the result of this execution.
+    // Datum *exec(Datum **paramAry, uint32_t paramCount);
 
-    /// @brief Execute the body of the procedure referenced in the source node.
-    /// @return the result of this execution.
-    Datum *bodyExec();
+    // /// @brief Execute the body of the procedure referenced in the source node.
+    // /// @return the result of this execution.
+    // Datum *bodyExec();
 
     /// @brief Constructor.
     /// @param aSourceNode The ASTNode source of this running procedure. 'nothing'
@@ -144,82 +144,5 @@ public:
     NewCallFrame &operator=(NewCallFrame &&) = delete;
 };
 
-
-/// @brief The call frame stack.
-///
-/// The call frame stack is the stack of call frames, each representing the state
-/// of a procedure. The first of the list is the 'top' call frame. That is,
-/// new frames are pushed to the front of the stack, and the oldest, 'global'
-/// frame is the last element of the list.
-/*
-struct CallFrameStack
-{
-    /// @brief The call frame stack.
-    QList<CallFrame *> stack;
-
-    /// @brief Returns the size of the stack, i.e. the number of stack frames.
-    /// @return The size of the stack.
-    int size() const
-    {
-        return stack.size();
-    }
-
-    /// @brief Set the test state to TRUE or FALSE.
-    /// @param isTrue True if the test state should be set to TRUE, false if it should be set to FALSE.
-    /// @note This is for the commands TEST, IFTRUE, and IFFALSE.
-    void setTest(bool isTrue);
-
-    /// @brief Return true if a test state has been registered in any stack frame.
-    /// @return True if a test state has been registered, false otherwise.
-    /// @note This is for the commands TEST, IFTRUE, and IFFALSE.
-    bool isTested() const;
-
-    /// @brief Return true if the highest registered test state is true.
-    /// @return True if the highest registered test state is true, false otherwise.
-    /// @note This is for the commands TEST, IFTRUE, and IFFALSE.
-    bool testedState() const;
-
-    /// @brief In "explicit slot" APPLY command, sets the list of values of the explicit
-    /// slot variables ("?1", "?2", etc.)
-    /// @param aList The list of values to set the explicit slot variables to.
-    void setExplicitSlotList(const DatumPtr &aList);
-
-    /// @brief In "explicit slot" APPLY command, retrieves the list of values of the
-    /// explicit slot variables ("?1", "?2", etc.)
-    /// @return The list of values of the explicit slot variables.
-    DatumPtr explicitSlotList() const;
-
-    /// @brief Return the global frame, i.e. the last element of the stack list.
-    /// @return The global frame.
-    CallFrame *globalFrame() const
-    {
-        Q_ASSERT(stack.size() > 0);
-        return stack.last();
-    }
-
-    /// @brief Return the local frame, i.e. the first element of the stack list.
-    /// @return The local frame.
-    CallFrame *localFrame() const
-    {
-        Q_ASSERT(stack.size() > 0);
-        return stack.first();
-    }
-
-    /// @brief Return the parent of the local frame, i.e. the second element of the stack list.
-    /// @return The parent frame.
-    CallFrame *parentFrame() const
-    {
-        Q_ASSERT(stack.size() >= 2);
-        return stack[1];
-    }
-
-    CallFrameStack() = default;
-    ~CallFrameStack() = default;
-    CallFrameStack(const CallFrameStack &) = delete;
-    CallFrameStack(CallFrameStack &&) = delete;
-    CallFrameStack &operator=(const CallFrameStack &) = delete;
-    CallFrameStack &operator=(CallFrameStack &&) = delete;
-};
-*/
 
 #endif // CALLFRAME_H

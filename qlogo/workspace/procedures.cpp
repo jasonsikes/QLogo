@@ -36,9 +36,9 @@ Procedures::Procedures()
 #include "workspace/primitivetable.h"
 }
 
-std::tuple<int, int, int> Procedures::validateArguments(const DatumPtr &cmd, const DatumPtr &argumentsList) const
+std::tuple<int, int, int> Procedures::validateParameters(const DatumPtr &cmd, const DatumPtr &parameterList) const
 {
-    ListIterator iter = argumentsList.listValue()->newIterator();
+    ListIterator iter = parameterList.listValue()->newIterator();
     std::tuple<int, int, int> retval(0, 0, 0);
     int &minimumInputs = std::get<0>(retval);
     int &defaultInputs = std::get<1>(retval);
@@ -147,11 +147,11 @@ void Procedures::defineProcedure(const DatumPtr &cmd,
     List *text = textP.listValue();
     if (text->isEmpty())
         throw FCError::doesntLike(cmd, textP);
-    DatumPtr argumentsList = text->head;
-    if ( ! argumentsList.isList())
-        throw FCError::doesntLike(cmd, argumentsList);
+    DatumPtr parameterList = text->head;
+    if ( ! parameterList.isList())
+        throw FCError::doesntLike(cmd, parameterList);
 
-    std::tuple<int, int, int> arity = validateArguments(cmd, argumentsList);
+    std::tuple<int, int, int> arity = validateParameters(cmd, parameterList);
     QString cmdString = cmd.toString(Datum::ToStringFlags_Key);
     bool isMacro = ((cmdString == QObject::tr(".MACRO")) || (cmdString == QObject::tr(".DEFMACRO")));
 

@@ -87,11 +87,11 @@ class Procedures
         return lastProcedureCreatedTimestamp_;
     }
 
-    /// @brief Validate a procedure arguments list.
-    /// @param cmd The command to validate the arguments list for.
+    /// @brief Validate a procedure parameters list.
+    /// @param cmd The command to validate the parameters list for.
     /// @param argumentsList The arguments list to validate.
     /// @return A tuple representing the arity of the procedure. Throws an exception if the arguments list is invalid.
-    std::tuple<int, int, int> validateArguments(const DatumPtr &cmd, const DatumPtr &argumentsList) const;
+    std::tuple<int, int, int> validateParameters(const DatumPtr &cmd, const DatumPtr &parameterList) const;
 
     /// @brief Create a Procedure object and save it to the procedures hash table.
     /// @param cmd The command used to define the procedure (TO or .MACRO).
@@ -227,7 +227,7 @@ class Procedure : public Datum
 
     /// @brief The instruction list of the procedure.
     /// @note This is a list of lists.
-    /// The first list is the arguments list, and the rest are the instruction lists.
+    /// The first list is the parameter list, and the rest are the instruction lists.
     /// TODO This should be a deep copy of the source lists, to prevent direct modification.
     DatumPtr instructionList_;
 };

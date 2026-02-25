@@ -51,48 +51,48 @@ void ece_trace(const char *msg)
     }
 }
 
-/// @brief Clean a procedure argument by removing ':' and '"' from the argument name if it is a word.
-/// @param argument The argument to clean.
-/// @return The cleaned argument.
-DatumPtr cleanProcArgumentWord(const DatumPtr &argument)
+/// @brief Clean a procedure parameter by removing ':' and '"' from the parameter name if it is a word.
+/// @param parameter The parameter to clean.
+/// @return The cleaned parameter.
+DatumPtr cleanParameterWord(const DatumPtr &parameter)
 {
-    Q_ASSERT (argument.isWord());
-    QString argumentName = argument.wordValue()->toString();
-    if (argumentName.startsWith(':') || argumentName.startsWith('"'))
+    Q_ASSERT (parameter.isWord());
+    QString parameterName = parameter.wordValue()->toString();
+    if (parameterName.startsWith(':') || parameterName.startsWith('"'))
     {
-        argumentName.remove(0, 1);
-        return DatumPtr(argumentName);
+        parameterName.remove(0, 1);
+        return DatumPtr(parameterName);
     }
-    return argument;
+    return parameter;
 }
 
-/// Clean a procedure argument by removing ':' and '"' from the argument name if it is a word or list.
-DatumPtr cleanProcArgument(ASTNode *node, const DatumPtr &argument)
+/// Clean a procedure parameter by removing ':' and '"' from the parameter name if it is a word or list.
+DatumPtr cleanParameter(ASTNode *node, const DatumPtr &parameter)
 {
     DatumPtr first;
 
-    // The argument can be a word.
-    if (argument.isWord())
+    // The parameter can be a word.
+    if (parameter.isWord())
     {
-        return cleanProcArgumentWord(argument);
+        return cleanParameterWord(parameter);
     }
 
-    // If not a word, the argument must be a list with the head being a word.
-    if ( ! argument.isList())
+    // If not a word, the parameter must be a list with the head being a word.
+    if ( ! parameter.isList())
     {
         goto error;
     }
 
-    first = argument.listValue()->head;
+    first = parameter.listValue()->head;
     if ( ! first.isWord())
     {
         goto error;
     }
-    first = cleanProcArgumentWord(first);
-    return new List(first, argument.listValue()->tail.listValue());
+    first = cleanParameterWord(first);
+    return new List(first, parameter.listValue()->tail.listValue());
 
 error:
-    throw FCError::doesntLike(node, argument);
+    throw FCError::doesntLike(node, parameter);
 }
 
 bool Kernel::numbersFromList(QVector<double> &retval, const DatumPtr &listP) const
@@ -244,14 +244,14 @@ DatumPtr Kernel::procnameFromNode(ASTNode *node)
     return procnameP;
 }
 
-DatumPtr Kernel::procArgumentsFromNode(ASTNode *node)
+DatumPtr Kernel::procParametersFromNode(ASTNode *node)
 {
-    ListBuilder argumentsBuilder;
+    ListBuilder paramListBuilder;
     for (int i = 1; i < node->countOfChildren(); ++i)
     {
-        argumentsBuilder.append(cleanProcArgument(node, node->childAtIndex(i)));
+        paramListBuilder.append(cleanParameter(node, node->childAtIndex(i)));
     }
-    return argumentsBuilder.finishedList();
+    return paramListBuilder.finishedList();
 }
 
 Datum *Kernel::inputProcedure(ASTNode *node)
@@ -274,14 +274,14 @@ Datum *Kernel::inputProcedure(ASTNode *node)
             throw FCError::procDefined(procnameP);
 
         // Assign the procedure's parameter names and default values.
-        DatumPtr argumentsList = procArgumentsFromNode(node);
+        DatumPtr parameterList = procParametersFromNode(node);
 
-        Procedures::get().validateArguments(command, argumentsList);
+        Procedures::get().validateParameters(command, parameterList);
 
         QList<DatumPtr> sourceText = systemReadStream_->listReaderLineHistory();
         // Now read in the body
         ListBuilder textBuilder;
-        textBuilder.append(argumentsList);
+        textBuilder.append(parameterList);
 
         forever
         {

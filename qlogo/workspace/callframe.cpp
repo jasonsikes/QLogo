@@ -77,8 +77,8 @@ void NewCallFrame::setVarAsLocal(const QString &name)
     Kernel::get().setDatumForName(nothing(), name);
 }
 
-Datum *NewCallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount)
-{
+// Datum *NewCallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount)
+// {
     // Procedure *proc = sourceNode_.astnodeValue()->procedure_.procedureValue();
 
     // QStringList &requiredInputs = proc->requiredInputs_;
@@ -139,11 +139,11 @@ Datum *NewCallFrame::applyProcedureParams(Datum **paramAry, uint32_t paramCount)
     //     DatumPtr restList = builder.finishedList();
     //     Kernel::get().setDatumForName(restList, name);
     // }
-    return nullptr;
-}
+//     return nullptr;
+// }
 
-Datum *NewCallFrame::exec(Datum **paramAry, uint32_t paramCount)
-{
+// Datum *NewCallFrame::exec(Datum **paramAry, uint32_t paramCount)
+// {
     // Datum *retval = applyProcedureParams(paramAry, paramCount);
     // if (retval != nullptr)
     // {
@@ -160,11 +160,11 @@ Datum *NewCallFrame::exec(Datum **paramAry, uint32_t paramCount)
     // }
 
     // return retval;
-    return nullptr;
-}
+//     return nullptr;
+// }
 
-Datum *NewCallFrame::applyContinuation(const DatumPtr &newNode, const QList<DatumPtr> &paramAry)
-{
+// Datum *NewCallFrame::applyContinuation(const DatumPtr &newNode, const QList<DatumPtr> &paramAry)
+// {
     // sourceNode = newNode;
     // std::vector<Datum *> newParamAry;
     // newParamAry.reserve(paramAry.size());
@@ -174,11 +174,11 @@ Datum *NewCallFrame::applyContinuation(const DatumPtr &newNode, const QList<Datu
     // }
 
     // return applyProcedureParams(newParamAry.data(), paramAry.size());
-    return nullptr;
-}
+//     return nullptr;
+// }
 
-Datum *NewCallFrame::applyGoto(FCGoto *node)
-{
+// Datum *NewCallFrame::applyGoto(FCGoto *node)
+// {
 //     DatumPtr tag = node->tag();
 //     Datum *procedure = sourceNode.astnodeValue()->procedure.datumValue();
 //     DatumPtr runningSourceListSnapshot;
@@ -224,11 +224,11 @@ Datum *NewCallFrame::applyGoto(FCGoto *node)
 //     runningSourceList = proc->tagToLine[tag.toString(Datum::ToStringFlags_Key)];
 //     jumpLocation = blockIdIterator.value();
 //     return nullptr;
-    return nullptr;
-}
+//     return nullptr;
+// }
 
-Datum *NewCallFrame::bodyExec()
-{
+// Datum *NewCallFrame::bodyExec()
+// {
 //     jumpLocation = 0;
 // beginBody:
 //     Datum *retval = nullptr;
@@ -285,8 +285,8 @@ Datum *NewCallFrame::bodyExec()
 //     }
 
 //     return retval;
-    return nullptr;
-}
+//     return nullptr;
+// }
 
 
 
