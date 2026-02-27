@@ -89,12 +89,11 @@ void NewEvaluator::pushSublist(Datum *aList)
     }
 }
 
-Datum *NewEvaluator::procedureExec(ASTNode *node, Datum **paramAry, uint32_t paramCount)
+void NewEvaluator::beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount)
 {
-    // CallFrameStack &frameStack = Kernel::get().callStack;
-    // CallFrame frame(frameStack, DatumPtr(node));
+    Kernel::get().callFrameStack_.push(std::make_unique<NewCallFrame>(node, paramAry, paramCount));
 
-    // return frame.exec(paramAry, paramCount);
+    Kernel::get().nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
 }
 
 Datum *NewEvaluator::watch(const DatumPtr &d)

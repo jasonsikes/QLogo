@@ -376,16 +376,12 @@ EXPORTC addr_t popEvaluationStackAndGetResult(addr_t eAddr)
 /// @param astnodeAddr a pointer to the ASTNode object which is the procedure to execute.
 /// @param paramAryAddr a pointer to an array of pointers to Datum objects which are the parameters to the procedure.
 /// @param paramCount the number of parameters to the procedure.
-/// @return the result of the procedure execution.
-EXPORTC addr_t runProcedure(addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAddr, uint32_t paramCount)
+EXPORTC void beginProcedure(addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAddr, uint32_t paramCount)
 {
     auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto **paramAry = reinterpret_cast<Datum **>(paramAryAddr);
-    Datum *result = e->procedureExec(node, paramAry, paramCount);
-    e->watch(result);
-
-    return reinterpret_cast<addr_t>(result);
+    e->beginProcedure(node, paramAry, paramCount);
 }
 
 /// Create and return Error: "SYSTEM"

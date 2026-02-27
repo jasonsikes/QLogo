@@ -31,7 +31,7 @@ EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr);
 EXPORTC addr_t runList(addr_t eAddr, addr_t listAddr);
 EXPORTC void pushListOntoEvaluationStack(addr_t eAddr, addr_t listAddr);
 EXPORTC addr_t popEvaluationStackAndGetResult(addr_t eAddr);
-EXPORTC addr_t runProcedure(addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAddr, uint32_t paramCount);
+EXPORTC void beginProcedure(addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAddr, uint32_t paramCount);
 EXPORTC addr_t getErrorSystem(addr_t eAddr);
 EXPORTC addr_t getErrorToplevel(addr_t eAddr);
 EXPORTC addr_t getErrorNoLike(addr_t eAddr, addr_t whoAddr, addr_t whatAddr);

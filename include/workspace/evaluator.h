@@ -72,12 +72,11 @@ struct NewEvaluator
     /// @param aList The list to push onto the evaluation stack.
     void pushSublist(Datum *aList);
 
-    /// @brief Execute the given procedure. Will return when execution is complete.
-    /// @param node The ASTNode of the procedure to execute.
+    /// @brief Push the given procedure onto the evaluation stack and prepare it for execution.
+    /// @param node The ASTNode of the procedure to push.
     /// @param paramAry The parameters to apply to the procedure.
     /// @param paramCount The number of parameters to apply.
-    /// @return the result of this execution.
-    Datum *procedureExec(ASTNode *node, Datum **paramAry, uint32_t paramCount);
+    void beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount);
 
     /// @brief Add a Datum to the release pool
     /// @return the given pointer (pass-through).

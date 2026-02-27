@@ -44,7 +44,7 @@ const int maxIterationDepth = 1000;
 
 void ece_trace(const char *msg)
 {
-    static bool doTrace = Config::get().traceEvaluator_;
+    static bool doTrace = true; // Config::get().traceEvaluator_;
     if (doTrace)
     {
         std::cerr << "ece_trace: " << msg << std::endl;
@@ -154,7 +154,7 @@ bool Kernel::colorFromDatumPtr(QColor &retval, const DatumPtr &colorP) const
 
 DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
 {
-    callFrameStack_.push(std::move(std::make_unique<NewCallFrame>(nothing())));
+    callFrameStack_.push(std::move(std::make_unique<NewCallFrame>(nullptr, nullptr, 0)));
     QString localPrompt = prompt + "? ";
     DatumPtr result;
     forever
@@ -435,7 +435,7 @@ Kernel::~Kernel()
 
 DatumPtr Kernel::runECE()
 {
-    nextOperation_ = &Kernel::ece_evaluateList;
+    nextOperation_ = &Kernel::ece_evaluateStack;
     jumpLocation_ = 0;
     retval_ = nothing();
 
@@ -457,9 +457,9 @@ NewEvaluator *Kernel::topEvaluator() const
     return currentCallFrame()->topEvaluator();
 }
 
-void Kernel::ece_evaluateList()
+void Kernel::ece_evaluateStack()
 {
-    ece_trace("ece_evaluateList");
+    ece_trace("ece_evaluateStack");
     if (topEvaluator()->exec(jumpLocation_))
     {
         nextOperation_ = &Kernel::ece_popEvaluator;
@@ -483,10 +483,33 @@ void Kernel::ece_popEvaluator()
     if (currentCallFrame()->evaluationStackSize() > 0)
     {
         currentCallFrame()->topEvaluator()->lastSubExecResult_ = retval_.datumValue();
-        nextOperation_ = &Kernel::ece_evaluateList;
+        nextOperation_ = &Kernel::ece_evaluateStack;
     } else {
         nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
     }
+}
+
+void Kernel::ece_exitProcedure()
+{
+    ece_trace("ece_exitProcedure");
+    
+    // Destroy remaining evaluators on the evaluation stack.
+    while (currentCallFrame()->evaluationStackSize() > 0)
+    {
+        currentCallFrame()->popEvaluator();
+    }
+
+    // TODO: if is continuation...
+
+    // TODO: save retval
+
+    callFrameStack_.pop();
+
+    // TODO: if is macro...
+
+    // TODO: store retval
+
+    nextOperation_ = &Kernel::ece_evaluateStack;
 }
 
 Datum *Kernel::specialVar(SpecialNames name) const

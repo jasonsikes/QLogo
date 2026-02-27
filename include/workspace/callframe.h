@@ -41,6 +41,18 @@ class NewCallFrame
     /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.
     std::stack<std::unique_ptr<NewEvaluator>> evaluationStack_;
 
+    bool isReadingArgs_ = false;
+
+    QString currentParameterName_;
+
+    /// @brief The list of parameters being processed.
+    DatumPtr parameters_;
+
+    /// @brief The list of arguments being processed.
+    DatumPtr arguments_;
+
+    void processParameters();
+
 public:
 
     /// @brief The ASTNode source of this running procedure.
@@ -68,6 +80,9 @@ public:
 
     /// @brief Variable names held in this scope and the values held prior to the invocation of this scope.
     QHash<QString, DatumPtr> localVars_;
+
+    /// @brief Move to the next line of the procedure.
+    void nextProcedureLine();
 
     /// @brief Add an evaluator to the evaluation stack.
     /// @param aList The list to evaluate.
@@ -127,10 +142,7 @@ public:
     /// @brief Constructor.
     /// @param aSourceNode The ASTNode source of this running procedure. 'nothing'
     /// is reserved for the global frame or PAUSE.
-    explicit NewCallFrame(const DatumPtr &aSourceNode)
-        : sourceNode_(aSourceNode)
-    {
-    }
+    explicit NewCallFrame(ASTNode *node, Datum **paramAry, uint32_t paramCount);
 
     /// @brief Destructor. Removes local variables from the frame stack variables hash,
     /// and restores the original values of the variables.

@@ -145,13 +145,22 @@ class Kernel
     NewEvaluator *topEvaluator() const;
 
     /// @brief Begin or continue evaluating a list. Will return when execution is suspended.
-    void ece_evaluateList();
+    void ece_evaluateStack();
 
     /// @brief Decide what to do next after emptying the evaluation stack.
     void ece_decideEmptyEvaluationStack();
 
+    /// @brief Begin or continue processing procedure arguments.
+    void ece_processArguments();
+
     /// @brief Pop the topmost evaluator from the evaluation stack.
     void ece_popEvaluator();
+
+    /// Begin the procedure.
+    void ece_beginProcedure();
+
+    /// @brief Exit the current procedure.
+    void ece_exitProcedure();
 
     /************ miscellaneous ************/
 

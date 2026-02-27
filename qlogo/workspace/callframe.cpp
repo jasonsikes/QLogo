@@ -27,7 +27,25 @@
 #include <algorithm>
 #include <vector>
 
+NewCallFrame::NewCallFrame(ASTNode *node, Datum **paramAry, uint32_t paramCount)
+{
+    if (node == nullptr)
+    {
+        // nullptr source node means this frame is REPL.
+        return;
+    }
+    DatumPtr body = node->procedure_.procedureValue();
+    sourceNode_ = DatumPtr(node);
+    runningSourceList_ = body.listValue()->tail;
 
+    parameters_ = body.listValue()->head;
+    arguments_ = emptyList();
+    for (int i = paramCount - 1; i >= 0; i--)
+    {
+        arguments_ = DatumPtr(new List(paramAry[i], arguments_.listValue()));
+    }
+    isReadingArgs_ = true;
+}
 
 NewCallFrame::~NewCallFrame()
 {
@@ -62,7 +80,88 @@ void NewCallFrame::decideEmptyEvaluationStack()
         Kernel::get().nextOperation_ = nullptr;
         return;
     }
-    Q_ASSERT(false);
+
+    // The only time we are reading arguments and the evaluation stack is empty is when we finished processing a default value for an optional parameter.
+    if (isReadingArgs_)
+    {
+        // We finished processing a default value for an optional parameter.
+        // We need to evaluate the default value and assign it to the parameter name.
+        DatumPtr defaultValue = Kernel::get().retval_;
+        setVarAsLocal(currentParameterName_);
+        Kernel::get().setDatumForName(defaultValue, currentParameterName_);
+        processParameters();
+        return;
+    }
+    nextProcedureLine();
+}
+
+void NewCallFrame::processParameters()
+{
+    while ( ! parameters_.listValue()->isEmpty())
+    {
+        DatumPtr parameter = parameters_.listValue()->head;
+        parameters_ = parameters_.listValue()->tail;
+
+        if (parameter.isWord())
+        {
+            // If the word is a number then break out of the loop.
+            // (it represents the default number of parameters, ignore.)
+            parameter.wordValue()->numberValue();
+            if (parameter.wordValue()->numberIsValid)
+            {
+                break;
+            }
+            // A word parameter gets assigned the current argument.
+            currentParameterName_ = parameter.toString(Datum::ToStringFlags_Key);
+            DatumPtr argument = arguments_.listValue()->head;
+            arguments_ = arguments_.listValue()->tail;
+            setVarAsLocal(currentParameterName_);
+            Kernel::get().setDatumForName(argument, currentParameterName_);
+        }
+        else
+        {
+            // This is either a parameter with a default value, or a rest parameter.
+            // Either way, the first element is the name of the parameter.
+            currentParameterName_ = parameter.listValue()->head.toString(Datum::ToStringFlags_Key);
+
+            // The remainder of the list is the default value, if it exists.
+            DatumPtr defaultValue = parameter.listValue()->tail;
+            if (defaultValue.listValue()->isEmpty())
+            {
+                // No default value, so the remainder of the arguments become the value.
+                setVarAsLocal(currentParameterName_);
+                Kernel::get().setDatumForName(arguments_, currentParameterName_);
+                break;
+            }
+            else
+            {
+                // We have a default value, so we need to evaluate it so we can assign it to the parameter name.
+                pushEvaluator(defaultValue);
+                Kernel::get().nextOperation_ = &Kernel::ece_evaluateStack;
+                return;
+            }
+        }
+    }
+
+    isReadingArgs_ = false;
+
+    // We have processed all the parameters, so we can move to the first line of the procedure.
+    nextProcedureLine();
+}
+
+void NewCallFrame::nextProcedureLine()
+{
+    if (runningSourceList_.listValue()->isEmpty())
+    {
+        // We have reached the end of the procedure.
+        Kernel::get().nextOperation_ = &Kernel::ece_exitProcedure;
+        return;
+    }
+
+    DatumPtr line = runningSourceList_.listValue()->head;
+    pushEvaluator(line);
+    runningSourceList_ = runningSourceList_.listValue()->tail;
+    Kernel::get().nextOperation_ = &Kernel::ece_evaluateStack;
 }
 
 size_t NewCallFrame::evaluationStackSize() const

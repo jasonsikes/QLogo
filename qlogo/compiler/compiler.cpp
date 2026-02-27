@@ -691,15 +691,6 @@ Value *Compiler::genValueOf(const DatumPtr &node, RequestReturnType returnType)
     return retval;
 }
 
-Value *Compiler::genExecProcedure(const DatumPtr &node, RequestReturnType returnType)
-{
-    AllocaInst *paramAry = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, DBG_NAME("paramAry"));
-    Value *vAstnodeValue = CoAddr(node.astnodeValue());
-    Value *vParamArySize = CoInt32(node.astnodeValue()->countOfChildren());
-    return generateCallExtern(
-        TyAddr, runProcedure, PaAddr(scaff_->evaluator_), PaAddr(vAstnodeValue), PaAddr(paramAry), PaInt32(vParamArySize));
-}
-
 Value *Compiler::ensureCoroutineFrame()
 {
     if (scaff_->suspendBB_ != nullptr)
@@ -742,6 +733,29 @@ Value *Compiler::generateCallList(Value *list, RequestReturnType returnType)
 {
     // Explicit control: push list onto evaluation stack, suspend so driver can run it, then pop and return result.
     generateCallExtern(TyVoid, pushListOntoEvaluationStack, PaAddr(scaff_->evaluator_), PaAddr(list));
+
+    ensureCoroutineFrame();
+
+    // Suspend point: llvm.coro.suspend(token none, i1 false) -> i8 (0=resume, 1=destroy, default=suspend)
+    Function *coroSuspendFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_suspend);
+    Value *coroutineSuspend = scaff_->builder_.CreateCall(
+        coroSuspendFn, {ConstantTokenNone::get(*scaff_->theContext_), CoBool(false)}, DBG_NAME("suspend"));
+
+    BasicBlock *continueBB = BasicBlock::Create(*scaff_->theContext_, "continue", scaff_->theFunction_);
+    SwitchInst *sw = scaff_->builder_.CreateSwitch(coroutineSuspend, scaff_->suspendBB_, 2);
+    sw->addCase(CoInt8(0), continueBB);
+    sw->addCase(CoInt8(1), scaff_->cleanupBB_);
+
+    scaff_->builder_.SetInsertPoint(continueBB);
+    return generateCallExtern(TyAddr, popEvaluationStackAndGetResult, PaAddr(scaff_->evaluator_));
+}
+
+Value *Compiler::genExecProcedure(const DatumPtr &node, RequestReturnType returnType)
+{
+    AllocaInst *paramAry = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, DBG_NAME("paramAry"));
+    Value *vAstnodeValue = CoAddr(node.astnodeValue());
+    Value *vParamArySize = CoInt32(node.astnodeValue()->countOfChildren());
+    generateCallExtern(TyVoid, beginProcedure, PaAddr(scaff_->evaluator_), PaAddr(vAstnodeValue), PaAddr(paramAry), PaInt32(vParamArySize));
 
     ensureCoroutineFrame();
 
