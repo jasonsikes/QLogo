@@ -106,12 +106,6 @@ public:
     /// @param name The name of the variable to insert.
     void setVarAsLocal(const QString &name);
 
-    // /// @brief Apply the given parameters to the procedure.
-    // /// @param paramAry The parameters to apply.
-    // /// @param paramCount The number of parameters to apply.
-    // /// @return nothing if successful, or an error if not.
-    // Datum *applyProcedureParams(Datum **paramAry, uint32_t paramCount);
-
     // /// @brief End the current procedure by continuing with the given node and parameters.
     // /// @param newNode The ASTNode of the new procedure to continue with.
     // /// @param paramAry The parameters to apply to the new node.
@@ -122,16 +116,6 @@ public:
     // /// @param node The FCGoto node.
     // /// @return Err if the tag is not found (or nothing if the tag is found).
     // Datum *applyGoto(FCGoto *node);
-
-    // /// @brief Execute procedure referenced in the source node.
-    // /// @param paramAry The parameters to apply.
-    // /// @param paramCount The number of parameters to apply.
-    // /// @return the result of this execution.
-    // Datum *exec(Datum **paramAry, uint32_t paramCount);
-
-    // /// @brief Execute the body of the procedure referenced in the source node.
-    // /// @return the result of this execution.
-    // Datum *bodyExec();
 
     /// @brief Constructor.
     /// @param aSourceNode The ASTNode source of this running procedure. 'nothing'
