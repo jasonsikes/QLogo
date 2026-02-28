@@ -457,6 +457,10 @@ NewEvaluator *Kernel::topEvaluator() const
     return currentCallFrame()->topEvaluator();
 }
 
+/***************************************************
+ * ECE operations
+ ***************************************************/
+
 void Kernel::ece_evaluateStack()
 {
     ece_trace("ece_evaluateStack");
@@ -470,13 +474,57 @@ void Kernel::ece_evaluateStack()
 void Kernel::ece_decideEmptyEvaluationStack()
 {
     ece_trace("ece_decideEmptyEvaluationStack");
-    currentCallFrame()->decideEmptyEvaluationStack();
+    if (currentCallFrame()->sourceNode_.isNothing())
+    {
+        // Empty source node means this frame is REPL. Return to the caller.
+        nextOperation_ = nullptr;
+        return;
+    }
+
+    // We are running a procedure.
+
+    if (currentCallFrame()->isReadingArgs_)
+    {
+        // We have either finished processing all the arguments, or we have finished processing a default value
+        // for an optional parameter.
+        if ( ! currentCallFrame()->currentParameterName_.isEmpty())
+        {
+            DatumPtr defaultValue = Kernel::get().retval_;
+            currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
+            Kernel::get().setDatumForName(defaultValue, currentCallFrame()->currentParameterName_);
+            currentCallFrame()->currentParameterName_.clear();
+            currentCallFrame()->processParameters();
+            return;
+        }
+        else
+        {
+            // We have finished processing all the arguments.
+            currentCallFrame()->isReadingArgs_ = false;
+            // nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
+            // return;
+        }
+    }
+
+    // If we are here, then this is the regular evaluation of the procedure body.
+    // It is time to evaluate the next line of the procedure, if it exists.
+    if (currentCallFrame()->runningSourceList_.listValue()->isEmpty())
+    {
+        // We have reached the end of the procedure.
+        nextOperation_ = &Kernel::ece_exitProcedure;
+        return;
+    }
+
+    // Get the next line of the procedure and push it onto the evaluation stack.
+    DatumPtr line = currentCallFrame()->runningSourceList_.listValue()->head;
+    currentCallFrame()->pushEvaluator(line);
+    currentCallFrame()->runningSourceList_ = currentCallFrame()->runningSourceList_.listValue()->tail;
+    nextOperation_ = &Kernel::ece_evaluateStack;
 }
 
 void Kernel::ece_popEvaluator()
 {
     ece_trace("ece_popEvaluator");
-    retval_ = DatumPtr(topEvaluator()->retval);
+    retval_ = DatumPtr(topEvaluator()->retval_);
 
     currentCallFrame()->popEvaluator();
 
@@ -511,6 +559,10 @@ void Kernel::ece_exitProcedure()
 
     nextOperation_ = &Kernel::ece_evaluateStack;
 }
+
+/***************************************************
+ * Miscellaneous operations
+ ***************************************************/
 
 Datum *Kernel::specialVar(SpecialNames name) const
 {

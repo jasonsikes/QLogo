@@ -36,9 +36,9 @@ NewCallFrame::NewCallFrame(ASTNode *node, Datum **paramAry, uint32_t paramCount)
     }
     DatumPtr body = node->procedure_.procedureValue();
     sourceNode_ = DatumPtr(node);
-    runningSourceList_ = body.listValue()->tail;
+    runningSourceList_ = body.procedureValue()->instructionList_.listValue()->tail;
 
-    parameters_ = body.listValue()->head;
+    parameters_ = body.procedureValue()->instructionList_.listValue()->head;
     arguments_ = emptyList();
     for (int i = paramCount - 1; i >= 0; i--)
     {
@@ -70,29 +70,6 @@ void NewCallFrame::pushEvaluator(const DatumPtr &aList)
 void NewCallFrame::popEvaluator()
 {
     evaluationStack_.pop();
-}
-
-void NewCallFrame::decideEmptyEvaluationStack()
-{
-    if (sourceNode_.isNothing())
-    {
-        // Empty source node means this frame is REPL. Return to the caller.
-        Kernel::get().nextOperation_ = nullptr;
-        return;
-    }
-
-    // The only time we are reading arguments and the evaluation stack is empty is when we finished processing a default value for an optional parameter.
-    if (isReadingArgs_)
-    {
-        // We finished processing a default value for an optional parameter.
-        // We need to evaluate the default value and assign it to the parameter name.
-        DatumPtr defaultValue = Kernel::get().retval_;
-        setVarAsLocal(currentParameterName_);
-        Kernel::get().setDatumForName(defaultValue, currentParameterName_);
-        processParameters();
-        return;
-    }
-    nextProcedureLine();
 }
 
 void NewCallFrame::processParameters()
@@ -146,22 +123,7 @@ void NewCallFrame::processParameters()
     isReadingArgs_ = false;
 
     // We have processed all the parameters, so we can move to the first line of the procedure.
-    nextProcedureLine();
-}
-
-void NewCallFrame::nextProcedureLine()
-{
-    if (runningSourceList_.listValue()->isEmpty())
-    {
-        // We have reached the end of the procedure.
-        Kernel::get().nextOperation_ = &Kernel::ece_exitProcedure;
-        return;
-    }
-
-    DatumPtr line = runningSourceList_.listValue()->head;
-    pushEvaluator(line);
-    runningSourceList_ = runningSourceList_.listValue()->tail;
-    Kernel::get().nextOperation_ = &Kernel::ece_evaluateStack;
+    Kernel::get().nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
 }
 
 size_t NewCallFrame::evaluationStackSize() const

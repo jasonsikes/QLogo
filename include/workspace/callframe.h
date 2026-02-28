@@ -41,22 +41,25 @@ class NewCallFrame
     /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.
     std::stack<std::unique_ptr<NewEvaluator>> evaluationStack_;
 
-    bool isReadingArgs_ = false;
-
-    QString currentParameterName_;
-
     /// @brief The list of parameters being processed.
     DatumPtr parameters_;
 
     /// @brief The list of arguments being processed.
     DatumPtr arguments_;
 
-    void processParameters();
-
 public:
 
     /// @brief The ASTNode source of this running procedure.
     DatumPtr sourceNode_;
+
+    /// @brief Set to true iff we are reading arguments for a procedure.
+    bool isReadingArgs_ = false;
+
+    /// @brief Process the parameters for the current procedure.
+    void processParameters();
+
+    /// @brief The name of the current parameter being processed.
+    QString currentParameterName_;
 
     /// @brief The current source list being executed.
     /// The head of this list is the current line being executed.
@@ -81,18 +84,12 @@ public:
     /// @brief Variable names held in this scope and the values held prior to the invocation of this scope.
     QHash<QString, DatumPtr> localVars_;
 
-    /// @brief Move to the next line of the procedure.
-    void nextProcedureLine();
-
     /// @brief Add an evaluator to the evaluation stack.
     /// @param aList The list to evaluate.
     void pushEvaluator(const DatumPtr &aList);
 
     /// @brief Pop the topmost evaluator from the evaluation stack.
     void popEvaluator();
-
-    /// @brief Decide what to do next after emptying the evaluation stack.
-    void decideEmptyEvaluationStack();
 
     /// @brief Get the size of the evaluation stack.
     /// @return The size of the evaluation stack.

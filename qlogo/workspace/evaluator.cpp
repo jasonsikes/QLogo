@@ -24,7 +24,7 @@ NewEvaluator::~NewEvaluator()
         if ((d->isa_ & Datum::typePersistentMask) == 0)
         {
             (d->retainCount_)--;
-            if ((d != retval) && (d->retainCount_ <= 0))
+            if ((d != retval_) && (d->retainCount_ <= 0))
                 delete d;
         }
     }
@@ -37,7 +37,7 @@ bool NewEvaluator::exec(int32_t jumpLocation)
         // Generate and execute the function. Might return a coroutine handle.
         if (list_.listValue() == EmptyList::instance())
         {
-            retval = Datum::notADatum();
+            retval_ = Datum::notADatum();
             return true;
         }
         try
@@ -46,10 +46,10 @@ bool NewEvaluator::exec(int32_t jumpLocation)
         }
         catch (FCError *e)
         {
-            retval = e;
+            retval_ = e;
             return true;
         }
-        handle_ = fn_((addr_t)this, (addr_t)&retval, jumpLocation, nullptr);
+        handle_ = fn_((addr_t)this, (addr_t)&retval_, jumpLocation, nullptr);
     } else {
         // Resume using the frame's resume function.
         if (handle_->resume != nullptr)
@@ -73,19 +73,19 @@ void NewEvaluator::pushSublist(Datum *aList)
         if (!aList->isList())
         {
             FCError *err = FCError::noHow(DatumPtr(aList));
-            retval = err;
+            retval_ = err;
             return;
         }
         if (aList->listValue()->isEmpty())
         {
-            retval = Datum::notADatum();
+            retval_ = Datum::notADatum();
             return;
         }
     owningFrame_->pushEvaluator(DatumPtr(aList));
     }
     catch (FCError *err)
     {
-        retval = err;
+        retval_ = err;
     }
 }
 
