@@ -41,22 +41,19 @@ class NewCallFrame
     /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.
     std::stack<std::unique_ptr<NewEvaluator>> evaluationStack_;
 
+public:
+
     /// @brief The list of parameters being processed.
     DatumPtr parameters_;
 
     /// @brief The list of arguments being processed.
     DatumPtr arguments_;
 
-public:
-
     /// @brief The ASTNode source of this running procedure.
     DatumPtr sourceNode_;
 
     /// @brief Set to true iff we are reading arguments for a procedure.
     bool isReadingArgs_ = false;
-
-    /// @brief Process the parameters for the current procedure.
-    void processParameters();
 
     /// @brief The name of the current parameter being processed.
     QString currentParameterName_;

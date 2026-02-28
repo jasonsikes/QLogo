@@ -162,6 +162,9 @@ class Kernel
     /// @brief Exit the current procedure.
     void ece_exitProcedure();
 
+    /// @brief Process the parameters and arguments for the current procedure.
+    void ece_processParameters();
+
     /************ miscellaneous ************/
 
     /// @brief The palette of colors.

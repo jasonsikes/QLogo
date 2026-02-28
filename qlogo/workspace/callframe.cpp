@@ -72,60 +72,6 @@ void NewCallFrame::popEvaluator()
     evaluationStack_.pop();
 }
 
-void NewCallFrame::processParameters()
-{
-    while ( ! parameters_.listValue()->isEmpty())
-    {
-        DatumPtr parameter = parameters_.listValue()->head;
-        parameters_ = parameters_.listValue()->tail;
-
-        if (parameter.isWord())
-        {
-            // If the word is a number then break out of the loop.
-            // (it represents the default number of parameters, ignore.)
-            parameter.wordValue()->numberValue();
-            if (parameter.wordValue()->numberIsValid)
-            {
-                break;
-            }
-            // A word parameter gets assigned the current argument.
-            currentParameterName_ = parameter.toString(Datum::ToStringFlags_Key);
-            DatumPtr argument = arguments_.listValue()->head;
-            arguments_ = arguments_.listValue()->tail;
-            setVarAsLocal(currentParameterName_);
-            Kernel::get().setDatumForName(argument, currentParameterName_);
-        }
-        else
-        {
-            // This is either a parameter with a default value, or a rest parameter.
-            // Either way, the first element is the name of the parameter.
-            currentParameterName_ = parameter.listValue()->head.toString(Datum::ToStringFlags_Key);
-
-            // The remainder of the list is the default value, if it exists.
-            DatumPtr defaultValue = parameter.listValue()->tail;
-            if (defaultValue.listValue()->isEmpty())
-            {
-                // No default value, so the remainder of the arguments become the value.
-                setVarAsLocal(currentParameterName_);
-                Kernel::get().setDatumForName(arguments_, currentParameterName_);
-                break;
-            }
-            else
-            {
-                // We have a default value, so we need to evaluate it so we can assign it to the parameter name.
-                pushEvaluator(defaultValue);
-                Kernel::get().nextOperation_ = &Kernel::ece_evaluateStack;
-                return;
-            }
-        }
-    }
-
-    isReadingArgs_ = false;
-
-    // We have processed all the parameters, so we can move to the first line of the procedure.
-    Kernel::get().nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
-}
-
 size_t NewCallFrame::evaluationStackSize() const
 {
     return evaluationStack_.size();

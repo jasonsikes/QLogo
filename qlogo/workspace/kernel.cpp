@@ -44,7 +44,7 @@ const int maxIterationDepth = 1000;
 
 void ece_trace(const char *msg)
 {
-    static bool doTrace = true; // Config::get().traceEvaluator_;
+    static bool doTrace = Config::get().traceEvaluator_;
     if (doTrace)
     {
         std::cerr << "ece_trace: " << msg << std::endl;
@@ -433,20 +433,6 @@ Kernel::~Kernel()
     Q_ASSERT(callFrameStack_.size() == 0);
 }
 
-DatumPtr Kernel::runECE()
-{
-    nextOperation_ = &Kernel::ece_evaluateStack;
-    jumpLocation_ = 0;
-    retval_ = nothing();
-
-    while (nextOperation_ != nullptr)
-    {
-        (this->*nextOperation_)();
-    }
-
-    return retval_;
-}
-
 NewCallFrame *Kernel::currentCallFrame() const
 {
     return callFrameStack_.top().get();
@@ -461,7 +447,21 @@ NewEvaluator *Kernel::topEvaluator() const
  * ECE operations
  ***************************************************/
 
-void Kernel::ece_evaluateStack()
+ DatumPtr Kernel::runECE()
+ {
+     nextOperation_ = &Kernel::ece_evaluateStack;
+     jumpLocation_ = 0;
+     retval_ = nothing();
+ 
+     while (nextOperation_ != nullptr)
+     {
+         (this->*nextOperation_)();
+     }
+ 
+     return retval_;
+ }
+ 
+ void Kernel::ece_evaluateStack()
 {
     ece_trace("ece_evaluateStack");
     if (topEvaluator()->exec(jumpLocation_))
@@ -493,7 +493,7 @@ void Kernel::ece_decideEmptyEvaluationStack()
             currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
             Kernel::get().setDatumForName(defaultValue, currentCallFrame()->currentParameterName_);
             currentCallFrame()->currentParameterName_.clear();
-            currentCallFrame()->processParameters();
+            nextOperation_ = &Kernel::ece_processParameters;
             return;
         }
         else
@@ -558,6 +558,61 @@ void Kernel::ece_exitProcedure()
     // TODO: store retval
 
     nextOperation_ = &Kernel::ece_evaluateStack;
+}
+
+void Kernel::ece_processParameters()
+{
+    ece_trace("ece_processParameters");
+    while ( ! currentCallFrame()->parameters_.listValue()->isEmpty())
+    {
+        DatumPtr parameter = currentCallFrame()->parameters_.listValue()->head;
+        currentCallFrame()->parameters_ = currentCallFrame()->parameters_.listValue()->tail;
+
+        if (parameter.isWord())
+        {
+            // If the word is a number then break out of the loop.
+            // (it represents the default number of parameters, ignore.)
+            parameter.wordValue()->numberValue();
+            if (parameter.wordValue()->numberIsValid)
+            {
+                break;
+            }
+            // A word parameter gets assigned the current argument.
+            currentCallFrame()->currentParameterName_ = parameter.toString(Datum::ToStringFlags_Key);
+            DatumPtr argument = currentCallFrame()->arguments_.listValue()->head;
+            currentCallFrame()->arguments_ = currentCallFrame()->arguments_.listValue()->tail;
+            currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
+            setDatumForName(argument, currentCallFrame()->currentParameterName_);
+        }
+        else
+        {
+            // This is either a parameter with a default value, or a rest parameter.
+            // Either way, the first element is the name of the parameter.
+            currentCallFrame()->currentParameterName_ = parameter.listValue()->head.toString(Datum::ToStringFlags_Key);
+
+            // The remainder of the list is the default value, if it exists.
+            DatumPtr defaultValue = parameter.listValue()->tail;
+            if (defaultValue.listValue()->isEmpty())
+            {
+                // No default value, so the remainder of the arguments become the value.
+                currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
+                setDatumForName(currentCallFrame()->arguments_, currentCallFrame()->currentParameterName_);
+                break;
+            }
+            else
+            {
+                // We have a default value, so we need to evaluate it so we can assign it to the parameter name.
+                currentCallFrame()->pushEvaluator(defaultValue);
+                nextOperation_ = &Kernel::ece_evaluateStack;
+                return;
+            }
+        }
+    }
+
+    currentCallFrame()->isReadingArgs_ = false;
+
+    // We have processed all the parameters, so we can move to the first line of the procedure.
+    nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
 }
 
 /***************************************************
