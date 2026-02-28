@@ -14,18 +14,13 @@
 ///
 //===----------------------------------------------------------------------===//
 
+#include "datum_types.h"
 #include "workspace/callframe.h"
 #include "astnode.h"
-#include "compiler.h"
-#include "flowcontrol.h"
 #include "workspace/kernel.h"
-#include "runparser.h"
-#include "sharedconstants.h"
 #include "workspace/procedures.h"
 
 #include <QObject>
-#include <algorithm>
-#include <vector>
 
 CallFrame::CallFrame(ASTNode *node, Datum **paramAry, uint32_t paramCount)
 {

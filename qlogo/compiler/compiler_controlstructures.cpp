@@ -17,10 +17,7 @@
 #include "astnode.h"
 #include "compiler.h"
 #include "compiler_internal.h"
-#include "datum_types.h"
 #include "workspace/exports.h"
-#include "flowcontrol.h"
-#include "workspace/kernel.h"
 #include "sharedconstants.h"
 using namespace llvm;
 using namespace llvm::orc;

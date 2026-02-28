@@ -18,7 +18,6 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum_ptr.h"
-#include "workspace/library.h"
 #include "workspace/callframe.h"
 #include "workspace/evaluator.h"
 #include "workspace/propertylists.h"

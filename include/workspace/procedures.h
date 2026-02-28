@@ -19,7 +19,6 @@
 
 #include "compiler_types.h"
 #include "datum_ptr.h"
-#include "workspace/library.h"
 #include <QHash>
 
 /// @brief A structure to hold a command's details for the treeifyer.

@@ -4,6 +4,7 @@
 #include "compiler.h"
 #include "flowcontrol.h"
 #include "runparser.h"
+#include <QObject>
 
 Evaluator::Evaluator(CallFrame *aOwningFrame, const DatumPtr &aList) : owningFrame_(aOwningFrame), list_(aList)
 {

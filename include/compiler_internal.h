@@ -24,7 +24,6 @@
 #undef emit
 #endif
 
-#include "llvm/IR/Constants.h"
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Verifier.h"

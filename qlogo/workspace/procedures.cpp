@@ -17,6 +17,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "workspace/procedures.h"
+#include "workspace/library.h"
 #include <QApplication>
 #include "astnode.h"
 #include "cmd_strings.h"
