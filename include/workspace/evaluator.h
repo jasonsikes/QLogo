@@ -20,16 +20,16 @@
 #include "compiler_types.h"
 #include "datum_ptr.h"
 
-class NewCallFrame;
+class CallFrame;
 
 /// @brief The Evaluator object handles the evaluation of a list.
 ///
 /// The evaluator handles the evaluation of a list. It provides support functionality
 /// for the list while it is executing.
-struct NewEvaluator
+struct Evaluator
 {
     /// @brief The call frame containing this evaluator.
-    NewCallFrame *owningFrame_;
+    CallFrame *owningFrame_;
 
     /// @brief The list to evaluate.
     DatumPtr list_;
@@ -58,10 +58,10 @@ struct NewEvaluator
 
     /// @brief Constructor.
     /// @param aList The list to evaluate.
-    NewEvaluator(NewCallFrame *owningFrame, const DatumPtr &aList);
+    Evaluator(CallFrame *owningFrame, const DatumPtr &aList);
 
     /// @brief Destructor.
-    ~NewEvaluator();
+    ~Evaluator();
 
     /// @brief Begin or resume execution of this list. Will return when execution is complete or suspended.
     /// @param jumpLocation The block number to start execution from when initiating execution.
@@ -95,11 +95,11 @@ struct NewEvaluator
     /// @brief Returns TRUE if CASEIGNOREDP is TRUE, otherwise FALSE.
     bool varCASEIGNOREDP();
 
-    NewEvaluator() = delete;
-    NewEvaluator(const NewEvaluator &) = delete;
-    NewEvaluator(NewEvaluator &&) = delete;
-    NewEvaluator &operator=(const NewEvaluator &) = delete;
-    NewEvaluator &operator=(NewEvaluator &&) = delete;
+    Evaluator() = delete;
+    Evaluator(const Evaluator &) = delete;
+    Evaluator(Evaluator &&) = delete;
+    Evaluator &operator=(const Evaluator &) = delete;
+    Evaluator &operator=(Evaluator &&) = delete;
 };
 
 #endif // EVALUATOR_H

@@ -27,7 +27,7 @@
 #include <memory>
 #include <stack>
 
-struct NewEvaluator;
+struct Evaluator;
 struct FCGoto;
 struct ASTNode;
 
@@ -35,11 +35,11 @@ struct ASTNode;
 /// @brief The CallFrame object holds the state of execution of a procedure (or REPL).
 /// @note The state includes named variables, anonymous variables (explicit slot, or
 /// "?"), and the test state (for TEST, IFTRUE, IFFALSE).
-class NewCallFrame
+class CallFrame
 {
     /// @brief The evaluation stack.
     /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.
-    std::stack<std::unique_ptr<NewEvaluator>> evaluationStack_;
+    std::stack<std::unique_ptr<Evaluator>> evaluationStack_;
 
 public:
 
@@ -94,7 +94,7 @@ public:
 
     /// @brief Return the topmost Evaluator object.
     /// @return The topmost Evaluator object.
-    NewEvaluator *topEvaluator() const
+    Evaluator *topEvaluator() const
     {
         Q_ASSERT(evaluationStack_.size() > 0);
         return evaluationStack_.top().get();
@@ -120,18 +120,18 @@ public:
     /// @brief Constructor.
     /// @param aSourceNode The ASTNode source of this running procedure. 'nothing'
     /// is reserved for the global frame or PAUSE.
-    explicit NewCallFrame(ASTNode *node, Datum **paramAry, uint32_t paramCount);
+    explicit CallFrame(ASTNode *node, Datum **paramAry, uint32_t paramCount);
 
     /// @brief Destructor. Removes local variables from the frame stack variables hash,
     /// and restores the original values of the variables.
     /// @note This frame will be removed from the stack.
-    ~NewCallFrame();
+    ~CallFrame();
 
-    NewCallFrame() = delete;
-    NewCallFrame(const NewCallFrame &) = delete;
-    NewCallFrame(NewCallFrame &&) = delete;
-    NewCallFrame &operator=(const NewCallFrame &) = delete;
-    NewCallFrame &operator=(NewCallFrame &&) = delete;
+    CallFrame() = delete;
+    CallFrame(const CallFrame &) = delete;
+    CallFrame(CallFrame &&) = delete;
+    CallFrame &operator=(const CallFrame &) = delete;
+    CallFrame &operator=(CallFrame &&) = delete;
 };
 
 

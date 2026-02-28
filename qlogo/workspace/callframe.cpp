@@ -27,7 +27,7 @@
 #include <algorithm>
 #include <vector>
 
-NewCallFrame::NewCallFrame(ASTNode *node, Datum **paramAry, uint32_t paramCount)
+CallFrame::CallFrame(ASTNode *node, Datum **paramAry, uint32_t paramCount)
 {
     if (node == nullptr)
     {
@@ -47,7 +47,7 @@ NewCallFrame::NewCallFrame(ASTNode *node, Datum **paramAry, uint32_t paramCount)
     isReadingArgs_ = true;
 }
 
-NewCallFrame::~NewCallFrame()
+CallFrame::~CallFrame()
 {
     for (auto iter = localVars_.begin(); iter != localVars_.end(); ++iter)
     {
@@ -62,22 +62,22 @@ NewCallFrame::~NewCallFrame()
     }
 }
 
-void NewCallFrame::pushEvaluator(const DatumPtr &aList)
+void CallFrame::pushEvaluator(const DatumPtr &aList)
 {
-    evaluationStack_.push(std::make_unique<NewEvaluator>(this, aList));
+    evaluationStack_.push(std::make_unique<Evaluator>(this, aList));
 }
 
-void NewCallFrame::popEvaluator()
+void CallFrame::popEvaluator()
 {
     evaluationStack_.pop();
 }
 
-size_t NewCallFrame::evaluationStackSize() const
+size_t CallFrame::evaluationStackSize() const
 {
     return evaluationStack_.size();
 }
 
-void NewCallFrame::setVarAsLocal(const QString &name)
+void CallFrame::setVarAsLocal(const QString &name)
 {
     DatumPtr originalValue = Kernel::get().datumForName(name);
     localVars_.insert(name, originalValue);

@@ -30,7 +30,7 @@
 
 class ProcedureScope;
 class TextStream;
-class NewEvaluator;
+class Evaluator;
 
 /// @brief Special variables.
 /// @note These are variable names that are used to store special values.
@@ -93,7 +93,7 @@ class Kernel
 
     /// @brief The call frame stack.
     /// @note This stack is used to store the evaluation state of procedures and subprocedures while they are executing.
-    std::stack<std::unique_ptr<NewCallFrame>> callFrameStack_;
+    std::stack<std::unique_ptr<CallFrame>> callFrameStack_;
 
     /************ variables ************/
 
@@ -139,10 +139,10 @@ class Kernel
     DatumPtr retval_;
 
     /// @brief Get the current call frame.
-    NewCallFrame *currentCallFrame() const;
+    CallFrame *currentCallFrame() const;
 
     /// @brief Get the topmost evaluator from the evaluation stack.
-    NewEvaluator *topEvaluator() const;
+    Evaluator *topEvaluator() const;
 
     /// @brief Begin or continue evaluating a list. Will return when execution is suspended.
     void ece_evaluateStack();

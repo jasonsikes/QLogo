@@ -5,11 +5,11 @@
 #include "flowcontrol.h"
 #include "runparser.h"
 
-NewEvaluator::NewEvaluator(NewCallFrame *aOwningFrame, const DatumPtr &aList) : owningFrame_(aOwningFrame), list_(aList)
+Evaluator::Evaluator(CallFrame *aOwningFrame, const DatumPtr &aList) : owningFrame_(aOwningFrame), list_(aList)
 {
 }
 
-NewEvaluator::~NewEvaluator()
+Evaluator::~Evaluator()
 {
     // Destroy the coroutine frame if it exists.
     if (handle_ != nullptr)
@@ -30,7 +30,7 @@ NewEvaluator::~NewEvaluator()
     }
 }
 
-bool NewEvaluator::exec(int32_t jumpLocation)
+bool Evaluator::exec(int32_t jumpLocation)
 {
     if (handle_ == nullptr)
     {
@@ -60,7 +60,7 @@ bool NewEvaluator::exec(int32_t jumpLocation)
     return (handle_ == nullptr) || (handle_->resume == nullptr);
 }
 
-void NewEvaluator::pushSublist(Datum *aList)
+void Evaluator::pushSublist(Datum *aList)
 {
     try
     {
@@ -89,26 +89,26 @@ void NewEvaluator::pushSublist(Datum *aList)
     }
 }
 
-void NewEvaluator::beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount)
+void Evaluator::beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount)
 {
-    Kernel::get().callFrameStack_.push(std::make_unique<NewCallFrame>(node, paramAry, paramCount));
+    Kernel::get().callFrameStack_.push(std::make_unique<CallFrame>(node, paramAry, paramCount));
 
     Kernel::get().nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
 }
 
-Datum *NewEvaluator::watch(const DatumPtr &d)
+Datum *Evaluator::watch(const DatumPtr &d)
 {
     return watch(d.datumValue());
 }
 
-Datum *NewEvaluator::watch(Datum *d)
+Datum *Evaluator::watch(Datum *d)
 {
     (d->retainCount_)++;
     releasePool_.push_back(d);
     return d;
 }
 
-bool NewEvaluator::varCASEIGNOREDP()
+bool Evaluator::varCASEIGNOREDP()
 {
     QString name = QObject::tr("CASEIGNOREDP");
     DatumPtr val = Kernel::get().datumForName(name);

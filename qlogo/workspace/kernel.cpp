@@ -154,7 +154,7 @@ bool Kernel::colorFromDatumPtr(QColor &retval, const DatumPtr &colorP) const
 
 DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
 {
-    callFrameStack_.push(std::move(std::make_unique<NewCallFrame>(nullptr, nullptr, 0)));
+    callFrameStack_.push(std::move(std::make_unique<CallFrame>(nullptr, nullptr, 0)));
     QString localPrompt = prompt + "? ";
     DatumPtr result;
     forever
@@ -433,12 +433,12 @@ Kernel::~Kernel()
     Q_ASSERT(callFrameStack_.size() == 0);
 }
 
-NewCallFrame *Kernel::currentCallFrame() const
+CallFrame *Kernel::currentCallFrame() const
 {
     return callFrameStack_.top().get();
 }
 
-NewEvaluator *Kernel::topEvaluator() const
+Evaluator *Kernel::topEvaluator() const
 {
     return currentCallFrame()->topEvaluator();
 }
