@@ -745,7 +745,7 @@ Value *Compiler::generateCallList(Value *list, RequestReturnType returnType)
     sw->addCase(CoInt8(1), scaff_->cleanupBB_);
 
     scaff_->builder_.SetInsertPoint(continueBB);
-    return generateCallExtern(TyAddr, popEvaluationStackAndGetResult, PaAddr(scaff_->evaluator_));
+    return generateCallExtern(TyAddr, getLastEvaluationResult, PaAddr(scaff_->evaluator_));
 }
 
 Value *Compiler::genExecProcedure(const DatumPtr &node, RequestReturnType returnType)
@@ -768,7 +768,7 @@ Value *Compiler::genExecProcedure(const DatumPtr &node, RequestReturnType return
     sw->addCase(CoInt8(1), scaff_->cleanupBB_);
 
     scaff_->builder_.SetInsertPoint(continueBB);
-    return generateCallExtern(TyAddr, popEvaluationStackAndGetResult, PaAddr(scaff_->evaluator_));
+    return generateCallExtern(TyAddr, getLastEvaluationResult, PaAddr(scaff_->evaluator_));
 }
 
 Value *Compiler::generateWordFromDouble(Value *val)

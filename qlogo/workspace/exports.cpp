@@ -360,14 +360,10 @@ EXPORTC void pushListOntoEvaluationStack(addr_t eAddr, addr_t listAddr)
 /// After a suspend that pushed a list, return the result of running that list.
 /// @param eAddr a pointer to the Evaluator object context.
 /// @return the result of the list execution.
-EXPORTC addr_t popEvaluationStackAndGetResult(addr_t eAddr)
+EXPORTC addr_t getLastEvaluationResult(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *result = e->lastSubExecResult_;
-    e->lastSubExecResult_ = nullptr;
-    Q_ASSERT(result != nullptr);
-    if (result != nullptr)
-        e->watch(result);
+    Datum *result = e->retvalFromChild_.datumValue();
     return reinterpret_cast<addr_t>(result);
 }
 

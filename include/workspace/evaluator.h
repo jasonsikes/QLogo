@@ -42,11 +42,11 @@ struct Evaluator
     LLVMCoroFrameHeader *handle_ = nullptr;
 
     /// @brief The return value of this evaluation.
-    Datum *retval_ = Datum::notADatum();
+    Datum *retvalToParent_ = Datum::notADatum();
 
     /// @brief Result of the most recently run sub-list (explicit control: push list, suspend, driver runs it, resume, pop).
-    /// Used by popEvaluationStackAndGetResult() after a coroutine suspend/resume for RUN/list call.
-    Datum *lastSubExecResult_ = Datum::notADatum();
+    /// Used by getLastEvaluationResult() after a coroutine suspend/resume for RUN/list call.
+    DatumPtr retvalFromChild_;
 
     /// @brief A pool of objects for garbage collection.
     /// @note This is the reason the copy operators are deleted. If we enable them, the

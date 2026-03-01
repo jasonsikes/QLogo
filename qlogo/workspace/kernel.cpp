@@ -433,6 +433,10 @@ Kernel::~Kernel()
     Q_ASSERT(callFrameStack_.size() == 0);
 }
 
+/***************************************************
+ * ECE operations
+ ***************************************************/
+
 CallFrame *Kernel::currentCallFrame() const
 {
     return callFrameStack_.top().get();
@@ -442,10 +446,6 @@ Evaluator *Kernel::topEvaluator() const
 {
     return currentCallFrame()->topEvaluator();
 }
-
-/***************************************************
- * ECE operations
- ***************************************************/
 
  DatumPtr Kernel::runECE()
  {
@@ -485,13 +485,13 @@ void Kernel::ece_decideEmptyEvaluationStack()
 
     if (currentCallFrame()->isReadingArgs_)
     {
-        // We have either finished processing all the arguments, or we have finished processing a default value
-        // for an optional parameter.
+        // We have either finished processing all the arguments, or 
         if ( ! currentCallFrame()->currentParameterName_.isEmpty())
         {
-            DatumPtr defaultValue = Kernel::get().retval_;
+            // We have finished processing a default value for an optional parameter.
+            DatumPtr defaultValue = retval_;
             currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
-            Kernel::get().setDatumForName(defaultValue, currentCallFrame()->currentParameterName_);
+            setDatumForName(defaultValue, currentCallFrame()->currentParameterName_);
             currentCallFrame()->currentParameterName_.clear();
             nextOperation_ = &Kernel::ece_processParameters;
             return;
@@ -500,8 +500,6 @@ void Kernel::ece_decideEmptyEvaluationStack()
         {
             // We have finished processing all the arguments.
             currentCallFrame()->isReadingArgs_ = false;
-            // nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
-            // return;
         }
     }
 
@@ -524,13 +522,13 @@ void Kernel::ece_decideEmptyEvaluationStack()
 void Kernel::ece_popEvaluator()
 {
     ece_trace("ece_popEvaluator");
-    retval_ = DatumPtr(topEvaluator()->retval_);
+    retval_ = DatumPtr(topEvaluator()->retvalToParent_);
 
     currentCallFrame()->popEvaluator();
 
     if (currentCallFrame()->evaluationStackSize() > 0)
     {
-        currentCallFrame()->topEvaluator()->lastSubExecResult_ = retval_.datumValue();
+        currentCallFrame()->topEvaluator()->retvalFromChild_ = retval_;
         nextOperation_ = &Kernel::ece_evaluateStack;
     } else {
         nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
