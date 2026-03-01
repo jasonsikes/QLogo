@@ -38,18 +38,20 @@
 #include <iostream>
 #include <cstdlib> // arc4random_uniform()
 
-
-// The maximum depth of procedure iterations before error is thrown.
-const int maxIterationDepth = 1000;
-
-void ece_trace(const char *msg)
+#define DEBUG 1
+#ifdef DEBUG
+void ece_trace(const QString &msg)
 {
     static bool doTrace = Config::get().traceEvaluator_;
     if (doTrace)
     {
-        std::cerr << "ece_trace: " << msg << std::endl;
+        std::cerr << "ece_trace: " << msg.toStdString().c_str() << std::endl;
     }
 }
+
+#else
+#define ece_trace(msg) do { } while (false)
+#endif // DEBUG
 
 /// @brief Clean a procedure parameter by removing ':' and '"' from the parameter name if it is a word.
 /// @param parameter The parameter to clean.
@@ -439,6 +441,7 @@ Kernel::~Kernel()
 
 void Kernel::beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount)
 {
+    ece_trace("beginProcedure: " + node->nodeName_.toString());
     callFrameStack_.push(std::make_unique<CallFrame>(node, paramAry, paramCount));
     nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
 }
@@ -469,7 +472,7 @@ Evaluator *Kernel::currentEvaluator() const
  
  void Kernel::ece_evaluateStack()
 {
-    ece_trace("ece_evaluateStack");
+    ece_trace("ece_evaluateStack: executing " + currentEvaluator()->list_.toString());
     if (currentEvaluator()->exec(jumpLocation_))
     {
         nextOperation_ = &Kernel::ece_popEvaluator;
@@ -497,6 +500,7 @@ void Kernel::ece_decideEmptyEvaluationStack()
             // We have finished processing a default value for an optional parameter.
             DatumPtr defaultValue = retval_;
             currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
+            ece_trace("ece_decideEmptyEvaluationStack: setting variable " + currentCallFrame()->currentParameterName_ + " to " + defaultValue.toString());
             setDatumForName(defaultValue, currentCallFrame()->currentParameterName_);
             currentCallFrame()->currentParameterName_.clear();
             nextOperation_ = &Kernel::ece_processParameters;
@@ -505,6 +509,7 @@ void Kernel::ece_decideEmptyEvaluationStack()
         else
         {
             // We have finished processing all the arguments.
+            ece_trace("ece_decideEmptyEvaluationStack: finished processing all arguments");
             currentCallFrame()->isReadingArgs_ = false;
         }
     }
@@ -520,6 +525,7 @@ void Kernel::ece_decideEmptyEvaluationStack()
 
     // Get the next line of the procedure and push it onto the evaluation stack.
     DatumPtr line = currentCallFrame()->runningSourceList_.listValue()->head;
+    ece_trace("ece_decideEmptyEvaluationStack: pushing line " + line.toString() + " onto the evaluation stack");
     currentCallFrame()->pushEvaluator(line);
     currentCallFrame()->runningSourceList_ = currentCallFrame()->runningSourceList_.listValue()->tail;
     nextOperation_ = &Kernel::ece_evaluateStack;
@@ -529,6 +535,8 @@ void Kernel::ece_popEvaluator()
 {
     ece_trace("ece_popEvaluator");
     retval_ = DatumPtr(currentEvaluator()->retvalToParent_);
+    retvalSourceList_ = currentEvaluator()->list_;
+    ece_trace("ece_popEvaluator: returning value " + retval_.toString() + " from source list " + retvalSourceList_.toString());
 
     currentCallFrame()->popEvaluator();
 
@@ -555,6 +563,7 @@ void Kernel::ece_exitProcedure()
 
     // TODO: save retval
 
+    ece_trace("ece_exitProcedure: popping call frame");
     callFrameStack_.pop();
 
     // TODO: if is macro...
@@ -586,6 +595,7 @@ void Kernel::ece_processParameters()
             DatumPtr argument = currentCallFrame()->arguments_.listValue()->head;
             currentCallFrame()->arguments_ = currentCallFrame()->arguments_.listValue()->tail;
             currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
+            ece_trace("ece_processParameters: setting variable " + currentCallFrame()->currentParameterName_ + " to " + argument.toString());
             setDatumForName(argument, currentCallFrame()->currentParameterName_);
         }
         else

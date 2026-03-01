@@ -139,6 +139,9 @@ class Kernel
     /// @brief The return value when a list operation completes.
     DatumPtr retval_;
 
+    /// @brief The source list that returned the return value.
+    DatumPtr retvalSourceList_;
+
     /// @brief Begin a procedure.
     /// @param node The ASTNode that holds the command, the procedure name and parameters.
     /// @param paramAry The parameters to apply to the procedure.
