@@ -437,12 +437,18 @@ Kernel::~Kernel()
  * ECE operations
  ***************************************************/
 
+void Kernel::beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount)
+{
+    callFrameStack_.push(std::make_unique<CallFrame>(node, paramAry, paramCount));
+    nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
+}
+
 CallFrame *Kernel::currentCallFrame() const
 {
     return callFrameStack_.top().get();
 }
 
-Evaluator *Kernel::topEvaluator() const
+Evaluator *Kernel::currentEvaluator() const
 {
     return currentCallFrame()->topEvaluator();
 }
@@ -464,7 +470,7 @@ Evaluator *Kernel::topEvaluator() const
  void Kernel::ece_evaluateStack()
 {
     ece_trace("ece_evaluateStack");
-    if (topEvaluator()->exec(jumpLocation_))
+    if (currentEvaluator()->exec(jumpLocation_))
     {
         nextOperation_ = &Kernel::ece_popEvaluator;
     }
@@ -522,7 +528,7 @@ void Kernel::ece_decideEmptyEvaluationStack()
 void Kernel::ece_popEvaluator()
 {
     ece_trace("ece_popEvaluator");
-    retval_ = DatumPtr(topEvaluator()->retvalToParent_);
+    retval_ = DatumPtr(currentEvaluator()->retvalToParent_);
 
     currentCallFrame()->popEvaluator();
 

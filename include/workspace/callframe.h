@@ -58,8 +58,8 @@ public:
     QString currentParameterName_;
 
     /// @brief The current source list being executed.
-    /// The head of this list is the current line being executed.
-    /// The tail is the lines following the current line.
+    /// The head of this list is removed when its execution begins.
+    /// This list then contains the lines remaining to be executed.
     DatumPtr runningSourceList_;
 
     /// @brief Set this value to set a jump location within a line.

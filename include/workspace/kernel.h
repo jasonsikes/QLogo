@@ -132,16 +132,24 @@ class Kernel
 
     /// @brief The next operation to perform.
     void(Kernel::*nextOperation_)() = nullptr;
+
     /// @brief The jump location to start execution from.
     int32_t jumpLocation_ = 0;
-    /// @brief The return value when an operation completes.
+
+    /// @brief The return value when a list operation completes.
     DatumPtr retval_;
+
+    /// @brief Begin a procedure.
+    /// @param node The ASTNode that holds the command, the procedure name and parameters.
+    /// @param paramAry The parameters to apply to the procedure.
+    /// @param paramCount The number of parameters to the procedure.
+    void beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount);
 
     /// @brief Get the current call frame.
     CallFrame *currentCallFrame() const;
 
     /// @brief Get the topmost evaluator from the evaluation stack.
-    Evaluator *topEvaluator() const;
+    Evaluator *currentEvaluator() const;
 
     /// @brief Begin or continue evaluating a list. Will return when execution is suspended.
     void ece_evaluateStack();

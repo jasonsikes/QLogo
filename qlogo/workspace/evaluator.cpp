@@ -91,9 +91,7 @@ void Evaluator::pushSublist(Datum *aList)
 
 void Evaluator::beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount)
 {
-    Kernel::get().callFrameStack_.push(std::make_unique<CallFrame>(node, paramAry, paramCount));
-
-    Kernel::get().nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
+    Kernel::get().beginProcedure(node, paramAry, paramCount);
 }
 
 Datum *Evaluator::watch(const DatumPtr &d)
