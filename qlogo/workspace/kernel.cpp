@@ -38,8 +38,6 @@
 #include <iostream>
 #include <cstdlib> // arc4random_uniform()
 
-#define DEBUG 1
-#ifdef DEBUG
 void ece_trace(const QString &msg)
 {
     static bool doTrace = Config::get().traceEvaluator_;
@@ -48,10 +46,6 @@ void ece_trace(const QString &msg)
         std::cerr << "ece_trace: " << msg.toStdString().c_str() << std::endl;
     }
 }
-
-#else
-#define ece_trace(msg) do { } while (false)
-#endif // DEBUG
 
 /// @brief Clean a procedure parameter by removing ':' and '"' from the parameter name if it is a word.
 /// @param parameter The parameter to clean.
@@ -494,7 +488,7 @@ void Kernel::ece_decideEmptyEvaluationStack()
 
     if (currentCallFrame()->isReadingArgs_)
     {
-        // We have either finished processing all the arguments, or 
+        // We are processing the arguments.
         if ( ! currentCallFrame()->currentParameterName_.isEmpty())
         {
             // We have finished processing a default value for an optional parameter.
@@ -508,9 +502,8 @@ void Kernel::ece_decideEmptyEvaluationStack()
         }
         else
         {
-            // We have finished processing all the arguments.
-            ece_trace("ece_decideEmptyEvaluationStack: finished processing all arguments");
-            currentCallFrame()->isReadingArgs_ = false;
+            nextOperation_ = &Kernel::ece_processParameters;
+            return;
         }
     }
 

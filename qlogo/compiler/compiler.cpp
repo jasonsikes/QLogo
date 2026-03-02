@@ -312,7 +312,7 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
             for (auto &node : srcBlock)
             {
                 // If this is the last node, accept any Datum return type.
-                // Otherwise, emit error if output is not nothing.
+                // Otherwise, expect that nothing is returned.
                 if (node == parsedList.last().last())
                     returnTypeRequest = RequestReturnDN;
                 nodeResult = generateChild(nullptr, node, returnTypeRequest);
@@ -699,12 +699,12 @@ Value *Compiler::ensureCoroutineFrame()
     // it will redirect this prologue's branch to Toc.
     BasicBlock *bodyEntry = &scaff_->theFunction_->getEntryBlock();
     scaff_->coroPrologueBB_ =
-        BasicBlock::Create(*scaff_->theContext_, "CoroPrologue", scaff_->theFunction_, bodyEntry);
+        BasicBlock::Create(*scaff_->theContext_, DBG_NAME("CoroPrologue"), scaff_->theFunction_, bodyEntry);
     BasicBlock *savedBlock = scaff_->builder_.GetInsertBlock();
     scaff_->builder_.SetInsertPoint(scaff_->coroPrologueBB_);
 
-    scaff_->suspendBB_ = BasicBlock::Create(*scaff_->theContext_, "suspend", scaff_->theFunction_);
-    scaff_->cleanupBB_ = BasicBlock::Create(*scaff_->theContext_, "cleanup", scaff_->theFunction_);
+    scaff_->suspendBB_ = BasicBlock::Create(*scaff_->theContext_, DBG_NAME("suspend"), scaff_->theFunction_);
+    scaff_->cleanupBB_ = BasicBlock::Create(*scaff_->theContext_, DBG_NAME("cleanup"), scaff_->theFunction_);
     // Coroutine frame: id -> size -> alloc -> begin
     // llvm.coro.id(i32 align, ptr promise, ptr coroutine, ptr info) -> token
     Function *coroIdFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_id);
@@ -717,7 +717,7 @@ Value *Compiler::ensureCoroutineFrame()
     Value *coroutineAlloc = generateCallExtern(TyAddr, q_malloc, PaAddr(scaff_->evaluator_), PaInt32(coroutineSize));
 
     Function *coroBeginFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_begin);
-    CallInst *coroBeginCall = cast<CallInst>(
+    auto *coroBeginCall = cast<CallInst>(
         scaff_->builder_.CreateCall(coroBeginFn, {coroutineCallToken, coroutineAlloc}, DBG_NAME("handle")));
     coroBeginCall->addRetAttr(Attribute::NoAlias);
     scaff_->coroutineHandle_ = coroBeginCall;
@@ -739,7 +739,7 @@ Value *Compiler::generateCallList(Value *list, RequestReturnType returnType)
     Value *coroutineSuspend = scaff_->builder_.CreateCall(
         coroSuspendFn, {ConstantTokenNone::get(*scaff_->theContext_), CoBool(false)}, DBG_NAME("suspend"));
 
-    BasicBlock *continueBB = BasicBlock::Create(*scaff_->theContext_, "continue", scaff_->theFunction_);
+    BasicBlock *continueBB = BasicBlock::Create(*scaff_->theContext_, DBG_NAME("continue"), scaff_->theFunction_);
     SwitchInst *sw = scaff_->builder_.CreateSwitch(coroutineSuspend, scaff_->suspendBB_, 2);
     sw->addCase(CoInt8(0), continueBB);
     sw->addCase(CoInt8(1), scaff_->cleanupBB_);
@@ -762,7 +762,7 @@ Value *Compiler::genExecProcedure(const DatumPtr &node, RequestReturnType return
     Value *coroutineSuspend = scaff_->builder_.CreateCall(
         coroSuspendFn, {ConstantTokenNone::get(*scaff_->theContext_), CoBool(false)}, DBG_NAME("suspend"));
 
-    BasicBlock *continueBB = BasicBlock::Create(*scaff_->theContext_, "continue", scaff_->theFunction_);
+    BasicBlock *continueBB = BasicBlock::Create(*scaff_->theContext_, DBG_NAME("continue"), scaff_->theFunction_);
     SwitchInst *sw = scaff_->builder_.CreateSwitch(coroutineSuspend, scaff_->suspendBB_, 2);
     sw->addCase(CoInt8(0), continueBB);
     sw->addCase(CoInt8(1), scaff_->cleanupBB_);

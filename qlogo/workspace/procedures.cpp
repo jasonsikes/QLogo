@@ -334,7 +334,7 @@ std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromProcedure(const Datum
     //     node.astnodeValue()->genExpression = &Compiler::genExecProcedure;
 
     node.astnodeValue()->genExpression_ = &Compiler::genExecProcedure;
-    node.astnodeValue()->returnType_ = RequestReturnDatum;
+    node.astnodeValue()->returnType_ = RequestReturnDN;
     node.astnodeValue()->procedure_ = procBody;
     return {node, procBody.procedureValue()->countOfMinParams_, procBody.procedureValue()->countOfDefaultParams_, procBody.procedureValue()->countOfMaxParams_};
 }
