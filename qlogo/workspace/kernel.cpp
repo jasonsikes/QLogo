@@ -40,7 +40,7 @@
 
 void ece_trace(const QString &msg)
 {
-    static bool doTrace = Config::get().traceEvaluator_;
+    static bool doTrace = true; // = Config::get().traceEvaluator_;
     if (doTrace)
     {
         std::cerr << "ece_trace: " << msg.toStdString().c_str() << std::endl;
@@ -552,6 +552,8 @@ void Kernel::ece_exitProcedure()
         currentCallFrame()->popEvaluator();
     }
 
+    // TODO: if is Error, pass it through
+
     // TODO: if is continuation...
 
     // TODO: save retval
@@ -561,7 +563,8 @@ void Kernel::ece_exitProcedure()
 
     // TODO: if is macro...
 
-    // TODO: store retval
+    // The result is OUTPUT with a datum
+    currentCallFrame()->topEvaluator()->retvalFromChild_ = retval_.flowControlValue()->data_;
 
     nextOperation_ = &Kernel::ece_evaluateStack;
 }
