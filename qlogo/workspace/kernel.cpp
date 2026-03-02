@@ -608,10 +608,24 @@ void Kernel::ece_processParameters()
             }
             else
             {
-                // We have a default value, so we need to evaluate it so we can assign it to the parameter name.
-                currentCallFrame()->pushEvaluator(defaultValue);
-                nextOperation_ = &Kernel::ece_evaluateStack;
-                return;
+                // We have a default value. Do we have an argument to assign to it?
+                if (currentCallFrame()->arguments_.listValue()->isEmpty())
+                {
+                    // we need to evaluate the default value so we can assign it to the parameter name.
+                    currentCallFrame()->pushEvaluator(defaultValue);
+                    nextOperation_ = &Kernel::ece_evaluateStack;
+                    return;
+                }
+                else
+                {
+                    // else, we assign the provided argument
+                    DatumPtr argument = currentCallFrame()->arguments_.listValue()->head;
+                    currentCallFrame()->arguments_ = currentCallFrame()->arguments_.listValue()->tail;
+                    currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
+                    ece_trace("ece_processParameters: setting variable " + currentCallFrame()->currentParameterName_ +
+                              " to " + argument.toString());
+                    setDatumForName(argument, currentCallFrame()->currentParameterName_);
+                }
             }
         }
     }

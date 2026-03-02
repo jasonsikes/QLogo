@@ -327,12 +327,6 @@ std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromProcedure(const Datum
     }
     auto node = DatumPtr(new ASTNode(cmdP));
 
-    // TODO: decide what to do here after we refactor the evaluator.
-    // if (procBody.procedureValue()->isMacro)
-    //     node.astnodeValue()->genExpression = &Compiler::genExecMacro;
-    // else
-    //     node.astnodeValue()->genExpression = &Compiler::genExecProcedure;
-
     node.astnodeValue()->genExpression_ = &Compiler::genExecProcedure;
     node.astnodeValue()->returnType_ = RequestReturnDN;
     node.astnodeValue()->procedure_ = procBody;
