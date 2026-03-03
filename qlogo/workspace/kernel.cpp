@@ -454,14 +454,14 @@ Evaluator *Kernel::currentEvaluator() const
  {
      nextOperation_ = &Kernel::ece_evaluateStack;
      jumpLocation_ = 0;
-     retval_ = nothing();
+     currentCallFrame()->retvalToParent_ = nothing();
  
      while (nextOperation_ != nullptr)
      {
          (this->*nextOperation_)();
      }
  
-     return retval_;
+     return currentCallFrame()->retvalToParent_;
  }
  
  void Kernel::ece_evaluateStack()
@@ -492,7 +492,7 @@ void Kernel::ece_decideEmptyEvaluationStack()
         if ( ! currentCallFrame()->currentParameterName_.isEmpty())
         {
             // We have finished processing a default value for an optional parameter.
-            DatumPtr defaultValue = retval_;
+            DatumPtr defaultValue = currentCallFrame()->retvalToParent_;
             currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
             ece_trace("ece_decideEmptyEvaluationStack: setting variable " + currentCallFrame()->currentParameterName_ + " to " + defaultValue.toString());
             setDatumForName(defaultValue, currentCallFrame()->currentParameterName_);
@@ -527,15 +527,15 @@ void Kernel::ece_decideEmptyEvaluationStack()
 void Kernel::ece_popEvaluator()
 {
     ece_trace("ece_popEvaluator");
-    retval_ = DatumPtr(currentEvaluator()->retvalToParent_);
+    currentCallFrame()->retvalToParent_ = DatumPtr(currentEvaluator()->retvalToParent_);
     retvalSourceList_ = currentEvaluator()->list_;
-    ece_trace("ece_popEvaluator: returning value " + retval_.toString() + " from source list " + retvalSourceList_.toString());
+    ece_trace("ece_popEvaluator: returning value " + currentCallFrame()->retvalToParent_.toString() + " from source list " + retvalSourceList_.toString());
 
     currentCallFrame()->popEvaluator();
 
     if (currentCallFrame()->evaluationStackSize() > 0)
     {
-        currentCallFrame()->topEvaluator()->retvalFromChild_ = retval_;
+        currentCallFrame()->topEvaluator()->retvalFromChild_ = currentCallFrame()->retvalToParent_;
         nextOperation_ = &Kernel::ece_evaluateStack;
     } else {
         nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
@@ -546,27 +546,44 @@ void Kernel::ece_exitProcedure()
 {
     ece_trace("ece_exitProcedure");
     
-    // Destroy remaining evaluators on the evaluation stack.
-    while (currentCallFrame()->evaluationStackSize() > 0)
+    // There shouldn't be any remaining evaluators on the evaluation stack.
+    Q_ASSERT(currentCallFrame()->evaluationStackSize() == 0);
+
+    // retval_ contains the result of the procedure.
+    switch (currentCallFrame()->retvalToParent_.isa())
     {
-        currentCallFrame()->popEvaluator();
+    case Datum::typeError:
+    {
+        // The error is passed through to the caller.
+        currentCallFrame()->topEvaluator()->retvalFromChild_ = currentCallFrame()->retvalToParent_.flowControlValue()->data_;
+        ece_trace("ece_exitProcedure with error: popping call frame");
+        callFrameStack_.pop();
+        nextOperation_ = &Kernel::ece_evaluateStack;
+        break;
+    }
+    case Datum::typeContinuation:
+    {
+        // TODO: handle continuation
+        // TODO: consider the case if child is a macro...
+        break;
+    }
+    case Datum::typeReturn:
+    {
+        // The return value is passed through to the caller.
+        // TODO: consider the case if child is a macro...
+        DatumPtr retval = currentCallFrame()->retvalToParent_.flowControlValue()->data_;
+        ece_trace("ece_exitProcedure with return: popping call frame");
+        callFrameStack_.pop();
+        currentCallFrame()->topEvaluator()->retvalFromChild_ = retval;
+        nextOperation_ = &Kernel::ece_evaluateStack;
+        break;
+    }
+    default:
+        Q_ASSERT(false);
+        break;
     }
 
-    // TODO: if is Error, pass it through
-
-    // TODO: if is continuation...
-
-    // TODO: save retval
-
-    ece_trace("ece_exitProcedure: popping call frame");
-    callFrameStack_.pop();
-
     // TODO: if is macro...
-
-    // The result is OUTPUT with a datum
-    currentCallFrame()->topEvaluator()->retvalFromChild_ = retval_.flowControlValue()->data_;
-
-    nextOperation_ = &Kernel::ece_evaluateStack;
 }
 
 void Kernel::ece_processParameters()

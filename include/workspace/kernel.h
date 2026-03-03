@@ -136,9 +136,6 @@ class Kernel
     /// @brief The jump location to start execution from.
     int32_t jumpLocation_ = 0;
 
-    /// @brief The return value when a list operation completes.
-    DatumPtr retval_;
-
     /// @brief The source list that returned the return value.
     DatumPtr retvalSourceList_;
 

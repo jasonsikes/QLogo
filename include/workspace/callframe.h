@@ -51,6 +51,9 @@ public:
     /// @brief The ASTNode source of this running procedure.
     DatumPtr sourceNode_;
 
+    /// @brief The return value to be passed to the parent procedure.
+    DatumPtr retvalToParent_;
+
     /// @brief Set to true iff we are reading arguments for a procedure.
     bool isReadingArgs_ = false;
 
