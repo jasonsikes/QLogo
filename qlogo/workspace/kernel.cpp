@@ -582,6 +582,7 @@ void Kernel::ece_exitProcedure()
         nextOperation_ = &Kernel::ece_evaluateStack;
         break;
     }
+        // TODO: case Datum::typeASTNode:
     default:
         Q_ASSERT(false);
         break;

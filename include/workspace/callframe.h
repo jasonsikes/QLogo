@@ -34,13 +34,11 @@ struct ASTNode;
 /// @brief The CallFrame object holds the state of execution of a procedure (or REPL).
 /// @note The state includes named variables, anonymous variables (explicit slot, or
 /// "?"), and the test state (for TEST, IFTRUE, IFFALSE).
-class CallFrame
+struct CallFrame
 {
     /// @brief The evaluation stack.
     /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.
     std::stack<std::unique_ptr<Evaluator>> evaluationStack_;
-
-public:
 
     /// @brief The list of parameters being processed.
     DatumPtr parameters_;
