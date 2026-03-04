@@ -24,7 +24,7 @@
 #include <QList>
 #include <QHash>
 #include <memory>
-#include <stack>
+#include <deque>
 
 struct Evaluator;
 struct FCGoto;
@@ -38,7 +38,7 @@ struct CallFrame
 {
     /// @brief The evaluation stack.
     /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.
-    std::stack<std::unique_ptr<Evaluator>> evaluationStack_;
+    std::deque<std::unique_ptr<Evaluator>> evaluationStack_;
 
     /// @brief The list of parameters being processed.
     DatumPtr parameters_;
@@ -97,7 +97,7 @@ struct CallFrame
     Evaluator *topEvaluator() const
     {
         Q_ASSERT(evaluationStack_.size() > 0);
-        return evaluationStack_.top().get();
+        return evaluationStack_.back().get();
     }
 
     /// @brief Insert an entry for 'name' in the variables hash. Save the previous value

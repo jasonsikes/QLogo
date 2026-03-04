@@ -23,7 +23,7 @@
 #include "workspace/propertylists.h"
 #include <QColor>
 #include <QSet>
-#include <stack>
+#include <deque>
 #include <QVector>
 #include <memory>
 
@@ -92,7 +92,7 @@ class Kernel
 
     /// @brief The call frame stack.
     /// @note This stack is used to store the evaluation state of procedures and subprocedures while they are executing.
-    std::stack<std::unique_ptr<CallFrame>> callFrameStack_;
+    std::deque<std::unique_ptr<CallFrame>> callFrameStack_;
 
     /************ variables ************/
 

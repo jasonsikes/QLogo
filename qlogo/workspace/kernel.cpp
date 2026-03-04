@@ -150,7 +150,7 @@ bool Kernel::colorFromDatumPtr(QColor &retval, const DatumPtr &colorP) const
 
 DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
 {
-    callFrameStack_.push(std::move(std::make_unique<CallFrame>(nullptr, nullptr, 0)));
+    callFrameStack_.push_back(std::move(std::make_unique<CallFrame>(nullptr, nullptr, 0)));
     QString localPrompt = prompt + "? ";
     DatumPtr result;
     forever
@@ -158,9 +158,9 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
         try
         {
             DatumPtr line = systemReadStream_->readListWithPrompt(localPrompt, true);
-            Q_ASSERT(callFrameStack_.top()->evaluationStackSize() == 0);
-            Q_ASSERT(callFrameStack_.top()->sourceNode_.isNothing());
-            callFrameStack_.top()->pushEvaluator(line);
+            Q_ASSERT(callFrameStack_.back()->evaluationStackSize() == 0);
+            Q_ASSERT(callFrameStack_.back()->sourceNode_.isNothing());
+            callFrameStack_.back()->pushEvaluator(line);
             result = runECE();
         }
         catch (FCError *e)
@@ -215,7 +215,7 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
     }
 
 bailout:
-    callFrameStack_.pop();
+    callFrameStack_.pop_back();
     return result;
 }
 
@@ -436,13 +436,13 @@ Kernel::~Kernel()
 void Kernel::beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount)
 {
     ece_trace("beginProcedure: " + node->nodeName_.toString());
-    callFrameStack_.push(std::make_unique<CallFrame>(node, paramAry, paramCount));
+    callFrameStack_.push_back(std::make_unique<CallFrame>(node, paramAry, paramCount));
     nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
 }
 
 CallFrame *Kernel::currentCallFrame() const
 {
-    return callFrameStack_.top().get();
+    return callFrameStack_.back().get();
 }
 
 Evaluator *Kernel::currentEvaluator() const
@@ -557,7 +557,7 @@ void Kernel::ece_exitProcedure()
         // The error is passed through to the caller.
         currentCallFrame()->topEvaluator()->retvalFromChild_ = currentCallFrame()->retvalToParent_.flowControlValue()->data_;
         ece_trace("ece_exitProcedure with error: popping call frame");
-        callFrameStack_.pop();
+        callFrameStack_.pop_back();
         nextOperation_ = &Kernel::ece_evaluateStack;
         break;
     }
@@ -577,7 +577,7 @@ void Kernel::ece_exitProcedure()
         // TODO: consider the case if child is a macro...
         DatumPtr retval = currentCallFrame()->retvalToParent_.flowControlValue()->data_;
         ece_trace("ece_exitProcedure with return: popping call frame");
-        callFrameStack_.pop();
+        callFrameStack_.pop_back();
         currentCallFrame()->topEvaluator()->retvalFromChild_ = retval;
         nextOperation_ = &Kernel::ece_evaluateStack;
         break;
