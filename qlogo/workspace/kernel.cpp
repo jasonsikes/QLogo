@@ -463,7 +463,7 @@ Evaluator *Kernel::currentEvaluator() const
  
      return currentCallFrame()->retvalToParent_;
  }
- 
+
  void Kernel::ece_evaluateStack()
 {
     ece_trace("ece_evaluateStack: executing " + currentEvaluator()->list_.toString());
@@ -748,4 +748,32 @@ int Kernel::run()
     LogoInterface::restoreSignals();
 
     return 0;
+}
+
+/// @brief Print stack trace.
+void bt()
+{
+    Kernel &k = Kernel::get();
+    const std::deque<std::unique_ptr<CallFrame>> &stack = k.callFrameStack_;
+    for (size_t i = 0; i < stack.size(); ++i)
+    {
+        CallFrame *frame = stack[i].get();
+        if (frame->sourceNode_.isNothing())
+            std::cerr << "frame " << i << ": REPL Base" << std::endl;
+        else if (frame->sourceNode_.isASTNode()
+                 && frame->sourceNode_.astnodeValue()->countOfChildren() > 0)
+            std::cerr << "frame " << i << ": "
+                      << frame->sourceNode_.astnodeValue()->nodeName_
+                             .toString(Datum::ToStringFlags_Key)
+                             .toStdString()
+                      << std::endl;
+        else
+            std::cerr << "frame " << i << ": ?" << std::endl;
+        for (size_t j = 0; j < frame->evaluationStack_.size(); ++j)
+        {
+            Evaluator *ev = frame->evaluationStack_[j].get();
+            std::cerr << "  list: "
+                      << ev->list_.toString(Datum::ToStringFlags_Show).toStdString() << std::endl;
+        }
+    }
 }
