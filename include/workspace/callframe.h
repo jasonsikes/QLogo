@@ -108,11 +108,10 @@ public:
     /// @param name The name of the variable to insert.
     void setVarAsLocal(const QString &name);
 
-    // /// @brief End the current procedure by continuing with the given node and parameters.
-    // /// @param newNode The ASTNode of the new procedure to continue with.
-    // /// @param paramAry The parameters to apply to the new node.
-    // /// @return nothing if successful, or an error if not.
-    // Datum *applyContinuation(const DatumPtr &newNode, const QList<DatumPtr> &paramAry);
+    /// @brief End the current procedure by continuing with the given node and parameters.
+    /// @param node The ASTNode of the new procedure to continue with.
+    /// @param arguments The linked list of arguments to apply to the new node.
+    void applyContinuation(ASTNode *node, const DatumPtr &arguments);
 
     // /// @brief Jump to the line in the procedure containing the given tag.
     // /// @param node The FCGoto node.

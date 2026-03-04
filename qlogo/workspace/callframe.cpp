@@ -57,6 +57,18 @@ CallFrame::~CallFrame()
     }
 }
 
+// TODO: create a common initialization function for this and the constructor.
+void CallFrame::applyContinuation(ASTNode *node, const DatumPtr &arguments)
+{
+    DatumPtr body = node->procedure_.procedureValue();
+    sourceNode_ = DatumPtr(node);
+    runningSourceList_ = body.procedureValue()->instructionList_.listValue()->tail;
+
+    parameters_ = body.procedureValue()->instructionList_.listValue()->head;
+    arguments_ = arguments;
+    isReadingArgs_ = true;
+}
+
 void CallFrame::pushEvaluator(const DatumPtr &aList)
 {
     evaluationStack_.push(std::make_unique<Evaluator>(this, aList));
@@ -79,20 +91,6 @@ void CallFrame::setVarAsLocal(const QString &name)
     Kernel::get().setDatumForName(nothing(), name);
 }
 
-
-// Datum *NewCallFrame::applyContinuation(const DatumPtr &newNode, const QList<DatumPtr> &paramAry)
-// {
-    // sourceNode = newNode;
-    // std::vector<Datum *> newParamAry;
-    // newParamAry.reserve(paramAry.size());
-    // for (const auto &param : paramAry)
-    // {
-    //     newParamAry.push_back(param.datumValue());
-    // }
-
-    // return applyProcedureParams(newParamAry.data(), paramAry.size());
-//     return nullptr;
-// }
 
 // Datum *NewCallFrame::applyGoto(FCGoto *node)
 // {

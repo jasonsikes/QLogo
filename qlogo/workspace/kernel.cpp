@@ -563,8 +563,12 @@ void Kernel::ece_exitProcedure()
     }
     case Datum::typeContinuation:
     {
-        // TODO: handle continuation
         // TODO: consider the case if child is a macro...
+        auto *continuation = static_cast<FCContinuation*>(currentCallFrame()->retvalToParent_.flowControlValue());
+        auto *procedure = continuation->procedure().astnodeValue();
+        auto arguments = continuation->params().first();
+        currentCallFrame()->applyContinuation(procedure, arguments);
+        nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
         break;
     }
     case Datum::typeReturn:

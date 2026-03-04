@@ -525,19 +525,21 @@ EXPORTC addr_t getCtrlReturn(addr_t eAddr, addr_t astNodeAddr, addr_t retvalAddr
 /// @param paramAryAddr a pointer to an array of pointers to Datum objects which are the parameters to the CONTINUATION.
 /// @param paramCount the number of parameters to the CONTINUATION.
 /// @return a pointer to the CONTINUATION control object that was generated.
-EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t paramAryAddr, uint32_t paramCount)
+EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t argAryAddr, uint32_t argCount)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astNodeAddr);
+    auto **argAry = reinterpret_cast<Datum **>(argAryAddr);
     auto nodePtr = DatumPtr(node);
 
-    QList<DatumPtr> paramAry;
-    for (uint32_t i = 0; i < paramCount; ++i)
+    DatumPtr arguments = emptyList();
+    for (int i = argCount - 1; i >= 0; i--)
     {
-        auto param = DatumPtr(reinterpret_cast<Datum *>(paramAryAddr[i]));
-        paramAry.append(param);
+        arguments = DatumPtr(new List(argAry[i], arguments.listValue()));
     }
-    auto *control = new FCContinuation(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), nodePtr, paramAry);
+    // Assign the Logo-style linked list to the first element of the parameters QList.
+    QList<DatumPtr> args{arguments};
+    auto *control = new FCContinuation(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), nodePtr, args);
     e->watch(control);
     return reinterpret_cast<addr_t>(control);
 }
