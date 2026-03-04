@@ -11,6 +11,8 @@ set(QLOGO_GUI Psychi)
 set(QLOGO_HELP qlogo_help.db)
 set(QLOGO_LIB qlogo_library.db)
 
+set(CMAKE_BUILD_TYPE "Debug")
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 if (CMAKE_BUILD_TYPE)
