@@ -61,7 +61,12 @@ std::tuple<int, int, int> Procedures::validateParameters(const DatumPtr &cmd, co
         ++defaultInputs;
         ++maximumInputs;
         QString paramName = param.toString(Datum::ToStringFlags_Key);
-        if ((paramName.isEmpty()) || paramName.startsWith(':') || paramName.startsWith('"'))
+
+        //We can only accept a number if it appears after an optional or rest input.
+        bool isNumber = false;
+        paramName.toDouble(&isNumber);
+
+        if (isNumber || (paramName.isEmpty()) || paramName.startsWith(':') || paramName.startsWith('"'))
             throw FCError::doesntLike(cmd, param);
 
         if ( ! iter.elementExists()) return retval;
@@ -69,7 +74,7 @@ std::tuple<int, int, int> Procedures::validateParameters(const DatumPtr &cmd, co
     }
 
     // Optional inputs, e.g. [:BAZ 87]
-    while (param.isList() && (param.listValue()->count() > 1))
+    while (param.isList() && ( ! param.listValue()->tail.listValue()->isEmpty()))
     {
         ++maximumInputs;
         List *list = param.listValue();

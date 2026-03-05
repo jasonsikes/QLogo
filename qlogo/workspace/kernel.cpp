@@ -611,7 +611,8 @@ void Kernel::ece_processParameters()
             // A word parameter gets assigned the current argument.
             currentCallFrame()->currentParameterName_ = parameter.toString(Datum::ToStringFlags_Key);
             DatumPtr argument = currentCallFrame()->arguments_.listValue()->head;
-            currentCallFrame()->arguments_ = currentCallFrame()->arguments_.listValue()->tail;
+            DatumPtr tail = currentCallFrame()->arguments_.listValue()->tail;
+            currentCallFrame()->arguments_ = tail;
             currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
             ece_trace("ece_processParameters: setting variable " + currentCallFrame()->currentParameterName_ + " to " + argument.toString());
             setDatumForName(argument, currentCallFrame()->currentParameterName_);
@@ -645,7 +646,8 @@ void Kernel::ece_processParameters()
                 {
                     // else, we assign the provided argument
                     DatumPtr argument = currentCallFrame()->arguments_.listValue()->head;
-                    currentCallFrame()->arguments_ = currentCallFrame()->arguments_.listValue()->tail;
+                    DatumPtr tail = currentCallFrame()->arguments_.listValue()->tail;
+                    currentCallFrame()->arguments_ = tail;
                     currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
                     ece_trace("ece_processParameters: setting variable " + currentCallFrame()->currentParameterName_ +
                               " to " + argument.toString());
