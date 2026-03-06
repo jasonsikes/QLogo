@@ -158,8 +158,16 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
         try
         {
             DatumPtr line = systemReadStream_->readListWithPrompt(localPrompt, true);
+
             Q_ASSERT(callFrameStack_.back()->evaluationStackSize() == 0);
             Q_ASSERT(callFrameStack_.back()->sourceNode_.isNothing());
+
+            if (line.isNothing())
+            {
+                 // EOF
+                result = nothing();
+                goto bailout;
+            }
             callFrameStack_.back()->pushEvaluator(line);
             result = runECE();
         }
