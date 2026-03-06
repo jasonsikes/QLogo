@@ -27,20 +27,20 @@
 
 void FCError::commonInit()
 {
-    // Kernel *k = &Kernel::get();
+    Kernel *k = &Kernel::get();
 
-    // // If the error is a bad default expression, don't report the procedure
-    // // or line.
-    // if (code != ERR_BAD_DEFAULT_EXPRESSION)
-    // {
-    //     CallFrame *cf = k->callStack.localFrame();
-    //     if (cf->sourceNode.isASTNode())
-    //     {
-    //         procedure() = cf->sourceNode.astnodeValue()->nodeName;
-    //         line() = cf->localEvaluator()->list;
-    //     }
-    // }
-    // k->currentError = DatumPtr(this);
+    // If the error is a bad default expression, don't report the procedure
+    // or line.
+    if (code_ != ERR_BAD_DEFAULT_EXPRESSION)
+    {
+        CallFrame *cf = k->currentCallFrame();
+        if (cf->sourceNode_.isASTNode())
+        {
+            procedure() = cf->sourceNode_.astnodeValue()->nodeName_;
+            line() = cf->evaluationStack_.back()->list_;
+        }
+    }
+    k->currentError_ = DatumPtr(this);
 }
 
 FCError *FCError::custom(const DatumPtr &tag, DatumPtr message, const DatumPtr &output)

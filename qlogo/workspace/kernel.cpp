@@ -563,9 +563,10 @@ void Kernel::ece_exitProcedure()
     case Datum::typeError:
     {
         // The error is passed through to the caller.
-        currentCallFrame()->topEvaluator()->retvalFromChild_ = currentCallFrame()->retvalToParent_.flowControlValue()->data_;
+        DatumPtr retval = currentCallFrame()->retvalToParent_;
         ece_trace("ece_exitProcedure with error: popping call frame");
         callFrameStack_.pop_back();
+        currentCallFrame()->topEvaluator()->retvalFromChild_ = retval;
         nextOperation_ = &Kernel::ece_evaluateStack;
         break;
     }

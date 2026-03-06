@@ -1997,7 +1997,7 @@ EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
     // We don't allow inputting a procedure while in a procedure.
     if (currentProc.isASTNode())
     {
-        FCError *err = FCError::toInProc(currentProc.astnodeValue()->nodeName_);
+        FCError *err = FCError::toInProc(node->nodeName_);
         e->watch(err);
         return reinterpret_cast<addr_t>(err);
     }
