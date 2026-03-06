@@ -1969,18 +1969,18 @@ EXPORTC double getMouseButton(void)
 /// 2 b. The value is a list AND the list is not empty.
 EXPORTC bool getvarErroract(void)
 {
-    // QString name = QObject::tr("ERRACT");
-    // DatumPtr val = Kernel::get().callStack.datumForName(name);
-    // if (val.isWord())
-    // {
-    //     QString word = val.toString(Datum::ToStringFlags_Key);
-    //     return (word != "FALSE") && (word != "");
-    // }
-    // if (val.isList())
-    // {
-    //     return !val.listValue()->isEmpty();
-    // }
-    // return false;
+    QString name = QObject::tr("ERRACT");
+    DatumPtr val = Kernel::get().datumForName(name);
+    if (val.isWord())
+    {
+        QString word = val.toString(Datum::ToStringFlags_Key);
+        return (word != "FALSE") && (word != "");
+    }
+    if (val.isList())
+    {
+        return !val.listValue()->isEmpty();
+    }
+    return false;
 }
 
 /// @brief input a procedure using the system read stream.
