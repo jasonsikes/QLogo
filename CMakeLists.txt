@@ -41,10 +41,6 @@ add_subdirectory("${QLOGO_BIN}")
 
 add_subdirectory("${QLOGO_GUI}")
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions("${QLOGO_BIN}" PRIVATE QT_FORCE_ASSERTS)
-endif()
-
 file(MAKE_DIRECTORY "${QLOGO_DATA_DIR}")
 
 file(COPY "share/${QLOGO_HELP}" "share/${QLOGO_LIB}"

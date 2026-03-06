@@ -574,7 +574,7 @@ QString MainWindow::findQlogoExe()
 
     for (auto &c : candidates)
     {
-        // qDebug() << "Checking: " << c;
+        // qInfo() << "Checking: " << c;
         if (QFileInfo::exists(c))
             return c;
     }
@@ -767,7 +767,7 @@ void MainWindow::processReadBuffer()
     {
     case W_ZERO:
         // This only exists to help catch errors.
-        qDebug() << "Zero!";
+        qInfo() << "Zero!";
         break;
     case W_INITIALIZE:
     {
@@ -1004,7 +1004,7 @@ void MainWindow::processReadBuffer()
         break;
     }
     default:
-        qDebug() << "was not expecting" << header;
+        qInfo() << "was not expecting" << header;
         break;
     }
 }
@@ -1037,7 +1037,7 @@ void MainWindow::setSplitterforMode(ScreenModeEnum mode)
 void MainWindow::readStandardError()
 {
     QByteArray ary = logoProcess->readAllStandardError();
-    qDebug() << "stderr: " << QString(ary);
+    qInfo() << "stderr: " << QString(ary);
 }
 
 void MainWindow::beginReadRawlineWithPrompt(const QString &prompt)

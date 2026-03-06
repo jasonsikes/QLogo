@@ -240,7 +240,7 @@ Word::Word()
     printableString = QString();
     keyString = QString();
     sourceIsNumber = false;
-    // qDebug() <<this << " new++ word";
+    // qInfo() <<this << " new++ word";
 }
 
 Word::Word(const QString &other, bool aIsForeverSpecial)
@@ -252,7 +252,7 @@ Word::Word(const QString &other, bool aIsForeverSpecial)
     printableString = QString();
     keyString = QString();
     sourceIsNumber = false;
-    // qDebug() <<this << " new++ word: " <<other;
+    // qInfo() <<this << " new++ word: " <<other;
 }
 
 Word::Word(double other)
@@ -264,7 +264,7 @@ Word::Word(double other)
     printableString = QString();
     keyString = QString();
     sourceIsNumber = true;
-    // qDebug() <<this << " new++ word: " <<other;
+    // qInfo() <<this << " new++ word: " <<other;
 }
 
 Word::~Word() = default;

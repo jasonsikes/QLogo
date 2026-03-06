@@ -41,7 +41,7 @@ List::~List()
         // Destructors must not throw exceptions. Log the error and continue.
         // The collection removal may have failed, but we still need to complete
         // the destruction of this object.
-        qDebug() << "Exception caught in List destructor during cleanup";
+        qInfo() << "Exception caught in List destructor during cleanup";
     }
 }
 

@@ -86,7 +86,7 @@ message_t LogoInterfaceGUI::getMessage()
     switch (header)
     {
     case W_ZERO:
-        qDebug() << "ZERO!";
+        qInfo() << "ZERO!";
         break;
     case W_INITIALIZE:
     {
@@ -137,7 +137,7 @@ message_t LogoInterfaceGUI::getMessage()
         break;
     default:
         // This should never happen. If it does, then there is a mess-up in the protocol.
-        qDebug() << "I don't know how I got " << header;
+        qInfo() << "I don't know how I got " << header;
         break;
     }
     return header;

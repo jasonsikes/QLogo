@@ -40,10 +40,10 @@
 
 void ece_trace(const QString &msg)
 {
-    static bool doTrace = true; // = Config::get().traceEvaluator_;
+    static bool doTrace = Config::get().traceEvaluator_;
     if (doTrace)
     {
-        std::cerr << "ece_trace: " << msg.toStdString().c_str() << std::endl;
+        qInfo() << "ece_trace: " << msg;
     }
 }
 

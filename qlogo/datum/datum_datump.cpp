@@ -88,7 +88,7 @@ void DatumPtr::destroy()
         {
             if (datumValue_->alertOnDelete_)
             {
-                qDebug() << "DELETING: " << datumValue_ << " " << datumValue_->toString(Datum::ToStringFlags_Show);
+                qInfo() << "DELETING: " << datumValue_ << " " << datumValue_->toString(Datum::ToStringFlags_Show);
             }
             delete datumValue_;
         }

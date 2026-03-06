@@ -32,7 +32,7 @@ Datum::Datum()
     ++countOfNodes;
     maxCountOfNodes = std::max(maxCountOfNodes, countOfNodes);
     if (Config::get().showCON_)
-        qDebug() << this << " con++: " << countOfNodes;
+        qInfo() << this << " con++: " << countOfNodes;
 }
 
 Datum *Datum::notADatum()
@@ -45,7 +45,7 @@ Datum::~Datum()
 {
     --countOfNodes;
     if (Config::get().showCON_)
-        qDebug() << this << " --con: " << countOfNodes;
+        qInfo() << this << " --con: " << countOfNodes;
 }
 
 QString Datum::toString(ToStringFlags flags, int printDepthLimit, int printWidthLimit, VisitedSet *visited) const

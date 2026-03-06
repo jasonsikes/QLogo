@@ -93,6 +93,8 @@ target_compile_definitions("${QLOGO_BIN}" PRIVATE
   "LOGOVERSION=\"${PROJECT_VERSION}\""
 )
 
+target_compile_definitions("${QLOGO_BIN}" PRIVATE QT_FORCE_ASSERTS)
+
 if(APPLE)
   target_compile_definitions("${QLOGO_BIN}" PRIVATE "LOGOPLATFORM=\"OSX\"")
 elseif(WIN32 OR MINGW OR MSYS OR CYGWIN)

@@ -62,7 +62,7 @@ private:
 
     int retainCount_ = 0;
 
-    /// @brief If set to 'true', DatumPtr will send qDebug message when this is deleted.
+    /// @brief If set to 'true', DatumPtr will send qInfo message when this is deleted.
     bool alertOnDelete_ = false;
 
     /// @brief Get the singleton instance of Datum.
