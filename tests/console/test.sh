@@ -120,59 +120,52 @@ else
     # Create temporary file for collecting test results
     reported_test_file=$(mktemp /tmp/test_reported_XXXXXX)
     
-    # Collect all .lg files first
+    if ! command -v parallel >/dev/null 2>&1; then
+        echo "Error: GNU parallel is required but was not found in PATH."
+        rm -f "$reported_test_file"
+        exit 1
+    fi
+
+    # Collect all .lg files first (one per line for GNU parallel)
     test_files=""
     for a in *.lg; do
-        test_files="$test_files $a"
-    done
-    
-    # Function to run a test in the background
-    run_test_parallel() {
-        f="$1"
-        case $f in
-            *.lg)
-                echo $f
-                # Run test in background
-                (
-                    $logo_path $exe_opts < $f 2>&1 | diff "${f%.lg}.result" -
-                    exit_code=$?
-                    # Report: (blacklisted and passed) or (not blacklisted and failed)
-                    if [ "$blacklisted" = true ] && [ $exit_code -eq 0 ]; then
-                        echo "$f" >> "$reported_test_file"
-                    elif [ "$blacklisted" != true ] && [ $exit_code -eq 1 ]; then
-                        echo "$f" >> "$reported_test_file"
-                    fi
-                ) &
-                ;;
-        esac
-    }
-    
-    # Run tests in parallel, limiting to max_jobs concurrent processes
-    job_pids=""
-    for a in $test_files; do
-        # Wait for a job slot if we've reached the limit
-        while true; do
-            n=0
-            for p in $job_pids; do
-                n=$((n + 1))
-            done
-            [ $n -lt $max_jobs ] && break
-            first_pid="${job_pids# }"
-            first_pid="${first_pid%% *}"
-            wait $first_pid 2>/dev/null
-            job_pids="${job_pids#$first_pid}"
-            job_pids="${job_pids# }"
-        done
-        
-        run_test_parallel $a
-        job_pids="$job_pids $!"
+        [ -f "$a" ] || continue
+        test_files="${test_files}${a}
+"
         test_count=$((test_count + 1))
     done
-    
-    # Wait for all remaining jobs to complete
-    for pid in $job_pids; do
-        wait $pid 2>/dev/null
-    done
+
+    # Make each test's output atomic with GNU parallel's --group.
+    # - In non-blacklisted mode, diff exit code 1 means failure; optionally stop early with -first.
+    # - In blacklisted mode, report PASSED tests (diff exit code 0), but don't fail the script.
+    halt_opt=""
+    if [ "$blacklisted" != true ] && [ "$stop_on_first_failure" = true ]; then
+        halt_opt="--halt now,fail=1"
+    fi
+
+    logo_cmd="$logo_path"
+    if [ -n "$exe_opts" ]; then
+        logo_cmd="$logo_cmd $exe_opts"
+    fi
+
+    # Build a single shell command per test. GNU parallel will substitute {} before execution.
+    #
+    # Notes:
+    # - We avoid nested "sh -c" because GNU parallel already executes via a shell.
+    # - We deliberately print a header line; --group keeps this header + diff atomic per test.
+    cmd='f="{}"
+echo "==== $f"
+'"$logo_cmd"' < "$f" 2>&1 | diff "${f%.lg}.result" -
+exit_code=$?
+if [ "'"$blacklisted"'" = true ] && [ $exit_code -eq 0 ]; then
+  echo "$f" >> "'"$reported_test_file"'"
+elif [ "'"$blacklisted"'" != true ] && [ $exit_code -eq 1 ]; then
+  echo "$f" >> "'"$reported_test_file"'"
+fi
+exit $exit_code'
+
+    # shellcheck disable=SC2086
+    printf "%s" "$test_files" | parallel --jobs "$max_jobs" --group $halt_opt "$cmd"
     
     # Read test results from the temporary file
     if [ -f "$reported_test_file" ] && [ -s "$reported_test_file" ]; then
