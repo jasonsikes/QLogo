@@ -27,6 +27,7 @@
 #include "sharedconstants.h"
 #include "treeifyer.h"
 #include "workspace/callframe.h"
+#include "workspace/kernel.h"
 #include "workspace/procedures.h"
 #include <string>
 #include <iostream>
@@ -212,28 +213,26 @@ QString Compiler::getTagNameFromNode(const DatumPtr &node) const
 
 void Compiler::setTagToBlockIdInProcedure(const QList<DatumPtr> &tagList, int32_t blockId)
 {
-    // // Get the currently-executing procedure.
-    // NewCallFrame *currentFrame = Kernel::get().callFrameStack.top();
+    // Get the currently-executing procedure.
+    CallFrame *currentFrame = Kernel::get().currentCallFrame();
 
-    // // If the current frame is not a procedure, there is no need to save the tag names
-    // // because we can't jump to them.
-    // if (!currentFrame->sourceNode.isASTNode())
-    // {
-    //     return;
-    // }
+    // If the current frame is not a procedure, there is no need to save the tag names.
+    if ( ! currentFrame->sourceNode_.isASTNode())
+    {
+        return;
+    }
 
-    // Procedure *currentProcedure = currentFrame->sourceNode.astnodeValue()->procedure.procedureValue();
-    // DatumPtr currentRunningLine = currentFrame->runningSourceList;
+    Procedure *currentProcedure = currentFrame->sourceNode_.astnodeValue()->procedure_.procedureValue();
+    DatumPtr currentRunningLine = currentFrame->runningSourceList_;
 
-    // for (auto &node : tagList)
-    // {
-    //     QString tagName = getTagNameFromNode(node);
-    //     if (!tagName.isEmpty())
-    //     {
-    //         currentProcedure->tagToBlockId[tagName] = blockId;
-    //         currentProcedure->tagToLine[tagName] = currentRunningLine;
-    //     }
-    // }
+    for (auto &node : tagList)
+    {
+        QString tagName = getTagNameFromNode(node);
+        if (!tagName.isEmpty())
+        {
+            currentProcedure->tagToLineAndBlockId_[tagName] = {currentRunningLine, blockId};
+        }
+    }
 }
 
 BasicBlock *Compiler::generateTOC(QList<BasicBlock *> blocks, Function *theFunction)

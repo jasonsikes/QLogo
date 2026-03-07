@@ -18,6 +18,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum_ptr.h"
+#include "datum_types.h"
 #include <QString>
 
 // The subclasses of FlowControl have a FC prefix because "goto", "return", and "continue"
@@ -32,7 +33,7 @@ struct FCContinuation;
 /// @details This class is used to signal the end of execution of a list or procedure. The base class does nothing.
 /// The subclasses contain the methods for the various flow control instructions.
 /// The FlowControl subtypes are as follows:
-/// - typeGoto: Goto the specified tag.
+/// - typeGoto: Goto the specified line and block.
 /// - typeReturn: Return from the current procedure.
 /// - typeContinuation: Similar to typeReturn but scope is unaffected.
 /// - typeError: Signal an error.
@@ -51,19 +52,18 @@ struct FlowControl : public Datum
 struct FCGoto : public FlowControl
 {
 
-    FCGoto(const DatumPtr &aSourceNode, const DatumPtr &aTag)
+    FCGoto(const DatumPtr &aSourceNode, const DatumPtr &runningSourceListSnapshot, int32_t blockId)
     {
         isa_ = Datum::typeGoto;
-        data_ = aTag;
         sourceNode_ = aSourceNode;
+        data_ = runningSourceListSnapshot;
+        dataAry_ = {DatumPtr(blockId)};
     }
 
-    /// @brief The tag to goto.
-    DatumPtr &tag()
+    /// @brief The location to go.
+    std::pair<DatumPtr, int32_t> location() const
     {
-        Q_ASSERT(isa_ == Datum::typeGoto);
-        Q_ASSERT(dataAry_.isEmpty());
-        return data_;
+        return std::make_pair(data_, static_cast<int32_t>(dataAry_[0].wordValue()->numberValue()));
     }
 };
 

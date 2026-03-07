@@ -29,7 +29,7 @@ CallFrame::CallFrame(ASTNode *node, Datum **paramAry, uint32_t paramCount)
         // nullptr source node means this frame is REPL.
         return;
     }
-    DatumPtr body = node->procedure_.procedureValue();
+    DatumPtr body = node->procedure_;
     sourceNode_ = DatumPtr(node);
     runningSourceList_ = body.procedureValue()->instructionList_.listValue()->tail;
 
@@ -60,7 +60,7 @@ CallFrame::~CallFrame()
 // TODO: create a common initialization function for this and the constructor.
 void CallFrame::applyContinuation(ASTNode *node, const DatumPtr &arguments)
 {
-    DatumPtr body = node->procedure_.procedureValue();
+    DatumPtr body = node->procedure_;
     sourceNode_ = DatumPtr(node);
     runningSourceList_ = body.procedureValue()->instructionList_.listValue()->tail;
 
@@ -93,58 +93,6 @@ void CallFrame::setVarAsLocal(const QString &name)
         Kernel::get().setDatumForName(nothing(), name);
     }
 }
-
-
-// Datum *NewCallFrame::applyGoto(FCGoto *node)
-// {
-//     DatumPtr tag = node->tag();
-//     Datum *procedure = sourceNode.astnodeValue()->procedure.datumValue();
-//     DatumPtr runningSourceListSnapshot;
-
-//     // Have we seen this tag already?
-//     auto *proc = static_cast<Procedure *>(procedure);
-//     auto blockIdIterator = proc->tagToBlockId.find(tag.toString(Datum::ToStringFlags_Key));
-//     if (blockIdIterator != proc->tagToBlockId.end())
-//     {
-//         goto foundTag;
-//     }
-
-//     // If not, then search through the remaining lines in the procedure.
-
-//     // Save our running state in case we need to restore it later.
-//     runningSourceListSnapshot = runningSourceList;
-
-//     while (runningSourceList.isList() && runningSourceList.listValue()->isEmpty() == false)
-//     {
-//         List *list = runningSourceList.listValue()->head.listValue();
-//         try
-//         {
-//             Compiler::get().functionPtrFromList(list);
-//         }
-//         catch (FCError *e)
-//         {
-//             return e;
-//         }
-//         blockIdIterator = proc->tagToBlockId.find(tag.toString(Datum::ToStringFlags_Key));
-//         if (blockIdIterator != proc->tagToBlockId.end())
-//         {
-//             goto foundTag;
-//         }
-//         runningSourceList = runningSourceList.listValue()->tail;
-//     }
-
-//     // If we still didn't find the tag, return an error.
-//     runningSourceList = runningSourceListSnapshot;
-//     return FCError::doesntLike(node->sourceNode.astnodeValue()->nodeName, tag);
-
-// foundTag:
-//     // Now, we need to jump to the block that contains the tag.
-//     runningSourceList = proc->tagToLine[tag.toString(Datum::ToStringFlags_Key)];
-//     jumpLocation = blockIdIterator.value();
-//     return nullptr;
-//     return nullptr;
-// }
-
 
 
 

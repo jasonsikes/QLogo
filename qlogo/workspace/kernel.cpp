@@ -532,6 +532,26 @@ void Kernel::ece_decideEmptyEvaluationStack()
     nextOperation_ = &Kernel::ece_evaluateStack;
 }
 
+void Kernel::ece_handleFlowControl()
+{
+    ece_trace("ece_handleFlowControl");
+    auto *control = currentCallFrame()->retvalToParent_.flowControlValue();
+    switch (control->isa_)
+    {
+    case Datum::typeGoto:
+    {
+        auto *gotoControl = static_cast<FCGoto*>(control);
+        auto [location, blockId] = gotoControl->location();
+        currentCallFrame()->runningSourceList_ = location;
+        currentCallFrame()->jumpLocation_ = blockId;
+        nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
+        break;
+    }
+    default:
+        Q_ASSERT(false);
+    }
+}
+
 void Kernel::ece_popEvaluator()
 {
     ece_trace("ece_popEvaluator");
@@ -545,7 +565,13 @@ void Kernel::ece_popEvaluator()
     {
         currentCallFrame()->topEvaluator()->retvalFromChild_ = currentCallFrame()->retvalToParent_;
         nextOperation_ = &Kernel::ece_evaluateStack;
-    } else {
+    }
+    else if (currentCallFrame()->retvalToParent_.isFlowControl())
+    {
+        nextOperation_ = &Kernel::ece_handleFlowControl;
+    }
+    else
+    {
         nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
     }
 }

@@ -24,7 +24,9 @@
 #include "sharedconstants.h"
 #include "workspace/turtle.h"
 #include "workspace/visited.h"
+#include "workspace/procedures.h"
 #include "workspace/callframe.h"
+#include "compiler.h"
 
 #include <QFile>
 #include <QObject>
@@ -548,13 +550,42 @@ EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t argA
 /// @param eAddr a pointer to the Evaluator object context.
 /// @param astNodeAddr a pointer to the ASTNode which is the source node of the GOTO.
 /// @param tagAddr a pointer to the Datum object which is the tag of the GOTO.
-/// @return a pointer to the GOTO control object that was generated.
+/// @return a pointer to the GOTO control object that was generated, or error if the tag is not found.
 EXPORTC addr_t getCtrlGoto(addr_t eAddr, addr_t astNodeAddr, addr_t tagAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto tag = DatumPtr(reinterpret_cast<Datum *>(tagAddr));
+    CallFrame *cf = Kernel::get().currentCallFrame();
+    ASTNode *node = cf->sourceNode_.astnodeValue();
 
-    auto *control = new FCGoto(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), tag);
+    // TODO: if node is nullptr, return error for not being in a procedure.
+    DatumPtr procedure = node->procedure_;
+    auto &tagToLineAndBlockId = procedure.procedureValue()->tagToLineAndBlockId_;
+    auto blockIdIterator = tagToLineAndBlockId.find(tag.toString(Datum::ToStringFlags_Key));
+    DatumPtr runningList = cf->runningSourceList_;
+
+    // Iterate through the remaining lines of the procedure to find the tag.
+    while (blockIdIterator == tagToLineAndBlockId.end())
+    {
+        DatumPtr tmp = runningList.listValue()->tail;
+        runningList = tmp;
+        if (runningList.listValue()->isEmpty())
+        {
+            // Tag not found
+            return reinterpret_cast<addr_t>(FCError::doesntLike(node->nodeName_, tag));
+        }
+        try
+        {
+            Compiler::get().functionPtrFromList(runningList.listValue()->head.listValue());
+        }
+        catch (FCError *e)
+        {
+            return reinterpret_cast<addr_t>(e);
+        }
+        blockIdIterator = tagToLineAndBlockId.find(tag.toString(Datum::ToStringFlags_Key));
+    }
+    auto [line, blockId] = blockIdIterator.value();
+    auto *control = new FCGoto(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), runningList, blockId);
     e->watch(control);
     return reinterpret_cast<addr_t>(control);
 }
