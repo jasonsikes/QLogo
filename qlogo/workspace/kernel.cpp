@@ -174,15 +174,29 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
         catch (FCError *e)
         {
             // While FCError objects can be returned from an execution in the form of a DatumPtr,
-            // Sometimes exceptions are thrown by a user interface action.
-            // Wrap it into a DatumPtr.
+            // sometimes exceptions are thrown by the parser.
+            // When that happens, wrap it into a DatumPtr.
             result = DatumPtr(e);
-            goto bailout;
         }
-        if ((result.datumValue()->isa_ & Datum::typeUnboundMask) != 0)
+
+        if ((result.datumValue()->isa_ & Datum::typeDataMask) != 0)
         {
-            continue;
+            result = DatumPtr(FCError::dontSay(result));
         }
+
+        if (result.isFlowControl())
+        {
+            // Flow control instructions are not allowed in the REPL.
+            DatumPtr blame;
+
+            if (result.flowControlValue()->isa_ == Datum::typeReturn)
+            {
+                blame = result.flowControlValue()->sourceNode_.astnodeValue()->nodeName_;
+                result = DatumPtr(FCError::notInsideProcedure(blame));
+            }
+            // TODO: other flow control types
+        }
+
         if (result.isErr())
         {
             FCError *e = result.errValue();
@@ -210,16 +224,6 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
             sysPrint(e->toString() + "\n");
             continue;
         }
-
-        if (result.isFlowControl())
-        {
-            // The other flow control types are OUTPUT/STOP and GOTO,
-            // which are not allowed here.
-            result = DatumPtr(FCError::notInsideProcedure(result.flowControlValue()->sourceNode_));
-        }
-
-        // If we are here that means something was output, but not handled.
-        sysPrint(QString("You don't say what to do with %1\n").arg(result.toString(Datum::ToStringFlags_Show)));
     }
 
 bailout:

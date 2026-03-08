@@ -571,16 +571,8 @@ EXPORTC addr_t getCtrlGoto(addr_t eAddr, addr_t astNodeAddr, addr_t tagAddr)
     auto blockIdIterator = tagToLineAndBlockId.find(tag.toString(Datum::ToStringFlags_Key));
     DatumPtr runningList = cf->runningSourceList_;
 
-    // Iterate through the remaining lines of the procedure to find the tag.
-    while (blockIdIterator == tagToLineAndBlockId.end())
+    while (!runningList.listValue()->isEmpty())
     {
-        DatumPtr tmp = runningList.listValue()->tail;
-        runningList = tmp;
-        if (runningList.listValue()->isEmpty())
-        {
-            // Tag not found
-            return reinterpret_cast<addr_t>(FCError::doesntLike(node->nodeName_, tag));
-        }
         try
         {
             Compiler::get().functionPtrFromList(runningList.listValue()->head.listValue());
@@ -590,11 +582,18 @@ EXPORTC addr_t getCtrlGoto(addr_t eAddr, addr_t astNodeAddr, addr_t tagAddr)
             return reinterpret_cast<addr_t>(e);
         }
         blockIdIterator = tagToLineAndBlockId.find(tag.toString(Datum::ToStringFlags_Key));
+        if (blockIdIterator != tagToLineAndBlockId.end())
+        {
+            auto [line, blockId] = blockIdIterator.value();
+            auto *control = new FCGoto(DatumPtr(astNodeAddr), runningList, blockId);
+            e->watch(control);
+            return reinterpret_cast<addr_t>(control);
+        }
+        DatumPtr tmp = runningList.listValue()->tail;
+        runningList = tmp;
     }
-    auto [line, blockId] = blockIdIterator.value();
-    auto *control = new FCGoto(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), runningList, blockId);
-    e->watch(control);
-    return reinterpret_cast<addr_t>(control);
+
+    return reinterpret_cast<addr_t>(FCError::doesntLike(astNode->nodeName_, tag));
 }
 
 /// @brief Get the number of elements in a list.
