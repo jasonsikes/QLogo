@@ -157,9 +157,6 @@ class Kernel
     /// @brief Decide what to do next after emptying the evaluation stack.
     void ece_decideEmptyEvaluationStack();
 
-    /// @brief Handle FlowControl instructions.
-    void ece_handleFlowControl();
-
     /// @brief Begin or continue processing procedure arguments.
     void ece_processArguments();
 

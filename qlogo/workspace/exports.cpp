@@ -556,9 +556,16 @@ EXPORTC addr_t getCtrlGoto(addr_t eAddr, addr_t astNodeAddr, addr_t tagAddr)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto tag = DatumPtr(reinterpret_cast<Datum *>(tagAddr));
     CallFrame *cf = Kernel::get().currentCallFrame();
+
+    auto astNode = reinterpret_cast<ASTNode *>(astNodeAddr);
+
+    // If node is nullptr, return error for not being in a procedure.
+    if (cf->sourceNode_.isNothing())
+    {
+        return reinterpret_cast<addr_t>(FCError::notInsideProcedure(astNode->nodeName_));
+    }
     ASTNode *node = cf->sourceNode_.astnodeValue();
 
-    // TODO: if node is nullptr, return error for not being in a procedure.
     DatumPtr procedure = node->procedure_;
     auto &tagToLineAndBlockId = procedure.procedureValue()->tagToLineAndBlockId_;
     auto blockIdIterator = tagToLineAndBlockId.find(tag.toString(Datum::ToStringFlags_Key));

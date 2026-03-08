@@ -501,6 +501,9 @@ void Kernel::ece_decideEmptyEvaluationStack()
         {
             // We have finished processing a default value for an optional parameter.
             DatumPtr defaultValue = currentCallFrame()->retvalToParent_;
+
+            // TODO: handle Control Flow instructions here.
+
             currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
             ece_trace("ece_decideEmptyEvaluationStack: setting variable " + currentCallFrame()->currentParameterName_ + " to " + defaultValue.toString());
             setDatumForName(defaultValue, currentCallFrame()->currentParameterName_);
@@ -515,11 +518,9 @@ void Kernel::ece_decideEmptyEvaluationStack()
         }
     }
 
-    // If we are here, then this is the regular evaluation of the procedure body.
-    // It is time to evaluate the next line of the procedure, if it exists.
-    if (currentCallFrame()->runningSourceList_.listValue()->isEmpty())
+    // If there is a flow control instruction, or we have reached the end of the procedure, we need to handle it.
+    if (currentCallFrame()->retvalToParent_.isFlowControl() || currentCallFrame()->runningSourceList_.listValue()->isEmpty())
     {
-        // We have reached the end of the procedure.
         nextOperation_ = &Kernel::ece_exitProcedure;
         return;
     }
@@ -530,26 +531,6 @@ void Kernel::ece_decideEmptyEvaluationStack()
     currentCallFrame()->pushEvaluator(line);
     currentCallFrame()->runningSourceList_ = currentCallFrame()->runningSourceList_.listValue()->tail;
     nextOperation_ = &Kernel::ece_evaluateStack;
-}
-
-void Kernel::ece_handleFlowControl()
-{
-    ece_trace("ece_handleFlowControl");
-    auto *control = currentCallFrame()->retvalToParent_.flowControlValue();
-    switch (control->isa_)
-    {
-    case Datum::typeGoto:
-    {
-        auto *gotoControl = static_cast<FCGoto*>(control);
-        auto [location, blockId] = gotoControl->location();
-        currentCallFrame()->runningSourceList_ = location;
-        currentCallFrame()->jumpLocation_ = blockId;
-        nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
-        break;
-    }
-    default:
-        Q_ASSERT(false);
-    }
 }
 
 void Kernel::ece_popEvaluator()
@@ -565,10 +546,6 @@ void Kernel::ece_popEvaluator()
     {
         currentCallFrame()->topEvaluator()->retvalFromChild_ = currentCallFrame()->retvalToParent_;
         nextOperation_ = &Kernel::ece_evaluateStack;
-    }
-    else if (currentCallFrame()->retvalToParent_.isFlowControl())
-    {
-        nextOperation_ = &Kernel::ece_handleFlowControl;
     }
     else
     {
@@ -625,6 +602,16 @@ void Kernel::ece_exitProcedure()
         callFrameStack_.pop_back();
         currentCallFrame()->topEvaluator()->retvalFromChild_ = retval;
         nextOperation_ = &Kernel::ece_evaluateStack;
+        break;
+    }
+    case Datum::typeGoto:
+    {
+        auto *gotoControl = static_cast<FCGoto*>(currentCallFrame()->retvalToParent_.flowControlValue());
+        auto [location, blockId] = gotoControl->location();
+        currentCallFrame()->runningSourceList_ = location;
+        currentCallFrame()->jumpLocation_ = blockId;
+        currentCallFrame()->retvalToParent_ = nothing();
+        nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
         break;
     }
     default:
