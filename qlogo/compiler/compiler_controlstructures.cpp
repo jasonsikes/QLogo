@@ -591,7 +591,6 @@ Value *Compiler::genForever(const DatumPtr &node, RequestReturnType returnType)
     BasicBlock *loopNextBB = scaff_->createBasicBlock(DBG_NAME("loopNext"));
     BasicBlock *noSayErrorBB = scaff_->createBasicBlock(DBG_NAME("noSayError"));
     BasicBlock *bailoutBB = scaff_->createBasicBlock(DBG_NAME("bailout"));
-    BasicBlock *throwawayBB = scaff_->createBasicBlock(DBG_NAME("throwaway"));
 
     scaff_->addColdPathBlocks(noSayErrorBB, bailoutBB);
 
@@ -599,6 +598,7 @@ Value *Compiler::genForever(const DatumPtr &node, RequestReturnType returnType)
 
     scaff_->builder_.SetInsertPoint(whileBB);
     Value *result = generateCallList(list, RequestReturnDatum);
+    BasicBlock *whileBBDestination = scaff_->builder_.GetInsertBlock();
     Value *resultType = generateGetDatumIsa(result);
     Value *mask = scaff_->builder_.CreateAnd(resultType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
     Value *cond = scaff_->builder_.CreateICmpEQ(mask, CoInt32(0), DBG_NAME("flowControlCond"));
@@ -622,13 +622,9 @@ Value *Compiler::genForever(const DatumPtr &node, RequestReturnType returnType)
     scaff_->builder_.SetInsertPoint(bailoutBB);
     PHINode *phiError = scaff_->builder_.CreatePHI(TyAddr, 2, DBG_NAME("errVal"));
     phiError->addIncoming(errNoSay, noSayErrorBB);
-    phiError->addIncoming(result, whileBB);
+    phiError->addIncoming(result, whileBBDestination);
     scaff_->builder_.CreateStore(shadowedRepcount, repcountAddress);
-    generateReturn(phiError);
-
-    // We will never reach here, but the compiler requires a current block and a return value.
-    scaff_->builder_.SetInsertPoint(throwawayBB);
-    return generateVoidRetval(node);
+    return generateImmediateReturn(phiError);
 }
 
 /***DOC TEST
