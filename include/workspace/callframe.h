@@ -55,6 +55,9 @@ struct CallFrame
     /// @brief Set to true iff we are reading arguments for a procedure.
     bool isReadingArgs_ = false;
 
+    /// @brief The current argument being processed (currentParameterName_ and optional default value).
+    DatumPtr currentArgument_;
+
     /// @brief The name of the current parameter being processed.
     QString currentParameterName_;
 

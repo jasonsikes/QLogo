@@ -506,7 +506,12 @@ void Kernel::ece_decideEmptyEvaluationStack()
             // We have finished processing a default value for an optional parameter.
             DatumPtr defaultValue = currentCallFrame()->retvalToParent_;
 
-            // TODO: handle Control Flow instructions here.
+            // Any error here gets converted.
+            if (defaultValue.isErr())
+            {
+                currentCallFrame()->retvalToParent_ = DatumPtr(FCError::badDefault(currentCallFrame()->currentArgument_));
+                nextOperation_ = &Kernel::ece_exitProcedure;
+            }
 
             currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
             ece_trace("ece_decideEmptyEvaluationStack: setting variable " + currentCallFrame()->currentParameterName_ + " to " + defaultValue.toString());
@@ -631,7 +636,8 @@ void Kernel::ece_processParameters()
     ece_trace("ece_processParameters");
     while ( ! currentCallFrame()->parameters_.listValue()->isEmpty())
     {
-        DatumPtr parameter = currentCallFrame()->parameters_.listValue()->head;
+        currentCallFrame()->currentArgument_ = currentCallFrame()->parameters_.listValue()->head;
+        DatumPtr parameter = currentCallFrame()->currentArgument_;
         currentCallFrame()->parameters_ = currentCallFrame()->parameters_.listValue()->tail;
 
         if (parameter.isWord())
