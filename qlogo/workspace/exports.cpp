@@ -2048,10 +2048,10 @@ EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
 // TODO: Should the executor be passed in here instead of getting the local frame from the call stack?
 EXPORTC void setVarAsLocal(addr_t varname)
 {
-    // auto *varName = reinterpret_cast<Word *>(varname);
-    // QString varNameStr = varName->toString(Datum::ToStringFlags_Key);
-    // CallFrame *currentFrame = Kernel::get().callStack.localFrame();
-    // currentFrame->setVarAsLocal(varNameStr);
+    auto *varName = reinterpret_cast<Word *>(varname);
+    QString varNameStr = varName->toString(Datum::ToStringFlags_Key);
+    CallFrame *currentFrame = Kernel::get().currentCallFrame();
+    currentFrame->setVarAsLocal(varNameStr);
 }
 
 /// @brief Handle a bad double value. If ERRACT is set, call PAUSE. Otherwise, return an error.
