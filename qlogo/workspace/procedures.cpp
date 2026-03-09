@@ -122,8 +122,8 @@ std::tuple<int, int, int> Procedures::validateParameters(const DatumPtr &cmd, co
     }
 
     // There should be no more parameters.
-    if (iter.elementExists())
-        throw FCError::doesntLike(cmd, iter.element());
+    if (!param.isNothing())
+        throw FCError::doesntLike(cmd, param);
 
     return retval;
 }
