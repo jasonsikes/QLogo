@@ -72,7 +72,7 @@ void CallFrame::applyContinuation(ASTNode *node, const DatumPtr &arguments)
 
 void CallFrame::pushEvaluator(const DatumPtr &aList)
 {
-    evaluationStack_.push_back(std::make_unique<Evaluator>(this, aList));
+    evaluationStack_.emplace_back(this, aList);
 }
 
 void CallFrame::popEvaluator()

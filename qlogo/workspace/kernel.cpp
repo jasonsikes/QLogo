@@ -832,7 +832,7 @@ void bt()
             std::cerr << "frame " << i << ": ?" << std::endl;
         for (size_t j = 0; j < frame->evaluationStack_.size(); ++j)
         {
-            Evaluator *ev = frame->evaluationStack_[j].get();
+            Evaluator *ev = &frame->evaluationStack_[j];
             std::cerr << "  list: "
                       << ev->list_.toString(Datum::ToStringFlags_Show).toStdString() << std::endl;
         }
