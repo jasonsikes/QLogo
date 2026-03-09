@@ -62,6 +62,7 @@ void CallFrame::applyContinuation(ASTNode *node, const DatumPtr &arguments)
 {
     DatumPtr body = node->procedure_;
     sourceNode_ = DatumPtr(node);
+    retvalToParent_ = nothing();
     runningSourceList_ = body.procedureValue()->instructionList_.listValue()->tail;
 
     parameters_ = body.procedureValue()->instructionList_.listValue()->head;

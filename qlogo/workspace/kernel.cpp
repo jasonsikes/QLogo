@@ -607,7 +607,7 @@ void Kernel::ece_exitProcedure()
         auto *procedure = continuation->procedure().astnodeValue();
         auto arguments = continuation->params().first();
         currentCallFrame()->applyContinuation(procedure, arguments);
-        nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
+        nextOperation_ = &Kernel::ece_processParameters;
         break;
     }
     case Datum::typeReturn:
