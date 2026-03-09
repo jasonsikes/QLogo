@@ -69,13 +69,9 @@ struct CallFrame
     /// @brief Set this value to set a jump location within a line.
     int32_t jumpLocation_ = 0;
 
-    /// @brief Set to true iff a TEST command has occurred.
-    /// @note This is for the commands TEST, IFTRUE, and IFFALSE.
-    bool isTested_ = false;
-
-    /// @brief This holds the result of the most recent TEST.
-    /// @note This is for the commands TEST, IFTRUE, and IFFALSE.
-    bool testResult_ = false;
+    /// @brief The test state for TEST/IFTRUE/IFFALSE.
+    /// @note 0 = not tested, 3 = tested true, 2 = tested false.
+    int8_t testState_ = 0;
 
     /// @brief The explicit slot list, placeholders for "?".
     /// @note This is for the "explicit slot" APPLY command.

@@ -128,6 +128,17 @@ class Kernel
     /// @brief Repcount is for use in looping functions (e.g. REPEAT)
     double repcount_ = -1;
 
+    /// @brief Set the test state for TEST/IFTRUE/IFFALSE.
+    /// @note Sets the test state for the current call frame.
+    /// @param isTrue The value to set the test state to.
+    void setTest(bool isTrue);
+
+    /// @brief Get the test state for TEST/IFTRUE/IFFALSE.
+    /// @note Searches the call frame stack for the first non-zero test state.
+    /// @note 0 = not tested, 3 = tested true, 2 = tested false.
+    /// @return The test state for the highest non-zero test state in the call frame stack.
+    int8_t testedState() const;
+
     /************ ECE ************/
 
     /// @brief The next operation to perform.

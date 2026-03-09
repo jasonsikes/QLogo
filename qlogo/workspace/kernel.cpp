@@ -418,6 +418,24 @@ DatumPtr Kernel::allVariables() const
     return builder.finishedList();
 }
 
+void Kernel::setTest(bool isTrue)
+{
+    currentCallFrame()->testState_ = isTrue ? 3 : 2;
+}
+
+int8_t Kernel::testedState() const
+{
+    for (auto it = callFrameStack_.crbegin(); it != callFrameStack_.crend(); ++it)
+    {
+        auto *frame = it->get();
+        if (frame->testState_ != 0)
+        {
+            return frame->testState_;
+        }
+    }
+    return 0;
+}
+
 
 Kernel::Kernel()
 {

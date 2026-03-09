@@ -816,17 +816,12 @@ EXPORTC addr_t processRunresult(addr_t eAddr, addr_t resultAddr)
 
 EXPORTC void saveTestResult(bool tf)
 {
-    // Kernel::get().callStack.setTest(tf);
+    Kernel::get().setTest(tf);
 }
 
-EXPORTC bool getIsTested(void)
+EXPORTC int8_t getTestResult(void)
 {
-    // return Kernel::get().callStack.isTested();
-}
-
-EXPORTC bool getTestResult(void)
-{
-    // return Kernel::get().callStack.testedState();
+    return Kernel::get().testedState();
 }
 
 /// Compare a Datum with a bool.

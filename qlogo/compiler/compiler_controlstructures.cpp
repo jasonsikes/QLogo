@@ -678,37 +678,37 @@ Value *Compiler::generateIffalse(const DatumPtr &node, RequestReturnType returnT
 Value *Compiler::generateIftruefalse(const DatumPtr &node, RequestReturnType returnType, bool testForTrue)
 {
     BasicBlock *notTestedBB = scaff_->createBasicBlock(DBG_NAME("notTested"));
-    BasicBlock *isTestedBB = scaff_->createBasicBlock(DBG_NAME("isTested"));
     BasicBlock *runListBB = scaff_->createBasicBlock(DBG_NAME("runList"));
     BasicBlock *noRunListBB = scaff_->createBasicBlock(DBG_NAME("noRunList"));
-    BasicBlock *returnBB = scaff_->createBasicBlock(DBG_NAME("return"));
+    BasicBlock *mergeBB = scaff_->createBasicBlock(DBG_NAME("merge"));
 
     scaff_->addColdPathBlocks(notTestedBB);
 
+    // 0 = not tested, 3 = tested true, 2 = tested false.
+    int8_t runCondition = testForTrue ? 3 : 2;
+    int8_t noRunCondition = testForTrue ? 2 : 3;
+
     Value *instructionlist = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    Value *testResult = generateCallExtern(TyBool, getIsTested);
-    Value *cond = scaff_->builder_.CreateICmpEQ(testResult, CoBool(1), DBG_NAME("isTested"));
-    scaff_->builder_.CreateCondBr(cond, isTestedBB, notTestedBB);
+    Value *testResult = generateCallExtern(TyInt8, getTestResult);
+    SwitchInst *sw = scaff_->builder_.CreateSwitch(testResult, notTestedBB, 3);
+    sw->addCase(CoInt8(0), notTestedBB);
+    sw->addCase(CoInt8(runCondition), runListBB);
+    sw->addCase(CoInt8(noRunCondition), noRunListBB);
 
     scaff_->builder_.SetInsertPoint(notTestedBB);
     Value *errVal = generateErrorNoTest(CoAddr(node.astnodeValue()->nodeName_.datumValue()));
     generateReturn(errVal);
 
-    scaff_->builder_.SetInsertPoint(isTestedBB);
-    testResult = generateCallExtern(TyBool, getTestResult);
-    cond = scaff_->builder_.CreateICmpEQ(testResult, CoBool(testForTrue), DBG_NAME("testResult"));
-    scaff_->builder_.CreateCondBr(cond, runListBB, noRunListBB);
-
     scaff_->builder_.SetInsertPoint(runListBB);
     Value *listRetval = generateCallList(instructionlist, returnType);
     BasicBlock *listRetvalBB = scaff_->builder_.GetInsertBlock();
-    scaff_->builder_.CreateBr(returnBB);
+    scaff_->builder_.CreateBr(mergeBB);
 
     scaff_->builder_.SetInsertPoint(noRunListBB);
     Value *noRetval = generateVoidRetval(node);
-    scaff_->builder_.CreateBr(returnBB);
+    scaff_->builder_.CreateBr(mergeBB);
 
-    scaff_->builder_.SetInsertPoint(returnBB);
+    scaff_->builder_.SetInsertPoint(mergeBB);
     PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 2, DBG_NAME("retval"));
     retval->addIncoming(listRetval, listRetvalBB);
     retval->addIncoming(noRetval, noRunListBB);

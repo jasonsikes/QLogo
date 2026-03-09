@@ -98,25 +98,6 @@ void CallFrame::setVarAsLocal(const QString &name)
 
 
 /*
-void CallFrameStack::setTest(bool isTrue)
-{
-    Q_ASSERT(stack.size() > 0);
-    stack.first()->isTested = true;
-    stack.first()->testResult = isTrue;
-}
-
-bool CallFrameStack::isTested() const
-{
-    return std::any_of(stack.begin(), stack.end(), [](const auto &frame) { return frame->isTested; });
-}
-
-bool CallFrameStack::testedState() const
-{
-    auto it = std::find_if(stack.begin(), stack.end(), [](const auto &frame) { return frame->isTested; });
-    Q_ASSERT(it != stack.end());
-    return (*it)->testResult;
-}
-
 void CallFrameStack::setExplicitSlotList(const DatumPtr &aList)
 {
     Q_ASSERT(stack.size() > 0);
