@@ -92,7 +92,7 @@ class Kernel
 
     /// @brief The call frame stack.
     /// @note This stack is used to store the evaluation state of procedures and subprocedures while they are executing.
-    std::deque<std::unique_ptr<CallFrame>> callFrameStack_;
+    std::deque<CallFrame> callFrameStack_;
 
     /************ variables ************/
 
@@ -157,10 +157,10 @@ class Kernel
     void beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount);
 
     /// @brief Get the current call frame.
-    CallFrame *currentCallFrame() const;
+    CallFrame *currentCallFrame();
 
     /// @brief Get the topmost evaluator from the evaluation stack.
-    Evaluator *currentEvaluator() const;
+    Evaluator *currentEvaluator();
 
     /// @brief Begin or continue evaluating a list. Will return when execution is suspended.
     void ece_evaluateStack();

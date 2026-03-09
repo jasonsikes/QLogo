@@ -150,7 +150,7 @@ bool Kernel::colorFromDatumPtr(QColor &retval, const DatumPtr &colorP) const
 
 DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
 {
-    callFrameStack_.push_back(std::move(std::make_unique<CallFrame>(nullptr, nullptr, 0)));
+    callFrameStack_.emplace_back(nullptr, nullptr, 0);
     QString localPrompt = prompt + "? ";
     DatumPtr result;
     forever
@@ -159,8 +159,8 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
         {
             DatumPtr line = systemReadStream_->readListWithPrompt(localPrompt, true);
 
-            Q_ASSERT(callFrameStack_.back()->evaluationStackSize() == 0);
-            Q_ASSERT(callFrameStack_.back()->sourceNode_.isNothing());
+            Q_ASSERT(callFrameStack_.back().evaluationStackSize() == 0);
+            Q_ASSERT(callFrameStack_.back().sourceNode_.isNothing());
 
             if (line.isNothing())
             {
@@ -168,7 +168,7 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
                 result = nothing();
                 goto bailout;
             }
-            callFrameStack_.back()->pushEvaluator(line);
+            callFrameStack_.back().pushEvaluator(line);
             result = runECE();
         }
         catch (FCError *e)
@@ -427,7 +427,7 @@ int8_t Kernel::testedState() const
 {
     for (auto it = callFrameStack_.crbegin(); it != callFrameStack_.crend(); ++it)
     {
-        auto *frame = it->get();
+        auto *frame = &(*it);
         if (frame->testState_ != 0)
         {
             return frame->testState_;
@@ -466,16 +466,16 @@ Kernel::~Kernel()
 void Kernel::beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount)
 {
     ece_trace("beginProcedure: " + node->nodeName_.toString());
-    callFrameStack_.push_back(std::make_unique<CallFrame>(node, paramAry, paramCount));
+    callFrameStack_.emplace_back(node, paramAry, paramCount);
     nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
 }
 
-CallFrame *Kernel::currentCallFrame() const
+CallFrame *Kernel::currentCallFrame()
 {
-    return callFrameStack_.back().get();
+    return &(callFrameStack_.back());
 }
 
-Evaluator *Kernel::currentEvaluator() const
+Evaluator *Kernel::currentEvaluator()
 {
     return currentCallFrame()->topEvaluator();
 }
@@ -815,10 +815,9 @@ int Kernel::run()
 void bt()
 {
     Kernel &k = Kernel::get();
-    const std::deque<std::unique_ptr<CallFrame>> &stack = k.callFrameStack_;
-    for (size_t i = 0; i < stack.size(); ++i)
+    for (size_t i = 0; i < k.callFrameStack_.size(); ++i)
     {
-        CallFrame *frame = stack[i].get();
+        CallFrame *frame = &(k.callFrameStack_[i]);
         if (frame->sourceNode_.isNothing())
             std::cerr << "frame " << i << ": REPL Base" << std::endl;
         else if (frame->sourceNode_.isASTNode()
