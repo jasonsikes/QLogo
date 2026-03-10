@@ -112,11 +112,6 @@ struct CallFrame
     /// @return The evaluator at the given index.
     Evaluator *evaluatorAtIndex(std::size_t index);
 
-    // /// @brief Jump to the line in the procedure containing the given tag.
-    // /// @param node The FCGoto node.
-    // /// @return Err if the tag is not found (or nothing if the tag is found).
-    // Datum *applyGoto(FCGoto *node);
-
     /// @brief Constructor.
     /// @param aSourceNode The ASTNode source of this running procedure. 'nothing'
     /// is reserved for the global frame or PAUSE.
