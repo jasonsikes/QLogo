@@ -91,8 +91,12 @@ class Kernel
     ~Kernel();
 
     /// @brief The call frame stack.
-    /// @note This stack is used to store the evaluation state of procedures and subprocedures while they are executing.
+    /// @note This stack is used to store the evaluation state of procedures while they are executing.
     std::deque<CallFrame> callFrameStack_;
+
+    /// @brief The evaluation stack.
+    /// @note This stack is used to store the evaluation state of lists while they are executing.
+    std::deque<Evaluator> evaluationStack_;
 
     /************ variables ************/
 

@@ -23,7 +23,6 @@
 
 #include <QList>
 #include <QHash>
-#include <deque>
 
 struct Evaluator;
 struct FCGoto;
@@ -35,9 +34,8 @@ struct ASTNode;
 /// "?"), and the test state (for TEST, IFTRUE, IFFALSE).
 struct CallFrame
 {
-    /// @brief The evaluation stack.
-    /// @note This stack is used to store the evaluation state of lists and sublists while they are executing.
-    std::deque<Evaluator> evaluationStack_;
+    /// @brief The index of the first evaluator in the evaluation stack.
+    std::size_t evaluationStackStartIndex_ = 0;
 
     /// @brief The list of parameters being processed.
     DatumPtr parameters_;
@@ -92,11 +90,7 @@ struct CallFrame
 
     /// @brief Return the topmost Evaluator object.
     /// @return The topmost Evaluator object.
-    Evaluator *topEvaluator()
-    {
-        Q_ASSERT( ! evaluationStack_.empty());
-        return &(evaluationStack_.back());
-    }
+    Evaluator *topEvaluator();
 
     /// @brief Insert an entry for 'name' in the variables hash. Save the previous value
     /// of the variable in the localVars hash. Store 'nothing' for the entry if name wasn't
@@ -108,6 +102,15 @@ struct CallFrame
     /// @param node The ASTNode of the new procedure to continue with.
     /// @param arguments The linked list of arguments to apply to the new node.
     void applyContinuation(ASTNode *node, const DatumPtr &arguments);
+
+    /// @brief return true if the evaluation stack is empty.
+    /// @return True if the evaluation stack is empty, false otherwise.
+    bool isEvaluationStackViewEmpty() const;
+
+    /// @brief Get the evaluator at the given index.
+    /// @param index The index of the evaluator to get.
+    /// @return The evaluator at the given index.
+    Evaluator *evaluatorAtIndex(std::size_t index);
 
     // /// @brief Jump to the line in the procedure containing the given tag.
     // /// @param node The FCGoto node.

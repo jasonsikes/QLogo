@@ -829,9 +829,9 @@ void bt()
                       << std::endl;
         else
             std::cerr << "frame " << i << ": ?" << std::endl;
-        for (size_t j = 0; j < frame->evaluationStack_.size(); ++j)
+        for (size_t j = 0; j < frame->evaluationStackSize(); ++j)
         {
-            Evaluator *ev = &frame->evaluationStack_[j];
+            Evaluator *ev = frame->evaluatorAtIndex(j);
             std::cerr << "  list: "
                       << ev->list_.toString(Datum::ToStringFlags_Show).toStdString() << std::endl;
         }

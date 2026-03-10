@@ -37,7 +37,7 @@ void FCError::commonInit()
         if (cf->sourceNode_.isASTNode())
         {
             procedure() = cf->sourceNode_.astnodeValue()->nodeName_;
-            line() = cf->evaluationStack_.back().list_;
+            line() = cf->topEvaluator()->list_;
         }
     }
     k->currentError_ = DatumPtr(this);

@@ -40,6 +40,7 @@ CallFrame::CallFrame(ASTNode *node, Datum **paramAry, uint32_t paramCount)
         arguments_ = DatumPtr(new List(paramAry[i], arguments_.listValue()));
     }
     isReadingArgs_ = true;
+    evaluationStackStartIndex_ = Kernel::get().evaluationStack_.size();
 }
 
 CallFrame::~CallFrame()
@@ -70,19 +71,34 @@ void CallFrame::applyContinuation(ASTNode *node, const DatumPtr &arguments)
     isReadingArgs_ = true;
 }
 
+Evaluator *CallFrame::topEvaluator()
+{
+    return &(Kernel::get().evaluationStack_.back());
+}
+
+bool CallFrame::isEvaluationStackViewEmpty() const
+{
+    return evaluationStackStartIndex_ == Kernel::get().evaluationStack_.size();
+}
+
+Evaluator *CallFrame::evaluatorAtIndex(std::size_t index)
+{
+    return &(Kernel::get().evaluationStack_[evaluationStackStartIndex_ + index]);
+}
+
 void CallFrame::pushEvaluator(const DatumPtr &aList)
 {
-    evaluationStack_.emplace_back(this, aList);
+    Kernel::get().evaluationStack_.emplace_back(this, aList);
 }
 
 void CallFrame::popEvaluator()
 {
-    evaluationStack_.pop_back();
+    Kernel::get().evaluationStack_.pop_back();
 }
 
 size_t CallFrame::evaluationStackSize() const
 {
-    return evaluationStack_.size();
+    return Kernel::get().evaluationStack_.size() - evaluationStackStartIndex_;
 }
 
 void CallFrame::setVarAsLocal(const QString &name)
