@@ -26,7 +26,7 @@ Evaluator::~Evaluator()
         if ((d->isa_ & Datum::typePersistentMask) == 0)
         {
             (d->retainCount_)--;
-            if ((d != retvalToParent_) && (d->retainCount_ <= 0))
+            if (d->retainCount_ <= 0)
                 delete d;
         }
     }
