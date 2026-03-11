@@ -16,7 +16,8 @@ Evaluator::~Evaluator()
     if (handle_ != nullptr)
     {
         Q_ASSERT(handle_->resume == nullptr);
-        handle_->destroy(handle_);
+        if (handle_->destroy != nullptr)
+            handle_->destroy(handle_);
     }
 
     // Release the objects in the release pool.
