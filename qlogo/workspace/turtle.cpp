@@ -146,23 +146,81 @@ void Turtle::moveTurtleWrap(const QTransform &newTransform)
     Config::get().mainInterface()->emitVertex();
 }
 
-// Move the turtle to a new position, but only if the new position is within the
-// canvas. If the new position is outside the canvas, an error is thrown.
+// Returns the point where the line from start to end first crosses a boundary,
+// or the end point if it remains within bounds.
+QPointF clampLineToBounds(double lineStartX, double lineStartY,
+                          double lineEndX, double lineEndY,
+                          double boundX, double boundY)
+{
+    const double dx = lineEndX - lineStartX;
+    const double dy = lineEndY - lineStartY;
+    double minT = 1.0;
 
+    const auto considerBoundary = [&](double denom, double numerator) {
+        if (std::abs(denom) > std::numeric_limits<double>::epsilon())
+        {
+            const double t = numerator / denom;
+            if (t >= 0 && t < minT && t <= 1.0)
+                minT = t;
+        }
+    };
+
+    considerBoundary(dx, boundX - lineStartX);
+    considerBoundary(dx, -boundX - lineStartX);
+    considerBoundary(dy, boundY - lineStartY);
+    considerBoundary(dy, -boundY - lineStartY);
+
+    QPointF result(lineStartX + minT * dx, lineStartY + minT * dy);
+
+    // When stopped at a boundary, nudge inward so we stay just inside
+    if (minT < 1.0)
+    {
+        const double eps = std::max({boundX, boundY, 1.0}) * 1e-9;
+        const double tol = std::max(eps, std::numeric_limits<double>::epsilon() * 10);
+        if (std::abs(result.x() - boundX) < tol)
+            result.setX(boundX - eps);
+        else if (std::abs(result.x() + boundX) < tol)
+            result.setX(-boundX + eps);
+        if (std::abs(result.y() - boundY) < tol)
+            result.setY(boundY - eps);
+        else if (std::abs(result.y() + boundY) < tol)
+            result.setY(-boundY + eps);
+    }
+
+    return result;
+}
+
+// Move the turtle to a new position, stopping at the boundary if the destination
+// would be outside the canvas.
 Datum* Turtle::moveTurtleFence(const QTransform &newTransform)
 {
-    double lineEndX = newTransform.dx();
-    double lineEndY = newTransform.dy();
-    double boundX = Config::get().mainInterface()->boundX();
-    double boundY = Config::get().mainInterface()->boundY();
+    const double lineStartX = turtleTransform_.dx();
+    const double lineStartY = turtleTransform_.dy();
+    const double lineEndX = newTransform.dx();
+    const double lineEndY = newTransform.dy();
+    const double boundX = Config::get().mainInterface()->boundX();
+    const double boundY = Config::get().mainInterface()->boundY();
 
-    if ((lineEndX < -boundX) || (lineEndX > boundX) || (lineEndY < -boundY) || (lineEndY > boundY))
+    const QPointF clamped = clampLineToBounds(lineStartX, lineStartY,
+                                              lineEndX, lineEndY,
+                                              boundX, boundY);
+
+    turtleTransform_ = QTransform{newTransform.m11(),
+                                 newTransform.m12(),
+                                 newTransform.m13(),
+                                 newTransform.m21(),
+                                 newTransform.m22(),
+                                 newTransform.m23(),
+                                 clamped.x(),
+                                 clamped.y(),
+                                 newTransform.m33()};
+    Config::get().mainInterface()->setTurtlePos(&turtleTransform_);
+    Config::get().mainInterface()->emitVertex();
+
+    if (lineEndX != clamped.x() || lineEndY != clamped.y())
     {
         return FCError::turtleOutOfBounds();
     }
-    turtleTransform_ = newTransform;
-    Config::get().mainInterface()->setTurtlePos(&turtleTransform_);
-    Config::get().mainInterface()->emitVertex();
     return Datum::notADatum();
 }
 
