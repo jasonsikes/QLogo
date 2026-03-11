@@ -333,20 +333,6 @@ EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr)
     Kernel::get().setDatumForName(d, w->toString(Datum::ToStringFlags_Key));
 }
 
-/// Run the given list. Output whatever the list outputs.
-/// @param eAddr a pointer to the Evaluator object context.
-/// @param listAddr a pointer to a List object which contains QLogo instructions to run
-/// @return the result of the list execution
-// EXPORTC addr_t runList(addr_t eAddr, addr_t listAddr)
-// {
-//     auto *e = reinterpret_cast<NewEvaluator *>(eAddr);
-//     auto *list = reinterpret_cast<List *>(listAddr);
-//     Datum *result = e->subExec(list);
-//     e->watch(result);
-
-//     return reinterpret_cast<addr_t>(result);
-// }
-
 /// Push a list onto the evaluation stack for explicit-control evaluation.
 /// The caller will then suspend; the driver runs this list to completion, then resumes the caller.
 /// If the list is invalid (e.g. not a list, or word that runparses to error), sets lastSubExecResult and does not push.
