@@ -621,10 +621,11 @@ void Kernel::ece_exitProcedure()
         nextOperation_ = &Kernel::ece_evaluateStack;
         break;
     }
+    case Datum::typeNothing:
+    case Datum::typeNothingPersistent:
     case Datum::typeASTNode:
     {
-        // TODO: consider using the procedure's ASTNode for the return value.
-        DatumPtr retval = currentCallFrame()->retvalToParent_;
+        DatumPtr retval = currentCallFrame()->sourceNode_;
         ece_trace("ece_exitProcedure with no return value: popping call frame");
         callFrameStack_.pop_back();
         currentCallFrame()->topEvaluator()->retvalFromChild_ = retval;
