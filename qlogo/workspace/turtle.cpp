@@ -149,7 +149,7 @@ void Turtle::moveTurtleWrap(const QTransform &newTransform)
 // Move the turtle to a new position, but only if the new position is within the
 // canvas. If the new position is outside the canvas, an error is thrown.
 
-void Turtle::moveTurtleFence(const QTransform &newTransform)
+Datum* Turtle::moveTurtleFence(const QTransform &newTransform)
 {
     double lineEndX = newTransform.dx();
     double lineEndY = newTransform.dy();
@@ -158,11 +158,12 @@ void Turtle::moveTurtleFence(const QTransform &newTransform)
 
     if ((lineEndX < -boundX) || (lineEndX > boundX) || (lineEndY < -boundY) || (lineEndY > boundY))
     {
-        throw FCError::turtleOutOfBounds();
+        return FCError::turtleOutOfBounds();
     }
     turtleTransform_ = newTransform;
     Config::get().mainInterface()->setTurtlePos(&turtleTransform_);
     Config::get().mainInterface()->emitVertex();
+    return Datum::notADatum();
 }
 
 // Move the turtle to a new position, adjusting the canvas boundaries,
@@ -186,23 +187,22 @@ void Turtle::moveTurtleWindow(const QTransform &newTransform)
     Config::get().mainInterface()->emitVertex();
 }
 
-void Turtle::moveTurtle(const QTransform &newTransform)
+Datum* Turtle::moveTurtle(const QTransform &newTransform)
 {
     switch (mode_)
     {
     case turtleWrap:
         moveTurtleWrap(newTransform);
-        break;
+        return Datum::notADatum();
     case turtleFence:
-        moveTurtleFence(newTransform);
-        break;
+        return moveTurtleFence(newTransform);
     case turtleWindow:
         moveTurtleWindow(newTransform);
-        break;
+        return Datum::notADatum();
     default:
         qWarning() << "Invalid turtle mode: " << mode_;
         moveTurtleWindow(newTransform);
-        break;
+        return Datum::notADatum();
     }
 }
 
@@ -211,7 +211,7 @@ void Turtle::drawArc(double angle, double radius)
     Config::get().mainInterface()->drawArc(angle, radius);
 }
 
-void Turtle::forward(double steps)
+Datum* Turtle::forward(double steps)
 {
     QTransform newTransform(turtleTransform_.m11(),
                            turtleTransform_.m12(),
@@ -222,7 +222,7 @@ void Turtle::forward(double steps)
                            turtleTransform_.dx() + steps * turtleTransform_.m21(),
                            turtleTransform_.dy() + steps * turtleTransform_.m22(),
                            turtleTransform_.m33());
-    moveTurtle(newTransform);
+    return moveTurtle(newTransform);
 }
 
 void Turtle::rotate(double angle)
@@ -236,7 +236,7 @@ void Turtle::rotate(double angle)
 
 QPointF Turtle::getxy() const
 {
-    return QPointF(turtleTransform_.dx(), turtleTransform_.dy());
+    return {turtleTransform_.dx(), turtleTransform_.dy()};
 }
 
 void Turtle::setMode(TurtleModeEnum newMode)
@@ -274,7 +274,7 @@ double Turtle::getHeading() const
     return retval;
 }
 
-void Turtle::setxy(double x, double y)
+Datum* Turtle::setxy(double x, double y)
 {
     QTransform newTransform(turtleTransform_.m11(),
                            turtleTransform_.m12(),
@@ -285,19 +285,19 @@ void Turtle::setxy(double x, double y)
                            x,
                            y,
                            turtleTransform_.m33());
-    moveTurtle(newTransform);
+    return moveTurtle(newTransform);
 }
 
-void Turtle::setx(double x)
+Datum* Turtle::setx(double x)
 {
     double y = turtleTransform_.dy();
-    setxy(x, y);
+    return setxy(x, y);
 }
 
-void Turtle::sety(double y)
+Datum* Turtle::sety(double y)
 {
     double x = turtleTransform_.dx();
-    setxy(x, y);
+    return setxy(x, y);
 }
 
 void Turtle::moveToHome()
@@ -318,7 +318,7 @@ const QColor &Turtle::getPenColor() const
 
 QSizeF Turtle::getScale() const
 {
-    return QSizeF(scaleX_, scaleY_);
+    return {scaleX_, scaleY_};
 }
 
 void Turtle::setScale(double newScaleX, double newScaleY)

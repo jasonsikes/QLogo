@@ -58,9 +58,9 @@ class Turtle
                     bool isXBoundary,
                     double mult);
 
-    void moveTurtle(const QTransform &newTransform);
+    Datum* moveTurtle(const QTransform &newTransform);
     void moveTurtleWrap(const QTransform &newTransform);
-    void moveTurtleFence(const QTransform &newTransform);
+    Datum* moveTurtleFence(const QTransform &newTransform);
     void moveTurtleWindow(const QTransform &newTransform);
 
     /// @brief Private constructor for singleton pattern.
@@ -130,7 +130,8 @@ class Turtle
 
     /// @brief Move the turtle forward by a given number of steps.
     /// @param steps The number of steps to move the turtle forward.
-    void forward(double steps);
+    /// @return notADatum if successful, otherwise an error.
+    Datum* forward(double steps);
 
     /// @brief Set the turtle mode.
     /// @param newMode The new turtle mode.
@@ -151,15 +152,15 @@ class Turtle
     /// @brief Set the turtle position.
     /// @param x The new x coordinate of the turtle.
     /// @param y The new y coordinate of the turtle.
-    void setxy(double x, double y);
+    Datum* setxy(double x, double y);
 
     /// @brief Set the x coordinate of the turtle.
     /// @param x The new x coordinate of the turtle.
-    void setx(double x);
+    Datum* setx(double x);
 
     /// @brief Set the y coordinate of the turtle.
     /// @param y The new y coordinate of the turtle.
-    void sety(double y);
+    Datum* sety(double y);
 
     /// @brief Set the pen color.
     /// @param c The new pen color.

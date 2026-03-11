@@ -41,8 +41,7 @@ COD***/
 Value *Compiler::genForward(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *distance = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    generateCallExtern(TyVoid, moveTurtleForward, PaDouble(distance));
-    return generateVoidRetval(node);
+    return generateCallExtern(TyAddr, moveTurtleForward, PaDouble(distance));
 }
 
 /***DOC BACK BK
@@ -60,8 +59,7 @@ Value *Compiler::genBack(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *reverseDistance = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *distance = scaff_->builder_.CreateFNeg(reverseDistance, DBG_NAME("negativeDistance"));
-    generateCallExtern(TyVoid, moveTurtleForward, PaDouble(distance));
-    return generateVoidRetval(node);
+    return generateCallExtern(TyAddr, moveTurtleForward, PaDouble(distance));
 }
 /***DOC LEFT LT
 LEFT degrees
@@ -109,8 +107,7 @@ Value *Compiler::genSetxy(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *x = generateChild(node.astnodeValue(), 0, RequestReturnReal);
     Value *y = generateChild(node.astnodeValue(), 1, RequestReturnReal);
-    generateCallExtern(TyVoid, setTurtleXY, PaDouble(x), PaDouble(y));
-    return generateVoidRetval(node);
+    return generateCallExtern(TyVoid, setTurtleXY, PaDouble(x), PaDouble(y));
 }
 /***DOC SETX
 SETX xcor
@@ -124,8 +121,7 @@ COD***/
 Value *Compiler::genSetx(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *x = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    generateCallExtern(TyVoid, setTurtleX, PaDouble(x));
-    return generateVoidRetval(node);
+    return generateCallExtern(TyAddr, setTurtleX, PaDouble(x));
 }
 /***DOC SETY
 SETY ycor
@@ -139,8 +135,7 @@ COD***/
 Value *Compiler::genSety(const DatumPtr &node, RequestReturnType returnType)
 {
     Value *y = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    generateCallExtern(TyVoid, setTurtleY, PaDouble(y));
-    return generateVoidRetval(node);
+    return generateCallExtern(TyAddr, setTurtleY, PaDouble(y));
 }
 /***DOC SETPOS
 SETPOS pos
@@ -153,8 +148,7 @@ COD***/
 Value *Compiler::genSetpos(const DatumPtr &node, RequestReturnType returnType)
 {
     AllocaInst *posAry = generateNumberAryFromDatum(node.astnodeValue(), node.astnodeValue()->childAtIndex(0), 2);
-    generateCallExtern(TyVoid, setTurtlePos, PaAddr(posAry));
-    return generateVoidRetval(node);
+    return generateCallExtern(TyAddr, setTurtlePos, PaAddr(posAry));
 }
 /***DOC SETHEADING SETH
 SETHEADING degrees

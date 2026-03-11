@@ -1493,9 +1493,9 @@ EXPORTC addr_t runparseDatum(addr_t eAddr, addr_t wordorlistAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC void moveTurtleForward(double distance)
+EXPORTC addr_t moveTurtleForward(double distance)
 {
-    Turtle::get().forward(distance);
+    return reinterpret_cast<addr_t>(Turtle::get().forward(distance));
 }
 
 EXPORTC void moveTurtleRotate(double angle)
@@ -1503,27 +1503,27 @@ EXPORTC void moveTurtleRotate(double angle)
     Turtle::get().rotate(angle);
 }
 
-EXPORTC void setTurtleXY(double x, double y)
+EXPORTC addr_t setTurtleXY(double x, double y)
 {
-    Turtle::get().setxy(x, y);
+    return reinterpret_cast<addr_t>(Turtle::get().setxy(x, y));
 }
 
-EXPORTC void setTurtleX(double x)
+EXPORTC addr_t setTurtleX(double x)
 {
-    Turtle::get().setx(x);
+    return reinterpret_cast<addr_t>(Turtle::get().setx(x));
 }
 
-EXPORTC void setTurtleY(double y)
+EXPORTC addr_t setTurtleY(double y)
 {
-    Turtle::get().sety(y);
+    return reinterpret_cast<addr_t>(Turtle::get().sety(y));
 }
 
-EXPORTC void setTurtlePos(addr_t posAddr)
+EXPORTC addr_t setTurtlePos(addr_t posAddr)
 {
     const auto *pos = reinterpret_cast<const double *>(posAddr);
     double x = pos[0];
     double y = pos[1];
-    Turtle::get().setxy(x, y);
+    return reinterpret_cast<addr_t>(Turtle::get().setxy(x, y));
 }
 
 EXPORTC void setTurtleHeading(double newHeading)
