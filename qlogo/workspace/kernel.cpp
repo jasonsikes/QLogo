@@ -524,8 +524,8 @@ void Kernel::ece_decideEmptyEvaluationStack()
             // We have finished processing a default value for an optional parameter.
             DatumPtr defaultValue = currentCallFrame()->retvalToParent_;
 
-            // Any error here gets converted.
-            if (defaultValue.isErr())
+            // Any result that is not a data type gets converted to a bad default error.
+            if ((defaultValue.isa() & Datum::typeDataMask) == 0)
             {
                 currentCallFrame()->retvalToParent_ = DatumPtr(FCError::badDefault(currentCallFrame()->currentArgument_));
                 nextOperation_ = &Kernel::ece_exitProcedure;
