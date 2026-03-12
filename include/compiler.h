@@ -136,6 +136,9 @@ class Compiler
     // Generate a call to construct error: "X has no value"
     llvm::Value *generateErrorNoValue(llvm::Value *what);
 
+    // Generate a call to construct error: "Graphics not initialized"
+    llvm::Value *generateErrorNoGraphics();
+
     // Generate a call to construct error: "Not enough inputs to X"
     llvm::Value *generateErrorNotEnoughInputs(ASTNode *x);
 

@@ -831,6 +831,12 @@ Value *Compiler::generateErrorNotEnoughInputs(ASTNode *x)
     return errObj;
 }
 
+Value *Compiler::generateErrorNoGraphics()
+{
+    Value *errObj = generateCallExtern(TyAddr, getErrorNoGraphics, PaAddr(scaff_->evaluator_));
+    return errObj;
+}
+
 Value *Compiler::generateImmediateReturn(llvm::Value *retval)
 {
     BasicBlock *bailoutBB = scaff_->createBasicBlock(DBG_NAME("bailout"));

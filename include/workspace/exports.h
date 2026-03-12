@@ -40,6 +40,7 @@ EXPORTC addr_t getErrorNoTest(addr_t eAddr, addr_t whoAddr);
 EXPORTC addr_t getErrorNoOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr);
 EXPORTC addr_t getErrorNotEnoughInputs(addr_t eAddr, addr_t xAddr);
 EXPORTC addr_t getErrorNoValue(addr_t eAddr, addr_t whatAddr);
+EXPORTC addr_t getErrorNoGraphics(addr_t eAddr);
 EXPORTC addr_t getErrorCustom(addr_t eAddr, addr_t tagAddr, addr_t outputAddr);
 EXPORTC addr_t getCtrlReturn(addr_t eAddr, addr_t astNodeAddr, addr_t retvalAddr);
 EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t paramAryAddr, uint32_t paramCount);
