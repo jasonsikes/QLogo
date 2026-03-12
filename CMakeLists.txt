@@ -11,22 +11,19 @@ set(QLOGO_GUI Psychi)
 set(QLOGO_HELP qlogo_help.db)
 set(QLOGO_LIB qlogo_library.db)
 
-set(CMAKE_BUILD_TYPE "Debug")
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 if (CMAKE_BUILD_TYPE)
     if(CMAKE_BUILD_TYPE STREQUAL "Release")
         set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
+    elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        add_compile_definitions(QLOGO_DEBUG)
     endif()
 endif()
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
-
-# Add debugging flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
