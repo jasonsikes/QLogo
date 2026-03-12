@@ -1625,7 +1625,7 @@ EXPORTC void setTurtleMode(int mode)
     auto newMode = static_cast<TurtleModeEnum>(mode);
     if (Turtle::get().getMode() != newMode)
     {
-        bool isCanvasBounded = (newMode == turtleWindow);
+        bool isCanvasBounded = ((newMode == turtleWindow) || (newMode == turtleFence));
         Turtle::get().setMode(newMode);
         Config::get().mainInterface()->setIsCanvasBounded(isCanvasBounded);
     }

@@ -212,16 +212,12 @@ class EmptyList : public List
     /// @return A pointer to the singleton EmptyList instance.
     static EmptyList *instance();
 
-    /// @brief Deleted copy constructor to prevent copying.
+    // Deleted operators to prevent copying.
     EmptyList(const EmptyList &) = delete;
-
-    /// @brief Deleted assignment operator to prevent assignment.
+    EmptyList(EmptyList *) = delete;
     EmptyList &operator=(const EmptyList &) = delete;
-
-    /// @brief Deleted move constructor to prevent moving.
+    EmptyList &operator=(EmptyList *) = delete;
     EmptyList(EmptyList &&) = delete;
-
-    /// @brief Deleted move assignment operator to prevent move assignment.
     EmptyList &operator=(EmptyList &&) = delete;
 
     QString toString(ToStringFlags flags = ToStringFlags_None,

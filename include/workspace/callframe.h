@@ -124,6 +124,7 @@ struct CallFrame
 
     CallFrame() = delete;
     CallFrame(const CallFrame &) = delete;
+    CallFrame(CallFrame *) = delete;
     CallFrame(CallFrame &&) = delete;
     CallFrame &operator=(const CallFrame &) = delete;
     CallFrame &operator=(CallFrame &&) = delete;

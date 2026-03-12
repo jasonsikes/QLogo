@@ -69,13 +69,18 @@ class Library : public DatabaseConnection
 
     /// @brief Private constructor - Singleton
     Library();
-    Library(const Library &) = delete;
-    Library &operator=(const Library &) = delete;
 
   public:
     /// @brief Get the singleton instance of the Library class.
     /// @return Reference to the singleton Library instance.
     static Library &get();
+
+    Library(const Library &) = delete;
+    Library(Library *) = delete;
+    Library(Library &&) = delete;
+    Library &operator=(const Library &) = delete;
+    Library &operator=(Library *) = delete;
+    Library &operator=(Library &&) = delete;
 
     /// @brief Destructor for the Library class.
     ~Library() override = default;
@@ -97,13 +102,18 @@ class Help : public DatabaseConnection
 
     /// @brief Private constructor - Singleton
     Help();
-    Help(const Help &) = delete;
-    Help &operator=(const Help &) = delete;
 
   public:
     /// @brief Get the singleton instance of the Help class.
     /// @return Reference to the singleton Help instance.
     static Help &get();
+
+    Help(const Help &) = delete;
+    Help(Help *) = delete;
+    Help(Help &&) = delete;
+    Help &operator=(const Help &) = delete;
+    Help &operator=(Help *) = delete;
+    Help &operator=(Help &&) = delete;
 
     /// @brief Destructor for the Help class.
     ~Help() override = default;

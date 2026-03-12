@@ -73,11 +73,6 @@ class Kernel
     /// @brief Private constructor for singleton pattern.
     Kernel();
 
-    Kernel(const Kernel &) = delete;
-    Kernel(Kernel &&) = delete;
-    Kernel &operator=(const Kernel &) = delete;
-    Kernel &operator=(Kernel &&) = delete;
-
   public:
     /// @brief Get the singleton instance of the Kernel class.
     /// @return The singleton instance of the Kernel class.
@@ -86,6 +81,13 @@ class Kernel
         static Kernel instance;
         return instance;
     }
+
+    // Deleted operators to prevent copying.
+    Kernel(const Kernel &) = delete;
+    Kernel(Kernel *) = delete;
+    Kernel(Kernel &&) = delete;
+    Kernel &operator=(const Kernel &) = delete;
+    Kernel &operator=(Kernel &&) = delete;
 
     /// @brief Destructor.
     ~Kernel();

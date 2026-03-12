@@ -14,15 +14,6 @@ class Datum
     friend class ListIterator;
     friend class DatumPtr;
 
-private:
-    // Explicitly private because Datums are not relocatable.
-    // Their addresses are used as key values for mapping operations.
-    Datum &operator=(const Datum &) = delete;
-    Datum &operator=(Datum &&) = delete;
-    Datum &operator=(Datum *) = delete;
-    Datum(const Datum &) = delete;
-    Datum(Datum &&) = delete;
-
   protected:
     /// @brief Protected constructor to prevent direct instantiation.
     ///
@@ -73,6 +64,15 @@ private:
     ///
     /// @return A pointer to the singleton Datum instance.
     static Datum *notADatum();
+
+    // Deleted operators because Datums are not relocatable.
+    // Their addresses are used as key values for mapping operations.
+    Datum &operator=(const Datum &) = delete;
+    Datum &operator=(Datum &&) = delete;
+    Datum &operator=(Datum *) = delete;
+    Datum(const Datum &) = delete;
+    Datum(Datum *) = delete;
+    Datum(Datum &&) = delete;
 
     /// @brief Destructor.
     virtual ~Datum();

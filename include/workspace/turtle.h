@@ -66,11 +66,6 @@ class Turtle
     /// @brief Private constructor for singleton pattern.
     Turtle();
 
-    Turtle(const Turtle &) = delete;
-    Turtle(Turtle &&) = delete;
-    Turtle &operator=(const Turtle &) = delete;
-    Turtle &operator=(Turtle &&) = delete;
-
   public:
     /// @brief Get the singleton instance of the Turtle class.
     /// @return The singleton instance of the Turtle class.
@@ -79,6 +74,13 @@ class Turtle
         static Turtle instance;
         return instance;
     }
+
+    // Deleted operators to prevent copying.
+    Turtle(const Turtle &) = delete;
+    Turtle(Turtle *) = delete;
+    Turtle &operator=(const Turtle &) = delete;
+    Turtle &operator=(Turtle *) = delete;
+    Turtle &operator=(Turtle &&) = delete;
 
     /// @brief Destructor for the Turtle class.
     ~Turtle() = default;

@@ -38,6 +38,8 @@
 #include <iostream>
 #include <cstdlib> // arc4random_uniform()
 
+
+#ifdef QLOGO_DEBUG
 void ece_trace(const QString &msg)
 {
     static bool doTrace = Config::get().traceEvaluator_;
@@ -46,6 +48,9 @@ void ece_trace(const QString &msg)
         qInfo() << "ece_trace: " << msg;
     }
 }
+#else
+#define ece_trace(msg) ((void)0)
+#endif
 
 /// @brief Clean a procedure parameter by removing ':' and '"' from the parameter name if it is a word.
 /// @param parameter The parameter to clean.

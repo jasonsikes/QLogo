@@ -62,11 +62,6 @@ class Procedures
     /// @brief Private constructor for singleton pattern.
     Procedures();
 
-    Procedures(const Procedures &) = delete;
-    Procedures(Procedures &&) = delete;
-    Procedures &operator=(const Procedures &) = delete;
-    Procedures &operator=(Procedures &&) = delete;
-
   public:
     /// @brief Get the singleton instance of the Procedures class.
     /// @return The singleton instance of the Procedures class.
@@ -75,6 +70,13 @@ class Procedures
         static Procedures instance;
         return instance;
     }
+
+    Procedures(const Procedures &) = delete;
+    Procedures(Procedures *) = delete;
+    Procedures(Procedures &&) = delete;
+    Procedures &operator=(const Procedures &) = delete;
+    Procedures &operator=(Procedures *) = delete;
+    Procedures &operator=(Procedures &&) = delete;
 
     /// @brief Destructor.
     ~Procedures() = default;

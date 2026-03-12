@@ -97,6 +97,7 @@ struct Evaluator
 
     Evaluator() = delete;
     Evaluator(const Evaluator &) = delete;
+    Evaluator(Evaluator *) = delete;
     Evaluator(Evaluator &&) = delete;
     Evaluator &operator=(const Evaluator &) = delete;
     Evaluator &operator=(Evaluator &&) = delete;

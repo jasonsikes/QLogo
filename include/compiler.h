@@ -252,11 +252,6 @@ class Compiler
     /// @brief Private constructor for singleton pattern.
     Compiler();
 
-    Compiler(const Compiler &) = delete;
-    Compiler(Compiler &&) = delete;
-    Compiler &operator=(const Compiler &) = delete;
-    Compiler &operator=(Compiler &&) = delete;
-
   public:
     /// @brief Get the singleton instance of the Compiler class.
     /// @return The singleton instance of the Compiler class.
@@ -265,6 +260,11 @@ class Compiler
         static Compiler instance;
         return instance;
     }
+
+    Compiler(const Compiler &) = delete;
+    Compiler(Compiler &&) = delete;
+    Compiler &operator=(const Compiler &) = delete;
+    Compiler &operator=(Compiler &&) = delete;
 
     /// @brief Destructor.
     ~Compiler();

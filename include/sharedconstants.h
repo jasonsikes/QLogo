@@ -103,10 +103,11 @@ class Config
 
   public:
     Config() = default;
-    Config(const Config &other) = delete;
-    Config(Config &&other) = delete;
-    Config &operator=(const Config &other) = delete;
-    Config &operator=(Config &&other) = delete;
+    Config(const Config &) = delete;
+    Config(Config *) = delete;
+    Config(Config &&) = delete;
+    Config &operator=(const Config &) = delete;
+    Config &operator=(Config &&) = delete;
 
 #ifdef DEBUG
 const bool debugBuild_ = true;
