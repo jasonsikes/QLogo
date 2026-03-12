@@ -1504,9 +1504,10 @@ EXPORTC addr_t runparseDatum(addr_t eAddr, addr_t wordorlistAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t moveTurtleForward(double distance)
+EXPORTC addr_t moveTurtleForward(ASTNode *node, double distance)
 {
-    return reinterpret_cast<addr_t>(Turtle::get().forward(distance));
+    auto retval = Turtle::get().forward(distance);
+    return reinterpret_cast<addr_t>(retval != nullptr ? retval : Datum::notADatum());
 }
 
 EXPORTC void moveTurtleRotate(double angle)
@@ -1514,27 +1515,31 @@ EXPORTC void moveTurtleRotate(double angle)
     Turtle::get().rotate(angle);
 }
 
-EXPORTC addr_t setTurtleXY(double x, double y)
+EXPORTC addr_t setTurtleXY(ASTNode *node, double x, double y)
 {
-    return reinterpret_cast<addr_t>(Turtle::get().setxy(x, y));
+    auto retval = Turtle::get().setxy(x, y);
+    return reinterpret_cast<addr_t>(retval != nullptr ? retval : Datum::notADatum());
 }
 
-EXPORTC addr_t setTurtleX(double x)
+EXPORTC addr_t setTurtleX(ASTNode *node, double x)
 {
-    return reinterpret_cast<addr_t>(Turtle::get().setx(x));
+    auto retval = Turtle::get().setx(x);
+    return reinterpret_cast<addr_t>(retval != nullptr ? retval : Datum::notADatum());
 }
 
-EXPORTC addr_t setTurtleY(double y)
+EXPORTC addr_t setTurtleY(ASTNode *node, double y)
 {
-    return reinterpret_cast<addr_t>(Turtle::get().sety(y));
+    auto retval = Turtle::get().sety(y);
+    return reinterpret_cast<addr_t>(retval != nullptr ? retval : Datum::notADatum());
 }
 
-EXPORTC addr_t setTurtlePos(addr_t posAddr)
+EXPORTC addr_t setTurtlePos(ASTNode *node, addr_t posAddr)
 {
     const auto *pos = reinterpret_cast<const double *>(posAddr);
     double x = pos[0];
     double y = pos[1];
-    return reinterpret_cast<addr_t>(Turtle::get().setxy(x, y));
+    auto retval = Turtle::get().setxy(x, y);
+    return reinterpret_cast<addr_t>(retval != nullptr ? retval : Datum::notADatum());
 }
 
 EXPORTC void setTurtleHeading(double newHeading)

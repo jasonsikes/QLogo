@@ -132,7 +132,7 @@ class Turtle
 
     /// @brief Move the turtle forward by a given number of steps.
     /// @param steps The number of steps to move the turtle forward.
-    /// @return notADatum if successful, otherwise an error.
+    /// @return nullptr if successful, otherwise an error.
     Datum* forward(double steps);
 
     /// @brief Set the turtle mode.
@@ -154,14 +154,17 @@ class Turtle
     /// @brief Set the turtle position.
     /// @param x The new x coordinate of the turtle.
     /// @param y The new y coordinate of the turtle.
+    /// @return nullptr if successful, otherwise an error.
     Datum* setxy(double x, double y);
 
     /// @brief Set the x coordinate of the turtle.
     /// @param x The new x coordinate of the turtle.
+    /// @return nullptr if successful, otherwise an error.
     Datum* setx(double x);
 
     /// @brief Set the y coordinate of the turtle.
     /// @param y The new y coordinate of the turtle.
+    /// @return nullptr if successful, otherwise an error.
     Datum* sety(double y);
 
     /// @brief Set the pen color.

@@ -192,6 +192,7 @@ QPointF clampLineToBounds(double lineStartX, double lineStartY,
 
 // Move the turtle to a new position, stopping at the boundary if the destination
 // would be outside the canvas.
+// returns an error if the turtle is out of bounds, else returns nullptr.
 Datum* Turtle::moveTurtleFence(const QTransform &newTransform)
 {
     const double lineStartX = turtleTransform_.dx();
@@ -221,7 +222,7 @@ Datum* Turtle::moveTurtleFence(const QTransform &newTransform)
     {
         return FCError::turtleOutOfBounds();
     }
-    return Datum::notADatum();
+    return nullptr;
 }
 
 // Move the turtle to a new position, adjusting the canvas boundaries,
@@ -251,16 +252,16 @@ Datum* Turtle::moveTurtle(const QTransform &newTransform)
     {
     case turtleWrap:
         moveTurtleWrap(newTransform);
-        return Datum::notADatum();
+        return nullptr;
     case turtleFence:
         return moveTurtleFence(newTransform);
     case turtleWindow:
         moveTurtleWindow(newTransform);
-        return Datum::notADatum();
+        return nullptr;
     default:
         qWarning() << "Invalid turtle mode: " << mode_;
         moveTurtleWindow(newTransform);
-        return Datum::notADatum();
+        return nullptr;
     }
 }
 
