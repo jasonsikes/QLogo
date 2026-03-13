@@ -1626,7 +1626,7 @@ EXPORTC addr_t getScrunch(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC void setTurtleVisible(int visible)
+EXPORTC void setTurtleVisible(uint32_t visible)
 {
     Turtle::get().setIsTurtleVisible(visible);
 }
@@ -1636,7 +1636,7 @@ EXPORTC void clean(void)
     Config::get().mainInterface()->clearCanvas();
 }
 
-EXPORTC void setTurtleMode(int mode)
+EXPORTC void setTurtleMode(uint32_t mode)
 {
     auto newMode = static_cast<TurtleModeEnum>(mode);
     if (Turtle::get().getMode() != newMode)
@@ -1692,7 +1692,7 @@ EXPORTC void setLabelHeight(double height)
     Config::get().mainInterface()->setLabelFontSize(height);
 }
 
-EXPORTC void setScreenMode(int mode)
+EXPORTC void setScreenMode(uint32_t mode)
 {
     Config::get().mainInterface()->setScreenMode(static_cast<ScreenModeEnum>(mode));
 }

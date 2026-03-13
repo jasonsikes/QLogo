@@ -45,7 +45,7 @@ Value *Compiler::genPrint(const DatumPtr &node, RequestReturnType returnType)
     Value *addNewline = CoBool(true);
 
     generateCallExtern(
-        TyAddr, stdWriteDatumAry, PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
+        stdWriteDatumAry, PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
     return generateVoidRetval(node);
 }
 
@@ -68,7 +68,7 @@ Value *Compiler::genShow(const DatumPtr &node, RequestReturnType returnType)
     Value *addNewline = CoBool(true);
 
     generateCallExtern(
-        TyAddr, stdWriteDatumAry, PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
+        stdWriteDatumAry, PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
     return generateVoidRetval(node);
 }
 
@@ -104,6 +104,6 @@ Value *Compiler::genType(const DatumPtr &node, RequestReturnType returnType)
     Value *addNewline = CoBool(false);
 
     generateCallExtern(
-        TyAddr, stdWriteDatumAry, PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
+        stdWriteDatumAry, PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
     return generateVoidRetval(node);
 }

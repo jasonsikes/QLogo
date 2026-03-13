@@ -6,9 +6,6 @@
 
 #include <QString>
 
-#define generateCallExtern(RET_TYPE, FUNC_NAME, ...) \
-    (generateExternFunctionCall(RET_TYPE, #FUNC_NAME, {__VA_ARGS__}))
-
 #ifdef _WIN32
 #define EXPORTC extern "C" __declspec(dllexport)
 #else
@@ -113,16 +110,16 @@ EXPORTC addr_t getTurtlePos(addr_t eAddr);
 EXPORTC double getTurtleHeading(void);
 EXPORTC double getTurtleTowards(addr_t posAddr);
 EXPORTC addr_t getScrunch(addr_t eAddr);
-EXPORTC void setTurtleVisible(int visible);
+EXPORTC void setTurtleVisible(uint32_t visible);
 EXPORTC void clean(void);
-EXPORTC void setTurtleMode(int mode);
+EXPORTC void setTurtleMode(uint32_t mode);
 EXPORTC addr_t getBounds(addr_t eAddr);
 EXPORTC void setBounds(double x, double y);
 EXPORTC int32_t beginFilledWithColor(addr_t colorAddr);
 EXPORTC void endFilled(void);
 EXPORTC void addLabel(addr_t textAddr);
 EXPORTC void setLabelHeight(double height);
-EXPORTC void setScreenMode(int mode);
+EXPORTC void setScreenMode(uint32_t mode);
 EXPORTC bool isTurtleVisible(void);
 EXPORTC addr_t getScreenMode(addr_t eAddr);
 EXPORTC addr_t getTurtleMode(addr_t eAddr);

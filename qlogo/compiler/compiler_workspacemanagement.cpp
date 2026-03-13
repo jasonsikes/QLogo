@@ -142,7 +142,7 @@ Value *Compiler::genInputProcedure(const DatumPtr &node, RequestReturnType retur
     Q_ASSERT(returnType && RequestReturnNothing);
     // We take the parameters as literals; we don't generate children.
     // Pass the node directly to the input function.
-    return generateCallExtern(TyAddr, inputProcedure, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.datumValue())));
+    return generateCallExtern(inputProcedure, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.datumValue())));
 }
 
 /***DOC MAKE
@@ -163,7 +163,7 @@ Value *Compiler::genMake(const DatumPtr &node, RequestReturnType returnType)
     Value *value = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
     varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
 
-    generateCallExtern(TyVoid, setDatumForWord, PaAddr(value), PaAddr(varname));
+    generateCallExtern(setDatumForWord, PaAddr(value), PaAddr(varname));
     return generateVoidRetval(node);
 }
 
@@ -191,7 +191,7 @@ Value *Compiler::genLocal(const DatumPtr &node, RequestReturnType returnType)
 
     Value *varname = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
     varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
-    generateCallExtern(TyVoid, setVarAsLocal, PaAddr(varname));
+    generateCallExtern(setVarAsLocal, PaAddr(varname));
 
     return generateVoidRetval(node);
 }

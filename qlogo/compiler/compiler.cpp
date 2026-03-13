@@ -534,8 +534,8 @@ Value *Compiler::generateDoubleFromDatum(ASTNode *parent, Value *src)
 {
     Value *retval = nullptr;
     auto realTest = [this, &retval](Value *src) {
-        retval = generateCallExtern(TyDouble, getDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(src));
-        Value *dType = generateCallExtern(TyBool, getValidityOfDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(src));
+        retval = generateCallExtern(getDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(src));
+        Value *dType = generateCallExtern(getValidityOfDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(src));
         return scaff_->builder_.CreateICmpEQ(dType, CoBool(true), DBG_NAME("isValidTest"));
     };
     generateValidationDatum(parent, src, realTest);
@@ -546,8 +546,8 @@ Value *Compiler::generateBoolFromDatum(ASTNode *parent, Value *src)
 {
     Value *retval = nullptr;
     auto boolTest = [this, &retval](Value *src) {
-        retval = generateCallExtern(TyBool, getBoolForDatum, PaAddr(scaff_->evaluator_), PaAddr(src));
-        Value *dType = generateCallExtern(TyBool, getValidityOfBoolForDatum, PaAddr(scaff_->evaluator_), PaAddr(src));
+        retval = generateCallExtern(getBoolForDatum, PaAddr(scaff_->evaluator_), PaAddr(src));
+        Value *dType = generateCallExtern(getValidityOfBoolForDatum, PaAddr(scaff_->evaluator_), PaAddr(src));
         return scaff_->builder_.CreateICmpEQ(dType, CoBool(true), DBG_NAME("isValidTest"));
     };
     generateValidationDatum(parent, src, boolTest);
@@ -673,7 +673,7 @@ Value *Compiler::genValueOf(const DatumPtr &node, RequestReturnType returnType)
 
     Word *varName = node.astnodeValue()->childAtIndex(0).wordValue();
     Value *nameAddr = CoAddr(varName);
-    Value *retval = generateCallExtern(TyAddr, getDatumForVarname, PaAddr(nameAddr));
+    Value *retval = generateCallExtern(getDatumForVarname, PaAddr(nameAddr));
 
     Value *dType = generateGetDatumIsa(retval);
     Value *mask = scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeDataMask), DBG_NAME("dataMask"));
@@ -713,7 +713,7 @@ Value *Compiler::ensureCoroutineFrame()
 
     Function *coroSizeFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_size, {TyInt32});
     Value *coroutineSize = scaff_->builder_.CreateCall(coroSizeFn, {}, DBG_NAME("size"));
-    Value *coroutineAlloc = generateCallExtern(TyAddr, q_malloc, PaAddr(scaff_->evaluator_), PaInt32(coroutineSize));
+    Value *coroutineAlloc = generateCallExtern(q_malloc, PaAddr(scaff_->evaluator_), PaInt32(coroutineSize));
 
     Function *coroBeginFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_begin);
     auto *coroBeginCall = cast<CallInst>(
@@ -729,7 +729,7 @@ Value *Compiler::ensureCoroutineFrame()
 Value *Compiler::generateCallList(Value *list, RequestReturnType returnType)
 {
     // Explicit control: push list onto evaluation stack, suspend so driver can run it, then pop and return result.
-    generateCallExtern(TyVoid, pushListOntoEvaluationStack, PaAddr(scaff_->evaluator_), PaAddr(list));
+    generateCallExtern(pushListOntoEvaluationStack, PaAddr(scaff_->evaluator_), PaAddr(list));
 
     ensureCoroutineFrame();
 
@@ -744,7 +744,7 @@ Value *Compiler::generateCallList(Value *list, RequestReturnType returnType)
     sw->addCase(CoInt8(1), scaff_->cleanupBB_);
 
     scaff_->builder_.SetInsertPoint(continueBB);
-    return generateCallExtern(TyAddr, getLastEvaluationResult, PaAddr(scaff_->evaluator_));
+    return generateCallExtern(getLastEvaluationResult, PaAddr(scaff_->evaluator_));
 }
 
 Value *Compiler::genExecProcedure(const DatumPtr &node, RequestReturnType returnType)
@@ -752,7 +752,7 @@ Value *Compiler::genExecProcedure(const DatumPtr &node, RequestReturnType return
     AllocaInst *paramAry = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, DBG_NAME("paramAry"));
     Value *vAstnodeValue = CoAddr(node.astnodeValue());
     Value *vParamArySize = CoInt32(node.astnodeValue()->countOfChildren());
-    generateCallExtern(TyVoid, beginProcedure, PaAddr(scaff_->evaluator_), PaAddr(vAstnodeValue), PaAddr(paramAry), PaInt32(vParamArySize));
+    generateCallExtern(beginProcedure, PaAddr(scaff_->evaluator_), PaAddr(vAstnodeValue), PaAddr(paramAry), PaInt32(vParamArySize));
 
     ensureCoroutineFrame();
 
@@ -767,73 +767,73 @@ Value *Compiler::genExecProcedure(const DatumPtr &node, RequestReturnType return
     sw->addCase(CoInt8(1), scaff_->cleanupBB_);
 
     scaff_->builder_.SetInsertPoint(continueBB);
-    return generateCallExtern(TyAddr, getLastEvaluationResult, PaAddr(scaff_->evaluator_));
+    return generateCallExtern(getLastEvaluationResult, PaAddr(scaff_->evaluator_));
 }
 
 Value *Compiler::generateWordFromDouble(Value *val)
 {
-    return generateCallExtern(TyAddr, getWordForDouble, PaAddr(scaff_->evaluator_), PaDouble(val));
+    return generateCallExtern(getWordForDouble, PaAddr(scaff_->evaluator_), PaDouble(val));
 }
 
 Value *Compiler::generateWordFromBool(Value *val)
 {
-    return generateCallExtern(TyAddr, getWordForBool, PaAddr(scaff_->evaluator_), PaBool(val));
+    return generateCallExtern(getWordForBool, PaAddr(scaff_->evaluator_), PaBool(val));
 }
 
 Value *Compiler::generateErrorSystem()
 {
-    Value *errObj = generateCallExtern(TyAddr, getErrorSystem, PaAddr(scaff_->evaluator_));
+    Value *errObj = generateCallExtern(getErrorSystem, PaAddr(scaff_->evaluator_));
     return errObj;
 }
 
 Value *Compiler::generateErrorToplevel()
 {
-    Value *errObj = generateCallExtern(TyAddr, getErrorToplevel, PaAddr(scaff_->evaluator_));
+    Value *errObj = generateCallExtern(getErrorToplevel, PaAddr(scaff_->evaluator_));
     return errObj;
 }
 
 Value *Compiler::generateErrorNoLike(ASTNode *who, Value *what)
 {
     Value *errWho = CoAddr(who->nodeName_.datumValue());
-    Value *errObj = generateCallExtern(TyAddr, getErrorNoLike, PaAddr(scaff_->evaluator_), PaAddr(errWho), PaAddr(what));
+    Value *errObj = generateCallExtern(getErrorNoLike, PaAddr(scaff_->evaluator_), PaAddr(errWho), PaAddr(what));
     return errObj;
 }
 
 Value *Compiler::generateErrorNoSay(Value *what)
 {
-    Value *errObj = generateCallExtern(TyAddr, getErrorNoSay, PaAddr(scaff_->evaluator_), PaAddr(what));
+    Value *errObj = generateCallExtern(getErrorNoSay, PaAddr(scaff_->evaluator_), PaAddr(what));
     return errObj;
 }
 
 Value *Compiler::generateErrorNoTest(Value *who)
 {
-    Value *errObj = generateCallExtern(TyAddr, getErrorNoTest, PaAddr(scaff_->evaluator_), PaAddr(who));
+    Value *errObj = generateCallExtern(getErrorNoTest, PaAddr(scaff_->evaluator_), PaAddr(who));
     return errObj;
 }
 
 Value *Compiler::generateErrorNoValue(Value *what)
 {
-    Value *errObj = generateCallExtern(TyAddr, getErrorNoValue, PaAddr(scaff_->evaluator_), PaAddr(what));
+    Value *errObj = generateCallExtern(getErrorNoValue, PaAddr(scaff_->evaluator_), PaAddr(what));
     return errObj;
 }
 
 Value *Compiler::generateErrorNoOutput(Value *x, ASTNode *y)
 {
     Value *vY = CoAddr(y->nodeName_.datumValue());
-    Value *errObj = generateCallExtern(TyAddr, getErrorNoOutput, PaAddr(scaff_->evaluator_), PaAddr(x), PaAddr(vY));
+    Value *errObj = generateCallExtern(getErrorNoOutput, PaAddr(scaff_->evaluator_), PaAddr(x), PaAddr(vY));
     return errObj;
 }
 
 Value *Compiler::generateErrorNotEnoughInputs(ASTNode *x)
 {
     Value *vX = CoAddr(x->nodeName_.datumValue());
-    Value *errObj = generateCallExtern(TyAddr, getErrorNotEnoughInputs, PaAddr(scaff_->evaluator_), PaAddr(vX));
+    Value *errObj = generateCallExtern(getErrorNotEnoughInputs, PaAddr(scaff_->evaluator_), PaAddr(vX));
     return errObj;
 }
 
 Value *Compiler::generateErrorNoGraphics()
 {
-    Value *errObj = generateCallExtern(TyAddr, getErrorNoGraphics, PaAddr(scaff_->evaluator_));
+    Value *errObj = generateCallExtern(getErrorNoGraphics, PaAddr(scaff_->evaluator_));
     return errObj;
 }
 
@@ -913,37 +913,11 @@ std::vector<Value *> Compiler::generateChildren(ASTNode *node, std::vector<Reque
     return retval;
 }
 
-// Generate a call to an external function
-Value *Compiler::generateExternFunctionCall(Type *returnType,
-                                            const std::string &name,
-                                            const std::vector<std::pair<Type *, Value *>> &args)
-{
-    std::vector<Type *> paramTypes;
-    std::vector<Value *> argsV;
-    paramTypes.reserve(args.size());
-    argsV.reserve(args.size());
-    for (const auto &arg : args)
-    {
-        paramTypes.push_back(arg.first);
-        argsV.push_back(arg.second);
-    }
-
-    FunctionType *fType = FunctionType::get(returnType, paramTypes, false);
-    FunctionCallee calleeF = scaff_->theModule_->getOrInsertFunction(name, fType);
-
-    Q_ASSERT(calleeF.getFunctionType()->getNumParams() == argsV.size());
-
-    if (returnType->isVoidTy())
-        return scaff_->builder_.CreateCall(calleeF, argsV);
-    else
-        return scaff_->builder_.CreateCall(calleeF, argsV, name + "_result");
-}
-
 AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr &srcPtr, int32_t size)
 {
     Value *vSize = CoInt32(size);
     Value *list = generateChild(parent, srcPtr, RequestReturnDatum);
-    Value *count = generateCallExtern(TyInt32, getCountOfList, PaAddr(list));
+    Value *count = generateCallExtern(getCountOfList, PaAddr(list));
     // There should be two doubles in the list
     BasicBlock *noLikeBB = scaff_->createBasicBlock(DBG_NAME("noLike"));
     BasicBlock *continueBB = scaff_->createBasicBlock(DBG_NAME("good"));
@@ -956,12 +930,12 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr
 
     scaff_->builder_.SetInsertPoint(noLikeBB);
     Value *errWho = CoAddr(parent->nodeName_.datumValue());
-    Value *errObj = generateCallExtern(TyAddr, getErrorNoLike, PaAddr(scaff_->evaluator_), PaAddr(errWho), PaAddr(list));
+    Value *errObj = generateCallExtern(getErrorNoLike, PaAddr(scaff_->evaluator_), PaAddr(errWho), PaAddr(list));
     generateReturn(errObj);
 
     scaff_->builder_.SetInsertPoint(continueBB);
     AllocaInst *ary = scaff_->builder_.CreateAlloca(TyDouble, vSize, DBG_NAME("ary"));
-    Value *isGood = generateCallExtern(TyInt32, getNumberAryFromList, PaAddr(list), PaAddr(ary));
+    Value *isGood = generateCallExtern(getNumberAryFromList, PaAddr(list), PaAddr(ary));
     Value *countCond = scaff_->builder_.CreateICmpEQ(isGood, CoInt32(1), DBG_NAME("countTest"));
     scaff_->builder_.CreateCondBr(countCond, gotPosBB, noLikeBB);
 
@@ -992,7 +966,7 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
 
     // The number is bad. Call handleBadDouble and maybe retry with the result.
     scaff_->builder_.SetInsertPoint(erractBB);
-    Value *handlerResult = generateCallExtern(TyAddr, handleBadDouble, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(parent)), PaDouble(candidate));
+    Value *handlerResult = generateCallExtern(handleBadDouble, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(parent)), PaDouble(candidate));
     Value *datamIsa = generateGetDatumIsa(handlerResult); // See if result is a datum.
     Value *isDatumMasked = scaff_->builder_.CreateAnd(datamIsa, CoInt32(Datum::typeDataMask), DBG_NAME("isDatumMasked"));
     Value *isDatumCond = scaff_->builder_.CreateICmpNE(isDatumMasked, CoInt32(0), DBG_NAME("isDatumCond"));
@@ -1000,7 +974,7 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
 
     // A Word was returned. Convert it to a double and try validating it again.
     scaff_->builder_.SetInsertPoint(convertBB);
-    Value *dVal = generateCallExtern(TyDouble, getDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(handlerResult));
+    Value *dVal = generateCallExtern(getDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(handlerResult));
     candidate->addIncoming(dVal, convertBB);
     scaff_->builder_.CreateBr(validateBB);
 
@@ -1035,7 +1009,7 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
 
     // The datum is bad. Call handleBadDatum and maybe retry with the result.
     scaff_->builder_.SetInsertPoint(erractBB);
-    Value *handlerResult = generateCallExtern(TyAddr, handleBadDatum, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(parent)), PaAddr(candidate));
+    Value *handlerResult = generateCallExtern(handleBadDatum, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(parent)), PaAddr(candidate));
     Value *datamIsa = generateGetDatumIsa(handlerResult); // See if result is a datum.
     Value *isDatumMasked = scaff_->builder_.CreateAnd(datamIsa, CoInt32(Datum::typeDataMask), DBG_NAME("isDatumMasked"));
     Value *isDatumCond = scaff_->builder_.CreateICmpNE(isDatumMasked, CoInt32(0), DBG_NAME("isDatumCond"));
@@ -1076,7 +1050,7 @@ void Compiler::generateWrapup()
         BasicBlock *cleanupEndBB = BasicBlock::Create(*scaff_->theContext_, "cleanup.end", scaff_->theFunction_);
         scaff_->builder_.CreateCondBr(needFree, dynFreeBB, cleanupEndBB);
         scaff_->builder_.SetInsertPoint(dynFreeBB);
-        generateCallExtern(TyAddr, q_free, PaAddr(scaff_->evaluator_), PaAddr(memToFree));
+        generateCallExtern(q_free, PaAddr(scaff_->evaluator_), PaAddr(memToFree));
         scaff_->builder_.CreateBr(cleanupEndBB);
         scaff_->builder_.SetInsertPoint(cleanupEndBB);
         //   br label %suspend

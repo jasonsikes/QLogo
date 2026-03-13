@@ -19,8 +19,10 @@
 
 #include "compiler_types.h"
 #include "datum_ptr.h"
+#include "compiler_internal.h"
+#include "workspace/jit_export_traits.h"
 
-// llvm #defines "emit". Qt uses "emit" as a function name.
+// Qt #defines "emit". llvm uses "emit" as a function name.
 #ifdef emit
 #undef emit
 #endif
@@ -90,11 +92,6 @@ class Compiler
 
     // Generate code for the child node at the given index and cast it to the requested data type.
     llvm::Value *generateChild(ASTNode *parent, unsigned int index, RequestReturnType);
-
-    // Generate a call to an external function
-    llvm::Value *generateExternFunctionCall(llvm::Type *returnType,
-                                            const std::string &name,
-                                            const std::vector<std::pair<llvm::Type *, llvm::Value *>> &args);
 
     // Generate a query to return a datum type (isa) of a given object.
     llvm::Value *generateGetDatumIsa(llvm::Value *objAddr);
@@ -304,6 +301,43 @@ class Compiler
     llvm::Value *genLiteral(const DatumPtr &node, RequestReturnType returnType);
 
     llvm::Value *genExecProcedure(const DatumPtr &node, RequestReturnType returnType);
-};
+
+    // Typed wrapper: derives LLVM types from C function signature for single-source-of-truth verification.
+    template <typename Ret, typename... Args>
+    llvm::Value *generateCallExternTyped(Ret (*)(Args...),
+                                        const std::string &name,
+                                        const std::vector<std::pair<llvm::Type *, llvm::Value *>> &args)
+    {
+        llvm::LLVMContext &ctx = *scaff_->theContext_;
+        llvm::Type *retType = CTypeToLLVM<Ret>::get(ctx);
+        std::vector<llvm::Type *> paramTypes;
+        std::vector<llvm::Value *> argsV;
+        paramTypes.reserve(sizeof...(Args));
+        argsV.reserve(args.size());
+
+        Q_ASSERT(static_cast<size_t>(args.size()) == sizeof...(Args));
+        for (size_t i = 0; i < args.size(); ++i)
+        {
+            paramTypes.push_back(args[i].first);
+            argsV.push_back(args[i].second);
+            Q_ASSERT(args[i].first == paramTypes[i]);
+        }
+
+        llvm::FunctionType *fType = llvm::FunctionType::get(retType, paramTypes, false);
+        llvm::FunctionCallee calleeF = scaff_->theModule_->getOrInsertFunction(name, fType);
+
+        Q_ASSERT(calleeF.getFunctionType()->getNumParams() == argsV.size());
+
+        if (retType->isVoidTy())
+            return scaff_->builder_.CreateCall(calleeF, argsV);
+        else
+            return scaff_->builder_.CreateCall(calleeF, argsV, name + "_result");
+    }
+    
+}; // class Compiler
+
+#define generateCallExtern(FUNC, ...) \
+generateCallExternTyped(FUNC, #FUNC, {__VA_ARGS__})
+
 
 #endif // COMPILER_H
