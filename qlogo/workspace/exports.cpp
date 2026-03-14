@@ -38,6 +38,9 @@
 
 bool areDatumsEqual(VisitedMap &visited, Datum *d1, Datum *d2, Qt::CaseSensitivity cs);
 
+bool isDatumInContainer(VisitedSet &visited, Datum *value, Datum *container, Qt::CaseSensitivity cs);
+
+
 /// @brief Recursively check if a datum is in an array.
 /// @param visited The set of visited nodes.
 /// @param value The value to check for.
@@ -263,24 +266,38 @@ EXPORTC addr_t getDatumForVarname(addr_t wordAddr)
 }
 
 /// Write a Datum object to the standard output device.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param datumAddr a pointer to a Datum object to print.
 /// @param useShow set to true to generate output for SHOW, false for PRINT
-EXPORTC addr_t stdWriteDatum(addr_t datumAddr, bool useShow)
+/// @return a pointer to the owning ASTNode object or a pointer to the Error object if an error occurs.
+EXPORTC addr_t stdWriteDatum(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr, bool useShow)
 {
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     Datum::ToStringFlags writeFlags = useShow ? Datum::ToStringFlags_Show : Datum::ToStringFlags_None;
     auto *d = reinterpret_cast<Datum *>(datumAddr);
     QString output = d->toString(writeFlags) + "\n";
-    Kernel::get().stdPrint(output);
-    return nullptr;
+    try {
+        Kernel::get().stdPrint(output);
+    } catch (FCError *err) {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(astnodeAddr);
 }
 
 /// Write an array of Datum objects to the standard output device.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param datumAddr a pointer to an array of pointers to Datum objects to print.
 /// @param count the number of Datum objects in the array
 /// @param useShow set to true to generate output for SHOW, false for PRINT
 /// @param addWhitespace set to true to add a newline to the end of the output and spaces between datums.
-EXPORTC addr_t stdWriteDatumAry(addr_t datumAddr, uint32_t count, bool useShow, bool addWhitespace)
+EXPORTC addr_t stdWriteDatumAry(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr, uint32_t count, bool useShow, bool addWhitespace)
 {
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     Datum::ToStringFlags writeFlags = useShow ? Datum::ToStringFlags_Show : Datum::ToStringFlags_None;
     auto **datumAry = reinterpret_cast<Datum **>(datumAddr);
     QString output;
@@ -293,9 +310,14 @@ EXPORTC addr_t stdWriteDatumAry(addr_t datumAddr, uint32_t count, bool useShow, 
     }
     if (addWhitespace)
         output = output % "\n";
-    Kernel::get().stdPrint(output);
-    return nullptr;
-}
+        try {
+            Kernel::get().stdPrint(output);
+        } catch (FCError *err) {
+            e->watch(err);
+            return reinterpret_cast<addr_t>(err);
+        }
+        return reinterpret_cast<addr_t>(astnodeAddr);
+    }
 
 /// Create a QLogo Word object using a double value
 /// @param eAddr a pointer to the Evaluator object
@@ -2083,7 +2105,7 @@ EXPORTC addr_t handleBadDatum(addr_t eAddr, addr_t parentAddr, addr_t valueAddr)
     });
 }
 
-EXPORTC addr_t q_malloc(addr_t eAddr,  uint32_t size)
+EXPORTC addr_t q_malloc(addr_t eAddr, uint32_t size)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     void *ptr = malloc(size);

@@ -44,9 +44,8 @@ Value *Compiler::genPrint(const DatumPtr &node, RequestReturnType returnType)
     Value *useShow = CoBool(false);
     Value *addNewline = CoBool(true);
 
-    generateCallExtern(
-        stdWriteDatumAry, PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
-    return generateVoidRetval(node);
+    return generateCallExtern(
+        stdWriteDatumAry, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
 }
 
 /***DOC SHOW
@@ -67,9 +66,8 @@ Value *Compiler::genShow(const DatumPtr &node, RequestReturnType returnType)
     Value *useShow = CoBool(true);
     Value *addNewline = CoBool(true);
 
-    generateCallExtern(
-        stdWriteDatumAry, PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
-    return generateVoidRetval(node);
+    return generateCallExtern(
+        stdWriteDatumAry, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
 }
 
 /***DOC TYPE
@@ -103,7 +101,6 @@ Value *Compiler::genType(const DatumPtr &node, RequestReturnType returnType)
     Value *useShow = CoBool(false);
     Value *addNewline = CoBool(false);
 
-    generateCallExtern(
-        stdWriteDatumAry, PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
-    return generateVoidRetval(node);
+    return generateCallExtern(
+        stdWriteDatumAry, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
 }

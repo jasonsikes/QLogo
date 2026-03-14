@@ -12,20 +12,17 @@
 #define EXPORTC extern "C"
 #endif
 
-bool isDatumInContainer(VisitedSet &visited, Datum *value, Datum *container, Qt::CaseSensitivity cs);
-
 EXPORTC void printInt(int32_t p);
 EXPORTC double getDoubleForDatum(addr_t eAddr, addr_t datumAddr);
 EXPORTC bool getValidityOfDoubleForDatum(addr_t eAddr, addr_t datumAddr);
 EXPORTC bool getBoolForDatum(addr_t eAddr, addr_t datumAddr);
 EXPORTC bool getValidityOfBoolForDatum(addr_t eAddr, addr_t datumAddr);
 EXPORTC addr_t getDatumForVarname(addr_t wordAddr);
-EXPORTC addr_t stdWriteDatum(addr_t datumAddr, bool useShow);
-EXPORTC addr_t stdWriteDatumAry(addr_t datumAddr, uint32_t count, bool useShow, bool addWhitespace);
+EXPORTC addr_t stdWriteDatum(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr, bool useShow);
+EXPORTC addr_t stdWriteDatumAry(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr, uint32_t count, bool useShow, bool addWhitespace);
 EXPORTC addr_t getWordForDouble(addr_t eAddr, double val);
 EXPORTC addr_t getWordForBool(addr_t eAddr, bool val);
 EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr);
-EXPORTC addr_t runList(addr_t eAddr, addr_t listAddr);
 EXPORTC void pushListOntoEvaluationStack(addr_t eAddr, addr_t listAddr);
 EXPORTC addr_t getLastEvaluationResult(addr_t eAddr);
 EXPORTC void beginProcedure(addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAddr, uint32_t paramCount);
@@ -40,7 +37,7 @@ EXPORTC addr_t getErrorNoValue(addr_t eAddr, addr_t whatAddr);
 EXPORTC addr_t getErrorNoGraphics(addr_t eAddr);
 EXPORTC addr_t getErrorCustom(addr_t eAddr, addr_t tagAddr, addr_t outputAddr);
 EXPORTC addr_t getCtrlReturn(addr_t eAddr, addr_t astNodeAddr, addr_t retvalAddr);
-EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t paramAryAddr, uint32_t paramCount);
+EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t argAryAddr, uint32_t argCount);
 EXPORTC addr_t getCtrlGoto(addr_t eAddr, addr_t astNodeAddr, addr_t tagAddr);
 EXPORTC int32_t getCountOfList(addr_t listAddr);
 EXPORTC int32_t getNumberAryFromList(addr_t listAddr, addr_t destAddr);
