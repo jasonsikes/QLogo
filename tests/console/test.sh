@@ -55,7 +55,31 @@ else
 fi
 
 logo_binary=qlogo
-logo_path="../../../qlogo/$logo_binary"
+logo_path=""
+for candidate in \
+    "../../../build/qlogo/$logo_binary" \
+    "../../$logo_binary" \
+    "../../../qlogo/$logo_binary" \
+    "$logo_binary"
+do
+    if [ -x "$candidate" ] 2>/dev/null; then
+        logo_path="$candidate"
+        break
+    fi
+done
+if [ -z "$logo_path" ] && command -v "$logo_binary" >/dev/null 2>&1; then
+    logo_path=$(command -v "$logo_binary")
+fi
+if [ -n "$logo_path" ]; then
+    case $logo_path in
+        /*) ;;
+        *)
+            logo_dir=$(dirname "$logo_path")
+            logo_base=$(basename "$logo_path")
+            logo_path=$(cd "$logo_dir" && pwd)/$logo_base
+            ;;
+    esac
+fi
 reported_tests=""
 
 exe_opts=""
@@ -86,10 +110,9 @@ run_test() {
     esac
 }
 
-if [ ! -f "$logo_path" ]
+if [ -z "$logo_path" ]
 then
-    echo "Error: could not find '$logo_binary' in parent directory."
-    echo "There should be a logo executable or a symbolic link in my parent diectory."
+    echo "Error: could not find executable '$logo_binary'."
     exit 0
 fi
 
