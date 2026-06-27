@@ -93,9 +93,6 @@ then
     exit 0
 fi
 
-# Maximum number of parallel processes
-max_jobs=8
-
 # Check if system has GNU date (supports %N for nanoseconds)
 has_gnu_date() {
     # GNU date supports --version, BSD date doesn't
@@ -117,56 +114,72 @@ else
     fi
     test_count=0
     
-    # Create temporary file for collecting test results
+    # Create temporary files for collecting test results and driving make.
     reported_test_file=$(mktemp /tmp/test_reported_XXXXXX)
-    
-    if ! command -v parallel >/dev/null 2>&1; then
-        echo "Error: GNU parallel is required but was not found in PATH."
-        rm -f "$reported_test_file"
+    test_makefile=$(mktemp /tmp/test_makefile_XXXXXX)
+
+    if ! command -v make >/dev/null 2>&1; then
+        echo "Error: make is required but was not found in PATH."
+        rm -f "$reported_test_file" "$test_makefile"
         exit 1
     fi
 
-    # Collect all .lg files first (one per line for GNU parallel)
-    test_files=""
-    for a in *.lg; do
-        [ -f "$a" ] || continue
-        test_files="${test_files}${a}
-"
-        test_count=$((test_count + 1))
-    done
-
-    # Make each test's output atomic with GNU parallel's --group.
-    # - In non-blacklisted mode, diff exit code 1 means failure; optionally stop early with -first.
-    # - In blacklisted mode, report PASSED tests (diff exit code 0), but don't fail the script.
-    halt_opt=""
-    if [ "$blacklisted" != true ] && [ "$stop_on_first_failure" = true ]; then
-        halt_opt="--halt now,fail=1"
+    if ! make --version >/dev/null 2>&1 || ! make --version 2>&1 | grep -q "GNU Make"; then
+        echo "Error: GNU make is required but was not found."
+        rm -f "$reported_test_file" "$test_makefile"
+        exit 1
     fi
 
-    logo_cmd="$logo_path"
-    if [ -n "$exe_opts" ]; then
-        logo_cmd="$logo_cmd $exe_opts"
+    # Generate a Makefile with one target per .lg file. Test targets use a
+    # run- prefix so they do not collide with the .lg source files on disk.
+    # -Otarget keeps each test's header and diff output grouped.
+    {
+        echo "LOGO = $logo_path"
+        if [ -n "$exe_opts" ]; then
+            echo "EXE_OPTS = $exe_opts"
+        else
+            echo "EXE_OPTS ="
+        fi
+        echo "REPORT = $reported_test_file"
+        echo "BLACKLISTED = $blacklisted"
+        echo
+        echo ".PHONY: all"
+        printf "all:"
+        for a in *.lg; do
+            [ -f "$a" ] || continue
+            printf " run-%s" "$a"
+            test_count=$((test_count + 1))
+        done
+        echo
+        echo
+        cat <<'MAKEEOF'
+run-%.lg:
+	@echo "==== $(patsubst run-%,%,$@)"
+	@$(LOGO) $(EXE_OPTS) < $(patsubst run-%,%,$@) 2>&1 | diff "$(patsubst run-%.lg,%.result,$@)" -; \
+	exit_code=$$?; \
+	if [ "$(BLACKLISTED)" = true ]; then \
+		if [ $$exit_code -eq 0 ]; then echo "$(patsubst run-%,%,$@)" >> $(REPORT); fi; \
+		exit 0; \
+	elif [ $$exit_code -eq 1 ]; then \
+		echo "$(patsubst run-%,%,$@)" >> $(REPORT); \
+		exit 1; \
+	else \
+		exit $$exit_code; \
+	fi
+MAKEEOF
+    } > "$test_makefile"
+
+    # Run all tests in parallel. Use -k unless -first is set (then stop after the
+    # first failure, once in-flight jobs finish).
+    make_opts="-j$(nproc) -Otarget"
+    if [ "$blacklisted" = true ] || [ "$stop_on_first_failure" != true ]; then
+        make_opts="$make_opts -k"
     fi
-
-    # Build a single shell command per test. GNU parallel will substitute {} before execution.
-    #
-    # Notes:
-    # - We avoid nested "sh -c" because GNU parallel already executes via a shell.
-    # - We deliberately print a header line; --group keeps this header + diff atomic per test.
-    cmd='f="{}"
-echo "==== $f"
-'"$logo_cmd"' < "$f" 2>&1 | diff "${f%.lg}.result" -
-exit_code=$?
-if [ "'"$blacklisted"'" = true ] && [ $exit_code -eq 0 ]; then
-  echo "$f" >> "'"$reported_test_file"'"
-elif [ "'"$blacklisted"'" != true ] && [ $exit_code -eq 1 ]; then
-  echo "$f" >> "'"$reported_test_file"'"
-fi
-exit $exit_code'
-
     # shellcheck disable=SC2086
-    printf "%s" "$test_files" | parallel --jobs "$max_jobs" --group $halt_opt "$cmd"
-    
+    make -f "$test_makefile" $make_opts all
+
+    rm -f "$test_makefile"
+
     # Read test results from the temporary file
     if [ -f "$reported_test_file" ] && [ -s "$reported_test_file" ]; then
         reported_tests=$(cat "$reported_test_file")
