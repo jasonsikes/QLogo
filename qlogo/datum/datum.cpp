@@ -18,9 +18,6 @@
 #include "datum_core.h"
 #include "sharedconstants.h"
 #include <QObject>
-#include <algorithm>
-#include <qdebug.h>
-#include <unistd.h>
 
 /// @brief The number of Datum objects in use.
 int countOfNodes = 0;
