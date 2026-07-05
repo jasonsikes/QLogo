@@ -40,6 +40,7 @@ set(QLOGO_SOURCES
   ../include/compiler_internal.h
   ../include/compiler_types.h
   ../include/interface/inputqueue.h
+  ../include/interface/pipeio.h
   ../include/interface/logointerface.h
   ../include/interface/logointerfacegui.h
   ../include/interface/textstream.h
@@ -127,12 +128,6 @@ else()
       Qt6::Sql
       -Xlinker --export-dynamic
       ${llvm_libs}
-  )
-endif()
-
-if(WIN32)
-  set_target_properties("${QLOGO_BIN}" PROPERTIES
-    WIN32_EXECUTABLE TRUE
   )
 endif()
 
