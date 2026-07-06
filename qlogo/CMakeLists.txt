@@ -68,6 +68,11 @@ set(QLOGO_SOURCES
 find_package(Qt6 REQUIRED COMPONENTS Sql)
 find_package(LLVM REQUIRED CONFIG)
 
+if(MSVC)
+  include("${CMAKE_SOURCE_DIR}/cmake/FixLLVMWindowsDIA.cmake")
+  fix_llvm_windows_dia_sdk()
+endif()
+
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
@@ -104,7 +109,13 @@ else()
   target_compile_definitions("${QLOGO_BIN}" PRIVATE "LOGOPLATFORM=\"UNIX\"")
 endif()
 
-llvm_config("${QLOGO_BIN}" USE_SHARED support core orcjit native irreader)
+# LLVM shared libraries (libLLVM) are not supported with the Microsoft
+# toolchain; USE_SHARED would try to link LLVM.lib, which is not built.
+if(MSVC)
+  llvm_config("${QLOGO_BIN}" support core orcjit native irreader)
+else()
+  llvm_config("${QLOGO_BIN}" USE_SHARED support core orcjit native irreader)
+endif()
 
 if(APPLE)
   target_link_libraries("${QLOGO_BIN}" PRIVATE
