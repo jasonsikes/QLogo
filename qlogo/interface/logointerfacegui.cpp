@@ -18,6 +18,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "interface/logointerfacegui.h"
+#include "interface/pipeio.h"
 #include <QApplication>
 #include <QByteArray>
 #include <QDataStream>
@@ -25,29 +26,17 @@
 #include <QMessageBox>
 #include <QTransform>
 
-#ifndef _WIN32
-#include <unistd.h>
-#endif
-
-#ifdef _WIN32
-// For setmode(..., O_BINARY)
-#include <fcntl.h>
-#endif
-
 qint64 StdoutMessageWriter::write(const QByteArray &buffer)
 {
-    return ::write(STDOUT_FILENO, buffer.constData(), buffer.size());
+    return pipeWrite(stdoutFd(), buffer.constData(), buffer.size());
 }
 
 #define message(X) (MessageTemplate<StdoutMessageWriter>(X))
 
 LogoInterfaceGUI::LogoInterfaceGUI(QObject *parent) : LogoInterface(parent)
 {
-#ifdef _WIN32
-    // That dreaded \r\n <-> \n problem
-    setmode(STDOUT_FILENO, O_BINARY);
-    setmode(STDIN_FILENO, O_BINARY);
-#endif
+    // That dreaded \r\n <-> \n problem (no-op on Unix)
+setStdioBinaryMode();
 }
 
 void LogoInterfaceGUI::closeInterface()

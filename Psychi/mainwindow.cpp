@@ -32,6 +32,10 @@
 #include <QTimer>
 #include <iostream>
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
+
 // External declaration of logging flag from psychi_main.cpp
 extern bool logging;
 
@@ -556,8 +560,7 @@ MainWindow::~MainWindow()
 
 QString MainWindow::findQlogoExe()
 {
-    // Windows executables have 'exe' extension.
-#ifdef WIN32
+#ifdef Q_OS_WIN
     QString filename("qlogo.exe");
 #else
     QString filename("qlogo");
@@ -592,6 +595,13 @@ int MainWindow::startLogo()
 
     logoProcess = new QProcess(this);
     ProcessMessageWriter::process_ = logoProcess;
+
+#ifdef Q_OS_WIN
+    logoProcess->setCreateProcessArgumentsModifier(
+        [](QProcess::CreateProcessArguments *args) {
+            args->flags |= CREATE_NO_WINDOW;
+        });
+#endif
 
     connect(
         logoProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &MainWindow::processFinished);

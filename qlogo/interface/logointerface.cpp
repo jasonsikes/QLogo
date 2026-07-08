@@ -35,45 +35,36 @@ static void handle_signal(int sig)
     case SIGINT:
         LogoInterface::lastSignal_ = toplevelSignal; // Ctrl+C
         break;
+#ifndef _WIN32
     case SIGTSTP:
         LogoInterface::lastSignal_ = pauseSignal; // Ctrl+Z
         break;
     case SIGQUIT:
         LogoInterface::lastSignal_ = systemSignal; // Ctrl+[backslash]
         break;
+#endif
     default:
         qWarning() << "Not expecting signal: " << sig;
     }
 }
 
-#ifdef _WIN32
-
 void LogoInterface::initSignals()
 {
-    // TODO: I need to find out how to handle keyboard interrupts in Windows
-}
-
-void LogoInterface::restoreSignals()
-{
-}
-
-#else
-
-void LogoInterface::initSignals()
-{
-    signal(SIGINT, handle_signal);  // TOPLEVEL
+    signal(SIGINT, handle_signal); // TOPLEVEL
+#ifndef _WIN32
     signal(SIGTSTP, handle_signal); // PAUSE
     signal(SIGQUIT, handle_signal); // SYSTEM
+#endif
 }
 
 void LogoInterface::restoreSignals()
 {
     signal(SIGINT, SIG_DFL);
+#ifndef _WIN32
     signal(SIGTSTP, SIG_DFL);
     signal(SIGQUIT, SIG_DFL);
-}
-
 #endif
+}
 
 LogoInterface::LogoInterface(QObject *parent)
     : inStream_(stdin, QIODevice::ReadOnly),

@@ -15,13 +15,10 @@
 //===----------------------------------------------------------------------===//
 
 #include "interface/inputqueue.h"
+#include "interface/pipeio.h"
 #include <QDebug>
 #include <QMutex>
 #include <QQueue>
-
-#ifndef _WIN32
-#include <unistd.h>
-#endif
 
 InputQueueThread::InputQueueThread(QQueue<QByteArray> *byteArrayQueue, QMutex *queueMutex, QObject *parent)
     : QThread(parent), byteArrayQueue_(byteArrayQueue), queueMutex_(queueMutex)
@@ -36,7 +33,7 @@ void InputQueueThread::run()
     forever
     {
         qint64 datareadSofar = 0;
-        dataread = read(STDIN_FILENO, &datalen, sizeof(qint64));
+        dataread = pipeRead(stdinFd(), &datalen, sizeof(qint64));
         if (dataread != sizeof(qint64))
         {
             // For some reason we didn't get the data we expected. That likely means the pipe was closed.
@@ -45,7 +42,7 @@ void InputQueueThread::run()
         message.resize(datalen);
         while (datalen > 0)
         {
-            dataread = read(STDIN_FILENO, message.data() + datareadSofar, datalen);
+            dataread = pipeRead(stdinFd(), message.data() + datareadSofar, datalen);
             if (dataread <= 0)
             {
                 // There was a problem reading the data. Likely means the pipe was closed.
