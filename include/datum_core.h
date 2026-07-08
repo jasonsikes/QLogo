@@ -6,7 +6,7 @@
 class VisitedSet;
 class Word;
 class List;
-class Array;
+struct Array;
 
 /// @brief The unit of data for QLogo. The base class for Word, List, Array, ASTNode, etc.
 class Datum

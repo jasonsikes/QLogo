@@ -18,6 +18,7 @@
 
 #include "astnode.h"
 #include "datum_types.h"
+#include "flowcontrol.h"
 #include "workspace/procedures.h"
 #include <QObject>
 #include <qdebug.h>

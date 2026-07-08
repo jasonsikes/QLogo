@@ -7,8 +7,8 @@
 
 class Procedure;
 class ASTNode;
-class FlowControl;
-class FCError;
+struct FlowControl;
+struct FCError;
 class VisitedSet;
 
 /// @brief A smart pointer to a Datum.
