@@ -155,7 +155,6 @@ else
 
     # Generate a Makefile with one target per .lg file. Test targets use a
     # run- prefix so they do not collide with the .lg source files on disk.
-    # -Otarget keeps each test's header and diff output grouped.
     {
         echo "LOGO = $logo_path"
         if [ -n "$exe_opts" ]; then
@@ -194,7 +193,7 @@ MAKEEOF
 
     # Run all tests in parallel. Use -k unless -first is set (then stop after the
     # first failure, once in-flight jobs finish).
-    make_opts="-j$(nproc) -Otarget"
+    make_opts="-j$(nproc 2>/dev/null || sysctl -n hw.ncpu)"
     if [ "$blacklisted" = true ] || [ "$stop_on_first_failure" != true ]; then
         make_opts="$make_opts -k"
     fi
