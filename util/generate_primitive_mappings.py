@@ -86,9 +86,9 @@ def write_primitive_entries(entries, method, header_file, table_file):
         string_name = name_to_cpp_identifier(name)
         
         table_file.write(
-            f"stringToCmd[{NAMESPACE_NAME}::{string_name}()] = "
-            f"{{&Compiler::{method}, {min_params}, {default_params}, "
-            f"{max_params}, {return_type_ext}}};\n"
+            f"stringToCmd.insert({NAMESPACE_NAME}::{string_name}(), "
+            f"Cmd_t{{&Compiler::{method}, {min_params}, {default_params}, "
+            f"{max_params}, {return_type_ext}}});\n"
         )
 
 
