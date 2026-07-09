@@ -17,7 +17,7 @@
 
 #include "interface/logointerface.h"
 #include "workspace/kernel.h"
-#include <QApplication>
+#include <QCoreApplication>
 #include <QFile>
 #include <QIODevice>
 #include <csignal>

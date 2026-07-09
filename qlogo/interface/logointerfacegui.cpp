@@ -19,7 +19,7 @@
 
 #include "interface/logointerfacegui.h"
 #include "interface/pipeio.h"
-#include <QApplication>
+#include <QCoreApplication>
 #include <QByteArray>
 #include <QDataStream>
 #include <QMatrix4x4>

@@ -29,7 +29,7 @@
 #include "runparser.h"
 #include "workspace/turtle.h"
 #include "interface/logointerface.h"
-#include <QApplication> // quit()
+#include <QCoreApplication> // quit()
 #include <QColor>
 #include <QDebug>
 #include <QDir>
@@ -216,7 +216,7 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
                 {
                     sysPrint("\n");
                     Config::get().mainInterface()->closeInterface();
-                    QApplication::quit();
+                    QCoreApplication::quit();
                     result = nothing();
                     goto bailout;
                 }

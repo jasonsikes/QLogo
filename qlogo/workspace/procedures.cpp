@@ -18,7 +18,7 @@
 
 #include "workspace/procedures.h"
 #include "workspace/library.h"
-#include <QApplication>
+#include <QCoreApplication>
 #include "astnode.h"
 #include "cmd_strings.h"
 #include "compiler.h"
