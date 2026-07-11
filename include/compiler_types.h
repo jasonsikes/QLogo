@@ -18,7 +18,12 @@
 #include <llvm/IR/Value.h>
 
 typedef uint64_t *addr_t;
+
+#ifdef _MSC_VER
+class __single_inheritance Compiler;
+#else
 class Compiler;
+#endif
 
 
 /// @brief LLVM coroutine frame header (when using LLVM coro-split).
