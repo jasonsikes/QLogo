@@ -9,7 +9,7 @@
 #include "datum_ptr.h"
 #include <QList>
 
-// llvm #defines "emit". Qt uses "emit" as a function name.
+// Qt #defines "emit". llvm uses "emit" as a function name.
 #ifdef emit
 #undef emit
 #endif
