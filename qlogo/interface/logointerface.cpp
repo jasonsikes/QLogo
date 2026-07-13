@@ -1,4 +1,3 @@
-
 //===-- qlogo/logointerface.h - LogoInterface class definition -------*- C++ -*-===//
 //
 // Copyright 2017-2024 Jason Sikes
@@ -20,6 +19,7 @@
 #include <QCoreApplication>
 #include <QFile>
 #include <QIODevice>
+#include <cstdio>
 #include <csignal>
 
 volatile SignalsEnum_t LogoInterface::lastSignal_ = noSignal;
@@ -67,8 +67,6 @@ void LogoInterface::restoreSignals()
 }
 
 LogoInterface::LogoInterface(QObject *parent)
-    : inStream_(stdin, QIODevice::ReadOnly),
-      outStream_(stdout, QIODevice::WriteOnly)
 {
     dribbleStream_ = nullptr;
     Config::get().setMainLogoInterface(this);
@@ -82,47 +80,63 @@ LogoInterface::~LogoInterface()
 
 void LogoInterface::printToConsole(const QString &s)
 {
-    outStream_ << s;
+    const QByteArray utf8 = s.toUtf8();
+    fwrite(utf8.constData(), 1, static_cast<size_t>(utf8.size()), stdout);
+    fflush(stdout);
     if (dribbleStream_)
         *dribbleStream_ << s;
 }
 
 bool LogoInterface::atEnd()
 {
-    return inStream_.atEnd();
+    return inputAtEof_ || feof(stdin) != 0;
 }
 
 bool LogoInterface::keyQueueHasChars()
 {
-    return !inStream_.atEnd();
+    return !atEnd();
 }
 
 // This is READRAWLINE
 QString LogoInterface::inputRawlineWithPrompt(const QString &prompt)
 {
-    QString retval;
-    if (!inStream_.atEnd())
+    if (atEnd())
+        return {};
+
+    printToConsole(prompt);
+
+    char buffer[65536];
+    if (!fgets(buffer, sizeof(buffer), stdin))
     {
-        printToConsole(prompt);
-        outStream_.flush();
-        retval = inStream_.readLine();
-        if (dribbleStream_)
-            *dribbleStream_ << retval << '\n';
+        inputAtEof_ = true;
+        return {};
     }
+
+    QString retval = QString::fromLocal8Bit(buffer);
+    if (retval.endsWith(QLatin1Char('\n')))
+        retval.chop(1);
+    if (retval.endsWith(QLatin1Char('\r')))
+        retval.chop(1);
+
+    if (dribbleStream_)
+        *dribbleStream_ << retval << '\n';
     return retval;
 }
 
 // This is READCHAR
 DatumPtr LogoInterface::readchar()
 {
-    QChar c;
-    outStream_.flush();
-    if (inStream_.atEnd())
+    fflush(stdout);
+    if (atEnd())
         return nothing();
-    inStream_ >> c;
-    QString retval = c;
-    DatumPtr retvalP = DatumPtr(retval);
-    return retvalP;
+
+    const int ch = fgetc(stdin);
+    if (ch == EOF)
+    {
+        inputAtEof_ = true;
+        return nothing();
+    }
+    return DatumPtr(QString(QChar(ch)));
 }
 
 bool LogoInterface::setDribble(const QString &filePath)

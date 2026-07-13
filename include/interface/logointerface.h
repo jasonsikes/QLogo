@@ -26,9 +26,9 @@
 #include <QFont>
 #include <QImage>
 #include <QObject>
+#include <QTextStream>
 #include <QThread>
 #include <QVector2D>
-#include <QTextStream>
 
 class QTransform;
 class Kernel;
@@ -583,9 +583,7 @@ class LogoInterface : public QObject
 
   protected:
     QTextStream *dribbleStream_;
-
-    QTextStream inStream_;
-    QTextStream outStream_;
+    bool inputAtEof_ = false;
 };
 
 #endif // LOGOINTERFACE_H
