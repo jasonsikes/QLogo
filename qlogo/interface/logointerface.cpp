@@ -15,12 +15,19 @@
 //===----------------------------------------------------------------------===//
 
 #include "interface/logointerface.h"
+#include "interface/pipeio.h"
 #include "workspace/kernel.h"
 #include <QCoreApplication>
 #include <QFile>
 #include <QIODevice>
 #include <cstdio>
 #include <csignal>
+
+#ifdef _WIN32
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 
 volatile SignalsEnum_t LogoInterface::lastSignal_ = noSignal;
 
@@ -102,6 +109,25 @@ QString LogoInterface::inputRawlineWithPrompt(const QString &prompt)
 {
     if (atEnd())
         return {};
+
+    // feof() is only set after a failed read. For redirected stdin (console tests),
+    // peek first so we do not print a trailing prompt after the last script line.
+    // Interactive ttys still print the prompt before blocking on input.
+#ifdef _WIN32
+    const bool interactive = _isatty(stdinFd()) != 0;
+#else
+    const bool interactive = isatty(stdinFd()) != 0;
+#endif
+    if (!interactive)
+    {
+        const int ch = fgetc(stdin);
+        if (ch == EOF)
+        {
+            inputAtEof_ = true;
+            return {};
+        }
+        ungetc(ch, stdin);
+    }
 
     printToConsole(prompt);
 

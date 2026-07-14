@@ -10,7 +10,7 @@
 #                passed tests instead of failed tests.
 #
 # Run test(s) optionally using FILENAMES as input. Compare the output to the file
-# with the same filename except with the ".result" extension.
+# with the same filename except with the ".expected" extension.
 #
 # FILENAMES is the list of optional names of the logo script WITH the .lg extension.
 #
@@ -92,7 +92,7 @@ run_test() {
     case $f in
         *.lg)
             echo $f
-            $logo_path $exe_opts < $f 2>&1 | diff "${f%.lg}.result" -
+            $logo_path $exe_opts < $f 2>&1 | diff "${f%.lg}.expected" -
             if [ $? -eq 1 ]
             then
                 if [ "$blacklisted" != true ] && [ "$stop_on_first_failure" = true ]; then
@@ -177,7 +177,7 @@ else
         cat <<'MAKEEOF'
 run-%.lg:
 	@echo "==== $(patsubst run-%,%,$@)"
-	@$(LOGO) $(EXE_OPTS) < $(patsubst run-%,%,$@) 2>&1 | diff "$(patsubst run-%.lg,%.result,$@)" -; \
+	@$(LOGO) $(EXE_OPTS) < $(patsubst run-%,%,$@) 2>&1 | diff "$(patsubst run-%.lg,%.expected,$@)" -; \
 	exit_code=$$?; \
 	if [ "$(BLACKLISTED)" = true ]; then \
 		if [ $$exit_code -eq 0 ]; then echo "$(patsubst run-%,%,$@)" >> $(REPORT); fi; \
