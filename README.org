@@ -12,13 +12,13 @@ Redistribution and use in source and binary forms, with or without modification,
 
 *** QLogo
 
-*QLogo* is a compiler for the UCBLogo language written in C++ using Qt and LLVM. It mimics the UCBLogo interpreter developed by Brian Harvey, et al. at U.C. Berkeley.
+*QLogo* is an interpreter for the UCBLogo language written in C++ using Qt and LLVM. It mimics the UCBLogo interpreter developed by Brian Harvey, et al. at U.C. Berkeley.
 
 You can find more information about the UCBLogo language using the UCBLogo Manual here:
 
 http://people.eecs.berkeley.edu/~bh/usermanual
 
-The QLogo compiler is _incomplete_. For an *actual working* UCBLogo interpreter see:
+The QLogo interpreter is _incomplete_. For an *actual working* UCBLogo interpreter see:
 
 https://github.com/jrincayc/ucblogo-code
 
@@ -31,9 +31,16 @@ https://github.com/jrincayc/ucblogo-code
 At this time I am developing and testing QLogo on the following systems:
 
 - Linux (Fedora 43 using Qt 6.10 and LLVM 21), and
-- macOS (Tahoe on Silicon, using LLVM 21 and Qt 6.10 provided by MacPorts).
+- macOS (Tahoe on Silicon, using LLVM 21 and Qt 6.10 provided by MacPorts), and
+- Windows
+  - Windows 11 for ARM (although Windows 11 for x86_64 should also work fine)
+  - Visual Studio C++
+  - LLVM 22.1.8 [if I remember correctly, I installed clang+llvm-22.1.8-aarch64-pc-windows-msvc.tar.xz]
+  - Qt 6.11
 
-_I am no longer testing on MS Windows as I no longer have a Windows machine._
+*** To build in macOS and Windows
+
+I simply use Qt Creator, keep in mind that you likely will have to set some parameters so that CMake can find the required LLVM components.
 
 *** To build in Linux
 
@@ -59,7 +66,7 @@ make
 
 If everything is successful, you should find the built components in the build directory. It's not a good idea to move the items to another location; I don't even know if the "install" script works correctly.
 
-The QLogo compiler and command-line program will be found at:
+The QLogo interpreter and command-line program will be found at:
 
 ~QLogo/build/qlogo/qlogo~
 
