@@ -142,4 +142,26 @@ else()
   )
 endif()
 
+# Copy Qt runtime DLLs/plugins next to qlogo.exe so it can be run and
+# tested from the build tree without manually adjusting PATH.
+if(WIN32)
+  get_target_property(_qlogo_qmake_location Qt6::qmake IMPORTED_LOCATION)
+  get_filename_component(_qlogo_qt_bin_dir "${_qlogo_qmake_location}" DIRECTORY)
+  find_program(WINDEPLOYQT_EXECUTABLE
+    NAMES windeployqt windeployqt6
+    HINTS "${_qlogo_qt_bin_dir}"
+    REQUIRED
+  )
+  add_custom_command(TARGET "${QLOGO_BIN}" POST_BUILD
+    COMMAND
+      "${CMAKE_COMMAND}" -E env
+      "PATH=${_qlogo_qt_bin_dir};$ENV{PATH}"
+      "${WINDEPLOYQT_EXECUTABLE}"
+      "$<IF:$<CONFIG:Debug>,--debug,--release>"
+      --no-translations
+      "$<TARGET_FILE:${QLOGO_BIN}>"
+    COMMENT "Deploying Qt runtime for ${QLOGO_BIN}"
+    VERBATIM
+  )
+endif()
 
