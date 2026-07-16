@@ -814,6 +814,8 @@ int Kernel::run()
 
     LogoInterface::restoreSignals();
 
+    Compiler::clearCompiledTextTable();
+
     return 0;
 }
 

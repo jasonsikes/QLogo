@@ -275,6 +275,9 @@ class Compiler
     /// Destroy the compiled text for a datum (either a List or an ASTNode).
     static void destroyCompiledTextForDatum(Datum *aDatum);
 
+    /// Destroy all cached compiled text. Safe to call during shutdown.
+    static void clearCompiledTextTable();
+
     // The generators for the different ASTNodes. Since this list changes often during development
     // and it needs to be consistent across several files, we keep the master list in the compiler
     // implementation files. Here, primitives.h is one of the generated files.

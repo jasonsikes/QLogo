@@ -193,7 +193,15 @@ Compiler::~Compiler()
 {
     // Clear compiledTextTable first to ensure all CompiledText objects are destroyed
     // while lljit is still valid
-    compiledTextTable_.clear();
+    clearCompiledTextTable();
+}
+
+void Compiler::clearCompiledTextTable()
+{
+    // Move aside so destroying CompiledText values (and their AST-held lists) cannot
+    // re-enter compiledTextTable_ via List::clear() -> destroyCompiledTextForDatum().
+    auto table = std::move(compiledTextTable_);
+    table.clear();
 }
 
 QString Compiler::getTagNameFromNode(const DatumPtr &node) const
