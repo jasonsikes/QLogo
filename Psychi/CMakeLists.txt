@@ -68,3 +68,24 @@ set_target_properties("${QLOGO_GUI}" PROPERTIES
   RESOURCE "${RESOURCE_FILES}"
 )
 
+if(WIN32)
+  get_target_property(_psychi_qmake_location Qt6::qmake IMPORTED_LOCATION)
+  get_filename_component(_psychi_qt_bin_dir "${_psychi_qmake_location}" DIRECTORY)
+  find_program(WINDEPLOYQT_EXECUTABLE
+    NAMES windeployqt windeployqt6
+    HINTS "${_psychi_qt_bin_dir}"
+    REQUIRED
+  )
+  add_custom_command(TARGET "${QLOGO_GUI}" POST_BUILD
+    COMMAND
+      "${CMAKE_COMMAND}" -E env
+      "PATH=${_psychi_qt_bin_dir};$ENV{PATH}"
+      "${WINDEPLOYQT_EXECUTABLE}"
+      "$<IF:$<CONFIG:Debug>,--debug,--release>"
+      --no-translations
+      "$<TARGET_FILE:${QLOGO_GUI}>"
+    COMMENT "Deploying Qt runtime for ${QLOGO_GUI}"
+    VERBATIM
+  )
+endif()
+
