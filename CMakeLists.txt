@@ -15,7 +15,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 if (CMAKE_BUILD_TYPE)
     if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
+        if(APPLE)
+            set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
+        endif()
     elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_compile_definitions(QLOGO_DEBUG)
     endif()
@@ -58,17 +60,19 @@ install(DIRECTORY "${QLOGO_DATA_DIR}"
     DESTINATION "${CMAKE_INSTALL_DATADIR}" 
 )
 
-install(FILES "${QLOGO_GUI}.desktop"
-    DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
-)
+if(UNIX AND NOT APPLE)
+    install(FILES "${QLOGO_GUI}.desktop"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
+    )
 
-install(DIRECTORY "icons/hicolor"
-    DESTINATION "${CMAKE_INSTALL_DATADIR}/icons"
-)
+    install(DIRECTORY "icons/hicolor"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/icons"
+    )
 
-install(FILES "${QLOGO_GUI}.appdata.xml"
-    DESTINATION "${CMAKE_INSTALL_DATADIR}/metainfo"
-)
+    install(FILES "${QLOGO_GUI}.appdata.xml"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/metainfo"
+    )
+endif()
 
 if (APPLE)
     set(MACOSX_BUNDLE_ICON_FILE ${QLOGO_GUI}.icns)
