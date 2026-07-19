@@ -1,11 +1,23 @@
-#! /bin/zsh -v
+#! /bin/sh
 
 # This script was developed on MacOS, but will probably work in Linux.
 # It will generate the set of icons for GitHub README, MacOS,
 # Windows, and common Linux desktops.
 
+# Make sure the required tools are installed before doing any work.
+missing=""
+for tool in iconutil convert sips; do
+    if ! command -v "$tool" >/dev/null 2>&1; then
+        missing="$missing $tool"
+    fi
+done
+if [ -n "$missing" ]; then
+    echo "Error: the following required tools are not installed:$missing" >&2
+    exit 1
+fi
+
 # Get the directory containing this script. We will base everything else relative to it.
-exePath=${0:a:h}
+exePath=$(cd "$(dirname "$0")" && pwd)
 
 # Our work will be in the icons directory.
 cd $exePath/../icons
