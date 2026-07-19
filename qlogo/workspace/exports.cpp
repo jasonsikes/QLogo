@@ -16,6 +16,7 @@
 #include "workspace/exports.h"
 #include "astnode.h"
 #include "interface/logointerface.h"
+#include "interface/streammanager.h"
 #include "interface/textstream.h"
 #include "datum_types.h"
 #include "flowcontrol.h"
@@ -1914,7 +1915,7 @@ EXPORTC addr_t savePict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
-    QString filepath = Kernel::get().filepathForFilename(DatumPtr(filename));
+    QString filepath = StreamManager::get().filepathForFilename(DatumPtr(filename));
     QImage image = Config::get().mainInterface()->getCanvasImage();
     bool isSuccessful = image.save(filepath);
     auto *retval = reinterpret_cast<Datum *>(nodeAddr);
@@ -1930,7 +1931,7 @@ EXPORTC addr_t saveSvgpict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
-    QString filepath = Kernel::get().filepathForFilename(DatumPtr(filename));
+    QString filepath = StreamManager::get().filepathForFilename(DatumPtr(filename));
     QByteArray svgImage = Config::get().mainInterface()->getSvgImage();
 
     auto *retval = reinterpret_cast<Datum *>(nodeAddr);
@@ -1957,7 +1958,7 @@ EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
     if (dFilename->isa_ == Datum::typeWord)
     {
         QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
-        QString filepath = Kernel::get().filepathForFilename(DatumPtr(filename));
+        QString filepath = StreamManager::get().filepathForFilename(DatumPtr(filename));
         QImage image = QImage(filepath);
         if (image.isNull())
         {

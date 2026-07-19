@@ -215,15 +215,6 @@ class LogoInterface : public QObject
     /// @note The base method calls and returns the result from QTextStream::atEnd().
     virtual bool keyQueueHasChars();
 
-    /// @brief Sets the dribble file path.
-    /// @param filePath The path to the dribble file. Use an empty string to disable dribbling.
-    /// @return True if the dribble file was set successfully, false otherwise.
-    bool setDribble(const QString &filePath);
-
-    /// @brief Checks if the dribble file is open.
-    /// @return True if the dribble file is open, false otherwise.
-    bool isDribbling();
-
     /// @brief Sets the bounds of the canvas.
     /// @param x The x coordinate of the upper right corner of the canvas.
     /// @param y The y coordinate of the upper right corner of the canvas.
@@ -582,7 +573,6 @@ class LogoInterface : public QObject
     }
 
   protected:
-    QTextStream *dribbleStream_;
     bool inputAtEof_ = false;
 };
 

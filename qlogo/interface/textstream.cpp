@@ -516,6 +516,11 @@ DatumPtr TextStream::readWordWithPrompt(const QString &prompt)
     return wordReader_.readWordWithPrompt(prompt);
 }
 
+DatumPtr TextStream::readRawlineWithPrompt(const QString &prompt)
+{
+    return wordReader_.readRawlineWithPrompt(prompt);
+}
+
 QList<DatumPtr> TextStream::listReaderLineHistory() const
 {
     return listReader_.lineHistory();

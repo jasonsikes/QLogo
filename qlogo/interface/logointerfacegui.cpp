@@ -19,6 +19,7 @@
 
 #include "interface/logointerfacegui.h"
 #include "interface/pipeio.h"
+#include "interface/streammanager.h"
 #include <QCoreApplication>
 #include <QByteArray>
 #include <QDataStream>
@@ -45,7 +46,7 @@ void LogoInterfaceGUI::closeInterface()
 
     messageQueue_.stopQueue();
 
-    setDribble("");
+    StreamManager::get().noDribble();
 }
 
 LogoInterfaceGUI::~LogoInterfaceGUI() = default;
@@ -153,8 +154,7 @@ void LogoInterfaceGUI::printToConsole(const QString &s)
 {
     message(C_CONSOLE_PRINT_STRING) << s;
 
-    if (dribbleStream_)
-        *dribbleStream_ << s;
+    StreamManager::get().teeToDribble(s);
 }
 
 QString LogoInterfaceGUI::addStandoutToString(const QString &src)
@@ -236,8 +236,7 @@ QString LogoInterfaceGUI::getTextFontName() const
 
 QString LogoInterfaceGUI::inputRawlineWithPrompt(const QString &prompt)
 {
-    if (dribbleStream_)
-        *dribbleStream_ << prompt;
+    StreamManager::get().teeToDribble(prompt);
 
     message(C_CONSOLE_REQUEST_LINE) << prompt;
     waitForMessage(C_CONSOLE_RAWLINE_READ);

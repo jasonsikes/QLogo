@@ -10,6 +10,7 @@ set(QLOGO_SOURCES
   interface/inputqueue.cpp
   interface/logointerface.cpp
   interface/logointerfacegui.cpp
+  interface/streammanager.cpp
   interface/textstream.cpp
   datum/datum.cpp
   datum/datum_array.cpp
@@ -43,6 +44,7 @@ set(QLOGO_SOURCES
   ../include/interface/pipeio.h
   ../include/interface/logointerface.h
   ../include/interface/logointerfacegui.h
+  ../include/interface/streammanager.h
   ../include/interface/textstream.h
   ../include/datum_core.h
   ../include/datum_ptr.h

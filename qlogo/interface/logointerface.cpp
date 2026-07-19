@@ -16,6 +16,7 @@
 
 #include "interface/logointerface.h"
 #include "interface/pipeio.h"
+#include "interface/streammanager.h"
 #include "workspace/kernel.h"
 #include <QCoreApplication>
 #include <QFile>
@@ -75,13 +76,11 @@ void LogoInterface::restoreSignals()
 
 LogoInterface::LogoInterface(QObject *parent)
 {
-    dribbleStream_ = nullptr;
     Config::get().setMainLogoInterface(this);
 }
 
 LogoInterface::~LogoInterface()
 {
-    setDribble("");
     Config::get().setMainLogoInterface(nullptr);
 }
 
@@ -90,8 +89,7 @@ void LogoInterface::printToConsole(const QString &s)
     const QByteArray utf8 = s.toUtf8();
     fwrite(utf8.constData(), 1, static_cast<size_t>(utf8.size()), stdout);
     fflush(stdout);
-    if (dribbleStream_)
-        *dribbleStream_ << s;
+    StreamManager::get().teeToDribble(s);
 }
 
 bool LogoInterface::atEnd()
@@ -144,8 +142,7 @@ QString LogoInterface::inputRawlineWithPrompt(const QString &prompt)
     if (retval.endsWith(QLatin1Char('\r')))
         retval.chop(1);
 
-    if (dribbleStream_)
-        *dribbleStream_ << retval << '\n';
+    StreamManager::get().teeToDribble(retval + '\n');
     return retval;
 }
 
@@ -165,34 +162,6 @@ DatumPtr LogoInterface::readchar()
     return DatumPtr(QString(QChar(ch)));
 }
 
-bool LogoInterface::setDribble(const QString &filePath)
-{
-    if (filePath == "")
-    {
-        if (dribbleStream_)
-        {
-            QIODevice *file = dribbleStream_->device();
-            dribbleStream_->flush();
-            delete dribbleStream_;
-            file->close();
-            delete file;
-        }
-        dribbleStream_ = nullptr;
-        return true;
-    }
-    auto *file = new QFile(filePath);
-    if (!file->open(QIODevice::Append))
-        return false;
-
-    dribbleStream_ = new QTextStream(file);
-    return true;
-}
-
-bool LogoInterface::isDribbling()
-{
-    return dribbleStream_ != nullptr;
-}
-
 SignalsEnum_t LogoInterface::latestSignal()
 {
     SignalsEnum_t retval = lastSignal_;
@@ -203,5 +172,5 @@ SignalsEnum_t LogoInterface::latestSignal()
 
 void LogoInterface::closeInterface()
 {
-    setDribble("");
+    StreamManager::get().noDribble();
 }

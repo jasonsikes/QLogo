@@ -22,6 +22,7 @@
 #include "workspace/kernel.h"
 #include "astnode.h"
 #include "compiler.h"
+#include "interface/streammanager.h"
 #include "interface/textstream.h"
 #include "datum_types.h"
 #include "sharedconstants.h"
@@ -162,7 +163,7 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
     {
         try
         {
-            DatumPtr line = systemReadStream_->readListWithPrompt(localPrompt, true);
+            DatumPtr line = StreamManager::get().readProgramList(localPrompt, true);
 
             Q_ASSERT(callFrameStack_.back().evaluationStackSize() == 0);
             Q_ASSERT(callFrameStack_.back().sourceNode_.isNothing());
@@ -291,17 +292,17 @@ Datum *Kernel::inputProcedure(ASTNode *node)
 
         Procedures::get().validateParameters(command, parameterList);
 
-        QList<DatumPtr> sourceText = systemReadStream_->listReaderLineHistory();
+        QList<DatumPtr> sourceText = StreamManager::get().programReaderLineHistory();
         // Now read in the body
         ListBuilder textBuilder;
         textBuilder.append(parameterList);
 
         forever
         {
-            DatumPtr line = systemReadStream_->readListWithPrompt("> ", true);
+            DatumPtr line = StreamManager::get().readProgramList("> ", true);
             if (!line.isList()) // this must be the end of the input
                 break;
-            sourceText.append(systemReadStream_->listReaderLineHistory());
+            sourceText.append(StreamManager::get().programReaderLineHistory());
             if (line.listValue()->isEmpty())
                 continue;
 
@@ -444,23 +445,14 @@ int8_t Kernel::testedState() const
 
 Kernel::Kernel()
 {
-    stdioStream_ = new TextStream(nullptr);
-    readStream_ = stdioStream_;
-    systemReadStream_ = stdioStream_;
-    writeStream_ = stdioStream_;
-    systemWriteStream_ = stdioStream_;
-
     initVariables();
     initPalette();
 
-    filePrefix_ = emptyList();
     isPausing_ = false;
 }
 
 Kernel::~Kernel()
 {
-    closeAll();
-
     Q_ASSERT(callFrameStack_.size() == 0);
 }
 
@@ -773,35 +765,14 @@ DatumPtr Kernel::pause()
     return nothing();
 }
 
-QString Kernel::filepathForFilename(const DatumPtr &filenameP) const
-{
-    QString filename = filenameP.wordValue()->toString();
-
-    if (filePrefix_.isWord())
-    {
-        QString prefix = filePrefix_.wordValue()->toString();
-        return prefix + QDir::separator() + filename;
-    }
-    return filename;
-}
-
-void Kernel::closeAll()
-{
-    QStringList names = fileStreams_.keys();
-    for (const auto &filename : names)
-    {
-        // close(filename);
-    }
-}
-
 void Kernel::stdPrint(const QString &text) const
 {
-    writeStream_->lprint(text);
+    StreamManager::get().print(text);
 }
 
 void Kernel::sysPrint(const QString &text) const
 {
-    systemWriteStream_->lprint(text);
+    StreamManager::get().printSystem(text);
 }
 
 int Kernel::run()

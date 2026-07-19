@@ -179,6 +179,8 @@ class TextStream
     DatumPtr readWordWithPrompt(const QString &prompt);
     QList<DatumPtr> wordReaderLineHistory() const;
 
+    DatumPtr readRawlineWithPrompt(const QString &prompt);
+
     DatumPtr readChar();
 
     void lprint(const QString &text);

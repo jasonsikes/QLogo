@@ -43,22 +43,10 @@ enum SpecialNames
 /// language and maintains the state of execution of the QLogo code.
 class Kernel
 {
-    DatumPtr filePrefix_;
-
     PropertyLists plists_;
 
-    QHash<QString, TextStream *> fileStreams_;
-    QSet<TextStream *> writableStreams_;
-    QSet<TextStream *> readableStreams_;
-    TextStream *readStream_;
-    TextStream *systemReadStream_;
-    TextStream *writeStream_;
-    TextStream *systemWriteStream_;
-    TextStream *stdioStream_;
 
     bool isPausing_;
-
-    void closeAll();
 
     void initPalette();
 
@@ -221,13 +209,11 @@ class Kernel
     /// @return the given node on success or Error on error.
     Datum *inputProcedure(ASTNode *node);
 
-    /// @brief Print a string to the standard output.
+    /// @brief Print a string to the current write stream.
     /// @param text The text to print.
-    /// @details This method prints a string to the standard output. The standard
-    /// output can either be the console or a file, or both in the case of dribbling.
     void stdPrint(const QString &text) const;
 
-    /// @brief Print a string to the system output.
+    /// @brief Print a string to the system/terminal output.
     /// @param text The text to print.
     void sysPrint(const QString &text) const;
 
@@ -242,11 +228,6 @@ class Kernel
     /// @param v The Datum to convert.
     /// @return The QVector<double>.
     bool numbersFromList(QVector<double> &retval, const DatumPtr &listP) const;
-
-    /// @brief Get the filepath for a filename.
-    /// @param filenameP The filename to get the filepath for.
-    /// @return The filepath for the filename with the current file prefix.
-    QString filepathForFilename(const DatumPtr &filenameP) const;
 
 
     /// @brief Perform pause, essentially a REPL loop.
