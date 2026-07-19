@@ -17,6 +17,7 @@
 
 #include "interface/textstream.h"
 #include "interface/logointerface.h"
+#include "interface/streammanager.h"
 #include "datum_types.h"
 
 /// @brief Find the last non-space character in a string
@@ -76,7 +77,7 @@ void RawStream::lprint(const QString &text)
 {
     if (stream_ == nullptr)
     {
-        Config::get().mainInterface()->printToConsole(text);
+        StreamManager::get().writeTerminal(text);
     }
     else
     {
@@ -90,7 +91,7 @@ DatumPtr RawStream::readChar()
 {
     if (stream_ == nullptr)
     {
-        return Config::get().mainInterface()->readchar();
+        return StreamManager::get().readTerminalChar();
     }
 
     if (stream_->atEnd())
@@ -189,7 +190,7 @@ DatumPtr WordReader::readRawlineWithPrompt(const QString &prompt)
     QString retval;
     if (rawStream_->stream_ == nullptr)
     {
-        retval = Config::get().mainInterface()->inputRawlineWithPrompt(prompt);
+        retval = StreamManager::get().readTerminalRawline(prompt);
         if (retval.isNull())
             return nothing();
     }

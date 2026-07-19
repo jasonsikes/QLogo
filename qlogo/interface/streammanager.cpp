@@ -351,6 +351,32 @@ void StreamManager::teeToDribble(const QString &text)
         *dribbleStream_ << text;
 }
 
+/************ terminal transport ************/
+
+void StreamManager::writeTerminal(const QString &text)
+{
+    Config::get().mainInterface()->printToConsole(text);
+    teeToDribble(text);
+}
+
+QString StreamManager::readTerminalRawline(const QString &prompt)
+{
+    QString line = Config::get().mainInterface()->inputRawlineWithPrompt(prompt);
+    // A null line means end of input; nothing was displayed, so nothing is
+    // dribbled. Otherwise mirror the prompt and the line the user supplied.
+    if (!line.isNull())
+    {
+        teeToDribble(prompt);
+        teeToDribble(line + '\n');
+    }
+    return line;
+}
+
+DatumPtr StreamManager::readTerminalChar()
+{
+    return Config::get().mainInterface()->readchar();
+}
+
 /************ program source / destination ************/
 
 void StreamManager::beginProgramRead(const DatumPtr &filename)

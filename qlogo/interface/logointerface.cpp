@@ -16,7 +16,6 @@
 
 #include "interface/logointerface.h"
 #include "interface/pipeio.h"
-#include "interface/streammanager.h"
 #include "workspace/kernel.h"
 #include <QCoreApplication>
 #include <QFile>
@@ -89,7 +88,6 @@ void LogoInterface::printToConsole(const QString &s)
     const QByteArray utf8 = s.toUtf8();
     fwrite(utf8.constData(), 1, static_cast<size_t>(utf8.size()), stdout);
     fflush(stdout);
-    StreamManager::get().teeToDribble(s);
 }
 
 bool LogoInterface::atEnd()
@@ -142,7 +140,6 @@ QString LogoInterface::inputRawlineWithPrompt(const QString &prompt)
     if (retval.endsWith(QLatin1Char('\r')))
         retval.chop(1);
 
-    StreamManager::get().teeToDribble(retval + '\n');
     return retval;
 }
 
@@ -172,5 +169,4 @@ SignalsEnum_t LogoInterface::latestSignal()
 
 void LogoInterface::closeInterface()
 {
-    StreamManager::get().noDribble();
 }

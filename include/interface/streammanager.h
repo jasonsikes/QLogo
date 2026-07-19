@@ -54,8 +54,10 @@ enum class OpenMode
 ///      LOAD/SAVE/EDIT redirect ends.
 ///
 /// Dribbling is separate from both layers: it is an independently owned sink
-/// that mirrors terminal I/O, applied at the terminal layer so that file
-/// reads/writes are never dribbled.
+/// that mirrors terminal I/O. All terminal bytes flow through this class (see
+/// the terminal transport methods), so dribbling is applied in one place and
+/// file reads/writes are never dribbled. The interface is a dumb transport with
+/// no dribble awareness.
 /// @note Singleton, consistent with Config, Kernel, Procedures, etc.
 class StreamManager
 {
@@ -128,6 +130,12 @@ class StreamManager
 
     /// @brief Flush, close, and delete an owned stream bundle.
     void closeStream(OpenStream *stream);
+
+    /// @brief Copy terminal text to the dribble file, if dribbling is active.
+    /// @param text The text (input echo or output) to mirror.
+    /// @details Best-effort: a write failure is ignored rather than interrupting
+    /// the in-progress read or print.
+    void teeToDribble(const QString &text);
 
     /// @brief Create the terminal stream and point every role at it.
     StreamManager();
@@ -257,11 +265,26 @@ class StreamManager
     /// @brief True while a dribble file is active.
     bool isDribbling() const;
 
-    /// @brief Copy terminal text to the dribble file, if dribbling is active.
-    /// @param text The text (input echo or output) to mirror.
-    /// @details Called by the terminal I/O layer. Best-effort: a write failure is
-    /// ignored rather than interrupting the in-progress read or print.
-    void teeToDribble(const QString &text);
+    /************ terminal transport ************/
+    //
+    // The terminal-backed TextStream (RawStream with a null device) routes its
+    // low-level I/O through these methods rather than calling the interface
+    // directly. Centralizing here makes StreamManager the single place terminal
+    // bytes flow through, so dribbling is applied in one spot and the interface
+    // stays a dumb transport.
+
+    /// @brief Write text to the terminal (via the interface) and mirror to dribble.
+    void writeTerminal(const QString &text);
+
+    /// @brief Read a raw line from the terminal, echoing the prompt and line to
+    /// dribble when a line is actually returned.
+    /// @param prompt The prompt to display.
+    /// @return The line, or a null QString at end of input.
+    QString readTerminalRawline(const QString &prompt);
+
+    /// @brief Read a single character from the terminal.
+    /// @return The character, or nothing at end of input.
+    DatumPtr readTerminalChar();
 
     /************ program source / destination ************/
     //
