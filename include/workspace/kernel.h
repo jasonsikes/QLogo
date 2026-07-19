@@ -209,14 +209,6 @@ class Kernel
     /// @return the given node on success or Error on error.
     Datum *inputProcedure(ASTNode *node);
 
-    /// @brief Print a string to the current write stream.
-    /// @param text The text to print.
-    void stdPrint(const QString &text) const;
-
-    /// @brief Print a string to the system/terminal output.
-    /// @param text The text to print.
-    void sysPrint(const QString &text) const;
-
     /// @brief Convert a Datum to a QColor.
     /// @param colorP The Datum to convert.
     /// @return The QColor.

@@ -166,7 +166,7 @@ addr_t handleBadValue(addr_t eAddr, addr_t parentAddr, DatumPtr value,
     DatumPtr retval;
     while (true)
     {
-        Kernel::get().sysPrint(err.toString() + "\n");
+        StreamManager::get().printToTerminal(err.toString() + "\n");
         retval = Kernel::get().pause();
         if (datatypeTest(retval))
         {
@@ -280,7 +280,7 @@ EXPORTC addr_t stdWriteDatum(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr,
     auto *d = reinterpret_cast<Datum *>(datumAddr);
     QString output = d->toString(writeFlags) + "\n";
     try {
-        Kernel::get().stdPrint(output);
+        StreamManager::get().print(output);
     } catch (FCError *err) {
         e->watch(err);
         return reinterpret_cast<addr_t>(err);
@@ -312,7 +312,7 @@ EXPORTC addr_t stdWriteDatumAry(addr_t eAddr, addr_t astnodeAddr, addr_t datumAd
     if (addWhitespace)
         output = output % "\n";
         try {
-            Kernel::get().stdPrint(output);
+            StreamManager::get().print(output);
         } catch (FCError *err) {
             e->watch(err);
             return reinterpret_cast<addr_t>(err);

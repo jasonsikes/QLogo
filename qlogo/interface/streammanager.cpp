@@ -174,7 +174,7 @@ void StreamManager::print(const QString &text)
     ostreamWrite_->lprint(text);
 }
 
-void StreamManager::printSystem(const QString &text)
+void StreamManager::printToTerminal(const QString &text)
 {
     ostreamStd_->lprint(text);
 }

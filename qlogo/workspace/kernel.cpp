@@ -210,12 +210,12 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
             {
                 if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("TOPLEVEL"))
                 {
-                    sysPrint("\n");
+                    StreamManager::get().printToTerminal("\n");
                     continue;
                 }
                 if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("SYSTEM"))
                 {
-                    sysPrint("\n");
+                    StreamManager::get().printToTerminal("\n");
                     Config::get().mainInterface()->closeInterface();
                     QCoreApplication::quit();
                     result = nothing();
@@ -227,7 +227,7 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
                     goto bailout;
                 }
             }
-            sysPrint(e->toString() + "\n");
+            StreamManager::get().printToTerminal(e->toString() + "\n");
             continue;
         }
     }
@@ -321,7 +321,7 @@ Datum *Kernel::inputProcedure(ASTNode *node)
 
         QString message = QObject::tr("%1 defined\n");
         message = message.arg(procnameP.toString());
-        Kernel::get().sysPrint(message);
+        StreamManager::get().printToTerminal(message);
     }
     catch (FCError *err)
     {
@@ -742,7 +742,7 @@ DatumPtr Kernel::pause()
 {
     // if (isPausing)
     // {
-    //     sysPrint(QObject::tr("Already Pausing\n"));
+    //     StreamManager::get().printToTerminal(QObject::tr("Already Pausing\n"));
     //     return nothing();
     // }
 
@@ -756,23 +756,13 @@ DatumPtr Kernel::pause()
 
     // CallFrame frame(callStack, nothing());
 
-    // sysPrint(QObject::tr("Pausing...\n"));
+    // StreamManager::get().printToTerminal(QObject::tr("Pausing...\n"));
 
     // DatumPtr result = readEvalPrintLoop(true, sourceNodeName);
 
     // isPausing = false;
     // return result;
     return nothing();
-}
-
-void Kernel::stdPrint(const QString &text) const
-{
-    StreamManager::get().print(text);
-}
-
-void Kernel::sysPrint(const QString &text) const
-{
-    StreamManager::get().printSystem(text);
 }
 
 int Kernel::run()

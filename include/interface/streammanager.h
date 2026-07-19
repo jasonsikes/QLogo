@@ -191,10 +191,10 @@ class StreamManager
     /// redirected to a file is not dribbled.
     void print(const QString &text);
 
-    /// @brief Write to the standard/system output (errors, prompts, REPL echo).
-    /// Unaffected by SETWRITE.
+    /// @brief Write to the terminal (errors, prompts, REPL echo, notices).
+    /// Always goes to the console; unaffected by SETWRITE.
     /// @param text The text to write.
-    void printSystem(const QString &text);
+    void printToTerminal(const QString &text);
 
     /************ read/write positions ************/
 
