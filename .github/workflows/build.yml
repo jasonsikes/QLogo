@@ -4,7 +4,6 @@ on:
   pull_request:
   push:
     branches:
-      - main
       - master
 
 jobs:
@@ -15,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        build-type: [Debug, Release]
+        build-type: [Release]
     
     steps:
     - name: Checkout code
@@ -32,25 +31,21 @@ jobs:
           ninja-build \
           qt6-base-dev \
           qt6-svg-dev \
-          llvm-dev
+          llvm-21-dev
         
     - name: Configure CMake
       run: |
-        mkdir -p build
-        cd build
-        cmake -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
-              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-              -G Ninja ..
+        cmake -S . -B build
               
     - name: Build
       run: |
         cd build
-        cmake --build . --config ${{ matrix.build-type }} -j$(nproc || sysctl -n hw.ncpu)
+        make -j$(nproc || sysctl -n hw.ncpu)
         
-    - name: Check for build artifacts
+    - name: Test
       run: |
-        test -f build/qlogo/qlogo
-        test -f build/Psychi/Psychi
+        cd build/tests/console
+        ./test.sh
 
 
 
