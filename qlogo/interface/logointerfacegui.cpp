@@ -23,7 +23,6 @@
 #include <QByteArray>
 #include <QDataStream>
 #include <QMatrix4x4>
-#include <QMessageBox>
 #include <QTransform>
 
 qint64 StdoutMessageWriter::write(const QByteArray &buffer)
