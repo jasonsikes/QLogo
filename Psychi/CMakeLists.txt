@@ -2,7 +2,7 @@
 # but on MacOS I want to put them into the QLOGO_GUI bundle.
 set(RESOURCE_FILES
   ${CMAKE_SOURCE_DIR}/share/qlogo_help.db
-  ${CMAKE_SOURCE_DIR}/share/qlogo_lib.db
+  ${CMAKE_SOURCE_DIR}/share/qlogo_library.db
 )
 set(GUI_SOURCES
   canvas.cpp
