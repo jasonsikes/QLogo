@@ -1,10 +1,24 @@
 name: Build
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches:
       - master
+      - main
+ 
+# Versions of the toolchains that are not preinstalled on the runner images.
+env:
+  # Windows: LLVM development packages usable by find_package(LLVM CONFIG) are
+  # not on the runner, so a prebuilt release is downloaded. QLogo requires
+  # LLVM >= 21; 22.1.8 matches local windows_arm64 development.
+  # Ubuntu 26.04: apt llvm-dev provides LLVM 21 and is installed in the Linux
+  # steps below (pass -DLLVM_DIR from llvm-config --cmakedir).
+  LLVM_VERSION: "22.1.8"
+  # Qt version to install on Windows; 6.10.x installs
+  # reliably via aqt for windows_arm64.
+  QT_VERSION: "6.10.1"
 
 jobs:
   build:
@@ -13,18 +27,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-26.04]
-        build-type: [Release]
-    
+        include:
+          - os: ubuntu-26.04
+            build-type: Release
+          - os: windows-11-arm
+            build-type: Release
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
+    # ---------------------------------------------------------------- Ubuntu
     - name: Install dependencies (Ubuntu)
-      if: matrix.os == 'ubuntu-26.04'
+      if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get upgrade -y
         sudo apt-get install -y \
           build-essential \
           cmake \
@@ -32,20 +49,87 @@ jobs:
           qt6-base-dev \
           qt6-svg-dev \
           llvm-dev
-        
-    - name: Configure CMake
+
+    - name: Configure CMake (Ubuntu)
+      if: runner.os == 'Linux'
       run: |
-        cmake -S . -B build
-              
-    - name: Build
-      run: |
-        cd build
-        make -j$(nproc || sysctl -n hw.ncpu)
-        
-    - name: Test
+        # Debian/Ubuntu ship LLVMConfig.cmake under /usr/lib/llvm-*/lib/cmake/llvm,
+        # which find_package does not search unless LLVM_DIR is set.
+        cmake -S . -B build -G Ninja \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+          -DLLVM_DIR="$(llvm-config --cmakedir)"
+
+    - name: Build (Ubuntu)
+      if: runner.os == 'Linux'
+      run: cmake --build build -j$(nproc)
+
+    - name: Test (Ubuntu)
+      if: runner.os == 'Linux'
       run: |
         cd build/tests/console
         ./test.sh
 
+    # --------------------------------------------------------------- Windows
+    - name: Install Qt (Windows)
+      if: runner.os == 'Windows'
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: ${{ env.QT_VERSION }}
+        host: windows_arm64
+        target: desktop
+        arch: win64_msvc2022_arm64
+        # x64 Python is needed to work
+        # around an aqtinstall build issue on Windows/ARM64 runners.
+        setup-python: true
 
+    - name: Set up MSVC (Windows)
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: arm64
 
+    - name: Cache LLVM (Windows)
+      if: runner.os == 'Windows'
+      id: cache-llvm
+      uses: actions/cache@v4
+      with:
+        path: llvm
+        key: llvm-${{ env.LLVM_VERSION }}-aarch64-pc-windows-msvc
+
+    - name: Install LLVM (Windows)
+      if: runner.os == 'Windows' && steps.cache-llvm.outputs.cache-hit != 'true'
+      shell: pwsh
+      run: |
+        $archive = "clang+llvm-${{ env.LLVM_VERSION }}-aarch64-pc-windows-msvc.tar.xz"
+        $url = "https://github.com/llvm/llvm-project/releases/download/llvmorg-${{ env.LLVM_VERSION }}/$archive"
+        Write-Host "Downloading $url"
+        curl.exe --fail --location --retry 3 --output $archive $url
+        New-Item -ItemType Directory -Force -Path llvm | Out-Null
+        tar -xf $archive -C llvm --strip-components=1
+        Remove-Item $archive
+
+    - name: Configure CMake (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        cmake -S . -B build -G Ninja `
+          -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} `
+          -DCMAKE_C_COMPILER=cl `
+          -DCMAKE_CXX_COMPILER=cl `
+          -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR" `
+          -DLLVM_DIR="$env:GITHUB_WORKSPACE/llvm/lib/cmake/llvm"
+
+    - name: Build (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: cmake --build build --config ${{ matrix.build-type }} -j
+
+    - name: Test (Windows)
+      if: runner.os == 'Windows'
+      working-directory: build/tests/console
+      shell: pwsh
+      run: |
+        New-Item -Path "HKCU:\Software\Microsoft\Windows\Windows Error Reporting" -Force | Out-Null
+        New-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\Windows Error Reporting" `
+          -Name DontShowUI -PropertyType DWord -Value 1 -Force | Out-Null
+        bash ./windows_test.sh
