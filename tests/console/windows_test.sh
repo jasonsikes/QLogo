@@ -27,7 +27,7 @@ do
 done
 
 if [ -z "$logo_path" ]; then
-    if command -v qlogo.exe >/dev/null 2>&1; tn
+    if command -v qlogo.exe >/dev/null 2>&1; then
         logo_path=$(command -v qlogo.exe)
     elif command -v qlogo >/dev/null 2>&1; then
         logo_path=$(command -v qlogo)
