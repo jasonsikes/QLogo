@@ -44,10 +44,21 @@ bool Evaluator::exec(int32_t jumpLocation)
         }
         try
         {
+            // When compiling a procedure body line, register TAGs against the body
+            // suffix that starts at this line. Skip for RUN/sublists (list_ is not
+            // the head of runningSourceList_).
+            DatumPtr lineLoc = owningFrame_->runningSourceList_;
+            if (lineLoc.isList() && !lineLoc.listValue()->isEmpty() &&
+                lineLoc.listValue()->head.datumValue() == list_.datumValue())
+            {
+                Compiler::get().setTagLineLocation(lineLoc);
+            }
             fn_ = Compiler::get().functionPtrFromList(list_.listValue());
+            Compiler::get().clearTagLineLocation();
         }
         catch (FCError *e)
         {
+            Compiler::get().clearTagLineLocation();
             retvalToParent_ = e;
             return true;
         }

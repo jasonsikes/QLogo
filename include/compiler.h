@@ -63,6 +63,11 @@ class Compiler
     // The hash table of compiled texts referenced by lists or ASTNodes.
     static QHash<Datum *, std::shared_ptr<CompiledText>> compiledTextTable_;
 
+    /// @brief Procedure-body suffix whose head is the line currently being compiled.
+    /// @details Used when registering TAG locations so GOTO can jump to the correct line.
+    /// Must be set by the caller of functionPtrFromList() when compiling a procedure line.
+    DatumPtr tagLineLocation_;
+
     // Child node generation.
 
     // Generate code for all children of the given node and cast them to the requested data type.
@@ -271,6 +276,13 @@ class Compiler
 
     /// Get the compiled function pointer for a list.
     CompiledFunctionPtr functionPtrFromList(List *aList);
+
+    /// @brief Set the procedure-body suffix for TAG registration during the next compile.
+    /// @param location List whose head is the line being compiled; tail is the remaining body.
+    void setTagLineLocation(const DatumPtr &location) { tagLineLocation_ = location; }
+
+    /// @brief Clear the TAG registration line location after compiling.
+    void clearTagLineLocation() { tagLineLocation_ = nothing(); }
 
     /// Destroy the compiled text for a datum (either a List or an ASTNode).
     static void destroyCompiledTextForDatum(Datum *aDatum);

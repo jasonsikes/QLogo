@@ -58,9 +58,9 @@ struct CallFrame
     /// @brief The name of the current parameter being processed.
     QString currentParameterName_;
 
-    /// @brief The current source list being executed.
-    /// The head of this list is removed when its execution begins.
-    /// This list then contains the lines remaining to be executed.
+    /// @brief Remaining procedure body, including the line currently executing.
+    /// @details The head is the current (or next) line. The list advances to its
+    /// tail when that line completes.
     DatumPtr runningSourceList_;
 
     /// @brief Set this value to set a jump location within a line.

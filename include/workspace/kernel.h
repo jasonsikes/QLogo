@@ -138,9 +138,6 @@ class Kernel
     /// @brief The next operation to perform.
     void(Kernel::*nextOperation_)() = nullptr;
 
-    /// @brief The jump location to start execution from.
-    int32_t jumpLocation_ = 0;
-
     /// @brief The source list that returned the return value.
     DatumPtr retvalSourceList_;
 

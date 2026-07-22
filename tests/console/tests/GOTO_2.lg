@@ -7,3 +7,4 @@ print [this should print]
 end
 make "t1 "tag1
 proc
+proc

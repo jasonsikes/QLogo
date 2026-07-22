@@ -588,29 +588,46 @@ EXPORTC addr_t getCtrlGoto(addr_t eAddr, addr_t astNodeAddr, addr_t tagAddr)
 
     DatumPtr procedure = node->procedure_;
     auto &tagToLineAndBlockId = procedure.procedureValue()->tagToLineAndBlockId_;
-    auto blockIdIterator = tagToLineAndBlockId.find(tag.toString(Datum::ToStringFlags_Key));
-    DatumPtr runningList = cf->runningSourceList_;
+    const QString tagKey = tag.toString(Datum::ToStringFlags_Key);
 
+    auto makeGoto = [&](const DatumPtr &line, int32_t blockId) -> addr_t {
+        auto *control = new FCGoto(DatumPtr(astNodeAddr), line, blockId);
+        e->watch(control);
+        return reinterpret_cast<addr_t>(control);
+    };
+
+    // If the tag was registered on a previous run/compile, jump using the stored line.
+    auto blockIdIterator = tagToLineAndBlockId.find(tagKey);
+    if (blockIdIterator != tagToLineAndBlockId.end())
+    {
+        auto [line, blockId] = blockIdIterator.value();
+        return makeGoto(line, blockId);
+    }
+
+    // Tag not yet known: compile following lines until it is registered (or we run out).
+    // Head of runningSourceList_ is the GOTO line still in progress; search its tail.
+    DatumPtr runningList = cf->runningSourceList_.listValue()->tail;
     while (!runningList.listValue()->isEmpty())
     {
+        Compiler::get().setTagLineLocation(runningList);
         try
         {
             Compiler::get().functionPtrFromList(runningList.listValue()->head.listValue());
         }
         catch (FCError *e)
         {
+            Compiler::get().clearTagLineLocation();
             return reinterpret_cast<addr_t>(e);
         }
-        blockIdIterator = tagToLineAndBlockId.find(tag.toString(Datum::ToStringFlags_Key));
+        Compiler::get().clearTagLineLocation();
+
+        blockIdIterator = tagToLineAndBlockId.find(tagKey);
         if (blockIdIterator != tagToLineAndBlockId.end())
         {
             auto [line, blockId] = blockIdIterator.value();
-            auto *control = new FCGoto(DatumPtr(astNodeAddr), runningList, blockId);
-            e->watch(control);
-            return reinterpret_cast<addr_t>(control);
+            return makeGoto(line, blockId);
         }
-        DatumPtr tmp = runningList.listValue()->tail;
-        runningList = tmp;
+        runningList = runningList.listValue()->tail;
     }
 
     return reinterpret_cast<addr_t>(FCError::doesntLike(astNode->nodeName_, tag));

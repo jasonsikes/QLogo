@@ -480,7 +480,6 @@ Evaluator *Kernel::currentEvaluator()
  DatumPtr Kernel::runECE()
  {
      nextOperation_ = &Kernel::ece_evaluateStack;
-     jumpLocation_ = 0;
      currentCallFrame()->retvalToParent_ = nothing();
  
      while (nextOperation_ != nullptr)
@@ -494,11 +493,14 @@ Evaluator *Kernel::currentEvaluator()
  void Kernel::ece_evaluateStack()
 {
     ece_trace("ece_evaluateStack: executing " + currentEvaluator()->list_.toString());
-    if (currentEvaluator()->exec(jumpLocation_))
+    // GOTO stores the destination block on the CallFrame; consume it here so the
+    // newly pushed line starts at the tagged block.
+    int32_t jumpLocation = currentCallFrame()->jumpLocation_;
+    currentCallFrame()->jumpLocation_ = 0;
+    if (currentEvaluator()->exec(jumpLocation))
     {
         nextOperation_ = &Kernel::ece_popEvaluator;
     }
-    jumpLocation_ = 0;
 }
 
 void Kernel::ece_decideEmptyEvaluationStack()
@@ -553,26 +555,35 @@ void Kernel::ece_decideEmptyEvaluationStack()
     DatumPtr line = currentCallFrame()->runningSourceList_.listValue()->head;
     ece_trace("ece_decideEmptyEvaluationStack: pushing line " + line.toString() + " onto the evaluation stack");
     currentCallFrame()->pushEvaluator(line);
-    currentCallFrame()->runningSourceList_ = currentCallFrame()->runningSourceList_.listValue()->tail;
     nextOperation_ = &Kernel::ece_evaluateStack;
 }
 
 void Kernel::ece_popEvaluator()
 {
     ece_trace("ece_popEvaluator");
-    currentCallFrame()->retvalToParent_ = DatumPtr(currentEvaluator()->retvalToParent_);
-    retvalSourceList_ = currentEvaluator()->list_;
-    ece_trace("ece_popEvaluator: returning value " + currentCallFrame()->retvalToParent_.toString() + " from source list " + retvalSourceList_.toString());
+    CallFrame *cf = currentCallFrame();
+    DatumPtr completedList = currentEvaluator()->list_;
+    cf->retvalToParent_ = DatumPtr(currentEvaluator()->retvalToParent_);
+    retvalSourceList_ = completedList;
+    ece_trace("ece_popEvaluator: returning value " + cf->retvalToParent_.toString() + " from source list " + retvalSourceList_.toString());
 
-    currentCallFrame()->popEvaluator();
+    cf->popEvaluator();
 
-    if (currentCallFrame()->evaluationStackSize() > 0)
+    if (cf->evaluationStackSize() > 0)
     {
-        currentCallFrame()->topEvaluator()->retvalFromChild_ = currentCallFrame()->retvalToParent_;
+        cf->topEvaluator()->retvalFromChild_ = cf->retvalToParent_;
         nextOperation_ = &Kernel::ece_evaluateStack;
     }
     else
     {
+        // Finished the frame's top-level list. If it was the current procedure
+        // body line, advance past it now that it has completed.
+        if (cf->sourceNode_.isASTNode() && cf->runningSourceList_.isList() &&
+            !cf->runningSourceList_.listValue()->isEmpty() &&
+            cf->runningSourceList_.listValue()->head.datumValue() == completedList.datumValue())
+        {
+            cf->runningSourceList_ = cf->runningSourceList_.listValue()->tail;
+        }
         nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
     }
 }

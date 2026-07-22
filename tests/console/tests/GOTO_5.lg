@@ -1,9 +1,7 @@
 to proc
 goto "t1
-tag "y2
 print [this shouldn't print]
-tag "t1
-print [this should print]
+print [a] tag "t1 print [this should print]
 end
 proc
 proc

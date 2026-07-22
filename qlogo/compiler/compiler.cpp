@@ -230,15 +230,21 @@ void Compiler::setTagToBlockIdInProcedure(const QList<DatumPtr> &tagList, int32_
         return;
     }
 
+    // tagLineLocation_ must be the procedure-body suffix whose head is the line that
+    // contains these tags (set by getCtrlGoto or Evaluator before compiling).
+    if (tagLineLocation_.isNothing())
+    {
+        return;
+    }
+
     Procedure *currentProcedure = currentFrame->sourceNode_.astnodeValue()->procedure_.procedureValue();
-    DatumPtr currentRunningLine = currentFrame->runningSourceList_;
 
     for (auto &node : tagList)
     {
         QString tagName = getTagNameFromNode(node);
         if (!tagName.isEmpty())
         {
-            currentProcedure->tagToLineAndBlockId_[tagName] = {currentRunningLine, blockId};
+            currentProcedure->tagToLineAndBlockId_[tagName] = {tagLineLocation_, blockId};
         }
     }
 }
