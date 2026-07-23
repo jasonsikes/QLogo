@@ -1071,9 +1071,9 @@ void Compiler::generateWrapup()
         scaff_->builder_.CreateBr(scaff_->suspendBB_);
 
         scaff_->builder_.SetInsertPoint(scaff_->suspendBB_);
-        //   call i1 @llvm.coro.end(ptr %hdl, i1 false, token none)  -- result unused; intrinsic returns i1 in current LLVM
+        //   call void @llvm.coro.end(ptr %hdl, i1 false, token none)
         Function *coroEndFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_end);
-        scaff_->builder_.CreateCall(coroEndFn, {scaff_->coroutineHandle_, CoBool(false), ConstantTokenNone::get(*scaff_->theContext_)}, DBG_NAME("end"));
+        scaff_->builder_.CreateCall(coroEndFn, {scaff_->coroutineHandle_, CoBool(false), ConstantTokenNone::get(*scaff_->theContext_)});
         //   ret ptr %hdl
         scaff_->builder_.CreateRet(scaff_->coroutineHandle_);
     }
