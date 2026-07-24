@@ -305,7 +305,7 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     QList<BasicBlock *> blocks = {currentBlock};
     scaff_->builder_.SetInsertPoint(currentBlock);
 
-    Value *nodeResult;
+    Value *nodeResult = nullptr;
     RequestReturnType returnTypeRequest = RequestReturnNothing;
     for (auto &srcBlock : parsedList)
     {
@@ -334,6 +334,7 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     }
 
     // Finish off the function
+    Q_ASSERT(nodeResult != nullptr);
     generateReturn(nodeResult);
     generateWrapup();
 
