@@ -374,6 +374,13 @@ Value *Compiler::genTag(const DatumPtr &node, RequestReturnType returnType)
     // ASTNode in the block.
     // Note that if the input is not a literal word following a quotation mark,
     // no error is generated.
+
+    // We need distinct function addresses for genTag and genNoop.
+    // Some compilers *helpfully* optimize by merging identical function bodies
+    // which causes us to be unable to distinguish between TAG and NOOP nodes.
+    // So keep this line intact!
+    (void)node.astnodeValue()->countOfChildren();
+
     return generateVoidRetval(node);
 }
 
