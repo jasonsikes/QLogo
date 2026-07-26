@@ -54,6 +54,18 @@ COD***/
 // CMD IFELSE 3 3 3 dn
 Value *Compiler::genIfelse(const DatumPtr &node, RequestReturnType returnType)
 {
+    // This is so hacky. Here's how it plays out:
+
+    // Case "IF" (2 parameters):
+    //     ift = execute instructionlist1
+    //     iff = UNBOUND
+    //     retval = either ift or iff
+
+    // Case "IFELSE" (3 parameters):
+    //     ift = instructionlist1
+    //     iff = instructionlist2
+    //     retval = execute either ift or iff
+
     std::vector<RequestReturnType> returnTypeAry = {RequestReturnDB, returnType};
     if (node.astnodeValue()->countOfChildren() == 3)
     {
@@ -66,13 +78,12 @@ Value *Compiler::genIfelse(const DatumPtr &node, RequestReturnType returnType)
     BasicBlock *mergeBB = scaff_->createBasicBlock(DBG_NAME("merge"));
 
     Value *cond = children[0];
-    Value *ift;
-    Value *iff;
+    Value *ift = children[1];
+    Value *iff = (children.size() == 3) ? children[2] : CoAddr(node.astnodeValue());
 
     // If input is a Datum type (can be word or list)
     if (cond->getType()->isPointerTy())
     {
-        // TODO: We should not execute a list.
         cond = generateListExecIfList(node.astnodeValue(), cond);
         cond = generateBoolFromDatum(node.astnodeValue(), cond);
         // bool continues.
@@ -81,37 +92,32 @@ Value *Compiler::genIfelse(const DatumPtr &node, RequestReturnType returnType)
     cond = scaff_->builder_.CreateICmpEQ(cond, CoBool(1), DBG_NAME("ifcond"));
     scaff_->builder_.CreateCondBr(cond, thenBB, elseBB);
 
-    // Emit then value.
+    // If true
     scaff_->builder_.SetInsertPoint(thenBB);
-    ift = generateCallList(children[1], returnType);
+    if (children.size() == 2)
+    {
+        ift = generateCallList(ift, returnType);
+        thenBB = scaff_->builder_.GetInsertBlock();
+    }
     scaff_->builder_.CreateBr(mergeBB);
-    // Codegen of 'Then' can change the current block, update thenBB for the PHI.
-    thenBB = scaff_->builder_.GetInsertBlock();
 
-    // Emit else block.
+    // If false
     scaff_->builder_.SetInsertPoint(elseBB);
-
-    // What we do here depends on if this is an IF or IFELSE
-    if (children.size() == 3)
-    {
-        iff = generateCallList(children[2], returnType);
-    }
-    else
-    {
-        iff = CoAddr(node.astnodeValue());
-    }
-
     scaff_->builder_.CreateBr(mergeBB);
-    // Codegen of 'Else' can change the current block, update elseBB for the PHI.
-    elseBB = scaff_->builder_.GetInsertBlock();
 
-    // Emit merge block.
+    // Merge the two branches.
     scaff_->builder_.SetInsertPoint(mergeBB);
     PHINode *phiNode = scaff_->builder_.CreatePHI(TyAddr, 2, DBG_NAME("iftmp"));
-
     phiNode->addIncoming(ift, thenBB);
     phiNode->addIncoming(iff, elseBB);
-    return phiNode;
+
+    Value *retval = phiNode;
+
+    if (children.size() == 3)
+    {
+        retval = generateCallList(retval, returnType);
+    }
+    return retval;
 }
 
 /***DOC RUN
