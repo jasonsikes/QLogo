@@ -115,6 +115,21 @@ void runCoroutinePasses(Module &M, ModuleAnalysisManager &mam,
     cantFail(pb.parsePassPipeline(coroMPM, "coro-early,cgscc(coro-split),function(coro-elide),coro-cleanup"));
     coroMPM.run(M, mam);
 }
+
+/// coro-split emit resume/destroy/cleanup as fastcc;
+/// However, they are invoked through C function pointers 
+/// (LLVMCoroFrameHeader). Match that ABI here.
+void setCoroHelperCallingConv(Module &M)
+{
+    for (Function &F : M)
+    {
+        if (F.isDeclaration())
+            continue;
+        StringRef name = F.getName();
+        if (name.ends_with(".resume") || name.ends_with(".destroy") || name.ends_with(".cleanup"))
+            F.setCallingConv(CallingConv::C);
+    }
+}
 } // namespace
 
 Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
@@ -374,6 +389,7 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
 
     // Lower coroutine intrinsics before backend.
     runCoroutinePasses(*scaff_->theModule_, scaff_->theMAM_, scaff_->theFAM_, scaff_->theLAM_, scaff_->theCGAM_);
+    setCoroHelperCallingConv(*scaff_->theModule_);
 
     // Run the optimizer on the function.
     scaff_->theFPM_.run(*(scaff_->theFunction_), scaff_->theFAM_);
