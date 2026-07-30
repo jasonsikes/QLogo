@@ -31,8 +31,9 @@
 #include "workspace/procedures.h"
 #include <string>
 #include <iostream>
+#include <vector>
 
-QHash<Datum *, std::shared_ptr<CompiledText>> Compiler::compiledTextTable_;
+std::vector<std::weak_ptr<CompiledText>> Compiler::liveCompiledTexts_;
 
 const char *dbgName(const char *enclosing, const char *name)
 {
@@ -206,17 +207,45 @@ Compiler::Compiler()
 
 Compiler::~Compiler()
 {
-    // Clear compiledTextTable first to ensure all CompiledText objects are destroyed
-    // while lljit is still valid
-    clearCompiledTextTable();
+    // Release ResourceTrackers while lljit is still valid.
+    releaseAllCompiledText();
 }
 
-void Compiler::clearCompiledTextTable()
+void Compiler::trackCompiledText(const std::shared_ptr<CompiledText> &compiledText)
 {
-    // Move aside so destroying CompiledText values (and their AST-held lists) cannot
-    // re-enter compiledTextTable_ via List::clear() -> destroyCompiledTextForDatum().
-    auto table = std::move(compiledTextTable_);
-    table.clear();
+    // Drop expired weak refs occasionally so the vector does not grow without bound.
+    // TODO: What if the list stays too long?
+    if (liveCompiledTexts_.size() >= 64)
+    {
+        std::vector<std::weak_ptr<CompiledText>> live;
+        live.reserve(liveCompiledTexts_.size() + 1);
+        for (auto &w : liveCompiledTexts_)
+        {
+            if (!w.expired()) {
+                live.push_back(std::move(w));
+            }
+        }
+        liveCompiledTexts_ = std::move(live);
+    }
+    liveCompiledTexts_.push_back(compiledText);
+}
+
+void Compiler::releaseAllCompiledText()
+{
+    for (auto &w : liveCompiledTexts_)
+    {
+        if (auto compiledText = w.lock())
+        {
+            if (compiledText->rt_)
+            {
+                cantFail(compiledText->rt_->remove());
+                compiledText->rt_.reset();
+            }
+            compiledText->functionPtr_ = nullptr;
+            compiledText->compiler_ = nullptr;
+        }
+    }
+    liveCompiledTexts_.clear();
 }
 
 QString Compiler::getTagNameFromNode(const DatumPtr &node) const
@@ -289,15 +318,16 @@ BasicBlock *Compiler::generateTOC(QList<BasicBlock *> blocks, Function *theFunct
     return tocBlock;
 }
 
-CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, Datum *key)
+std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, List *aList)
 {
     Scaffold compilerScaffolding(lljit_->getDataLayout());
     scaff_ = &compilerScaffolding;
 
-    auto *compiledText = new CompiledText();
+    auto compiledText = std::make_shared<CompiledText>();
     compiledText->astList_ = parsedList;
     compiledText->compiler_ = this;
-    compiledTextTable_[key] = std::shared_ptr<CompiledText>(compiledText);
+    aList->compiledText_ = compiledText;
+    trackCompiledText(compiledText);
 
     // The first block is number zero.
     int localBlockId = 0;
@@ -405,7 +435,7 @@ CompiledFunctionPtr Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPt
     auto [addr, rt] = addModuleAndLookup(*lljit_, std::move(tsm), scaff_->name_);
     compiledText->rt_ = std::move(rt);
     compiledText->functionPtr_ = reinterpret_cast<CompiledFunctionPtr>(addr);
-    return compiledText->functionPtr_;
+    return compiledText;
 }
 
 QList<QList<DatumPtr>> Compiler::groupConsecutiveExpressions(const QList<DatumPtr> &expressions)
@@ -447,21 +477,17 @@ QList<QList<DatumPtr>> Compiler::groupConsecutiveExpressions(const QList<DatumPt
     return retval;
 }
 
-CompiledFunctionPtr Compiler::functionPtrFromList(List *aList)
+std::shared_ptr<CompiledText> Compiler::compiledTextFromList(List *aList)
 {
-    if (aList->compileTimeStamp <= Procedures::get().timeOfLastProcedureCreation())
+    if (aList->compileTimeStamp <= Procedures::get().timeOfLastProcedureCreation() ||
+        !aList->compiledText_ || !aList->compiledText_->functionPtr_)
     {
         QList<DatumPtr> astFlatList = Treeifier::astFromList(aList);
         QList<QList<DatumPtr>> parsedList = groupConsecutiveExpressions(astFlatList);
-        return generateFunctionPtrFromASTList(parsedList, static_cast<Datum *>(aList));
+        return generateFunctionPtrFromASTList(parsedList, aList);
     }
 
-    return compiledTextTable_[static_cast<Datum *>(aList)]->functionPtr_;
-}
-
-void Compiler::destroyCompiledTextForDatum(Datum *aDatum)
-{
-    compiledTextTable_.remove(aDatum);
+    return aList->compiledText_;
 }
 
 Value *Compiler::generateChildOfNode(ASTNode *parent, const DatumPtr &node, RequestReturnType returnType)

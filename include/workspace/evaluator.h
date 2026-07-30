@@ -20,6 +20,8 @@
 #include "compiler_types.h"
 #include "datum_ptr.h"
 
+#include <memory>
+
 class CallFrame;
 
 /// @brief The Evaluator object handles the evaluation of a list.
@@ -34,8 +36,10 @@ struct Evaluator
     /// @brief The list to evaluate.
     DatumPtr list_;
 
-    /// @brief The pointer to this list's compiled function.
-    CompiledFunctionPtr fn_;
+    /// @brief Ownership of this list's JIT module for the lifetime of the evaluation.
+    /// @note Must outlive any suspended coroutine frame whose resume/destroy point into
+    /// that module.
+    std::shared_ptr<CompiledText> compiledText_;
 
     /// @brief The coroutine handle for this evaluation.
     /// @note Execution may resume until this value is nullptr.

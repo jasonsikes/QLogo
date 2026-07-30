@@ -10,15 +10,32 @@ Evaluator::Evaluator(CallFrame *aOwningFrame, const DatumPtr &aList) : owningFra
 {
 }
 
+namespace {
+
+/// Free the LLVM coro frame if destroy is present, then drop the host handle.
+void destroyCoroFrame(LLVMCoroFrameHeader *&handle)
+{
+    if (handle == nullptr)
+        return;
+    if (handle->destroy != nullptr)
+        handle->destroy(handle);
+    handle = nullptr;
+}
+
+bool coroFrameIsComplete(LLVMCoroFrameHeader *handle)
+{
+    return handle == nullptr || handle->resume == nullptr;
+}
+
+} // namespace
+
 Evaluator::~Evaluator()
 {
-    // Destroy the coroutine frame if it exists.
-    if (handle_ != nullptr)
-    {
-        Q_ASSERT(handle_->resume == nullptr);
-        if (handle_->destroy != nullptr)
-            handle_->destroy(handle_);
-    }
+    // Suspended frames should not reach destruction (ECE only pops when complete).
+    // Still destroy whatever remains so the heap allocation cannot outlive us.
+    destroyCoroFrame(handle_);
+    // Drop JIT ownership after the frame is gone (resume/destroy point into the module).
+    compiledText_.reset();
 
     // Release the objects in the release pool.
     for (auto &d : releasePool_)
@@ -53,24 +70,41 @@ bool Evaluator::exec(int32_t jumpLocation)
             {
                 Compiler::get().setTagLineLocation(lineLoc);
             }
-            fn_ = Compiler::get().functionPtrFromList(list_.listValue());
+            compiledText_ = Compiler::get().compiledTextFromList(list_.listValue());
             Compiler::get().clearTagLineLocation();
         }
         catch (FCError *e)
         {
             Compiler::get().clearTagLineLocation();
+            compiledText_.reset();
             retvalToParent_ = e;
             return true;
         }
-        handle_ = fn_((addr_t)this, (addr_t)&retvalToParent_, jumpLocation, nullptr);
-    } else {
-        // Resume using the frame's resume function.
-        if (handle_->resume != nullptr)
+
+        CompiledFunctionPtr fn = compiledText_ ? compiledText_->functionPtr_ : nullptr;
+        if (fn == nullptr)
         {
-            handle_->resume(handle_);
+            compiledText_.reset();
+            retvalToParent_ = FCError::fatalInternal();
+            return true;
         }
+
+        handle_ = fn((addr_t)this, (addr_t)&retvalToParent_, jumpLocation, nullptr);
     }
-    return (handle_ == nullptr) || (handle_->resume == nullptr);
+    else
+    {
+        if (handle_->resume != nullptr)
+            handle_->resume(handle_);
+    }
+
+    // Completed: destroy immediately so handle_ never dangles across later ECE steps.
+    if (coroFrameIsComplete(handle_))
+    {
+        destroyCoroFrame(handle_);
+        compiledText_.reset();
+        return true;
+    }
+    return false;
 }
 
 void Evaluator::pushSublist(Datum *aList)

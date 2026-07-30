@@ -612,7 +612,7 @@ EXPORTC addr_t getCtrlGoto(addr_t eAddr, addr_t astNodeAddr, addr_t tagAddr)
         Compiler::get().setTagLineLocation(runningList);
         try
         {
-            Compiler::get().functionPtrFromList(runningList.listValue()->head.listValue());
+            Compiler::get().compiledTextFromList(runningList.listValue()->head.listValue());
         }
         catch (FCError *e)
         {
@@ -1269,7 +1269,10 @@ EXPORTC void setFirstOfList(addr_t listAddr, addr_t valueAddr)
     auto *l = reinterpret_cast<List *>(listAddr);
     l->head = DatumPtr(reinterpret_cast<Datum *>(valueAddr));
     if (l->compileTimeStamp > 0)
+    {
         l->compileTimeStamp = 1;
+        l->compiledText_.reset();
+    }
 }
 
 EXPORTC void setButfirstOfList(addr_t listAddr, addr_t valueAddr)
@@ -1277,7 +1280,10 @@ EXPORTC void setButfirstOfList(addr_t listAddr, addr_t valueAddr)
     auto *l = reinterpret_cast<List *>(listAddr);
     l->tail = DatumPtr(reinterpret_cast<Datum *>(valueAddr));
     if (l->compileTimeStamp > 0)
+    {
         l->compileTimeStamp = 1;
+        l->compiledText_.reset();
+    }
 }
 
 EXPORTC bool isEmpty(addr_t thingAddr)

@@ -33,8 +33,10 @@
 #include "llvm/Transforms/Scalar/Reassociate.h"
 
 #include <memory>
+#include <vector>
 
 struct Scaffold;
+class List;
 
 namespace llvm
 {
@@ -60,12 +62,14 @@ class Compiler
 
     std::unique_ptr<llvm::orc::LLJIT> lljit_;
 
-    // The hash table of compiled texts referenced by lists or ASTNodes.
-    static QHash<Datum *, std::shared_ptr<CompiledText>> compiledTextTable_;
+    // Weak refs so shutdown can release ResourceTrackers while LLJIT is still alive.
+    static std::vector<std::weak_ptr<CompiledText>> liveCompiledTexts_;
+
+    static void trackCompiledText(const std::shared_ptr<CompiledText> &compiledText);
 
     /// @brief Procedure-body suffix whose head is the line currently being compiled.
     /// @details Used when registering TAG locations so GOTO can jump to the correct line.
-    /// Must be set by the caller of functionPtrFromList() when compiling a procedure line.
+    /// Must be set by the caller of compiledTextFromList() when compiling a procedure line.
     DatumPtr tagLineLocation_;
 
     // Child node generation.
@@ -230,8 +234,8 @@ class Compiler
     // Group consecutive expressions of the same type (tag or non-tag) together.
     QList<QList<DatumPtr>> groupConsecutiveExpressions(const QList<DatumPtr> &expressions);
 
-    // Get the compiled function pointer for a list of ASTNodes.
-    CompiledFunctionPtr generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, Datum *key);
+    // Compile a list of ASTNode trees into a new CompiledText (JIT module) and store it on aList.
+    std::shared_ptr<CompiledText> generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, List *aList);
 
     // Generate a number array from a datum.
     llvm::AllocaInst *generateNumberAryFromDatum(ASTNode *parent, llvm::Value *src);
@@ -274,8 +278,8 @@ class Compiler
     /// @brief Destructor.
     ~Compiler();
 
-    /// Get the compiled function pointer for a list.
-    CompiledFunctionPtr functionPtrFromList(List *aList);
+    /// Get the compiled text for a list (compiling if stale or missing).
+    std::shared_ptr<CompiledText> compiledTextFromList(List *aList);
 
     /// @brief Set the procedure-body suffix for TAG registration during the next compile.
     /// @param location List whose head is the line being compiled; tail is the remaining body.
@@ -284,11 +288,9 @@ class Compiler
     /// @brief Clear the TAG registration line location after compiling.
     void clearTagLineLocation() { tagLineLocation_ = nothing(); }
 
-    /// Destroy the compiled text for a datum (either a List or an ASTNode).
-    static void destroyCompiledTextForDatum(Datum *aDatum);
-
-    /// Destroy all cached compiled text. Safe to call during shutdown.
-    static void clearCompiledTextTable();
+    /// Release JIT resources for all live CompiledText.
+    /// Safe to call during shutdown; does not require walking every List.
+    static void releaseAllCompiledText();
 
     // The generators for the different ASTNodes. Since this list changes often during development
     // and it needs to be consistent across several files, we keep the master list in the compiler

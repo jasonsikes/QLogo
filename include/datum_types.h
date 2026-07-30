@@ -4,9 +4,11 @@
 #include "datum_ptr.h"
 #include <QList>
 #include <QString>
+#include <memory>
 
 class ListIterator;
 class VisitedSet;
+struct CompiledText;
 
 /// Convert "raw" encoding to Char encoding.
 QChar rawToChar(const QChar &src);
@@ -147,6 +149,9 @@ class List : public Datum
     /// Set when this list is compiled. Reset this to zero when the compiled text is destroyed.
     /// Set to one when the list is modified to trigger recompilation, if needed.
     qint64 compileTimeStamp = 0;
+
+    /// @brief Cached JIT module for this list, if compiled.
+    std::shared_ptr<CompiledText> compiledText_;
 
     /// @brief Create a new list by attaching item as the head of srcList.
     ///

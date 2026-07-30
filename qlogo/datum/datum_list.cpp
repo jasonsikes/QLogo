@@ -16,9 +16,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "compiler.h"
 #include "datum_types.h"
-#include "treeifyer.h"
 #include "workspace/visited.h"
 #include <QObject>
 #include <qdebug.h>
@@ -120,8 +118,7 @@ void List::clear()
     Q_ASSERT(this != EmptyList::instance());
     head = nothing();
     tail = nothing();
-    if (compileTimeStamp > 0)
-        Compiler::destroyCompiledTextForDatum(this);
+    compiledText_.reset();
     compileTimeStamp = 0;
 }
 
