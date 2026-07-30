@@ -147,6 +147,6 @@ EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr);
 EXPORTC void setVarAsLocal(addr_t varname);
 EXPORTC addr_t handleBadDouble(addr_t eAddr, addr_t parentAddr, double value);
 EXPORTC addr_t handleBadDatum(addr_t eAddr, addr_t parentAddr, addr_t valueAddr);
-EXPORTC addr_t q_malloc(addr_t eAddr, uint32_t size);
+EXPORTC addr_t q_malloc(addr_t eAddr, uint32_t size, uint32_t align);
 EXPORTC void q_free(addr_t eAddr, addr_t ptr);
 #endif // WORKSPACE_EXPORTS_H

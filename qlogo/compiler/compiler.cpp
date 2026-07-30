@@ -744,7 +744,13 @@ Value *Compiler::ensureCoroutineFrame()
 
     Function *coroSizeFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_size, {TyInt32});
     Value *coroutineSize = scaff_->builder_.CreateCall(coroSizeFn, {}, DBG_NAME("size"));
-    Value *coroutineAlloc = generateCallExtern(q_malloc, PaAddr(scaff_->evaluator_), PaInt32(coroutineSize));
+
+    Function *coroAlignFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_align, {TyInt32});
+    Value *coroutineAlign = scaff_->builder_.CreateCall(coroAlignFn, {}, DBG_NAME("align"));
+
+    Value *coroutineAlloc = generateCallExtern(
+        q_malloc, PaAddr(scaff_->evaluator_), PaInt32(coroutineSize), PaInt32(coroutineAlign));
+    
 
     Function *coroBeginFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_begin);
     auto *coroBeginCall = cast<CallInst>(

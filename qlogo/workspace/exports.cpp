@@ -2123,15 +2123,32 @@ EXPORTC addr_t handleBadDatum(addr_t eAddr, addr_t parentAddr, addr_t valueAddr)
     });
 }
 
-EXPORTC addr_t q_malloc(addr_t eAddr, uint32_t size)
+/// @brief Allocate memory with a specified alignment.
+/// @param eAddr a pointer to the Evaluator object
+/// @param size the size of the memory to allocate
+/// @param align the alignment of the memory to allocate
+/// @return a pointer to the allocated memory
+EXPORTC addr_t q_malloc(addr_t eAddr, uint32_t size, uint32_t align)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    void *ptr = malloc(size);
+    align = std::max(align, static_cast<uint32_t>(alignof(std::max_align_t)));
+#ifdef _WIN32
+    void *ptr = _aligned_malloc(size, align);
+#else
+    void *ptr = aligned_alloc(align, size);
+#endif
     return reinterpret_cast<addr_t>(ptr);
 }
 
+/// @brief Free memory allocated with q_malloc.
+/// @param eAddr a pointer to the Evaluator object
+/// @param ptr a pointer to the memory to free
 EXPORTC void q_free(addr_t eAddr, addr_t ptr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
+#ifdef _WIN32
+    _aligned_free(ptr);
+#else
     free(ptr);
+#endif
 }
