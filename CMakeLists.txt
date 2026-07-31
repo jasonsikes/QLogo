@@ -65,7 +65,7 @@ if(UNIX AND NOT APPLE)
         DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
     )
 
-    install(DIRECTORY "icons/hicolor"
+    install(DIRECTORY "icons/linux/hicolor"
         DESTINATION "${CMAKE_INSTALL_DATADIR}/icons"
     )
 

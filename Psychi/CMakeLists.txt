@@ -24,15 +24,14 @@ set(GUI_SOURCES
 find_package(Qt6 REQUIRED COMPONENTS Sql)
 
 if(WIN32)
-    # Psychi.ico lives next to Psychi.rc (see util/createDesktopIcons.sh).
-    set(app_icon_resource_windows "${CMAKE_SOURCE_DIR}/resources/${QLOGO_GUI}.rc")
+    set(app_icon_resource_windows "${CMAKE_SOURCE_DIR}/icons/windows/${QLOGO_GUI}.rc")
     qt_add_executable("${QLOGO_GUI}"
       ${GUI_SOURCES}
       ${app_icon_resource_windows}
     )
 elseif(APPLE)
     set(MACOSX_BUNDLE_ICON_FILE "${QLOGO_GUI}.icns")
-    set(app_icon_macos "${CMAKE_SOURCE_DIR}/icons/${QLOGO_GUI}.icns")
+    set(app_icon_macos "${CMAKE_SOURCE_DIR}/icons/macos/${QLOGO_GUI}.icns")
     set_source_files_properties(${app_icon_macos} PROPERTIES
         MACOSX_PACKAGE_LOCATION "Resources")
     qt_add_executable("${QLOGO_GUI}" MACOSX_BUNDLE

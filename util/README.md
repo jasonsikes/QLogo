@@ -20,7 +20,7 @@ Generates the library files for QLogo from the source json file.
 
 ## createDesktopIcons.sh
 
-Reads `icons/qlogo_icon_1024.png` and generates platform icon files: `icons/Psychi.icns` (macOS), `resources/Psychi.ico` (Windows, next to `Psychi.rc`), `icons/hicolor/` (Linux), and `qlogo_logo.png` (README).
+Reads `icons/qlogo_icon_1024.png` and generates platform icon files under `icons/macos/`, `icons/windows/`, and `icons/linux/hicolor/`, plus `qlogo_logo.png` for the README.
 
 ## run-clang-tools.sh
 
