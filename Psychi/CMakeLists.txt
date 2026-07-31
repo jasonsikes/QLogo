@@ -24,8 +24,7 @@ set(GUI_SOURCES
 find_package(Qt6 REQUIRED COMPONENTS Sql)
 
 if(WIN32)
-    file(COPY "${CMAKE_SOURCE_DIR}/icons/${QLOGO_GUI}.ico"
-    DESTINATION  "${CMAKE_SOURCE_DIR}/resources")
+    # Psychi.ico lives next to Psychi.rc (see util/createDesktopIcons.sh).
     set(app_icon_resource_windows "${CMAKE_SOURCE_DIR}/resources/${QLOGO_GUI}.rc")
     qt_add_executable("${QLOGO_GUI}"
       ${GUI_SOURCES}
