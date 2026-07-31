@@ -4,27 +4,21 @@
 # by Jason Sikes
 
 # To use:
-# generate_help.py <cpp_source_dir> <library_helpfile.json> <dest_db>
+# generate_help.py
 #
-# Where:
-# 
-# <cpp_source_dir> is the directory containing the C++ source code
-# for the QLogo primitives.
-# 
-# <library_helpfile.json> is a JSON file that maps the library names to the
-# help text for each library procedure.
-# 
-# <dest_db> is the path to the SQLite database to be created.
+# Can be run from any directory. Paths are resolved relative to the
+# repository root (the parent of this script's directory):
 #
-# Example:
-# $ cd ~/Projects/QLogo
-# $ util/generate_help.py qlogo/executor util/logolib_help.json share/qlogo_help.db
+#   source_prefix:  qlogo/compiler
+#   json_file_path: util/logolib_help.json
+#   dest_path:      share/qlogo_help.db
 
-import os, errno, sqlite3, sys, re, json
+import os, errno, sqlite3, re, json
 
-source_prefix = sys.argv[1]
-json_file_path = sys.argv[2]
-dest_path = sys.argv[3]
+repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+source_prefix = os.path.join(repo_root, 'qlogo', 'compiler')
+json_file_path = os.path.join(repo_root, 'util', 'logolib_help.json')
+dest_path = os.path.join(repo_root, 'share', 'qlogo_help.db')
 
 SOURCES = [f for f in os.listdir(source_prefix) if re.match(r'.*\.cpp', f)]
 

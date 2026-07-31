@@ -4,23 +4,19 @@
 # by Jason Sikes
 
 # To use:
-# generate_library.py <library_source.json> <dest_db>
+# generate_library.py
 #
-# Where:
-# 
-# <library_source.json> is a JSON file that contains the code for the
-# QLogo standard library.
-# 
-# <dest_db> is the path to the SQLite database to be created.
+# Can be run from any directory. Paths are resolved relative to the
+# repository root (the parent of this script's directory):
 #
-# Example:
-# $ cd ~/Projects/QLogo
-# $ util/generate_library.py util/logolib.json share/qlogo_library.db
+#   json_file_path: util/logolib.json
+#   dest_path:      share/qlogo_library.db
 
-import os, sqlite3, sys, json
+import os, sqlite3, json
 
-json_file_path = sys.argv[1]
-dest_path = sys.argv[2]
+repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+json_file_path = os.path.join(repo_root, 'util', 'logolib.json')
+dest_path = os.path.join(repo_root, 'share', 'qlogo_library.db')
 
 # Delete the database if it already exists
 try:
