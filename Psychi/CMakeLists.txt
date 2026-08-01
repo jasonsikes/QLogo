@@ -1,8 +1,9 @@
 # Technically, the qlogo resource files belong to the qlogo binary,
-# but on MacOS I want to put them into the QLOGO_GUI bundle.
+# but on macOS they live in the GUI bundle's Contents/Resources so
+# findDBPath (../Resources/) can find them when qlogo runs from Psychi.
 set(RESOURCE_FILES
-  ${CMAKE_SOURCE_DIR}/share/qlogo_help.db
-  ${CMAKE_SOURCE_DIR}/share/qlogo_library.db
+  "${CMAKE_SOURCE_DIR}/share/${QLOGO_HELP}"
+  "${CMAKE_SOURCE_DIR}/share/${QLOGO_LIB}"
 )
 set(GUI_SOURCES
   canvas.cpp
@@ -32,11 +33,12 @@ if(WIN32)
 elseif(APPLE)
     set(MACOSX_BUNDLE_ICON_FILE "${QLOGO_GUI}.icns")
     set(app_icon_macos "${CMAKE_SOURCE_DIR}/icons/macos/${QLOGO_GUI}.icns")
-    set_source_files_properties(${app_icon_macos} PROPERTIES
+    set_source_files_properties(${app_icon_macos} ${RESOURCE_FILES} PROPERTIES
         MACOSX_PACKAGE_LOCATION "Resources")
     qt_add_executable("${QLOGO_GUI}" MACOSX_BUNDLE
       ${GUI_SOURCES}
       ${app_icon_macos}
+      ${RESOURCE_FILES}
     )
 else()
     qt_add_executable("${QLOGO_GUI}"

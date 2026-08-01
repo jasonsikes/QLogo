@@ -56,10 +56,17 @@ install(TARGETS "${QLOGO_GUI}" "${QLOGO_BIN}"
     RESOURCE DESTINATION ${CMAKE_INSTALL_DATADIR}
 )
 
-install(DIRECTORY "${QLOGO_DATA_DIR}"
-    DESTINATION "${CMAKE_INSTALL_DATADIR}" 
-)
-
+if(WIN32)
+    install(FILES "${QLOGO_HELP_DB}" "${QLOGO_LIB_DB}"
+        DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    )
+elseif(UNIX AND NOT APPLE)
+    # On Linux, findDBPath uses ../share/qlogo relative to the binary.
+    install(DIRECTORY "${QLOGO_DATA_DIR}"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}"
+    )
+endif()
+# On macOS the DBs live in the Psychi.app bundle
 if(UNIX AND NOT APPLE)
     install(FILES "${QLOGO_GUI}.desktop"
         DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
@@ -76,13 +83,11 @@ endif()
 
 if (APPLE)
     set(MACOSX_BUNDLE_ICON_FILE ${QLOGO_GUI}.icns)
-    # Copy the qlogo binary and help database into the GUI bundle
+    # Copy the qlogo binary into the GUI bundle.
     set(QLOGO_BIN_LOC ${CMAKE_BINARY_DIR}/${QLOGO_BIN}/${QLOGO_BIN})
     set(QLOGO_BUNDLE_EXE_DIR ${CMAKE_BINARY_DIR}/${QLOGO_GUI}/${QLOGO_GUI}.app/Contents/MacOS)
-    set(QLOGO_BUNDLE_RESOURCES_DIR ${CMAKE_BINARY_DIR}/${QLOGO_GUI}/${QLOGO_GUI}.app/Contents/Resources)
     add_custom_target(QLogoBundleCp ALL
-        COMMAND cp "${QLOGO_BIN_LOC}" "${QLOGO_BUNDLE_EXE_DIR}"
-        COMMAND cp "${QLOGO_HELP_DB}" "${QLOGO_LIB_DB}" "${QLOGO_BUNDLE_RESOURCES_DIR}"
+        COMMAND "${CMAKE_COMMAND}" -E copy "${QLOGO_BIN_LOC}" "${QLOGO_BUNDLE_EXE_DIR}"
         DEPENDS "${QLOGO_GUI}" "${QLOGO_BIN}"
     )
 endif()
