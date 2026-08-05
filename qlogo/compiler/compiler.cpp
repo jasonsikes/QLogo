@@ -351,7 +351,7 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     scaff_->builder_.SetInsertPoint(currentBlock);
 
     Value *nodeResult = nullptr;
-    RequestReturnType returnTypeRequest = RequestReturnNothing;
+    TypeMask returnTypeRequest = TypeNothing;
     for (auto &srcBlock : parsedList)
     {
         if (isTag(srcBlock.first()))
@@ -372,7 +372,7 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
                 // If this is the last node, accept any Datum return type.
                 // Otherwise, expect that nothing is returned.
                 if (node == parsedList.last().last())
-                    returnTypeRequest = RequestReturnDN;
+                    returnTypeRequest = TypeDN;
                 nodeResult = generateChild(nullptr, node, returnTypeRequest);
             }
         }
@@ -468,7 +468,7 @@ QList<QList<DatumPtr>> Compiler::groupConsecutiveExpressions(const QList<DatumPt
     {
         auto *noopNode = new ASTNode(DatumPtr(StringConstants::keywordNoop()));
         noopNode->genExpression_ = &Compiler::genNoop;
-        noopNode->returnType_ = RequestReturnNothing;
+        noopNode->produces_ = TypeNothing;
 
         currentBlock = {DatumPtr(noopNode)};
         retval.append(currentBlock);
@@ -490,101 +490,101 @@ std::shared_ptr<CompiledText> Compiler::compiledTextFromList(List *aList)
     return aList->compiledText_;
 }
 
-Value *Compiler::generateChildOfNode(ASTNode *parent, const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::generateChildOfNode(ASTNode *parent, const DatumPtr &node, TypeMask expected)
 {
     Generator method = node.astnodeValue()->genExpression_;
-    Value *retval = ((this->*method)(node, returnType));
+    Value *retval = ((this->*method)(node, expected));
     return retval;
 }
 
-Value *Compiler::generateCast(Value *src, ASTNode *parent, const DatumPtr &node, RequestReturnType destReturnType)
+Value *Compiler::generateCast(Value *src, ASTNode *parent, const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(!src->getType()->isVoidTy());
-    RequestReturnType srcReturnType = node.astnodeValue()->returnType_;
+    TypeMask produces = node.astnodeValue()->produces_;
 
-    if (srcReturnType == destReturnType)
+    if (produces == expected)
         return src;
 
     if (src->getType()->isDoubleTy())
-        return generateCastFromDouble(src, parent, destReturnType);
+        return generateCastFromDouble(src, parent, expected);
     if (src->getType()->isIntegerTy(1))
-        return generateCastFromBool(src, parent, destReturnType);
-    if (srcReturnType == RequestReturnDatum)
-        return generateCastFromDatum(src, parent, destReturnType);
-    if (srcReturnType == RequestReturnNothing)
-        return generateCastFromNothing(src, parent, destReturnType);
+        return generateCastFromBool(src, parent, expected);
+    if (produces == TypeDatum)
+        return generateCastFromDatum(src, parent, expected);
+    if (produces == TypeNothing)
+        return generateCastFromNothing(src, parent, expected);
 
-    Q_ASSERT(srcReturnType == RequestReturnDN);
-    return generateCastFromDN(src, parent, destReturnType);
+    Q_ASSERT(produces == TypeDN);
+    return generateCastFromDN(src, parent, expected);
 }
 
-Value *Compiler::generateCastFromDouble(Value *src, ASTNode *parent, RequestReturnType destReturnType)
+Value *Compiler::generateCastFromDouble(Value *src, ASTNode *parent, TypeMask expected)
 {
-    if (destReturnType & RequestReturnReal)
+    if (expected & TypeReal)
         return src;
     Value *srcAsWord = generateWordFromDouble(src);
-    if (destReturnType & RequestReturnDatum)
+    if (expected & TypeDatum)
         return srcAsWord;
-    if (destReturnType & RequestReturnBool)
+    if (expected & TypeBool)
         return generateImmediateReturn(generateErrorNoLike(parent, srcAsWord));
-    Q_ASSERT(destReturnType & RequestReturnNothing);
+    Q_ASSERT(expected & TypeNothing);
     return generateImmediateReturn(generateErrorNoSay(srcAsWord));
 }
 
-Value *Compiler::generateCastFromBool(Value *src, ASTNode *parent, RequestReturnType destReturnType)
+Value *Compiler::generateCastFromBool(Value *src, ASTNode *parent, TypeMask expected)
 {
-    if (destReturnType & RequestReturnBool)
+    if (expected & TypeBool)
         return src;
     Value *srcAsWord = generateWordFromBool(src);
-    if (destReturnType & RequestReturnDatum)
+    if (expected & TypeDatum)
         return srcAsWord;
-    if (destReturnType & RequestReturnReal)
+    if (expected & TypeReal)
         return generateImmediateReturn(generateErrorNoLike(parent, srcAsWord));
-    Q_ASSERT(destReturnType & RequestReturnNothing);
+    Q_ASSERT(expected & TypeNothing);
     return generateImmediateReturn(generateErrorNoSay(srcAsWord));
 }
 
-Value *Compiler::generateCastFromDatum(Value *src, ASTNode *parent, RequestReturnType destReturnType)
+Value *Compiler::generateCastFromDatum(Value *src, ASTNode *parent, TypeMask expected)
 {
-    if (destReturnType & RequestReturnDatum)
+    if (expected & TypeDatum)
         return src;
-    if (destReturnType & RequestReturnBool)
+    if (expected & TypeBool)
         return generateBoolFromDatum(parent, src);
-    if (destReturnType & RequestReturnReal)
+    if (expected & TypeReal)
         return generateDoubleFromDatum(parent, src);
-    Q_ASSERT(destReturnType & RequestReturnNothing);
+    Q_ASSERT(expected & TypeNothing);
     return generateImmediateReturn(generateErrorNoSay(src));
 }
 
-Value *Compiler::generateCastFromNothing(Value *src, ASTNode *parent, RequestReturnType destReturnType)
+Value *Compiler::generateCastFromNothing(Value *src, ASTNode *parent, TypeMask expected)
 {
-    if (destReturnType & RequestReturnNothing)
+    if (expected & TypeNothing)
         return src;
     return generateImmediateReturn(generateErrorNoOutput(src, parent));
 }
 
-Value *Compiler::generateCastFromDN(Value *src, ASTNode *parent, RequestReturnType destReturnType)
+Value *Compiler::generateCastFromDN(Value *src, ASTNode *parent, TypeMask expected)
 {
-    if (destReturnType == RequestReturnNothing)
+    if (expected == TypeNothing)
         return generateNothingFromDatum(parent, src);
-    if (destReturnType == RequestReturnDatum)
+    if (expected == TypeDatum)
         return generateNotNothingFromDatum(parent, src);
-    if (destReturnType == RequestReturnReal)
+    if (expected == TypeReal)
         return generateDoubleFromDatum(parent, src);
-    Q_ASSERT(destReturnType == RequestReturnBool);
+    Q_ASSERT(expected == TypeBool);
     return generateBoolFromDatum(parent, src);
 }
 
-Value *Compiler::generateChild(ASTNode *parent, const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::generateChild(ASTNode *parent, const DatumPtr &node, TypeMask expected)
 {
-    Value *child = generateChildOfNode(parent, node, returnType);
-    return generateCast(child, parent, node, returnType);
+    Value *child = generateChildOfNode(parent, node, expected);
+    return generateCast(child, parent, node, expected);
 }
 
-Value *Compiler::generateChild(ASTNode *parent, unsigned int index, RequestReturnType returnType)
+Value *Compiler::generateChild(ASTNode *parent, unsigned int index, TypeMask expected)
 {
     DatumPtr node = parent->childAtIndex(index);
-    return generateChild(parent, node, returnType);
+    return generateChild(parent, node, expected);
 }
 
 Value *Compiler::generateDoubleFromDatum(ASTNode *parent, Value *src)
@@ -686,7 +686,7 @@ Value *Compiler::generateArrayFromDatum(ASTNode *parent, Value *src)
     return generateFromDatum(Datum::typeArray, parent, src);
 }
 
-Value *Compiler::genLiteral(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genLiteral(const DatumPtr &node, TypeMask expected)
 {
     DatumPtr literalPtr = node.astnodeValue()->childAtIndex(0);
 
@@ -696,13 +696,13 @@ Value *Compiler::genLiteral(const DatumPtr &node, RequestReturnType returnType)
     if (literalPtr.isWord())
     {
         Word *wVal = literalPtr.wordValue();
-        if (returnType == RequestReturnReal)
+        if (expected == TypeReal)
         {
             double val = wVal->numberValue();
             if (wVal->numberIsValid)
                 return CoDouble(val);
         }
-        if (returnType == RequestReturnBool)
+        if (expected == TypeBool)
         {
             bool val = wVal->boolValue();
             if (wVal->boolIsValid)
@@ -721,7 +721,7 @@ Value *Compiler::generateVoidRetval(const DatumPtr &node)
     return CoAddr(node.astnodeValue());
 }
 
-Value *Compiler::genValueOf(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genValueOf(const DatumPtr &node, TypeMask expected)
 {
     BasicBlock *noValueBB = scaff_->createBasicBlock(DBG_NAME("NoValue"));
     BasicBlock *hasValueBB = scaff_->createBasicBlock(DBG_NAME("hasValue"));
@@ -789,7 +789,7 @@ Value *Compiler::ensureCoroutineFrame()
     return scaff_->coroutineHandle_;
 }
 
-Value *Compiler::generateCallList(Value *list, RequestReturnType returnType)
+Value *Compiler::generateCallList(Value *list, TypeMask expected)
 {
     // Explicit control: push list onto evaluation stack, suspend so driver can run it, then pop and return result.
     generateCallExtern(pushListOntoEvaluationStack, PaAddr(scaff_->evaluator_), PaAddr(list));
@@ -810,9 +810,9 @@ Value *Compiler::generateCallList(Value *list, RequestReturnType returnType)
     return generateCallExtern(getLastEvaluationResult, PaAddr(scaff_->evaluator_));
 }
 
-Value *Compiler::genExecProcedure(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genExecProcedure(const DatumPtr &node, TypeMask expected)
 {
-    AllocaInst *paramAry = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, DBG_NAME("paramAry"));
+    AllocaInst *paramAry = generateChildrenAlloca(node.astnodeValue(), TypeDatum, DBG_NAME("paramAry"));
     Value *vAstnodeValue = CoAddr(node.astnodeValue());
     Value *vParamArySize = CoInt32(node.astnodeValue()->countOfChildren());
     generateCallExtern(beginProcedure, PaAddr(scaff_->evaluator_), PaAddr(vAstnodeValue), PaAddr(paramAry), PaInt32(vParamArySize));
@@ -925,23 +925,23 @@ Value *Compiler::generateImmediateReturn(llvm::Value *retval)
     return retval;
 }
 
-std::vector<Value *> Compiler::generateChildren(ASTNode *node, RequestReturnType returnType)
+std::vector<Value *> Compiler::generateChildren(ASTNode *node, TypeMask expected)
 {
     std::vector<Value *> retval;
     retval.reserve(node->countOfChildren());
     for (int i = 0; i < node->countOfChildren(); ++i)
     {
-        Value *v = generateChildOfNode(node, node->childAtIndex(i), returnType);
-        Value *casted = generateCast(v, node, node->childAtIndex(i), returnType);
+        Value *v = generateChildOfNode(node, node->childAtIndex(i), expected);
+        Value *casted = generateCast(v, node, node->childAtIndex(i), expected);
         retval.push_back(casted);
     }
 
     return retval;
 }
 
-AllocaInst *Compiler::generateChildrenAlloca(ASTNode *node, RequestReturnType returnType, const std::string &name)
+AllocaInst *Compiler::generateChildrenAlloca(ASTNode *node, TypeMask expected, const std::string &name)
 {
-    std::vector<Value *> children = generateChildren(node, returnType);
+    std::vector<Value *> children = generateChildren(node, expected);
     return generateAllocaAry(children, name);
 }
 
@@ -960,18 +960,18 @@ AllocaInst *Compiler::generateAllocaAry(const std::vector<llvm::Value *> &values
     return retval;
 }
 
-std::vector<Value *> Compiler::generateChildren(ASTNode *node, std::vector<RequestReturnType> returnTypeAry)
+std::vector<Value *> Compiler::generateChildren(ASTNode *node, std::vector<TypeMask> expectedAry)
 {
-    Q_ASSERT(node->countOfChildren() == returnTypeAry.size());
+    Q_ASSERT(node->countOfChildren() == expectedAry.size());
     std::vector<Value *> retval;
     retval.reserve(node->countOfChildren());
     for (int i = 0; i < node->countOfChildren(); ++i)
     {
-        retval.push_back(generateChildOfNode(node, node->childAtIndex(i), returnTypeAry[i]));
+        retval.push_back(generateChildOfNode(node, node->childAtIndex(i), expectedAry[i]));
     }
     for (int i = 0; i < node->countOfChildren(); ++i)
     {
-        retval[i] = generateCast(retval[i], node, node->childAtIndex(i), returnTypeAry[i]);
+        retval[i] = generateCast(retval[i], node, node->childAtIndex(i), expectedAry[i]);
     }
     return retval;
 }
@@ -979,7 +979,7 @@ std::vector<Value *> Compiler::generateChildren(ASTNode *node, std::vector<Reque
 AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr &srcPtr, int32_t size)
 {
     Value *vSize = CoInt32(size);
-    Value *list = generateChild(parent, srcPtr, RequestReturnDatum);
+    Value *list = generateChild(parent, srcPtr, TypeDatum);
     Value *count = generateCallExtern(getCountOfList, PaAddr(list));
     // There should be two doubles in the list
     BasicBlock *noLikeBB = scaff_->createBasicBlock(DBG_NAME("noLike"));

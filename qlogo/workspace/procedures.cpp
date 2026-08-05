@@ -319,7 +319,7 @@ std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromPrimitive(const Datum
     const Cmd_t &command = cmd.value();
     auto node = DatumPtr(new ASTNode(cmdP));
     node.astnodeValue()->genExpression_ = command.method_;
-    node.astnodeValue()->returnType_ = command.returnType_;
+    node.astnodeValue()->produces_ = command.produces_;
     return {node, command.countOfMinParams_, command.countOfDefaultParams_, command.countOfMaxParams_};
 }
 
@@ -334,7 +334,7 @@ std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromProcedure(const Datum
     auto node = DatumPtr(new ASTNode(cmdP));
 
     node.astnodeValue()->genExpression_ = &Compiler::genExecProcedure;
-    node.astnodeValue()->returnType_ = RequestReturnDN;
+    node.astnodeValue()->produces_ = TypeDN;
     node.astnodeValue()->procedure_ = procBody;
     return {node, procBody.procedureValue()->countOfMinParams_, procBody.procedureValue()->countOfDefaultParams_, procBody.procedureValue()->countOfMaxParams_};
 }

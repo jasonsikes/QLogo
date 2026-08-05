@@ -37,31 +37,34 @@ struct LLVMCoroFrameHeader
     void (*destroy)(void *frame);
 };
 
-/// @brief Expression generator request type.
+/// @brief Bitmask of value kinds a node may produce or a parent may expect.
 ///
-/// Request that the generator generate code that produces this output type.
-enum RequestReturnType : int
+/// Bits: N (nothing/UNBOUND), B (bool), D (datum), R (real). Combinations
+/// (e.g. DN, DB) mean more than one kind is allowed.
+enum TypeMask : int
 {
-    RequestReturnVoid = 0x00,
-    RequestReturnNothing = 0x01,
-    RequestReturnN = 0x01,    // N
-    RequestReturnBool = 0x02, // B
-    RequestReturnB = 0x02,
-    RequestReturnBN = 0x03,
-    RequestReturnDatum = 0x04, // D
-    RequestReturnD = 0x04,
-    RequestReturnDN = 0x05,
-    RequestReturnDB = 0x06,
-    RequestReturnDBN = 0x07,
-    RequestReturnReal = 0x08, // R
-    RequestReturnR = 0x08,
-    RequestReturnRN = 0x09,
-    RequestReturnRB = 0x0A,
-    RequestReturnRBN = 0x0B,
-    RequestReturnRD = 0x0C,
-    RequestReturnRDN = 0x0D,
-    RequestReturnRDB = 0x0E,
-    RequestReturnRDBN = 0x0F,
+    TypeNone = 0x00,
+
+    TypeN = 0x01, // nothing / UNBOUND
+    TypeNothing = TypeN,
+    TypeB = 0x02, // bool
+    TypeBool = TypeB,
+    TypeD = 0x04, // datum
+    TypeDatum = TypeD,
+    TypeR = 0x08, // real
+    TypeReal = TypeR,
+
+    TypeBN = TypeB | TypeN,
+    TypeDN = TypeD | TypeN,
+    TypeDB = TypeD | TypeB,
+    TypeDBN = TypeD | TypeB | TypeN,
+    TypeRN = TypeR | TypeN,
+    TypeRB = TypeR | TypeB,
+    TypeRBN = TypeR | TypeB | TypeN,
+    TypeRD = TypeR | TypeD,
+    TypeRDN = TypeR | TypeD | TypeN,
+    TypeRDB = TypeR | TypeD | TypeB,
+    TypeRDBN = TypeR | TypeD | TypeB | TypeN,
 };
 
 // Compiled function signature: returns coroutine handle (nullptr = completed).
@@ -69,7 +72,7 @@ enum RequestReturnType : int
 typedef LLVMCoroFrameHeader *(*CompiledFunctionPtr)(addr_t, addr_t, int32_t, LLVMCoroFrameHeader *);
 
 /// Signature of method that generates IR code for a given node.
-typedef llvm::Value *(Compiler::*Generator)(const DatumPtr &, RequestReturnType);
+typedef llvm::Value *(Compiler::*Generator)(const DatumPtr &, TypeMask);
 
 // The information to store the generated function and to destroy later
 struct CompiledText

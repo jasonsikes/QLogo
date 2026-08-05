@@ -126,7 +126,7 @@ DatumPtr Treeifier::treeifyRootExp()
     {
         auto newNode = DatumPtr(new ASTNode(currentToken_));
         newNode.astnodeValue()->genExpression_ = &Compiler::genStop;
-        newNode.astnodeValue()->returnType_ = RequestReturnNothing;
+        newNode.astnodeValue()->produces_ = TypeNothing;
         newNode.astnodeValue()->addChild(node);
         node = newNode;
         advanceToken();
@@ -160,32 +160,32 @@ DatumPtr Treeifier::treeifyExp()
         if (op.toString() == opEqual())
         {
             node.astnodeValue()->genExpression_ = &Compiler::genEqualp;
-            node.astnodeValue()->returnType_ = RequestReturnBool;
+            node.astnodeValue()->produces_ = TypeBool;
         }
         else if (op.toString() == opNotEqual())
         {
             node.astnodeValue()->genExpression_ = &Compiler::genNotequalp;
-            node.astnodeValue()->returnType_ = RequestReturnBool;
+            node.astnodeValue()->produces_ = TypeBool;
         }
         else if (op.toString() == opLessThan())
         {
             node.astnodeValue()->genExpression_ = &Compiler::genLessp;
-            node.astnodeValue()->returnType_ = RequestReturnBool;
+            node.astnodeValue()->produces_ = TypeBool;
         }
         else if (op.toString() == opGreaterThan())
         {
             node.astnodeValue()->genExpression_ = &Compiler::genGreaterp;
-            node.astnodeValue()->returnType_ = RequestReturnBool;
+            node.astnodeValue()->produces_ = TypeBool;
         }
         else if (op.toString() == opLessEqual())
         {
             node.astnodeValue()->genExpression_ = &Compiler::genLessequalp;
-            node.astnodeValue()->returnType_ = RequestReturnBool;
+            node.astnodeValue()->produces_ = TypeBool;
         }
         else
         {
             node.astnodeValue()->genExpression_ = &Compiler::genGreaterequalp;
-            node.astnodeValue()->returnType_ = RequestReturnBool;
+            node.astnodeValue()->produces_ = TypeBool;
         }
         node.astnodeValue()->addChild(left);
         node.astnodeValue()->addChild(right);
@@ -216,12 +216,12 @@ DatumPtr Treeifier::treeifySumexp()
         if (op.toString() == opPlus())
         {
             node.astnodeValue()->genExpression_ = &Compiler::genSum;
-            node.astnodeValue()->returnType_ = RequestReturnReal;
+            node.astnodeValue()->produces_ = TypeReal;
         }
         else
         {
             node.astnodeValue()->genExpression_ = &Compiler::genDifference;
-            node.astnodeValue()->returnType_ = RequestReturnReal;
+            node.astnodeValue()->produces_ = TypeReal;
         }
         node.astnodeValue()->addChild(left);
         node.astnodeValue()->addChild(right);
@@ -253,17 +253,17 @@ DatumPtr Treeifier::treeifyMulexp()
         if (op.toString() == opMultiply())
         {
             node.astnodeValue()->genExpression_ = &Compiler::genProduct;
-            node.astnodeValue()->returnType_ = RequestReturnReal;
+            node.astnodeValue()->produces_ = TypeReal;
         }
         else if (op.toString() == opDivide())
         {
             node.astnodeValue()->genExpression_ = &Compiler::genQuotient;
-            node.astnodeValue()->returnType_ = RequestReturnReal;
+            node.astnodeValue()->produces_ = TypeReal;
         }
         else
         {
             node.astnodeValue()->genExpression_ = &Compiler::genRemainder;
-            node.astnodeValue()->returnType_ = RequestReturnReal;
+            node.astnodeValue()->produces_ = TypeReal;
         }
         node.astnodeValue()->addChild(left);
         node.astnodeValue()->addChild(right);
@@ -291,7 +291,7 @@ DatumPtr Treeifier::treeifyMinusexp()
             throw FCError::notEnoughInputs(op);
 
         node.astnodeValue()->genExpression_ = &Compiler::genDifference;
-        node.astnodeValue()->returnType_ = RequestReturnReal;
+        node.astnodeValue()->produces_ = TypeReal;
         node.astnodeValue()->addChild(left);
         node.astnodeValue()->addChild(right);
         left = node;
@@ -319,7 +319,7 @@ DatumPtr Treeifier::treeifyTermexp()
     {
         DatumPtr node(new ASTNode(astNodeTypeList()));
         node.astnodeValue()->genExpression_ = &Compiler::genLiteral;
-        node.astnodeValue()->returnType_ = RequestReturnDatum;
+        node.astnodeValue()->produces_ = TypeDatum;
         node.astnodeValue()->addChild(currentToken_);
         advanceToken();
         return node;
@@ -329,7 +329,7 @@ DatumPtr Treeifier::treeifyTermexp()
     {
         DatumPtr node(new ASTNode(astNodeTypeArray()));
         node.astnodeValue()->genExpression_ = &Compiler::genLiteral;
-        node.astnodeValue()->returnType_ = RequestReturnDatum;
+        node.astnodeValue()->produces_ = TypeDatum;
         node.astnodeValue()->addChild(currentToken_);
         advanceToken();
         return node;
@@ -384,7 +384,7 @@ DatumPtr Treeifier::treeifyTermexp()
         {
             DatumPtr node(new ASTNode(astNodeTypeQuotedWord()));
             node.astnodeValue()->genExpression_ = &Compiler::genLiteral;
-            node.astnodeValue()->returnType_ = RequestReturnDatum;
+            node.astnodeValue()->produces_ = TypeDatum;
             node.astnodeValue()->addChild(DatumPtr(DatumPtr(name, currentToken_.wordValue()->isForeverSpecial)));
             advanceToken();
             return node;
@@ -393,7 +393,7 @@ DatumPtr Treeifier::treeifyTermexp()
         {
             DatumPtr node(new ASTNode(astNodeTypeValueOf()));
             node.astnodeValue()->genExpression_ = &Compiler::genValueOf;
-            node.astnodeValue()->returnType_ = RequestReturnDatum;
+            node.astnodeValue()->produces_ = TypeDatum;
             node.astnodeValue()->addChild(DatumPtr(name));
             advanceToken();
             return node;
@@ -406,7 +406,7 @@ DatumPtr Treeifier::treeifyTermexp()
     {
         DatumPtr node(new ASTNode(astNodeTypeNumber()));
         node.astnodeValue()->genExpression_ = &Compiler::genLiteral;
-        node.astnodeValue()->returnType_ = RequestReturnDatum;
+        node.astnodeValue()->produces_ = TypeDatum;
         node.astnodeValue()->addChild(DatumPtr(number));
         advanceToken();
         return node;

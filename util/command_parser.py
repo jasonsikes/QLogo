@@ -147,8 +147,8 @@ def get_project_root():
 
 
 def string_to_enum(return_type_str):
-    """Return the CPP enum representation of the output_type string."""
-    retval = 'RequestReturn'
+    """Return the CPP TypeMask enum constant for the output_type string."""
+    retval = 'Type'
     s = return_type_str.upper()
     for c in 'RDBN':
         if c in s:

@@ -23,7 +23,7 @@
 
 /// @brief A structure to hold a command's details for the treeifyer.
 /// @note This is used to map a command name to its method, minimum, default, maximum
-/// parameter counts, and return data type.
+/// parameter counts, and produced value type(s).
 struct Cmd_t
 {
     /// @brief The compiler method to generate code for this command.
@@ -41,8 +41,8 @@ struct Cmd_t
     /// @note -1 means unlimited.
     int countOfMaxParams_;
 
-    /// @brief The data type(s) that this procedure is expected to return.
-    RequestReturnType returnType_;
+    /// @brief The type(s) of value this procedure produces.
+    TypeMask produces_;
 };
 
 /// @brief The procedures class.

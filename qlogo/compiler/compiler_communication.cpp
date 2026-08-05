@@ -36,11 +36,11 @@ printed around sublists.  Braces are always printed around arrays.
 COD***/
 // CMD PRINT 0 1 -1 n
 // CMD PR 0 1 -1 n
-Value *Compiler::genPrint(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genPrint(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnNothing);
+    Q_ASSERT(expected && TypeNothing);
 
-    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, DBG_NAME("printAry"));
+    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), TypeDatum, DBG_NAME("printAry"));
     Value *useShow = CoBool(false);
     Value *addNewline = CoBool(true);
 
@@ -58,11 +58,11 @@ SHOW thing
 
 COD***/
 // CMD SHOW 0 1 -1 n
-Value *Compiler::genShow(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genShow(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnNothing);
+    Q_ASSERT(expected && TypeNothing);
 
-    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, DBG_NAME("showAry"));
+    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), TypeDatum, DBG_NAME("showAry"));
     Value *useShow = CoBool(true);
     Value *addNewline = CoBool(true);
 
@@ -93,11 +93,11 @@ TYPE thing
 
 COD***/
 // CMD TYPE 0 1 -1 n
-Value *Compiler::genType(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genType(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnNothing);
+    Q_ASSERT(expected && TypeNothing);
 
-    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), RequestReturnDatum, DBG_NAME("typeAry"));
+    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), TypeDatum, DBG_NAME("typeAry"));
     Value *useShow = CoBool(false);
     Value *addNewline = CoBool(false);
 

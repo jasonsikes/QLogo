@@ -76,7 +76,7 @@ def write_primitive_entries(entries, method, header_file, table_file):
     """
     # Write method declaration to header (once per method)
     header_file.write(
-        f"llvm::Value *{method}(const DatumPtr &node, RequestReturnType returnType);\n"
+        f"llvm::Value *{method}(const DatumPtr &node, TypeMask expected);\n"
     )
     
     # Write mapping entries to table (one per command name)

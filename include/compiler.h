@@ -74,39 +74,39 @@ class Compiler
 
     // Child node generation.
 
-    // Generate code for all children of the given node and cast them to the requested data type.
-    std::vector<llvm::Value *> generateChildren(ASTNode *node, RequestReturnType);
+    // Generate code for all children of the given node and cast them to the expected type.
+    std::vector<llvm::Value *> generateChildren(ASTNode *node, TypeMask expected);
 
-    // Generate code for all children of the given node and cast them to the requested data types.
-    std::vector<llvm::Value *> generateChildren(ASTNode *node, std::vector<RequestReturnType>);
+    // Generate code for all children of the given node and cast each to its expected type.
+    std::vector<llvm::Value *> generateChildren(ASTNode *node, std::vector<TypeMask> expectedAry);
 
-    // Generate code for all children of the given node and cast them to the requested data type.
-    llvm::AllocaInst *generateChildrenAlloca(ASTNode *node, RequestReturnType, const std::string &name = "");
+    // Generate code for all children of the given node and cast them to the expected type.
+    llvm::AllocaInst *generateChildrenAlloca(ASTNode *node, TypeMask expected, const std::string &name = "");
 
     // Generate code to save a vector of values to an alloca array.
     llvm::AllocaInst *generateAllocaAry(const std::vector<llvm::Value *> &values, const std::string &name = "");
 
-    // Glue to ensure requested data type matches the type returned from child
-    llvm::Value *generateCast(llvm::Value *child, ASTNode *parent, const DatumPtr &, RequestReturnType);
+    // Glue to cast child's produced type to the type the parent expects.
+    llvm::Value *generateCast(llvm::Value *child, ASTNode *parent, const DatumPtr &, TypeMask expected);
 
-    // Cast helpers: source type is known, emit code to produce destReturnType.
-    llvm::Value *generateCastFromDouble(llvm::Value *src, ASTNode *parent, RequestReturnType destReturnType);
-    llvm::Value *generateCastFromBool(llvm::Value *src, ASTNode *parent, RequestReturnType destReturnType);
-    llvm::Value *generateCastFromDatum(llvm::Value *src, ASTNode *parent, RequestReturnType destReturnType);
-    llvm::Value *generateCastFromNothing(llvm::Value *src, ASTNode *parent, RequestReturnType destReturnType);
-    llvm::Value *generateCastFromDN(llvm::Value *src, ASTNode *parent, RequestReturnType destReturnType);
+    // Cast helpers: source type is known, emit code to produce expected.
+    llvm::Value *generateCastFromDouble(llvm::Value *src, ASTNode *parent, TypeMask expected);
+    llvm::Value *generateCastFromBool(llvm::Value *src, ASTNode *parent, TypeMask expected);
+    llvm::Value *generateCastFromDatum(llvm::Value *src, ASTNode *parent, TypeMask expected);
+    llvm::Value *generateCastFromNothing(llvm::Value *src, ASTNode *parent, TypeMask expected);
+    llvm::Value *generateCastFromDN(llvm::Value *src, ASTNode *parent, TypeMask expected);
 
-    // Generate code for a child node and cast it to the requested data type.
-    llvm::Value *generateChild(ASTNode *parent, const DatumPtr &, RequestReturnType);
+    // Generate code for a child node and cast it to the expected type.
+    llvm::Value *generateChild(ASTNode *parent, const DatumPtr &, TypeMask expected);
 
-    // Generate code for the child node at the given index and cast it to the requested data type.
-    llvm::Value *generateChild(ASTNode *parent, unsigned int index, RequestReturnType);
+    // Generate code for the child node at the given index and cast it to the expected type.
+    llvm::Value *generateChild(ASTNode *parent, unsigned int index, TypeMask expected);
 
     // Generate a query to return a datum type (isa) of a given object.
     llvm::Value *generateGetDatumIsa(llvm::Value *objAddr);
 
     // Generate a call to a child node
-    llvm::Value *generateChildOfNode(ASTNode *parent, const DatumPtr &, RequestReturnType);
+    llvm::Value *generateChildOfNode(ASTNode *parent, const DatumPtr &, TypeMask expected);
 
     // Generate a void return value using the ASTNode to represent the source (for blame).
     llvm::Value *generateVoidRetval(const DatumPtr &node);
@@ -116,7 +116,7 @@ class Compiler
     llvm::Value *ensureCoroutineFrame();
 
     // Generate a call to execute a list.
-    llvm::Value *generateCallList(llvm::Value *list, RequestReturnType returnType);
+    llvm::Value *generateCallList(llvm::Value *list, TypeMask expected);
 
     // Generate a call to return a value immediately.
     llvm::Value *generateImmediateReturn(llvm::Value *retval);
@@ -229,7 +229,7 @@ class Compiler
 
     // Common methodology for the genAnd()/genOr() methods.
     // @param isAnd true if AND, false if OR
-    llvm::Value *generateAndOr(const DatumPtr &node, RequestReturnType returnType, bool isAnd);
+    llvm::Value *generateAndOr(const DatumPtr &node, TypeMask expected, bool isAnd);
 
     // Group consecutive expressions of the same type (tag or non-tag) together.
     QList<QList<DatumPtr>> groupConsecutiveExpressions(const QList<DatumPtr> &expressions);
@@ -298,26 +298,26 @@ class Compiler
 #include <primitives.h>
 
     // Generate a noop expression.
-    llvm::Value *genNoop(const DatumPtr &node, RequestReturnType returnType);
+    llvm::Value *genNoop(const DatumPtr &node, TypeMask expected);
 
     // generate the common code for IFTRUE and IFFALSE.
-    llvm::Value *generateIftruefalse(const DatumPtr &node, RequestReturnType returnType, bool testForTrue);
+    llvm::Value *generateIftruefalse(const DatumPtr &node, TypeMask expected, bool testForTrue);
 
     // generate the common code for FPUT and LPUT.
-    llvm::Value *generateFputlput(const DatumPtr &node, RequestReturnType returnType, bool isLput);
+    llvm::Value *generateFputlput(const DatumPtr &node, TypeMask expected, bool isLput);
 
     // generate the common code for SETITEM.
-    llvm::Value *generateSetitem(const DatumPtr &node, RequestReturnType returnType, bool isDangerous);
+    llvm::Value *generateSetitem(const DatumPtr &node, TypeMask expected, bool isDangerous);
 
     // generate the common code for OUTPUT, STOP, and .MAYBEOUTPUT.
     llvm::Value *generateProcedureExit(const DatumPtr &node,
-                                       RequestReturnType returnType,
-                                       RequestReturnType paramRequestType);
+                                       TypeMask expected,
+                                       TypeMask childExpected);
 
-    llvm::Value *genValueOf(const DatumPtr &node, RequestReturnType returnType);
-    llvm::Value *genLiteral(const DatumPtr &node, RequestReturnType returnType);
+    llvm::Value *genValueOf(const DatumPtr &node, TypeMask expected);
+    llvm::Value *genLiteral(const DatumPtr &node, TypeMask expected);
 
-    llvm::Value *genExecProcedure(const DatumPtr &node, RequestReturnType returnType);
+    llvm::Value *genExecProcedure(const DatumPtr &node, TypeMask expected);
 
     // Typed wrapper: derives LLVM types from C function signature for single-source-of-truth verification.
     template <typename Ret, typename... Args>

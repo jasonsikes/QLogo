@@ -124,10 +124,10 @@ ARCTAN num
 
 COD***/
 // CMD ARCTAN 1 1 2 r
-Value *Compiler::genArctan(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genArctan(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
 
     Value *radToDeg = CoDouble(180 / PI);
     Value *retval;
@@ -154,11 +154,11 @@ ASHIFT num1 num2
 
 COD***/
 // CMD ASHIFT 2 2 2 r
-Value *Compiler::genAshift(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genAshift(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    Value *num2 = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    Value *num1 = generateChild(node.astnodeValue(), 0, TypeReal);
+    Value *num2 = generateChild(node.astnodeValue(), 1, TypeReal);
 
     num1 = generateInt32FromDouble(node.astnodeValue(), num1, true);
     num2 = generateInt32FromDouble(node.astnodeValue(), num2, true);
@@ -196,11 +196,11 @@ LSHIFT num1 num2
 
 COD***/
 // CMD LSHIFT 2 2 2 r
-Value *Compiler::genLshift(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genLshift(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    Value *num2 = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    Value *num1 = generateChild(node.astnodeValue(), 0, TypeReal);
+    Value *num2 = generateChild(node.astnodeValue(), 1, TypeReal);
 
     num1 = generateInt32FromDouble(node.astnodeValue(), num1, true);
     num2 = generateInt32FromDouble(node.astnodeValue(), num2, true);
@@ -237,10 +237,10 @@ BITAND num1 num2
 
 COD***/
 // CMD BITAND 0 2 -1 r
-Value *Compiler::genBitand(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genBitand(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
 
     for (auto &child : children)
     {
@@ -269,10 +269,10 @@ BITOR num1 num2
 
 COD***/
 // CMD BITOR 0 2 -1 r
-Value *Compiler::genBitor(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genBitor(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
 
     for (auto &child : children)
     {
@@ -302,10 +302,10 @@ BITXOR num1 num2
 
 COD***/
 // CMD BITXOR 0 2 -1 r
-Value *Compiler::genBitxor(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genBitxor(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
 
     for (auto &child : children)
     {
@@ -333,10 +333,10 @@ BITNOT num
 
 COD***/
 // CMD BITNOT 1 1 1 r
-Value *Compiler::genBitnot(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genBitnot(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnBool);
-    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Q_ASSERT(expected && TypeBool);
+    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
 
     num = generateInt32FromDouble(node.astnodeValue(), num, true);
     num = scaff_->builder_.CreateXor(num, CoInt32(-1), DBG_NAME("bitNOT"));
@@ -352,11 +352,11 @@ MODULO num1 num2
 
 COD***/
 // CMD MODULO 2 2 2 r
-Value *Compiler::genModulo(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genModulo(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    Value *denom = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
+    Value *denom = generateChild(node.astnodeValue(), 1, TypeReal);
 
     num = generateInt32FromDouble(node.astnodeValue(), num, true);
     denom = generateNotZeroInt32FromDouble(node.astnodeValue(), denom);
@@ -401,10 +401,10 @@ SQRT num
 
 COD***/
 // CMD SQRT 1 1 1 r
-Value *Compiler::genSqrt(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genSqrt(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
 
     num = generateNotNegativeFromDouble(node.astnodeValue(), num);
     return generateCallExternTyped(static_cast<double (*)(double)>(sqrt), "sqrt", {PaDouble(num)});
@@ -418,11 +418,11 @@ POWER num1 num2
 
 COD***/
 // CMD POWER 2 2 2 r
-Value *Compiler::genPower(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genPower(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    Value *num2 = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    Value *num1 = generateChild(node.astnodeValue(), 0, TypeReal);
+    Value *num2 = generateChild(node.astnodeValue(), 1, TypeReal);
 
     BasicBlock *startBB = scaff_->builder_.GetInsertBlock();
     Function *theFunction = startBB->getParent();
@@ -466,10 +466,10 @@ MINUS 3 + 4	means	-(3+4)
 COD***/
 // CMD MINUS 1 1 1 r
 // CMD - 1 1 1 r
-Value *Compiler::genMinus(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genMinus(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
 
     return scaff_->builder_.CreateFNeg(num, DBG_NAME("negtmp"));
 }
@@ -483,10 +483,10 @@ outputs the product of its inputs.
 
 COD***/
 // CMD PRODUCT 0 2 -1 r
-Value *Compiler::genProduct(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genProduct(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
 
     // No children? Return identity.
     if (children.size() == 0)
@@ -510,10 +510,10 @@ outputs the sum of its inputs.
 
 COD***/
 // CMD SUM 0 2 -1 r
-Value *Compiler::genSum(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genSum(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
 
     // No children? Return identity.
     if (children.size() == 0)
@@ -539,11 +539,11 @@ by a nonspace.  (See also MINUS.)
 
 COD***/
 // CMD DIFFERENCE 2 2 2 r
-Value *Compiler::genDifference(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genDifference(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    Value *num2 = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    Value *num1 = generateChild(node.astnodeValue(), 0, TypeReal);
+    Value *num2 = generateChild(node.astnodeValue(), 1, TypeReal);
 
     return scaff_->builder_.CreateFSub(num1, num2, DBG_NAME("subtmp"));
 }
@@ -561,10 +561,10 @@ QUOTIENT outputs the reciprocal of the input.
 
 COD***/
 // CMD QUOTIENT 1 2 2 r
-Value *Compiler::genQuotient(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genQuotient(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
 
     Value *num;
     Value *denom;
@@ -593,11 +593,11 @@ REMAINDER num1 num2
 
 COD***/
 // CMD REMAINDER 2 2 2 r
-Value *Compiler::genRemainder(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genRemainder(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    Value *denom = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
+    Value *denom = generateChild(node.astnodeValue(), 1, TypeReal);
     num = generateInt32FromDouble(node.astnodeValue(), num, true);
     denom = generateNotZeroInt32FromDouble(node.astnodeValue(), denom);
     Value *retval = scaff_->builder_.CreateSRem(num, denom, DBG_NAME("remainder"));
@@ -611,10 +611,10 @@ outputs the sine of its input, which is taken in degrees.
 
 COD***/
 // CMD SIN 1 1 1 r
-Value *Compiler::genSin(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genSin(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
 
     Value *degToRad = CoDouble(PI / 180);
     Value *theta = scaff_->builder_.CreateFMul(num, degToRad, DBG_NAME("theta"));
@@ -631,10 +631,10 @@ the input.
 
 COD***/
 // CMD INT 1 1 1 r
-Value *Compiler::genInt(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genInt(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
     return generateCallExternTyped(static_cast<double (*)(double)>(trunc), "trunc", {PaDouble(num)});
 }
 
@@ -645,10 +645,10 @@ outputs the nearest integer to the input.
 
 COD***/
 // CMD ROUND 1 1 1 r
-Value *Compiler::genRound(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genRound(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
     return generateCallExternTyped(static_cast<double (*)(double)>(round), "round", {PaDouble(num)});
 }
 
@@ -659,10 +659,10 @@ outputs e (2.718281828+) to the input power.
 
 COD***/
 // CMD EXP 1 1 1 r
-Value *Compiler::genExp(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genExp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
     return generateCallExternTyped(static_cast<double (*)(double)>(exp), "exp", {PaDouble(num)});
 }
 
@@ -674,10 +674,10 @@ LOG10 num
 
 COD***/
 // CMD LOG10 1 1 1 r
-Value *Compiler::genLog10(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genLog10(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
     num = generateGTZeroFromDouble(node.astnodeValue(), num);
     return generateCallExternTyped(static_cast<double (*)(double)>(log10), "log10", {PaDouble(num)});
 }
@@ -690,10 +690,10 @@ LN num
 
 COD***/
 // CMD LN 1 1 1 r
-Value *Compiler::genLn(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genLn(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
     num = generateGTZeroFromDouble(node.astnodeValue(), num);
     return generateCallExternTyped(static_cast<double (*)(double)>(log), "log", {PaDouble(num)});
 }
@@ -705,10 +705,10 @@ outputs the sine of its input, which is taken in radians.
 
 COD***/
 // CMD RADSIN 1 1 1 r
-Value *Compiler::genRadsin(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genRadsin(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
     return generateCallExternTyped(static_cast<double (*)(double)>(sin), "sin", {PaDouble(num)});
 }
 
@@ -719,10 +719,10 @@ outputs the cosine of its input, which is taken in radians.
 
 COD***/
 // CMD RADCOS 1 1 1 r
-Value *Compiler::genRadcos(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genRadcos(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
     return generateCallExternTyped(static_cast<double (*)(double)>(cos), "cos", {PaDouble(num)});
 }
 
@@ -739,10 +739,10 @@ RADARCTAN num
 
 COD***/
 // CMD RADARCTAN 1 1 2 r
-Value *Compiler::genRadarctan(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genRadarctan(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
 
     Value *retval;
 
@@ -765,10 +765,10 @@ outputs the cosine of its input, which is taken in degrees.
 
 COD***/
 // CMD COS 1 1 1 r
-Value *Compiler::genCos(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genCos(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnReal);
-    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
+    Q_ASSERT(expected && TypeReal);
+    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
 
     Value *degToRad = CoDouble(PI / 180);
     Value *theta = scaff_->builder_.CreateFMul(num, degToRad, DBG_NAME("theta"));
@@ -785,11 +785,11 @@ outputs TRUE if its first input is strictly less than its second.
 COD***/
 // CMD LESSP 2 2 2 b
 // CMD LESS? 2 2 2 b
-Value *Compiler::genLessp(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genLessp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnBool);
-    Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    Value *num2 = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+    Q_ASSERT(expected && TypeBool);
+    Value *num1 = generateChild(node.astnodeValue(), 0, TypeReal);
+    Value *num2 = generateChild(node.astnodeValue(), 1, TypeReal);
     return scaff_->builder_.CreateFCmpULT(num1, num2, DBG_NAME("lessp"));
 }
 
@@ -803,11 +803,11 @@ outputs TRUE if its first input is strictly greater than its second.
 COD***/
 // CMD GREATERP 2 2 2 b
 // CMD GREATER? 2 2 2 b
-Value *Compiler::genGreaterp(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genGreaterp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnBool);
-    Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    Value *num2 = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+    Q_ASSERT(expected && TypeBool);
+    Value *num1 = generateChild(node.astnodeValue(), 0, TypeReal);
+    Value *num2 = generateChild(node.astnodeValue(), 1, TypeReal);
     return scaff_->builder_.CreateFCmpUGT(num1, num2, DBG_NAME("greaterp"));
 }
 
@@ -821,11 +821,11 @@ outputs TRUE if its first input is less than or equal to its second.
 COD***/
 // CMD LESSEQUALP 2 2 2 b
 // CMD LESSEQUAL? 2 2 2 b
-Value *Compiler::genLessequalp(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genLessequalp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnBool);
-    Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    Value *num2 = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+    Q_ASSERT(expected && TypeBool);
+    Value *num1 = generateChild(node.astnodeValue(), 0, TypeReal);
+    Value *num2 = generateChild(node.astnodeValue(), 1, TypeReal);
     return scaff_->builder_.CreateFCmpULE(num1, num2, DBG_NAME("lessp"));
 }
 
@@ -839,11 +839,11 @@ outputs TRUE if its first input is greater than or equal to its second.
 COD***/
 // CMD GREATEREQUALP 2 2 2 b
 // CMD GREATEREQUAL? 2 2 2 b
-Value *Compiler::genGreaterequalp(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genGreaterequalp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnBool);
-    Value *num1 = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    Value *num2 = generateChild(node.astnodeValue(), 1, RequestReturnReal);
+    Q_ASSERT(expected && TypeBool);
+    Value *num1 = generateChild(node.astnodeValue(), 0, TypeReal);
+    Value *num2 = generateChild(node.astnodeValue(), 1, TypeReal);
     return scaff_->builder_.CreateFCmpUGE(num1, num2, DBG_NAME("greaterp"));
 }
 
@@ -857,10 +857,10 @@ expression must produce a TRUE or FALSE value.
 
 COD***/
 // CMD NOT 1 1 1 b
-Value *Compiler::genNot(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genNot(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnBool);
-    Value *tf = generateChild(node.astnodeValue(), 0, RequestReturnBool);
+    Q_ASSERT(expected && TypeBool);
+    Value *tf = generateChild(node.astnodeValue(), 0, TypeBool);
     return scaff_->builder_.CreateSub(CoBool(1), tf, DBG_NAME("not"));
 }
 
@@ -879,9 +879,9 @@ RANDOM num
 
 COD***/
 // CMD RANDOM 1 1 2 r
-Value *Compiler::genRandom(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genRandom(const DatumPtr &node, TypeMask expected)
 {
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
     std::vector<Value *> iChildren;
     iChildren.reserve(children.size());
 
@@ -935,9 +935,9 @@ RERANDOM
 
 COD***/
 // CMD RERANDOM 0 0 1 n
-Value *Compiler::genRerandom(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genRerandom(const DatumPtr &node, TypeMask expected)
 {
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnReal);
+    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
 
     if (children.size() == 1)
     {
@@ -964,12 +964,12 @@ FORM num width precision
 
 COD***/
 // CMD FORM 3 3 3 d
-Value *Compiler::genForm(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genForm(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnBool);
-    Value *num = generateChild(node.astnodeValue(), 0, RequestReturnReal);
-    Value *width = generateChild(node.astnodeValue(), 1, RequestReturnReal);
-    Value *precision = generateChild(node.astnodeValue(), 2, RequestReturnReal);
+    Q_ASSERT(expected && TypeBool);
+    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
+    Value *width = generateChild(node.astnodeValue(), 1, TypeReal);
+    Value *precision = generateChild(node.astnodeValue(), 2, TypeReal);
     width = generateInt32FromDouble(node.astnodeValue(), width, true);
 
     // TODO: Combine into one validation function.
@@ -990,10 +990,10 @@ Value *Compiler::genForm(const DatumPtr &node, RequestReturnType returnType)
 // CMD <= 1 1 1 d
 // CMD >= 1 1 1 d
 // CMD <> 1 1 1 d
-Value *Compiler::genInfixError(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genInfixError(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnBool);
-    generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    Q_ASSERT(expected && TypeBool);
+    generateChild(node.astnodeValue(), 0, TypeDatum);
 
     Value *err = generateErrorNotEnoughInputs(node.astnodeValue());
     return generateImmediateReturn(err);
@@ -1018,9 +1018,9 @@ AND tf1 tf2
 
 COD***/
 // CMD AND 0 2 -1 b
-Value *Compiler::genAnd(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genAnd(const DatumPtr &node, TypeMask expected)
 {
-    return generateAndOr(node, returnType, true);
+    return generateAndOr(node, expected, true);
 }
 
 /***DOC OR
@@ -1040,17 +1040,17 @@ OR tf1 tf2
 
 COD***/
 // CMD OR 0 2 -1 b
-Value *Compiler::genOr(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genOr(const DatumPtr &node, TypeMask expected)
 {
-    return generateAndOr(node, returnType, false);
+    return generateAndOr(node, expected, false);
 }
 
-Value *Compiler::generateAndOr(const DatumPtr &node, RequestReturnType returnType, bool isAnd)
+Value *Compiler::generateAndOr(const DatumPtr &node, TypeMask expected, bool isAnd)
 {
     Function *theFunction = scaff_->builder_.GetInsertBlock()->getParent();
 
-    Q_ASSERT(returnType && RequestReturnBool);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), RequestReturnDB);
+    Q_ASSERT(expected && TypeBool);
+    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeDB);
 
     // If there are no children, simply return isAnd
     if (children.size() == 0)
@@ -1123,7 +1123,7 @@ Value *Compiler::generateListExecIfList(ASTNode *parent, Value *c)
 
     scaff_->builder_.SetInsertPoint(isListBB);
     // The list gets executed (push/suspend/resume/pop); on return we are in the resume block.
-    Value *listRunResult = generateCallList(c, RequestReturnDatum);
+    Value *listRunResult = generateCallList(c, TypeDatum);
     BasicBlock *listRunResultBB = scaff_->builder_.GetInsertBlock();
     Value *listRunResultType = generateGetDatumIsa(listRunResult);
     Value *listRunResultCond =

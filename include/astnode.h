@@ -42,8 +42,8 @@ class ASTNode : public Datum
     /// @brief A pointer to the Compiler method that generates code to execute this node.
     Generator genExpression_ = nullptr;
 
-    /// @brief a bitfield containing the type(s) of value that this function is expected to return.
-    RequestReturnType returnType_ = RequestReturnVoid;
+    /// @brief Bitmask of the type(s) of value this node produces.
+    TypeMask produces_ = TypeNone;
 
     /// @brief Create an invalid ASTNode.
     ASTNode() = default;

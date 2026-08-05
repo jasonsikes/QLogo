@@ -137,9 +137,9 @@ TO procname :input1 :input2 ...                         (special form)
 COD***/
 // CMD TO -1 -1 -1 n
 // CMD .MACRO -1 -1 -1 n
-Value *Compiler::genInputProcedure(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genInputProcedure(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnNothing);
+    Q_ASSERT(expected && TypeNothing);
     // We take the parameters as literals; we don't generate children.
     // Pass the node directly to the input function.
     return generateCallExtern(inputProcedure, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.datumValue())));
@@ -155,12 +155,12 @@ variable is changed.  If not, a new global variable is created.
 
 COD***/
 // CMD MAKE 2 2 2 n
-Value *Compiler::genMake(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genMake(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnNothing);
+    Q_ASSERT(expected && TypeNothing);
 
-    Value *varname = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
-    Value *value = generateChild(node.astnodeValue(), 1, RequestReturnDatum);
+    Value *varname = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *value = generateChild(node.astnodeValue(), 1, TypeDatum);
     varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
 
     generateCallExtern(setDatumForWord, PaAddr(value), PaAddr(varname));
@@ -185,11 +185,11 @@ LOCAL varnamelist
 COD***/
 // TODO: [varname:varnamelist:etc] procedure is duplicated in excGlobal().
 // CMD LOCAL 1 1 -1 n
-Value *Compiler::genLocal(const DatumPtr &node, RequestReturnType returnType)
+Value *Compiler::genLocal(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(returnType && RequestReturnNothing);
+    Q_ASSERT(expected && TypeNothing);
 
-    Value *varname = generateChild(node.astnodeValue(), 0, RequestReturnDatum);
+    Value *varname = generateChild(node.astnodeValue(), 0, TypeDatum);
     varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
     generateCallExtern(setVarAsLocal, PaAddr(varname));
 
