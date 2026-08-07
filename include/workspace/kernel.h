@@ -156,6 +156,9 @@ class Kernel
     /// @brief Begin or continue evaluating a list. Will return when execution is suspended.
     void ece_evaluateStack();
 
+    /// @brief Chain the current list being evaluated to the next list.
+    void ece_chainList();
+
     /// @brief Decide what to do next after emptying the evaluation stack.
     void ece_decideEmptyEvaluationStack();
 

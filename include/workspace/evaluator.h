@@ -34,7 +34,15 @@ struct Evaluator
     CallFrame *owningFrame_;
 
     /// @brief The list to evaluate.
+    /// @note May be replaced by ece_chainList when a tail RUN continues in place.
     DatumPtr list_;
+
+    /// @brief The list this evaluator was created for.
+    /// @note Unchanged across list chaining; used to advance the procedure body line on pop.
+    DatumPtr startingList_;
+
+    /// @brief The list to run after the current list has completed.
+    DatumPtr listToRunAfterCurrentList_;
 
     /// @brief Ownership of this list's JIT module for the lifetime of the evaluation.
     /// @note Must outlive any suspended coroutine frame whose resume/destroy point into
@@ -75,6 +83,12 @@ struct Evaluator
     /// @brief Push the given sublist onto the evaluation stack and prepare it for execution.
     /// @param aList The list to push onto the evaluation stack.
     void pushSublist(Datum *aList);
+
+    /// @brief Set the list to run after the current list has completed.
+    /// @param aList The list to run after the current list has completed.
+    /// @return Result for this evaluation: error/nothing on failure or empty list;
+    ///         nothing when a continuation was scheduled (chained list supplies the real result).
+    Datum *runListAfterCurrentList(Datum *aList);
 
     /// @brief Push the given procedure onto the evaluation stack and prepare it for execution.
     /// @param node The ASTNode of the procedure to push.

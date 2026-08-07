@@ -6,7 +6,8 @@
 #include "runparser.h"
 #include <QObject>
 
-Evaluator::Evaluator(CallFrame *aOwningFrame, const DatumPtr &aList) : owningFrame_(aOwningFrame), list_(aList)
+Evaluator::Evaluator(CallFrame *aOwningFrame, const DatumPtr &aList)
+    : owningFrame_(aOwningFrame), list_(aList), startingList_(aList)
 {
 }
 
@@ -25,6 +26,29 @@ void destroyCoroFrame(LLVMCoroFrameHeader *&handle)
 bool coroFrameIsComplete(LLVMCoroFrameHeader *handle)
 {
     return handle == nullptr || handle->resume == nullptr;
+}
+
+/// Runparse a word if needed; require a non-empty list.
+/// @return nullptr if @p aList is ready to run; otherwise error or nothing (also in e.retvalToParent_).
+Datum *normalizeListToRun(Evaluator &e, Datum *&aList)
+{
+    if (aList->isWord())
+    {
+        DatumPtr runparsedList = runparse(DatumPtr(aList));
+        aList = runparsedList.datumValue();
+        e.watch(aList);
+    }
+    if (!aList->isList())
+    {
+        e.retvalToParent_ = FCError::noHow(DatumPtr(aList));
+        return e.retvalToParent_;
+    }
+    if (aList->listValue()->isEmpty())
+    {
+        e.retvalToParent_ = Datum::notADatum();
+        return e.retvalToParent_;
+    }
+    return nullptr;
 }
 
 } // namespace
@@ -111,27 +135,30 @@ void Evaluator::pushSublist(Datum *aList)
 {
     try
     {
-        if (aList->isWord())
-        {
-            DatumPtr runparsedList = runparse(DatumPtr(aList));
-            aList = runparsedList.datumValue();
-            watch(aList);
-        }
-        if (!aList->isList())
-        {
-            retvalToParent_ = FCError::noHow(DatumPtr(aList));
+        if (normalizeListToRun(*this, aList) != nullptr)
             return;
-        }
-        if (aList->listValue()->isEmpty())
-        {
-            retvalToParent_ = Datum::notADatum();
-            return;
-        }
-    owningFrame_->pushEvaluator(DatumPtr(aList));
+        owningFrame_->pushEvaluator(DatumPtr(aList));
     }
     catch (FCError *err)
     {
         retvalToParent_ = err;
+    }
+}
+
+Datum *Evaluator::runListAfterCurrentList(Datum *aList)
+{
+    try
+    {
+        if (Datum *status = normalizeListToRun(*this, aList))
+            return status;
+        listToRunAfterCurrentList_ = DatumPtr(aList);
+        // Continuation will supply the real result, but we have to return something. So return nothing.
+        return Datum::notADatum();
+    }
+    catch (FCError *err)
+    {
+        retvalToParent_ = err;
+        return err;
     }
 }
 

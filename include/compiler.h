@@ -108,6 +108,12 @@ class Compiler
     // Generate a call to a child node
     llvm::Value *generateChildOfNode(ASTNode *parent, const DatumPtr &, TypeMask expected);
 
+    // Generate a call to the TCO version of the run instruction.
+    llvm::Value *genRunTCO(const DatumPtr &node, TypeMask expected);
+
+    // Similar to generateChild(), but if the child is an "execute List" node, generate a tail call instead of a sublist call.
+    llvm::Value *generateTailCallChild(ASTNode *parent, const DatumPtr &node, TypeMask expected);
+
     // Generate a void return value using the ASTNode to represent the source (for blame).
     llvm::Value *generateVoidRetval(const DatumPtr &node);
 
@@ -117,6 +123,9 @@ class Compiler
 
     // Generate a call to execute a list.
     llvm::Value *generateCallList(llvm::Value *list, TypeMask expected);
+
+    // Generate a call to execute a list continuation.
+    llvm::Value *generateCallListContinuation(llvm::Value *list, TypeMask expected);
 
     // Generate a call to return a value immediately.
     llvm::Value *generateImmediateReturn(llvm::Value *retval);

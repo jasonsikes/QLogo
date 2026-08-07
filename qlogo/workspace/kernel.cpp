@@ -499,8 +499,25 @@ Evaluator *Kernel::currentEvaluator()
     currentCallFrame()->jumpLocation_ = 0;
     if (currentEvaluator()->exec(jumpLocation))
     {
-        nextOperation_ = &Kernel::ece_popEvaluator;
+        if (currentEvaluator()->listToRunAfterCurrentList_.isList())
+        {
+            nextOperation_ = &Kernel::ece_chainList;
+        }
+        else
+        {
+            nextOperation_ = &Kernel::ece_popEvaluator;
+        }
     }
+}
+
+void Kernel::ece_chainList()
+{
+    ece_trace("ece_chainList");
+    Evaluator *e = currentEvaluator();
+    Q_ASSERT(e->handle_ == nullptr);
+    e->list_ = e->listToRunAfterCurrentList_;
+    e->listToRunAfterCurrentList_ = DatumPtr();
+    nextOperation_ = &Kernel::ece_evaluateStack;
 }
 
 void Kernel::ece_decideEmptyEvaluationStack()
@@ -562,8 +579,10 @@ void Kernel::ece_popEvaluator()
 {
     ece_trace("ece_popEvaluator");
     CallFrame *cf = currentCallFrame();
-    DatumPtr completedList = currentEvaluator()->list_;
-    cf->retvalToParent_ = DatumPtr(currentEvaluator()->retvalToParent_);
+    Evaluator *e = currentEvaluator();
+    DatumPtr completedList = e->list_;
+    DatumPtr startingList = e->startingList_;
+    cf->retvalToParent_ = DatumPtr(e->retvalToParent_);
     retvalSourceList_ = completedList;
     ece_trace("ece_popEvaluator: returning value " + cf->retvalToParent_.toString() + " from source list " + retvalSourceList_.toString());
 
@@ -576,11 +595,12 @@ void Kernel::ece_popEvaluator()
     }
     else
     {
-        // Finished the frame's top-level list. If it was the current procedure
-        // body line, advance past it now that it has completed.
+        // Finished the frame's top-level list. If this evaluator was created for the
+        // current procedure body line, advance past it (use startingList_: list_ may
+        // have been replaced by ece_chainList for a tail RUN).
         if (cf->sourceNode_.isASTNode() && cf->runningSourceList_.isList() &&
             !cf->runningSourceList_.listValue()->isEmpty() &&
-            cf->runningSourceList_.listValue()->head.datumValue() == completedList.datumValue())
+            cf->runningSourceList_.listValue()->head.datumValue() == startingList.datumValue())
         {
             cf->runningSourceList_ = cf->runningSourceList_.listValue()->tail;
         }

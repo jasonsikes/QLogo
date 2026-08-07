@@ -134,6 +134,12 @@ Value *Compiler::genRun(const DatumPtr &node, TypeMask expected)
     return generateCallList(list, expected);
 }
 
+Value *Compiler::genRunTCO(const DatumPtr &node, TypeMask expected)
+{
+    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
+    return generateCallListContinuation(list, expected);
+}
+
 /***DOC REPEAT
 REPEAT num instructionlist
 

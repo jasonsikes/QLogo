@@ -24,6 +24,7 @@ EXPORTC addr_t getWordForDouble(addr_t eAddr, double val);
 EXPORTC addr_t getWordForBool(addr_t eAddr, bool val);
 EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr);
 EXPORTC void pushListOntoEvaluationStack(addr_t eAddr, addr_t listAddr);
+EXPORTC addr_t runListAfterCurrentList(addr_t eAddr, addr_t listAddr);
 EXPORTC addr_t getLastEvaluationResult(addr_t eAddr);
 EXPORTC void beginProcedure(addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAddr, uint32_t paramCount);
 EXPORTC addr_t getErrorSystem(addr_t eAddr);

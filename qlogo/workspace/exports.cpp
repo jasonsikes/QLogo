@@ -368,6 +368,17 @@ EXPORTC void pushListOntoEvaluationStack(addr_t eAddr, addr_t listAddr)
     e->pushSublist(aList);
 }
 
+/// Tell evaluator to run this list after the current list has completed.
+/// @param eAddr a pointer to the Evaluator object context.
+/// @param listAddr a pointer to the list (or word to runparse) to execute.
+/// @return Result for this evaluation (error, nothing, or nothing when a continuation was scheduled).
+EXPORTC addr_t runListAfterCurrentList(addr_t eAddr, addr_t listAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *aList = reinterpret_cast<Datum *>(listAddr);
+    return reinterpret_cast<addr_t>(e->runListAfterCurrentList(aList));
+}
+
 /// After a suspend that pushed a list, return the result of running that list.
 /// @param eAddr a pointer to the Evaluator object context.
 /// @return the result of the list execution.

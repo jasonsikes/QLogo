@@ -351,7 +351,6 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     scaff_->builder_.SetInsertPoint(currentBlock);
 
     Value *nodeResult = nullptr;
-    TypeMask returnTypeRequest = TypeNothing;
     for (auto &srcBlock : parsedList)
     {
         if (isTag(srcBlock.first()))
@@ -369,11 +368,11 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
         {
             for (auto &node : srcBlock)
             {
-                // If this is the last node, accept any Datum return type.
-                // Otherwise, expect that nothing is returned.
+                // If this is the last node, generate a tail call version of the child, if possible.
                 if (node == parsedList.last().last())
-                    returnTypeRequest = TypeDN;
-                nodeResult = generateChild(nullptr, node, returnTypeRequest);
+                    nodeResult = generateTailCallChild(nullptr, node, TypeDN);
+                else
+                    generateChild(nullptr, node, TypeNothing);
             }
         }
     }
@@ -488,6 +487,17 @@ std::shared_ptr<CompiledText> Compiler::compiledTextFromList(List *aList)
     }
 
     return aList->compiledText_;
+}
+
+Value *Compiler::generateTailCallChild(ASTNode *parent, const DatumPtr &node, TypeMask expected)
+{
+    Generator method = node.astnodeValue()->genExpression_;
+
+    if (method == &Compiler::genRun)
+        return genRunTCO(node, expected);
+
+    Value *child = ((this->*method)(node, expected));
+    return generateCast(child, parent, node, expected);
 }
 
 Value *Compiler::generateChildOfNode(ASTNode *parent, const DatumPtr &node, TypeMask expected)
@@ -789,6 +799,7 @@ Value *Compiler::ensureCoroutineFrame()
     return scaff_->coroutineHandle_;
 }
 
+// TODO: expected seems to be ignored.
 Value *Compiler::generateCallList(Value *list, TypeMask expected)
 {
     // Explicit control: push list onto evaluation stack, suspend so driver can run it, then pop and return result.
@@ -808,6 +819,13 @@ Value *Compiler::generateCallList(Value *list, TypeMask expected)
 
     scaff_->builder_.SetInsertPoint(continueBB);
     return generateCallExtern(getLastEvaluationResult, PaAddr(scaff_->evaluator_));
+}
+
+// TODO: expected seems to be ignored.
+Value *Compiler::generateCallListContinuation(Value *list, TypeMask expected)
+{
+    // Tell evaluator to run this list after the current list has completed.
+    return generateCallExtern(runListAfterCurrentList, PaAddr(scaff_->evaluator_), PaAddr(list));
 }
 
 Value *Compiler::genExecProcedure(const DatumPtr &node, TypeMask expected)
