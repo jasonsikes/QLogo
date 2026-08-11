@@ -108,8 +108,11 @@ class Compiler
     // Generate a call to a child node
     llvm::Value *generateChildOfNode(ASTNode *parent, const DatumPtr &, TypeMask expected);
 
-    // Generate a call to the TCO version of the run instruction.
+    // Generate a call to the TCO version of the RUN instruction.
     llvm::Value *genRunTCO(const DatumPtr &node, TypeMask expected);
+
+    // Generate a call to the TCO version of the IF/IFELSE (3-argument) instruction.
+    llvm::Value *genIfelseTCO(const DatumPtr &node, TypeMask expected);
 
     // Similar to generateChild(), but if the child is an "execute List" node, generate a tail call instead of a sublist call.
     llvm::Value *generateTailCallChild(ASTNode *parent, const DatumPtr &node, TypeMask expected);

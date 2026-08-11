@@ -120,6 +120,74 @@ Value *Compiler::genIfelse(const DatumPtr &node, TypeMask expected)
     return retval;
 }
 
+Value *Compiler::genIfelseTCO(const DatumPtr &node, TypeMask expected)
+{
+    // This is so hacky. Here's how it plays out:
+
+    // Case "IF" (2 parameters):
+    //     ift = execute instructionlist1
+    //     iff = UNBOUND
+    //     retval = either ift or iff
+
+    // Case "IFELSE" (3 parameters):
+    //     ift = instructionlist1
+    //     iff = instructionlist2
+    //     retval = execute either ift or iff
+
+    std::vector<TypeMask> expectedAry = {TypeDB, expected};
+    if (node.astnodeValue()->countOfChildren() == 3)
+    {
+        expectedAry.push_back(expected);
+    }
+    std::vector<Value *> children = generateChildren(node.astnodeValue(), expectedAry);
+
+    BasicBlock *thenBB = scaff_->createBasicBlock(DBG_NAME("then"));
+    BasicBlock *elseBB = scaff_->createBasicBlock(DBG_NAME("else"));
+    BasicBlock *mergeBB = scaff_->createBasicBlock(DBG_NAME("merge"));
+
+    Value *cond = children[0];
+    Value *ift = children[1];
+    Value *iff = (children.size() == 3) ? children[2] : CoAddr(node.astnodeValue());
+
+    // If input is a Datum type (can be word or list)
+    if (cond->getType()->isPointerTy())
+    {
+        cond = generateListExecIfList(node.astnodeValue(), cond);
+        cond = generateBoolFromDatum(node.astnodeValue(), cond);
+        // bool continues.
+    }
+
+    cond = scaff_->builder_.CreateICmpEQ(cond, CoBool(1), DBG_NAME("ifcond"));
+    scaff_->builder_.CreateCondBr(cond, thenBB, elseBB);
+
+    // If true
+    scaff_->builder_.SetInsertPoint(thenBB);
+    if (children.size() == 2)
+    {
+        ift = generateCallListContinuation(ift, expected);
+        thenBB = scaff_->builder_.GetInsertBlock();
+    }
+    scaff_->builder_.CreateBr(mergeBB);
+
+    // If false
+    scaff_->builder_.SetInsertPoint(elseBB);
+    scaff_->builder_.CreateBr(mergeBB);
+
+    // Merge the two branches.
+    scaff_->builder_.SetInsertPoint(mergeBB);
+    PHINode *phiNode = scaff_->builder_.CreatePHI(TyAddr, 2, DBG_NAME("iftmp"));
+    phiNode->addIncoming(ift, thenBB);
+    phiNode->addIncoming(iff, elseBB);
+
+    Value *retval = phiNode;
+
+    if (children.size() == 3)
+    {
+        retval = generateCallListContinuation(retval, expected);
+    }
+    return retval;
+}
+
 /***DOC RUN
 RUN instructionlist
 

@@ -496,6 +496,9 @@ Value *Compiler::generateTailCallChild(ASTNode *parent, const DatumPtr &node, Ty
     if (method == &Compiler::genRun)
         return genRunTCO(node, expected);
 
+    if (method == &Compiler::genIfelse)
+        return genIfelseTCO(node, expected);
+
     Value *child = ((this->*method)(node, expected));
     return generateCast(child, parent, node, expected);
 }
