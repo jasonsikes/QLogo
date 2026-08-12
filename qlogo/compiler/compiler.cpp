@@ -351,6 +351,7 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     scaff_->builder_.SetInsertPoint(currentBlock);
 
     Value *nodeResult = nullptr;
+    TypeMask returnTypeRequest = TypeNothing;
     for (auto &srcBlock : parsedList)
     {
         if (isTag(srcBlock.first()))
@@ -368,11 +369,14 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
         {
             for (auto &node : srcBlock)
             {
-                // If this is the last node, generate a tail call version of the child, if possible.
-                if (node == parsedList.last().last())
-                    nodeResult = generateTailCallChild(nullptr, node, TypeDN);
-                else
-                    generateChild(nullptr, node, TypeNothing);
+                // If this is the last node, accept any Datum return type.
+                // Otherwise, expect that nothing is returned.
+                if (node == parsedList.last().last()) {
+                    returnTypeRequest = TypeDN;
+                    // Also, set the inSequenceTail_ flag so that the child will know it can generate a tail call.
+                    node.astnodeValue()->inSequenceTail_ = true;
+                }
+                nodeResult = generateChild(nullptr, node, returnTypeRequest);
             }
         }
     }
@@ -487,20 +491,6 @@ std::shared_ptr<CompiledText> Compiler::compiledTextFromList(List *aList)
     }
 
     return aList->compiledText_;
-}
-
-Value *Compiler::generateTailCallChild(ASTNode *parent, const DatumPtr &node, TypeMask expected)
-{
-    Generator method = node.astnodeValue()->genExpression_;
-
-    if (method == &Compiler::genRun)
-        return genRunTCO(node, expected);
-
-    if (method == &Compiler::genIfelse)
-        return genIfelseTCO(node, expected);
-
-    Value *child = ((this->*method)(node, expected));
-    return generateCast(child, parent, node, expected);
 }
 
 Value *Compiler::generateChildOfNode(ASTNode *parent, const DatumPtr &node, TypeMask expected)

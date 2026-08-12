@@ -45,6 +45,9 @@ class ASTNode : public Datum
     /// @brief Bitmask of the type(s) of value this node produces.
     TypeMask produces_ = TypeNone;
 
+    /// @brief Set to TRUE iff this node is the last of a list sequence.
+    bool inSequenceTail_ = false;
+
     /// @brief Create an invalid ASTNode.
     ASTNode() = default;
 
