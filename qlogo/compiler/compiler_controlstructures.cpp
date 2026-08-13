@@ -700,6 +700,8 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, TypeMask expected, bo
 
     scaff_->addColdPathBlocks(notTestedBB);
 
+    auto generateListFn = node.astnodeValue()->inSequenceTail_ ? &Compiler::generateCallListContinuation : &Compiler::generateCallList;
+
     // 0 = not tested, 3 = tested true, 2 = tested false.
     int8_t runCondition = testForTrue ? 3 : 2;
     int8_t noRunCondition = testForTrue ? 2 : 3;
@@ -716,7 +718,7 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, TypeMask expected, bo
     generateReturn(errVal);
 
     scaff_->builder_.SetInsertPoint(runListBB);
-    Value *listRetval = generateCallList(instructionlist, expected);
+    Value *listRetval = (this->*generateListFn)(instructionlist, expected);
     BasicBlock *listRetvalBB = scaff_->builder_.GetInsertBlock();
     scaff_->builder_.CreateBr(mergeBB);
 
