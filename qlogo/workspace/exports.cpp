@@ -15,6 +15,7 @@
 
 #include "workspace/exports.h"
 #include "astnode.h"
+#include "cmd_strings.h"
 #include "interface/logointerface.h"
 #include "interface/streammanager.h"
 #include "interface/textstream.h"
@@ -870,6 +871,82 @@ EXPORTC void saveTestResult(bool tf)
 EXPORTC int8_t getTestResult(void)
 {
     return Kernel::get().testedState();
+}
+
+/// @brief Determine the template form for the `APPLY` operator.
+/// @param eAddr the address of the Evaluator object
+/// @param templateAddr a pointer to the template
+/// @return the template form (as an integer)
+EXPORTC int8_t getTemplateForm(addr_t eAddr, addr_t templateAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *aTemplate = reinterpret_cast<Datum *>(templateAddr);
+
+    if (aTemplate->isWord())
+    {
+        return TemplateFormNamedProcedure; // "sum
+    }
+    if (( ! aTemplate->isList()) || (aTemplate->listValue()->isEmpty()))
+    {
+        return TemplateFormInvalid;
+    }
+
+    DatumPtr first = aTemplate->listValue()->head;
+    if (first.isWord())
+    {
+        return TemplateFormExplicitSlot;   // [? * ?]
+    }
+    if (( ! first.isList()) || (aTemplate->listValue()->count() < 2))
+    {
+        return TemplateFormInvalid;
+    }
+
+    DatumPtr butfirst = aTemplate->listValue()->tail;
+    DatumPtr procedureFirst = butfirst.listValue()->head;
+
+    if (procedureFirst.isList())
+    {
+        return TemplateFormProcedureText;  // [[x y] [OUTPUT :x + :y]]
+    }
+
+    return TemplateFormLambda;             // [[x y] :x + :y]
+}
+
+/// @brief Build a call AST for named-procedure APPLY.
+/// @param eAddr the address of the Evaluator object
+/// @param templateAddr a pointer to the procedure name (a Word)
+/// @param inputlistAddr a pointer to the already-evaluated input list
+/// @return a one-node List whose head is the call AST, or an error
+EXPORTC addr_t buildApplyNamedCall(addr_t eAddr, addr_t astNodeAddr, addr_t templateAddr, addr_t inputlistAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *astNode = reinterpret_cast<Datum *>(astNodeAddr);
+    auto *aTemplate = reinterpret_cast<Datum *>(templateAddr);
+    auto *inputlist = reinterpret_cast<Datum *>(inputlistAddr);
+
+    Q_ASSERT(aTemplate->isWord());
+    Q_ASSERT(inputlist->isList());
+
+    QString name = aTemplate->toString(Datum::ToStringFlags_Key);
+    if (name == StringConstants::cmdStrTO() || name == StringConstants::cmdStr_dot_MACRO())
+    {
+        FCError *err = FCError::doesntLike(DatumPtr(astNode), DatumPtr(aTemplate));
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+
+    try
+    {
+        DatumPtr node = Procedures::get().astnodeWithLiterals(DatumPtr(aTemplate), DatumPtr(inputlist));
+        auto *callList = new List(node, EmptyList::instance());
+        e->watch(callList);
+        return reinterpret_cast<addr_t>(callList);
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
 }
 
 /// Compare a Datum with a bool.

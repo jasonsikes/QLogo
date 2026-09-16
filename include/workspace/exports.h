@@ -56,6 +56,8 @@ EXPORTC addr_t generateContinue(addr_t eAddr, addr_t outputAddr);
 EXPORTC addr_t processRunresult(addr_t eAddr, addr_t resultAddr);
 EXPORTC void saveTestResult(bool tf);
 EXPORTC int8_t getTestResult(void);
+EXPORTC int8_t getTemplateForm(addr_t eAddr, addr_t templateAddr);
+EXPORTC addr_t buildApplyNamedCall(addr_t eAddr, addr_t astNodeAddr, addr_t templateAddr, addr_t inputlistAddr);
 EXPORTC bool cmpDatumToBool(addr_t d, bool b);
 EXPORTC bool cmpDatumToDouble(addr_t d, double n);
 EXPORTC bool cmpDatumToDatum(addr_t eAddr, addr_t d1, addr_t d2);

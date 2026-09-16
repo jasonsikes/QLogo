@@ -732,3 +732,59 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, TypeMask expected, bo
     retval->addIncoming(noRetval, noRunListBB);
     return retval;
 }
+
+
+/***DOC APPLY
+APPLY template inputlist
+
+    command or operation.  Runs the "template," filling its slots with
+    the members of "inputlist."  The number of members in "inputlist"
+    must be an acceptable number of slots for "template."  It is
+    illegal to apply the primitive TO as a template, but anything else
+    is okay.  APPLY outputs what "template" outputs, if anything.
+
+COD***/
+// CMD APPLY 2 2 2 dn
+Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
+{
+    BasicBlock *validTemplateBB = scaff_->createBasicBlock(DBG_NAME("validTemplate"));
+    BasicBlock *namedProcedureBB = scaff_->createBasicBlock(DBG_NAME("namedProcedure"));
+    // BasicBlock *explicitSlotBB = scaff_->createBasicBlock(DBG_NAME("explicitSlot"));
+    // BasicBlock *lambdaBB = scaff_->createBasicBlock(DBG_NAME("lambda"));
+    // BasicBlock *procedureTextBB = scaff_->createBasicBlock(DBG_NAME("procedureText"));
+    BasicBlock *mergeBB = scaff_->createBasicBlock(DBG_NAME("merge"));
+    BasicBlock *invalidTemplateBB = scaff_->createBasicBlock(DBG_NAME("invalidTemplate"));
+
+    scaff_->addColdPathBlocks(invalidTemplateBB);
+
+    Value *aTemplate = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *inputlist = generateChild(node.astnodeValue(), 1, TypeDatum);
+
+    Value *templateForm = generateCallExtern(getTemplateForm, PaAddr(scaff_->evaluator_), PaAddr(aTemplate));
+
+    Value *templateCond = scaff_->builder_.CreateICmpEQ(templateForm, CoInt8(TemplateFormInvalid), DBG_NAME("templateCond"));
+    scaff_->builder_.CreateCondBr(templateCond, invalidTemplateBB, validTemplateBB);
+
+    scaff_->builder_.SetInsertPoint(validTemplateBB);
+    Value *inputList = generateListFromDatum(node.astnodeValue(), inputlist);
+    SwitchInst *sw = scaff_->builder_.CreateSwitch(templateForm, invalidTemplateBB, 1);
+    sw->addCase(CoInt8(TemplateFormNamedProcedure), namedProcedureBB);
+
+    scaff_->builder_.SetInsertPoint(invalidTemplateBB);
+    Value *errVal = generateErrorNoLike(node.astnodeValue(), aTemplate);
+    scaff_->builder_.CreateBr(mergeBB);
+
+    scaff_->builder_.SetInsertPoint(namedProcedureBB);
+    Value *callAST = generateCallExtern(buildApplyNamedCall,
+                                        PaAddr(scaff_->evaluator_),
+                                        PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
+                                        PaAddr(aTemplate),
+                                        PaAddr(inputList));
+    scaff_->builder_.CreateBr(mergeBB);
+
+    scaff_->builder_.SetInsertPoint(mergeBB);
+    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 2, DBG_NAME("retval"));
+    retval->addIncoming(errVal, invalidTemplateBB);
+    retval->addIncoming(callAST, namedProcedureBB);
+    return retval;
+}

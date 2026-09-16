@@ -74,7 +74,7 @@ typedef LLVMCoroFrameHeader *(*CompiledFunctionPtr)(addr_t, addr_t, int32_t, LLV
 /// Signature of method that generates IR code for a given node.
 typedef llvm::Value *(Compiler::*Generator)(const DatumPtr &, TypeMask);
 
-// The information to store the generated function and to destroy later
+/// The information to store the generated function and to destroy later
 struct CompiledText
 {
     llvm::orc::ResourceTrackerSP rt_;
@@ -88,6 +88,17 @@ struct CompiledText
     Compiler *compiler_ = nullptr;
 
     ~CompiledText();
+};
+
+/// The four `APPLY` forms.
+enum TemplateForm : int8_t
+{
+    TemplateFormInvalid = 0,
+    TemplateFormExplicitSlot,   // [? * ?]
+    TemplateFormNamedProcedure, // "sum
+    TemplateFormLambda,         // [[x y] :x + :y]
+    TemplateFormProcedureText,  // [[x y] [OUTPUT :x + :y]]
+    TemplateFormCount
 };
 
 #endif // COMPILER_TYPES_H

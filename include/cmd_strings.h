@@ -87,6 +87,7 @@ const QString &cmdStrIFTRUE();
 const QString &cmdStrIFT();
 const QString &cmdStrIFFALSE();
 const QString &cmdStrIFF();
+const QString &cmdStrAPPLY();
 const QString &cmdStrEQUALP();
 const QString &cmdStrEQUAL_Q();
 const QString &cmdStrNOTEQUALP();
@@ -227,3 +228,4 @@ const QString &cmdStrMAKE();
 const QString &cmdStrLOCAL();
 } // namespace StringConstants
 #endif // CMD_STRINGS_H
+

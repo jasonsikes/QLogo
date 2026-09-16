@@ -5,6 +5,7 @@
 #include "cmd_strings.h"
 #include <QObject>
 
+
 const QString &StringConstants::cmdStrARCTAN()
 {
     static const QString str = QObject::tr("ARCTAN");
@@ -476,6 +477,12 @@ const QString &StringConstants::cmdStrIFFALSE()
 const QString &StringConstants::cmdStrIFF()
 {
     static const QString str = QObject::tr("IFF");
+    return str;
+}
+
+const QString &StringConstants::cmdStrAPPLY()
+{
+    static const QString str = QObject::tr("APPLY");
     return str;
 }
 
@@ -1306,3 +1313,5 @@ const QString &StringConstants::cmdStrLOCAL()
     static const QString str = QObject::tr("LOCAL");
     return str;
 }
+
+
