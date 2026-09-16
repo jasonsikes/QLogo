@@ -87,12 +87,12 @@ def write_string_entries(entries, string_header_file, string_table_file):
         
         # Write definition to implementation
         string_table_file.write(f"""
-    const QString &{NAMESPACE_NAME}::{string_name}()
-    {{
-        static const QString str = QObject::tr("{name}");
-        return str;
-    }}
-        """)
+const QString &{NAMESPACE_NAME}::{string_name}()
+{{
+    static const QString str = QObject::tr("{name}");
+    return str;
+}}
+""")
 
 
 def main():
