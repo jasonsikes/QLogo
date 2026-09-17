@@ -377,6 +377,7 @@ DatumPtr Procedures::astnodeWithLiterals(const DatumPtr &cmd, const DatumPtr &pa
         DatumPtr p = iter.element();
         auto datumNode = DatumPtr(new ASTNode(QObject::tr("literal")));
         datumNode.astnodeValue()->genExpression_ = &Compiler::genLiteral;
+        datumNode.astnodeValue()->produces_ = TypeDatum;
         datumNode.astnodeValue()->addChild(p);
         node.astnodeValue()->addChild(datumNode);
     }

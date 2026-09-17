@@ -83,6 +83,19 @@ QList<DatumPtr> Treeifier::astFromList(List *aList)
     // Mark the list with current timestamp to track compilation time
     aList->compileTimeStamp = QDateTime::currentMSecsSinceEpoch();
 
+    // Special case: APPLY builds a list whose members are already AST nodes.
+    // Skip runparse/treeify so those nodes are compiled as-is.
+    if (!aList->isEmpty() && aList->head.isASTNode())
+    {
+        QList<DatumPtr> retval;
+        for (List *l = aList; !l->isEmpty(); l = l->tail.listValue())
+        {
+            Q_ASSERT(l->head.isASTNode());
+            retval.push_back(l->head);
+        }
+        return retval;
+    }
+
     DatumPtr runParsedList = runparse(aList);
 
     instance.listIter_ = runParsedList.listValue();
