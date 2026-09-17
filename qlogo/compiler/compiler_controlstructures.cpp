@@ -749,15 +749,13 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
 {
     BasicBlock *validTemplateBB = scaff_->createBasicBlock(DBG_NAME("validTemplate"));
     BasicBlock *namedProcedureBB = scaff_->createBasicBlock(DBG_NAME("namedProcedure"));
-    BasicBlock *namedErrorBB = scaff_->createBasicBlock(DBG_NAME("namedError"));
-    BasicBlock *namedCallBB = scaff_->createBasicBlock(DBG_NAME("namedCall"));
     // BasicBlock *explicitSlotBB = scaff_->createBasicBlock(DBG_NAME("explicitSlot"));
     // BasicBlock *lambdaBB = scaff_->createBasicBlock(DBG_NAME("lambda"));
     // BasicBlock *procedureTextBB = scaff_->createBasicBlock(DBG_NAME("procedureText"));
     BasicBlock *mergeBB = scaff_->createBasicBlock(DBG_NAME("merge"));
     BasicBlock *invalidTemplateBB = scaff_->createBasicBlock(DBG_NAME("invalidTemplate"));
 
-    scaff_->addColdPathBlocks(invalidTemplateBB, namedErrorBB);
+    scaff_->addColdPathBlocks(invalidTemplateBB);
 
     Value *aTemplate = generateChild(node.astnodeValue(), 0, TypeDatum);
     Value *inputlist = generateChild(node.astnodeValue(), 1, TypeDatum);
@@ -777,6 +775,24 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
     generateReturn(errVal);
 
     scaff_->builder_.SetInsertPoint(namedProcedureBB);
+    Value *callResult = generateApplyNamedProcedure(node, expected, aTemplate, inputList);
+    BasicBlock *namedCallDestBB = scaff_->builder_.GetInsertBlock();
+    scaff_->builder_.CreateBr(mergeBB);
+
+    scaff_->builder_.SetInsertPoint(mergeBB);
+    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 1, DBG_NAME("retval"));
+    retval->addIncoming(callResult, namedCallDestBB);
+    return retval;
+}
+
+Value *Compiler::generateApplyNamedProcedure(const DatumPtr &node, TypeMask expected,
+                                             Value *aTemplate, Value *inputList)
+{
+    BasicBlock *namedErrorBB = scaff_->createBasicBlock(DBG_NAME("namedError"));
+    BasicBlock *namedCallBB = scaff_->createBasicBlock(DBG_NAME("namedCall"));
+
+    scaff_->addColdPathBlocks(namedErrorBB);
+
     Value *callAST = generateCallExtern(buildApplyNamedCall,
                                         PaAddr(scaff_->evaluator_),
                                         PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
@@ -793,12 +809,5 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
     scaff_->builder_.SetInsertPoint(namedCallBB);
     auto generateListFn = node.astnodeValue()->inSequenceTail_ ? &Compiler::generateCallListContinuation
                                                               : &Compiler::generateCallList;
-    Value *callResult = (this->*generateListFn)(callAST, expected);
-    BasicBlock *namedCallDestBB = scaff_->builder_.GetInsertBlock();
-    scaff_->builder_.CreateBr(mergeBB);
-
-    scaff_->builder_.SetInsertPoint(mergeBB);
-    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 1, DBG_NAME("retval"));
-    retval->addIncoming(callResult, namedCallDestBB);
-    return retval;
+    return (this->*generateListFn)(callAST, expected);
 }

@@ -121,6 +121,12 @@ class Compiler
     // Generate a call to execute a list continuation.
     llvm::Value *generateCallListContinuation(llvm::Value *list, TypeMask expected);
 
+    // Generate named-procedure APPLY. Insert point must be the form's entry block.
+    // On success, returns the call result and leaves the insert point on the producing block.
+    // Errors generateReturn and do not return to the caller.
+    llvm::Value *generateApplyNamedProcedure(const DatumPtr &node, TypeMask expected,
+                                             llvm::Value *aTemplate, llvm::Value *inputList);
+
     // Generate a call to return a value immediately.
     llvm::Value *generateImmediateReturn(llvm::Value *retval);
 
