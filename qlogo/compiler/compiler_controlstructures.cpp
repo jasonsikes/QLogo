@@ -774,7 +774,7 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
 
     scaff_->builder_.SetInsertPoint(invalidTemplateBB);
     Value *errVal = generateErrorNoLike(node.astnodeValue(), aTemplate);
-    scaff_->builder_.CreateBr(mergeBB);
+    generateReturn(errVal);
 
     scaff_->builder_.SetInsertPoint(namedProcedureBB);
     Value *callAST = generateCallExtern(buildApplyNamedCall,
@@ -788,7 +788,7 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
     scaff_->builder_.CreateCondBr(isError, namedErrorBB, namedCallBB);
 
     scaff_->builder_.SetInsertPoint(namedErrorBB);
-    scaff_->builder_.CreateBr(mergeBB);
+    generateReturn(callAST);
 
     scaff_->builder_.SetInsertPoint(namedCallBB);
     auto generateListFn = node.astnodeValue()->inSequenceTail_ ? &Compiler::generateCallListContinuation
@@ -798,9 +798,7 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
     scaff_->builder_.CreateBr(mergeBB);
 
     scaff_->builder_.SetInsertPoint(mergeBB);
-    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 3, DBG_NAME("retval"));
-    retval->addIncoming(errVal, invalidTemplateBB);
-    retval->addIncoming(callAST, namedErrorBB);
+    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 1, DBG_NAME("retval"));
     retval->addIncoming(callResult, namedCallDestBB);
     return retval;
 }
