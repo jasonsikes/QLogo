@@ -82,7 +82,7 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 
 |--------------------+----------------+---------------+------------------------+---------------------------+----------------------|
 | CONTROL STRUCTURES | GRAPHICS       | ARITHMETIC    | COMMUNICATION          | DATA STRUCTURE PRIMITIVES | WORKSPACE MANAGEMENT |
-|                    | /COMPLETE/     | /COMPLETE/    |                        | /COMPLETE/                |                      |
+| /COMPLETE-ISH/     | /COMPLETE/     | /COMPLETE/    |                        | /COMPLETE/                |                      |
 |--------------------+----------------+---------------+------------------------+---------------------------+----------------------|
 | RUN                | FORWARD        | SUM           | PRINT                  | WORD                      | TO                   |
 | *TODO* TIME        | FD             | DIFFERENCE    | PR                     | LIST                      | .MACRO               |
