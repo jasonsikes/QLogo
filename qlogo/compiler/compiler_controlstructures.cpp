@@ -822,9 +822,23 @@ Value *Compiler::generateApplyNamedProcedure(const DatumPtr &node, TypeMask expe
 Value *Compiler::generateApplyExplicitSlot(const DatumPtr &node, TypeMask expected,
                                            Value *aTemplate, Value *inputList)
 {
+    BasicBlock *errorBB = scaff_->createBasicBlock(DBG_NAME("explicitSlotError"));
+    BasicBlock *okBB = scaff_->createBasicBlock(DBG_NAME("explicitSlotOk"));
+    scaff_->addColdPathBlocks(errorBB);
+
     generateCallExtern(pushExplicitSlotList, PaAddr(inputList));
     Value *result = generateCallList(aTemplate, expected);
     generateCallExtern(popExplicitSlotList);
+
+    Value *resultType = generateGetDatumIsa(result);
+    Value *flowMask = scaff_->builder_.CreateAnd(resultType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
+    Value *isError = scaff_->builder_.CreateICmpNE(flowMask, CoInt32(0), DBG_NAME("isExplicitSlotError"));
+    scaff_->builder_.CreateCondBr(isError, errorBB, okBB);
+
+    scaff_->builder_.SetInsertPoint(errorBB);
+    generateReturn(result);
+
+    scaff_->builder_.SetInsertPoint(okBB);
     return result;
 }
 

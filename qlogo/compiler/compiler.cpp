@@ -627,50 +627,61 @@ Value *Compiler::generateFromDatum(Datum::DatumType t, ASTNode *parent, Value *s
 
 Value *Compiler::generateNotNothingFromDatum(ASTNode *parent, Value *src)
 {
+    BasicBlock *checkFlowBB = scaff_->createBasicBlock(DBG_NAME("checkFlow"));
+    BasicBlock *isFlowBB = scaff_->createBasicBlock(DBG_NAME("isFlow"));
     BasicBlock *isNothingBB = scaff_->createBasicBlock(DBG_NAME("isNothing"));
     BasicBlock *notNothingBB = scaff_->createBasicBlock(DBG_NAME("notNothing"));
 
-    scaff_->addColdPathBlocks(isNothingBB);
+    scaff_->addColdPathBlocks(checkFlowBB, isFlowBB, isNothingBB);
 
-    // isNothing?
     Value *dType = generateGetDatumIsa(src);
-    Value *mask = scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeDataMask), DBG_NAME("dataTypeMask"));
-    Value *cond = scaff_->builder_.CreateICmpEQ(mask, CoInt32(0), DBG_NAME("dataTypeMaskTest"));
-    scaff_->builder_.CreateCondBr(cond, isNothingBB, notNothingBB);
+    Value *dataMask = scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeDataMask), DBG_NAME("dataTypeMask"));
+    Value *isData = scaff_->builder_.CreateICmpNE(dataMask, CoInt32(0), DBG_NAME("isDataTest"));
+    scaff_->builder_.CreateCondBr(isData, notNothingBB, checkFlowBB);
 
-    // Bad
+    scaff_->builder_.SetInsertPoint(checkFlowBB);
+    Value *flowMask = scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
+    Value *isFlow = scaff_->builder_.CreateICmpNE(flowMask, CoInt32(0), DBG_NAME("isFlowTest"));
+    scaff_->builder_.CreateCondBr(isFlow, isFlowBB, isNothingBB);
+
+    scaff_->builder_.SetInsertPoint(isFlowBB);
+    generateReturn(src);
+
     scaff_->builder_.SetInsertPoint(isNothingBB);
-    Value *errWhat = src;
-    Value *errObj = generateErrorNoOutput(errWhat, parent);
+    Value *errObj = generateErrorNoOutput(src, parent);
     generateReturn(errObj);
 
-    // Good
     scaff_->builder_.SetInsertPoint(notNothingBB);
-
     return src;
 }
 
 Value *Compiler::generateNothingFromDatum(ASTNode *parent, Value *src)
 {
+    BasicBlock *checkFlowBB = scaff_->createBasicBlock(DBG_NAME("checkFlow"));
+    BasicBlock *isFlowBB = scaff_->createBasicBlock(DBG_NAME("isFlow"));
     BasicBlock *notNothingBB = scaff_->createBasicBlock(DBG_NAME("notNothing"));
     BasicBlock *isNothingBB = scaff_->createBasicBlock(DBG_NAME("isNothing"));
 
-    scaff_->addColdPathBlocks(notNothingBB);
+    scaff_->addColdPathBlocks(checkFlowBB, isFlowBB, notNothingBB);
 
-    // isNothing?
     Value *dType = generateGetDatumIsa(src);
-    Value *mask = scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeDataMask), DBG_NAME("dataTypeMask"));
-    Value *cond = scaff_->builder_.CreateICmpEQ(mask, CoInt32(0), DBG_NAME("dataTypeMaskTest"));
-    scaff_->builder_.CreateCondBr(cond, isNothingBB, notNothingBB);
+    Value *dataMask = scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeDataMask), DBG_NAME("dataTypeMask"));
+    Value *isData = scaff_->builder_.CreateICmpNE(dataMask, CoInt32(0), DBG_NAME("isDataTest"));
+    scaff_->builder_.CreateCondBr(isData, notNothingBB, checkFlowBB);
 
-    // Bad
+    scaff_->builder_.SetInsertPoint(checkFlowBB);
+    Value *flowMask = scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
+    Value *isFlow = scaff_->builder_.CreateICmpNE(flowMask, CoInt32(0), DBG_NAME("isFlowTest"));
+    scaff_->builder_.CreateCondBr(isFlow, isFlowBB, isNothingBB);
+
+    scaff_->builder_.SetInsertPoint(isFlowBB);
+    generateReturn(src);
+
     scaff_->builder_.SetInsertPoint(notNothingBB);
     Value *errObj = generateErrorNoSay(src);
     generateReturn(errObj);
 
-    // Good
     scaff_->builder_.SetInsertPoint(isNothingBB);
-
     return src;
 }
 
