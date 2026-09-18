@@ -1,0 +1,1 @@
+show apply [[x y] [output :x * :y]] [5 6]

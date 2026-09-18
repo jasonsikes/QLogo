@@ -1,0 +1,2 @@
+apply [[x] [print :x] [stop] [print 99]] [5]
+print "after

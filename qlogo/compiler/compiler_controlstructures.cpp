@@ -751,7 +751,7 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
     BasicBlock *namedProcedureBB = scaff_->createBasicBlock(DBG_NAME("namedProcedure"));
     BasicBlock *explicitSlotBB = scaff_->createBasicBlock(DBG_NAME("explicitSlot"));
     BasicBlock *lambdaBB = scaff_->createBasicBlock(DBG_NAME("lambda"));
-    // BasicBlock *procedureTextBB = scaff_->createBasicBlock(DBG_NAME("procedureText"));
+    BasicBlock *procedureTextBB = scaff_->createBasicBlock(DBG_NAME("procedureText"));
     BasicBlock *mergeBB = scaff_->createBasicBlock(DBG_NAME("merge"));
     BasicBlock *invalidTemplateBB = scaff_->createBasicBlock(DBG_NAME("invalidTemplate"));
 
@@ -767,10 +767,11 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
 
     scaff_->builder_.SetInsertPoint(validTemplateBB);
     Value *inputList = generateListFromDatum(node.astnodeValue(), inputlist);
-    SwitchInst *sw = scaff_->builder_.CreateSwitch(templateForm, invalidTemplateBB, 3);
+    SwitchInst *sw = scaff_->builder_.CreateSwitch(templateForm, invalidTemplateBB, 4);
     sw->addCase(CoInt8(TemplateFormNamedProcedure), namedProcedureBB);
     sw->addCase(CoInt8(TemplateFormExplicitSlot), explicitSlotBB);
     sw->addCase(CoInt8(TemplateFormLambda), lambdaBB);
+    sw->addCase(CoInt8(TemplateFormProcedureText), procedureTextBB);
 
     scaff_->builder_.SetInsertPoint(invalidTemplateBB);
     Value *errVal = generateErrorNoLike(node.astnodeValue(), aTemplate);
@@ -791,11 +792,17 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
     BasicBlock *lambdaDestBB = scaff_->builder_.GetInsertBlock();
     scaff_->builder_.CreateBr(mergeBB);
 
+    scaff_->builder_.SetInsertPoint(procedureTextBB);
+    Value *procedureTextResult = generateApplyProcedureText(node, expected, aTemplate, inputList);
+    BasicBlock *procedureTextDestBB = scaff_->builder_.GetInsertBlock();
+    scaff_->builder_.CreateBr(mergeBB);
+
     scaff_->builder_.SetInsertPoint(mergeBB);
-    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 3, DBG_NAME("retval"));
+    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 4, DBG_NAME("retval"));
     retval->addIncoming(namedProcedureResult, namedProcedureDestBB);
     retval->addIncoming(slotResult, explicitSlotDestBB);
     retval->addIncoming(lambdaResult, lambdaDestBB);
+    retval->addIncoming(procedureTextResult, procedureTextDestBB);
     return retval;
 }
 
@@ -885,6 +892,33 @@ Value *Compiler::generateApplyLambda(const DatumPtr &node, TypeMask expected,
 
     scaff_->builder_.SetInsertPoint(okBB);
     return result;
+}
+
+Value *Compiler::generateApplyProcedureText(const DatumPtr &node, TypeMask expected,
+                                            Value *aTemplate, Value *inputList)
+{
+    BasicBlock *errorBB = scaff_->createBasicBlock(DBG_NAME("procedureTextError"));
+    BasicBlock *callBB = scaff_->createBasicBlock(DBG_NAME("procedureTextCall"));
+
+    scaff_->addColdPathBlocks(errorBB);
+
+    Value *callAST = generateCallExtern(buildApplyProcedureText,
+                                        PaAddr(scaff_->evaluator_),
+                                        PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
+                                        PaAddr(aTemplate),
+                                        PaAddr(inputList));
+    Value *callType = generateGetDatumIsa(callAST);
+    Value *flowMask = scaff_->builder_.CreateAnd(callType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
+    Value *isError = scaff_->builder_.CreateICmpNE(flowMask, CoInt32(0), DBG_NAME("isProcedureTextError"));
+    scaff_->builder_.CreateCondBr(isError, errorBB, callBB);
+
+    scaff_->builder_.SetInsertPoint(errorBB);
+    generateReturn(callAST);
+
+    scaff_->builder_.SetInsertPoint(callBB);
+    auto generateListFn = node.astnodeValue()->inSequenceTail_ ? &Compiler::generateCallListContinuation
+                                                              : &Compiler::generateCallList;
+    return (this->*generateListFn)(callAST, expected);
 }
 
 /***DOC ?

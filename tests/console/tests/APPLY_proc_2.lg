@@ -1,0 +1,1 @@
+show apply [[x] [output :x + 3]] [5]

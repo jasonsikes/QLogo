@@ -1,0 +1,1 @@
+show apply [[x] [print :x] [output :x * 2]] [7]

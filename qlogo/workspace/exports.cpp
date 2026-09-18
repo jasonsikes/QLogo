@@ -1095,6 +1095,79 @@ EXPORTC addr_t beginApplyLambda(addr_t eAddr, addr_t astNodeAddr, addr_t templat
     return reinterpret_cast<addr_t>(body);
 }
 
+/// @brief Build a call AST for procedure-text APPLY.
+/// @param eAddr the address of the Evaluator object
+/// @param astNodeAddr a pointer to the APPLY command name (for errors)
+/// @param templateAddr a pointer to the procedure-text template list
+/// @param inputlistAddr a pointer to the already-evaluated input list
+/// @return a one-node List whose head is the call AST, or an error
+EXPORTC addr_t buildApplyProcedureText(addr_t eAddr, addr_t astNodeAddr, addr_t templateAddr, addr_t inputlistAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *who = reinterpret_cast<Datum *>(astNodeAddr);
+    auto *aTemplate = reinterpret_cast<Datum *>(templateAddr);
+    auto *inputlist = reinterpret_cast<Datum *>(inputlistAddr);
+
+    Q_ASSERT(aTemplate->isList());
+    Q_ASSERT(inputlist->isList());
+
+    DatumPtr whoP(who);
+    DatumPtr templateP(aTemplate);
+    List *tmpl = aTemplate->listValue();
+    Q_ASSERT(!tmpl->isEmpty() && tmpl->head.isList());
+
+    try
+    {
+        for (List *lineList = tmpl->tail.listValue(); !lineList->isEmpty();
+             lineList = lineList->tail.listValue())
+        {
+            if (!lineList->head.isList())
+                throw FCError::doesntLike(whoP, lineList->head);
+        }
+
+        auto [minParams, defaultParams, maxParams] =
+            Procedures::get().validateParameters(whoP, tmpl->head);
+
+        int countOfChildren = inputlist->listValue()->count();
+        if (countOfChildren < minParams)
+            throw FCError::notEnoughInputs(whoP);
+        if ((countOfChildren > maxParams) && (maxParams != -1))
+            throw FCError::tooManyInputs(whoP);
+
+        auto *body = new Procedure();
+        DatumPtr bodyP(body);
+        body->countOfMinParams_ = minParams;
+        body->countOfDefaultParams_ = defaultParams;
+        body->countOfMaxParams_ = maxParams;
+        body->instructionList_ = templateP;
+
+        auto node = DatumPtr(new ASTNode(whoP));
+        node.astnodeValue()->genExpression_ = &Compiler::genExecProcedure;
+        node.astnodeValue()->produces_ = TypeDN;
+        node.astnodeValue()->procedure_ = bodyP;
+
+        ListIterator iter = inputlist->listValue()->newIterator();
+        while (iter.elementExists())
+        {
+            DatumPtr p = iter.element();
+            auto datumNode = DatumPtr(new ASTNode(QObject::tr("literal")));
+            datumNode.astnodeValue()->genExpression_ = &Compiler::genLiteral;
+            datumNode.astnodeValue()->produces_ = TypeDatum;
+            datumNode.astnodeValue()->addChild(p);
+            node.astnodeValue()->addChild(datumNode);
+        }
+
+        auto *callList = new List(node, EmptyList::instance());
+        e->watch(callList);
+        return reinterpret_cast<addr_t>(callList);
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+}
+
 /// @brief Restore variable bindings from the most recent beginApplyLambda.
 EXPORTC void endApplyLambda(void)
 {

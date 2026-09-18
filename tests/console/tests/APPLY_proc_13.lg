@@ -1,0 +1,1 @@
+show apply [[a] [output :a]] [3 5]

@@ -1,0 +1,7 @@
+to foo
+test "false
+apply [[] [test "true]] []
+iftrue [print "leaked]
+end
+foo
+print "done

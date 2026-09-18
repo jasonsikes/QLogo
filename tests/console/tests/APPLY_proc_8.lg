@@ -1,0 +1,1 @@
+show apply [[x [y 10]] [output :x + :y]] [3]

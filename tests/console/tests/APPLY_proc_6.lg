@@ -1,0 +1,5 @@
+to foo
+print apply [[x] [output :x * 2]] [5]
+print "after
+end
+foo

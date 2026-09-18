@@ -139,6 +139,13 @@ class Compiler
     llvm::Value *generateApplyLambda(const DatumPtr &node, TypeMask expected,
                                      llvm::Value *aTemplate, llvm::Value *inputList);
 
+    // Generate procedure-text APPLY. Insert point must be the form's entry block.
+    // Builds an anonymous Procedure from the template TEXT and invokes it.
+    // On success, returns the call result and leaves the insert point on the producing block.
+    // Errors generateReturn and do not return to the caller.
+    llvm::Value *generateApplyProcedureText(const DatumPtr &node, TypeMask expected,
+                                            llvm::Value *aTemplate, llvm::Value *inputList);
+
     // Generate a call to return a value immediately.
     llvm::Value *generateImmediateReturn(llvm::Value *retval);
 
