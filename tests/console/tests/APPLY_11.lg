@@ -1,0 +1,7 @@
+to p
+show ?
+end
+apply [p] [5]
+apply [p] ["hello]
+apply [p] "hello
+apply [p] []
