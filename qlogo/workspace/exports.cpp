@@ -980,31 +980,47 @@ EXPORTC addr_t getExplicitSlot(addr_t eAddr, addr_t whoAddr, addr_t indexAddr)
             goto bailout;
     }
 
-    DatumPtr slotList = Kernel::get().explicitSlotList();
-    if (!slotList.isList())
     {
-        err = FCError::notEnoughInputs(who);
-        goto bailout;
-    }
-
-    ListIterator iter = slotList.listValue()->newIterator();
-    qsizetype remaining = i;
-    while (iter.elementExists())
-    {
-        DatumPtr element = iter.element();
-        remaining--;
-        if (remaining == 0)
+        DatumPtr slotList = Kernel::get().explicitSlotList();
+        if (!slotList.isList())
         {
-            e->watch(element);
-            return reinterpret_cast<addr_t>(element.datumValue());
+            err = FCError::notEnoughInputs(who);
+            goto bailout;
         }
-    }
 
-    err = FCError::notEnoughInputs(who);
+        ListIterator iter = slotList.listValue()->newIterator();
+        qsizetype remaining = i;
+        while (iter.elementExists())
+        {
+            DatumPtr element = iter.element();
+            remaining--;
+            if (remaining == 0)
+            {
+                e->watch(element);
+                return reinterpret_cast<addr_t>(element.datumValue());
+            }
+        }
+
+        err = FCError::notEnoughInputs(who);
+    }
 
 bailout:
     e->watch(err);
     return reinterpret_cast<addr_t>(err);
+}
+
+/// @brief Push an explicit-slot list for `?`.
+EXPORTC void pushExplicitSlotList(addr_t listAddr)
+{
+    auto *list = reinterpret_cast<Datum *>(listAddr);
+    Kernel::get().explicitSlotListStack_.push(DatumPtr(list));
+}
+
+/// @brief Pop the current explicit-slot list.
+EXPORTC void popExplicitSlotList(void)
+{
+    Q_ASSERT(!Kernel::get().explicitSlotListStack_.isEmpty());
+    Kernel::get().explicitSlotListStack_.pop();
 }
 
 /// Compare a Datum with a bool.

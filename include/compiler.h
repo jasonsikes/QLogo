@@ -127,6 +127,12 @@ class Compiler
     llvm::Value *generateApplyNamedProcedure(const DatumPtr &node, TypeMask expected,
                                              llvm::Value *aTemplate, llvm::Value *inputList);
 
+    // Generate explicit-slot APPLY. Insert point must be the form's entry block.
+    // Pushes inputList, runs the template with generateCallList, then pops.
+    // Always uses generateCallList (not a continuation) so the slot list can be restored.
+    llvm::Value *generateApplyExplicitSlot(const DatumPtr &node, TypeMask expected,
+                                           llvm::Value *aTemplate, llvm::Value *inputList);
+
     // Generate a call to return a value immediately.
     llvm::Value *generateImmediateReturn(llvm::Value *retval);
 

@@ -749,7 +749,7 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
 {
     BasicBlock *validTemplateBB = scaff_->createBasicBlock(DBG_NAME("validTemplate"));
     BasicBlock *namedProcedureBB = scaff_->createBasicBlock(DBG_NAME("namedProcedure"));
-    // BasicBlock *explicitSlotBB = scaff_->createBasicBlock(DBG_NAME("explicitSlot"));
+    BasicBlock *explicitSlotBB = scaff_->createBasicBlock(DBG_NAME("explicitSlot"));
     // BasicBlock *lambdaBB = scaff_->createBasicBlock(DBG_NAME("lambda"));
     // BasicBlock *procedureTextBB = scaff_->createBasicBlock(DBG_NAME("procedureText"));
     BasicBlock *mergeBB = scaff_->createBasicBlock(DBG_NAME("merge"));
@@ -767,8 +767,9 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
 
     scaff_->builder_.SetInsertPoint(validTemplateBB);
     Value *inputList = generateListFromDatum(node.astnodeValue(), inputlist);
-    SwitchInst *sw = scaff_->builder_.CreateSwitch(templateForm, invalidTemplateBB, 1);
+    SwitchInst *sw = scaff_->builder_.CreateSwitch(templateForm, invalidTemplateBB, 2);
     sw->addCase(CoInt8(TemplateFormNamedProcedure), namedProcedureBB);
+    sw->addCase(CoInt8(TemplateFormExplicitSlot), explicitSlotBB);
 
     scaff_->builder_.SetInsertPoint(invalidTemplateBB);
     Value *errVal = generateErrorNoLike(node.astnodeValue(), aTemplate);
@@ -779,9 +780,15 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
     BasicBlock *namedCallDestBB = scaff_->builder_.GetInsertBlock();
     scaff_->builder_.CreateBr(mergeBB);
 
+    scaff_->builder_.SetInsertPoint(explicitSlotBB);
+    Value *slotResult = generateApplyExplicitSlot(node, expected, aTemplate, inputList);
+    BasicBlock *explicitSlotDestBB = scaff_->builder_.GetInsertBlock();
+    scaff_->builder_.CreateBr(mergeBB);
+
     scaff_->builder_.SetInsertPoint(mergeBB);
-    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 1, DBG_NAME("retval"));
+    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 2, DBG_NAME("retval"));
     retval->addIncoming(callResult, namedCallDestBB);
+    retval->addIncoming(slotResult, explicitSlotDestBB);
     return retval;
 }
 
@@ -810,6 +817,15 @@ Value *Compiler::generateApplyNamedProcedure(const DatumPtr &node, TypeMask expe
     auto generateListFn = node.astnodeValue()->inSequenceTail_ ? &Compiler::generateCallListContinuation
                                                               : &Compiler::generateCallList;
     return (this->*generateListFn)(callAST, expected);
+}
+
+Value *Compiler::generateApplyExplicitSlot(const DatumPtr &node, TypeMask expected,
+                                           Value *aTemplate, Value *inputList)
+{
+    generateCallExtern(pushExplicitSlotList, PaAddr(inputList));
+    Value *result = generateCallList(aTemplate, expected);
+    generateCallExtern(popExplicitSlotList);
+    return result;
 }
 
 /***DOC ?
