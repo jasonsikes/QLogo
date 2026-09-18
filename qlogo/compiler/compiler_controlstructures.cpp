@@ -776,8 +776,8 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
     generateReturn(errVal);
 
     scaff_->builder_.SetInsertPoint(namedProcedureBB);
-    Value *callResult = generateApplyNamedProcedure(node, expected, aTemplate, inputList);
-    BasicBlock *namedCallDestBB = scaff_->builder_.GetInsertBlock();
+    Value *namedProcedureResult = generateApplyNamedProcedure(node, expected, aTemplate, inputList);
+    BasicBlock *namedProcedureDestBB = scaff_->builder_.GetInsertBlock();
     scaff_->builder_.CreateBr(mergeBB);
 
     scaff_->builder_.SetInsertPoint(explicitSlotBB);
@@ -787,7 +787,7 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
 
     scaff_->builder_.SetInsertPoint(mergeBB);
     PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 2, DBG_NAME("retval"));
-    retval->addIncoming(callResult, namedCallDestBB);
+    retval->addIncoming(namedProcedureResult, namedProcedureDestBB);
     retval->addIncoming(slotResult, explicitSlotDestBB);
     return retval;
 }
