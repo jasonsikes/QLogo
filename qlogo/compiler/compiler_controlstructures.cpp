@@ -830,14 +830,14 @@ Value *Compiler::genQ(const DatumPtr &node, TypeMask expected)
     BasicBlock *okBB = scaff_->createBasicBlock(DBG_NAME("questionOk"));
     scaff_->addColdPathBlocks(errorBB);
 
-    Value *index = CoDouble(1.0);
+    Value *index = CoAddr(Datum::notADatum());
     if (node.astnodeValue()->countOfChildren() == 1)
-        index = generateChild(node.astnodeValue(), 0, TypeReal);
+        index = generateChild(node.astnodeValue(), 0, TypeDatum);
 
     Value *result = generateCallExtern(getExplicitSlot,
                                        PaAddr(scaff_->evaluator_),
                                        PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
-                                       PaDouble(index));
+                                       PaAddr(index));
     Value *resultType = generateGetDatumIsa(result);
     Value *flowMask = scaff_->builder_.CreateAnd(resultType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
     Value *isError = scaff_->builder_.CreateICmpNE(flowMask, CoInt32(0), DBG_NAME("isQuestionError"));

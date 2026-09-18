@@ -952,27 +952,39 @@ EXPORTC addr_t buildApplyNamedCall(addr_t eAddr, addr_t astNodeAddr, addr_t temp
 /// @brief Return the explicit-slot value for `?` / `(? n)`.
 /// @param eAddr the address of the Evaluator object
 /// @param whoAddr a pointer to the `?` command name (for errors)
-/// @param index 1-based slot index
+/// @param indexAddr a 1-based slot index, or notADatum if `?` was given no input
 /// @return the slot datum, or an error
-EXPORTC addr_t getExplicitSlot(addr_t eAddr, addr_t whoAddr, double index)
+EXPORTC addr_t getExplicitSlot(addr_t eAddr, addr_t whoAddr, addr_t indexAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *who = reinterpret_cast<Datum *>(whoAddr);
+    DatumPtr who(reinterpret_cast<Datum *>(whoAddr));
+    DatumPtr index(reinterpret_cast<Datum *>(indexAddr));
+    FCError *err = nullptr;
 
-    auto i = static_cast<qsizetype>(index);
-    if (i != index || i < 1)
+    qsizetype i = 1;
+    if (!index.isNothing())
     {
-        FCError *err = FCError::doesntLike(DatumPtr(who), DatumPtr(index));
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
+        if (!index.isWord())
+        {
+            err = FCError::doesntLike(who, index);
+        }
+        else
+        {
+            Word *w = index.wordValue();
+            double n = w->numberValue();
+            i = static_cast<qsizetype>(n);
+            if (!w->numberIsValid || i != n || i < 1)
+                err = FCError::doesntLike(who, index);
+        }
+        if (err != nullptr)
+            goto bailout;
     }
 
     DatumPtr slotList = Kernel::get().explicitSlotList();
     if (!slotList.isList())
     {
-        FCError *err = FCError::notEnoughInputs(DatumPtr(who));
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
+        err = FCError::notEnoughInputs(who);
+        goto bailout;
     }
 
     ListIterator iter = slotList.listValue()->newIterator();
@@ -988,7 +1000,9 @@ EXPORTC addr_t getExplicitSlot(addr_t eAddr, addr_t whoAddr, double index)
         }
     }
 
-    FCError *err = FCError::notEnoughInputs(DatumPtr(who));
+    err = FCError::notEnoughInputs(who);
+
+bailout:
     e->watch(err);
     return reinterpret_cast<addr_t>(err);
 }
