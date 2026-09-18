@@ -111,8 +111,8 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 | CO                 | CLEAN          | GREATER?      | *TODO* ERASEFILE       | WORD?                     | *TODO* NAME?         |
 | TAG                | CLEARSCREEN    | LESSEQUALP    | *TODO* ERF             | LISTP                     | *TODO* PLISTP        |
 | GOTO               | CS             | LESSEQUAL?    | *TODO* DRIBBLE         | LIST?                     | *TODO* PLIST?        |
-| *TODO* APPLY       | WRAP           | GREATEREQUALP | *TODO* NODRIBBLE       | ARRAYP                    | *TODO* CONTENTS      |
-| *TODO* ?           | WINDOW         | GREATEREQUAL? | *TODO* SETREAD         | ARRAY?                    | *TODO* BURIED        |
+| APPLY              | WRAP           | GREATEREQUALP | *TODO* NODRIBBLE       | ARRAYP                    | *TODO* CONTENTS      |
+| ?                  | WINDOW         | GREATEREQUAL? | *TODO* SETREAD         | ARRAY?                    | *TODO* BURIED        |
 |                    | FENCE          | RANDOM        | *TODO* SETWRITE        | EMPTYP                    | *TODO* TRACED        |
 |                    | BOUNDS         | RERANDOM      | *TODO* READER          | EMPTY?                    | *TODO* STEPPED       |
 |                    | SETBOUNDS      | FORM          | *TODO* WRITER          | EQUALP                    | *TODO* PROCEDURES    |
