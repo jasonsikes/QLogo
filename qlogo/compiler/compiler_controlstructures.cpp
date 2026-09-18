@@ -750,7 +750,7 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
     BasicBlock *validTemplateBB = scaff_->createBasicBlock(DBG_NAME("validTemplate"));
     BasicBlock *namedProcedureBB = scaff_->createBasicBlock(DBG_NAME("namedProcedure"));
     BasicBlock *explicitSlotBB = scaff_->createBasicBlock(DBG_NAME("explicitSlot"));
-    // BasicBlock *lambdaBB = scaff_->createBasicBlock(DBG_NAME("lambda"));
+    BasicBlock *lambdaBB = scaff_->createBasicBlock(DBG_NAME("lambda"));
     // BasicBlock *procedureTextBB = scaff_->createBasicBlock(DBG_NAME("procedureText"));
     BasicBlock *mergeBB = scaff_->createBasicBlock(DBG_NAME("merge"));
     BasicBlock *invalidTemplateBB = scaff_->createBasicBlock(DBG_NAME("invalidTemplate"));
@@ -767,9 +767,10 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
 
     scaff_->builder_.SetInsertPoint(validTemplateBB);
     Value *inputList = generateListFromDatum(node.astnodeValue(), inputlist);
-    SwitchInst *sw = scaff_->builder_.CreateSwitch(templateForm, invalidTemplateBB, 2);
+    SwitchInst *sw = scaff_->builder_.CreateSwitch(templateForm, invalidTemplateBB, 3);
     sw->addCase(CoInt8(TemplateFormNamedProcedure), namedProcedureBB);
     sw->addCase(CoInt8(TemplateFormExplicitSlot), explicitSlotBB);
+    sw->addCase(CoInt8(TemplateFormLambda), lambdaBB);
 
     scaff_->builder_.SetInsertPoint(invalidTemplateBB);
     Value *errVal = generateErrorNoLike(node.astnodeValue(), aTemplate);
@@ -785,10 +786,16 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
     BasicBlock *explicitSlotDestBB = scaff_->builder_.GetInsertBlock();
     scaff_->builder_.CreateBr(mergeBB);
 
+    scaff_->builder_.SetInsertPoint(lambdaBB);
+    Value *lambdaResult = generateApplyLambda(node, expected, aTemplate, inputList);
+    BasicBlock *lambdaDestBB = scaff_->builder_.GetInsertBlock();
+    scaff_->builder_.CreateBr(mergeBB);
+
     scaff_->builder_.SetInsertPoint(mergeBB);
-    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 2, DBG_NAME("retval"));
+    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 3, DBG_NAME("retval"));
     retval->addIncoming(namedProcedureResult, namedProcedureDestBB);
     retval->addIncoming(slotResult, explicitSlotDestBB);
+    retval->addIncoming(lambdaResult, lambdaDestBB);
     return retval;
 }
 
@@ -836,6 +843,44 @@ Value *Compiler::generateApplyExplicitSlot(const DatumPtr &node, TypeMask expect
     scaff_->builder_.CreateCondBr(isError, errorBB, okBB);
 
     scaff_->builder_.SetInsertPoint(errorBB);
+    generateReturn(result);
+
+    scaff_->builder_.SetInsertPoint(okBB);
+    return result;
+}
+
+Value *Compiler::generateApplyLambda(const DatumPtr &node, TypeMask expected,
+                                     Value *aTemplate, Value *inputList)
+{
+    BasicBlock *bindErrorBB = scaff_->createBasicBlock(DBG_NAME("lambdaBindError"));
+    BasicBlock *runBB = scaff_->createBasicBlock(DBG_NAME("lambdaRun"));
+    BasicBlock *runErrorBB = scaff_->createBasicBlock(DBG_NAME("lambdaRunError"));
+    BasicBlock *okBB = scaff_->createBasicBlock(DBG_NAME("lambdaOk"));
+    scaff_->addColdPathBlocks(bindErrorBB, runErrorBB);
+
+    Value *bodyOrErr = generateCallExtern(beginApplyLambda,
+                                          PaAddr(scaff_->evaluator_),
+                                          PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
+                                          PaAddr(aTemplate),
+                                          PaAddr(inputList));
+    Value *bindType = generateGetDatumIsa(bodyOrErr);
+    Value *bindFlowMask = scaff_->builder_.CreateAnd(bindType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
+    Value *bindIsError = scaff_->builder_.CreateICmpNE(bindFlowMask, CoInt32(0), DBG_NAME("isLambdaBindError"));
+    scaff_->builder_.CreateCondBr(bindIsError, bindErrorBB, runBB);
+
+    scaff_->builder_.SetInsertPoint(bindErrorBB);
+    generateReturn(bodyOrErr);
+
+    scaff_->builder_.SetInsertPoint(runBB);
+    Value *result = generateCallList(bodyOrErr, expected);
+    generateCallExtern(endApplyLambda);
+
+    Value *resultType = generateGetDatumIsa(result);
+    Value *runFlowMask = scaff_->builder_.CreateAnd(resultType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
+    Value *runIsError = scaff_->builder_.CreateICmpNE(runFlowMask, CoInt32(0), DBG_NAME("isLambdaRunError"));
+    scaff_->builder_.CreateCondBr(runIsError, runErrorBB, okBB);
+
+    scaff_->builder_.SetInsertPoint(runErrorBB);
     generateReturn(result);
 
     scaff_->builder_.SetInsertPoint(okBB);

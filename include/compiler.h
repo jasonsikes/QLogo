@@ -133,6 +133,12 @@ class Compiler
     llvm::Value *generateApplyExplicitSlot(const DatumPtr &node, TypeMask expected,
                                            llvm::Value *aTemplate, llvm::Value *inputList);
 
+    // Generate lambda APPLY. Insert point must be the form's entry block.
+    // Binds template names to inputList, runs the template tail, then restores.
+    // Always uses generateCallList (not a continuation) so bindings can be restored.
+    llvm::Value *generateApplyLambda(const DatumPtr &node, TypeMask expected,
+                                     llvm::Value *aTemplate, llvm::Value *inputList);
+
     // Generate a call to return a value immediately.
     llvm::Value *generateImmediateReturn(llvm::Value *retval);
 

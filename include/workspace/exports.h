@@ -61,6 +61,8 @@ EXPORTC addr_t buildApplyNamedCall(addr_t eAddr, addr_t astNodeAddr, addr_t temp
 EXPORTC addr_t getExplicitSlot(addr_t eAddr, addr_t whoAddr, addr_t indexAddr);
 EXPORTC void pushExplicitSlotList(addr_t listAddr);
 EXPORTC void popExplicitSlotList(void);
+EXPORTC addr_t beginApplyLambda(addr_t eAddr, addr_t astNodeAddr, addr_t templateAddr, addr_t inputlistAddr);
+EXPORTC void endApplyLambda(void);
 EXPORTC bool cmpDatumToBool(addr_t d, bool b);
 EXPORTC bool cmpDatumToDouble(addr_t d, double n);
 EXPORTC bool cmpDatumToDatum(addr_t eAddr, addr_t d1, addr_t d2);

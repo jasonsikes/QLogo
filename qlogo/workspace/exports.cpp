@@ -1023,6 +1023,93 @@ EXPORTC void popExplicitSlotList(void)
     Kernel::get().explicitSlotListStack_.pop();
 }
 
+/// @brief Bind lambda APPLY names to inputlist members and return the template body.
+/// @param eAddr the address of the Evaluator object
+/// @param astNodeAddr a pointer to the APPLY command name (for errors)
+/// @param templateAddr a pointer to the lambda template list
+/// @param inputlistAddr a pointer to the already-evaluated input list
+/// @return the template tail (instruction list) on success, or an error
+EXPORTC addr_t beginApplyLambda(addr_t eAddr, addr_t astNodeAddr, addr_t templateAddr, addr_t inputlistAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *who = reinterpret_cast<Datum *>(astNodeAddr);
+    auto *aTemplate = reinterpret_cast<Datum *>(templateAddr);
+    auto *inputlist = reinterpret_cast<Datum *>(inputlistAddr);
+
+    Q_ASSERT(aTemplate->isList());
+    Q_ASSERT(inputlist->isList());
+
+    List *tmpl = aTemplate->listValue();
+    Q_ASSERT(!tmpl->isEmpty() && tmpl->head.isList());
+
+    List *names = tmpl->head.listValue();
+    List *body = tmpl->tail.listValue();
+    List *inputs = inputlist->listValue();
+    DatumPtr whoP(who);
+
+    ListIterator nameIter = names->newIterator();
+    while (nameIter.elementExists())
+    {
+        DatumPtr nameP = nameIter.element();
+        if (!nameP.isWord())
+        {
+            FCError *err = FCError::doesntLike(whoP, nameP);
+            e->watch(err);
+            return reinterpret_cast<addr_t>(err);
+        }
+    }
+
+    const int nameCount = names->count();
+    const int inputCount = inputs->count();
+    if (nameCount < inputCount)
+    {
+        FCError *err = FCError::tooManyInputs(whoP);
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    if (nameCount > inputCount)
+    {
+        FCError *err = FCError::notEnoughInputs(whoP);
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+
+    Kernel &k = Kernel::get();
+    ApplyLambdaBinding frame;
+    nameIter = names->newIterator();
+    ListIterator inputIter = inputs->newIterator();
+    while (nameIter.elementExists())
+    {
+        QString name = nameIter.element().toString(Datum::ToStringFlags_Key);
+        DatumPtr value = inputIter.element();
+        ApplyLambdaSavedVar saved;
+        saved.name = name;
+        saved.existed = k.doesExist(name);
+        saved.previous = saved.existed ? k.datumForName(name) : nothing();
+        frame.saved.append(saved);
+        k.setDatumForName(value, name);
+    }
+
+    k.applyLambdaBindingStack_.push(frame);
+    e->watch(body);
+    return reinterpret_cast<addr_t>(body);
+}
+
+/// @brief Restore variable bindings from the most recent beginApplyLambda.
+EXPORTC void endApplyLambda(void)
+{
+    Kernel &k = Kernel::get();
+    Q_ASSERT(!k.applyLambdaBindingStack_.isEmpty());
+    ApplyLambdaBinding frame = k.applyLambdaBindingStack_.pop();
+    for (auto it = frame.saved.crbegin(); it != frame.saved.crend(); ++it)
+    {
+        if (!it->existed)
+            k.eraseVar(it->name);
+        else
+            k.setDatumForName(it->previous, it->name);
+    }
+}
+
 /// Compare a Datum with a bool.
 /// @param d a Datum
 /// @param b a bool

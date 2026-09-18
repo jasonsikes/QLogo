@@ -22,11 +22,26 @@
 #include "workspace/evaluator.h"
 #include "workspace/propertylists.h"
 #include <QColor>
+#include <QList>
 #include <QSet>
 #include <QStack>
 #include <deque>
 #include <QVector>
 #include <memory>
+
+/// @brief One variable snapshot for a lambda APPLY binding.
+struct ApplyLambdaSavedVar
+{
+    QString name;
+    DatumPtr previous;
+    bool existed = false;
+};
+
+/// @brief Saved variable bindings for one nested lambda APPLY.
+struct ApplyLambdaBinding
+{
+    QList<ApplyLambdaSavedVar> saved;
+};
 
 class ProcedureScope;
 class TextStream;
@@ -126,6 +141,10 @@ class Kernel
     /// @brief Explicit-slot lists for `?` (APPLY / MAP / FOREACH).
     /// @note APPLY pushes a list and pops it when the template returns.
     QStack<DatumPtr> explicitSlotListStack_;
+
+    /// @brief Saved variable bindings for nested lambda APPLY.
+    /// @note beginApplyLambda pushes; endApplyLambda pops and restores.
+    QStack<ApplyLambdaBinding> applyLambdaBindingStack_;
 
     /// @brief The current explicit-slot list, or nothing if the stack is empty.
     DatumPtr explicitSlotList() const;

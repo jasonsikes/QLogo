@@ -1,0 +1,1 @@
+show apply [[a b] :a * :b] [10]
