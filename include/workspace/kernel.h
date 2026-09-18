@@ -23,6 +23,7 @@
 #include "workspace/propertylists.h"
 #include <QColor>
 #include <QSet>
+#include <QStack>
 #include <deque>
 #include <QVector>
 #include <memory>
@@ -121,6 +122,13 @@ class Kernel
 
     /// @brief Repcount is for use in looping functions (e.g. REPEAT)
     double repcount_ = -1;
+
+    /// @brief Explicit-slot lists for `?` (APPLY / MAP / FOREACH).
+    /// @note APPLY pushes a list and pops it when the template returns.
+    QStack<DatumPtr> explicitSlotListStack_;
+
+    /// @brief The current explicit-slot list, or nothing if the stack is empty.
+    DatumPtr explicitSlotList() const;
 
     /// @brief Set the test state for TEST/IFTRUE/IFFALSE.
     /// @note Sets the test state for the current call frame.

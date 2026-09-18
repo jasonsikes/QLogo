@@ -30,8 +30,7 @@ struct ASTNode;
 
 
 /// @brief The CallFrame object holds the state of execution of a procedure (or REPL).
-/// @note The state includes named variables, anonymous variables (explicit slot, or
-/// "?"), and the test state (for TEST, IFTRUE, IFFALSE).
+/// @note The state includes named variables and the test state (for TEST, IFTRUE, IFFALSE).
 struct CallFrame
 {
     /// @brief The index of the first evaluator in the evaluation stack.
@@ -69,10 +68,6 @@ struct CallFrame
     /// @brief The test state for TEST/IFTRUE/IFFALSE.
     /// @note 0 = not tested, 3 = tested true, 2 = tested false.
     int8_t testState_ = 0;
-
-    /// @brief The explicit slot list, placeholders for "?".
-    /// @note This is for the "explicit slot" APPLY command.
-    DatumPtr explicitSlotList_;
 
     /// @brief Variable names held in this scope and the values held prior to the invocation of this scope.
     QHash<QString, DatumPtr> localVars_;

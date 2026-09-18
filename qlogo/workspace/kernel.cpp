@@ -442,6 +442,13 @@ int8_t Kernel::testedState() const
     return 0;
 }
 
+DatumPtr Kernel::explicitSlotList() const
+{
+    if (explicitSlotListStack_.isEmpty())
+        return nothing();
+    return explicitSlotListStack_.top();
+}
+
 
 Kernel::Kernel()
 {

@@ -88,6 +88,7 @@ const QString &cmdStrIFT();
 const QString &cmdStrIFFALSE();
 const QString &cmdStrIFF();
 const QString &cmdStrAPPLY();
+const QString &cmdStr_Q();
 const QString &cmdStrEQUALP();
 const QString &cmdStrEQUAL_Q();
 const QString &cmdStrNOTEQUALP();

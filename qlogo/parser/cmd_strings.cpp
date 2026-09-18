@@ -486,6 +486,12 @@ const QString &StringConstants::cmdStrAPPLY()
     return str;
 }
 
+const QString &StringConstants::cmdStr_Q()
+{
+    static const QString str = QObject::tr("?");
+    return str;
+}
+
 const QString &StringConstants::cmdStrEQUALP()
 {
     static const QString str = QObject::tr("EQUALP");

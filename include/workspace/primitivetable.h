@@ -83,6 +83,7 @@ stringToCmd.insert(StringConstants::cmdStrIFT(), Cmd_t{&Compiler::generateIftrue
 stringToCmd.insert(StringConstants::cmdStrIFFALSE(), Cmd_t{&Compiler::generateIffalse, 1, 1, 1, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrIFF(), Cmd_t{&Compiler::generateIffalse, 1, 1, 1, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrAPPLY(), Cmd_t{&Compiler::genApply, 2, 2, 2, TypeDN});
+stringToCmd.insert(StringConstants::cmdStr_Q(), Cmd_t{&Compiler::genQ, 0, 0, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrEQUALP(), Cmd_t{&Compiler::genEqualp, 2, 2, 2, TypeB});
 stringToCmd.insert(StringConstants::cmdStrEQUAL_Q(), Cmd_t{&Compiler::genEqualp, 2, 2, 2, TypeB});
 stringToCmd.insert(StringConstants::cmdStrNOTEQUALP(), Cmd_t{&Compiler::genNotequalp, 2, 2, 2, TypeB});

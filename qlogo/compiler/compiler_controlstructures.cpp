@@ -811,3 +811,41 @@ Value *Compiler::generateApplyNamedProcedure(const DatumPtr &node, TypeMask expe
                                                               : &Compiler::generateCallList;
     return (this->*generateListFn)(callAST, expected);
 }
+
+/***DOC ?
+?
+(? number)
+
+    outputs a member of the current explicit-slot template input list.
+    ? is equivalent to (? 1).  (? n) outputs the nth member (1-based).
+    The form ?n is equivalent to (? n).
+
+COD***/
+// CMD ? 0 0 1 d
+Value *Compiler::genQ(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+
+    BasicBlock *errorBB = scaff_->createBasicBlock(DBG_NAME("questionError"));
+    BasicBlock *okBB = scaff_->createBasicBlock(DBG_NAME("questionOk"));
+    scaff_->addColdPathBlocks(errorBB);
+
+    Value *index = CoDouble(1.0);
+    if (node.astnodeValue()->countOfChildren() == 1)
+        index = generateChild(node.astnodeValue(), 0, TypeReal);
+
+    Value *result = generateCallExtern(getExplicitSlot,
+                                       PaAddr(scaff_->evaluator_),
+                                       PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
+                                       PaDouble(index));
+    Value *resultType = generateGetDatumIsa(result);
+    Value *flowMask = scaff_->builder_.CreateAnd(resultType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
+    Value *isError = scaff_->builder_.CreateICmpNE(flowMask, CoInt32(0), DBG_NAME("isQuestionError"));
+    scaff_->builder_.CreateCondBr(isError, errorBB, okBB);
+
+    scaff_->builder_.SetInsertPoint(errorBB);
+    generateReturn(result);
+
+    scaff_->builder_.SetInsertPoint(okBB);
+    return result;
+}

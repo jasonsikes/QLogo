@@ -949,6 +949,50 @@ EXPORTC addr_t buildApplyNamedCall(addr_t eAddr, addr_t astNodeAddr, addr_t temp
     }
 }
 
+/// @brief Return the explicit-slot value for `?` / `(? n)`.
+/// @param eAddr the address of the Evaluator object
+/// @param whoAddr a pointer to the `?` command name (for errors)
+/// @param index 1-based slot index
+/// @return the slot datum, or an error
+EXPORTC addr_t getExplicitSlot(addr_t eAddr, addr_t whoAddr, double index)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *who = reinterpret_cast<Datum *>(whoAddr);
+
+    auto i = static_cast<qsizetype>(index);
+    if (i != index || i < 1)
+    {
+        FCError *err = FCError::doesntLike(DatumPtr(who), DatumPtr(index));
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+
+    DatumPtr slotList = Kernel::get().explicitSlotList();
+    if (!slotList.isList())
+    {
+        FCError *err = FCError::notEnoughInputs(DatumPtr(who));
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+
+    ListIterator iter = slotList.listValue()->newIterator();
+    qsizetype remaining = i;
+    while (iter.elementExists())
+    {
+        DatumPtr element = iter.element();
+        remaining--;
+        if (remaining == 0)
+        {
+            e->watch(element);
+            return reinterpret_cast<addr_t>(element.datumValue());
+        }
+    }
+
+    FCError *err = FCError::notEnoughInputs(DatumPtr(who));
+    e->watch(err);
+    return reinterpret_cast<addr_t>(err);
+}
+
 /// Compare a Datum with a bool.
 /// @param d a Datum
 /// @param b a bool

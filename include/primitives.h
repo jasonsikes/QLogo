@@ -66,6 +66,7 @@ llvm::Value *genTest(const DatumPtr &node, TypeMask expected);
 llvm::Value *generateIftrue(const DatumPtr &node, TypeMask expected);
 llvm::Value *generateIffalse(const DatumPtr &node, TypeMask expected);
 llvm::Value *genApply(const DatumPtr &node, TypeMask expected);
+llvm::Value *genQ(const DatumPtr &node, TypeMask expected);
 llvm::Value *genEqualp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genNotequalp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genWord(const DatumPtr &node, TypeMask expected);
