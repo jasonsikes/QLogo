@@ -156,6 +156,7 @@ bool Kernel::colorFromDatumPtr(QColor &retval, const DatumPtr &colorP) const
 
 DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
 {
+    ReplScope repl;
     callFrameStack_.emplace_back(nullptr, nullptr, 0);
     QString localPrompt = prompt + "? ";
     DatumPtr result;

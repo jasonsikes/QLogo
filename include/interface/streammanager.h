@@ -14,8 +14,8 @@
 /// \file
 /// This file contains the declaration of the StreamManager class, which owns
 /// every open text stream and tracks which stream currently fills each I/O
-/// role (current reader, current writer, dribble, etc.). It is the single
-/// backing point for the Logo file/terminal I/O primitives.
+/// role (current reader, current writer, commander, listing, dribble). It is
+/// the single backing point for the Logo file/terminal I/O primitives.
 ///
 //===----------------------------------------------------------------------===//
 
@@ -42,28 +42,45 @@ enum class OpenMode
 };
 
 /// @brief Owns the pool of open text streams and the current-role assignments.
-/// @details There are two layers here:
+/// @details Layers:
 ///   1. A *pool* of open streams: the terminal (always present, never closed)
 ///      plus one entry per file opened via OPENREAD/OPENWRITE/etc.
-///   2. A small set of *role pointers* that alias entries in the pool: the
-///      current reader/writer, the program source/destination, and the
-///      terminal-only std streams. Role pointers are non-owning and always
-///      valid; a role not otherwise assigned points at the terminal. Closing a
-///      pool stream that fills a role reverts that role to the terminal; the
-///      program roles instead restore their previous target when a
+///   2. *Role pointers* that alias the pool (or the terminal): SETREAD reader,
+///      SETWRITE writer, commander (REPL / TO / LOAD), and listing destination
+///      (SAVE / EDIT / PO). Roles are non-owning and always valid; unassigned
+///      roles point at the terminal. Closing a pool stream that fills the
+///      reader or writer reverts that role to the terminal. Program
+///      source/destination roles restore their previous target when a
 ///      LOAD/SAVE/EDIT redirect ends.
+///   3. A *REPL stack* of interactive sessions (top-level commander and
+///      PAUSE). Each frame points the commander at the terminal so the human
+///      is reached even during LOAD, and overlays the writer onto the terminal
+///      until SETWRITE is called in that session. LOAD may nest inside a REPL
+///      frame: while the commander is a file, SETWRITE applies immediately;
+///      when LOAD ends the REPL frame is current again and the overlay
+///      returns if it was still active.
 ///
-/// Dribbling is separate from both layers: it is an independently owned sink
-/// that mirrors terminal I/O. All terminal bytes flow through this class (see
-/// the terminal transport methods), so dribbling is applied in one place and
-/// file reads/writes are never dribbled. The interface is a dumb transport with
-/// no dribble awareness.
+/// Dribbling is separate: an independently owned sink that mirrors terminal
+/// I/O. All terminal bytes flow through this class (see the terminal transport
+/// methods), so dribbling is applied in one place and file reads/writes are
+/// never dribbled. The interface is a dumb transport with no dribble awareness.
 /// @note Singleton, consistent with Config, Kernel, Procedures, etc.
 class StreamManager
 {
     /// @brief One open file: the QFile/QTextStream backing plus the wrapper and mode.
     /// @details Defined in the .cpp so this header needs no Qt device includes.
     struct OpenStream;
+
+    /// @brief One interactive commander session (top-level REPL or PAUSE).
+    struct ReplFrame
+    {
+        /// @brief Commander stream to restore when this session ends.
+        TextStream *savedCommander = nullptr;
+        /// @brief True until SETWRITE in this session, while the commander is
+        /// the terminal: PRINT/SHOW go to the terminal and WRITER reports empty
+        /// even if ostreamWrite_ is still a file.
+        bool overlayActive = false;
+    };
 
     /// @brief The pool of open *file* streams, keyed by the name used to open them.
     QHash<QString, OpenStream *> openStreams_;
@@ -74,31 +91,23 @@ class StreamManager
     // Role pointers: non-owning aliases into the pool (or the terminal). Every
     // role is always valid; a role not otherwise assigned points at the terminal.
 
-    /// @brief Forced-interactive input (PAUSE). Always the terminal.
-    /// @details Distinct from istreamProgram_ so PAUSE reaches the human even
-    /// while a file is being loaded.
-    TextStream *istreamStd_;
-
     /// @brief The current reader (SETREAD / READWORD / READLIST / ...).
     /// @details Terminal by default; a file while SETREAD is in effect.
     TextStream *istreamRead_;
 
-    /// @brief The program-text source: top-level REPL lines and TO...END bodies.
-    /// @details Terminal by default; the file during LOAD / EDIT / `qlogo script.lg`.
-    /// Kept non-transient so the REPL and procedure definition can always read
-    /// from it without checking whether a load is in progress.
+    /// @brief The commander: REPL lines, TO...END bodies, and LOAD text.
+    /// @details Terminal by default; a file during LOAD / EDIT / `qlogo script.lg`;
+    /// the terminal again for the duration of a REPL/PAUSE session even if a
+    /// load is in progress.
     TextStream *istreamProgram_;
 
-    /// @brief Output for errors, prompts, and REPL echo. Always the terminal.
-    TextStream *ostreamStd_;
-
-    /// @brief The current writer (SETWRITE / PRINT / TYPE / SHOW).
+    /// @brief The current writer (SETWRITE). PRINT/TYPE/SHOW use this unless a
+    /// REPL overlay is hiding it.
     /// @details Terminal by default; a file while SETWRITE is in effect.
     TextStream *ostreamWrite_;
 
-    /// @brief The program-text destination: procedure listings (SAVE / EDIT / PO).
-    /// @details Terminal by default; the file during SAVE / EDIT. Kept
-    /// non-transient for symmetry with istreamProgram_.
+    /// @brief The listing destination: procedure listings (SAVE / EDIT / PO).
+    /// @details Terminal by default; the file during SAVE / EDIT.
     TextStream *ostreamProgram_;
 
     /// @brief Prefix prepended to relative filenames (SETPREFIX / PREFIX).
@@ -112,9 +121,13 @@ class StreamManager
 
     // Active program-source/destination redirects, innermost last. Each entry is
     // an owned open file; istreamProgram_/ostreamProgram_ alias the top of the
-    // stack (or the terminal when empty). Stacks so redirects can nest.
+    // stack (or the terminal when empty), except that a REPL frame forces the
+    // commander to the terminal until it ends. Stacks so redirects can nest.
     QList<OpenStream *> programReadStack_;
     QList<OpenStream *> programWriteStack_;
+
+    /// @brief Active interactive sessions, innermost last.
+    QList<ReplFrame> replStack_;
 
     /// @brief Look up the name a pool stream is registered under (reverse lookup).
     /// @param stream The stream to find.
@@ -137,6 +150,17 @@ class StreamManager
     /// the in-progress read or print.
     void teeToDribble(const QString &text);
 
+    /// @brief True when a REPL/PAUSE session is active and the commander is the
+    /// terminal (not a nested LOAD file).
+    bool isInteractiveCommander() const;
+
+    /// @brief True when PRINT/WRITER should treat the writer as the terminal
+    /// because the current REPL session is still overlaying SETWRITE.
+    bool writerOverlayActive() const;
+
+    /// @brief The stream PRINT/TYPE/SHOW and WRITER currently use.
+    TextStream *activeWriter() const;
+
     /// @brief Create the terminal stream and point every role at it.
     StreamManager();
 
@@ -157,7 +181,53 @@ class StreamManager
     /// @brief Close all open file streams. Roles revert to the terminal.
     ~StreamManager();
 
-    /************ current-reader input ************/
+    /************ workspace file primitives ************/
+
+    /// @brief OPENREAD / OPENWRITE / OPENAPPEND / OPENUPDATE.
+    /// @param name The name to register the stream under (also the filename).
+    /// @param mode How to open the file.
+    /// @note Throws if already open or the file system operation fails.
+    void open(const QString &name, OpenMode mode);
+
+    /// @brief CLOSE: close one open stream; reverts reader/writer to the terminal
+    /// if needed. Program and REPL stacks are not affected.
+    /// @param name The stream to close.
+    void close(const QString &name);
+
+    /// @brief CLOSEALL: close every open file stream. Reader/writer revert to
+    /// the terminal. Program and REPL stacks are not affected.
+    void closeAll();
+
+    /// @brief ALLOPEN: names of all currently open file streams.
+    QStringList allOpen() const;
+
+    /// @brief True if a stream is open under the given name.
+    bool isOpen(const QString &name) const;
+
+    /// @brief ERASEFILE: delete a file from disk (must not be open).
+    void eraseFile(const QString &name);
+
+    /// @brief SETREAD: make the named open stream the current reader.
+    /// @param name The open stream's name; empty selects the terminal.
+    /// @note Throws if the name is not open or was not opened for reading.
+    void setReader(const QString &name);
+
+    /// @brief READER: name of the current reader (empty for the terminal).
+    QString reader() const;
+
+    /// @brief SETWRITE: make the named open stream the current writer.
+    /// @param name The open stream's name; empty selects the terminal.
+    /// @details If a REPL/PAUSE session is currently talking to the human,
+    /// this also ends that session's writer overlay so PRINT follows the new
+    /// writer immediately. SETWRITE during LOAD does not clear the overlay;
+    /// when the load ends and the REPL is current again, a still-active
+    /// overlay hides the writer until the user SETWRITEs at the prompt.
+    /// @note Throws if the name is not open or was not opened for writing.
+    void setWriter(const QString &name);
+
+    /// @brief WRITER: name of the stream PRINT currently uses (empty for the
+    /// terminal, including while a REPL overlay is hiding a file writer).
+    QString writer() const;
 
     /// @brief Read a list from the current reader.
     /// @param prompt Prompt shown only when the reader is the terminal.
@@ -183,20 +253,13 @@ class StreamManager
     /// @brief KEYP: true if a character is available on the current reader.
     bool keyAvailable() const;
 
-    /************ current-writer output ************/
-
-    /// @brief Write to the current writer (PRINT / TYPE / SHOW).
+    /// @brief Write to the active writer (PRINT / TYPE / SHOW).
     /// @param text The text to write.
-    /// @note Dribbling, if active, is applied by the terminal layer, so output
-    /// redirected to a file is not dribbled.
+    /// @details During a REPL/PAUSE session whose overlay is still active,
+    /// this goes to the terminal rather than the SETWRITE file. Dribbling, if
+    /// active, is applied by the terminal layer, so output that actually
+    /// reaches a file is not dribbled.
     void print(const QString &text);
-
-    /// @brief Write to the terminal (errors, prompts, REPL echo, notices).
-    /// Always goes to the console; unaffected by SETWRITE.
-    /// @param text The text to write.
-    void printToTerminal(const QString &text);
-
-    /************ read/write positions ************/
 
     /// @brief READPOS: current position of the reader.
     qint64 readPos() const;
@@ -204,55 +267,22 @@ class StreamManager
     /// @brief SETREADPOS: seek the reader.
     void setReadPos(qint64 pos);
 
-    /// @brief WRITEPOS: current position of the writer.
+    /// @brief WRITEPOS: current position of the active writer.
     qint64 writePos() const;
 
-    /// @brief SETWRITEPOS: seek the writer.
+    /// @brief SETWRITEPOS: seek the active writer.
     void setWritePos(qint64 pos);
 
-    /************ roles ************/
+    /// @brief SETPREFIX: set the prefix prepended to relative filenames.
+    void setPrefix(const DatumPtr &prefix);
 
-    /// @brief SETREAD: make the named open stream the current reader.
-    /// @param name The open stream's name; empty selects the terminal.
-    /// @note Throws if the name is not open or was not opened for reading.
-    void setReader(const QString &name);
+    /// @brief PREFIX: the current filename prefix.
+    DatumPtr prefix() const;
 
-    /// @brief READER: name of the current reader (empty for the terminal).
-    QString reader() const;
-
-    /// @brief SETWRITE: make the named open stream the current writer.
-    /// @param name The open stream's name; empty selects the terminal.
-    /// @note Throws if the name is not open or was not opened for writing.
-    void setWriter(const QString &name);
-
-    /// @brief WRITER: name of the current writer (empty for the terminal).
-    QString writer() const;
-
-    /************ pool management ************/
-
-    /// @brief OPENREAD / OPENWRITE / OPENAPPEND / OPENUPDATE.
-    /// @param name The name to register the stream under (also the filename).
-    /// @param mode How to open the file.
-    /// @note Throws if already open or the file system operation fails.
-    void open(const QString &name, OpenMode mode);
-
-    /// @brief CLOSE: close one open stream; reverts roles to the terminal if needed.
-    /// @param name The stream to close.
-    void close(const QString &name);
-
-    /// @brief CLOSEALL: close every open file stream. Roles revert to the terminal.
-    void closeAll();
-
-    /// @brief ALLOPEN: names of all currently open file streams.
-    QStringList allOpen() const;
-
-    /// @brief True if a stream is open under the given name.
-    bool isOpen(const QString &name) const;
-
-    /// @brief ERASEFILE: delete a file from disk (must not be open).
-    void eraseFile(const QString &name);
-
-    /************ dribble ************/
+    /// @brief Resolve a filename against the current prefix.
+    /// @param filenameP The filename to resolve.
+    /// @return The full path.
+    QString filepathForFilename(const DatumPtr &filenameP) const;
 
     /// @brief DRIBBLE: begin copying terminal I/O to the named file (Append mode).
     /// @param name The dribble filename (resolved against the current prefix).
@@ -264,6 +294,70 @@ class StreamManager
 
     /// @brief True while a dribble file is active.
     bool isDribbling() const;
+
+    /************ human / system output ************/
+
+    /// @brief Write to the terminal (errors, prompts, REPL echo, notices).
+    /// Always goes to the console; unaffected by SETWRITE and the REPL overlay.
+    /// @param text The text to write.
+    void printToTerminal(const QString &text);
+
+    /************ command interpreter ************/
+    //
+    // The commander (istreamProgram_) is always valid (terminal by default).
+    // LOAD / EDIT / a startup script redirect it to a file for the duration of
+    // the operation, then restore the previous target. Redirects nest, so a
+    // loaded file may itself LOAD another. Prefer the RAII scopes below.
+    // readProgramList follows the commander, including a REPL frame that has
+    // pointed it at the terminal.
+
+    /// @brief Redirect the commander to a file (LOAD / EDIT / startup script).
+    /// @details Saves the current target and points istreamProgram_ at the file.
+    /// @note Prefer ProgramReadScope for exception-safe restore.
+    void beginProgramRead(const DatumPtr &filename);
+
+    /// @brief Read the next list from the commander (terminal unless redirected).
+    /// @param prompt Prompt shown only when the source is the terminal.
+    /// @param shouldRemoveComments Strip QLogo-formatted comments.
+    DatumPtr readProgramList(const QString &prompt, bool shouldRemoveComments);
+
+    /// @brief Rawlines consumed to build the most recent program list.
+    QList<DatumPtr> programReaderLineHistory() const;
+
+    /// @brief True if the commander is exhausted (never true for the terminal).
+    bool programReaderAtEnd() const;
+
+    /// @brief Close the redirected file and restore the previous commander.
+    void endProgramRead();
+
+    /// @brief Redirect the listing destination to a file (SAVE / EDIT).
+    /// @details Saves the current target and points ostreamProgram_ at the file.
+    /// @note Prefer ProgramWriteScope for exception-safe restore.
+    void beginProgramWrite(const DatumPtr &filename, bool append = false);
+
+    /// @brief Write text to the listing destination (terminal unless redirected).
+    void writeProgram(const QString &text);
+
+    /// @brief Close the redirected file and restore the previous listing destination.
+    void endProgramWrite();
+
+    /************ REPL / PAUSE ************/
+    //
+    // beginRepl/endRepl nest independently of LOAD/SAVE. Each session reads
+    // commander input from the terminal and overlays PRINT onto the terminal
+    // until SETWRITE in that session. Prefer ReplScope.
+
+    /// @brief Begin an interactive commander session (top-level REPL or PAUSE).
+    /// @details Saves the current commander, points it at the terminal, and
+    /// starts a writer overlay if SETWRITE currently names a file.
+    /// @note Prefer ReplScope for exception-safe restore.
+    void beginRepl();
+
+    /// @brief End the innermost interactive session and restore the commander.
+    /// @details The SETWRITE target is left as-is: a SETWRITE from before this
+    /// session remains unless the user changed it, and the overlay of this
+    /// frame is discarded.
+    void endRepl();
 
     /************ terminal transport ************/
     //
@@ -285,59 +379,9 @@ class StreamManager
     /// @brief Read a single character from the terminal.
     /// @return The character, or nothing at end of input.
     DatumPtr readTerminalChar();
-
-    /************ program source / destination ************/
-    //
-    // istreamProgram_ and ostreamProgram_ are always valid (terminal by
-    // default). LOAD / SAVE / EDIT redirect them to a file for the duration of
-    // the operation, then restore the previous target. Redirects nest, so a
-    // loaded file may itself LOAD another. Prefer the RAII scopes below.
-
-    /// @brief Redirect the program source to a file (LOAD / EDIT / startup script).
-    /// @details Saves the current target and points istreamProgram_ at the file.
-    /// @note Prefer ProgramReadScope for exception-safe restore.
-    void beginProgramRead(const DatumPtr &filename);
-
-    /// @brief Read the next list from the program source (terminal unless redirected).
-    /// @param prompt Prompt shown only when the source is the terminal.
-    /// @param shouldRemoveComments Strip QLogo-formatted comments.
-    DatumPtr readProgramList(const QString &prompt, bool shouldRemoveComments);
-
-    /// @brief Rawlines consumed to build the most recent program list.
-    QList<DatumPtr> programReaderLineHistory() const;
-
-    /// @brief True if the program source is exhausted (never true for the terminal).
-    bool programReaderAtEnd() const;
-
-    /// @brief Close the redirected file and restore the previous program source.
-    void endProgramRead();
-
-    /// @brief Redirect the program destination to a file (SAVE / EDIT).
-    /// @details Saves the current target and points ostreamProgram_ at the file.
-    /// @note Prefer ProgramWriteScope for exception-safe restore.
-    void beginProgramWrite(const DatumPtr &filename, bool append = false);
-
-    /// @brief Write text to the program destination (terminal unless redirected).
-    void writeProgram(const QString &text);
-
-    /// @brief Close the redirected file and restore the previous program destination.
-    void endProgramWrite();
-
-    /************ file naming ************/
-
-    /// @brief SETPREFIX: set the prefix prepended to relative filenames.
-    void setPrefix(const DatumPtr &prefix);
-
-    /// @brief PREFIX: the current filename prefix.
-    DatumPtr prefix() const;
-
-    /// @brief Resolve a filename against the current prefix.
-    /// @param filenameP The filename to resolve.
-    /// @return The full path.
-    QString filepathForFilename(const DatumPtr &filenameP) const;
 };
 
-/// @brief RAII guard: redirects the program source to a file on construction and
+/// @brief RAII guard: redirects the commander to a file on construction and
 /// restores the previous target on destruction (including when a FCError unwinds
 /// the stack).
 class ProgramReadScope
@@ -355,7 +399,7 @@ class ProgramReadScope
     ProgramReadScope &operator=(const ProgramReadScope &) = delete;
 };
 
-/// @brief RAII guard: redirects the program destination to a file on construction
+/// @brief RAII guard: redirects the listing destination to a file on construction
 /// and restores the previous target on destruction (including when a FCError
 /// unwinds the stack).
 class ProgramWriteScope
@@ -371,6 +415,26 @@ class ProgramWriteScope
     }
     ProgramWriteScope(const ProgramWriteScope &) = delete;
     ProgramWriteScope &operator=(const ProgramWriteScope &) = delete;
+};
+
+/// @brief RAII guard: begins an interactive commander session on construction
+/// and ends it on destruction (including when a FCError unwinds the stack).
+/// @details Wrap Kernel::readEvalPrintLoop so the top-level REPL and PAUSE each
+/// get a session: commander input from the terminal, and PRINT overlay until
+/// SETWRITE.
+class ReplScope
+{
+  public:
+    ReplScope()
+    {
+        StreamManager::get().beginRepl();
+    }
+    ~ReplScope()
+    {
+        StreamManager::get().endRepl();
+    }
+    ReplScope(const ReplScope &) = delete;
+    ReplScope &operator=(const ReplScope &) = delete;
 };
 
 #endif // STREAMMANAGER_H

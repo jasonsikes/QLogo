@@ -42,10 +42,8 @@ StreamManager::StreamManager()
     , dribbleStream_(nullptr)
 {
     // Every role starts pointed at the terminal.
-    istreamStd_ = terminalStream_;
     istreamRead_ = terminalStream_;
     istreamProgram_ = terminalStream_;
-    ostreamStd_ = terminalStream_;
     ostreamWrite_ = terminalStream_;
     ostreamProgram_ = terminalStream_;
 
@@ -59,8 +57,24 @@ StreamManager::~StreamManager()
         closeStream(programReadStack_.takeLast());
     while (!programWriteStack_.isEmpty())
         closeStream(programWriteStack_.takeLast());
+    replStack_.clear();
     noDribble();
     delete terminalStream_;
+}
+
+bool StreamManager::isInteractiveCommander() const
+{
+    return !replStack_.isEmpty() && istreamProgram_ == terminalStream_;
+}
+
+bool StreamManager::writerOverlayActive() const
+{
+    return isInteractiveCommander() && replStack_.last().overlayActive;
+}
+
+TextStream *StreamManager::activeWriter() const
+{
+    return writerOverlayActive() ? terminalStream_ : ostreamWrite_;
 }
 
 StreamManager::OpenStream *StreamManager::openStream(const QString &filepath, OpenMode mode)
@@ -171,12 +185,12 @@ bool StreamManager::keyAvailable() const
 
 void StreamManager::print(const QString &text)
 {
-    ostreamWrite_->lprint(text);
+    activeWriter()->lprint(text);
 }
 
 void StreamManager::printToTerminal(const QString &text)
 {
-    ostreamStd_->lprint(text);
+    terminalStream_->lprint(text);
 }
 
 /************ read/write positions ************/
@@ -197,16 +211,18 @@ void StreamManager::setReadPos(qint64 pos)
 
 qint64 StreamManager::writePos() const
 {
-    if (ostreamWrite_ == terminalStream_)
+    TextStream *writer = activeWriter();
+    if (writer == terminalStream_)
         return 0;
-    return ostreamWrite_->pos();
+    return writer->pos();
 }
 
 void StreamManager::setWritePos(qint64 pos)
 {
-    if (ostreamWrite_ == terminalStream_)
+    TextStream *writer = activeWriter();
+    if (writer == terminalStream_)
         return;
-    ostreamWrite_->seek(pos);
+    writer->seek(pos);
 }
 
 /************ roles ************/
@@ -237,20 +253,27 @@ void StreamManager::setWriter(const QString &name)
     if (name.isEmpty())
     {
         ostreamWrite_ = terminalStream_;
-        return;
     }
-    auto it = openStreams_.find(name);
-    if (it == openStreams_.end())
-        throw FCError::fileSystem();
-    OpenStream *os = it.value();
-    if ((os->mode != OpenMode::Write) && (os->mode != OpenMode::Append) && (os->mode != OpenMode::Update))
-        throw FCError::fileSystem();
-    ostreamWrite_ = os->stream;
+    else
+    {
+        auto it = openStreams_.find(name);
+        if (it == openStreams_.end())
+            throw FCError::fileSystem();
+        OpenStream *os = it.value();
+        if ((os->mode != OpenMode::Write) && (os->mode != OpenMode::Append) && (os->mode != OpenMode::Update))
+            throw FCError::fileSystem();
+        ostreamWrite_ = os->stream;
+    }
+
+    // SETWRITE at a human prompt ends this session's overlay so PRINT follows
+    // the new writer. SETWRITE during LOAD leaves the overlay in place.
+    if (isInteractiveCommander())
+        replStack_.last().overlayActive = false;
 }
 
 QString StreamManager::writer() const
 {
-    return nameForStream(ostreamWrite_);
+    return nameForStream(activeWriter());
 }
 
 /************ pool management ************/
@@ -270,7 +293,8 @@ void StreamManager::close(const QString &name)
         throw FCError::fileSystem();
     OpenStream *os = it.value();
 
-    // A role aliasing this stream reverts to the terminal.
+    // Reader/writer aliasing this stream revert to the terminal. Program and
+    // REPL stacks do not hold pool streams, so they are left alone.
     if (istreamRead_ == os->stream)
         istreamRead_ = terminalStream_;
     if (ostreamWrite_ == os->stream)
@@ -431,6 +455,25 @@ void StreamManager::endProgramWrite()
         return;
     closeStream(programWriteStack_.takeLast());
     ostreamProgram_ = programWriteStack_.isEmpty() ? terminalStream_ : programWriteStack_.last()->stream;
+}
+
+/************ REPL / PAUSE ************/
+
+void StreamManager::beginRepl()
+{
+    ReplFrame frame;
+    frame.savedCommander = istreamProgram_;
+    frame.overlayActive = (ostreamWrite_ != terminalStream_);
+    replStack_.append(frame);
+    istreamProgram_ = terminalStream_;
+}
+
+void StreamManager::endRepl()
+{
+    if (replStack_.isEmpty())
+        return;
+    istreamProgram_ = replStack_.last().savedCommander;
+    replStack_.removeLast();
 }
 
 /************ file naming ************/
