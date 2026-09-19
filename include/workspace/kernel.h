@@ -45,7 +45,7 @@ struct ApplyLambdaBinding
 
 class ProcedureScope;
 class TextStream;
-class Evaluator;
+struct Evaluator;
 
 /// @brief Special variables.
 /// @note These are variable names that are used to store special values.
