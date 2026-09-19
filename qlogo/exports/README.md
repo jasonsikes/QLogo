@@ -8,32 +8,32 @@ The files here are split along the same UCBLogo primitive categories as the comp
 
 ### exports.cpp
 
-Contains runtime services used by the compiler core: converting between Logo datums and C types, looking up and assigning variables, constructing error objects, handling bad inputs when `ERRACT` is set, and allocating temporary memory.
+Contains runtime services shared by all compiled code: converting between Logo values and C types, looking up and storing variables, constructing errors, and allocating temporary memory.
 
 ### exports_arithmetic.cpp
 
-Contains the implementations for `RANDOM`, `RERANDOM`, and `FORM`. Other arithmetic is compiled directly to LLVM and C math library calls.
+Contains arithmetic operations, including random number generation and formatting numbers as Logo words.
 
 ### exports_communication.cpp
 
-Contains the implementations for writing datums to the standard output device, used by `PRINT`, `TYPE`, and `SHOW`.
+Contains input and output to the terminal and to files, including converting Logo values to text and writing them to the current output stream.
 
 ### exports_controlstructures.cpp
 
-Contains the implementations for evaluation-stack control, procedure entry, `OUTPUT`/`STOP`, `GOTO`, `CATCH`/`THROW`, `PAUSE`/`CONTINUE`, `RUNRESULT`, `TEST`, and `APPLY`.
+Contains program flow control: running lists, entering procedures, applying templates, catching errors, and non-local exits.
 
 ### exports_datastructureprimitives.cpp
 
-Contains the implementations for constructing, selecting, mutating, and querying words, lists, and arrays, including `EQUALP`, `MEMBER`, `PARSE`, and `RUNPARSE`.
+Contains constructors, selectors, mutators, and predicates for words, lists, and arrays, including comparison and parsing text into Logo values.
 
 ### exports_graphics.cpp
 
-Contains the implementations for turtle motion, pen and screen control, mouse input, and saving or loading canvas images.
+Contains turtle graphics and canvas operations: motion and heading, pen and screen, pointing-device input, and picture files.
 
 ### exports_specialvariables.cpp
 
-Contains the implementation for reading the `ERRACT` special variable.
+Contains access to Logo special variables, which are names owned by the interpreter rather than by a procedure.
 
 ### exports_workspacemanagement.cpp
 
-Contains the implementations for defining a procedure from the read stream (`TO`) and marking a variable as local (`LOCAL`).
+Contains workspace operations: defining procedures and controlling the scope of names.
