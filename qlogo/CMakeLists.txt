@@ -8,6 +8,14 @@ set(QLOGO_SOURCES
   compiler/compiler_graphics.cpp
   compiler/compiler_specialvariables.cpp
   exports/exports.cpp
+  exports/exports_arithmetic.cpp
+  exports/exports_communication.cpp
+  exports/exports_controlstructures.cpp
+  exports/exports_datastructureprimitives.cpp
+  exports/exports_graphics.cpp
+  exports/exports_specialvariables.cpp
+  exports/exports_workspacemanagement.cpp
+
   interface/inputqueue.cpp
   interface/logointerface.cpp
   interface/logointerfacegui.cpp
@@ -55,6 +63,7 @@ set(QLOGO_SOURCES
   ../include/primitives.h
   ../include/workspace/evaluator.h
   ../include/workspace/exports.h
+  ../include/workspace/exports_internal.h
   ../include/workspace/library.h
   ../include/workspace/turtle.h
   ../include/treeifyer.h

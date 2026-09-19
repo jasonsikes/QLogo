@@ -2,15 +2,7 @@
 #define WORKSPACE_EXPORTS_H
 
 #include "compiler_types.h"
-#include "workspace/visited.h"
-
-#include <QString>
-
-#ifdef _WIN32
-#define EXPORTC extern "C" __declspec(dllexport)
-#else
-#define EXPORTC extern "C"
-#endif
+#include "workspace/exports_internal.h"
 
 EXPORTC void printInt(int32_t p);
 EXPORTC double getDoubleForDatum(addr_t eAddr, addr_t datumAddr);
@@ -62,8 +54,8 @@ EXPORTC addr_t getExplicitSlot(addr_t eAddr, addr_t whoAddr, addr_t indexAddr);
 EXPORTC void pushExplicitSlotList(addr_t listAddr);
 EXPORTC void popExplicitSlotList(void);
 EXPORTC addr_t beginApplyLambda(addr_t eAddr, addr_t astNodeAddr, addr_t templateAddr, addr_t inputlistAddr);
-EXPORTC void endApplyLambda(void);
 EXPORTC addr_t buildApplyProcedureText(addr_t eAddr, addr_t astNodeAddr, addr_t templateAddr, addr_t inputlistAddr);
+EXPORTC void endApplyLambda(void);
 EXPORTC bool cmpDatumToBool(addr_t d, bool b);
 EXPORTC bool cmpDatumToDouble(addr_t d, double n);
 EXPORTC bool cmpDatumToDatum(addr_t eAddr, addr_t d1, addr_t d2);
