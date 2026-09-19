@@ -13,15 +13,7 @@ HEADER = """#ifndef WORKSPACE_EXPORTS_H
 // See util/update_exports_header.py for details.
 
 #include "compiler_types.h"
-#include "workspace/visited.h"
-
-#include <QString>
-
-#ifdef _WIN32
-#define EXPORTC extern "C" __declspec(dllexport)
-#else
-#define EXPORTC extern "C"
-#endif
+#include "workspace/exports_internal.h"
 
 """
 
@@ -68,6 +60,11 @@ def main() -> None:
 
     declarations = []
     for source_path in source_paths:
+        declarations.append("\n")
+        declarations.append("//  -------------------------------------------------------------------\n")
+        declarations.append(f"//  {source_path.name}\n")
+        declarations.append("//  -------------------------------------------------------------------\n")
+        declarations.append("\n")
         source_lines = source_path.read_text(encoding="utf-8").splitlines(keepends=True)
         declarations.extend(extract_export_declarations(source_lines))
 
