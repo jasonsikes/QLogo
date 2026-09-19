@@ -8,10 +8,6 @@ This directory contains the supporting components of the QLogo workspace functio
 
 Contains the implementations for `CallFrame` structure. This is for managing QLogo variables and the procedure stack for QLogo procedures.
 
-### exports.cpp
-
-Contains the exported C functions that provide the interface between the compiled QLogo code and the runtime system. These functions handle data type conversions, error handling, control flow, list operations, graphics operations, and other runtime services.
-
 ### kernel.cpp
 
 Contains the implementation of the `Kernel` class, which is the main executor of the QLogo language. It maintains the state of execution of the QLogo code, including the read-eval-print loop, file I/O, and special variables.

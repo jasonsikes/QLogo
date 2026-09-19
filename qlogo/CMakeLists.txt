@@ -7,6 +7,7 @@ set(QLOGO_SOURCES
   compiler/compiler_controlstructures.cpp
   compiler/compiler_graphics.cpp
   compiler/compiler_specialvariables.cpp
+  exports/exports.cpp
   interface/inputqueue.cpp
   interface/logointerface.cpp
   interface/logointerfacegui.cpp
@@ -25,7 +26,6 @@ set(QLOGO_SOURCES
   workspace/library.cpp
   workspace/turtle.cpp
   workspace/evaluator.cpp
-  workspace/exports.cpp
   workspace/visited.cpp
   parser/treeifyer.cpp
   parser/runparser.cpp
