@@ -655,6 +655,25 @@ Value *Compiler::generateNotNothingFromDatum(ASTNode *parent, Value *src)
     return src;
 }
 
+Value *Compiler::generateNotFlowControl(Value *src)
+{
+    BasicBlock *isFlowBB = scaff_->createBasicBlock(DBG_NAME("isFlow"));
+    BasicBlock *notFlowBB = scaff_->createBasicBlock(DBG_NAME("notFlow"));
+
+    scaff_->addColdPathBlocks(isFlowBB);
+
+    Value *dType = generateGetDatumIsa(src);
+    Value *flowMask = scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
+    Value *isFlow = scaff_->builder_.CreateICmpNE(flowMask, CoInt32(0), DBG_NAME("isFlowTest"));
+    scaff_->builder_.CreateCondBr(isFlow, isFlowBB, notFlowBB);
+
+    scaff_->builder_.SetInsertPoint(isFlowBB);
+    generateReturn(src);
+
+    scaff_->builder_.SetInsertPoint(notFlowBB);
+    return src;
+}
+
 Value *Compiler::generateNothingFromDatum(ASTNode *parent, Value *src)
 {
     BasicBlock *checkFlowBB = scaff_->createBasicBlock(DBG_NAME("checkFlow"));

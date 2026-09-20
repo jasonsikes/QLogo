@@ -125,7 +125,8 @@ COD***/
 Value *Compiler::genReadlist(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    return generateCallExtern(stdReadList, PaAddr(scaff_->evaluator_));
+    Value *retval = generateCallExtern(stdReadList, PaAddr(scaff_->evaluator_));
+    return generateNotFlowControl(retval);
 }
 
 /***DOC READWORD RW
@@ -149,5 +150,6 @@ COD***/
 Value *Compiler::genReadword(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    return generateCallExtern(stdReadWord, PaAddr(scaff_->evaluator_));
+    Value *retval = generateCallExtern(stdReadWord, PaAddr(scaff_->evaluator_));
+    return generateNotFlowControl(retval);
 }

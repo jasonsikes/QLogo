@@ -251,6 +251,10 @@ class Compiler
     // Emit return "didn't output" error if not.
     llvm::Value *generateNotNothingFromDatum(ASTNode *parent, llvm::Value *src);
 
+    // If src is flow control (error, STOP, OUTPUT, ...), return it immediately.
+    // Otherwise pass src through.
+    llvm::Value *generateNotFlowControl(llvm::Value *src);
+
     // Ensure that the Datum is nothing (ASTNode).
     // Emit return "don't say" error if not.
     llvm::Value *generateNothingFromDatum(ASTNode *parent, llvm::Value *src);
