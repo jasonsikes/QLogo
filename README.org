@@ -102,8 +102,8 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 | STOP               | ARC            | SIN           | SHELL                  | *LIBRARY* BFS             | *TODO* PROCEDUREP    |
 | OUTPUT             | POS            | RADSIN        | SETPREFIX              | BUTLAST                   | *TODO* PROCEDURE?    |
 | OP                 | HEADING        | COS           | PREFIX                 | BL                        | *TODO* MACROP        |
-| .MAYBEOUTPUT       | TOWARDS        | RADCOS        | *TODO* OPENREAD        | ITEM                      | *TODO* MACRO?        |
-| CATCH              | SCRUNCH        | ARCTAN        | *TODO* OPENWRITE       | SETITEM                   | *TODO* PRIMITIVEP    |
+| .MAYBEOUTPUT       | TOWARDS        | RADCOS        | OPENREAD               | ITEM                      | *TODO* MACRO?        |
+| CATCH              | SCRUNCH        | ARCTAN        | OPENWRITE              | SETITEM                   | *TODO* PRIMITIVEP    |
 | THROW              | SHOWTURTLE     | RADARCTAN     | *TODO* OPENAPPEND      | .SETFIRST                 | *TODO* PRIMITIVE?    |
 | ERROR              | ST             | LESSP         | *TODO* OPENUPDATE      | .SETBF                    | *TODO* DEFINEDP      |
 | PAUSE              | HIDETURTLE     | LESS?         | *TODO* CLOSE           | .SETITEM                  | *TODO* DEFINED?      |
@@ -344,4 +344,8 @@ GUI only. Presents a modal file dialog so the user can select a file. Outputs th
 **** ~LPUT~ and ~FPUT~:
 
 When using the Word form of ~LPUT~ and ~FPUT~, there is no single-character limitation. I'm not sure why that limitation is necessary in UCBLogo.
+
+**** ~OPENREAD~, ~OPENWRITE~, ~OPENAPPEND~, and ~OPENUPDATE~:
+
+In UCBLogo only ~OPENWRITE~ accepts a list, which names a character buffer, and ~SETWRITE~/~CLOSE~ must be given that same list object (~.EQ~), not a copy. In QLogo every OPEN variant accepts the list form, and the buffer is identified by the variable named in the first element rather than by list identity. Any further members are ignored. ~OPENREAD~ requires the variable to already have a value.
 

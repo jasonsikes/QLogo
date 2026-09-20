@@ -263,6 +263,9 @@ class Compiler
     // @param isAnd true if AND, false if OR
     llvm::Value *generateAndOr(const DatumPtr &node, TypeMask expected, bool isAnd);
 
+    // OPENREAD / OPENWRITE / OPENAPPEND / OPENUPDATE. `mode` is OpenMode as int32.
+    llvm::Value *generateOpen(const DatumPtr &node, TypeMask expected, int32_t mode);
+
     // Group consecutive expressions of the same type (tag or non-tag) together.
     QList<QList<DatumPtr>> groupConsecutiveExpressions(const QList<DatumPtr> &expressions);
 

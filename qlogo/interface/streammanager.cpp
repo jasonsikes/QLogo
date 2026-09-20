@@ -25,16 +25,35 @@
 #include <QIODevice>
 #include <QTextStream>
 
-/// @brief One open file: the QFile and QTextStream backing plus the TextStream
-/// wrapper and the mode it was opened with. The wrapper does not own the
-/// QFile/QTextStream, so all three are torn down together in closeStream().
+/// @brief One open stream: a file or an in-memory character buffer, the
+/// QTextStream wrapping it, the TextStream wrapper, and the mode it was opened
+/// with. The wrapper does not own the QFile/QString/QTextStream, so they are
+/// torn down together in closeStream().
 struct StreamManager::OpenStream
 {
     QFile *file = nullptr;
+    QString *buffer = nullptr;
     QTextStream *textStream = nullptr;
     TextStream *stream = nullptr;
     OpenMode mode = OpenMode::Read;
 };
+
+static QIODevice::OpenMode flagsForMode(OpenMode mode)
+{
+    switch (mode)
+    {
+    case OpenMode::Read:
+        return QIODevice::ReadOnly;
+    case OpenMode::Write:
+        return QIODevice::WriteOnly | QIODevice::Truncate;
+    case OpenMode::Append:
+        return QIODevice::WriteOnly | QIODevice::Append;
+    case OpenMode::Update:
+        return QIODevice::ReadWrite;
+    }
+    Q_ASSERT(false);
+    return QIODevice::ReadOnly;
+}
 
 StreamManager::StreamManager()
     : terminalStream_(new TextStream(nullptr))
@@ -79,22 +98,7 @@ TextStream *StreamManager::activeWriter() const
 
 StreamManager::OpenStream *StreamManager::openStream(const QString &filepath, OpenMode mode)
 {
-    QIODevice::OpenMode flags;
-    switch (mode)
-    {
-    case OpenMode::Read:
-        flags = QIODevice::ReadOnly;
-        break;
-    case OpenMode::Write:
-        flags = QIODevice::WriteOnly | QIODevice::Truncate;
-        break;
-    case OpenMode::Append:
-        flags = QIODevice::WriteOnly | QIODevice::Append;
-        break;
-    case OpenMode::Update:
-        flags = QIODevice::ReadWrite;
-        break;
-    }
+    QIODevice::OpenMode flags = flagsForMode(mode);
 
     auto *file = new QFile(filepath);
     if (!file->open(flags))
@@ -120,11 +124,16 @@ void StreamManager::closeStream(OpenStream *stream)
 {
     if (stream == nullptr)
         return;
-    stream->textStream->flush();
+    if (stream->textStream != nullptr)
+        stream->textStream->flush();
     delete stream->stream;     // TextStream wrapper (non-owning of the below)
     delete stream->textStream; // QTextStream
-    stream->file->close();
-    delete stream->file; // QFile
+    if (stream->file != nullptr)
+    {
+        stream->file->close();
+        delete stream->file;
+    }
+    delete stream->buffer;
     delete stream;
 }
 
@@ -284,6 +293,24 @@ void StreamManager::open(const QString &name, OpenMode mode)
         throw FCError::fileSystem();
     QString filepath = filepathForFilename(DatumPtr(name));
     openStreams_.insert(name, openStream(filepath, mode));
+}
+
+void StreamManager::openBuffer(const QString &name, const QString &initial, OpenMode mode)
+{
+    if (isOpen(name))
+        throw FCError::fileSystem();
+
+    auto *buffer = new QString(initial);
+    auto *textStream = new QTextStream(buffer, flagsForMode(mode));
+    if (mode == OpenMode::Update)
+        textStream->seek(buffer->size());
+
+    auto *os = new OpenStream;
+    os->buffer = buffer;
+    os->textStream = textStream;
+    os->stream = new TextStream(textStream);
+    os->mode = mode;
+    openStreams_.insert(name, os);
 }
 
 void StreamManager::close(const QString &name)

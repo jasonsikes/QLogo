@@ -414,6 +414,18 @@ const QString &StringConstants::cmdStrPREFIX()
     return str;
 }
 
+const QString &StringConstants::cmdStrOPENREAD()
+{
+    static const QString str = QObject::tr("OPENREAD");
+    return str;
+}
+
+const QString &StringConstants::cmdStrOPENWRITE()
+{
+    static const QString str = QObject::tr("OPENWRITE");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

@@ -76,6 +76,8 @@ const QString &cmdStrCOPYRIGHT();
 const QString &cmdStrSHELL();
 const QString &cmdStrSETPREFIX();
 const QString &cmdStrPREFIX();
+const QString &cmdStrOPENREAD();
+const QString &cmdStrOPENWRITE();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();

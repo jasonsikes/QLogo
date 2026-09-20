@@ -183,11 +183,18 @@ class StreamManager
 
     /************ workspace file primitives ************/
 
-    /// @brief OPENREAD / OPENWRITE / OPENAPPEND / OPENUPDATE.
+    /// @brief OPENREAD / OPENWRITE / OPENAPPEND / OPENUPDATE for a file.
     /// @param name The name to register the stream under (also the filename).
     /// @param mode How to open the file.
     /// @note Throws if already open or the file system operation fails.
     void open(const QString &name, OpenMode mode);
+
+    /// @brief OPENREAD / OPENWRITE / OPENAPPEND / OPENUPDATE for a character buffer.
+    /// @param name The variable name that identifies the buffer (also the stream key).
+    /// @param initial Starting contents, typically the variable's current word value.
+    /// @param mode How to open the buffer.
+    /// @note Throws if a stream is already registered under this name.
+    void openBuffer(const QString &name, const QString &initial, OpenMode mode);
 
     /// @brief CLOSE: close one open stream; reverts reader/writer to the terminal
     /// if needed. Program and REPL stacks are not affected.

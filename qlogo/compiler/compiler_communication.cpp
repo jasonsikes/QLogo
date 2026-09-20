@@ -17,6 +17,7 @@
 #include "astnode.h"
 #include "compiler.h"
 #include "compiler_internal.h"
+#include "interface/streammanager.h"
 #include "sharedconstants.h"
 #include "workspace/exports.h"
 
@@ -350,4 +351,64 @@ Value *Compiler::genPrefix(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
     return generateCallExtern(stdPrefix, PaAddr(scaff_->evaluator_));
+}
+
+/***DOC OPENREAD
+OPENREAD filename
+
+    command.  Opens the named file for reading.  The read position is
+    initially at the beginning of the file.
+
+    The input may also be a list whose first element is a variable
+    name; any remaining members are ignored.  The named variable's
+    word value is opened as a character buffer.  It is an error if
+    the variable has no value.
+
+COD***/
+// CMD OPENREAD 1 1 1 n
+Value *Compiler::genOpenread(const DatumPtr &node, TypeMask expected)
+{
+    return generateOpen(node, expected, static_cast<int32_t>(OpenMode::Read));
+}
+
+/***DOC OPENWRITE
+OPENWRITE filename
+
+    command.  Opens the named file for writing.  If the file already
+    existed, the old version is deleted and a new, empty file created.
+
+    The input may also be a list whose first element is a variable
+    name; any remaining members are ignored.  (The other OPEN variants
+    accept this list form as well.)  A character buffer is created and
+    identified by that variable name (not by list identity).  After
+    SETWRITE with the same name, printed characters are stored in the
+    buffer.  After CLOSE with the same name, the buffer contents
+    (treated as one long word, even if spaces and newlines are
+    included) become the value of the specified variable.
+
+COD***/
+// CMD OPENWRITE 1 1 1 n
+Value *Compiler::genOpenwrite(const DatumPtr &node, TypeMask expected)
+{
+    return generateOpen(node, expected, static_cast<int32_t>(OpenMode::Write));
+}
+
+Value *Compiler::generateOpen(const DatumPtr &node, TypeMask expected, int32_t mode)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *spec = generateChild(node.astnodeValue(), 0, TypeDatum);
+    auto validator = [this](Value *candidate) {
+        Value *isValid = generateCallExtern(isValidOpenSpec, PaAddr(candidate));
+        return scaff_->builder_.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isValidOpenSpecCond"));
+    };
+    spec = generateValidationDatum(node.astnodeValue(), spec, validator);
+
+    Value *retval = generateCallExtern(
+        stdOpen,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(spec),
+        PaInt32(CoInt32(mode)));
+    return generateNotFlowControl(retval);
 }

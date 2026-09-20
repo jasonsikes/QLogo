@@ -65,6 +65,8 @@ EXPORTC bool isValidShellCommand(addr_t commandAddr);
 EXPORTC addr_t stdShell(addr_t eAddr, addr_t commandAddr, bool wordflag);
 EXPORTC void stdSetPrefix(addr_t prefixAddr);
 EXPORTC addr_t stdPrefix(addr_t eAddr);
+EXPORTC bool isValidOpenSpec(addr_t specAddr);
+EXPORTC addr_t stdOpen(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr, int32_t mode);
 
 //  -------------------------------------------------------------------
 //  exports_controlstructures.cpp

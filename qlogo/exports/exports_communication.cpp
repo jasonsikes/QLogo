@@ -355,3 +355,60 @@ EXPORTC addr_t stdPrefix(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
+/// Return true if the datum is a valid OPEN* argument: a word, or a non-empty
+/// list whose first element is a word (the buffer's variable name).
+EXPORTC bool isValidOpenSpec(addr_t specAddr)
+{
+    auto *d = reinterpret_cast<Datum *>(specAddr);
+    if (d->isWord())
+        return true;
+    if (!d->isList())
+        return false;
+    List *list = d->listValue();
+    if (list->isEmpty())
+        return false;
+    return list->head.isWord();
+}
+
+/// OPENREAD / OPENWRITE / OPENAPPEND / OPENUPDATE.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param specAddr a word filename, or a list whose first element is a variable name
+/// @param mode OpenMode as int32 (Read=0, Write=1, Append=2, Update=3)
+/// @return the owning ASTNode, or an Error if the stream is already open or the open fails.
+EXPORTC addr_t stdOpen(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr, int32_t mode)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *spec = reinterpret_cast<Datum *>(specAddr);
+    auto openMode = static_cast<OpenMode>(mode);
+    try
+    {
+        if (spec->isWord())
+        {
+            StreamManager::get().open(spec->wordValue()->toString(), openMode);
+        }
+        else
+        {
+            DatumPtr nameWord = spec->listValue()->head;
+            QString name = nameWord.wordValue()->toString(Datum::ToStringFlags_Key);
+            if ((openMode == OpenMode::Read || openMode == OpenMode::Update)
+                && !Kernel::get().doesExist(name))
+            {
+                throw FCError::noValue(nameWord);
+            }
+            QString initial;
+            DatumPtr existing = Kernel::get().datumForName(name);
+            if (existing.isWord())
+                initial = existing.wordValue()->toString();
+            StreamManager::get().openBuffer(name, initial, openMode);
+        }
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+

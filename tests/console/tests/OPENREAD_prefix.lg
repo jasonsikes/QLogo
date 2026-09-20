@@ -1,0 +1,2 @@
+setprefix "openread_dir
+openread "data.txt
