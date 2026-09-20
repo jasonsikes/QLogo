@@ -26,14 +26,6 @@
 using namespace llvm;
 using namespace llvm::orc;
 
-
-// Graphics operations only work in the GUI mode. For the CLI mode, we return an error.
-#define CHECK_GRAPHICS_MODE \
-    if (Config::get().hasGUI_ == false) \
-    { \
-        return generateImmediateReturn(generateErrorNoGraphics()); \
-    }
-
 // TURTLE MOTION
 
 /***DOC FORWARD FD

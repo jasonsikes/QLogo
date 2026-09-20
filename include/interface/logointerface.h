@@ -113,6 +113,10 @@ class LogoInterface : public QObject
     /// @brief Stops communication and initiates cleanup tasks.
     virtual void closeInterface();
 
+    /// @brief Displays a file dialog modal.
+    /// @return The path of the selected file.
+    /// @note The base method triggers an error message. Subclasses can override this method to
+    /// perform the necessary tasks to display a file dialog modal.
     virtual QString fileDialogModal()
     {
         exit(1);

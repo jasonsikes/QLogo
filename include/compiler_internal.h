@@ -138,4 +138,12 @@ struct Scaffold
 const char *dbgName(const char *enclosing, const char *name);
 #define DBG_NAME(name) (::dbgName(__func__, (name)))
 
+// Some operations only work in the GUI mode. For the CLI mode, we return an error.
+#define CHECK_GRAPHICS_MODE \
+    if (Config::get().hasGUI_ == false) \
+    { \
+        return generateImmediateReturn(generateErrorNoGraphics()); \
+    }
+
+
 #endif // COMPILER_INTERNAL_H
