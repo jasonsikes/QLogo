@@ -138,8 +138,9 @@ class StreamManager
     /// program redirects).
     /// @param filepath The resolved path to open.
     /// @param mode How to open the file.
-    /// @return The new bundle; throws FCError on failure.
-    OpenStream *openStream(const QString &filepath, OpenMode mode);
+    /// @param filename The Logo name to report if the file cannot be opened.
+    /// @return The new bundle; throws FCError::cantOpen on failure.
+    OpenStream *openStream(const QString &filepath, OpenMode mode, const DatumPtr &filename);
 
     /// @brief Flush, close, and delete an owned stream bundle.
     void closeStream(OpenStream *stream);
@@ -186,23 +187,27 @@ class StreamManager
     /// @brief OPENREAD / OPENWRITE / OPENAPPEND / OPENUPDATE for a file.
     /// @param name The name to register the stream under (also the filename).
     /// @param mode How to open the file.
-    /// @note Throws if already open or the file system operation fails.
-    void open(const QString &name, OpenMode mode);
+    /// @param spec The original Logo input, used in error messages.
+    /// @note Throws FCError::alreadyOpen if already open, FCError::cantOpen if
+    ///       the file system operation fails.
+    void open(const QString &name, OpenMode mode, const DatumPtr &spec);
 
     /// @brief OPENREAD / OPENWRITE / OPENAPPEND / OPENUPDATE for a character buffer.
     /// @param name The variable name that identifies the buffer (also the stream key).
     /// @param initial Starting contents, typically the variable's current word value.
     /// @param mode How to open the buffer.
-    /// @note Throws if a stream is already registered under this name.
-    void openBuffer(const QString &name, const QString &initial, OpenMode mode);
+    /// @param spec The original Logo input, used in error messages.
+    /// @note Throws FCError::alreadyOpen if a stream is already registered under this name.
+    void openBuffer(const QString &name, const QString &initial, OpenMode mode, const DatumPtr &spec);
 
     /// @brief CLOSE: close one open stream; reverts reader/writer to the terminal
     /// if needed. Program and REPL stacks are not affected.
     /// @param name The stream to close.
+    /// @param spec The original Logo input, used in error messages.
     /// @return A Word of the buffer contents if this was a character buffer
     ///         (to assign to the named variable); nothing() if it was a file.
-    /// @note Throws if the name is not open.
-    DatumPtr close(const QString &name);
+    /// @note Throws FCError::notOpen if the name is not open.
+    DatumPtr close(const QString &name, const DatumPtr &spec);
 
     /// @brief CLOSEALL: close every open file stream. Reader/writer revert to
     /// the terminal. Program and REPL stacks are not affected.

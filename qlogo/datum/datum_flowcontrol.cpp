@@ -196,6 +196,24 @@ FCError *FCError::isPrimitive(const DatumPtr &x)
     return new FCError(ERR_IS_PRIMITIVE, message);
 }
 
+FCError *FCError::notOpen(const DatumPtr &x)
+{
+    QString message = QObject::tr("File %1 not open").arg(x.toString(Datum::ToStringFlags_Show));
+    return new FCError(ERR_NOT_OPEN, message);
+}
+
+FCError *FCError::alreadyOpen(const DatumPtr &x)
+{
+    QString message = QObject::tr("File %1 already open").arg(x.toString(Datum::ToStringFlags_Show));
+    return new FCError(ERR_ALREADY_OPEN, message);
+}
+
+FCError *FCError::cantOpen(const DatumPtr &x)
+{
+    QString message = QObject::tr("I can't open file %1").arg(x.toString(Datum::ToStringFlags_Show));
+    return new FCError(ERR_CANT_OPEN, message);
+}
+
 QString FCError::toString(ToStringFlags, int, int, VisitedSet *) const
 {
     QString retval = message().toString();

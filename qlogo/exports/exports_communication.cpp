@@ -387,7 +387,7 @@ EXPORTC addr_t stdOpen(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr, int32_
     {
         if (spec->isWord())
         {
-            StreamManager::get().open(spec->wordValue()->toString(), openMode);
+            StreamManager::get().open(spec->wordValue()->toString(), openMode, DatumPtr(spec));
         }
         else
         {
@@ -401,7 +401,7 @@ EXPORTC addr_t stdOpen(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr, int32_
             DatumPtr existing = Kernel::get().datumForName(name);
             if (existing.isWord())
                 initial = existing.wordValue()->toString();
-            StreamManager::get().openBuffer(name, initial, openMode);
+            StreamManager::get().openBuffer(name, initial, openMode, DatumPtr(spec));
         }
     }
     catch (FCError *err)
@@ -433,7 +433,7 @@ EXPORTC addr_t stdClose(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr)
     try
     {
         const QString name = streamNameFromSpec(spec);
-        DatumPtr bufferContents = StreamManager::get().close(name);
+        DatumPtr bufferContents = StreamManager::get().close(name, DatumPtr(spec));
         if (!bufferContents.isNothing())
             Kernel::get().setDatumForName(bufferContents, name);
     }

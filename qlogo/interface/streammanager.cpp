@@ -96,7 +96,7 @@ TextStream *StreamManager::activeWriter() const
     return writerOverlayActive() ? terminalStream_ : ostreamWrite_;
 }
 
-StreamManager::OpenStream *StreamManager::openStream(const QString &filepath, OpenMode mode)
+StreamManager::OpenStream *StreamManager::openStream(const QString &filepath, OpenMode mode, const DatumPtr &filename)
 {
     QIODevice::OpenMode flags = flagsForMode(mode);
 
@@ -104,7 +104,7 @@ StreamManager::OpenStream *StreamManager::openStream(const QString &filepath, Op
     if (!file->open(flags))
     {
         delete file;
-        throw FCError::fileSystem();
+        throw FCError::cantOpen(filename);
     }
 
     // OPENUPDATE positions the file at the end for both reading and writing.
@@ -287,18 +287,18 @@ QString StreamManager::writer() const
 
 /************ pool management ************/
 
-void StreamManager::open(const QString &name, OpenMode mode)
+void StreamManager::open(const QString &name, OpenMode mode, const DatumPtr &spec)
 {
     if (isOpen(name))
-        throw FCError::fileSystem();
+        throw FCError::alreadyOpen(spec);
     QString filepath = filepathForFilename(DatumPtr(name));
-    openStreams_.insert(name, openStream(filepath, mode));
+    openStreams_.insert(name, openStream(filepath, mode, spec));
 }
 
-void StreamManager::openBuffer(const QString &name, const QString &initial, OpenMode mode)
+void StreamManager::openBuffer(const QString &name, const QString &initial, OpenMode mode, const DatumPtr &spec)
 {
     if (isOpen(name))
-        throw FCError::fileSystem();
+        throw FCError::alreadyOpen(spec);
 
     auto *buffer = new QString(initial);
     auto *textStream = new QTextStream(buffer, flagsForMode(mode));
@@ -313,11 +313,11 @@ void StreamManager::openBuffer(const QString &name, const QString &initial, Open
     openStreams_.insert(name, os);
 }
 
-DatumPtr StreamManager::close(const QString &name)
+DatumPtr StreamManager::close(const QString &name, const DatumPtr &spec)
 {
     auto it = openStreams_.find(name);
     if (it == openStreams_.end())
-        throw FCError::fileSystem();
+        throw FCError::notOpen(spec);
     OpenStream *os = it.value();
 
     // Reader/writer aliasing this stream revert to the terminal. Program and
@@ -445,7 +445,7 @@ DatumPtr StreamManager::readTerminalChar()
 void StreamManager::beginProgramRead(const DatumPtr &filename)
 {
     QString filepath = filepathForFilename(filename);
-    OpenStream *os = openStream(filepath, OpenMode::Read);
+    OpenStream *os = openStream(filepath, OpenMode::Read, filename);
     programReadStack_.append(os);
     istreamProgram_ = os->stream;
 }
@@ -478,7 +478,7 @@ void StreamManager::endProgramRead()
 void StreamManager::beginProgramWrite(const DatumPtr &filename, bool append)
 {
     QString filepath = filepathForFilename(filename);
-    OpenStream *os = openStream(filepath, append ? OpenMode::Append : OpenMode::Write);
+    OpenStream *os = openStream(filepath, append ? OpenMode::Append : OpenMode::Write, filename);
     programWriteStack_.append(os);
     ostreamProgram_ = os->stream;
 }

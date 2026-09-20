@@ -376,6 +376,19 @@ struct FCError : public FlowControl
     /// @param x The primitive that is being manipulated.
     static FCError *isPrimitive(const DatumPtr &x);
 
+    /// @brief Create an error object for a file that is not open.
+    /// @param x The file that is not open.
+    static FCError *notOpen(const DatumPtr &x);
+
+    /// @brief Create an error object for a file that is already open.
+    /// @param x The file that is already open.
+    static FCError *alreadyOpen(const DatumPtr &x);
+
+    /// @brief Create an error object for a file that cannot be opened.
+    /// @param x The file that cannot be opened.
+    static FCError *cantOpen(const DatumPtr &x);
+
+
     /// @brief Return a string suitable for the PRINT command
     ///
     /// @param flags Flags to control the output. See ToStringFlags for possible values.
