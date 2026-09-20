@@ -199,7 +199,10 @@ class StreamManager
     /// @brief CLOSE: close one open stream; reverts reader/writer to the terminal
     /// if needed. Program and REPL stacks are not affected.
     /// @param name The stream to close.
-    void close(const QString &name);
+    /// @return A Word of the buffer contents if this was a character buffer
+    ///         (to assign to the named variable); nothing() if it was a file.
+    /// @note Throws if the name is not open.
+    DatumPtr close(const QString &name);
 
     /// @brief CLOSEALL: close every open file stream. Reader/writer revert to
     /// the terminal. Program and REPL stacks are not affected.

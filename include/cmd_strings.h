@@ -80,6 +80,7 @@ const QString &cmdStrOPENREAD();
 const QString &cmdStrOPENWRITE();
 const QString &cmdStrOPENAPPEND();
 const QString &cmdStrOPENUPDATE();
+const QString &cmdStrCLOSE();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();

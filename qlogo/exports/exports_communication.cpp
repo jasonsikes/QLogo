@@ -412,3 +412,36 @@ EXPORTC addr_t stdOpen(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr, int32_
     return reinterpret_cast<addr_t>(node);
 }
 
+static QString streamNameFromSpec(Datum *spec)
+{
+    if (spec->isWord())
+        return spec->wordValue()->toString();
+    return spec->listValue()->head.wordValue()->toString(Datum::ToStringFlags_Key);
+}
+
+/// CLOSE: close one open stream. If it was a character buffer, assign the
+/// buffer contents to the named variable.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param specAddr a word filename, or a list whose first element is a variable name
+/// @return the owning ASTNode, or an Error if the name is not open.
+EXPORTC addr_t stdClose(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *spec = reinterpret_cast<Datum *>(specAddr);
+    try
+    {
+        const QString name = streamNameFromSpec(spec);
+        DatumPtr bufferContents = StreamManager::get().close(name);
+        if (!bufferContents.isNothing())
+            Kernel::get().setDatumForName(bufferContents, name);
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+

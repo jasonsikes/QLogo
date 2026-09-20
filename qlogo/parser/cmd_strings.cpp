@@ -438,6 +438,12 @@ const QString &StringConstants::cmdStrOPENUPDATE()
     return str;
 }
 
+const QString &StringConstants::cmdStrCLOSE()
+{
+    static const QString str = QObject::tr("CLOSE");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

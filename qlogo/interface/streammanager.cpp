@@ -313,7 +313,7 @@ void StreamManager::openBuffer(const QString &name, const QString &initial, Open
     openStreams_.insert(name, os);
 }
 
-void StreamManager::close(const QString &name)
+DatumPtr StreamManager::close(const QString &name)
 {
     auto it = openStreams_.find(name);
     if (it == openStreams_.end())
@@ -327,8 +327,20 @@ void StreamManager::close(const QString &name)
     if (ostreamWrite_ == os->stream)
         ostreamWrite_ = terminalStream_;
 
+    DatumPtr bufferContents = nothing();
+    if (os->buffer != nullptr)
+    {
+        if (os->textStream != nullptr)
+            os->textStream->flush();
+        QString contents = *os->buffer;
+        if (contents.isNull())
+            contents = QStringLiteral("");
+        bufferContents = DatumPtr(contents);
+    }
+
     openStreams_.erase(it);
     closeStream(os);
+    return bufferContents;
 }
 
 void StreamManager::closeAll()

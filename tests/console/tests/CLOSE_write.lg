@@ -1,0 +1,3 @@
+openwrite "CLOSE_tmp.txt
+close "CLOSE_tmp.txt
+openwrite "CLOSE_tmp.txt

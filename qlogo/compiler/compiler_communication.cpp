@@ -455,3 +455,31 @@ Value *Compiler::generateOpen(const DatumPtr &node, TypeMask expected, int32_t m
         PaInt32(CoInt32(mode)));
     return generateNotFlowControl(retval);
 }
+
+/***DOC CLOSE
+CLOSE filename
+
+    command.  Closes the named file.  If the file was currently the
+    reader or writer, then the reader or writer is changed to the
+    keyboard or screen, as if SETREAD [] or SETWRITE [] had been done.
+
+COD***/
+// CMD CLOSE 1 1 1 n
+Value *Compiler::genClose(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *spec = generateChild(node.astnodeValue(), 0, TypeDatum);
+    auto validator = [this](Value *candidate) {
+        Value *isValid = generateCallExtern(isValidOpenSpec, PaAddr(candidate));
+        return scaff_->builder_.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isValidCloseSpecCond"));
+    };
+    spec = generateValidationDatum(node.astnodeValue(), spec, validator);
+
+    Value *retval = generateCallExtern(
+        stdClose,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(spec));
+    return generateNotFlowControl(retval);
+}

@@ -1,0 +1,3 @@
+openwrite [buf]
+close [buf]
+print count :buf
