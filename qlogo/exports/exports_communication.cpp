@@ -16,6 +16,7 @@
 
 #include "interface/streammanager.h"
 #include "interface/logointerface.h"
+#include "interface/textstream.h"
 #include "workspace/exports_internal.h"
 #include "datum_types.h"
 #include "workspace/kernel.h"
@@ -24,7 +25,9 @@
 
 #include <QFile>
 #include <QObject>
+#include <QProcess>
 #include <QStringBuilder>
+#include <QTextStream>
 
 /// Write a Datum object to the standard output device.
 /// @param eAddr a pointer to the Evaluator object
@@ -228,5 +231,111 @@ EXPORTC addr_t stdCopyright(addr_t eAddr, addr_t astnodeAddr)
         return reinterpret_cast<addr_t>(err);
     }
     return reinterpret_cast<addr_t>(node);
+}
+
+/// Return true if the datum is a valid SHELL command: a word, or a non-empty list of words.
+EXPORTC bool isValidShellCommand(addr_t commandAddr)
+{
+    auto *d = reinterpret_cast<Datum *>(commandAddr);
+    if (d->isWord())
+        return true;
+    if (!d->isList())
+        return false;
+    List *list = d->listValue();
+    if (list->isEmpty())
+        return false;
+    ListIterator iter = list->newIterator();
+    while (iter.elementExists())
+    {
+        if (!iter.element().isWord())
+            return false;
+    }
+    return true;
+}
+
+static QString shellCommandString(Datum *command)
+{
+    if (command->isWord())
+        return command->wordValue()->toString();
+
+    QString joined;
+    ListIterator iter = command->listValue()->newIterator();
+    while (iter.elementExists())
+    {
+        if (!joined.isEmpty())
+            joined += QLatin1Char(' ');
+        joined += iter.element().wordValue()->toString();
+    }
+    return joined;
+}
+
+/// Run a shell command (SHELL).
+/// @param eAddr a pointer to the Evaluator object
+/// @param commandAddr a word or a list of words naming the command
+/// @param wordflag if true, each output line is a word; otherwise each line is parsed as a list
+/// @return a list of lines, or an Error
+EXPORTC addr_t stdShell(addr_t eAddr, addr_t commandAddr, bool wordflag)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *command = reinterpret_cast<Datum *>(commandAddr);
+    try
+    {
+        const QString commandString = shellCommandString(command);
+
+        QProcess proc;
+#ifdef _WIN32
+        proc.start(QStringLiteral("cmd.exe"), QStringList{QStringLiteral("/C"), commandString});
+#else
+        proc.start(QStringLiteral("/bin/sh"), QStringList{QStringLiteral("-c"), commandString});
+#endif
+        proc.waitForStarted(-1);
+        proc.closeWriteChannel();
+        proc.waitForFinished(-1);
+
+        QByteArray result = proc.readAllStandardOutput();
+        if (result.isEmpty())
+        {
+            List *empty = EmptyList::instance();
+            e->watch(empty);
+            return reinterpret_cast<addr_t>(empty);
+        }
+
+        if (result.endsWith('\n'))
+            result.chop(1);
+
+        ListBuilder builder;
+        const QList<QByteArray> lines = result.split('\n');
+        for (QByteArray line : lines)
+        {
+#ifdef _WIN32
+            if (line.endsWith('\r'))
+                line.chop(1);
+#endif
+            QString text = QString::fromLocal8Bit(line);
+            if (wordflag)
+            {
+                builder.append(DatumPtr(text));
+            }
+            else
+            {
+                QTextStream stream(&text, QIODevice::ReadOnly);
+                TextStream ts(&stream);
+                DatumPtr parsed = ts.readListWithPrompt(QString(), false);
+                if (parsed.isNothing())
+                    builder.append(emptyList());
+                else
+                    builder.append(parsed);
+            }
+        }
+
+        DatumPtr retval = builder.finishedList();
+        e->watch(retval);
+        return reinterpret_cast<addr_t>(retval.datumValue());
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
 }
 

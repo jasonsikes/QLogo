@@ -396,6 +396,12 @@ const QString &StringConstants::cmdStrCOPYRIGHT()
     return str;
 }
 
+const QString &StringConstants::cmdStrSHELL()
+{
+    static const QString str = QObject::tr("SHELL");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

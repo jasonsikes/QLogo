@@ -61,6 +61,8 @@ EXPORTC addr_t stdReadRawline(addr_t eAddr);
 EXPORTC addr_t stdReadChars(addr_t eAddr, int32_t count);
 EXPORTC addr_t stdFileDialog(addr_t eAddr);
 EXPORTC addr_t stdCopyright(addr_t eAddr, addr_t astnodeAddr);
+EXPORTC bool isValidShellCommand(addr_t commandAddr);
+EXPORTC addr_t stdShell(addr_t eAddr, addr_t commandAddr, bool wordflag);
 
 //  -------------------------------------------------------------------
 //  exports_controlstructures.cpp
