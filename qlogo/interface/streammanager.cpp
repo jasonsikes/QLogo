@@ -352,9 +352,12 @@ void StreamManager::closeAll()
     ostreamWrite_ = terminalStream_;
 }
 
-QStringList StreamManager::allOpen() const
+DatumPtr StreamManager::allOpen() const
 {
-    return openStreams_.keys();
+    ListBuilder builder;
+    for (const auto &name : openStreams_.keys())
+        builder.append(DatumPtr(name));
+    return builder.finishedList();
 }
 
 bool StreamManager::isOpen(const QString &name) const

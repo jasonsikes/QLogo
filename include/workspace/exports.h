@@ -68,6 +68,7 @@ EXPORTC addr_t stdPrefix(addr_t eAddr);
 EXPORTC bool isValidOpenSpec(addr_t specAddr);
 EXPORTC addr_t stdOpen(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr, int32_t mode);
 EXPORTC addr_t stdClose(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr);
+EXPORTC addr_t stdAllOpen(addr_t eAddr);
 
 //  -------------------------------------------------------------------
 //  exports_controlstructures.cpp

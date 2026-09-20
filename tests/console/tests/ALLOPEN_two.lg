@@ -1,0 +1,7 @@
+openread "OPENREAD_data.txt
+openwrite [buf]
+print count allopen
+print memberp "OPENREAD_data.txt allopen
+print memberp "BUF allopen
+close "OPENREAD_data.txt
+close [buf]

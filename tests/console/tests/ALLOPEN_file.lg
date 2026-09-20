@@ -1,0 +1,3 @@
+openread "OPENREAD_data.txt
+show allopen
+close "OPENREAD_data.txt

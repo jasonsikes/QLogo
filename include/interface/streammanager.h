@@ -23,7 +23,6 @@
 #include <QHash>
 #include <QList>
 #include <QString>
-#include <QStringList>
 
 class TextStream;
 class QFile;
@@ -213,8 +212,9 @@ class StreamManager
     /// the terminal. Program and REPL stacks are not affected.
     void closeAll();
 
-    /// @brief ALLOPEN: names of all currently open file streams.
-    QStringList allOpen() const;
+    /// @brief ALLOPEN: names of all currently open file streams as a Logo list.
+    /// @details Does not include the dribble file, if any. The terminal is never listed.
+    DatumPtr allOpen() const;
 
     /// @brief True if a stream is open under the given name.
     bool isOpen(const QString &name) const;

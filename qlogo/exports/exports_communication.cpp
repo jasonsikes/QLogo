@@ -445,3 +445,14 @@ EXPORTC addr_t stdClose(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr)
     return reinterpret_cast<addr_t>(node);
 }
 
+/// ALLOPEN: names of all currently open streams, not including dribble.
+/// @param eAddr a pointer to the Evaluator object
+/// @return a list of names, or the empty list if none are open.
+EXPORTC addr_t stdAllOpen(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    DatumPtr retval = StreamManager::get().allOpen();
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval.datumValue());
+}
+

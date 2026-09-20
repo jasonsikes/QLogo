@@ -59,6 +59,7 @@ llvm::Value *genOpenwrite(const DatumPtr &node, TypeMask expected);
 llvm::Value *genOpenappend(const DatumPtr &node, TypeMask expected);
 llvm::Value *genOpenupdate(const DatumPtr &node, TypeMask expected);
 llvm::Value *genClose(const DatumPtr &node, TypeMask expected);
+llvm::Value *genAllopen(const DatumPtr &node, TypeMask expected);
 llvm::Value *genIfelse(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRun(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRepeat(const DatumPtr &node, TypeMask expected);

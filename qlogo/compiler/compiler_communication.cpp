@@ -483,3 +483,17 @@ Value *Compiler::genClose(const DatumPtr &node, TypeMask expected)
         PaAddr(spec));
     return generateNotFlowControl(retval);
 }
+
+/***DOC ALLOPEN
+ALLOPEN
+
+    outputs a list whose members are the names of all files currently open.
+    This list does not include the dribble file, if any.
+
+COD***/
+// CMD ALLOPEN 0 0 0 d
+Value *Compiler::genAllopen(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdAllOpen, PaAddr(scaff_->evaluator_));
+}

@@ -444,6 +444,12 @@ const QString &StringConstants::cmdStrCLOSE()
     return str;
 }
 
+const QString &StringConstants::cmdStrALLOPEN()
+{
+    static const QString str = QObject::tr("ALLOPEN");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");
