@@ -17,6 +17,7 @@
 #include "astnode.h"
 #include "compiler.h"
 #include "compiler_internal.h"
+#include "sharedconstants.h"
 #include "workspace/exports.h"
 
 using namespace llvm;
@@ -218,5 +219,22 @@ Value *Compiler::genReadchar(const DatumPtr &node, TypeMask expected)
     }
 
     Value *retval = generateCallExtern(stdReadChars, PaAddr(scaff_->evaluator_), PaInt32(count));
+    return generateNotFlowControl(retval);
+}
+
+/***DOC FILEDIALOG
+FILEDIALOG
+
+    GUI only. Presents a modal file dialog to the user. The user is then
+    given an opportunity to select a file. Outputs the file path of the file
+    selected by the user or an empty list if user pressed 'Cancel'.
+
+COD***/
+// CMD FILEDIALOG 0 0 0 d
+Value *Compiler::genFiledialog(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    CHECK_GRAPHICS_MODE
+    Value *retval = generateCallExtern(stdFileDialog, PaAddr(scaff_->evaluator_));
     return generateNotFlowControl(retval);
 }

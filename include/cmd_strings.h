@@ -71,6 +71,7 @@ const QString &cmdStrREADCHAR();
 const QString &cmdStrRC();
 const QString &cmdStrREADCHARS();
 const QString &cmdStrRCS();
+const QString &cmdStrFILEDIALOG();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();

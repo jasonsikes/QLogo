@@ -384,6 +384,12 @@ const QString &StringConstants::cmdStrRCS()
     return str;
 }
 
+const QString &StringConstants::cmdStrFILEDIALOG()
+{
+    static const QString str = QObject::tr("FILEDIALOG");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

@@ -49,6 +49,7 @@ llvm::Value *genReadlist(const DatumPtr &node, TypeMask expected);
 llvm::Value *genReadword(const DatumPtr &node, TypeMask expected);
 llvm::Value *genReadrawline(const DatumPtr &node, TypeMask expected);
 llvm::Value *genReadchar(const DatumPtr &node, TypeMask expected);
+llvm::Value *genFiledialog(const DatumPtr &node, TypeMask expected);
 llvm::Value *genIfelse(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRun(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRepeat(const DatumPtr &node, TypeMask expected);

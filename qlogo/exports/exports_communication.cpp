@@ -15,10 +15,12 @@
 //===----------------------------------------------------------------------===//
 
 #include "interface/streammanager.h"
+#include "interface/logointerface.h"
 #include "workspace/exports_internal.h"
 #include "datum_types.h"
 #include "workspace/kernel.h"
 #include "flowcontrol.h"
+#include "sharedconstants.h"
 
 #include <QFile>
 #include <QObject>
@@ -171,6 +173,32 @@ EXPORTC addr_t stdReadChars(addr_t eAddr, int32_t count)
         }
         e->watch(retval);
         return reinterpret_cast<addr_t>(retval.datumValue());
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+}
+
+/// Present a modal file dialog (FILEDIALOG). GUI only.
+/// @param eAddr a pointer to the Evaluator object
+/// @return a word containing the selected path, the empty list if cancelled, or an Error.
+EXPORTC addr_t stdFileDialog(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    try
+    {
+        QString path = Config::get().mainInterface()->fileDialogModal();
+        if (path.isEmpty())
+        {
+            List *empty = EmptyList::instance();
+            e->watch(empty);
+            return reinterpret_cast<addr_t>(empty);
+        }
+        auto *word = new Word(path);
+        e->watch(word);
+        return reinterpret_cast<addr_t>(word);
     }
     catch (FCError *err)
     {

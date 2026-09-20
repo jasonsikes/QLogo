@@ -59,6 +59,7 @@ EXPORTC addr_t stdReadList(addr_t eAddr);
 EXPORTC addr_t stdReadWord(addr_t eAddr);
 EXPORTC addr_t stdReadRawline(addr_t eAddr);
 EXPORTC addr_t stdReadChars(addr_t eAddr, int32_t count);
+EXPORTC addr_t stdFileDialog(addr_t eAddr);
 
 //  -------------------------------------------------------------------
 //  exports_controlstructures.cpp
