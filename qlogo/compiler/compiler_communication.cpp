@@ -301,3 +301,53 @@ Value *Compiler::genShell(const DatumPtr &node, TypeMask expected)
         stdShell, PaAddr(scaff_->evaluator_), PaAddr(command), PaBool(CoBool(hasWordflag)));
     return generateNotFlowControl(retval);
 }
+
+/***DOC SETPREFIX
+SETPREFIX string
+
+    command.  Sets a prefix that will be used as the implicit beginning
+    of filenames in OPENREAD, OPENWRITE, OPENAPPEND, OPENUPDATE, LOAD,
+    and SAVE commands.  Logo will put the appropriate separator
+    character (slash for Unix, backslash for Windows) between the prefix
+    and the filename entered by the user.  On Windows, either a forward
+    slash or backslash can be used as a separator character.  The input
+    to SETPREFIX must be a word, unless it is the empty list, to indicate
+    that there should be no prefix.
+
+COD***/
+// CMD SETPREFIX 1 1 1 n
+Value *Compiler::genSetprefix(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *prefix = generateChild(node.astnodeValue(), 0, TypeDatum);
+    auto validator = [this](Value *candidate) {
+        Value *isa = generateGetDatumIsa(candidate);
+        Value *wordMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeWord), DBG_NAME("wordMask"));
+        Value *isWord = scaff_->builder_.CreateICmpNE(wordMask, CoInt32(0), DBG_NAME("isWord"));
+        Value *listMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeList), DBG_NAME("listMask"));
+        Value *isList = scaff_->builder_.CreateICmpNE(listMask, CoInt32(0), DBG_NAME("isList"));
+        Value *empty = generateCallExtern(isEmpty, PaAddr(candidate));
+        Value *isEmptyVal = scaff_->builder_.CreateICmpEQ(empty, CoBool(true), DBG_NAME("isEmpty"));
+        Value *isEmptyList = scaff_->builder_.CreateAnd(isList, isEmptyVal, DBG_NAME("isEmptyList"));
+        return scaff_->builder_.CreateOr(isWord, isEmptyList, DBG_NAME("isValidPrefix"));
+    };
+    prefix = generateValidationDatum(node.astnodeValue(), prefix, validator);
+
+    generateCallExtern(stdSetPrefix, PaAddr(prefix));
+    return generateVoidRetval(node);
+}
+
+/***DOC PREFIX
+PREFIX
+
+    outputs the current file prefix, or [] if there is no prefix.
+    See SETPREFIX.
+
+COD***/
+// CMD PREFIX 0 0 0 d
+Value *Compiler::genPrefix(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdPrefix, PaAddr(scaff_->evaluator_));
+}

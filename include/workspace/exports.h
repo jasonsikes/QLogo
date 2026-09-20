@@ -63,6 +63,8 @@ EXPORTC addr_t stdFileDialog(addr_t eAddr);
 EXPORTC addr_t stdCopyright(addr_t eAddr, addr_t astnodeAddr);
 EXPORTC bool isValidShellCommand(addr_t commandAddr);
 EXPORTC addr_t stdShell(addr_t eAddr, addr_t commandAddr, bool wordflag);
+EXPORTC void stdSetPrefix(addr_t prefixAddr);
+EXPORTC addr_t stdPrefix(addr_t eAddr);
 
 //  -------------------------------------------------------------------
 //  exports_controlstructures.cpp

@@ -52,6 +52,8 @@ llvm::Value *genReadchar(const DatumPtr &node, TypeMask expected);
 llvm::Value *genFiledialog(const DatumPtr &node, TypeMask expected);
 llvm::Value *genCopyright(const DatumPtr &node, TypeMask expected);
 llvm::Value *genShell(const DatumPtr &node, TypeMask expected);
+llvm::Value *genSetprefix(const DatumPtr &node, TypeMask expected);
+llvm::Value *genPrefix(const DatumPtr &node, TypeMask expected);
 llvm::Value *genIfelse(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRun(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRepeat(const DatumPtr &node, TypeMask expected);

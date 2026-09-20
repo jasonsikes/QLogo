@@ -69,6 +69,8 @@ stringToCmd.insert(StringConstants::cmdStrRCS(), Cmd_t{&Compiler::genReadchar, 1
 stringToCmd.insert(StringConstants::cmdStrFILEDIALOG(), Cmd_t{&Compiler::genFiledialog, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrCOPYRIGHT(), Cmd_t{&Compiler::genCopyright, 0, 0, 0, TypeN});
 stringToCmd.insert(StringConstants::cmdStrSHELL(), Cmd_t{&Compiler::genShell, 1, 1, 2, TypeD});
+stringToCmd.insert(StringConstants::cmdStrSETPREFIX(), Cmd_t{&Compiler::genSetprefix, 1, 1, 1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrPREFIX(), Cmd_t{&Compiler::genPrefix, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrIF(), Cmd_t{&Compiler::genIfelse, 2, 2, 3, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrIFELSE(), Cmd_t{&Compiler::genIfelse, 3, 3, 3, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrRUN(), Cmd_t{&Compiler::genRun, 1, 1, 1, TypeDN});

@@ -402,6 +402,18 @@ const QString &StringConstants::cmdStrSHELL()
     return str;
 }
 
+const QString &StringConstants::cmdStrSETPREFIX()
+{
+    static const QString str = QObject::tr("SETPREFIX");
+    return str;
+}
+
+const QString &StringConstants::cmdStrPREFIX()
+{
+    static const QString str = QObject::tr("PREFIX");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

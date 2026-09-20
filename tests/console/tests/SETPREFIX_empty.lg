@@ -1,0 +1,3 @@
+setprefix "foo
+setprefix []
+show prefix

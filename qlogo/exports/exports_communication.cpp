@@ -339,3 +339,19 @@ EXPORTC addr_t stdShell(addr_t eAddr, addr_t commandAddr, bool wordflag)
     }
 }
 
+/// SETPREFIX: store the filename prefix (a word, or the empty list for none).
+EXPORTC void stdSetPrefix(addr_t prefixAddr)
+{
+    auto *d = reinterpret_cast<Datum *>(prefixAddr);
+    StreamManager::get().setPrefix(DatumPtr(d));
+}
+
+/// PREFIX: return the current filename prefix, or the empty list if none.
+EXPORTC addr_t stdPrefix(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    DatumPtr retval = StreamManager::get().prefix();
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval.datumValue());
+}
+

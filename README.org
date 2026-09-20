@@ -100,8 +100,8 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 | IFFALSE            | SETH           | LOG10         | FILEDIALOG             | BF                        | *TODO* REMPROP       |
 | IFF                | HOME           | LN            | COPYRIGHT              | *LIBRARY* BUTFIRSTS       | *TODO* PLIST         |
 | STOP               | ARC            | SIN           | SHELL                  | *LIBRARY* BFS             | *TODO* PROCEDUREP    |
-| OUTPUT             | POS            | RADSIN        | *TODO* SETPREFIX       | BUTLAST                   | *TODO* PROCEDURE?    |
-| OP                 | HEADING        | COS           | *TODO* PREFIX          | BL                        | *TODO* MACROP        |
+| OUTPUT             | POS            | RADSIN        | SETPREFIX              | BUTLAST                   | *TODO* PROCEDURE?    |
+| OP                 | HEADING        | COS           | PREFIX                 | BL                        | *TODO* MACROP        |
 | .MAYBEOUTPUT       | TOWARDS        | RADCOS        | *TODO* OPENREAD        | ITEM                      | *TODO* MACRO?        |
 | CATCH              | SCRUNCH        | ARCTAN        | *TODO* OPENWRITE       | SETITEM                   | *TODO* PRIMITIVEP    |
 | THROW              | SHOWTURTLE     | RADARCTAN     | *TODO* OPENAPPEND      | .SETFIRST                 | *TODO* PRIMITIVE?    |
