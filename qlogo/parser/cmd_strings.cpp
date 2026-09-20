@@ -426,6 +426,18 @@ const QString &StringConstants::cmdStrOPENWRITE()
     return str;
 }
 
+const QString &StringConstants::cmdStrOPENAPPEND()
+{
+    static const QString str = QObject::tr("OPENAPPEND");
+    return str;
+}
+
+const QString &StringConstants::cmdStrOPENUPDATE()
+{
+    static const QString str = QObject::tr("OPENUPDATE");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

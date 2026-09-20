@@ -375,7 +375,8 @@ EXPORTC bool isValidOpenSpec(addr_t specAddr)
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param specAddr a word filename, or a list whose first element is a variable name
 /// @param mode OpenMode as int32 (Read=0, Write=1, Append=2, Update=3)
-/// @return the owning ASTNode, or an Error if the stream is already open or the open fails.
+/// @return the owning ASTNode, or an Error if the stream is already open, the
+///         open fails, or OPENREAD names a variable that has no value.
 EXPORTC addr_t stdOpen(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr, int32_t mode)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
@@ -392,8 +393,7 @@ EXPORTC addr_t stdOpen(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr, int32_
         {
             DatumPtr nameWord = spec->listValue()->head;
             QString name = nameWord.wordValue()->toString(Datum::ToStringFlags_Key);
-            if ((openMode == OpenMode::Read || openMode == OpenMode::Update)
-                && !Kernel::get().doesExist(name))
+            if (openMode == OpenMode::Read && !Kernel::get().doesExist(name))
             {
                 throw FCError::noValue(nameWord);
             }

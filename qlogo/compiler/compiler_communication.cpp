@@ -393,6 +393,49 @@ Value *Compiler::genOpenwrite(const DatumPtr &node, TypeMask expected)
     return generateOpen(node, expected, static_cast<int32_t>(OpenMode::Write));
 }
 
+/***DOC OPENAPPEND
+OPENAPPEND filename
+
+    command.  Opens the named file for writing.  If the file already
+    exists, the write position is initially set to the end of the old
+    file, so that newly written data will be appended to it.  If the
+    file does not exist, it is created.
+
+    The input may also be a list whose first element is a variable
+    name; any remaining members are ignored.  If the named variable
+    has no value, an empty buffer is created.
+
+COD***/
+// CMD OPENAPPEND 1 1 1 n
+Value *Compiler::genOpenappend(const DatumPtr &node, TypeMask expected)
+{
+    return generateOpen(node, expected, static_cast<int32_t>(OpenMode::Append));
+}
+
+/***DOC OPENUPDATE
+OPENUPDATE filename
+
+    command.  Opens the named file for reading and writing.  The read and
+    write position is initially set to the end of the old file, if any.
+    If the file does not exist, it is created.  Note: each open file has
+    only one position, for both reading and writing.  If a file opened
+    for update is both READER and WRITER at the same time, then
+    SETREADPOS will also affect WRITEPOS and vice versa.  Also, if you
+    alternate reading and writing the same file, you must SETREADPOS
+    between a write and a read, and SETWRITEPOS between a read and a
+    write.
+
+    The input may also be a list whose first element is a variable
+    name; any remaining members are ignored.  If the named variable
+    has no value, an empty buffer is created.
+
+COD***/
+// CMD OPENUPDATE 1 1 1 n
+Value *Compiler::genOpenupdate(const DatumPtr &node, TypeMask expected)
+{
+    return generateOpen(node, expected, static_cast<int32_t>(OpenMode::Update));
+}
+
 Value *Compiler::generateOpen(const DatumPtr &node, TypeMask expected, int32_t mode)
 {
     Q_ASSERT(expected && TypeNothing);

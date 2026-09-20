@@ -78,6 +78,8 @@ const QString &cmdStrSETPREFIX();
 const QString &cmdStrPREFIX();
 const QString &cmdStrOPENREAD();
 const QString &cmdStrOPENWRITE();
+const QString &cmdStrOPENAPPEND();
+const QString &cmdStrOPENUPDATE();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();
