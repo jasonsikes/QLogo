@@ -627,25 +627,17 @@ Value *Compiler::generateFromDatum(Datum::DatumType t, ASTNode *parent, Value *s
 
 Value *Compiler::generateNotNothingFromDatum(ASTNode *parent, Value *src)
 {
-    BasicBlock *checkFlowBB = scaff_->createBasicBlock(DBG_NAME("checkFlow"));
-    BasicBlock *isFlowBB = scaff_->createBasicBlock(DBG_NAME("isFlow"));
+    src = generateNotFlowControl(src);
+
     BasicBlock *isNothingBB = scaff_->createBasicBlock(DBG_NAME("isNothing"));
     BasicBlock *notNothingBB = scaff_->createBasicBlock(DBG_NAME("notNothing"));
 
-    scaff_->addColdPathBlocks(checkFlowBB, isFlowBB, isNothingBB);
+    scaff_->addColdPathBlocks(isNothingBB);
 
     Value *dType = generateGetDatumIsa(src);
     Value *dataMask = scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeDataMask), DBG_NAME("dataTypeMask"));
     Value *isData = scaff_->builder_.CreateICmpNE(dataMask, CoInt32(0), DBG_NAME("isDataTest"));
-    scaff_->builder_.CreateCondBr(isData, notNothingBB, checkFlowBB);
-
-    scaff_->builder_.SetInsertPoint(checkFlowBB);
-    Value *flowMask = scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
-    Value *isFlow = scaff_->builder_.CreateICmpNE(flowMask, CoInt32(0), DBG_NAME("isFlowTest"));
-    scaff_->builder_.CreateCondBr(isFlow, isFlowBB, isNothingBB);
-
-    scaff_->builder_.SetInsertPoint(isFlowBB);
-    generateReturn(src);
+    scaff_->builder_.CreateCondBr(isData, notNothingBB, isNothingBB);
 
     scaff_->builder_.SetInsertPoint(isNothingBB);
     Value *errObj = generateErrorNoOutput(src, parent);
@@ -676,25 +668,17 @@ Value *Compiler::generateNotFlowControl(Value *src)
 
 Value *Compiler::generateNothingFromDatum(ASTNode *parent, Value *src)
 {
-    BasicBlock *checkFlowBB = scaff_->createBasicBlock(DBG_NAME("checkFlow"));
-    BasicBlock *isFlowBB = scaff_->createBasicBlock(DBG_NAME("isFlow"));
+    src = generateNotFlowControl(src);
+
     BasicBlock *notNothingBB = scaff_->createBasicBlock(DBG_NAME("notNothing"));
     BasicBlock *isNothingBB = scaff_->createBasicBlock(DBG_NAME("isNothing"));
 
-    scaff_->addColdPathBlocks(checkFlowBB, isFlowBB, notNothingBB);
+    scaff_->addColdPathBlocks(notNothingBB);
 
     Value *dType = generateGetDatumIsa(src);
     Value *dataMask = scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeDataMask), DBG_NAME("dataTypeMask"));
     Value *isData = scaff_->builder_.CreateICmpNE(dataMask, CoInt32(0), DBG_NAME("isDataTest"));
-    scaff_->builder_.CreateCondBr(isData, notNothingBB, checkFlowBB);
-
-    scaff_->builder_.SetInsertPoint(checkFlowBB);
-    Value *flowMask = scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
-    Value *isFlow = scaff_->builder_.CreateICmpNE(flowMask, CoInt32(0), DBG_NAME("isFlowTest"));
-    scaff_->builder_.CreateCondBr(isFlow, isFlowBB, isNothingBB);
-
-    scaff_->builder_.SetInsertPoint(isFlowBB);
-    generateReturn(src);
+    scaff_->builder_.CreateCondBr(isData, notNothingBB, isNothingBB);
 
     scaff_->builder_.SetInsertPoint(notNothingBB);
     Value *errObj = generateErrorNoSay(src);
@@ -1052,12 +1036,10 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
     BasicBlock *srcBB = scaff_->builder_.GetInsertBlock();
 
     BasicBlock *validateBB = scaff_->createBasicBlock(DBG_NAME("validate"));
-    BasicBlock *convertBB = scaff_->createBasicBlock(DBG_NAME("convert"));
     BasicBlock *erractBB = scaff_->createBasicBlock(DBG_NAME("errorAction"));
-    BasicBlock *bailoutBB = scaff_->createBasicBlock(DBG_NAME("bailout"));
     BasicBlock *acceptBB = scaff_->createBasicBlock(DBG_NAME("accept"));
 
-    scaff_->addColdPathBlocks(erractBB, convertBB, bailoutBB);
+    scaff_->addColdPathBlocks(erractBB);
 
     scaff_->builder_.CreateBr(validateBB);
 
@@ -1071,20 +1053,12 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
     // The number is bad. Call handleBadDouble and maybe retry with the result.
     scaff_->builder_.SetInsertPoint(erractBB);
     Value *handlerResult = generateCallExtern(handleBadDouble, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(parent)), PaDouble(candidate));
-    Value *datamIsa = generateGetDatumIsa(handlerResult); // See if result is a datum.
-    Value *isDatumMasked = scaff_->builder_.CreateAnd(datamIsa, CoInt32(Datum::typeDataMask), DBG_NAME("isDatumMasked"));
-    Value *isDatumCond = scaff_->builder_.CreateICmpNE(isDatumMasked, CoInt32(0), DBG_NAME("isDatumCond"));
-    scaff_->builder_.CreateCondBr(isDatumCond, convertBB, bailoutBB);
+    handlerResult = generateNotFlowControl(handlerResult);
 
     // A Word was returned. Convert it to a double and try validating it again.
-    scaff_->builder_.SetInsertPoint(convertBB);
     Value *dVal = generateCallExtern(getDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(handlerResult));
-    candidate->addIncoming(dVal, convertBB);
+    candidate->addIncoming(dVal, scaff_->builder_.GetInsertBlock());
     scaff_->builder_.CreateBr(validateBB);
-
-    // The number is bad, and ERRACT is not set. Return a DOESN'T LIKE error.
-    scaff_->builder_.SetInsertPoint(bailoutBB);
-    generateReturn(handlerResult);
 
     // The number is good. Continue.
     scaff_->builder_.SetInsertPoint(acceptBB);
@@ -1097,10 +1071,9 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
 
     BasicBlock *validateBB = scaff_->createBasicBlock(DBG_NAME("validate"));
     BasicBlock *erractBB = scaff_->createBasicBlock(DBG_NAME("errorAction"));
-    BasicBlock *bailoutBB = scaff_->createBasicBlock(DBG_NAME("bailout"));
     BasicBlock *acceptBB = scaff_->createBasicBlock(DBG_NAME("accept"));
 
-    scaff_->addColdPathBlocks(erractBB, bailoutBB);
+    scaff_->addColdPathBlocks(erractBB);
 
     scaff_->builder_.CreateBr(validateBB);
 
@@ -1114,15 +1087,9 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
     // The datum is bad. Call handleBadDatum and maybe retry with the result.
     scaff_->builder_.SetInsertPoint(erractBB);
     Value *handlerResult = generateCallExtern(handleBadDatum, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(parent)), PaAddr(candidate));
-    Value *datamIsa = generateGetDatumIsa(handlerResult); // See if result is a datum.
-    Value *isDatumMasked = scaff_->builder_.CreateAnd(datamIsa, CoInt32(Datum::typeDataMask), DBG_NAME("isDatumMasked"));
-    Value *isDatumCond = scaff_->builder_.CreateICmpNE(isDatumMasked, CoInt32(0), DBG_NAME("isDatumCond"));
-    candidate->addIncoming(handlerResult, erractBB);
-    scaff_->builder_.CreateCondBr(isDatumCond, validateBB, bailoutBB);
-
-    // The datum is bad, and ERRACT is not set. Return a DOESN'T LIKE error.
-    scaff_->builder_.SetInsertPoint(bailoutBB);
-    generateReturn(handlerResult);
+    handlerResult = generateNotFlowControl(handlerResult);
+    candidate->addIncoming(handlerResult, scaff_->builder_.GetInsertBlock());
+    scaff_->builder_.CreateBr(validateBB);
 
     // The datum is good. Continue.
     scaff_->builder_.SetInsertPoint(acceptBB);
