@@ -244,6 +244,10 @@ class StreamManager
     /// @brief Read a single character from the current reader.
     DatumPtr readChar();
 
+    /// @brief Read up to count characters from the current reader.
+    /// @return A word of the characters read, or an empty list if none were available.
+    DatumPtr readChars(int32_t count);
+
     /// @brief The rawlines consumed to build the most recent list read.
     QList<DatumPtr> readerLineHistory() const;
 

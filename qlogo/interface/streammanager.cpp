@@ -162,6 +162,11 @@ DatumPtr StreamManager::readChar()
     return istreamRead_->readChar();
 }
 
+DatumPtr StreamManager::readChars(int32_t count)
+{
+    return istreamRead_->readChars(count);
+}
+
 QList<DatumPtr> StreamManager::readerLineHistory() const
 {
     return istreamRead_->listReaderLineHistory();

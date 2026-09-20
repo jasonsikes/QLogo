@@ -71,8 +71,13 @@ class RawStream
     DatumPtr readRawlineWithPrompt(const QString &prompt);
 
     /// @brief Read a single character. No formatting is applied.
-    /// @return The character as a Character object, or an empty List object if no input is available.
+    /// @return The character as a Word, or an empty List object if no input is available.
     DatumPtr readChar();
+
+    /// @brief Read up to count characters. No formatting is applied.
+    /// @param count Number of characters to read. Must be >= 0.
+    /// @return The characters as a Word, or an empty List if none were available.
+    DatumPtr readChars(int32_t count);
 };
 
 
@@ -182,6 +187,8 @@ class TextStream
     DatumPtr readRawlineWithPrompt(const QString &prompt);
 
     DatumPtr readChar();
+
+    DatumPtr readChars(int32_t count);
 
     void lprint(const QString &text);
 

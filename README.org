@@ -95,8 +95,8 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 | IF                 | SETPOS         | INT           | READRAWLINE            | ARRAYTOLIST               | LOCAL                |
 | IFELSE             | SETXY          | ROUND         | READCHAR               | FIRST                     | *TODO* THING         |
 | TEST               | SETX           | SQRT          | RC                     | *LIBRARY* FIRSTS          | *TODO* GLOBAL        |
-| IFTRUE             | SETY           | POWER         | *TODO* READCHARS       | LAST                      | *TODO* PPROP         |
-| IFT                | SETHEADING     | EXP           | *TODO* RCS             | BUTFIRST                  | *TODO* GPROP         |
+| IFTRUE             | SETY           | POWER         | READCHARS              | LAST                      | *TODO* PPROP         |
+| IFT                | SETHEADING     | EXP           | RCS                    | BUTFIRST                  | *TODO* GPROP         |
 | IFFALSE            | SETH           | LOG10         | *TODO* FILEDIALOG      | BF                        | *TODO* REMPROP       |
 | IFF                | HOME           | LN            | *TODO* COPYRIGHT       | *LIBRARY* BUTFIRSTS       | *TODO* PLIST         |
 | STOP               | ARC            | SIN           | *TODO* SHELL           | *LIBRARY* BFS             | *TODO* PROCEDUREP    |

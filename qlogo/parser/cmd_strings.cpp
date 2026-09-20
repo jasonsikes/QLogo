@@ -372,6 +372,18 @@ const QString &StringConstants::cmdStrRC()
     return str;
 }
 
+const QString &StringConstants::cmdStrREADCHARS()
+{
+    static const QString str = QObject::tr("READCHARS");
+    return str;
+}
+
+const QString &StringConstants::cmdStrRCS()
+{
+    static const QString str = QObject::tr("RCS");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

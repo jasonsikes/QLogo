@@ -14,6 +14,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
+#include "astnode.h"
 #include "compiler.h"
 #include "compiler_internal.h"
 #include "workspace/exports.h"
@@ -187,11 +188,35 @@ RC
     and tilde characters have no special meaning in this context.
 
 COD***/
+
+/***DOC READCHARS RCS
+READCHARS num
+RCS num
+
+    reads "num" characters from the read stream and outputs those
+    characters as a word.  If the read stream is a file, and the end of
+    file is reached, READCHARS outputs the empty list (not the empty
+    word).  If the read stream is a terminal, echoing is turned off
+    when READCHARS is invoked, and remains off until READLIST or READWORD
+    is invoked or a Logo prompt is printed.  Backslash, vertical bar,
+    and tilde characters have no special meaning in this context.
+
+COD***/
 // CMD READCHAR 0 0 0 d
 // CMD RC 0 0 0 d
+// CMD READCHARS 1 1 1 d
+// CMD RCS 1 1 1 d
 Value *Compiler::genReadchar(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *retval = generateCallExtern(stdReadChar, PaAddr(scaff_->evaluator_));
+
+    Value *count = CoInt32(1);
+    if (node.astnodeValue()->countOfChildren() == 1)
+    {
+        Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
+        count = generateNotNegativeInt32FromDouble(node.astnodeValue(), num);
+    }
+
+    Value *retval = generateCallExtern(stdReadChars, PaAddr(scaff_->evaluator_), PaInt32(count));
     return generateNotFlowControl(retval);
 }

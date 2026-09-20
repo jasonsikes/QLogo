@@ -89,17 +89,38 @@ void RawStream::lprint(const QString &text)
 
 DatumPtr RawStream::readChar()
 {
+    return readChars(1);
+}
+
+DatumPtr RawStream::readChars(int32_t count)
+{
+    if (count == 0)
+        return emptyList();
+
     if (stream_ == nullptr)
     {
-        return StreamManager::get().readTerminalChar();
+        QString buf;
+        buf.reserve(count);
+        for (int32_t i = 0; i < count; ++i)
+        {
+            DatumPtr c = StreamManager::get().readTerminalChar();
+            if (c.isNothing())
+                break;
+            buf.append(c.wordValue()->toString(Datum::ToStringFlags_Raw));
+        }
+        if (buf.isEmpty())
+            return nothing();
+        return DatumPtr(buf);
     }
 
     if (stream_->atEnd())
         return emptyList();
-    QString line = stream_->read(1);
+    QString s = stream_->read(count);
     if (stream_->status() != QTextStream::Ok)
         throw FCError::fileSystem();
-    return DatumPtr(line);
+    if (s.isEmpty())
+        return emptyList();
+    return DatumPtr(s);
 }
 
 
@@ -535,6 +556,11 @@ QList<DatumPtr> TextStream::wordReaderLineHistory() const
 DatumPtr TextStream::readChar()
 {
     return rawStream_.readChar();
+}
+
+DatumPtr TextStream::readChars(int32_t count)
+{
+    return rawStream_.readChars(count);
 }
 
 void TextStream::lprint(const QString &text)
