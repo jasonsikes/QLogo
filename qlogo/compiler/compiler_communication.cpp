@@ -104,3 +104,26 @@ Value *Compiler::genType(const DatumPtr &node, TypeMask expected)
     return generateCallExtern(
         stdWriteDatumAry, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
 }
+
+/***DOC READLIST RL
+READLIST
+RL
+
+    reads a line from the read stream (initially the keyboard) and
+    outputs that line as a list.  The line is separated into members as
+    though it were typed in square brackets in an instruction.  If the
+    read stream is a file, and the end of file is reached, READLIST
+    outputs the empty word (not the empty list).  READLIST processes
+    backslash, vertical bar, and tilde characters in the read stream;
+    the output list will not contain these characters but they will have
+    had their usual effect.  READLIST does not, however, treat semicolon
+    as a comment character.
+
+COD***/
+// CMD READLIST 0 0 0 d
+// CMD RL 0 0 0 d
+Value *Compiler::genReadlist(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdReadList, PaAddr(scaff_->evaluator_));
+}

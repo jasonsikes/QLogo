@@ -330,6 +330,18 @@ const QString &StringConstants::cmdStrTYPE()
     return str;
 }
 
+const QString &StringConstants::cmdStrREADLIST()
+{
+    static const QString str = QObject::tr("READLIST");
+    return str;
+}
+
+const QString &StringConstants::cmdStrRL()
+{
+    static const QString str = QObject::tr("RL");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

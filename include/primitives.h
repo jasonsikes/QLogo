@@ -45,6 +45,7 @@ llvm::Value *genOr(const DatumPtr &node, TypeMask expected);
 llvm::Value *genPrint(const DatumPtr &node, TypeMask expected);
 llvm::Value *genShow(const DatumPtr &node, TypeMask expected);
 llvm::Value *genType(const DatumPtr &node, TypeMask expected);
+llvm::Value *genReadlist(const DatumPtr &node, TypeMask expected);
 llvm::Value *genIfelse(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRun(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRepeat(const DatumPtr &node, TypeMask expected);

@@ -57,6 +57,8 @@ stringToCmd.insert(StringConstants::cmdStrPRINT(), Cmd_t{&Compiler::genPrint, 0,
 stringToCmd.insert(StringConstants::cmdStrPR(), Cmd_t{&Compiler::genPrint, 0, 1, -1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrSHOW(), Cmd_t{&Compiler::genShow, 0, 1, -1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrTYPE(), Cmd_t{&Compiler::genType, 0, 1, -1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrREADLIST(), Cmd_t{&Compiler::genReadlist, 0, 0, 0, TypeD});
+stringToCmd.insert(StringConstants::cmdStrRL(), Cmd_t{&Compiler::genReadlist, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrIF(), Cmd_t{&Compiler::genIfelse, 2, 2, 3, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrIFELSE(), Cmd_t{&Compiler::genIfelse, 3, 3, 3, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrRUN(), Cmd_t{&Compiler::genRun, 1, 1, 1, TypeDN});

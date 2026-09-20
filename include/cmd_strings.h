@@ -62,6 +62,8 @@ const QString &cmdStrPRINT();
 const QString &cmdStrPR();
 const QString &cmdStrSHOW();
 const QString &cmdStrTYPE();
+const QString &cmdStrREADLIST();
+const QString &cmdStrRL();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();

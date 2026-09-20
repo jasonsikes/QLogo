@@ -78,3 +78,28 @@ EXPORTC addr_t stdWriteDatumAry(addr_t eAddr, addr_t astnodeAddr, addr_t datumAd
         return reinterpret_cast<addr_t>(astnodeAddr);
     }
 
+/// Read a list from the current reader (READLIST / RL).
+/// @param eAddr a pointer to the Evaluator object
+/// @return a list, the empty word at end of input, or an Error on I/O failure.
+EXPORTC addr_t stdReadList(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    try
+    {
+        DatumPtr retval = StreamManager::get().readList(QString(), false);
+        if (retval.isNothing())
+        {
+            auto *emptyWord = new Word(QStringLiteral(""));
+            e->watch(emptyWord);
+            return reinterpret_cast<addr_t>(emptyWord);
+        }
+        e->watch(retval);
+        return reinterpret_cast<addr_t>(retval.datumValue());
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+}
+

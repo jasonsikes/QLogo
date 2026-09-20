@@ -88,8 +88,8 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 | *TODO* TIME        | FD             | DIFFERENCE    | PR                     | LIST                      | .MACRO               |
 | *TODO* MARK        | BACK           | MINUS         | TYPE                   | SENTENCE                  | *TODO* DEFINE        |
 | RUNRESULT          | BK             | -             | SHOW                   | SE                        | *TODO* .DEFMACRO     |
-| BYE                | LEFT           | PRODUCT       | *TODO* READLIST        | FPUT                      | *TODO* TEXT          |
-| REPEAT             | LT             | QUOTIENT      | *TODO* RL              | LPUT                      | *TODO* FULLTEXT      |
+| BYE                | LEFT           | PRODUCT       | READLIST               | FPUT                      | *TODO* TEXT          |
+| REPEAT             | LT             | QUOTIENT      | RL                     | LPUT                      | *TODO* FULLTEXT      |
 | FOREVER            | RIGHT          | REMAINDER     | *TODO* READWORD        | ARRAY                     | *TODO* COPYDEF       |
 | REPCOUNT           | RT             | MODULO        | *TODO* RW              | LISTTOARRAY               | MAKE                 |
 | IF                 | SETPOS         | INT           | *TODO* READRAWLINE     | ARRAYTOLIST               | LOCAL                |
