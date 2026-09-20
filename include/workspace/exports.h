@@ -58,6 +58,7 @@ EXPORTC addr_t stdWriteDatumAry(addr_t eAddr, addr_t astnodeAddr, addr_t datumAd
 EXPORTC addr_t stdReadList(addr_t eAddr);
 EXPORTC addr_t stdReadWord(addr_t eAddr);
 EXPORTC addr_t stdReadRawline(addr_t eAddr);
+EXPORTC addr_t stdReadChar(addr_t eAddr);
 
 //  -------------------------------------------------------------------
 //  exports_controlstructures.cpp

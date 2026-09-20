@@ -67,6 +67,8 @@ const QString &cmdStrRL();
 const QString &cmdStrREADWORD();
 const QString &cmdStrRW();
 const QString &cmdStrREADRAWLINE();
+const QString &cmdStrREADCHAR();
+const QString &cmdStrRC();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();

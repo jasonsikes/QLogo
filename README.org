@@ -93,55 +93,55 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 | FOREVER            | RIGHT          | REMAINDER     | READWORD               | ARRAY                     | *TODO* COPYDEF       |
 | REPCOUNT           | RT             | MODULO        | RW                     | LISTTOARRAY               | MAKE                 |
 | IF                 | SETPOS         | INT           | READRAWLINE            | ARRAYTOLIST               | LOCAL                |
-| IFELSE             | SETXY          | ROUND         | *TODO* READCHAR        | FIRST                     | *TODO* THING         |
-| TEST               | SETX           | SQRT          | *TODO* READCHARS       | *LIBRARY* FIRSTS          | *TODO* GLOBAL        |
-| IFTRUE             | SETY           | POWER         | *TODO* RCS             | LAST                      | *TODO* PPROP         |
-| IFT                | SETHEADING     | EXP           | *TODO* FILEDIALOG      | BUTFIRST                  | *TODO* GPROP         |
-| IFFALSE            | SETH           | LOG10         | *TODO* COPYRIGHT       | BF                        | *TODO* REMPROP       |
-| IFF                | HOME           | LN            | *TODO* SHELL           | *LIBRARY* BUTFIRSTS       | *TODO* PLIST         |
-| STOP               | ARC            | SIN           | *TODO* SETPREFIX       | *LIBRARY* BFS             | *TODO* PROCEDUREP    |
-| OUTPUT             | POS            | RADSIN        | *TODO* PREFIX          | BUTLAST                   | *TODO* PROCEDURE?    |
-| OP                 | HEADING        | COS           | *TODO* OPENREAD        | BL                        | *TODO* MACROP        |
-| .MAYBEOUTPUT       | TOWARDS        | RADCOS        | *TODO* OPENWRITE       | ITEM                      | *TODO* MACRO?        |
-| CATCH              | SCRUNCH        | ARCTAN        | *TODO* OPENAPPEND      | SETITEM                   | *TODO* PRIMITIVEP    |
-| THROW              | SHOWTURTLE     | RADARCTAN     | *TODO* OPENUPDATE      | .SETFIRST                 | *TODO* PRIMITIVE?    |
-| ERROR              | ST             | LESSP         | *TODO* CLOSE           | .SETBF                    | *TODO* DEFINEDP      |
-| PAUSE              | HIDETURTLE     | LESS?         | *TODO* ALLOPEN         | .SETITEM                  | *TODO* DEFINED?      |
-| CONTINUE           | HT             | GREATERP      | *TODO* CLOSEALL        | WORDP                     | *TODO* NAMEP         |
-| CO                 | CLEAN          | GREATER?      | *TODO* ERASEFILE       | WORD?                     | *TODO* NAME?         |
-| TAG                | CLEARSCREEN    | LESSEQUALP    | *TODO* ERF             | LISTP                     | *TODO* PLISTP        |
-| GOTO               | CS             | LESSEQUAL?    | *TODO* DRIBBLE         | LIST?                     | *TODO* PLIST?        |
-| APPLY              | WRAP           | GREATEREQUALP | *TODO* NODRIBBLE       | ARRAYP                    | *TODO* CONTENTS      |
-| ?                  | WINDOW         | GREATEREQUAL? | *TODO* SETREAD         | ARRAY?                    | *TODO* BURIED        |
-|                    | FENCE          | RANDOM        | *TODO* SETWRITE        | EMPTYP                    | *TODO* TRACED        |
-|                    | BOUNDS         | RERANDOM      | *TODO* READER          | EMPTY?                    | *TODO* STEPPED       |
-|                    | SETBOUNDS      | FORM          | *TODO* WRITER          | EQUALP                    | *TODO* PROCEDURES    |
-|                    | FILLED         | BITAND        | *TODO* SETREADPOS      | EQUAL?                    | *TODO* PRIMITIVES    |
-|                    | LABEL          | BITOR         | *TODO* SETWRITEPOS     | NOTEQUALP                 | *TODO* NAMES         |
-|                    | SETLABELHEIGHT | BITXOR        | *TODO* READPOS         | NOTEQUAL?                 | *TODO* PLISTS        |
-|                    | TEXTSCREEN     | BITNOT        | *TODO* WRITEPOS        | BEFOREP                   | *TODO* ARITY         |
-|                    | TS             | ASHIFT        | *TODO* EOFP            | BEFORE?                   | *TODO* NODES         |
-|                    | FULLSCREEN     | LSHIFT        | *TODO* EOF?            | .EQ                       | *TODO* PRINTOUT      |
-|                    | FS             | AND           | *TODO* KEYP            | MEMBERP                   | *TODO* PO            |
-|                    | SPLITSCREEN    | OR            | *TODO* KEY?            | MEMBER?                   | *TODO* POT           |
-|                    | SS             | NOT           | *TODO* CLEARTEXT       | SUBSTRINGP                | *TODO* ERASE         |
-|                    | SETSCRUNCH     | +             | *TODO* CT              | SUBSTRING?                | *TODO* ER            |
-|                    | SHOWNP         | *             | *TODO* SETCURSOR       | NUMBERP                   | *TODO* ERALL         |
-|                    | SHOWN?         | /             | *TODO* CURSOR          | NUMBER?                   | *TODO* ERPS          |
-|                    | SCREENMODE     | <             | *TODO* SETTEXTCOLOR    | VBARREDP                  | *TODO* ERNS          |
-|                    | TURTLEMODE     | >             | *TODO* SETTC           | VBARRED?                  | *TODO* ERPLS         |
-|                    | LABELSIZE      | =             | *TODO* INCREASEFONT    | COUNT                     | *TODO* BURY          |
-|                    | *NO* MATRIX    | <=            | *TODO* DECREASEFONT    | ASCII                     | *TODO* UNBURY        |
-|                    | PENDOWN        | >=            | *TODO* SETTEXTSIZE     | RAWASCII                  | *TODO* BURIEDP       |
-|                    | PD             | <>            | *TODO* TEXTSIZE        | CHAR                      | *TODO* BURIED?       |
-|                    | PENUP          |               | *TODO* SETTEXTFONT     | MEMBER                    | *TODO* TRACE         |
-|                    | PU             |               | *TODO* FONT            | LOWERCASE                 | *TODO* UNTRACE       |
-|                    | PENPAINT       |               | *TODO* ALLFONTS        | UPPERCASE                 | *TODO* TRACEDP       |
-|                    | PPT            |               | *TODO* CURSORINSERT    | STANDOUT                  | *TODO* TRACED?       |
-|                    | PENERASE       |               | *TODO* CURSOROVERWRITE | PARSE                     | *TODO* STEP          |
-|                    | PE             |               | *TODO* CURSORMODE      | RUNPARSE                  | *TODO* UNSTEP        |
-|                    | PENREVERSE     |               | *TODO* WAIT            |                           | *TODO* STEPPEDP      |
-|                    | PX             |               |                        |                           | *TODO* STEPPED?      |
+| IFELSE             | SETXY          | ROUND         | READCHAR               | FIRST                     | *TODO* THING         |
+| TEST               | SETX           | SQRT          | RC                     | *LIBRARY* FIRSTS          | *TODO* GLOBAL        |
+| IFTRUE             | SETY           | POWER         | *TODO* READCHARS       | LAST                      | *TODO* PPROP         |
+| IFT                | SETHEADING     | EXP           | *TODO* RCS             | BUTFIRST                  | *TODO* GPROP         |
+| IFFALSE            | SETH           | LOG10         | *TODO* FILEDIALOG      | BF                        | *TODO* REMPROP       |
+| IFF                | HOME           | LN            | *TODO* COPYRIGHT       | *LIBRARY* BUTFIRSTS       | *TODO* PLIST         |
+| STOP               | ARC            | SIN           | *TODO* SHELL           | *LIBRARY* BFS             | *TODO* PROCEDUREP    |
+| OUTPUT             | POS            | RADSIN        | *TODO* SETPREFIX       | BUTLAST                   | *TODO* PROCEDURE?    |
+| OP                 | HEADING        | COS           | *TODO* PREFIX          | BL                        | *TODO* MACROP        |
+| .MAYBEOUTPUT       | TOWARDS        | RADCOS        | *TODO* OPENREAD        | ITEM                      | *TODO* MACRO?        |
+| CATCH              | SCRUNCH        | ARCTAN        | *TODO* OPENWRITE       | SETITEM                   | *TODO* PRIMITIVEP    |
+| THROW              | SHOWTURTLE     | RADARCTAN     | *TODO* OPENAPPEND      | .SETFIRST                 | *TODO* PRIMITIVE?    |
+| ERROR              | ST             | LESSP         | *TODO* OPENUPDATE      | .SETBF                    | *TODO* DEFINEDP      |
+| PAUSE              | HIDETURTLE     | LESS?         | *TODO* CLOSE           | .SETITEM                  | *TODO* DEFINED?      |
+| CONTINUE           | HT             | GREATERP      | *TODO* ALLOPEN         | WORDP                     | *TODO* NAMEP         |
+| CO                 | CLEAN          | GREATER?      | *TODO* CLOSEALL        | WORD?                     | *TODO* NAME?         |
+| TAG                | CLEARSCREEN    | LESSEQUALP    | *TODO* ERASEFILE       | LISTP                     | *TODO* PLISTP        |
+| GOTO               | CS             | LESSEQUAL?    | *TODO* ERF             | LIST?                     | *TODO* PLIST?        |
+| APPLY              | WRAP           | GREATEREQUALP | *TODO* DRIBBLE         | ARRAYP                    | *TODO* CONTENTS      |
+| ?                  | WINDOW         | GREATEREQUAL? | *TODO* NODRIBBLE       | ARRAY?                    | *TODO* BURIED        |
+|                    | FENCE          | RANDOM        | *TODO* SETREAD         | EMPTYP                    | *TODO* TRACED        |
+|                    | BOUNDS         | RERANDOM      | *TODO* SETWRITE        | EMPTY?                    | *TODO* STEPPED       |
+|                    | SETBOUNDS      | FORM          | *TODO* READER          | EQUALP                    | *TODO* PROCEDURES    |
+|                    | FILLED         | BITAND        | *TODO* WRITER          | EQUAL?                    | *TODO* PRIMITIVES    |
+|                    | LABEL          | BITOR         | *TODO* SETREADPOS      | NOTEQUALP                 | *TODO* NAMES         |
+|                    | SETLABELHEIGHT | BITXOR        | *TODO* SETWRITEPOS     | NOTEQUAL?                 | *TODO* PLISTS        |
+|                    | TEXTSCREEN     | BITNOT        | *TODO* READPOS         | BEFOREP                   | *TODO* ARITY         |
+|                    | TS             | ASHIFT        | *TODO* WRITEPOS        | BEFORE?                   | *TODO* NODES         |
+|                    | FULLSCREEN     | LSHIFT        | *TODO* EOFP            | .EQ                       | *TODO* PRINTOUT      |
+|                    | FS             | AND           | *TODO* EOF?            | MEMBERP                   | *TODO* PO            |
+|                    | SPLITSCREEN    | OR            | *TODO* KEYP            | MEMBER?                   | *TODO* POT           |
+|                    | SS             | NOT           | *TODO* KEY?            | SUBSTRINGP                | *TODO* ERASE         |
+|                    | SETSCRUNCH     | +             | *TODO* CLEARTEXT       | SUBSTRING?                | *TODO* ER            |
+|                    | SHOWNP         | *             | *TODO* CT              | NUMBERP                   | *TODO* ERALL         |
+|                    | SHOWN?         | /             | *TODO* SETCURSOR       | NUMBER?                   | *TODO* ERPS          |
+|                    | SCREENMODE     | <             | *TODO* CURSOR          | VBARREDP                  | *TODO* ERNS          |
+|                    | TURTLEMODE     | >             | *TODO* SETTEXTCOLOR    | VBARRED?                  | *TODO* ERPLS         |
+|                    | LABELSIZE      | =             | *TODO* SETTC           | COUNT                     | *TODO* BURY          |
+|                    | *NO* MATRIX    | <=            | *TODO* INCREASEFONT    | ASCII                     | *TODO* UNBURY        |
+|                    | PENDOWN        | >=            | *TODO* DECREASEFONT    | RAWASCII                  | *TODO* BURIEDP       |
+|                    | PD             | <>            | *TODO* SETTEXTSIZE     | CHAR                      | *TODO* BURIED?       |
+|                    | PENUP          |               | *TODO* TEXTSIZE        | MEMBER                    | *TODO* TRACE         |
+|                    | PU             |               | *TODO* SETTEXTFONT     | LOWERCASE                 | *TODO* UNTRACE       |
+|                    | PENPAINT       |               | *TODO* FONT            | UPPERCASE                 | *TODO* TRACEDP       |
+|                    | PPT            |               | *TODO* ALLFONTS        | STANDOUT                  | *TODO* TRACED?       |
+|                    | PENERASE       |               | *TODO* CURSORINSERT    | PARSE                     | *TODO* STEP          |
+|                    | PE             |               | *TODO* CURSOROVERWRITE | RUNPARSE                  | *TODO* UNSTEP        |
+|                    | PENREVERSE     |               | *TODO* CURSORMODE      |                           | *TODO* STEPPEDP      |
+|                    | PX             |               | *TODO* WAIT            |                           | *TODO* STEPPED?      |
 |                    | SETPENCOLOR    |               |                        |                           | *TODO* EDIT          |
 |                    | SETPC          |               |                        |                           | *TODO* ED            |
 |                    | ALLCOLORS      |               |                        |                           | *TODO* EDITFILE      |

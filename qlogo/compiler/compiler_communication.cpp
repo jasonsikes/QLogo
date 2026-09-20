@@ -173,3 +173,25 @@ Value *Compiler::genReadrawline(const DatumPtr &node, TypeMask expected)
     Value *retval = generateCallExtern(stdReadRawline, PaAddr(scaff_->evaluator_));
     return generateNotFlowControl(retval);
 }
+
+/***DOC READCHAR RC
+READCHAR
+RC
+
+    reads a single character from the read stream and outputs that
+    character as a word.  If the read stream is a file, and the end of
+    file is reached, READCHAR outputs the empty list (not the empty
+    word).  If the read stream is the keyboard, echoing is turned off
+    when READCHAR is invoked, and remains off until READLIST or READWORD
+    is invoked or a Logo prompt is printed.  Backslash, vertical bar,
+    and tilde characters have no special meaning in this context.
+
+COD***/
+// CMD READCHAR 0 0 0 d
+// CMD RC 0 0 0 d
+Value *Compiler::genReadchar(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    Value *retval = generateCallExtern(stdReadChar, PaAddr(scaff_->evaluator_));
+    return generateNotFlowControl(retval);
+}

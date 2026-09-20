@@ -360,6 +360,18 @@ const QString &StringConstants::cmdStrREADRAWLINE()
     return str;
 }
 
+const QString &StringConstants::cmdStrREADCHAR()
+{
+    static const QString str = QObject::tr("READCHAR");
+    return str;
+}
+
+const QString &StringConstants::cmdStrRC()
+{
+    static const QString str = QObject::tr("RC");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

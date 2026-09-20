@@ -153,3 +153,28 @@ EXPORTC addr_t stdReadRawline(addr_t eAddr)
     }
 }
 
+/// Read a single character from the current reader (READCHAR / RC).
+/// @param eAddr a pointer to the Evaluator object
+/// @return a one-character word, the empty list at end of input, or an Error on I/O failure.
+EXPORTC addr_t stdReadChar(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    try
+    {
+        DatumPtr retval = StreamManager::get().readChar();
+        if (retval.isNothing())
+        {
+            List *empty = EmptyList::instance();
+            e->watch(empty);
+            return reinterpret_cast<addr_t>(empty);
+        }
+        e->watch(retval);
+        return reinterpret_cast<addr_t>(retval.datumValue());
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+}
+
