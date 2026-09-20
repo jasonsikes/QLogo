@@ -60,6 +60,7 @@ EXPORTC addr_t stdReadWord(addr_t eAddr);
 EXPORTC addr_t stdReadRawline(addr_t eAddr);
 EXPORTC addr_t stdReadChars(addr_t eAddr, int32_t count);
 EXPORTC addr_t stdFileDialog(addr_t eAddr);
+EXPORTC addr_t stdCopyright(addr_t eAddr, addr_t astnodeAddr);
 
 //  -------------------------------------------------------------------
 //  exports_controlstructures.cpp

@@ -207,3 +207,26 @@ EXPORTC addr_t stdFileDialog(addr_t eAddr)
     }
 }
 
+/// Print the QLogo copyright message to the current writer (COPYRIGHT).
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @return the owning ASTNode, or an Error on I/O failure.
+EXPORTC addr_t stdCopyright(addr_t eAddr, addr_t astnodeAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    QString printString = QStringLiteral(
+        "QLogo and Psychi source Copyright 2017-2026 Jason Sikes\n"
+        "Help and library texts Copyright (C) 1993 by the Regents of the University of California\n");
+    try
+    {
+        StreamManager::get().print(printString);
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+

@@ -390,6 +390,12 @@ const QString &StringConstants::cmdStrFILEDIALOG()
     return str;
 }
 
+const QString &StringConstants::cmdStrCOPYRIGHT()
+{
+    static const QString str = QObject::tr("COPYRIGHT");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

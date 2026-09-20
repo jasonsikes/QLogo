@@ -238,3 +238,18 @@ Value *Compiler::genFiledialog(const DatumPtr &node, TypeMask expected)
     Value *retval = generateCallExtern(stdFileDialog, PaAddr(scaff_->evaluator_));
     return generateNotFlowControl(retval);
 }
+
+/***DOC COPYRIGHT
+COPYRIGHT
+
+    command.  Prints a copyright message to the current write stream.
+
+COD***/
+// CMD COPYRIGHT 0 0 0 n
+Value *Compiler::genCopyright(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    Value *retval = generateCallExtern(
+        stdCopyright, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())));
+    return generateNotFlowControl(retval);
+}
