@@ -87,11 +87,6 @@ void RawStream::lprint(const QString &text)
     }
 }
 
-DatumPtr RawStream::readChar()
-{
-    return readChars(1);
-}
-
 DatumPtr RawStream::readChars(int32_t count)
 {
     if (count == 0)
@@ -551,11 +546,6 @@ QList<DatumPtr> TextStream::listReaderLineHistory() const
 QList<DatumPtr> TextStream::wordReaderLineHistory() const
 {
     return wordReader_.lineHistory();
-}
-
-DatumPtr TextStream::readChar()
-{
-    return rawStream_.readChar();
 }
 
 DatumPtr TextStream::readChars(int32_t count)

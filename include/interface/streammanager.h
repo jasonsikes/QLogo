@@ -241,9 +241,6 @@ class StreamManager
     /// @brief Read a raw line (no tokenizing) from the current reader.
     DatumPtr readRawline(const QString &prompt);
 
-    /// @brief Read a single character from the current reader.
-    DatumPtr readChar();
-
     /// @brief Read up to count characters from the current reader.
     /// @return A word of the characters read, or an empty list if none were available.
     DatumPtr readChars(int32_t count);

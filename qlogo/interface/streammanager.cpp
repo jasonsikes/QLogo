@@ -157,11 +157,6 @@ DatumPtr StreamManager::readRawline(const QString &prompt)
     return istreamRead_->readRawlineWithPrompt(prompt);
 }
 
-DatumPtr StreamManager::readChar()
-{
-    return istreamRead_->readChar();
-}
-
 DatumPtr StreamManager::readChars(int32_t count)
 {
     return istreamRead_->readChars(count);
