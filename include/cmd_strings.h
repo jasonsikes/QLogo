@@ -64,6 +64,8 @@ const QString &cmdStrSHOW();
 const QString &cmdStrTYPE();
 const QString &cmdStrREADLIST();
 const QString &cmdStrRL();
+const QString &cmdStrREADWORD();
+const QString &cmdStrRW();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();

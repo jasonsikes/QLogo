@@ -342,6 +342,18 @@ const QString &StringConstants::cmdStrRL()
     return str;
 }
 
+const QString &StringConstants::cmdStrREADWORD()
+{
+    static const QString str = QObject::tr("READWORD");
+    return str;
+}
+
+const QString &StringConstants::cmdStrRW()
+{
+    static const QString str = QObject::tr("RW");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

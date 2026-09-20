@@ -103,3 +103,28 @@ EXPORTC addr_t stdReadList(addr_t eAddr)
     }
 }
 
+/// Read a word from the current reader (READWORD / RW).
+/// @param eAddr a pointer to the Evaluator object
+/// @return a word, the empty list at end of input, or an Error on I/O failure.
+EXPORTC addr_t stdReadWord(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    try
+    {
+        DatumPtr retval = StreamManager::get().readWord(QString());
+        if (retval.isNothing())
+        {
+            List *empty = EmptyList::instance();
+            e->watch(empty);
+            return reinterpret_cast<addr_t>(empty);
+        }
+        e->watch(retval);
+        return reinterpret_cast<addr_t>(retval.datumValue());
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+}
+

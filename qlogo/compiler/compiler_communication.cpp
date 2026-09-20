@@ -127,3 +127,27 @@ Value *Compiler::genReadlist(const DatumPtr &node, TypeMask expected)
     Q_ASSERT(expected && TypeDatum);
     return generateCallExtern(stdReadList, PaAddr(scaff_->evaluator_));
 }
+
+/***DOC READWORD RW
+READWORD
+RW
+
+    reads a line from the read stream and outputs that line as a word.
+    The output is a single word even if the line contains spaces,
+    brackets, etc.  If the read stream is a file, and the end of file is
+    reached, READWORD outputs the empty list (not the empty word).
+    READWORD processes backslash, vertical bar, and tilde characters in
+    the read stream.  In the case of a tilde used for line continuation,
+    the output word DOES include the tilde and the newline characters, so
+    that the user program can tell exactly what the user entered.
+    Vertical bars in the line are also preserved in the output.
+    Backslash characters are not preserved in the output.
+
+COD***/
+// CMD READWORD 0 0 0 d
+// CMD RW 0 0 0 d
+Value *Compiler::genReadword(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdReadWord, PaAddr(scaff_->evaluator_));
+}
