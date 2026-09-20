@@ -92,7 +92,7 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 | REPEAT             | LT             | QUOTIENT      | RL                     | LPUT                      | *TODO* FULLTEXT      |
 | FOREVER            | RIGHT          | REMAINDER     | READWORD               | ARRAY                     | *TODO* COPYDEF       |
 | REPCOUNT           | RT             | MODULO        | RW                     | LISTTOARRAY               | MAKE                 |
-| IF                 | SETPOS         | INT           | *TODO* READRAWLINE     | ARRAYTOLIST               | LOCAL                |
+| IF                 | SETPOS         | INT           | READRAWLINE            | ARRAYTOLIST               | LOCAL                |
 | IFELSE             | SETXY          | ROUND         | *TODO* READCHAR        | FIRST                     | *TODO* THING         |
 | TEST               | SETX           | SQRT          | *TODO* READCHARS       | *LIBRARY* FIRSTS          | *TODO* GLOBAL        |
 | IFTRUE             | SETY           | POWER         | *TODO* RCS             | LAST                      | *TODO* PPROP         |

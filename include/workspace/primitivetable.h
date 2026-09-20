@@ -61,6 +61,7 @@ stringToCmd.insert(StringConstants::cmdStrREADLIST(), Cmd_t{&Compiler::genReadli
 stringToCmd.insert(StringConstants::cmdStrRL(), Cmd_t{&Compiler::genReadlist, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrREADWORD(), Cmd_t{&Compiler::genReadword, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrRW(), Cmd_t{&Compiler::genReadword, 0, 0, 0, TypeD});
+stringToCmd.insert(StringConstants::cmdStrREADRAWLINE(), Cmd_t{&Compiler::genReadrawline, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrIF(), Cmd_t{&Compiler::genIfelse, 2, 2, 3, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrIFELSE(), Cmd_t{&Compiler::genIfelse, 3, 3, 3, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrRUN(), Cmd_t{&Compiler::genRun, 1, 1, 1, TypeDN});

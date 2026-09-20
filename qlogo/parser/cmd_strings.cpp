@@ -354,6 +354,12 @@ const QString &StringConstants::cmdStrRW()
     return str;
 }
 
+const QString &StringConstants::cmdStrREADRAWLINE()
+{
+    static const QString str = QObject::tr("READRAWLINE");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

@@ -153,3 +153,23 @@ Value *Compiler::genReadword(const DatumPtr &node, TypeMask expected)
     Value *retval = generateCallExtern(stdReadWord, PaAddr(scaff_->evaluator_));
     return generateNotFlowControl(retval);
 }
+
+/***DOC READRAWLINE
+READRAWLINE
+
+    reads a line from the read stream and outputs that line as a word.
+    The output is a single word even if the line contains spaces,
+    brackets, etc.  If the read stream is a file, and the end of file is
+    reached, READRAWLINE outputs the empty list (not the empty word).
+    READRAWLINE outputs the exact string of characters as they appear
+    in the line, with no special meaning for backslash, vertical bar,
+    tilde, or any other formatting characters.
+
+COD***/
+// CMD READRAWLINE 0 0 0 d
+Value *Compiler::genReadrawline(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    Value *retval = generateCallExtern(stdReadRawline, PaAddr(scaff_->evaluator_));
+    return generateNotFlowControl(retval);
+}
