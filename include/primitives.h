@@ -76,6 +76,7 @@ llvm::Value *genKeyp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genCleartext(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSetcursor(const DatumPtr &node, TypeMask expected);
 llvm::Value *genCursor(const DatumPtr &node, TypeMask expected);
+llvm::Value *genSettextcolor(const DatumPtr &node, TypeMask expected);
 llvm::Value *genIfelse(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRun(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRepeat(const DatumPtr &node, TypeMask expected);

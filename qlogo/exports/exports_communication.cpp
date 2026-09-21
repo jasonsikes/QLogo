@@ -681,3 +681,28 @@ EXPORTC addr_t stdCursor(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
+/// Return true if the datum names a color (palette index, RGB/RGBA list, name, or hex).
+EXPORTC bool isValidColor(addr_t colorAddr)
+{
+    auto *d = reinterpret_cast<Datum *>(colorAddr);
+    QColor color;
+    return Kernel::get().colorFromDatumPtr(color, DatumPtr(d));
+}
+
+/// SETTEXTCOLOR / SETTC: set the text console colors.
+/// @param foregroundAddr a color datum
+/// @param backgroundAddr a color datum, or null to leave the background unchanged
+EXPORTC void stdSetTextColor(addr_t foregroundAddr, addr_t backgroundAddr)
+{
+    auto *foreground = reinterpret_cast<Datum *>(foregroundAddr);
+    QColor fg;
+    Kernel::get().colorFromDatumPtr(fg, DatumPtr(foreground));
+    QColor bg;
+    if (backgroundAddr)
+    {
+        auto *background = reinterpret_cast<Datum *>(backgroundAddr);
+        Kernel::get().colorFromDatumPtr(bg, DatumPtr(background));
+    }
+    StreamManager::get().setTextColor(fg, bg);
+}
+

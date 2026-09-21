@@ -25,6 +25,7 @@
 #include <QString>
 
 class TextStream;
+class QColor;
 class QFile;
 class QTextStream;
 
@@ -340,6 +341,12 @@ class StreamManager
     /// @brief CURSOR: current text console cursor row and column.
     /// @details On the command-line interface both values are 0.
     void getTextCursor(int &row, int &col);
+
+    /// @brief SETTEXTCOLOR / SETTC: set the text console foreground and background.
+    /// @details In Psychi this changes future printing in the console widget.
+    /// The command-line interface has no text window, so this is a no-op.
+    /// An invalid background leaves the existing background unchanged.
+    void setTextColor(const QColor &foreground, const QColor &background);
 
     /************ command interpreter ************/
     //

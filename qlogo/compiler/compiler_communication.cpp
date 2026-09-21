@@ -838,3 +838,46 @@ Value *Compiler::genCursor(const DatumPtr &node, TypeMask expected)
     Q_ASSERT(expected && TypeDatum);
     return generateCallExtern(stdCursor, PaAddr(scaff_->evaluator_));
 }
+
+/***DOC SETTEXTCOLOR SETTC
+SETTEXTCOLOR foreground background
+SETTC foreground background
+(SETTEXTCOLOR foreground)
+(SETTC foreground)
+
+    command (GUI only). The inputs are colors. The foreground color will
+    be used as the text color for future printing to the text window. The
+    text already printed will not be affected. If a background color is
+    specified, it will immediately change the background color of all
+    text already on the screen.
+
+    Note that this is different from UCBLogo's SETTEXTCOLOR, which changes
+    the foreground and background colors of all text already on the screen
+    in addition to the future printing.
+
+COD***/
+// CMD SETTEXTCOLOR 1 2 2 n
+// CMD SETTC 1 2 2 n
+Value *Compiler::genSettextcolor(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    auto colorValidator = [this](Value *candidate) {
+        Value *isValid = generateCallExtern(isValidColor, PaAddr(candidate));
+        return scaff_->builder_.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isValidColor"));
+    };
+
+    Value *foreground = generateChild(node.astnodeValue(), 0, TypeDatum);
+    foreground = generateValidationDatum(node.astnodeValue(), foreground, colorValidator);
+
+    const bool hasBackground = node.astnodeValue()->countOfChildren() == 2;
+    Value *background = CoAddr(0);
+    if (hasBackground)
+    {
+        background = generateChild(node.astnodeValue(), 1, TypeDatum);
+        background = generateValidationDatum(node.astnodeValue(), background, colorValidator);
+    }
+
+    generateCallExtern(stdSetTextColor, PaAddr(foreground), PaAddr(background));
+    return generateVoidRetval(node);
+}

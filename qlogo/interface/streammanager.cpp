@@ -217,6 +217,11 @@ void StreamManager::getTextCursor(int &row, int &col)
     Config::get().mainInterface()->getTextCursorPos(row, col);
 }
 
+void StreamManager::setTextColor(const QColor &foreground, const QColor &background)
+{
+    Config::get().mainInterface()->setTextColor(foreground, background);
+}
+
 /************ read/write positions ************/
 
 qint64 StreamManager::readPos() const

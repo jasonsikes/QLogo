@@ -129,8 +129,8 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | SHOWNP         | *             | CT                     | NUMBERP                   | *TODO* ERALL         |
 |                    | SHOWN?         | /             | SETCURSOR              | NUMBER?                   | *TODO* ERPS          |
 |                    | SCREENMODE     | <             | CURSOR                 | VBARREDP                  | *TODO* ERNS          |
-|                    | TURTLEMODE     | >             | *TODO* SETTEXTCOLOR    | VBARRED?                  | *TODO* ERPLS         |
-|                    | LABELSIZE      | =             | *TODO* SETTC           | COUNT                     | *TODO* BURY          |
+|                    | TURTLEMODE     | >             | SETTEXTCOLOR           | VBARRED?                  | *TODO* ERPLS         |
+|                    | LABELSIZE      | =             | SETTC                  | COUNT                     | *TODO* BURY          |
 |                    | *NO* MATRIX    | <=            | *TODO* INCREASEFONT    | ASCII                     | *TODO* UNBURY        |
 |                    | PENDOWN        | >=            | *TODO* DECREASEFONT    | RAWASCII                  | *TODO* BURIEDP       |
 |                    | PD             | <>            | *TODO* SETTEXTSIZE     | CHAR                      | *TODO* BURIED?       |
@@ -352,6 +352,10 @@ When using the Word form of ~LPUT~ and ~FPUT~, there is no single-character limi
 **** ~CURSOR~ and ~SETCURSOR~:
 
 On the command-line interface ~SETCURSOR~ is a no-op and ~CURSOR~ outputs ~[0 0]~.
+
+**** ~SETTEXTCOLOR~ and ~SETTC~:
+
+On the command-line interface this is a no-op. A parenthesized call with one input changes only the foreground color. Colors use the same five forms as ~SETPENCOLOR~.
 
 **** ~OPENREAD~, ~OPENWRITE~, ~OPENAPPEND~, and ~OPENUPDATE~:
 

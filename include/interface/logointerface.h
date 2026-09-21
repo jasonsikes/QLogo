@@ -379,11 +379,13 @@ class LogoInterface : public QObject
     /// @brief Sets the text color.
     /// @param text The color of the text.
     /// @param background The background color of the text.
-    /// @note The base method triggers an error message. Subclasses can override this method to
-    /// perform the necessary tasks to set the text color.
+    /// @note The base method is a no-op; the command-line interface has no
+    /// text window. Subclasses can override this method to set the GUI colors.
+    /// An invalid background leaves the existing background unchanged.
     virtual void setTextColor(const QColor &text, const QColor &background)
     {
-        exit(1);
+        Q_UNUSED(text);
+        Q_UNUSED(background);
     }
 
     /// @brief Sets the text font size.

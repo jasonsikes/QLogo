@@ -570,6 +570,18 @@ const QString &StringConstants::cmdStrCURSOR()
     return str;
 }
 
+const QString &StringConstants::cmdStrSETTEXTCOLOR()
+{
+    static const QString str = QObject::tr("SETTEXTCOLOR");
+    return str;
+}
+
+const QString &StringConstants::cmdStrSETTC()
+{
+    static const QString str = QObject::tr("SETTC");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

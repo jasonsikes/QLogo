@@ -102,6 +102,8 @@ const QString &cmdStrCLEARTEXT();
 const QString &cmdStrCT();
 const QString &cmdStrSETCURSOR();
 const QString &cmdStrCURSOR();
+const QString &cmdStrSETTEXTCOLOR();
+const QString &cmdStrSETTC();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();
