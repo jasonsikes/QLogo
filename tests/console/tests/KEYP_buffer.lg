@@ -1,0 +1,7 @@
+make "a "hello
+openread [a]
+setread [a]
+print keyp
+print readword
+print keyp
+close [a]

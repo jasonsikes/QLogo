@@ -123,8 +123,8 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | TS             | ASHIFT        | WRITEPOS               | BEFORE?                   | *TODO* NODES         |
 |                    | FULLSCREEN     | LSHIFT        | EOFP                   | .EQ                       | *TODO* PRINTOUT      |
 |                    | FS             | AND           | EOF?                   | MEMBERP                   | *TODO* PO            |
-|                    | SPLITSCREEN    | OR            | *TODO* KEYP            | MEMBER?                   | *TODO* POT           |
-|                    | SS             | NOT           | *TODO* KEY?            | SUBSTRINGP                | *TODO* ERASE         |
+|                    | SPLITSCREEN    | OR            | KEYP                   | MEMBER?                   | *TODO* POT           |
+|                    | SS             | NOT           | KEY?                   | SUBSTRINGP                | *TODO* ERASE         |
 |                    | SETSCRUNCH     | +             | *TODO* CLEARTEXT       | SUBSTRING?                | *TODO* ER            |
 |                    | SHOWNP         | *             | *TODO* CT              | NUMBERP                   | *TODO* ERALL         |
 |                    | SHOWN?         | /             | *TODO* SETCURSOR       | NUMBER?                   | *TODO* ERPS          |

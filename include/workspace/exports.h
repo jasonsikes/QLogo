@@ -81,6 +81,7 @@ EXPORTC double stdReadPos(void);
 EXPORTC void stdSetWritePos(int32_t pos);
 EXPORTC double stdWritePos(void);
 EXPORTC bool stdEofp(void);
+EXPORTC bool stdKeyp(void);
 
 //  -------------------------------------------------------------------
 //  exports_controlstructures.cpp

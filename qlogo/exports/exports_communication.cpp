@@ -647,3 +647,9 @@ EXPORTC bool stdEofp(void)
     return StreamManager::get().readerAtEnd();
 }
 
+/// KEYP / KEY?: true if a character is waiting on the current reader.
+EXPORTC bool stdKeyp(void)
+{
+    return StreamManager::get().keyAvailable();
+}
+
