@@ -742,3 +742,19 @@ Value *Compiler::genWritepos(const DatumPtr &node, TypeMask expected)
     Q_ASSERT(expected && TypeReal);
     return generateCallExtern(stdWritePos);
 }
+
+/***DOC EOFP EOF?
+EOFP
+EOF?
+
+    predicate, outputs TRUE if there are no more characters to be
+    read in the read stream file, FALSE otherwise.
+
+COD***/
+// CMD EOFP 0 0 0 b
+// CMD EOF? 0 0 0 b
+Value *Compiler::genEofp(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeBool);
+    return generateCallExtern(stdEofp);
+}

@@ -80,6 +80,7 @@ EXPORTC void stdSetReadPos(int32_t pos);
 EXPORTC double stdReadPos(void);
 EXPORTC void stdSetWritePos(int32_t pos);
 EXPORTC double stdWritePos(void);
+EXPORTC bool stdEofp(void);
 
 //  -------------------------------------------------------------------
 //  exports_controlstructures.cpp

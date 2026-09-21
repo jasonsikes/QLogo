@@ -641,3 +641,9 @@ EXPORTC double stdWritePos(void)
     return static_cast<double>(StreamManager::get().writePos());
 }
 
+/// EOFP / EOF?: true if the current reader has no more characters.
+EXPORTC bool stdEofp(void)
+{
+    return StreamManager::get().readerAtEnd();
+}
+

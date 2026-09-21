@@ -1,0 +1,5 @@
+openread "OPENREAD_data.txt
+setread "OPENREAD_data.txt
+make "a readword
+print eofp
+close "OPENREAD_data.txt

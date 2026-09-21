@@ -522,6 +522,18 @@ const QString &StringConstants::cmdStrWRITEPOS()
     return str;
 }
 
+const QString &StringConstants::cmdStrEOFP()
+{
+    static const QString str = QObject::tr("EOFP");
+    return str;
+}
+
+const QString &StringConstants::cmdStrEOF_Q()
+{
+    static const QString str = QObject::tr("EOF?");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

@@ -121,8 +121,8 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | SETLABELHEIGHT | BITXOR        | SETWRITEPOS            | NOTEQUAL?                 | *TODO* PLISTS        |
 |                    | TEXTSCREEN     | BITNOT        | READPOS                | BEFOREP                   | *TODO* ARITY         |
 |                    | TS             | ASHIFT        | WRITEPOS               | BEFORE?                   | *TODO* NODES         |
-|                    | FULLSCREEN     | LSHIFT        | *TODO* EOFP            | .EQ                       | *TODO* PRINTOUT      |
-|                    | FS             | AND           | *TODO* EOF?            | MEMBERP                   | *TODO* PO            |
+|                    | FULLSCREEN     | LSHIFT        | EOFP                   | .EQ                       | *TODO* PRINTOUT      |
+|                    | FS             | AND           | EOF?                   | MEMBERP                   | *TODO* PO            |
 |                    | SPLITSCREEN    | OR            | *TODO* KEYP            | MEMBER?                   | *TODO* POT           |
 |                    | SS             | NOT           | *TODO* KEY?            | SUBSTRINGP                | *TODO* ERASE         |
 |                    | SETSCRUNCH     | +             | *TODO* CLEARTEXT       | SUBSTRING?                | *TODO* ER            |
