@@ -497,3 +497,28 @@ Value *Compiler::genAllopen(const DatumPtr &node, TypeMask expected)
     Q_ASSERT(expected && TypeDatum);
     return generateCallExtern(stdAllOpen, PaAddr(scaff_->evaluator_));
 }
+
+/***DOC ERASEFILE ERF
+ERASEFILE filename
+ERF filename
+
+    command.  Erases (deletes, removes) the named file, which should not
+    currently be open.
+
+COD***/
+// CMD ERASEFILE 1 1 1 n
+// CMD ERF 1 1 1 n
+Value *Compiler::genErasefile(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *filename = generateChild(node.astnodeValue(), 0, TypeDatum);
+    filename = generateFromDatum(Datum::typeWord, node.astnodeValue(), filename);
+
+    Value *retval = generateCallExtern(
+        stdEraseFile,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(filename));
+    return generateNotFlowControl(retval);
+}

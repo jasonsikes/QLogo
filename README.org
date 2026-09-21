@@ -108,9 +108,9 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 | ERROR              | ST             | LESSP         | OPENUPDATE             | .SETBF                    | *TODO* DEFINEDP      |
 | PAUSE              | HIDETURTLE     | LESS?         | CLOSE                  | .SETITEM                  | *TODO* DEFINED?      |
 | CONTINUE           | HT             | GREATERP      | ALLOPEN                | WORDP                     | *TODO* NAMEP         |
-| CO                 | CLEAN          | GREATER?      | *TODO* CLOSEALL        | WORD?                     | *TODO* NAME?         |
-| TAG                | CLEARSCREEN    | LESSEQUALP    | *TODO* ERASEFILE       | LISTP                     | *TODO* PLISTP        |
-| GOTO               | CS             | LESSEQUAL?    | *TODO* ERF             | LIST?                     | *TODO* PLIST?        |
+| CO                 | CLEAN          | GREATER?      | *LIBRARY* CLOSEALL     | WORD?                     | *TODO* NAME?         |
+| TAG                | CLEARSCREEN    | LESSEQUALP    | ERASEFILE              | LISTP                     | *TODO* PLISTP        |
+| GOTO               | CS             | LESSEQUAL?    | ERF                    | LIST?                     | *TODO* PLIST?        |
 | APPLY              | WRAP           | GREATEREQUALP | *TODO* DRIBBLE         | ARRAYP                    | *TODO* CONTENTS      |
 | ?                  | WINDOW         | GREATEREQUAL? | *TODO* NODRIBBLE       | ARRAY?                    | *TODO* BURIED        |
 |                    | FENCE          | RANDOM        | *TODO* SETREAD         | EMPTYP                    | *TODO* TRACED        |

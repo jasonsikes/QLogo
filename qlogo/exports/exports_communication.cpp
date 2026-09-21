@@ -456,3 +456,25 @@ EXPORTC addr_t stdAllOpen(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
+/// ERASEFILE / ERF: delete a file from disk. The file must not be open.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param filenameAddr a word naming the file
+/// @return the owning ASTNode, or an Error if the file is open or cannot be removed.
+EXPORTC addr_t stdEraseFile(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *filename = reinterpret_cast<Datum *>(filenameAddr);
+    try
+    {
+        StreamManager::get().eraseFile(filename->wordValue()->toString());
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+

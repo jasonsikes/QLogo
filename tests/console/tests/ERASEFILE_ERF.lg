@@ -1,0 +1,4 @@
+openwrite "ERASEFILE_ERF_tmp.txt
+close "ERASEFILE_ERF_tmp.txt
+erf "ERASEFILE_ERF_tmp.txt
+openread "ERASEFILE_ERF_tmp.txt

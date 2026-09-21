@@ -1,0 +1,4 @@
+openwrite "ERASEFILE_tmp.txt
+close "ERASEFILE_tmp.txt
+erasefile "ERASEFILE_tmp.txt
+openread "ERASEFILE_tmp.txt

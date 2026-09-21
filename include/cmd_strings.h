@@ -82,6 +82,8 @@ const QString &cmdStrOPENAPPEND();
 const QString &cmdStrOPENUPDATE();
 const QString &cmdStrCLOSE();
 const QString &cmdStrALLOPEN();
+const QString &cmdStrERASEFILE();
+const QString &cmdStrERF();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();

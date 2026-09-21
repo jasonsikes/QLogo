@@ -450,6 +450,18 @@ const QString &StringConstants::cmdStrALLOPEN()
     return str;
 }
 
+const QString &StringConstants::cmdStrERASEFILE()
+{
+    static const QString str = QObject::tr("ERASEFILE");
+    return str;
+}
+
+const QString &StringConstants::cmdStrERF()
+{
+    static const QString str = QObject::tr("ERF");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");
