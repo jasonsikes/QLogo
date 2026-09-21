@@ -119,37 +119,39 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | FILLED         | BITAND        | WRITER                 | EQUAL?                    | *TODO* PRIMITIVES    |
 |                    | LABEL          | BITOR         | SETREADPOS             | NOTEQUALP                 | *TODO* NAMES         |
 |                    | SETLABELHEIGHT | BITXOR        | SETWRITEPOS            | NOTEQUAL?                 | *TODO* PLISTS        |
-|                    | TEXTSCREEN     | BITNOT        | READPOS                | BEFOREP                   | *TODO* ARITY         |
-|                    | TS             | ASHIFT        | WRITEPOS               | BEFORE?                   | *TODO* NODES         |
-|                    | FULLSCREEN     | LSHIFT        | EOFP                   | .EQ                       | *TODO* PRINTOUT      |
-|                    | FS             | AND           | EOF?                   | MEMBERP                   | *TODO* PO            |
-|                    | SPLITSCREEN    | OR            | KEYP                   | MEMBER?                   | *TODO* POT           |
-|                    | SS             | NOT           | KEY?                   | SUBSTRINGP                | *TODO* ERASE         |
-|                    | SETSCRUNCH     | +             | CLEARTEXT              | SUBSTRING?                | *TODO* ER            |
-|                    | SHOWNP         | *             | CT                     | NUMBERP                   | *TODO* ERALL         |
-|                    | SHOWN?         | /             | SETCURSOR              | NUMBER?                   | *TODO* ERPS          |
-|                    | SCREENMODE     | <             | CURSOR                 | VBARREDP                  | *TODO* ERNS          |
-|                    | TURTLEMODE     | >             | SETTEXTCOLOR           | VBARRED?                  | *TODO* ERPLS         |
-|                    | LABELSIZE      | =             | SETTC                  | COUNT                     | *TODO* BURY          |
-|                    | *NO* MATRIX    | <=            | INCREASEFONT           | ASCII                     | *TODO* UNBURY        |
-|                    | PENDOWN        | >=            | DECREASEFONT           | RAWASCII                  | *TODO* BURIEDP       |
-|                    | PD             | <>            | SETTEXTSIZE            | CHAR                      | *TODO* BURIED?       |
-|                    | PENUP          |               | TEXTSIZE               | MEMBER                    | *TODO* TRACE         |
-|                    | PU             |               | SETFONT                | LOWERCASE                 | *TODO* UNTRACE       |
-|                    | PENPAINT       |               | FONT                   | UPPERCASE                 | *TODO* TRACEDP       |
-|                    | PPT            |               | ALLFONTS               | STANDOUT                  | *TODO* TRACED?       |
-|                    | PENERASE       |               | CURSORINSERT           | PARSE                     | *TODO* STEP          |
-|                    | PE             |               | CURSOROVERWRITE        | RUNPARSE                  | *TODO* UNSTEP        |
-|                    | PENREVERSE     |               | CURSORMODE             |                           | *TODO* STEPPEDP      |
-|                    | PX             |               | WAIT                   |                           | *TODO* STEPPED?      |
-|                    | SETPENCOLOR    |               |                        |                           | *TODO* EDIT          |
-|                    | SETPC          |               |                        |                           | *TODO* ED            |
-|                    | ALLCOLORS      |               |                        |                           | *TODO* EDITFILE      |
-|                    | SETPALETTE     |               |                        |                           | *TODO* SAVE          |
-|                    | SETPENSIZE     |               |                        |                           | *TODO* LOAD          |
-|                    | SETBACKGROUND  |               |                        |                           | *TODO* HELP          |
-|                    | SETBG          |               |                        |                           | *TODO* FOO           |
-|                    | PENDOWNP       |               |                        |                           | *TODO* SETFOO        |
+|                    | SETLABELFONT   | BITNOT        | READPOS                | BEFOREP                   | *TODO* ARITY         |
+|                    | TEXTSCREEN     | ASHIFT        | WRITEPOS               | BEFORE?                   | *TODO* NODES         |
+|                    | TS             | LSHIFT        | EOFP                   | .EQ                       | *TODO* PRINTOUT      |
+|                    | FULLSCREEN     | AND           | EOF?                   | MEMBERP                   | *TODO* PO            |
+|                    | FS             | OR            | KEYP                   | MEMBER?                   | *TODO* POT           |
+|                    | SPLITSCREEN    | NOT           | KEY?                   | SUBSTRINGP                | *TODO* ERASE         |
+|                    | SS             | +             | CLEARTEXT              | SUBSTRING?                | *TODO* ER            |
+|                    | SETSCRUNCH     | *             | CT                     | NUMBERP                   | *TODO* ERALL         |
+|                    | SHOWNP         | /             | SETCURSOR              | NUMBER?                   | *TODO* ERPS          |
+|                    | SHOWN?         | <             | CURSOR                 | VBARREDP                  | *TODO* ERNS          |
+|                    | SCREENMODE     | >             | SETTEXTCOLOR           | VBARRED?                  | *TODO* ERPLS         |
+|                    | TURTLEMODE     | =             | SETTC                  | COUNT                     | *TODO* BURY          |
+|                    | LABELSIZE      | <=            | INCREASEFONT           | ASCII                     | *TODO* UNBURY        |
+|                    | LABELFONT      | >=            | DECREASEFONT           | RAWASCII                  | *TODO* BURIEDP       |
+|                    | *NO* MATRIX    | <>            | SETTEXTSIZE            | CHAR                      | *TODO* BURIED?       |
+|                    | PENDOWN        |               | TEXTSIZE               | MEMBER                    | *TODO* TRACE         |
+|                    | PD             |               | SETFONT                | LOWERCASE                 | *TODO* UNTRACE       |
+|                    | PENUP          |               | FONT                   | UPPERCASE                 | *TODO* TRACEDP       |
+|                    | PU             |               | ALLFONTS               | STANDOUT                  | *TODO* TRACED?       |
+|                    | PENPAINT       |               | CURSORINSERT           | PARSE                     | *TODO* STEP          |
+|                    | PPT            |               | CURSOROVERWRITE        | RUNPARSE                  | *TODO* UNSTEP        |
+|                    | PENERASE       |               | CURSORMODE             |                           | *TODO* STEPPEDP      |
+|                    | PE             |               | WAIT                   |                           | *TODO* STEPPED?      |
+|                    | PENREVERSE     |               |                        |                           | *TODO* EDIT          |
+|                    | PX             |               |                        |                           | *TODO* ED            |
+|                    | SETPENCOLOR    |               |                        |                           | *TODO* EDITFILE      |
+|                    | SETPC          |               |                        |                           | *TODO* SAVE          |
+|                    | ALLCOLORS      |               |                        |                           | *TODO* LOAD          |
+|                    | SETPALETTE     |               |                        |                           | *TODO* HELP          |
+|                    | SETPENSIZE     |               |                        |                           | *TODO* FOO           |
+|                    | SETBACKGROUND  |               |                        |                           | *TODO* SETFOO        |
+|                    | SETBG          |               |                        |                           |                      |
+|                    | PENDOWNP       |               |                        |                           |                      |
 |                    | PENDOWN?       |               |                        |                           |                      |
 |                    | PENMODE        |               |                        |                           |                      |
 |                    | PENCOLOR       |               |                        |                           |                      |
@@ -166,7 +168,6 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | BUTTONP        |               |                        |                           |                      |
 |                    | BUTTON?        |               |                        |                           |                      |
 |                    | BUTTON         |               |                        |                           |                      |
-|                    |                |               |                        |                           |                      |
 
 
 The differences between QLogo and UCBLogo are described in the *nuances* section below.
@@ -297,6 +298,10 @@ Qt has strong support for internationalization, but in QLogo it is only partiall
 
 In Psychi it returns a list of all the fonts available on your system. On the command-line interface it outputs the empty list.
 
+**** ~SETLABELFONT~ and ~LABELFONT~:
+
+These set and report the font family used by ~LABEL~ on the turtle canvas. They are GUI-only; the command-line interpreter reports that graphics are not available.
+
 **** ~ALLCOLORS~:
 
 Returns a list of all the named colors that QLogo knows about.
@@ -355,7 +360,7 @@ On the command-line interface this is a no-op. A parenthesized call with one inp
 
 **** ~SETTEXTSIZE~, ~TEXTSIZE~, ~INCREASEFONT~, ~DECREASEFONT~, ~SETFONT~, and ~FONT~:
 
-On the command-line interface ~SETTEXTSIZE~, ~INCREASEFONT~, ~DECREASEFONT~, and ~SETFONT~ are no-ops; ~TEXTSIZE~ outputs ~12~ and ~FONT~ outputs the empty word. ~INCREASEFONT~ and ~DECREASEFONT~ change the point size by 2; ~DECREASEFONT~ will not go below 2. ~SETFONT~ and ~FONT~ apply to the text and edit windows, not the turtle canvas. (UCBLogo's ~SETTEXTFONT~ is ~SETFONT~ in QLogo.)
+On the command-line interface ~SETTEXTSIZE~, ~INCREASEFONT~, ~DECREASEFONT~, and ~SETFONT~ are no-ops; ~TEXTSIZE~ outputs ~12~ and ~FONT~ outputs the empty word. ~INCREASEFONT~ and ~DECREASEFONT~ change the point size by 2; ~DECREASEFONT~ will not go below 2. ~SETFONT~ and ~FONT~ apply to the text and edit windows, not the turtle canvas. Use ~SETLABELFONT~ and ~LABELFONT~ for the font family of ~LABEL~ on the canvas.
 
 **** ~OPENREAD~, ~OPENWRITE~, ~OPENAPPEND~, and ~OPENUPDATE~:
 

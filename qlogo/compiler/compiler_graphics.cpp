@@ -488,6 +488,24 @@ Value *Compiler::genSetlabelheight(const DatumPtr &node, TypeMask expected)
     generateCallExtern(setLabelHeight, PaDouble(height));
     return generateVoidRetval(node);
 }
+
+/***DOC SETLABELFONT
+SETLABELFONT fontname
+
+    command (GUI only). Set the font family used by LABEL in the
+    graphics window to the one named by the input.  See ALLFONTS
+    for a list of all fonts available on your system.
+
+COD***/
+// CMD SETLABELFONT 1 1 1 n
+Value *Compiler::genSetlabelfont(const DatumPtr &node, TypeMask expected)
+{
+    CHECK_GRAPHICS_MODE
+    Value *name = generateChild(node.astnodeValue(), 0, TypeDatum);
+    name = generateWordFromDatum(node.astnodeValue(), name);
+    generateCallExtern(setLabelFontName, PaAddr(name));
+    return generateVoidRetval(node);
+}
 /***DOC TEXTSCREEN TS
 TEXTSCREEN
 TS
@@ -622,6 +640,19 @@ Value *Compiler::genLabelsize(const DatumPtr &node, TypeMask expected)
 {
     CHECK_GRAPHICS_MODE
     return generateCallExtern(getLabelSize, PaAddr(scaff_->evaluator_));
+}
+
+/***DOC LABELFONT
+LABELFONT
+
+    outputs the font family used by LABEL in the graphics window.
+
+COD***/
+// CMD LABELFONT 0 0 0 d
+Value *Compiler::genLabelfont(const DatumPtr &node, TypeMask expected)
+{
+    CHECK_GRAPHICS_MODE
+    return generateCallExtern(getLabelFontName, PaAddr(scaff_->evaluator_));
 }
 // PEN AND BACKGROUND CONTROL
 

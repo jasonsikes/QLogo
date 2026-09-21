@@ -1350,6 +1350,12 @@ const QString &StringConstants::cmdStrSETLABELHEIGHT()
     return str;
 }
 
+const QString &StringConstants::cmdStrSETLABELFONT()
+{
+    static const QString str = QObject::tr("SETLABELFONT");
+    return str;
+}
+
 const QString &StringConstants::cmdStrTEXTSCREEN()
 {
     static const QString str = QObject::tr("TEXTSCREEN");
@@ -1419,6 +1425,12 @@ const QString &StringConstants::cmdStrTURTLEMODE()
 const QString &StringConstants::cmdStrLABELSIZE()
 {
     static const QString str = QObject::tr("LABELSIZE");
+    return str;
+}
+
+const QString &StringConstants::cmdStrLABELFONT()
+{
+    static const QString str = QObject::tr("LABELFONT");
     return str;
 }
 

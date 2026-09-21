@@ -228,6 +228,12 @@ EXPORTC void setLabelHeight(double height)
     Config::get().mainInterface()->setLabelFontSize(height);
 }
 
+EXPORTC void setLabelFontName(addr_t nameAddr)
+{
+    auto *w = reinterpret_cast<Word *>(nameAddr);
+    Config::get().mainInterface()->setLabelFontName(w->toString());
+}
+
 EXPORTC void setScreenMode(uint32_t mode)
 {
     Config::get().mainInterface()->setScreenMode(static_cast<ScreenModeEnum>(mode));
@@ -293,6 +299,17 @@ EXPORTC addr_t getLabelSize(addr_t eAddr)
     Datum *retval = retvalBuilder.finishedList().datumValue();
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
+}
+
+EXPORTC addr_t getLabelFontName(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    QString name = Config::get().mainInterface()->getLabelFontName();
+    if (name.isNull())
+        name = QStringLiteral("");
+    auto *word = new Word(name);
+    e->watch(word);
+    return reinterpret_cast<addr_t>(word);
 }
 
 EXPORTC void setPenIsDown(bool isDown)
