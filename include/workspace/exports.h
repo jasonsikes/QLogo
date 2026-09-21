@@ -78,6 +78,8 @@ EXPORTC addr_t stdSetWrite(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr);
 EXPORTC addr_t stdWriter(addr_t eAddr);
 EXPORTC void stdSetReadPos(int32_t pos);
 EXPORTC double stdReadPos(void);
+EXPORTC void stdSetWritePos(int32_t pos);
+EXPORTC double stdWritePos(void);
 
 //  -------------------------------------------------------------------
 //  exports_controlstructures.cpp

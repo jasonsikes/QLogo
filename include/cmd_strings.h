@@ -92,6 +92,8 @@ const QString &cmdStrSETWRITE();
 const QString &cmdStrWRITER();
 const QString &cmdStrSETREADPOS();
 const QString &cmdStrREADPOS();
+const QString &cmdStrSETWRITEPOS();
+const QString &cmdStrWRITEPOS();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();

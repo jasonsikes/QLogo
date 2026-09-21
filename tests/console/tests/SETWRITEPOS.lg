@@ -1,0 +1,9 @@
+openwrite "SETWRITEPOS_tmp.txt
+setwrite "SETWRITEPOS_tmp.txt
+type "hello
+setwritepos 1
+make "p writepos
+setwrite []
+close "SETWRITEPOS_tmp.txt
+erf "SETWRITEPOS_tmp.txt
+print :p

@@ -629,3 +629,15 @@ EXPORTC double stdReadPos(void)
     return static_cast<double>(StreamManager::get().readPos());
 }
 
+/// SETWRITEPOS: seek the current writer. No-op if the writer is the terminal.
+EXPORTC void stdSetWritePos(int32_t pos)
+{
+    StreamManager::get().setWritePos(pos);
+}
+
+/// WRITEPOS: current position of the writer, or 0 if the writer is the terminal.
+EXPORTC double stdWritePos(void)
+{
+    return static_cast<double>(StreamManager::get().writePos());
+}
+

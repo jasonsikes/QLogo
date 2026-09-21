@@ -1,0 +1,8 @@
+openwrite "WRITEPOS_offset_tmp.txt
+setwrite "WRITEPOS_offset_tmp.txt
+type "hello
+make "p writepos
+setwrite []
+close "WRITEPOS_offset_tmp.txt
+erf "WRITEPOS_offset_tmp.txt
+print :p

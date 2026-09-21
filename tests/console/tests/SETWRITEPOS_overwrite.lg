@@ -1,0 +1,12 @@
+openwrite "SETWRITEPOS_overwrite_tmp.txt
+setwrite "SETWRITEPOS_overwrite_tmp.txt
+type "hello
+setwritepos 1
+type "a
+setwrite []
+close "SETWRITEPOS_overwrite_tmp.txt
+openread "SETWRITEPOS_overwrite_tmp.txt
+setread "SETWRITEPOS_overwrite_tmp.txt
+print readword
+close "SETWRITEPOS_overwrite_tmp.txt
+erf "SETWRITEPOS_overwrite_tmp.txt

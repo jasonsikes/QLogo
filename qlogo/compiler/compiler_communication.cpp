@@ -709,3 +709,36 @@ Value *Compiler::genReadpos(const DatumPtr &node, TypeMask expected)
     Q_ASSERT(expected && TypeReal);
     return generateCallExtern(stdReadPos);
 }
+
+/***DOC SETWRITEPOS
+SETWRITEPOS charpos
+
+    command.  Sets the file pointer of the write stream file so that the
+    next PRINT, etc., will begin writing at the "charpos"th character
+    in the file, counting from 0.  (That is, SETWRITEPOS 0 will start
+    writing from the beginning of the file.)  Meaningless if the write
+    stream is the screen.
+
+COD***/
+// CMD SETWRITEPOS 1 1 1 n
+Value *Compiler::genSetwritepos(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
+    Value *pos = generateNotNegativeInt32FromDouble(node.astnodeValue(), num);
+    generateCallExtern(stdSetWritePos, PaInt32(pos));
+    return generateVoidRetval(node);
+}
+
+/***DOC WRITEPOS
+WRITEPOS
+
+    outputs the file position of the current write stream file.
+
+COD***/
+// CMD WRITEPOS 0 0 0 r
+Value *Compiler::genWritepos(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeReal);
+    return generateCallExtern(stdWritePos);
+}

@@ -69,6 +69,8 @@ llvm::Value *genSetwrite(const DatumPtr &node, TypeMask expected);
 llvm::Value *genWriter(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSetreadpos(const DatumPtr &node, TypeMask expected);
 llvm::Value *genReadpos(const DatumPtr &node, TypeMask expected);
+llvm::Value *genSetwritepos(const DatumPtr &node, TypeMask expected);
+llvm::Value *genWritepos(const DatumPtr &node, TypeMask expected);
 llvm::Value *genIfelse(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRun(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRepeat(const DatumPtr &node, TypeMask expected);

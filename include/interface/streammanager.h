@@ -290,7 +290,9 @@ class StreamManager
     void setReadPos(qint64 pos);
 
     /// @brief WRITEPOS: current position of the active writer.
-    qint64 writePos() const;
+    /// @details Flushes the writer first so the reported position includes
+    /// buffered output. Returns 0 if the writer is the terminal.
+    qint64 writePos();
 
     /// @brief SETWRITEPOS: seek the active writer.
     void setWritePos(qint64 pos);

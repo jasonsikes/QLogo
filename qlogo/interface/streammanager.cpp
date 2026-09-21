@@ -218,11 +218,12 @@ void StreamManager::setReadPos(qint64 pos)
     istreamRead_->seek(pos);
 }
 
-qint64 StreamManager::writePos() const
+qint64 StreamManager::writePos()
 {
     TextStream *writer = activeWriter();
     if (writer == terminalStream_)
         return 0;
+    writer->flush();
     return writer->pos();
 }
 
