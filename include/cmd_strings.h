@@ -100,6 +100,8 @@ const QString &cmdStrKEYP();
 const QString &cmdStrKEY_Q();
 const QString &cmdStrCLEARTEXT();
 const QString &cmdStrCT();
+const QString &cmdStrSETCURSOR();
+const QString &cmdStrCURSOR();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();

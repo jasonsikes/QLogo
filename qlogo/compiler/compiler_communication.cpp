@@ -797,3 +797,44 @@ Value *Compiler::genCleartext(const DatumPtr &node, TypeMask expected)
     generateCallExtern(stdClearText);
     return generateVoidRetval(node);
 }
+
+/***DOC SETCURSOR
+SETCURSOR vector
+
+    command.  The input is a list of two numbers, the column and row
+    coordinates of a text window position (origin in the upper left
+    corner, positive direction is southeast).  The text cursor is
+    moved to the requested position.  In the GUI the text console may
+    scroll to reveal the requested position if it was previously
+    outside of the viewing area.  This command also forces the
+    immediate printing of any buffered characters.
+
+COD***/
+// CMD SETCURSOR 1 1 1 n
+Value *Compiler::genSetcursor(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    AllocaInst *posAry = generateNumberAryFromDatum(node.astnodeValue(), node.astnodeValue()->childAtIndex(0), 2);
+    Value *colPtr = scaff_->builder_.CreateConstInBoundsGEP1_32(TyDouble, posAry, 0, DBG_NAME("colPtr"));
+    Value *rowPtr = scaff_->builder_.CreateConstInBoundsGEP1_32(TyDouble, posAry, 1, DBG_NAME("rowPtr"));
+    Value *colD = scaff_->builder_.CreateLoad(TyDouble, colPtr, DBG_NAME("col"));
+    Value *rowD = scaff_->builder_.CreateLoad(TyDouble, rowPtr, DBG_NAME("row"));
+    Value *col = generateNotNegativeInt32FromDouble(node.astnodeValue(), colD);
+    Value *row = generateNotNegativeInt32FromDouble(node.astnodeValue(), rowD);
+    generateCallExtern(stdSetCursor, PaInt32(row), PaInt32(col));
+    return generateVoidRetval(node);
+}
+
+/***DOC CURSOR
+CURSOR
+
+    outputs a list containing the current column and row coordinates of
+    the text cursor.
+
+COD***/
+// CMD CURSOR 0 0 0 d
+Value *Compiler::genCursor(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdCursor, PaAddr(scaff_->evaluator_));
+}

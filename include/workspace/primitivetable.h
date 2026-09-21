@@ -95,6 +95,8 @@ stringToCmd.insert(StringConstants::cmdStrKEYP(), Cmd_t{&Compiler::genKeyp, 0, 0
 stringToCmd.insert(StringConstants::cmdStrKEY_Q(), Cmd_t{&Compiler::genKeyp, 0, 0, 0, TypeB});
 stringToCmd.insert(StringConstants::cmdStrCLEARTEXT(), Cmd_t{&Compiler::genCleartext, 0, 0, 0, TypeN});
 stringToCmd.insert(StringConstants::cmdStrCT(), Cmd_t{&Compiler::genCleartext, 0, 0, 0, TypeN});
+stringToCmd.insert(StringConstants::cmdStrSETCURSOR(), Cmd_t{&Compiler::genSetcursor, 1, 1, 1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrCURSOR(), Cmd_t{&Compiler::genCursor, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrIF(), Cmd_t{&Compiler::genIfelse, 2, 2, 3, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrIFELSE(), Cmd_t{&Compiler::genIfelse, 3, 3, 3, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrRUN(), Cmd_t{&Compiler::genRun, 1, 1, 1, TypeDN});

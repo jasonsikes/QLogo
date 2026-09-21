@@ -207,6 +207,16 @@ void StreamManager::clearText()
     Config::get().mainInterface()->clearScreenText();
 }
 
+void StreamManager::setTextCursor(int row, int col)
+{
+    Config::get().mainInterface()->setTextCursorPos(row, col);
+}
+
+void StreamManager::getTextCursor(int &row, int &col)
+{
+    Config::get().mainInterface()->getTextCursorPos(row, col);
+}
+
 /************ read/write positions ************/
 
 qint64 StreamManager::readPos() const

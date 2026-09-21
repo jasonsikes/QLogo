@@ -127,8 +127,8 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | SS             | NOT           | KEY?                   | SUBSTRINGP                | *TODO* ERASE         |
 |                    | SETSCRUNCH     | +             | CLEARTEXT              | SUBSTRING?                | *TODO* ER            |
 |                    | SHOWNP         | *             | CT                     | NUMBERP                   | *TODO* ERALL         |
-|                    | SHOWN?         | /             | *TODO* SETCURSOR       | NUMBER?                   | *TODO* ERPS          |
-|                    | SCREENMODE     | <             | *TODO* CURSOR          | VBARREDP                  | *TODO* ERNS          |
+|                    | SHOWN?         | /             | SETCURSOR              | NUMBER?                   | *TODO* ERPS          |
+|                    | SCREENMODE     | <             | CURSOR                 | VBARREDP                  | *TODO* ERNS          |
 |                    | TURTLEMODE     | >             | *TODO* SETTEXTCOLOR    | VBARRED?                  | *TODO* ERPLS         |
 |                    | LABELSIZE      | =             | *TODO* SETTC           | COUNT                     | *TODO* BURY          |
 |                    | *NO* MATRIX    | <=            | *TODO* INCREASEFONT    | ASCII                     | *TODO* UNBURY        |
@@ -348,6 +348,10 @@ GUI only. Presents a modal file dialog so the user can select a file. Outputs th
 **** ~LPUT~ and ~FPUT~:
 
 When using the Word form of ~LPUT~ and ~FPUT~, there is no single-character limitation. I'm not sure why that limitation is necessary in UCBLogo.
+
+**** ~CURSOR~ and ~SETCURSOR~:
+
+On the command-line interface ~SETCURSOR~ is a no-op and ~CURSOR~ outputs ~[0 0]~.
 
 **** ~OPENREAD~, ~OPENWRITE~, ~OPENAPPEND~, and ~OPENUPDATE~:
 

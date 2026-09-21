@@ -355,23 +355,25 @@ class LogoInterface : public QObject
     }
 
     /// @brief Sets the cursor position.
-    /// @param x The x coordinate of the cursor.
-    /// @param y The y coordinate of the cursor.
-    /// @note The base method triggers an error message. Subclasses can override this method to
-    /// perform the necessary tasks to set the cursor position.
+    /// @param x The row of the cursor.
+    /// @param y The column of the cursor.
+    /// @note The base method is a no-op; the command-line interface has no
+    /// text window. Subclasses can override this method to set the GUI cursor.
     virtual void setTextCursorPos(int x, int y)
     {
-        exit(1);
+        Q_UNUSED(x);
+        Q_UNUSED(y);
     }
 
     /// @brief Returns the cursor position.
-    /// @param x The x coordinate of the cursor.
-    /// @param y The y coordinate of the cursor.
-    /// @note The base method triggers an error message. Subclasses can override this method to
-    /// perform the necessary tasks to return the cursor position.
+    /// @param x The row of the cursor.
+    /// @param y The column of the cursor.
+    /// @note The base method reports [0 0]; the command-line interface has no
+    /// text window. Subclasses can override this method to return the GUI cursor.
     virtual void getTextCursorPos(int &x, int &y)
     {
-        exit(1);
+        x = 0;
+        y = 0;
     }
 
     /// @brief Sets the text color.

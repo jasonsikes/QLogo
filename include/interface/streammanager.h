@@ -332,6 +332,15 @@ class StreamManager
     /// interface has no text window, so this is a no-op. Not dribbled.
     void clearText();
 
+    /// @brief SETCURSOR: move the text console cursor to the given row and column.
+    /// @details In Psychi this moves the console widget cursor. The command-line
+    /// interface has no text window, so this is a no-op. Not dribbled.
+    void setTextCursor(int row, int col);
+
+    /// @brief CURSOR: current text console cursor row and column.
+    /// @details On the command-line interface both values are 0.
+    void getTextCursor(int &row, int &col);
+
     /************ command interpreter ************/
     //
     // The commander (istreamProgram_) is always valid (terminal by default).

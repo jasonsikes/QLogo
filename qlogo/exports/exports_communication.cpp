@@ -659,3 +659,25 @@ EXPORTC void stdClearText(void)
     StreamManager::get().clearText();
 }
 
+/// SETCURSOR: move the text console cursor. Logo order is [column row];
+/// the interface uses row, then column.
+EXPORTC void stdSetCursor(int32_t row, int32_t col)
+{
+    StreamManager::get().setTextCursor(row, col);
+}
+
+/// CURSOR: current text console cursor as a two-number list [column row].
+EXPORTC addr_t stdCursor(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    int row = 0;
+    int col = 0;
+    StreamManager::get().getTextCursor(row, col);
+    ListBuilder builder;
+    builder.append(DatumPtr(col));
+    builder.append(DatumPtr(row));
+    DatumPtr retval = builder.finishedList();
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval.datumValue());
+}
+

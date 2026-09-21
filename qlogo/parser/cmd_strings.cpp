@@ -558,6 +558,18 @@ const QString &StringConstants::cmdStrCT()
     return str;
 }
 
+const QString &StringConstants::cmdStrSETCURSOR()
+{
+    static const QString str = QObject::tr("SETCURSOR");
+    return str;
+}
+
+const QString &StringConstants::cmdStrCURSOR()
+{
+    static const QString str = QObject::tr("CURSOR");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");
