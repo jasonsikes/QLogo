@@ -318,6 +318,12 @@ class LogoInterfaceGUI : public LogoInterface
 
     /// @brief Clears all of the text from the GUI console.
     void clearScreenText() override;
+
+    /// @brief Delay execution by asking Psychi to run a timer.
+    /// @param msecs Milliseconds to wait.
+    /// @details Sends W_TIMER_START and blocks until W_TIMER_END arrives so
+    /// mouse, keyboard, and other UI messages can still be processed.
+    void mwait(unsigned long msecs) override;
 };
 
 #endif // LOGOINTERFACEGUI_H

@@ -654,6 +654,12 @@ const QString &StringConstants::cmdStrCURSORMODE()
     return str;
 }
 
+const QString &StringConstants::cmdStrWAIT()
+{
+    static const QString str = QObject::tr("WAIT");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

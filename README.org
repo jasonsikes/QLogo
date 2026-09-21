@@ -141,7 +141,7 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | PENERASE       |               | CURSORINSERT           | PARSE                     | *TODO* STEP          |
 |                    | PE             |               | CURSOROVERWRITE        | RUNPARSE                  | *TODO* UNSTEP        |
 |                    | PENREVERSE     |               | CURSORMODE             |                           | *TODO* STEPPEDP      |
-|                    | PX             |               | *TODO* WAIT            |                           | *TODO* STEPPED?      |
+|                    | PX             |               | WAIT                   |                           | *TODO* STEPPED?      |
 |                    | SETPENCOLOR    |               |                        |                           | *TODO* EDIT          |
 |                    | SETPC          |               |                        |                           | *TODO* ED            |
 |                    | ALLCOLORS      |               |                        |                           | *TODO* EDITFILE      |
@@ -344,6 +344,10 @@ When using the Word form of ~LPUT~ and ~FPUT~, there is no single-character limi
 **** ~CURSOR~ and ~SETCURSOR~:
 
 On the command-line interface ~SETCURSOR~ is a no-op and ~CURSOR~ outputs ~[0 0]~.
+
+**** ~WAIT~:
+
+On the command-line interface QLogo flushes stdout and sleeps in-process. In Psychi, WAIT sends a timer-start message and yields until Psychi replies that the timer fired, so mouse, keyboard, and other UI events keep being handled during the delay.
 
 **** ~SETTEXTCOLOR~ and ~SETTC~:
 

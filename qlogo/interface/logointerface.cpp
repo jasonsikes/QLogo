@@ -20,6 +20,7 @@
 #include <QCoreApplication>
 #include <QFile>
 #include <QIODevice>
+#include <QThread>
 #include <cstdio>
 #include <csignal>
 
@@ -169,4 +170,10 @@ SignalsEnum_t LogoInterface::latestSignal()
 
 void LogoInterface::closeInterface()
 {
+}
+
+void LogoInterface::mwait(unsigned long msecs)
+{
+    fflush(stdout);
+    QThread::msleep(msecs);
 }

@@ -94,6 +94,7 @@ EXPORTC addr_t stdFont(addr_t eAddr);
 EXPORTC addr_t stdAllFonts(addr_t eAddr);
 EXPORTC void stdSetCursorOverwriteMode(bool overwrite);
 EXPORTC addr_t stdCursorMode(addr_t eAddr);
+EXPORTC addr_t stdWait(addr_t eAddr, addr_t astnodeAddr, double sixtieths);
 
 //  -------------------------------------------------------------------
 //  exports_controlstructures.cpp

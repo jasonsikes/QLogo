@@ -576,6 +576,12 @@ class LogoInterface : public QObject
         exit(1);
     }
 
+    /// @brief Delay execution for the given number of milliseconds.
+    /// @param msecs Milliseconds to wait. Zero flushes terminal output without sleeping.
+    /// @details The command-line interface flushes stdout and calls QThread::msleep.
+    /// The GUI override asks Psychi to run the timer so the UI stays responsive.
+    virtual void mwait(unsigned long msecs);
+
   protected:
     bool inputAtEof_ = false;
 };

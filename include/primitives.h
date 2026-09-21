@@ -87,6 +87,7 @@ llvm::Value *genAllfonts(const DatumPtr &node, TypeMask expected);
 llvm::Value *genCursorinsert(const DatumPtr &node, TypeMask expected);
 llvm::Value *genCursoroverwrite(const DatumPtr &node, TypeMask expected);
 llvm::Value *genCursormode(const DatumPtr &node, TypeMask expected);
+llvm::Value *genWait(const DatumPtr &node, TypeMask expected);
 llvm::Value *genIfelse(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRun(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRepeat(const DatumPtr &node, TypeMask expected);

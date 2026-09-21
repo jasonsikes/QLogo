@@ -42,6 +42,8 @@ enum messageCategory : message_t
     W_CLOSE_PIPE,           // The interpreter tells the GUI to close the iter-process pipe
     W_SET_SCREENMODE,       // Set the screenmode (splitscreen, fullscreen, textscreen)
     W_FILE_DIALOG_GET_PATH, // Query user for a file path using modal file dialog.
+    W_TIMER_START,          // QLogo asks Psychi to start a WAIT timer (qint32 msecs)
+    W_TIMER_END,            // Psychi reports that the WAIT timer fired
 
     S_SYSTEM,   // SYSTEM signal (End everything)
     S_TOPLEVEL, // TOPLEVEL signal (End currently-running procedure, drop back to prompt)

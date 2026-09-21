@@ -1049,3 +1049,23 @@ Value *Compiler::genCursormode(const DatumPtr &node, TypeMask expected)
     Q_ASSERT(expected && TypeDatum);
     return generateCallExtern(stdCursorMode, PaAddr(scaff_->evaluator_));
 }
+
+/***DOC WAIT
+WAIT time
+
+    command.  Delays further execution for "time" 60ths of a second.
+    Also causes any buffered characters destined for the terminal to
+    be printed immediately.  WAIT 0 can be used to achieve this
+    buffer flushing without actually waiting.
+
+COD***/
+// CMD WAIT 1 1 1 n
+Value *Compiler::genWait(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    Value *time = generateChild(node.astnodeValue(), 0, TypeReal);
+    time = generateNotNegativeFromDouble(node.astnodeValue(), time);
+    Value *retval = generateCallExtern(
+        stdWait, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaDouble(time));
+    return generateNotFlowControl(retval);
+}

@@ -77,6 +77,10 @@ class MainWindow : public QMainWindow
     // Show user a file dialog modal window.
     void fileDialogModal();
 
+    /// @brief Start a one-shot WAIT timer and reply with W_TIMER_END when it fires.
+    /// @param msecs Milliseconds to wait.
+    void startWaitTimer(qint32 msecs);
+
     void processReadBuffer();
 
   protected:

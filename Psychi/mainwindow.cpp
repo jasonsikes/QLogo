@@ -75,6 +75,10 @@ static QString getMessageTypeName(message_t type)
         return "W_SET_SCREENMODE";
     case W_FILE_DIALOG_GET_PATH:
         return "W_FILE_DIALOG_GET_PATH";
+    case W_TIMER_START:
+        return "W_TIMER_START";
+    case W_TIMER_END:
+        return "W_TIMER_END";
     case S_SYSTEM:
         return "S_SYSTEM";
     case S_TOPLEVEL:
@@ -219,6 +223,14 @@ static QString serializeMessageData(message_t type, const QByteArray &dataBuffer
         QString path;
         readStream >> path;
         yaml << " \"" << yamlEscape(path) << "\"\n";
+        hasData = true;
+        break;
+    }
+    case W_TIMER_START:
+    {
+        qint32 msecs;
+        readStream >> msecs;
+        yaml << " " << msecs << "\n";
         hasData = true;
         break;
     }
@@ -670,6 +682,11 @@ void MainWindow::fileDialogModal()
     message(W_FILE_DIALOG_GET_PATH) << filePath;
 }
 
+void MainWindow::startWaitTimer(qint32 msecs)
+{
+    QTimer::singleShot(msecs, this, [this]() { message(W_TIMER_END); });
+}
+
 void MainWindow::openEditorWindow(const QString &startingText)
 {
     if (editWindow_ == nullptr)
@@ -805,6 +822,13 @@ void MainWindow::processReadBuffer()
     case W_FILE_DIALOG_GET_PATH:
     {
         fileDialogModal();
+        break;
+    }
+    case W_TIMER_START:
+    {
+        qint32 msecs;
+        dataStream >> msecs;
+        startWaitTimer(msecs);
         break;
     }
     case C_CONSOLE_PRINT_STRING:

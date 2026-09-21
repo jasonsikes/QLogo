@@ -18,6 +18,7 @@
 #include "interface/logointerface.h"
 #include "interface/textstream.h"
 #include "workspace/exports_internal.h"
+#include <limits>
 #include "datum_types.h"
 #include "workspace/kernel.h"
 #include "flowcontrol.h"
@@ -767,5 +768,35 @@ EXPORTC addr_t stdCursorMode(addr_t eAddr)
     auto *word = new Word(overwrite ? QObject::tr("OVERWRITE") : QObject::tr("INSERT"));
     e->watch(word);
     return reinterpret_cast<addr_t>(word);
+}
+
+/// WAIT: delay for the given number of 60ths of a second.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param sixtieths delay in 60ths of a second, already validated as >= 0
+/// @return the owning ASTNode, or an Error if the GUI wait is interrupted.
+EXPORTC addr_t stdWait(addr_t eAddr, addr_t astnodeAddr, double sixtieths)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    try
+    {
+        double msecs = (1000.0 / 60.0) * sixtieths;
+        unsigned long waitMs = 0;
+        if (msecs > 0)
+        {
+            if (msecs >= static_cast<double>(std::numeric_limits<unsigned long>::max()))
+                waitMs = std::numeric_limits<unsigned long>::max();
+            else
+                waitMs = static_cast<unsigned long>(msecs);
+        }
+        Config::get().mainInterface()->mwait(waitMs);
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
 }
 

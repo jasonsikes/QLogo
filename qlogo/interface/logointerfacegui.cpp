@@ -24,6 +24,7 @@
 #include <QDataStream>
 #include <QMatrix4x4>
 #include <QTransform>
+#include <limits>
 
 qint64 StdoutMessageWriter::write(const QByteArray &buffer)
 {
@@ -438,4 +439,14 @@ void LogoInterfaceGUI::setPensize(qreal aSize)
         return;
     message(C_CANVAS_SET_PENSIZE) << (qreal)aSize;
     penSize_ = aSize;
+}
+
+void LogoInterfaceGUI::mwait(unsigned long msecs)
+{
+    qint32 ms = std::numeric_limits<qint32>::max();
+    if (msecs < static_cast<unsigned long>(std::numeric_limits<qint32>::max()))
+        ms = static_cast<qint32>(msecs);
+
+    message(W_TIMER_START) << ms;
+    waitForMessage(W_TIMER_END);
 }

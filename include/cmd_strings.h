@@ -116,6 +116,7 @@ const QString &cmdStrALLFONTS();
 const QString &cmdStrCURSORINSERT();
 const QString &cmdStrCURSOROVERWRITE();
 const QString &cmdStrCURSORMODE();
+const QString &cmdStrWAIT();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();

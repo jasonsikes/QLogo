@@ -111,6 +111,7 @@ stringToCmd.insert(StringConstants::cmdStrALLFONTS(), Cmd_t{&Compiler::genAllfon
 stringToCmd.insert(StringConstants::cmdStrCURSORINSERT(), Cmd_t{&Compiler::genCursorinsert, 0, 0, 0, TypeN});
 stringToCmd.insert(StringConstants::cmdStrCURSOROVERWRITE(), Cmd_t{&Compiler::genCursoroverwrite, 0, 0, 0, TypeN});
 stringToCmd.insert(StringConstants::cmdStrCURSORMODE(), Cmd_t{&Compiler::genCursormode, 0, 0, 0, TypeD});
+stringToCmd.insert(StringConstants::cmdStrWAIT(), Cmd_t{&Compiler::genWait, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrIF(), Cmd_t{&Compiler::genIfelse, 2, 2, 3, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrIFELSE(), Cmd_t{&Compiler::genIfelse, 3, 3, 3, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrRUN(), Cmd_t{&Compiler::genRun, 1, 1, 1, TypeDN});
