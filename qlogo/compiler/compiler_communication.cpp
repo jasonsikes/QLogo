@@ -948,3 +948,21 @@ Value *Compiler::genTextsize(const DatumPtr &node, TypeMask expected)
     Q_ASSERT(expected && TypeReal);
     return generateCallExtern(stdTextSize);
 }
+
+/***DOC ALLFONTS
+ALLFONTS
+
+    outputs a list of all the font names available on your system. Note that
+    simply printing the list may not be the best representation since font
+    names usually contain spaces. You may instead wish to print each font
+    name on a separate line:
+
+        foreach allfonts [print ?]
+
+COD***/
+// CMD ALLFONTS 0 0 0 d
+Value *Compiler::genAllfonts(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdAllFonts, PaAddr(scaff_->evaluator_));
+}

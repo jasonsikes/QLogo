@@ -103,6 +103,7 @@ stringToCmd.insert(StringConstants::cmdStrINCREASEFONT(), Cmd_t{&Compiler::genIn
 stringToCmd.insert(StringConstants::cmdStrDECREASEFONT(), Cmd_t{&Compiler::genDecreasefont, 0, 0, 0, TypeN});
 stringToCmd.insert(StringConstants::cmdStrSETTEXTSIZE(), Cmd_t{&Compiler::genSettextsize, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrTEXTSIZE(), Cmd_t{&Compiler::genTextsize, 0, 0, 0, TypeR});
+stringToCmd.insert(StringConstants::cmdStrALLFONTS(), Cmd_t{&Compiler::genAllfonts, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrIF(), Cmd_t{&Compiler::genIfelse, 2, 2, 3, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrIFELSE(), Cmd_t{&Compiler::genIfelse, 3, 3, 3, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrRUN(), Cmd_t{&Compiler::genRun, 1, 1, 1, TypeDN});

@@ -137,7 +137,7 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | PENUP          |               | TEXTSIZE               | MEMBER                    | *TODO* TRACE         |
 |                    | PU             |               | *TODO* SETTEXTFONT     | LOWERCASE                 | *TODO* UNTRACE       |
 |                    | PENPAINT       |               | *TODO* FONT            | UPPERCASE                 | *TODO* TRACEDP       |
-|                    | PPT            |               | *TODO* ALLFONTS        | STANDOUT                  | *TODO* TRACED?       |
+|                    | PPT            |               | ALLFONTS               | STANDOUT                  | *TODO* TRACED?       |
 |                    | PENERASE       |               | *TODO* CURSORINSERT    | PARSE                     | *TODO* STEP          |
 |                    | PE             |               | *TODO* CURSOROVERWRITE | RUNPARSE                  | *TODO* UNSTEP        |
 |                    | PENREVERSE     |               | *TODO* CURSORMODE      |                           | *TODO* STEPPEDP      |
@@ -295,7 +295,7 @@ Qt has strong support for internationalization, but in QLogo it is only partiall
 
 **** ~ALLFONTS~:
 
-Returns a list of all the fonts available on your system.
+In Psychi it returns a list of all the fonts available on your system. On the command-line interface it outputs the empty list.
 
 **** ~ALLCOLORS~:
 

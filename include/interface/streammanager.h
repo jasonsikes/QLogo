@@ -23,6 +23,7 @@
 #include <QHash>
 #include <QList>
 #include <QString>
+#include <QStringList>
 
 class TextStream;
 class QColor;
@@ -356,6 +357,11 @@ class StreamManager
     /// @brief TEXTSIZE: current text console font point size.
     /// @details On the command-line interface this is 12.
     double textFontSize() const;
+
+    /// @brief ALLFONTS: names of fonts available on the system.
+    /// @details In Psychi this is the family list sent at GUI initialization.
+    /// On the command-line interface this is empty.
+    QStringList allFontNames() const;
 
     /************ command interpreter ************/
     //

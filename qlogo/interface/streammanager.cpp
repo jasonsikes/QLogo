@@ -232,6 +232,11 @@ double StreamManager::textFontSize() const
     return Config::get().mainInterface()->getTextFontSize();
 }
 
+QStringList StreamManager::allFontNames() const
+{
+    return Config::get().mainInterface()->getAllFontNames();
+}
+
 /************ read/write positions ************/
 
 qint64 StreamManager::readPos() const

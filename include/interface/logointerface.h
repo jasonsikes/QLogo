@@ -427,11 +427,11 @@ class LogoInterface : public QObject
 
     /// @brief Returns all the font names.
     /// @return A list of all the font names.
-    /// @note The base method triggers an error message. Subclasses can override this method to
-    /// perform the necessary tasks to return all the font names.
+    /// @note The command-line interface has no GUI font system, so the base
+    /// method returns an empty list. Psychi overrides this with the families
+    /// sent at GUI initialization.
     virtual QStringList getAllFontNames() const
     {
-        exit(1);
         return {};
     }
 

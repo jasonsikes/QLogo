@@ -606,6 +606,12 @@ const QString &StringConstants::cmdStrTEXTSIZE()
     return str;
 }
 
+const QString &StringConstants::cmdStrALLFONTS()
+{
+    static const QString str = QObject::tr("ALLFONTS");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

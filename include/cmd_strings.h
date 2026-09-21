@@ -108,6 +108,7 @@ const QString &cmdStrINCREASEFONT();
 const QString &cmdStrDECREASEFONT();
 const QString &cmdStrSETTEXTSIZE();
 const QString &cmdStrTEXTSIZE();
+const QString &cmdStrALLFONTS();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();

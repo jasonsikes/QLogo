@@ -89,6 +89,7 @@ EXPORTC bool isValidColor(addr_t colorAddr);
 EXPORTC void stdSetTextColor(addr_t foregroundAddr, addr_t backgroundAddr);
 EXPORTC void stdSetTextSize(double size);
 EXPORTC double stdTextSize(void);
+EXPORTC addr_t stdAllFonts(addr_t eAddr);
 
 //  -------------------------------------------------------------------
 //  exports_controlstructures.cpp

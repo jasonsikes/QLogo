@@ -718,3 +718,18 @@ EXPORTC double stdTextSize(void)
     return StreamManager::get().textFontSize();
 }
 
+/// ALLFONTS: names of fonts available on the system, as a Logo list of words.
+EXPORTC addr_t stdAllFonts(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    ListBuilder builder;
+    const QStringList fonts = StreamManager::get().allFontNames();
+    for (const QString &name : fonts)
+    {
+        builder.append(DatumPtr(new Word(name)));
+    }
+    DatumPtr retval = builder.finishedList();
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval.datumValue());
+}
+
