@@ -222,6 +222,16 @@ void StreamManager::setTextColor(const QColor &foreground, const QColor &backgro
     Config::get().mainInterface()->setTextColor(foreground, background);
 }
 
+void StreamManager::setTextFontSize(double size)
+{
+    Config::get().mainInterface()->setTextFontSize(size);
+}
+
+double StreamManager::textFontSize() const
+{
+    return Config::get().mainInterface()->getTextFontSize();
+}
+
 /************ read/write positions ************/
 
 qint64 StreamManager::readPos() const

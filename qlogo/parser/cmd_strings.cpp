@@ -582,6 +582,18 @@ const QString &StringConstants::cmdStrSETTC()
     return str;
 }
 
+const QString &StringConstants::cmdStrSETTEXTSIZE()
+{
+    static const QString str = QObject::tr("SETTEXTSIZE");
+    return str;
+}
+
+const QString &StringConstants::cmdStrTEXTSIZE()
+{
+    static const QString str = QObject::tr("TEXTSIZE");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

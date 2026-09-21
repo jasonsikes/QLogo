@@ -881,3 +881,39 @@ Value *Compiler::genSettextcolor(const DatumPtr &node, TypeMask expected)
     generateCallExtern(stdSetTextColor, PaAddr(foreground), PaAddr(background));
     return generateVoidRetval(node);
 }
+
+/***DOC SETTEXTSIZE
+SETTEXTSIZE height
+
+    command (GUI only). Set the "point size" of the font used in the
+    text and edit windows to the given number.  The size must be at
+    least 1.  See SETLABELHEIGHT for a different approach used for the
+    graphics window.
+
+COD***/
+// CMD SETTEXTSIZE 1 1 1 n
+Value *Compiler::genSettextsize(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    Value *size = generateChild(node.astnodeValue(), 0, TypeReal);
+    size = generateValidationDouble(node.astnodeValue(), size, [this](Value *val) {
+        return scaff_->builder_.CreateFCmpOGE(val, CoDouble(1.0), DBG_NAME("sizeGE1"));
+    });
+    generateCallExtern(stdSetTextSize, PaDouble(size));
+    return generateVoidRetval(node);
+}
+
+/***DOC TEXTSIZE
+TEXTSIZE
+
+    outputs the "point size" of the font used in the text and edit
+    windows.  See SETTEXTSIZE for a discussion of font sizing.  See
+    LABELSIZE for a different approach used for the graphics window.
+
+COD***/
+// CMD TEXTSIZE 0 0 0 r
+Value *Compiler::genTextsize(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeReal);
+    return generateCallExtern(stdTextSize);
+}

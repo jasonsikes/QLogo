@@ -348,6 +348,15 @@ class StreamManager
     /// An invalid background leaves the existing background unchanged.
     void setTextColor(const QColor &foreground, const QColor &background);
 
+    /// @brief SETTEXTSIZE: set the text console font point size.
+    /// @details In Psychi this changes future printing in the console widget.
+    /// The command-line interface has no text window, so this is a no-op.
+    void setTextFontSize(double size);
+
+    /// @brief TEXTSIZE: current text console font point size.
+    /// @details On the command-line interface this is 12.
+    double textFontSize() const;
+
     /************ command interpreter ************/
     //
     // The commander (istreamProgram_) is always valid (terminal by default).

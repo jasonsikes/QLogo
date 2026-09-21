@@ -390,20 +390,19 @@ class LogoInterface : public QObject
 
     /// @brief Sets the text font size.
     /// @param size The point size of the font.
-    /// @note The base method triggers an error message. Subclasses can override this method to
-    /// perform the necessary tasks to set the text font size.
+    /// @note The base method is a no-op; the command-line interface has no
+    /// text window. Subclasses can override this method to set the GUI font size.
     virtual void setTextFontSize(double size)
     {
-        exit(1);
+        Q_UNUSED(size);
     }
 
     /// @brief Returns the text font size.
     /// @return The text font point size.
-    /// @note The base method triggers an error message. Subclasses can override this method to
-    /// perform the necessary tasks to return the text font size.
+    /// @note The base method reports 12; the command-line interface has no
+    /// text window. Subclasses can override this method to return the GUI font size.
     virtual double getTextFontSize() const
     {
-        exit(1);
         return 12;
     }
 

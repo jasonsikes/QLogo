@@ -87,6 +87,8 @@ EXPORTC void stdSetCursor(int32_t row, int32_t col);
 EXPORTC addr_t stdCursor(addr_t eAddr);
 EXPORTC bool isValidColor(addr_t colorAddr);
 EXPORTC void stdSetTextColor(addr_t foregroundAddr, addr_t backgroundAddr);
+EXPORTC void stdSetTextSize(double size);
+EXPORTC double stdTextSize(void);
 
 //  -------------------------------------------------------------------
 //  exports_controlstructures.cpp

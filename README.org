@@ -133,8 +133,8 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | LABELSIZE      | =             | SETTC                  | COUNT                     | *TODO* BURY          |
 |                    | *NO* MATRIX    | <=            | *TODO* INCREASEFONT    | ASCII                     | *TODO* UNBURY        |
 |                    | PENDOWN        | >=            | *TODO* DECREASEFONT    | RAWASCII                  | *TODO* BURIEDP       |
-|                    | PD             | <>            | *TODO* SETTEXTSIZE     | CHAR                      | *TODO* BURIED?       |
-|                    | PENUP          |               | *TODO* TEXTSIZE        | MEMBER                    | *TODO* TRACE         |
+|                    | PD             | <>            | SETTEXTSIZE            | CHAR                      | *TODO* BURIED?       |
+|                    | PENUP          |               | TEXTSIZE               | MEMBER                    | *TODO* TRACE         |
 |                    | PU             |               | *TODO* SETTEXTFONT     | LOWERCASE                 | *TODO* UNTRACE       |
 |                    | PENPAINT       |               | *TODO* FONT            | UPPERCASE                 | *TODO* TRACEDP       |
 |                    | PPT            |               | *TODO* ALLFONTS        | STANDOUT                  | *TODO* TRACED?       |
@@ -356,6 +356,10 @@ On the command-line interface ~SETCURSOR~ is a no-op and ~CURSOR~ outputs ~[0 0]
 **** ~SETTEXTCOLOR~ and ~SETTC~:
 
 On the command-line interface this is a no-op. A parenthesized call with one input changes only the foreground color. Colors use the same five forms as ~SETPENCOLOR~.
+
+**** ~SETTEXTSIZE~ and ~TEXTSIZE~:
+
+On the command-line interface ~SETTEXTSIZE~ is a no-op and ~TEXTSIZE~ outputs ~12~.
 
 **** ~OPENREAD~, ~OPENWRITE~, ~OPENAPPEND~, and ~OPENUPDATE~:
 

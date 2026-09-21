@@ -706,3 +706,15 @@ EXPORTC void stdSetTextColor(addr_t foregroundAddr, addr_t backgroundAddr)
     StreamManager::get().setTextColor(fg, bg);
 }
 
+/// SETTEXTSIZE: set the text console font point size. No-op on the command-line interface.
+EXPORTC void stdSetTextSize(double size)
+{
+    StreamManager::get().setTextFontSize(size);
+}
+
+/// TEXTSIZE: current text console font point size. 12 on the command-line interface.
+EXPORTC double stdTextSize(void)
+{
+    return StreamManager::get().textFontSize();
+}
+
