@@ -882,6 +882,37 @@ Value *Compiler::genSettextcolor(const DatumPtr &node, TypeMask expected)
     return generateVoidRetval(node);
 }
 
+/***DOC INCREASEFONT DECREASEFONT
+INCREASEFONT
+DECREASEFONT
+
+    command (GUI only). Increase or decrease the point size of the font
+    used in the text and edit windows by 2.  DECREASEFONT will not go
+    below 2.
+
+COD***/
+// CMD INCREASEFONT 0 0 0 n
+Value *Compiler::genIncreasefont(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    Value *size = generateCallExtern(stdTextSize);
+    size = scaff_->builder_.CreateFAdd(size, CoDouble(2.0), DBG_NAME("increasedSize"));
+    generateCallExtern(stdSetTextSize, PaDouble(size));
+    return generateVoidRetval(node);
+}
+
+// CMD DECREASEFONT 0 0 0 n
+Value *Compiler::genDecreasefont(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    Value *size = generateCallExtern(stdTextSize);
+    size = scaff_->builder_.CreateFSub(size, CoDouble(2.0), DBG_NAME("decreasedSize"));
+    Value *tooSmall = scaff_->builder_.CreateFCmpOLT(size, CoDouble(2.0), DBG_NAME("sizeLT2"));
+    size = scaff_->builder_.CreateSelect(tooSmall, CoDouble(2.0), size, DBG_NAME("clampedSize"));
+    generateCallExtern(stdSetTextSize, PaDouble(size));
+    return generateVoidRetval(node);
+}
+
 /***DOC SETTEXTSIZE
 SETTEXTSIZE height
 

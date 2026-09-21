@@ -104,6 +104,8 @@ const QString &cmdStrSETCURSOR();
 const QString &cmdStrCURSOR();
 const QString &cmdStrSETTEXTCOLOR();
 const QString &cmdStrSETTC();
+const QString &cmdStrINCREASEFONT();
+const QString &cmdStrDECREASEFONT();
 const QString &cmdStrSETTEXTSIZE();
 const QString &cmdStrTEXTSIZE();
 const QString &cmdStrIF();

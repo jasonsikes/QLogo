@@ -582,6 +582,18 @@ const QString &StringConstants::cmdStrSETTC()
     return str;
 }
 
+const QString &StringConstants::cmdStrINCREASEFONT()
+{
+    static const QString str = QObject::tr("INCREASEFONT");
+    return str;
+}
+
+const QString &StringConstants::cmdStrDECREASEFONT()
+{
+    static const QString str = QObject::tr("DECREASEFONT");
+    return str;
+}
+
 const QString &StringConstants::cmdStrSETTEXTSIZE()
 {
     static const QString str = QObject::tr("SETTEXTSIZE");

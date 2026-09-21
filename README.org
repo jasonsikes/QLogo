@@ -131,8 +131,8 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | SCREENMODE     | <             | CURSOR                 | VBARREDP                  | *TODO* ERNS          |
 |                    | TURTLEMODE     | >             | SETTEXTCOLOR           | VBARRED?                  | *TODO* ERPLS         |
 |                    | LABELSIZE      | =             | SETTC                  | COUNT                     | *TODO* BURY          |
-|                    | *NO* MATRIX    | <=            | *TODO* INCREASEFONT    | ASCII                     | *TODO* UNBURY        |
-|                    | PENDOWN        | >=            | *TODO* DECREASEFONT    | RAWASCII                  | *TODO* BURIEDP       |
+|                    | *NO* MATRIX    | <=            | INCREASEFONT           | ASCII                     | *TODO* UNBURY        |
+|                    | PENDOWN        | >=            | DECREASEFONT           | RAWASCII                  | *TODO* BURIEDP       |
 |                    | PD             | <>            | SETTEXTSIZE            | CHAR                      | *TODO* BURIED?       |
 |                    | PENUP          |               | TEXTSIZE               | MEMBER                    | *TODO* TRACE         |
 |                    | PU             |               | *TODO* SETTEXTFONT     | LOWERCASE                 | *TODO* UNTRACE       |
@@ -357,9 +357,9 @@ On the command-line interface ~SETCURSOR~ is a no-op and ~CURSOR~ outputs ~[0 0]
 
 On the command-line interface this is a no-op. A parenthesized call with one input changes only the foreground color. Colors use the same five forms as ~SETPENCOLOR~.
 
-**** ~SETTEXTSIZE~ and ~TEXTSIZE~:
+**** ~SETTEXTSIZE~, ~TEXTSIZE~, ~INCREASEFONT~, and ~DECREASEFONT~:
 
-On the command-line interface ~SETTEXTSIZE~ is a no-op and ~TEXTSIZE~ outputs ~12~.
+On the command-line interface ~SETTEXTSIZE~, ~INCREASEFONT~, and ~DECREASEFONT~ are no-ops and ~TEXTSIZE~ outputs ~12~. ~INCREASEFONT~ and ~DECREASEFONT~ change the point size by 2; ~DECREASEFONT~ will not go below 2.
 
 **** ~OPENREAD~, ~OPENWRITE~, ~OPENAPPEND~, and ~OPENUPDATE~:
 

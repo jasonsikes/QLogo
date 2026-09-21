@@ -77,6 +77,8 @@ llvm::Value *genCleartext(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSetcursor(const DatumPtr &node, TypeMask expected);
 llvm::Value *genCursor(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSettextcolor(const DatumPtr &node, TypeMask expected);
+llvm::Value *genIncreasefont(const DatumPtr &node, TypeMask expected);
+llvm::Value *genDecreasefont(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSettextsize(const DatumPtr &node, TypeMask expected);
 llvm::Value *genTextsize(const DatumPtr &node, TypeMask expected);
 llvm::Value *genIfelse(const DatumPtr &node, TypeMask expected);
