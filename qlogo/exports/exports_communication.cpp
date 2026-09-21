@@ -617,3 +617,15 @@ EXPORTC addr_t stdWriter(addr_t eAddr)
     return reinterpret_cast<addr_t>(word);
 }
 
+/// SETREADPOS: seek the current reader. No-op if the reader is the terminal.
+EXPORTC void stdSetReadPos(int32_t pos)
+{
+    StreamManager::get().setReadPos(pos);
+}
+
+/// READPOS: current position of the reader, or 0 if the reader is the terminal.
+EXPORTC double stdReadPos(void)
+{
+    return static_cast<double>(StreamManager::get().readPos());
+}
+

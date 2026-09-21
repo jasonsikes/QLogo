@@ -1,0 +1,6 @@
+openread "OPENREAD_data.txt
+setread "OPENREAD_data.txt
+print readword
+setreadpos 0
+print readword
+close "OPENREAD_data.txt

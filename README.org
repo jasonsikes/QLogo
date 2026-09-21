@@ -117,9 +117,9 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | BOUNDS         | RERANDOM      | SETWRITE               | EMPTY?                    | *TODO* STEPPED       |
 |                    | SETBOUNDS      | FORM          | READER                 | EQUALP                    | *TODO* PROCEDURES    |
 |                    | FILLED         | BITAND        | WRITER                 | EQUAL?                    | *TODO* PRIMITIVES    |
-|                    | LABEL          | BITOR         | *TODO* SETREADPOS      | NOTEQUALP                 | *TODO* NAMES         |
+|                    | LABEL          | BITOR         | SETREADPOS             | NOTEQUALP                 | *TODO* NAMES         |
 |                    | SETLABELHEIGHT | BITXOR        | *TODO* SETWRITEPOS     | NOTEQUAL?                 | *TODO* PLISTS        |
-|                    | TEXTSCREEN     | BITNOT        | *TODO* READPOS         | BEFOREP                   | *TODO* ARITY         |
+|                    | TEXTSCREEN     | BITNOT        | READPOS                | BEFOREP                   | *TODO* ARITY         |
 |                    | TS             | ASHIFT        | *TODO* WRITEPOS        | BEFORE?                   | *TODO* NODES         |
 |                    | FULLSCREEN     | LSHIFT        | *TODO* EOFP            | .EQ                       | *TODO* PRINTOUT      |
 |                    | FS             | AND           | *TODO* EOF?            | MEMBERP                   | *TODO* PO            |

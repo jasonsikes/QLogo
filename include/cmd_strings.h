@@ -90,6 +90,8 @@ const QString &cmdStrSETREAD();
 const QString &cmdStrREADER();
 const QString &cmdStrSETWRITE();
 const QString &cmdStrWRITER();
+const QString &cmdStrSETREADPOS();
+const QString &cmdStrREADPOS();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();

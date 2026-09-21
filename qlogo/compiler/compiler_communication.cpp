@@ -676,3 +676,36 @@ Value *Compiler::genWriter(const DatumPtr &node, TypeMask expected)
     Q_ASSERT(expected && TypeDatum);
     return generateCallExtern(stdWriter, PaAddr(scaff_->evaluator_));
 }
+
+/***DOC SETREADPOS
+SETREADPOS charpos
+
+    command.  Sets the file pointer of the read stream file so that the
+    next READLIST, etc., will begin reading at the "charpos"th character
+    in the file, counting from 0.  (That is, SETREADPOS 0 will start
+    reading from the beginning of the file.)  Meaningless if the read
+    stream is the keyboard.
+
+COD***/
+// CMD SETREADPOS 1 1 1 n
+Value *Compiler::genSetreadpos(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
+    Value *pos = generateNotNegativeInt32FromDouble(node.astnodeValue(), num);
+    generateCallExtern(stdSetReadPos, PaInt32(pos));
+    return generateVoidRetval(node);
+}
+
+/***DOC READPOS
+READPOS
+
+    outputs the file position of the current read stream file.
+
+COD***/
+// CMD READPOS 0 0 0 r
+Value *Compiler::genReadpos(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeReal);
+    return generateCallExtern(stdReadPos);
+}

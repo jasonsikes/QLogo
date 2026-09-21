@@ -498,6 +498,18 @@ const QString &StringConstants::cmdStrWRITER()
     return str;
 }
 
+const QString &StringConstants::cmdStrSETREADPOS()
+{
+    static const QString str = QObject::tr("SETREADPOS");
+    return str;
+}
+
+const QString &StringConstants::cmdStrREADPOS()
+{
+    static const QString str = QObject::tr("READPOS");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");
