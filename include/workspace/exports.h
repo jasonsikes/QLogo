@@ -92,6 +92,8 @@ EXPORTC double stdTextSize(void);
 EXPORTC void stdSetFont(addr_t nameAddr);
 EXPORTC addr_t stdFont(addr_t eAddr);
 EXPORTC addr_t stdAllFonts(addr_t eAddr);
+EXPORTC void stdSetCursorOverwriteMode(bool overwrite);
+EXPORTC addr_t stdCursorMode(addr_t eAddr);
 
 //  -------------------------------------------------------------------
 //  exports_controlstructures.cpp

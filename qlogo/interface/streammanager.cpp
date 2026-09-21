@@ -247,6 +247,16 @@ QStringList StreamManager::allFontNames() const
     return Config::get().mainInterface()->getAllFontNames();
 }
 
+void StreamManager::setCursorOverwriteMode(bool overwrite)
+{
+    Config::get().mainInterface()->setCursorOverwriteMode(overwrite);
+}
+
+bool StreamManager::cursorOverwriteMode() const
+{
+    return Config::get().mainInterface()->cursorOverwriteMode();
+}
+
 /************ read/write positions ************/
 
 qint64 StreamManager::readPos() const

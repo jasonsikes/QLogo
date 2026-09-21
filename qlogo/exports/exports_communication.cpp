@@ -752,3 +752,20 @@ EXPORTC addr_t stdAllFonts(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
+/// CURSORINSERT / CURSOROVERWRITE: set the text console cursor mode.
+/// @param overwrite true for overwrite mode, false for insert mode.
+EXPORTC void stdSetCursorOverwriteMode(bool overwrite)
+{
+    StreamManager::get().setCursorOverwriteMode(overwrite);
+}
+
+/// CURSORMODE: current text console cursor mode as INSERT or OVERWRITE.
+EXPORTC addr_t stdCursorMode(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    const bool overwrite = StreamManager::get().cursorOverwriteMode();
+    auto *word = new Word(overwrite ? QObject::tr("OVERWRITE") : QObject::tr("INSERT"));
+    e->watch(word);
+    return reinterpret_cast<addr_t>(word);
+}
+

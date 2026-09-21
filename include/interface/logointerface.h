@@ -436,20 +436,19 @@ class LogoInterface : public QObject
 
     /// @brief Sets the cursor overwrite mode.
     /// @param mode True if the cursor should overwrite, false indicates the cursor should insert.
-    /// @note The base method triggers an error message. Subclasses can override this method to
-    /// perform the necessary tasks to set the cursor overwrite mode.
+    /// @note The base method is a no-op; the command-line interface has no
+    /// text window. Subclasses can override this method to set the GUI cursor mode.
     virtual void setCursorOverwriteMode(bool mode)
     {
-        exit(1);
+        Q_UNUSED(mode);
     }
 
     /// @brief Returns if the cursor is in overwrite mode.
     /// @return True if the cursor is in overwrite mode, false indicates the cursor is in insert mode.
-    /// @note The base method triggers an error message. Subclasses can override this method to
-    /// perform the necessary tasks to return if the cursor is in overwrite mode.
+    /// @note The base method reports insert mode; the command-line interface has
+    /// no text window. Subclasses can override this method to return the GUI cursor mode.
     virtual bool cursorOverwriteMode() const
     {
-        exit(1);
         return false;
     }
 

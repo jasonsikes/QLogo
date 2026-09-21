@@ -1005,3 +1005,47 @@ Value *Compiler::genAllfonts(const DatumPtr &node, TypeMask expected)
     Q_ASSERT(expected && TypeDatum);
     return generateCallExtern(stdAllFonts, PaAddr(scaff_->evaluator_));
 }
+
+/***DOC CURSORINSERT
+CURSORINSERT
+
+    Sets the cursor mode to "insert". Future output to the text window will
+    cause any text that was already positioned after the cursor to be pushed
+    forward to make room for the inserted text.
+
+COD***/
+// CMD CURSORINSERT 0 0 0 n
+Value *Compiler::genCursorinsert(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    generateCallExtern(stdSetCursorOverwriteMode, PaBool(CoBool(false)));
+    return generateVoidRetval(node);
+}
+
+/***DOC CURSOROVERWRITE
+CURSOROVERWRITE
+
+    Sets the cursor mode to "overwrite". Future output to the text window will
+    overwrite any text that was already positioned after the cursor.
+
+COD***/
+// CMD CURSOROVERWRITE 0 0 0 n
+Value *Compiler::genCursoroverwrite(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    generateCallExtern(stdSetCursorOverwriteMode, PaBool(CoBool(true)));
+    return generateVoidRetval(node);
+}
+
+/***DOC CURSORMODE
+CURSORMODE
+
+    Outputs the current cursor mode, either "OVERWRITE" or "INSERT".
+
+COD***/
+// CMD CURSORMODE 0 0 0 d
+Value *Compiler::genCursormode(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdCursorMode, PaAddr(scaff_->evaluator_));
+}
