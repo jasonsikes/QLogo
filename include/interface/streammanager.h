@@ -327,6 +327,11 @@ class StreamManager
     /// @param text The text to write.
     void printToTerminal(const QString &text);
 
+    /// @brief CLEARTEXT / CT: clear the text console.
+    /// @details In Psychi this empties the console widget. The command-line
+    /// interface has no text window, so this is a no-op. Not dribbled.
+    void clearText();
+
     /************ command interpreter ************/
     //
     // The commander (istreamProgram_) is always valid (terminal by default).

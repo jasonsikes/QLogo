@@ -653,3 +653,9 @@ EXPORTC bool stdKeyp(void)
     return StreamManager::get().keyAvailable();
 }
 
+/// CLEARTEXT / CT: clear the text console. No-op on the command-line interface.
+EXPORTC void stdClearText(void)
+{
+    StreamManager::get().clearText();
+}
+

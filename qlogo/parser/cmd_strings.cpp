@@ -546,6 +546,18 @@ const QString &StringConstants::cmdStrKEY_Q()
     return str;
 }
 
+const QString &StringConstants::cmdStrCLEARTEXT()
+{
+    static const QString str = QObject::tr("CLEARTEXT");
+    return str;
+}
+
+const QString &StringConstants::cmdStrCT()
+{
+    static const QString str = QObject::tr("CT");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

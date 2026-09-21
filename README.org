@@ -125,8 +125,8 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | FS             | AND           | EOF?                   | MEMBERP                   | *TODO* PO            |
 |                    | SPLITSCREEN    | OR            | KEYP                   | MEMBER?                   | *TODO* POT           |
 |                    | SS             | NOT           | KEY?                   | SUBSTRINGP                | *TODO* ERASE         |
-|                    | SETSCRUNCH     | +             | *TODO* CLEARTEXT       | SUBSTRING?                | *TODO* ER            |
-|                    | SHOWNP         | *             | *TODO* CT              | NUMBERP                   | *TODO* ERALL         |
+|                    | SETSCRUNCH     | +             | CLEARTEXT              | SUBSTRING?                | *TODO* ER            |
+|                    | SHOWNP         | *             | CT                     | NUMBERP                   | *TODO* ERALL         |
 |                    | SHOWN?         | /             | *TODO* SETCURSOR       | NUMBER?                   | *TODO* ERPS          |
 |                    | SCREENMODE     | <             | *TODO* CURSOR          | VBARREDP                  | *TODO* ERNS          |
 |                    | TURTLEMODE     | >             | *TODO* SETTEXTCOLOR    | VBARRED?                  | *TODO* ERPLS         |
@@ -324,6 +324,10 @@ Outputs either ~INSERT~ or ~OVERWRITE~.
 **** ~STANDOUT~:
 
 This works in the QLogo GUI by switching the font's foreground and background colors. It isn't implemented for text terminals.
+
+**** ~CLEARTEXT~ / ~CT~:
+
+Clears the Psychi text console. In the command-line interpreter this is a no-op.
 
 **** ~SETBOUNDS~:
 

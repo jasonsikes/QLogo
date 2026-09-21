@@ -202,6 +202,11 @@ void StreamManager::printToTerminal(const QString &text)
     terminalStream_->lprint(text);
 }
 
+void StreamManager::clearText()
+{
+    Config::get().mainInterface()->clearScreenText();
+}
+
 /************ read/write positions ************/
 
 qint64 StreamManager::readPos() const

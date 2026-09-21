@@ -781,3 +781,19 @@ Value *Compiler::genKeyp(const DatumPtr &node, TypeMask expected)
     Q_ASSERT(expected && TypeBool);
     return generateCallExtern(stdKeyp);
 }
+
+/***DOC CLEARTEXT CT
+CLEARTEXT
+CT
+
+    command.  Clears the text window.
+
+COD***/
+// CMD CLEARTEXT 0 0 0 n
+// CMD CT 0 0 0 n
+Value *Compiler::genCleartext(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    generateCallExtern(stdClearText);
+    return generateVoidRetval(node);
+}

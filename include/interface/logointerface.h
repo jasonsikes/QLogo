@@ -348,11 +348,10 @@ class LogoInterface : public QObject
     }
 
     /// @brief Clears the text on the screen.
-    /// @note The base method triggers an error message. Subclasses can override this method to
-    /// perform the necessary tasks to clear the text on the screen.
+    /// @note The base method does nothing; the command-line interface has no
+    /// text window. Subclasses can override this method to clear the GUI console.
     virtual void clearScreenText()
     {
-        exit(1);
     }
 
     /// @brief Sets the cursor position.
