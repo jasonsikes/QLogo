@@ -135,8 +135,8 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | PENDOWN        | >=            | DECREASEFONT           | RAWASCII                  | *TODO* BURIEDP       |
 |                    | PD             | <>            | SETTEXTSIZE            | CHAR                      | *TODO* BURIED?       |
 |                    | PENUP          |               | TEXTSIZE               | MEMBER                    | *TODO* TRACE         |
-|                    | PU             |               | *TODO* SETTEXTFONT     | LOWERCASE                 | *TODO* UNTRACE       |
-|                    | PENPAINT       |               | *TODO* FONT            | UPPERCASE                 | *TODO* TRACEDP       |
+|                    | PU             |               | SETFONT                | LOWERCASE                 | *TODO* UNTRACE       |
+|                    | PENPAINT       |               | FONT                   | UPPERCASE                 | *TODO* TRACEDP       |
 |                    | PPT            |               | ALLFONTS               | STANDOUT                  | *TODO* TRACED?       |
 |                    | PENERASE       |               | *TODO* CURSORINSERT    | PARSE                     | *TODO* STEP          |
 |                    | PE             |               | *TODO* CURSOROVERWRITE | RUNPARSE                  | *TODO* UNSTEP        |
@@ -357,9 +357,9 @@ On the command-line interface ~SETCURSOR~ is a no-op and ~CURSOR~ outputs ~[0 0]
 
 On the command-line interface this is a no-op. A parenthesized call with one input changes only the foreground color. Colors use the same five forms as ~SETPENCOLOR~.
 
-**** ~SETTEXTSIZE~, ~TEXTSIZE~, ~INCREASEFONT~, and ~DECREASEFONT~:
+**** ~SETTEXTSIZE~, ~TEXTSIZE~, ~INCREASEFONT~, ~DECREASEFONT~, ~SETFONT~, and ~FONT~:
 
-On the command-line interface ~SETTEXTSIZE~, ~INCREASEFONT~, and ~DECREASEFONT~ are no-ops and ~TEXTSIZE~ outputs ~12~. ~INCREASEFONT~ and ~DECREASEFONT~ change the point size by 2; ~DECREASEFONT~ will not go below 2.
+On the command-line interface ~SETTEXTSIZE~, ~INCREASEFONT~, ~DECREASEFONT~, and ~SETFONT~ are no-ops; ~TEXTSIZE~ outputs ~12~ and ~FONT~ outputs the empty word. ~INCREASEFONT~ and ~DECREASEFONT~ change the point size by 2; ~DECREASEFONT~ will not go below 2. ~SETFONT~ and ~FONT~ apply to the text and edit windows, not the turtle canvas. (UCBLogo's ~SETTEXTFONT~ is ~SETFONT~ in QLogo.)
 
 **** ~OPENREAD~, ~OPENWRITE~, ~OPENAPPEND~, and ~OPENUPDATE~:
 

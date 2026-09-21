@@ -81,6 +81,8 @@ llvm::Value *genIncreasefont(const DatumPtr &node, TypeMask expected);
 llvm::Value *genDecreasefont(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSettextsize(const DatumPtr &node, TypeMask expected);
 llvm::Value *genTextsize(const DatumPtr &node, TypeMask expected);
+llvm::Value *genSetfont(const DatumPtr &node, TypeMask expected);
+llvm::Value *genFont(const DatumPtr &node, TypeMask expected);
 llvm::Value *genAllfonts(const DatumPtr &node, TypeMask expected);
 llvm::Value *genIfelse(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRun(const DatumPtr &node, TypeMask expected);

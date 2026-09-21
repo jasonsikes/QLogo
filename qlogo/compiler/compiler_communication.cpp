@@ -949,6 +949,45 @@ Value *Compiler::genTextsize(const DatumPtr &node, TypeMask expected)
     return generateCallExtern(stdTextSize);
 }
 
+/***DOC SETFONT SETTEXTFONT
+SETFONT fontname
+SETTEXTFONT fontname
+
+    command (GUI only). Set the font family of the font used for all
+    future text and edit windows.  See ALLFONTS for a list of all fonts
+    available on your system.  Try "Courier or "Monospace as likely
+    possibilities.  Not all computers have the same fonts installed.
+    It's a good idea to stick with monospace fonts (ones in which all
+    characters have the same width).
+
+COD***/
+// CMD SETFONT 1 1 1 n
+// CMD SETTEXTFONT 1 1 1 n
+Value *Compiler::genSetfont(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    Value *name = generateChild(node.astnodeValue(), 0, TypeDatum);
+    name = generateWordFromDatum(node.astnodeValue(), name);
+    generateCallExtern(stdSetFont, PaAddr(name));
+    return generateVoidRetval(node);
+}
+
+/***DOC FONT TEXTFONT
+FONT
+TEXTFONT
+
+    outputs the font family of the font used in the text and edit
+    windows.
+
+COD***/
+// CMD FONT 0 0 0 d
+// CMD TEXTFONT 0 0 0 d
+Value *Compiler::genFont(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdFont, PaAddr(scaff_->evaluator_));
+}
+
 /***DOC ALLFONTS
 ALLFONTS
 

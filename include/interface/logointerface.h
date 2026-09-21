@@ -408,21 +408,20 @@ class LogoInterface : public QObject
 
     /// @brief Returns the text font name.
     /// @return The text font name.
-    /// @note The base method triggers an error message. Subclasses can override this method to
-    /// perform the necessary tasks to return the text font name.
+    /// @note The base method reports an empty name; the command-line interface
+    /// has no text window. Subclasses can override this method to return the GUI font name.
     virtual QString getTextFontName() const
     {
-        exit(1);
-        return {};
+        return QStringLiteral("");
     }
 
     /// @brief Sets the text font name.
     /// @param name The name of the font.
-    /// @note The base method triggers an error message. Subclasses can override this method to
-    /// perform the necessary tasks to set the text font name.
+    /// @note The base method is a no-op; the command-line interface has no
+    /// text window. Subclasses can override this method to set the GUI font name.
     virtual void setTextFontName(const QString &name)
     {
-        exit(1);
+        Q_UNUSED(name);
     }
 
     /// @brief Returns all the font names.

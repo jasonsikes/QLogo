@@ -232,6 +232,16 @@ double StreamManager::textFontSize() const
     return Config::get().mainInterface()->getTextFontSize();
 }
 
+void StreamManager::setTextFontName(const QString &name)
+{
+    Config::get().mainInterface()->setTextFontName(name);
+}
+
+QString StreamManager::textFontName() const
+{
+    return Config::get().mainInterface()->getTextFontName();
+}
+
 QStringList StreamManager::allFontNames() const
 {
     return Config::get().mainInterface()->getAllFontNames();

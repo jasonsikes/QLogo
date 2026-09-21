@@ -358,6 +358,15 @@ class StreamManager
     /// @details On the command-line interface this is 12.
     double textFontSize() const;
 
+    /// @brief SETFONT: set the text console font family.
+    /// @details In Psychi this changes future printing in the console widget.
+    /// The command-line interface has no text window, so this is a no-op.
+    void setTextFontName(const QString &name);
+
+    /// @brief FONT: current text console font family.
+    /// @details On the command-line interface this is the empty word.
+    QString textFontName() const;
+
     /// @brief ALLFONTS: names of fonts available on the system.
     /// @details In Psychi this is the family list sent at GUI initialization.
     /// On the command-line interface this is empty.

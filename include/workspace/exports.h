@@ -89,6 +89,8 @@ EXPORTC bool isValidColor(addr_t colorAddr);
 EXPORTC void stdSetTextColor(addr_t foregroundAddr, addr_t backgroundAddr);
 EXPORTC void stdSetTextSize(double size);
 EXPORTC double stdTextSize(void);
+EXPORTC void stdSetFont(addr_t nameAddr);
+EXPORTC addr_t stdFont(addr_t eAddr);
 EXPORTC addr_t stdAllFonts(addr_t eAddr);
 
 //  -------------------------------------------------------------------

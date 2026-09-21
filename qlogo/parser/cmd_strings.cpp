@@ -606,6 +606,30 @@ const QString &StringConstants::cmdStrTEXTSIZE()
     return str;
 }
 
+const QString &StringConstants::cmdStrSETFONT()
+{
+    static const QString str = QObject::tr("SETFONT");
+    return str;
+}
+
+const QString &StringConstants::cmdStrSETTEXTFONT()
+{
+    static const QString str = QObject::tr("SETTEXTFONT");
+    return str;
+}
+
+const QString &StringConstants::cmdStrFONT()
+{
+    static const QString str = QObject::tr("FONT");
+    return str;
+}
+
+const QString &StringConstants::cmdStrTEXTFONT()
+{
+    static const QString str = QObject::tr("TEXTFONT");
+    return str;
+}
+
 const QString &StringConstants::cmdStrALLFONTS()
 {
     static const QString str = QObject::tr("ALLFONTS");

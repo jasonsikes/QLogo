@@ -718,6 +718,25 @@ EXPORTC double stdTextSize(void)
     return StreamManager::get().textFontSize();
 }
 
+/// SETFONT: set the text console font family. No-op on the command-line interface.
+EXPORTC void stdSetFont(addr_t nameAddr)
+{
+    auto *w = reinterpret_cast<Word *>(nameAddr);
+    StreamManager::get().setTextFontName(w->toString());
+}
+
+/// FONT: current text console font family. Empty word on the command-line interface.
+EXPORTC addr_t stdFont(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    QString name = StreamManager::get().textFontName();
+    if (name.isNull())
+        name = QStringLiteral("");
+    auto *word = new Word(name);
+    e->watch(word);
+    return reinterpret_cast<addr_t>(word);
+}
+
 /// ALLFONTS: names of fonts available on the system, as a Logo list of words.
 EXPORTC addr_t stdAllFonts(addr_t eAddr)
 {
