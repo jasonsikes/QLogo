@@ -507,3 +507,64 @@ EXPORTC void stdNoDribble(void)
     StreamManager::get().noDribble();
 }
 
+/// Resolve a SETREAD word to the name stored in the open-stream pool.
+/// Files are stored under the original word text; buffers under the Key form.
+static QString openStreamNameFromWord(Datum *spec)
+{
+    QString name = spec->wordValue()->toString();
+    if (StreamManager::get().isOpen(name))
+        return name;
+    QString key = spec->wordValue()->toString(Datum::ToStringFlags_Key);
+    if (StreamManager::get().isOpen(key))
+        return key;
+    return name;
+}
+
+/// SETREAD: make the named open stream the current reader, or [] for the terminal.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param specAddr a word filename, a list whose first element is a buffer
+///        variable name, or the empty list for the terminal
+/// @return the owning ASTNode, or an Error if the name is not open for reading.
+EXPORTC addr_t stdSetRead(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *spec = reinterpret_cast<Datum *>(specAddr);
+    try
+    {
+        if (spec->isList() && spec->listValue()->isEmpty())
+        {
+            StreamManager::get().setReader(QString());
+        }
+        else
+        {
+            const QString name = spec->isWord() ? openStreamNameFromWord(spec) : streamNameFromSpec(spec);
+            StreamManager::get().setReader(name, DatumPtr(spec));
+        }
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+
+/// READER: name of the current reader, or the empty list if it is the terminal.
+/// @param eAddr a pointer to the Evaluator object
+EXPORTC addr_t stdReader(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    QString name = StreamManager::get().reader();
+    if (name.isEmpty())
+    {
+        List *empty = EmptyList::instance();
+        e->watch(empty);
+        return reinterpret_cast<addr_t>(empty);
+    }
+    auto *word = new Word(name);
+    e->watch(word);
+    return reinterpret_cast<addr_t>(word);
+}
+

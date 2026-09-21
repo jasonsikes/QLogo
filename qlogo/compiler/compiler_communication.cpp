@@ -564,3 +564,59 @@ Value *Compiler::genNodribble(const DatumPtr &node, TypeMask expected)
     generateCallExtern(stdNoDribble);
     return generateVoidRetval(node);
 }
+
+/***DOC SETREAD
+SETREAD filename
+
+    command.  Makes the named file the read stream, used for READLIST,
+    etc.  The file must already be open with OPENREAD or OPENUPDATE.  If
+    the input is the empty list, then the read stream becomes the
+    keyboard, as usual.  Changing the read stream does not close the
+    file that was previously the read stream, so it is possible to
+    alternate between files.
+
+    In QLogo the input may also be a list whose first element is a
+    variable name, matching OPENREAD's character-buffer form.  The
+    buffer must already be open.
+
+COD***/
+// CMD SETREAD 1 1 1 n
+Value *Compiler::genSetread(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *spec = generateChild(node.astnodeValue(), 0, TypeDatum);
+    auto validator = [this](Value *candidate) {
+        Value *isOpenSpec = generateCallExtern(isValidOpenSpec, PaAddr(candidate));
+        Value *openOk = scaff_->builder_.CreateICmpEQ(isOpenSpec, CoBool(true), DBG_NAME("isValidOpenSpecCond"));
+        Value *isa = generateGetDatumIsa(candidate);
+        Value *listMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeList), DBG_NAME("listMask"));
+        Value *isList = scaff_->builder_.CreateICmpNE(listMask, CoInt32(0), DBG_NAME("isList"));
+        Value *empty = generateCallExtern(isEmpty, PaAddr(candidate));
+        Value *isEmptyVal = scaff_->builder_.CreateICmpEQ(empty, CoBool(true), DBG_NAME("isEmpty"));
+        Value *isEmptyList = scaff_->builder_.CreateAnd(isList, isEmptyVal, DBG_NAME("isEmptyList"));
+        return scaff_->builder_.CreateOr(openOk, isEmptyList, DBG_NAME("isValidSetRead"));
+    };
+    spec = generateValidationDatum(node.astnodeValue(), spec, validator);
+
+    Value *retval = generateCallExtern(
+        stdSetRead,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(spec));
+    return generateNotFlowControl(retval);
+}
+
+/***DOC READER
+READER
+
+    outputs the name of the current read stream file, or the empty list
+    if the read stream is the terminal.
+
+COD***/
+// CMD READER 0 0 0 d
+Value *Compiler::genReader(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdReader, PaAddr(scaff_->evaluator_));
+}

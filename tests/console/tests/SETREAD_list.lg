@@ -1,0 +1,6 @@
+make "a "hello
+openread [a]
+setread [a]
+show reader
+print readword
+close [a]

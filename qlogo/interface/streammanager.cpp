@@ -236,16 +236,16 @@ void StreamManager::setWritePos(qint64 pos)
 
 /************ roles ************/
 
-void StreamManager::setReader(const QString &name)
+void StreamManager::setReader(const QString &name, const DatumPtr &spec)
 {
-    if (name.isEmpty())
+    if (name.isEmpty() && spec.isNothing())
     {
         istreamRead_ = terminalStream_;
         return;
     }
     auto it = openStreams_.find(name);
     if (it == openStreams_.end())
-        throw FCError::fileSystem();
+        throw FCError::notOpen(spec.isNothing() ? DatumPtr(name) : spec);
     OpenStream *os = it.value();
     if ((os->mode != OpenMode::Read) && (os->mode != OpenMode::Update))
         throw FCError::fileSystem();

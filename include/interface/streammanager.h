@@ -223,9 +223,12 @@ class StreamManager
     void eraseFile(const QString &name);
 
     /// @brief SETREAD: make the named open stream the current reader.
-    /// @param name The open stream's name; empty selects the terminal.
-    /// @note Throws if the name is not open or was not opened for reading.
-    void setReader(const QString &name);
+    /// @param name The open stream's name; empty with a nothing spec selects
+    ///        the terminal (SETREAD []).
+    /// @param spec The original Logo input, used in error messages.
+    /// @note Throws FCError::notOpen if the name is not open. Throws
+    ///       FCError::fileSystem if the stream was not opened for reading.
+    void setReader(const QString &name, const DatumPtr &spec = DatumPtr());
 
     /// @brief READER: name of the current reader (empty for the terminal).
     QString reader() const;

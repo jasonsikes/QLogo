@@ -474,6 +474,18 @@ const QString &StringConstants::cmdStrNODRIBBLE()
     return str;
 }
 
+const QString &StringConstants::cmdStrSETREAD()
+{
+    static const QString str = QObject::tr("SETREAD");
+    return str;
+}
+
+const QString &StringConstants::cmdStrREADER()
+{
+    static const QString str = QObject::tr("READER");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

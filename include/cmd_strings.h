@@ -86,6 +86,8 @@ const QString &cmdStrERASEFILE();
 const QString &cmdStrERF();
 const QString &cmdStrDRIBBLE();
 const QString &cmdStrNODRIBBLE();
+const QString &cmdStrSETREAD();
+const QString &cmdStrREADER();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();
