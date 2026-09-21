@@ -1,9 +1,0 @@
-make "d "dribble.txt
-dribble :d
-print [hi]
-nodribble
-openread :d
-setread :d
-repeat 4[show readrawline]
-close :d
-erf :d

@@ -84,6 +84,8 @@ const QString &cmdStrCLOSE();
 const QString &cmdStrALLOPEN();
 const QString &cmdStrERASEFILE();
 const QString &cmdStrERF();
+const QString &cmdStrDRIBBLE();
+const QString &cmdStrNODRIBBLE();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();

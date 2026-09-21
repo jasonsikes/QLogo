@@ -376,6 +376,9 @@ struct FCError : public FlowControl
     /// @param x The primitive that is being manipulated.
     static FCError *isPrimitive(const DatumPtr &x);
 
+    /// @brief Create an error object for attempting to dribble while already dribbling.
+    static FCError *alreadyDribbling();
+
     /// @brief Create an error object for a file that is not open.
     /// @param x The file that is not open.
     static FCError *notOpen(const DatumPtr &x);

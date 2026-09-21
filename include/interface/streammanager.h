@@ -301,9 +301,10 @@ class StreamManager
     QString filepathForFilename(const DatumPtr &filenameP) const;
 
     /// @brief DRIBBLE: begin copying terminal I/O to the named file (Append mode).
-    /// @param name The dribble filename (resolved against the current prefix).
-    /// @note Throws FCError if the file cannot be opened.
-    void dribble(const QString &name);
+    /// @param filename The dribble filename (resolved against the current prefix).
+    /// @note Throws FCError::alreadyDribbling if a dribble file is already
+    ///       active, FCError::cantOpen if the file cannot be opened.
+    void dribble(const DatumPtr &filename);
 
     /// @brief NODRIBBLE: stop dribbling and close the dribble file.
     void noDribble();

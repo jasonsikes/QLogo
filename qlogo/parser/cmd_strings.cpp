@@ -462,6 +462,18 @@ const QString &StringConstants::cmdStrERF()
     return str;
 }
 
+const QString &StringConstants::cmdStrDRIBBLE()
+{
+    static const QString str = QObject::tr("DRIBBLE");
+    return str;
+}
+
+const QString &StringConstants::cmdStrNODRIBBLE()
+{
+    static const QString str = QObject::tr("NODRIBBLE");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

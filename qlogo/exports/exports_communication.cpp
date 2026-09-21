@@ -478,3 +478,32 @@ EXPORTC addr_t stdEraseFile(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAdd
     return reinterpret_cast<addr_t>(node);
 }
 
+/// DRIBBLE: begin copying terminal I/O to the named file.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param filenameAddr a word naming the dribble file
+/// @return the owning ASTNode, or an Error if already dribbling or the file
+///         cannot be opened.
+EXPORTC addr_t stdDribble(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *filename = reinterpret_cast<Datum *>(filenameAddr);
+    try
+    {
+        StreamManager::get().dribble(DatumPtr(filename));
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+
+/// NODRIBBLE: stop dribbling and close the dribble file.
+EXPORTC void stdNoDribble(void)
+{
+    StreamManager::get().noDribble();
+}
+

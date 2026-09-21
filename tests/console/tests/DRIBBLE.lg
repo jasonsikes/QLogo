@@ -1,0 +1,4 @@
+dribble "DRIBBLE_tmp.txt
+print [hi]
+nodribble
+erasefile "DRIBBLE_tmp.txt

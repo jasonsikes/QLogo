@@ -196,6 +196,11 @@ FCError *FCError::isPrimitive(const DatumPtr &x)
     return new FCError(ERR_IS_PRIMITIVE, message);
 }
 
+FCError *FCError::alreadyDribbling()
+{
+    return new FCError(ERR_ALREADY_DRIBBLING, QObject::tr("already dribbling"));
+}
+
 FCError *FCError::notOpen(const DatumPtr &x)
 {
     QString message = QObject::tr("File %1 not open").arg(x.toString(Datum::ToStringFlags_Show));

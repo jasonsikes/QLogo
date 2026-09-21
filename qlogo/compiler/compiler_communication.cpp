@@ -522,3 +522,45 @@ Value *Compiler::genErasefile(const DatumPtr &node, TypeMask expected)
         PaAddr(filename));
     return generateNotFlowControl(retval);
 }
+
+/***DOC DRIBBLE
+DRIBBLE filename
+
+    command.  Creates a new file whose name is the input, like OPENWRITE,
+    and begins recording in that file everything that is read from the
+    keyboard or written to the terminal.  That is, this writing is in
+    addition to the writing to WRITER.  The intent is to create a
+    transcript of a Logo session, including things like prompt
+    characters and interactions.
+
+COD***/
+// CMD DRIBBLE 1 1 1 n
+Value *Compiler::genDribble(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *filename = generateChild(node.astnodeValue(), 0, TypeDatum);
+    filename = generateFromDatum(Datum::typeWord, node.astnodeValue(), filename);
+
+    Value *retval = generateCallExtern(
+        stdDribble,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(filename));
+    return generateNotFlowControl(retval);
+}
+
+/***DOC NODRIBBLE
+NODRIBBLE
+
+    command.  Stops copying information into the dribble file, and
+    closes the file.
+
+COD***/
+// CMD NODRIBBLE 0 0 0 n
+Value *Compiler::genNodribble(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    generateCallExtern(stdNoDribble);
+    return generateVoidRetval(node);
+}

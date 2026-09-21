@@ -376,15 +376,16 @@ void StreamManager::eraseFile(const QString &name)
 
 /************ dribble ************/
 
-void StreamManager::dribble(const QString &name)
+void StreamManager::dribble(const DatumPtr &filename)
 {
-    noDribble();
-    QString filepath = filepathForFilename(DatumPtr(name));
+    if (isDribbling())
+        throw FCError::alreadyDribbling();
+    QString filepath = filepathForFilename(filename);
     auto *file = new QFile(filepath);
     if (!file->open(QIODevice::Append))
     {
         delete file;
-        throw FCError::fileSystem();
+        throw FCError::cantOpen(filename);
     }
     dribbleFile_ = file;
     dribbleStream_ = new QTextStream(file);

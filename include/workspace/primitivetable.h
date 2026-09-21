@@ -79,6 +79,8 @@ stringToCmd.insert(StringConstants::cmdStrCLOSE(), Cmd_t{&Compiler::genClose, 1,
 stringToCmd.insert(StringConstants::cmdStrALLOPEN(), Cmd_t{&Compiler::genAllopen, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrERASEFILE(), Cmd_t{&Compiler::genErasefile, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrERF(), Cmd_t{&Compiler::genErasefile, 1, 1, 1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrDRIBBLE(), Cmd_t{&Compiler::genDribble, 1, 1, 1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrNODRIBBLE(), Cmd_t{&Compiler::genNodribble, 0, 0, 0, TypeN});
 stringToCmd.insert(StringConstants::cmdStrIF(), Cmd_t{&Compiler::genIfelse, 2, 2, 3, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrIFELSE(), Cmd_t{&Compiler::genIfelse, 3, 3, 3, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrRUN(), Cmd_t{&Compiler::genRun, 1, 1, 1, TypeDN});
