@@ -88,6 +88,8 @@ const QString &cmdStrDRIBBLE();
 const QString &cmdStrNODRIBBLE();
 const QString &cmdStrSETREAD();
 const QString &cmdStrREADER();
+const QString &cmdStrSETWRITE();
+const QString &cmdStrWRITER();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();

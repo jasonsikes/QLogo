@@ -486,6 +486,18 @@ const QString &StringConstants::cmdStrREADER()
     return str;
 }
 
+const QString &StringConstants::cmdStrSETWRITE()
+{
+    static const QString str = QObject::tr("SETWRITE");
+    return str;
+}
+
+const QString &StringConstants::cmdStrWRITER()
+{
+    static const QString str = QObject::tr("WRITER");
+    return str;
+}
+
 const QString &StringConstants::cmdStrIF()
 {
     static const QString str = QObject::tr("IF");

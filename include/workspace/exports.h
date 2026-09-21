@@ -74,6 +74,8 @@ EXPORTC addr_t stdDribble(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr)
 EXPORTC void stdNoDribble(void);
 EXPORTC addr_t stdSetRead(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr);
 EXPORTC addr_t stdReader(addr_t eAddr);
+EXPORTC addr_t stdSetWrite(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr);
+EXPORTC addr_t stdWriter(addr_t eAddr);
 
 //  -------------------------------------------------------------------
 //  exports_controlstructures.cpp

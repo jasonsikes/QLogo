@@ -1,0 +1,6 @@
+openwrite [buf]
+setwrite [buf]
+type "hello
+setwrite []
+close [buf]
+print :buf

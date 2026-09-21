@@ -1,0 +1,6 @@
+openwrite "OPENWRITE_tmp.txt
+setwrite "OPENWRITE_tmp.txt
+make "w writer
+setwrite []
+show :w
+close "OPENWRITE_tmp.txt

@@ -1,0 +1,5 @@
+openwrite [buf]
+setwrite [buf]
+setwrite []
+show writer
+close [buf]

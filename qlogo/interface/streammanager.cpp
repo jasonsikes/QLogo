@@ -257,9 +257,9 @@ QString StreamManager::reader() const
     return nameForStream(istreamRead_);
 }
 
-void StreamManager::setWriter(const QString &name)
+void StreamManager::setWriter(const QString &name, const DatumPtr &spec)
 {
-    if (name.isEmpty())
+    if (name.isEmpty() && spec.isNothing())
     {
         ostreamWrite_ = terminalStream_;
     }
@@ -267,7 +267,7 @@ void StreamManager::setWriter(const QString &name)
     {
         auto it = openStreams_.find(name);
         if (it == openStreams_.end())
-            throw FCError::fileSystem();
+            throw FCError::notOpen(spec.isNothing() ? DatumPtr(name) : spec);
         OpenStream *os = it.value();
         if ((os->mode != OpenMode::Write) && (os->mode != OpenMode::Append) && (os->mode != OpenMode::Update))
             throw FCError::fileSystem();

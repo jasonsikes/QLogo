@@ -507,7 +507,7 @@ EXPORTC void stdNoDribble(void)
     StreamManager::get().noDribble();
 }
 
-/// Resolve a SETREAD word to the name stored in the open-stream pool.
+/// Resolve a SETREAD/SETWRITE word to the name stored in the open-stream pool.
 /// Files are stored under the original word text; buffers under the Key form.
 static QString openStreamNameFromWord(Datum *spec)
 {
@@ -557,6 +557,55 @@ EXPORTC addr_t stdReader(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString name = StreamManager::get().reader();
+    if (name.isEmpty())
+    {
+        List *empty = EmptyList::instance();
+        e->watch(empty);
+        return reinterpret_cast<addr_t>(empty);
+    }
+    auto *word = new Word(name);
+    e->watch(word);
+    return reinterpret_cast<addr_t>(word);
+}
+
+/// SETWRITE: make the named open stream the current writer, or [] for the terminal.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param specAddr a word filename, a list whose first element is a buffer
+///        variable name, or the empty list for the terminal
+/// @return the owning ASTNode, or an Error if the name is not open for writing.
+EXPORTC addr_t stdSetWrite(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *spec = reinterpret_cast<Datum *>(specAddr);
+    try
+    {
+        if (spec->isList() && spec->listValue()->isEmpty())
+        {
+            StreamManager::get().setWriter(QString());
+        }
+        else
+        {
+            const QString name = spec->isWord() ? openStreamNameFromWord(spec) : streamNameFromSpec(spec);
+            StreamManager::get().setWriter(name, DatumPtr(spec));
+        }
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+
+/// WRITER: name of the current writer, or the empty list if it is the terminal
+/// (including while a REPL overlay is hiding a file writer).
+/// @param eAddr a pointer to the Evaluator object
+EXPORTC addr_t stdWriter(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    QString name = StreamManager::get().writer();
     if (name.isEmpty())
     {
         List *empty = EmptyList::instance();

@@ -620,3 +620,59 @@ Value *Compiler::genReader(const DatumPtr &node, TypeMask expected)
     Q_ASSERT(expected && TypeDatum);
     return generateCallExtern(stdReader, PaAddr(scaff_->evaluator_));
 }
+
+/***DOC SETWRITE
+SETWRITE filename
+
+    command.  Makes the named file the write stream, used for PRINT,
+    etc.  The file must already be open with OPENWRITE, OPENAPPEND, or
+    OPENUPDATE.  If the input is the empty list, then the write stream
+    becomes the screen, as usual.  Changing the write stream does
+    not close the file that was previously the write stream, so it is
+    possible to alternate between files.
+
+    In QLogo the input may also be a list whose first element is a
+    variable name, matching OPENWRITE's character-buffer form.  The
+    buffer must already be open.
+
+COD***/
+// CMD SETWRITE 1 1 1 n
+Value *Compiler::genSetwrite(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *spec = generateChild(node.astnodeValue(), 0, TypeDatum);
+    auto validator = [this](Value *candidate) {
+        Value *isOpenSpec = generateCallExtern(isValidOpenSpec, PaAddr(candidate));
+        Value *openOk = scaff_->builder_.CreateICmpEQ(isOpenSpec, CoBool(true), DBG_NAME("isValidOpenSpecCond"));
+        Value *isa = generateGetDatumIsa(candidate);
+        Value *listMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeList), DBG_NAME("listMask"));
+        Value *isList = scaff_->builder_.CreateICmpNE(listMask, CoInt32(0), DBG_NAME("isList"));
+        Value *empty = generateCallExtern(isEmpty, PaAddr(candidate));
+        Value *isEmptyVal = scaff_->builder_.CreateICmpEQ(empty, CoBool(true), DBG_NAME("isEmpty"));
+        Value *isEmptyList = scaff_->builder_.CreateAnd(isList, isEmptyVal, DBG_NAME("isEmptyList"));
+        return scaff_->builder_.CreateOr(openOk, isEmptyList, DBG_NAME("isValidSetWrite"));
+    };
+    spec = generateValidationDatum(node.astnodeValue(), spec, validator);
+
+    Value *retval = generateCallExtern(
+        stdSetWrite,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(spec));
+    return generateNotFlowControl(retval);
+}
+
+/***DOC WRITER
+WRITER
+
+    outputs the name of the current write stream file, or the empty list
+    if the write stream is the screen.
+
+COD***/
+// CMD WRITER 0 0 0 d
+Value *Compiler::genWriter(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdWriter, PaAddr(scaff_->evaluator_));
+}

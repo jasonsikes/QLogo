@@ -234,14 +234,17 @@ class StreamManager
     QString reader() const;
 
     /// @brief SETWRITE: make the named open stream the current writer.
-    /// @param name The open stream's name; empty selects the terminal.
+    /// @param name The open stream's name; empty with a nothing spec selects
+    ///        the terminal (SETWRITE []).
+    /// @param spec The original Logo input, used in error messages.
     /// @details If a REPL/PAUSE session is currently talking to the human,
     /// this also ends that session's writer overlay so PRINT follows the new
     /// writer immediately. SETWRITE during LOAD does not clear the overlay;
     /// when the load ends and the REPL is current again, a still-active
     /// overlay hides the writer until the user SETWRITEs at the prompt.
-    /// @note Throws if the name is not open or was not opened for writing.
-    void setWriter(const QString &name);
+    /// @note Throws FCError::notOpen if the name is not open. Throws
+    ///       FCError::fileSystem if the stream was not opened for writing.
+    void setWriter(const QString &name, const DatumPtr &spec = DatumPtr());
 
     /// @brief WRITER: name of the stream PRINT currently uses (empty for the
     /// terminal, including while a REPL overlay is hiding a file writer).

@@ -1,0 +1,6 @@
+openwrite [buf]
+setwrite [buf]
+make "w writer
+setwrite []
+show :w
+close [buf]

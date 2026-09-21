@@ -114,9 +114,9 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 | APPLY              | WRAP           | GREATEREQUALP | DRIBBLE                | ARRAYP                    | *TODO* CONTENTS      |
 | ?                  | WINDOW         | GREATEREQUAL? | NODRIBBLE              | ARRAY?                    | *TODO* BURIED        |
 |                    | FENCE          | RANDOM        | SETREAD                | EMPTYP                    | *TODO* TRACED        |
-|                    | BOUNDS         | RERANDOM      | *TODO* SETWRITE        | EMPTY?                    | *TODO* STEPPED       |
+|                    | BOUNDS         | RERANDOM      | SETWRITE               | EMPTY?                    | *TODO* STEPPED       |
 |                    | SETBOUNDS      | FORM          | READER                 | EQUALP                    | *TODO* PROCEDURES    |
-|                    | FILLED         | BITAND        | *TODO* WRITER          | EQUAL?                    | *TODO* PRIMITIVES    |
+|                    | FILLED         | BITAND        | WRITER                 | EQUAL?                    | *TODO* PRIMITIVES    |
 |                    | LABEL          | BITOR         | *TODO* SETREADPOS      | NOTEQUALP                 | *TODO* NAMES         |
 |                    | SETLABELHEIGHT | BITXOR        | *TODO* SETWRITEPOS     | NOTEQUAL?                 | *TODO* PLISTS        |
 |                    | TEXTSCREEN     | BITNOT        | *TODO* READPOS         | BEFOREP                   | *TODO* ARITY         |
@@ -347,5 +347,5 @@ When using the Word form of ~LPUT~ and ~FPUT~, there is no single-character limi
 
 **** ~OPENREAD~, ~OPENWRITE~, ~OPENAPPEND~, and ~OPENUPDATE~:
 
-In UCBLogo only ~OPENWRITE~ accepts a list, which names a character buffer, and ~SETWRITE~/~CLOSE~ must be given that same list object (~.EQ~), not a copy. In QLogo every OPEN variant accepts the list form, and the buffer is identified by the variable named in the first element rather than by list identity. ~SETREAD~ accepts that same list form (UCBLogo ~SETREAD~ does not), so ~OPENREAD [FOO]~ / ~SETREAD [FOO]~ / ~CLOSE [FOO]~ name the same buffer. Any further members are ignored. Only ~OPENREAD~ requires the file or variable to already exist; ~OPENWRITE~, ~OPENAPPEND~, and ~OPENUPDATE~ create a missing file, and they create the named variable when the buffer is closed.
+In UCBLogo only ~OPENWRITE~ accepts a list, which names a character buffer, and ~SETWRITE~/~CLOSE~ must be given that same list object (~.EQ~), not a copy. In QLogo every OPEN variant accepts the list form, and the buffer is identified by the variable named in the first element rather than by list identity. ~SETREAD~ and ~SETWRITE~ accept that same list form (UCBLogo ~SETREAD~ does not; UCBLogo ~SETWRITE~ uses list identity and may open a sized buffer implicitly). ~OPENREAD [FOO]~ / ~SETREAD [FOO]~ / ~CLOSE [FOO]~, and the write-side equivalents, name the same buffer. Any further members are ignored. Only ~OPENREAD~ requires the file or variable to already exist; ~OPENWRITE~, ~OPENAPPEND~, and ~OPENUPDATE~ create a missing file, and they create the named variable when the buffer is closed. The buffer must already be open before ~SETREAD~ or ~SETWRITE~.
 
