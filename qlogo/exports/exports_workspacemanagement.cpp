@@ -319,3 +319,13 @@ EXPORTC addr_t stdPlist(addr_t eAddr, addr_t plistnameAddr)
     return reinterpret_cast<addr_t>(plist.datumValue());
 }
 
+/// PROCEDUREP: TRUE if the word names a primitive or a user procedure.
+/// An unknown name is FALSE. The compiler rejects a non-word before this runs.
+/// @param nameAddr a word naming the candidate
+/// @return true if the name is a procedure.
+EXPORTC bool stdProcedurep(addr_t nameAddr)
+{
+    auto *name = reinterpret_cast<Datum *>(nameAddr);
+    return Procedures::get().isProcedure(name->toString(Datum::ToStringFlags_Key));
+}
+

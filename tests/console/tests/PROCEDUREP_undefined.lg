@@ -1,0 +1,5 @@
+show procedurep "nope
+show procedure? "nope
+make "x 1
+show procedurep "x
+show procedurep 5

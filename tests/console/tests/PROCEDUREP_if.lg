@@ -1,0 +1,2 @@
+if procedurep "show [print "yes]
+(if procedure? "missing [print "no] [print "yes])

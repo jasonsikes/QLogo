@@ -1,0 +1,6 @@
+show procedurep "SHOW
+show procedure? "PROCEDUREP
+to Proc1
+end
+show procedurep "proc1
+show procedure? "PROC1

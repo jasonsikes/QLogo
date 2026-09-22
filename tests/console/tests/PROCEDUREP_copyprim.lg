@@ -1,0 +1,3 @@
+copydef "myshow "show
+show procedurep "myshow
+show procedure? "MYSHOW

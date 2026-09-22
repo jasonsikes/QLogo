@@ -1728,4 +1728,16 @@ const QString &StringConstants::cmdStrPLIST()
     return str;
 }
 
+const QString &StringConstants::cmdStrPROCEDUREP()
+{
+    static const QString str = QObject::tr("PROCEDUREP");
+    return str;
+}
+
+const QString &StringConstants::cmdStrPROCEDURE_Q()
+{
+    static const QString str = QObject::tr("PROCEDURE?");
+    return str;
+}
+
 

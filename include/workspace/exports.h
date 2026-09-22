@@ -248,4 +248,5 @@ EXPORTC void stdPprop(addr_t plistnameAddr, addr_t propnameAddr, addr_t valueAdd
 EXPORTC addr_t stdGprop(addr_t eAddr, addr_t plistnameAddr, addr_t propnameAddr);
 EXPORTC void stdRemprop(addr_t plistnameAddr, addr_t propnameAddr);
 EXPORTC addr_t stdPlist(addr_t eAddr, addr_t plistnameAddr);
+EXPORTC bool stdProcedurep(addr_t nameAddr);
 #endif // WORKSPACE_EXPORTS_H

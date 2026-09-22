@@ -1,0 +1,5 @@
+.macro m
+output [print "hi]
+end
+show procedurep "m
+show procedure? "M

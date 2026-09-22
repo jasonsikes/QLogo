@@ -469,3 +469,23 @@ Value *Compiler::genPlist(const DatumPtr &node, TypeMask expected)
     Value *retval = generateCallExtern(stdPlist, PaAddr(scaff_->evaluator_), PaAddr(plistname));
     return retval;
 }
+
+// PREDICATES
+
+/***DOC PROCEDUREP PROCEDURE?
+PROCEDUREP name
+PROCEDURE? name
+
+    outputs TRUE if the input is the name of a procedure.
+
+COD***/
+// CMD PROCEDUREP 1 1 1 b
+// CMD PROCEDURE? 1 1 1 b
+Value *Compiler::genProcedurep(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeBool);
+
+    Value *name = generateChild(node.astnodeValue(), 0, TypeDatum);
+    name = generateFromDatum(Datum::typeWord, node.astnodeValue(), name);
+    return generateCallExtern(stdProcedurep, PaAddr(name));
+}
