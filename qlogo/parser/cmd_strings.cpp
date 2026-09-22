@@ -1704,4 +1704,28 @@ const QString &StringConstants::cmdStrGLOBAL()
     return str;
 }
 
+const QString &StringConstants::cmdStrPPROP()
+{
+    static const QString str = QObject::tr("PPROP");
+    return str;
+}
+
+const QString &StringConstants::cmdStrGPROP()
+{
+    static const QString str = QObject::tr("GPROP");
+    return str;
+}
+
+const QString &StringConstants::cmdStrREMPROP()
+{
+    static const QString str = QObject::tr("REMPROP");
+    return str;
+}
+
+const QString &StringConstants::cmdStrPLIST()
+{
+    static const QString str = QObject::tr("PLIST");
+    return str;
+}
+
 

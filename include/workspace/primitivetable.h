@@ -286,5 +286,9 @@ stringToCmd.insert(StringConstants::cmdStrTHING(), Cmd_t{&Compiler::genThing, 1,
 stringToCmd.insert(StringConstants::cmdStrMAKE(), Cmd_t{&Compiler::genMake, 2, 2, 2, TypeN});
 stringToCmd.insert(StringConstants::cmdStrLOCAL(), Cmd_t{&Compiler::genLocal, 1, 1, -1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrGLOBAL(), Cmd_t{&Compiler::genGlobal, 1, 1, -1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrPPROP(), Cmd_t{&Compiler::genPprop, 3, 3, 3, TypeN});
+stringToCmd.insert(StringConstants::cmdStrGPROP(), Cmd_t{&Compiler::genGprop, 2, 2, 2, TypeD});
+stringToCmd.insert(StringConstants::cmdStrREMPROP(), Cmd_t{&Compiler::genRemprop, 2, 2, 2, TypeN});
+stringToCmd.insert(StringConstants::cmdStrPLIST(), Cmd_t{&Compiler::genPlist, 1, 1, 1, TypeD});
 
 

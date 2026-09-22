@@ -1,0 +1,5 @@
+pprop "a "b [1 2]
+make "saved plist "a
+pprop "a "b 9
+show :saved
+show gprop "a "b

@@ -1,0 +1,10 @@
+pprop [a] "b 1
+pprop "a [b] 1
+pprop {a} "b 1
+gprop [a] "b
+gprop "a [b]
+remprop [a] "b
+remprop "a [b]
+plist [a]
+plist {a}
+show "ok

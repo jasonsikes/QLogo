@@ -218,5 +218,9 @@ llvm::Value *genThing(const DatumPtr &node, TypeMask expected);
 llvm::Value *genMake(const DatumPtr &node, TypeMask expected);
 llvm::Value *genLocal(const DatumPtr &node, TypeMask expected);
 llvm::Value *genGlobal(const DatumPtr &node, TypeMask expected);
+llvm::Value *genPprop(const DatumPtr &node, TypeMask expected);
+llvm::Value *genGprop(const DatumPtr &node, TypeMask expected);
+llvm::Value *genRemprop(const DatumPtr &node, TypeMask expected);
+llvm::Value *genPlist(const DatumPtr &node, TypeMask expected);
 #endif // PRIMITIVE_HEADER_H
 

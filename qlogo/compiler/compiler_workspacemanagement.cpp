@@ -383,3 +383,89 @@ Value *Compiler::genGlobal(const DatumPtr &node, TypeMask expected)
         PaInt32(ary->getArraySize()));
     return generateNotFlowControl(retval);
 }
+
+/***DOC PPROP
+PPROP plistname propname value
+
+    command.  Adds a property to the "plistname" property list
+    with name "propname" and value "value".
+
+COD***/
+// CMD PPROP 3 3 3 n
+Value *Compiler::genPprop(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *plistname = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *propname = generateChild(node.astnodeValue(), 1, TypeDatum);
+    Value *value = generateChild(node.astnodeValue(), 2, TypeDatum);
+    plistname = generateFromDatum(Datum::typeWord, node.astnodeValue(), plistname);
+    propname = generateFromDatum(Datum::typeWord, node.astnodeValue(), propname);
+
+    generateCallExtern(stdPprop, PaAddr(plistname), PaAddr(propname), PaAddr(value));
+    return generateVoidRetval(node);
+}
+
+/***DOC GPROP
+GPROP plistname propname
+
+    outputs the value of the "propname" property in the "plistname"
+    property list, or the empty list if there is no such property.
+
+COD***/
+// CMD GPROP 2 2 2 d
+Value *Compiler::genGprop(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+
+    Value *plistname = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *propname = generateChild(node.astnodeValue(), 1, TypeDatum);
+    plistname = generateFromDatum(Datum::typeWord, node.astnodeValue(), plistname);
+    propname = generateFromDatum(Datum::typeWord, node.astnodeValue(), propname);
+
+    Value *retval = generateCallExtern(stdGprop, PaAddr(scaff_->evaluator_), PaAddr(plistname), PaAddr(propname));
+    return retval;
+}
+
+/***DOC REMPROP
+REMPROP plistname propname
+
+    command.  Removes the property named "propname" from the
+    property list named "plistname".
+
+COD***/
+// CMD REMPROP 2 2 2 n
+Value *Compiler::genRemprop(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *plistname = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *propname = generateChild(node.astnodeValue(), 1, TypeDatum);
+    plistname = generateFromDatum(Datum::typeWord, node.astnodeValue(), plistname);
+    propname = generateFromDatum(Datum::typeWord, node.astnodeValue(), propname);
+
+    generateCallExtern(stdRemprop, PaAddr(plistname), PaAddr(propname));
+    return generateVoidRetval(node);
+}
+
+/***DOC PLIST
+PLIST plistname
+
+    outputs a list whose odd-numbered members are the names, and
+    whose even-numbered members are the values, of the properties
+    in the property list named "plistname".  The output is a copy
+    of the actual property list; changing properties later will not
+    magically change a list output earlier by PLIST.
+
+COD***/
+// CMD PLIST 1 1 1 d
+Value *Compiler::genPlist(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+
+    Value *plistname = generateChild(node.astnodeValue(), 0, TypeDatum);
+    plistname = generateFromDatum(Datum::typeWord, node.astnodeValue(), plistname);
+
+    Value *retval = generateCallExtern(stdPlist, PaAddr(scaff_->evaluator_), PaAddr(plistname));
+    return retval;
+}

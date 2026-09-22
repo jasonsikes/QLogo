@@ -1,0 +1,10 @@
+pprop 1 2 3
+pprop 1 3 4
+remprop 1 2
+show gprop 1 2
+show gprop 1 3
+show count plist 1
+remprop 1 3
+show plist 1
+remprop 9 9
+show "ok

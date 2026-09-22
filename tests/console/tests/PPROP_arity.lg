@@ -1,0 +1,9 @@
+pprop
+pprop "a
+(pprop "a "b)
+gprop
+gprop "a
+remprop
+plist
+(pprop "a "b 1 2)
+(gprop "a "b 1)

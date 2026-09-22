@@ -291,6 +291,10 @@ const QString &cmdStrTHING();
 const QString &cmdStrMAKE();
 const QString &cmdStrLOCAL();
 const QString &cmdStrGLOBAL();
+const QString &cmdStrPPROP();
+const QString &cmdStrGPROP();
+const QString &cmdStrREMPROP();
+const QString &cmdStrPLIST();
 } // namespace StringConstants
 #endif // CMD_STRINGS_H
 

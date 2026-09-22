@@ -1,0 +1,6 @@
+pprop "City "Name "Berkeley
+show gprop "city "name
+show gprop "CITY "NAME
+pprop "city "name "Oakland
+show gprop "City "Name
+show plist "city

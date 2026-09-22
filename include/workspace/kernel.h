@@ -59,9 +59,6 @@ enum SpecialNames
 /// language and maintains the state of execution of the QLogo code.
 class Kernel
 {
-    PropertyLists plists_;
-
-
     bool isPausing_;
 
     void initPalette();
@@ -220,6 +217,10 @@ class Kernel
 
     /// @brief The current error, if any.
     DatumPtr currentError_;
+
+    /// @brief The collection of property lists.
+    PropertyLists plists_;
+
 
     /// @brief READ a line of input, EVALUATE it, PRINT the result, LOOP.
     /// @param isPausing Whether we are in a PAUSE loop.

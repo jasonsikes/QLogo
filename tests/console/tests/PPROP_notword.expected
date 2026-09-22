@@ -1,0 +1,10 @@
+? pprop doesn't like [a] as input
+? pprop doesn't like [b] as input
+? pprop doesn't like {a} as input
+? gprop doesn't like [a] as input
+? gprop doesn't like [b] as input
+? remprop doesn't like [a] as input
+? remprop doesn't like [b] as input
+? plist doesn't like [a] as input
+? plist doesn't like {a} as input
+? ok

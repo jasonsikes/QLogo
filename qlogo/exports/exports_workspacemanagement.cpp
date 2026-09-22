@@ -257,3 +257,65 @@ EXPORTC addr_t stdLocal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, uin
     return reinterpret_cast<addr_t>(node);
 }
 
+namespace
+{
+
+QString propertyKey(Datum *word)
+{
+    return word->toString(Datum::ToStringFlags_Key);
+}
+
+} // namespace
+
+/// PPROP: add or replace one property. Names are case-insensitive.
+/// @param plistnameAddr a word naming the property list
+/// @param propnameAddr a word naming the property
+/// @param valueAddr the value to store
+EXPORTC void stdPprop(addr_t plistnameAddr, addr_t propnameAddr, addr_t valueAddr)
+{
+    auto *plistname = reinterpret_cast<Datum *>(plistnameAddr);
+    auto *propname = reinterpret_cast<Datum *>(propnameAddr);
+    auto *value = reinterpret_cast<Datum *>(valueAddr);
+    Kernel::get().plists_.addProperty(propertyKey(plistname), propertyKey(propname), DatumPtr(value));
+}
+
+/// GPROP: output a property value, or the empty list if it is absent.
+/// @param eAddr a pointer to the Evaluator object
+/// @param plistnameAddr a word naming the property list
+/// @param propnameAddr a word naming the property
+/// @return the stored value, or an empty list.
+EXPORTC addr_t stdGprop(addr_t eAddr, addr_t plistnameAddr, addr_t propnameAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *plistname = reinterpret_cast<Datum *>(plistnameAddr);
+    auto *propname = reinterpret_cast<Datum *>(propnameAddr);
+    DatumPtr value = Kernel::get().plists_.getProperty(propertyKey(plistname), propertyKey(propname));
+    e->watch(value);
+    return reinterpret_cast<addr_t>(value.datumValue());
+}
+
+/// REMPROP: remove one property. A missing name is ignored.
+/// Removing the last property erases the property list.
+/// @param plistnameAddr a word naming the property list
+/// @param propnameAddr a word naming the property
+EXPORTC void stdRemprop(addr_t plistnameAddr, addr_t propnameAddr)
+{
+    auto *plistname = reinterpret_cast<Datum *>(plistnameAddr);
+    auto *propname = reinterpret_cast<Datum *>(propnameAddr);
+    Kernel::get().plists_.removeProperty(propertyKey(plistname), propertyKey(propname));
+}
+
+/// PLIST: output a copy of the property list as alternating names and values.
+/// An unknown name outputs an empty list. Names in the result are the stored keys.
+/// @param eAddr a pointer to the Evaluator object
+/// @param plistnameAddr a word naming the property list
+/// @return a list of alternating property names and values.
+EXPORTC addr_t stdPlist(addr_t eAddr, addr_t plistnameAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *plistname = reinterpret_cast<Datum *>(plistnameAddr);
+    DatumPtr plist = Kernel::get().plists_.getPropertyList(propertyKey(plistname));
+    e->watch(plist);
+    return reinterpret_cast<addr_t>(plist.datumValue());
+}
+
