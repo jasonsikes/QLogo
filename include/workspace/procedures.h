@@ -95,7 +95,7 @@ class Procedures
     std::tuple<int, int, int> validateParameters(const DatumPtr &cmd, const DatumPtr &parameterList) const;
 
     /// @brief Create a Procedure object and save it to the procedures hash table.
-    /// @param cmd The command used to define the procedure (TO or .MACRO).
+    /// @param cmd The command used to define the procedure (TO, .MACRO, or DEFINE).
     /// @param procnameP The name of the procedure to define.
     /// @param text The text to define a procedure from, in the form of a list of sublists.
     /// @param sourceText The source text to define a procedure from, or an empty list if there

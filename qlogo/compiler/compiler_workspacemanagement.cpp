@@ -145,6 +145,42 @@ Value *Compiler::genInputProcedure(const DatumPtr &node, TypeMask expected)
     return generateCallExtern(inputProcedure, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.datumValue())));
 }
 
+/***DOC DEFINE
+DEFINE procname text
+
+command.  Defines a procedure with name "procname" and text "text".
+If there is already a procedure with the same name, the new
+definition replaces the old one.  The text input must be a list
+whose members are lists.  The first member is a list of inputs;
+it looks like a TO line but without the word TO, without the
+procedure name, and without the colons before input names.  In
+other words, the members of this first sublist are words for the
+names of required inputs and lists for the names of optional or
+rest inputs.  The remaining sublists of the text input make up
+the body of the procedure, with one sublist for each instruction
+line of the body.  (There is no END line in the text input.)
+It is an error to redefine a primitive procedure.
+
+COD***/
+// CMD DEFINE 2 2 2 n
+Value *Compiler::genDefine(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *procname = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *text = generateChild(node.astnodeValue(), 1, TypeDatum);
+    procname = generateFromDatum(Datum::typeWord, node.astnodeValue(), procname);
+    text = generateFromDatum(Datum::typeList, node.astnodeValue(), text);
+
+    Value *retval = generateCallExtern(
+        stdDefine,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(procname),
+        PaAddr(text));
+    return generateNotFlowControl(retval);
+}
+
 /***DOC MAKE
 MAKE varname value
 

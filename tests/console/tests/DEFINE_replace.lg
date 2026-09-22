@@ -1,0 +1,6 @@
+to greet
+print "old
+end
+greet
+define "greet [[] [print "new]]
+greet

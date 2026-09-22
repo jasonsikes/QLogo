@@ -86,7 +86,7 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |--------------------+----------------+---------------+------------------------+---------------------------+----------------------|
 | RUN                | FORWARD        | SUM           | PRINT                  | WORD                      | TO                   |
 | *TODO* TIME        | FD             | DIFFERENCE    | PR                     | LIST                      | .MACRO               |
-| *TODO* MARK        | BACK           | MINUS         | TYPE                   | SENTENCE                  | *TODO* DEFINE        |
+| *TODO* MARK        | BACK           | MINUS         | TYPE                   | SENTENCE                  | DEFINE               |
 | RUNRESULT          | BK             | -             | SHOW                   | SE                        | *TODO* .DEFMACRO     |
 | BYE                | LEFT           | PRODUCT       | READLIST               | FPUT                      | *TODO* TEXT          |
 | REPEAT             | LT             | QUOTIENT      | RL                     | LPUT                      | *TODO* FULLTEXT      |

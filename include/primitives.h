@@ -210,6 +210,7 @@ llvm::Value *genClickpos(const DatumPtr &node, TypeMask expected);
 llvm::Value *genButtonp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genButton(const DatumPtr &node, TypeMask expected);
 llvm::Value *genInputProcedure(const DatumPtr &node, TypeMask expected);
+llvm::Value *genDefine(const DatumPtr &node, TypeMask expected);
 llvm::Value *genMake(const DatumPtr &node, TypeMask expected);
 llvm::Value *genLocal(const DatumPtr &node, TypeMask expected);
 #endif // PRIMITIVE_HEADER_H

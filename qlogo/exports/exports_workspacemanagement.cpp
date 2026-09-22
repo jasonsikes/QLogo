@@ -17,6 +17,7 @@
 #include "workspace/exports_internal.h"
 #include "datum_types.h"
 #include "workspace/kernel.h"
+#include "workspace/procedures.h"
 #include "astnode.h"
 #include "flowcontrol.h"
 #include "compiler_types.h"
@@ -45,6 +46,32 @@ EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
 
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
+}
+
+/// DEFINE: install a procedure from a list of lists.
+/// The first sublist is the parameter list. The rest are instruction lines.
+/// There is no END line, and no source-text history is stored.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param nameAddr a word naming the procedure
+/// @param textAddr a list whose members are lists
+/// @return the owning ASTNode, or an Error if the name or text is rejected.
+EXPORTC addr_t stdDefine(addr_t eAddr, addr_t astnodeAddr, addr_t nameAddr, addr_t textAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *name = reinterpret_cast<Datum *>(nameAddr);
+    auto *text = reinterpret_cast<Datum *>(textAddr);
+    try
+    {
+        Procedures::get().defineProcedure(node->nodeName_, DatumPtr(name), DatumPtr(text), QList<DatumPtr>());
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
 }
 
 // TODO: Should the executor be passed in here instead of getting the local frame from the call stack?

@@ -154,9 +154,17 @@ void Procedures::defineProcedure(const DatumPtr &cmd,
     List *text = textP.listValue();
     if (text->isEmpty())
         throw FCError::doesntLike(cmd, textP);
+
+    // DEFINE's text is a list of lists: parameters, then one instruction line each.
+    // A word or array anywhere in that text is rejected as the whole input.
+    ListIterator memberIter = text->newIterator();
+    while (memberIter.elementExists())
+    {
+        if ( ! memberIter.element().isList())
+            throw FCError::doesntLike(cmd, textP);
+    }
+
     DatumPtr parameterList = text->head;
-    if ( ! parameterList.isList())
-        throw FCError::doesntLike(cmd, parameterList);
 
     std::tuple<int, int, int> arity = validateParameters(cmd, parameterList);
     QString cmdString = cmd.toString(Datum::ToStringFlags_Key);
