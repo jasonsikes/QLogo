@@ -139,14 +139,19 @@ class Procedures
     /// @brief Get the full text of a procedure.
     /// @param procnameP The name of the procedure to get the full text of.
     /// @param shouldValidate Whether to validate the procedure.
-    /// @return A list of the full text of the procedure, in the form of a list of
-    /// words.
+    /// @return For a procedure defined with TO or .MACRO, a list of words, one raw
+    /// source line each, including END. For a procedure defined with DEFINE or
+    /// .DEFMACRO, a list of lists: a generated title line, one list per body line,
+    /// and a final [end] list. That result is not suitable as input to DEFINE.
+    /// If shouldValidate is false and the name is undefined, a two-word stand-in
+    /// list (a TO line and END) is returned instead of an error.
     DatumPtr procedureFulltext(const DatumPtr &procnameP, bool shouldValidate = true) const;
 
-    /// @brief Generate the title line of a procedure.
+    /// @brief Generate the title line of a procedure that has no stored source text.
     /// @param procnameP The name of the procedure to generate the title line for.
-    /// @return A string containing the title of the procedure. A title is the first line
-    /// of the procedure's source text, starting with 'to' or '.macro'.
+    /// @return A string containing the title of the procedure. A title starts with
+    /// 'to' or '.macro', then the name, then the inputs in TO syntax (colons on
+    /// input names).
     QString generateProcedureTitleLine(const DatumPtr &procnameP) const;
 
     /// @brief Check if a name is a procedure.

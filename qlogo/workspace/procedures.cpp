@@ -218,6 +218,59 @@ void Procedures::eraseProcedure(const DatumPtr &procnameP)
     procedures_.remove(procname);
 }
 
+/// Prefix a colon unless the name already has one, so a DEFINE formal prints
+/// in the TO syntax FULLTEXT uses for a generated title line.
+static DatumPtr colonizeInputName(const DatumPtr &name)
+{
+    const QString text = name.toString();
+    if (text.startsWith(QLatin1Char(':')))
+        return name;
+    return DatumPtr(QStringLiteral(":") + text);
+}
+
+/// One formal from the stored parameter list, rewritten for a TO-style title.
+/// A word that is a number is the default input count and is left unchanged.
+/// Any other word is a required input. A list is an optional or rest input;
+/// only its name (the first member) gains a colon.
+static DatumPtr formalForFulltextTitle(const DatumPtr &formal)
+{
+    if (formal.isList())
+    {
+        List *formalList = formal.listValue();
+        ListBuilder rewritten;
+        rewritten.append(colonizeInputName(formalList->head));
+        ListIterator rest = formalList->tail.listValue()->newIterator();
+        while (rest.elementExists())
+            rewritten.append(rest.element());
+        return rewritten.finishedList();
+    }
+
+    if (formal.isWord())
+    {
+        Word *word = formal.wordValue();
+        word->numberValue();
+        if (word->numberIsValid)
+            return formal;
+    }
+    return colonizeInputName(formal);
+}
+
+/// Title list for a procedure that was defined with DEFINE or .DEFMACRO:
+/// [to name :input1 [:optional default] [:rest] defaultcount]
+/// or the same with .macro in place of to.
+static DatumPtr generatedTitleList(const Procedure *body, const DatumPtr &procnameP)
+{
+    ListBuilder title;
+    const QString command = body->isMacro_ ? QObject::tr(".macro") : QObject::tr("to");
+    title.append(DatumPtr(command));
+    title.append(procnameP);
+
+    ListIterator formals = body->instructionList_.listValue()->head.listValue()->newIterator();
+    while (formals.elementExists())
+        title.append(formalForFulltextTitle(formals.element()));
+    return title.finishedList();
+}
+
 DatumPtr Procedures::procedureText(const DatumPtr &procnameP) const
 {
     QString procname = procnameP.toString(Datum::ToStringFlags_Key);
@@ -242,21 +295,24 @@ DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldVal
     {
         Procedure *body = procedureForName(procname).procedureValue();
 
-        // If there is no source text, generate it from the instruction list.
+        // DEFINE and .DEFMACRO store no source lines. Rebuild a TO-shaped
+        // definition as a list of lists: title, one list per body line, [end].
+        // The parameter list is the first member of the instruction list and
+        // belongs in the title, not in the body.
         if (body->sourceText_.isEmpty())
         {
             ListBuilder retvalBuilder;
-            retvalBuilder.append(DatumPtr(generateProcedureTitleLine(procnameP)));
+            retvalBuilder.append(generatedTitleList(body, procnameP));
 
-            ListIterator b = body->instructionList_.listValue()->newIterator();
+            ListIterator lines = body->instructionList_.listValue()->newIterator();
+            if (lines.elementExists())
+                lines.element();
+            while (lines.elementExists())
+                retvalBuilder.append(lines.element());
 
-            while (b.elementExists())
-            {
-                retvalBuilder.append(DatumPtr(b.element().toString(Datum::ToStringFlags_Show)));
-            }
-
-            DatumPtr end(QObject::tr("END"));
-            retvalBuilder.append(end);
+            ListBuilder endLine;
+            endLine.append(DatumPtr(QObject::tr("end")));
+            retvalBuilder.append(endLine.finishedList());
             return retvalBuilder.finishedList();
         }
         else
@@ -291,13 +347,7 @@ QString Procedures::generateProcedureTitleLine(const DatumPtr &procnameP) const
         throw FCError::noHow(procnameP);
 
     Procedure *body = procedureForName(procname).procedureValue();
-
-    List *retvalL = body->instructionList_.listValue()->head.listValue();
-    retvalL = new List(DatumPtr(procnameP), retvalL);
-    DatumPtr cmd = DatumPtr((body->isMacro_) ? QObject::tr(".macro") : QObject::tr("to"));
-    retvalL = new List(cmd, retvalL);
-    DatumPtr retvalP = DatumPtr(retvalL);
-    return retvalP.toString(Datum::ToStringFlags_None);
+    return generatedTitleList(body, procnameP).toString(Datum::ToStringFlags_None);
 }
 
 DatumPtr Procedures::procedureForName(const QString &aName) const

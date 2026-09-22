@@ -239,5 +239,6 @@ EXPORTC bool getvarErroract(void);
 EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr);
 EXPORTC addr_t stdDefine(addr_t eAddr, addr_t astnodeAddr, addr_t nameAddr, addr_t textAddr);
 EXPORTC addr_t stdText(addr_t eAddr, addr_t nameAddr);
+EXPORTC addr_t stdFulltext(addr_t eAddr, addr_t nameAddr);
 EXPORTC void setVarAsLocal(addr_t varname);
 #endif // WORKSPACE_EXPORTS_H

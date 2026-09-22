@@ -97,6 +97,30 @@ EXPORTC addr_t stdText(addr_t eAddr, addr_t nameAddr)
     }
 }
 
+/// FULLTEXT: output the source form of a user procedure.
+/// TO and .MACRO keep the raw source lines, so the result is a list of words
+/// including END. DEFINE and .DEFMACRO have no source lines, so the result is
+/// a list of lists: a generated title, the body, and [end].
+/// @param eAddr a pointer to the Evaluator object
+/// @param nameAddr a word naming the procedure
+/// @return the procedure's full text, or an Error if the name is a primitive or undefined.
+EXPORTC addr_t stdFulltext(addr_t eAddr, addr_t nameAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *name = reinterpret_cast<Datum *>(nameAddr);
+    try
+    {
+        DatumPtr text = Procedures::get().procedureFulltext(DatumPtr(name));
+        e->watch(text);
+        return reinterpret_cast<addr_t>(text.datumValue());
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+}
+
 // TODO: Should the executor be passed in here instead of getting the local frame from the call stack?
 EXPORTC void setVarAsLocal(addr_t varname)
 {

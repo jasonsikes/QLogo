@@ -1668,6 +1668,12 @@ const QString &StringConstants::cmdStrTEXT()
     return str;
 }
 
+const QString &StringConstants::cmdStrFULLTEXT()
+{
+    static const QString str = QObject::tr("FULLTEXT");
+    return str;
+}
+
 const QString &StringConstants::cmdStrMAKE()
 {
     static const QString str = QObject::tr("MAKE");

@@ -1,0 +1,4 @@
+define "qw [[] [show "Hello] [show "Bye]]
+show fulltext "qw
+show first fulltext "qw
+show last fulltext "qw

@@ -217,6 +217,33 @@ Value *Compiler::genText(const DatumPtr &node, TypeMask expected)
     return generateNotFlowControl(retval);
 }
 
+/***DOC FULLTEXT
+FULLTEXT procname
+
+    outputs a representation of the procedure "procname" in which
+    formatting information is preserved.  If the procedure was defined
+    with TO, EDIT, or LOAD, then the output is a list of words.  Each
+    word represents one entire line of the definition in the form
+    output by READWORD, including extra spaces and continuation lines.
+    The last member of the output represents the END line.  If the
+    procedure was defined with DEFINE, then the output is a list of
+    lists.  If these lists are printed, one per line, the result will
+    look like a definition using TO.  Note: the output from FULLTEXT
+    is not suitable for use as input to DEFINE!
+
+COD***/
+// CMD FULLTEXT 1 1 1 d
+Value *Compiler::genFulltext(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+
+    Value *procname = generateChild(node.astnodeValue(), 0, TypeDatum);
+    procname = generateFromDatum(Datum::typeWord, node.astnodeValue(), procname);
+
+    Value *retval = generateCallExtern(stdFulltext, PaAddr(scaff_->evaluator_), PaAddr(procname));
+    return generateNotFlowControl(retval);
+}
+
 /***DOC MAKE
 MAKE varname value
 
