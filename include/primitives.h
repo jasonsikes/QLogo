@@ -214,6 +214,7 @@ llvm::Value *genDefine(const DatumPtr &node, TypeMask expected);
 llvm::Value *genText(const DatumPtr &node, TypeMask expected);
 llvm::Value *genFulltext(const DatumPtr &node, TypeMask expected);
 llvm::Value *genCopydef(const DatumPtr &node, TypeMask expected);
+llvm::Value *genThing(const DatumPtr &node, TypeMask expected);
 llvm::Value *genMake(const DatumPtr &node, TypeMask expected);
 llvm::Value *genLocal(const DatumPtr &node, TypeMask expected);
 #endif // PRIMITIVE_HEADER_H

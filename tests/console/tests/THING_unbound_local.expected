@@ -1,0 +1,4 @@
+? ? > > > p defined
+? a has no value in p
+[print thing "a]
+? 1

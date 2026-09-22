@@ -1,0 +1,7 @@
+make "a 1
+to p
+local "a
+print thing "a
+end
+p
+print thing "a

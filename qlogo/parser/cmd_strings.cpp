@@ -1680,6 +1680,12 @@ const QString &StringConstants::cmdStrCOPYDEF()
     return str;
 }
 
+const QString &StringConstants::cmdStrTHING()
+{
+    static const QString str = QObject::tr("THING");
+    return str;
+}
+
 const QString &StringConstants::cmdStrMAKE()
 {
     static const QString str = QObject::tr("MAKE");

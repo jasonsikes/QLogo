@@ -147,6 +147,24 @@ EXPORTC addr_t stdCopydef(addr_t eAddr, addr_t astnodeAddr, addr_t newnameAddr, 
     return reinterpret_cast<addr_t>(node);
 }
 
+/// THING: output the value of the variable named by the input word.
+/// Dynamic scope selects the innermost binding. An unbound name is an error.
+/// @param eAddr a pointer to the Evaluator object
+/// @param nameAddr a word naming the variable
+/// @return the variable's value, or an Error if it has no value.
+EXPORTC addr_t stdThing(addr_t eAddr, addr_t nameAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *name = reinterpret_cast<Datum *>(nameAddr);
+    DatumPtr val = Kernel::get().datumForName(name->toString(Datum::ToStringFlags_Key));
+    if (!val.isNothing())
+        return reinterpret_cast<addr_t>(val.datumValue());
+
+    FCError *err = FCError::noValue(DatumPtr(name));
+    e->watch(err);
+    return reinterpret_cast<addr_t>(err);
+}
+
 // TODO: Should the executor be passed in here instead of getting the local frame from the call stack?
 EXPORTC void setVarAsLocal(addr_t varname)
 {

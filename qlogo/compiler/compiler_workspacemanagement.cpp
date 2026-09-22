@@ -275,6 +275,32 @@ Value *Compiler::genCopydef(const DatumPtr &node, TypeMask expected)
     return generateNotFlowControl(retval);
 }
 
+/***DOC THING
+THING varname
+:quoted.varname
+
+    outputs the value of the variable whose name is the input.
+    If there is more than one such variable, the innermost local
+    variable of that name is chosen.  The colon notation is an
+    abbreviation not for THING but for the combination
+
+                thing "
+
+    so that :FOO means THING "FOO.
+
+COD***/
+// CMD THING 1 1 1 d
+Value *Compiler::genThing(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+
+    Value *varname = generateChild(node.astnodeValue(), 0, TypeDatum);
+    varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
+
+    Value *retval = generateCallExtern(stdThing, PaAddr(scaff_->evaluator_), PaAddr(varname));
+    return generateNotFlowControl(retval);
+}
+
 /***DOC MAKE
 MAKE varname value
 

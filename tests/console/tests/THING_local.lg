@@ -1,0 +1,8 @@
+make "a "outer
+to p
+local "a
+make "a "inner
+show thing "a
+end
+p
+show thing "a

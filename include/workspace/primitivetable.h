@@ -282,6 +282,7 @@ stringToCmd.insert(StringConstants::cmdStr_dot_DEFMACRO(), Cmd_t{&Compiler::genD
 stringToCmd.insert(StringConstants::cmdStrTEXT(), Cmd_t{&Compiler::genText, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrFULLTEXT(), Cmd_t{&Compiler::genFulltext, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrCOPYDEF(), Cmd_t{&Compiler::genCopydef, 2, 2, 2, TypeN});
+stringToCmd.insert(StringConstants::cmdStrTHING(), Cmd_t{&Compiler::genThing, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrMAKE(), Cmd_t{&Compiler::genMake, 2, 2, 2, TypeN});
 stringToCmd.insert(StringConstants::cmdStrLOCAL(), Cmd_t{&Compiler::genLocal, 1, 1, -1, TypeN});
 
