@@ -1,0 +1,2 @@
+show primitivep [show]
+show primitive? {a}

@@ -1,0 +1,6 @@
+show primitivep "SHOW
+show primitive? "PRIMITIVEP
+to Proc1
+end
+show primitivep "proc1
+show primitive? "PROC1

@@ -103,8 +103,8 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 | OUTPUT             | POS            | RADSIN        | SETPREFIX              | BUTLAST                   | PROCEDURE?           |
 | OP                 | HEADING        | COS           | PREFIX                 | BL                        | MACROP               |
 | .MAYBEOUTPUT       | TOWARDS        | RADCOS        | OPENREAD               | ITEM                      | MACRO?               |
-| CATCH              | SCRUNCH        | ARCTAN        | OPENWRITE              | SETITEM                   | *TODO* PRIMITIVEP    |
-| THROW              | SHOWTURTLE     | RADARCTAN     | OPENAPPEND             | .SETFIRST                 | *TODO* PRIMITIVE?    |
+| CATCH              | SCRUNCH        | ARCTAN        | OPENWRITE              | SETITEM                   | PRIMITIVEP           |
+| THROW              | SHOWTURTLE     | RADARCTAN     | OPENAPPEND             | .SETFIRST                 | PRIMITIVE?           |
 | ERROR              | ST             | LESSP         | OPENUPDATE             | .SETBF                    | *TODO* DEFINEDP      |
 | PAUSE              | HIDETURTLE     | LESS?         | CLOSE                  | .SETITEM                  | *TODO* DEFINED?      |
 | CONTINUE           | HT             | GREATERP      | ALLOPEN                | WORDP                     | *TODO* NAMEP         |

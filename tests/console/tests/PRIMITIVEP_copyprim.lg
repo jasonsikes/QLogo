@@ -1,0 +1,3 @@
+copydef "myshow "show
+show primitivep "myshow
+show primitive? "MYSHOW

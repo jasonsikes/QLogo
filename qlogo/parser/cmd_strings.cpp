@@ -1752,4 +1752,16 @@ const QString &StringConstants::cmdStrMACRO_Q()
     return str;
 }
 
+const QString &StringConstants::cmdStrPRIMITIVEP()
+{
+    static const QString str = QObject::tr("PRIMITIVEP");
+    return str;
+}
+
+const QString &StringConstants::cmdStrPRIMITIVE_Q()
+{
+    static const QString str = QObject::tr("PRIMITIVE?");
+    return str;
+}
+
 

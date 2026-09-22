@@ -339,3 +339,14 @@ EXPORTC bool stdMacrop(addr_t nameAddr)
     return Procedures::get().isMacro(name->toString(Datum::ToStringFlags_Key));
 }
 
+/// PRIMITIVEP: TRUE if the word names a built-in procedure.
+/// A name created by COPYDEF from a primitive is itself a primitive.
+/// User procedures, macros, and unknown names are FALSE.
+/// @param nameAddr a word naming the candidate
+/// @return true if the name is a primitive.
+EXPORTC bool stdPrimitivep(addr_t nameAddr)
+{
+    auto *name = reinterpret_cast<Datum *>(nameAddr);
+    return Procedures::get().isPrimitive(name->toString(Datum::ToStringFlags_Key));
+}
+

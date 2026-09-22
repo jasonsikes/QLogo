@@ -294,5 +294,7 @@ stringToCmd.insert(StringConstants::cmdStrPROCEDUREP(), Cmd_t{&Compiler::genProc
 stringToCmd.insert(StringConstants::cmdStrPROCEDURE_Q(), Cmd_t{&Compiler::genProcedurep, 1, 1, 1, TypeB});
 stringToCmd.insert(StringConstants::cmdStrMACROP(), Cmd_t{&Compiler::genMacrop, 1, 1, 1, TypeB});
 stringToCmd.insert(StringConstants::cmdStrMACRO_Q(), Cmd_t{&Compiler::genMacrop, 1, 1, 1, TypeB});
+stringToCmd.insert(StringConstants::cmdStrPRIMITIVEP(), Cmd_t{&Compiler::genPrimitivep, 1, 1, 1, TypeB});
+stringToCmd.insert(StringConstants::cmdStrPRIMITIVE_Q(), Cmd_t{&Compiler::genPrimitivep, 1, 1, 1, TypeB});
 
 

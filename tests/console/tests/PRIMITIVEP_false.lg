@@ -1,0 +1,9 @@
+to p
+end
+show primitivep "p
+show primitive? "nope
+show primitivep 5
+.macro m
+output []
+end
+show primitivep "m

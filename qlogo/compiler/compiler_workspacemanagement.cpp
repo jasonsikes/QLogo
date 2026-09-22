@@ -507,3 +507,23 @@ Value *Compiler::genMacrop(const DatumPtr &node, TypeMask expected)
     name = generateFromDatum(Datum::typeWord, node.astnodeValue(), name);
     return generateCallExtern(stdMacrop, PaAddr(name));
 }
+
+/***DOC PRIMITIVEP PRIMITIVE?
+PRIMITIVEP name
+PRIMITIVE? name
+
+    outputs TRUE if the input is the name of a primitive procedure
+    (one built into Logo).  Note that some of the procedures
+    described in this document are library procedures, not primitives.
+
+COD***/
+// CMD PRIMITIVEP 1 1 1 b
+// CMD PRIMITIVE? 1 1 1 b
+Value *Compiler::genPrimitivep(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeBool);
+
+    Value *name = generateChild(node.astnodeValue(), 0, TypeDatum);
+    name = generateFromDatum(Datum::typeWord, node.astnodeValue(), name);
+    return generateCallExtern(stdPrimitivep, PaAddr(name));
+}
