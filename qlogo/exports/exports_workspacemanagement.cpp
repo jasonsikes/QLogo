@@ -121,6 +121,32 @@ EXPORTC addr_t stdFulltext(addr_t eAddr, addr_t nameAddr)
     }
 }
 
+/// COPYDEF: make newname a procedure identical to oldname.
+/// A user procedure is copied. A primitive is aliased, and the new name is
+/// then a primitive itself. The new name must not already name a primitive.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param newnameAddr a word naming the procedure to create
+/// @param oldnameAddr a word naming the procedure to copy
+/// @return the owning ASTNode, or an Error if either name is rejected.
+EXPORTC addr_t stdCopydef(addr_t eAddr, addr_t astnodeAddr, addr_t newnameAddr, addr_t oldnameAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *newname = reinterpret_cast<Datum *>(newnameAddr);
+    auto *oldname = reinterpret_cast<Datum *>(oldnameAddr);
+    try
+    {
+        Procedures::get().copyProcedure(node->nodeName_, DatumPtr(newname), DatumPtr(oldname));
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+
 // TODO: Should the executor be passed in here instead of getting the local frame from the call stack?
 EXPORTC void setVarAsLocal(addr_t varname)
 {

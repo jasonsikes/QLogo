@@ -1,0 +1,3 @@
+copydef "myplus "sum
+print myplus 2 3
+text "myplus

@@ -244,6 +244,37 @@ Value *Compiler::genFulltext(const DatumPtr &node, TypeMask expected)
     return generateNotFlowControl(retval);
 }
 
+/***DOC COPYDEF
+COPYDEF newname oldname
+
+    command.  Makes "newname" a procedure identical to "oldname".
+    The latter may be a primitive or a defined procedure.  If
+    "newname" was already defined, the new definition replaces
+    the old one.  It is an error to redefine a primitive
+    procedure.  Note: dialects of Logo differ as to the order
+    of inputs to COPYDEF.  This dialect uses "MAKE order," not
+    "NAME order."
+
+COD***/
+// CMD COPYDEF 2 2 2 n
+Value *Compiler::genCopydef(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *newname = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *oldname = generateChild(node.astnodeValue(), 1, TypeDatum);
+    newname = generateFromDatum(Datum::typeWord, node.astnodeValue(), newname);
+    oldname = generateFromDatum(Datum::typeWord, node.astnodeValue(), oldname);
+
+    Value *retval = generateCallExtern(
+        stdCopydef,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(newname),
+        PaAddr(oldname));
+    return generateNotFlowControl(retval);
+}
+
 /***DOC MAKE
 MAKE varname value
 

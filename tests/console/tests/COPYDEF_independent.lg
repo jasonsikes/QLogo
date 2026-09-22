@@ -1,0 +1,8 @@
+to qw
+print "old
+end
+copydef "we "qw
+define "qw [[] [print "new]]
+show text "we
+qw
+we

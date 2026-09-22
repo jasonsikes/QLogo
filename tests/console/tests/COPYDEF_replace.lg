@@ -1,0 +1,9 @@
+to a
+print "one
+end
+to b
+print "two
+end
+copydef "a "b
+a
+b

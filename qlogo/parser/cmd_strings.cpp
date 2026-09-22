@@ -1674,6 +1674,12 @@ const QString &StringConstants::cmdStrFULLTEXT()
     return str;
 }
 
+const QString &StringConstants::cmdStrCOPYDEF()
+{
+    static const QString str = QObject::tr("COPYDEF");
+    return str;
+}
+
 const QString &StringConstants::cmdStrMAKE()
 {
     static const QString str = QObject::tr("MAKE");

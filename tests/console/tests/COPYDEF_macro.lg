@@ -1,0 +1,5 @@
+.macro m
+output [print "hi]
+end
+copydef "n "m
+n

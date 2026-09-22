@@ -1,0 +1,5 @@
+define "qw [[p] [print :p]]
+copydef "we "qw
+show fulltext "we
+we "there
+qw "here

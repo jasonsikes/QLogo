@@ -187,25 +187,105 @@ void Procedures::defineProcedure(const DatumPtr &cmd,
 }
 
 
-void Procedures::copyProcedure(const DatumPtr &newnameP, const DatumPtr &oldnameP)
+/// proc_name_arg rejects numbers before the name is looked up.
+static void rejectNumberName(const DatumPtr &cmd, const DatumPtr &nameP)
 {
-    lastProcedureCreatedTimestamp_ = QDateTime::currentMSecsSinceEpoch();
-    QString newname = newnameP.toString(Datum::ToStringFlags_Key);
-    QString oldname = oldnameP.toString(Datum::ToStringFlags_Key);
+    nameP.wordValue()->numberValue();
+    if (nameP.wordValue()->numberIsValid)
+        throw FCError::doesntLike(cmd, nameP);
+}
+
+/// New lists, shared atoms, so the copy compiles and records tags on its own.
+static DatumPtr deepCopyList(const DatumPtr &src)
+{
+    ListBuilder builder;
+    ListIterator iter = src.listValue()->newIterator();
+    while (iter.elementExists())
+    {
+        DatumPtr element = iter.element();
+        if (element.isList())
+            builder.append(deepCopyList(element));
+        else
+            builder.append(element);
+    }
+    return builder.finishedList();
+}
+
+/// Replace the procedure name (the second word) in a TO or .MACRO title line.
+/// The line is a READWORD-style word, so the rewritten text is stored with
+/// the same raw encoding the reader uses for spaces and punctuation.
+static DatumPtr sourceLineWithNewName(const DatumPtr &line, const DatumPtr &newnameP)
+{
+    const QString title = line.toString();
+    int firstEnd = 0;
+    const int length = title.size();
+    while (firstEnd < length && !title[firstEnd].isSpace())
+        ++firstEnd;
+    int nameStart = firstEnd;
+    while (nameStart < length && title[nameStart].isSpace())
+        ++nameStart;
+    if (nameStart >= length)
+        return line;
+
+    int nameEnd = nameStart;
+    while (nameEnd < length && !title[nameEnd].isSpace())
+        ++nameEnd;
+
+    const QString rewritten = title.left(nameStart) + newnameP.toString() + title.mid(nameEnd);
+    QString raw;
+    raw.reserve(rewritten.size());
+    for (const QChar &ch : rewritten)
+        raw.append(charToRaw(ch));
+    if (raw.isNull())
+        raw = QStringLiteral("");
+    return DatumPtr(raw);
+}
+
+static DatumPtr duplicateProcedure(const DatumPtr &srcP, const DatumPtr &newnameP)
+{
+    Procedure *src = srcP.procedureValue();
+    auto *body = new Procedure();
+    DatumPtr bodyP(body);
+    body->countOfMinParams_ = src->countOfMinParams_;
+    body->countOfDefaultParams_ = src->countOfDefaultParams_;
+    body->countOfMaxParams_ = src->countOfMaxParams_;
+    body->isMacro_ = src->isMacro_;
+    body->instructionList_ = deepCopyList(src->instructionList_);
+    body->sourceText_ = src->sourceText_;
+    if (!body->sourceText_.isEmpty())
+        body->sourceText_[0] = sourceLineWithNewName(body->sourceText_[0], newnameP);
+    return bodyP;
+}
+
+void Procedures::copyProcedure(const DatumPtr &cmd, const DatumPtr &newnameP, const DatumPtr &oldnameP)
+{
+    rejectNumberName(cmd, newnameP);
+    rejectNumberName(cmd, oldnameP);
+
+    const QString newname = newnameP.toString(Datum::ToStringFlags_Key);
+    const QString oldname = oldnameP.toString(Datum::ToStringFlags_Key);
+
+    // An unknown source is reported before a primitive destination, matching
+    // UCBLogo: COPYDEF "PRINT "NOSUCH is "I don't know how to NOSUCH".
+    const bool oldIsPrimitive = stringToCmd.contains(oldname);
+    const bool oldIsUser = procedures_.contains(oldname);
+    if (!oldIsPrimitive && !oldIsUser)
+        throw FCError::noHow(oldnameP);
 
     if (stringToCmd.contains(newname))
         throw FCError::isPrimitive(newnameP);
 
-    if (stringToCmd.contains(oldname))
+    lastProcedureCreatedTimestamp_ = QDateTime::currentMSecsSinceEpoch();
+
+    if (oldIsPrimitive)
     {
-        throw FCError::isPrimitive(oldnameP);
-    }
-    if (isNamedProcedure(oldname))
-    {
-        procedures_[newname] = procedures_[oldname];
+        // The alias is a primitive: later DEFINE/TEXT see it in the primitive table.
+        procedures_.remove(newname);
+        stringToCmd.insert(newname, stringToCmd.value(oldname));
         return;
     }
-    throw FCError::noHow(oldnameP);
+
+    procedures_[newname] = duplicateProcedure(procedures_.value(oldname), newnameP);
 }
 
 void Procedures::eraseProcedure(const DatumPtr &procnameP)

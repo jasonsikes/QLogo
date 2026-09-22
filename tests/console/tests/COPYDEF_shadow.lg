@@ -1,0 +1,5 @@
+to qw
+print "old
+end
+copydef "qw "print
+qw "new

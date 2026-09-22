@@ -1,0 +1,6 @@
+to qw
+show "Hello
+end
+copydef "we "qw
+show text "we
+show text "qw

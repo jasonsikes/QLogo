@@ -106,9 +106,14 @@ class Procedures
                          const QList<DatumPtr> &sourceText);
 
     /// @brief Copy a procedure to a new name.
+    /// @param cmd The COPYDEF command, used when an input is rejected.
     /// @param newnameP The new name to copy the procedure to.
-    /// @param oldnameP The name of the procedure to copy.
-    void copyProcedure(const DatumPtr &newnameP, const DatumPtr &oldnameP);
+    /// @param oldnameP The name of the procedure to copy. May be a primitive.
+    /// @details A user procedure is copied as its own procedure, with the same
+    /// body and with the new name in its source title. A primitive is aliased,
+    /// and the new name is then itself a primitive. The new name must not
+    /// already be a primitive.
+    void copyProcedure(const DatumPtr &cmd, const DatumPtr &newnameP, const DatumPtr &oldnameP);
 
     /// @brief Erase a procedure.
     /// @param procnameP The name of the procedure to erase.

@@ -1,0 +1,8 @@
+to qw :p1
+print :p1
+end
+copydef "we "qw
+show fulltext "we
+show fulltext "qw
+we "there
+qw "here
