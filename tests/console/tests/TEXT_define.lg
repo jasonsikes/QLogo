@@ -1,0 +1,4 @@
+define "c1 [[] [print "hi]]
+show text "c1
+define "c2 text "c1
+c2

@@ -1,0 +1,4 @@
+.macro m
+output [print "hi]
+end
+show text "m

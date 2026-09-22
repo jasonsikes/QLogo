@@ -1662,6 +1662,12 @@ const QString &StringConstants::cmdStr_dot_DEFMACRO()
     return str;
 }
 
+const QString &StringConstants::cmdStrTEXT()
+{
+    static const QString str = QObject::tr("TEXT");
+    return str;
+}
+
 const QString &StringConstants::cmdStrMAKE()
 {
     static const QString str = QObject::tr("MAKE");

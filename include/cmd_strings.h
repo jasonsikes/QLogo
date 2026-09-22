@@ -284,6 +284,7 @@ const QString &cmdStrTO();
 const QString &cmdStr_dot_MACRO();
 const QString &cmdStrDEFINE();
 const QString &cmdStr_dot_DEFMACRO();
+const QString &cmdStrTEXT();
 const QString &cmdStrMAKE();
 const QString &cmdStrLOCAL();
 } // namespace StringConstants

@@ -120,6 +120,9 @@ std::tuple<int, int, int> Procedures::validateParameters(const DatumPtr &cmd, co
         if ((paramAsNumber != floor(paramAsNumber)) || (defaultInputs < minimumInputs)
          || ((defaultInputs > maximumInputs) && (maximumInputs != -1)))
             throw FCError::doesntLike(cmd, param);
+
+        if ( ! iter.elementExists()) return retval;
+        param = iter.element();
     }
 
     // There should be no more parameters.

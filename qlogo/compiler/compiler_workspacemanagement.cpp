@@ -194,6 +194,29 @@ Value *Compiler::genDefine(const DatumPtr &node, TypeMask expected)
     return generateNotFlowControl(retval);
 }
 
+/***DOC TEXT
+TEXT procname
+
+    outputs the text of the procedure named "procname" in the form
+    expected by DEFINE: a list of lists, the first of which describes
+    the inputs to the procedure and the rest of which are the lines of
+    its body.  The text does not reflect formatting information used
+    when the procedure was defined, such as continuation lines and
+    extra spaces.
+
+COD***/
+// CMD TEXT 1 1 1 d
+Value *Compiler::genText(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+
+    Value *procname = generateChild(node.astnodeValue(), 0, TypeDatum);
+    procname = generateFromDatum(Datum::typeWord, node.astnodeValue(), procname);
+
+    Value *retval = generateCallExtern(stdText, PaAddr(scaff_->evaluator_), PaAddr(procname));
+    return generateNotFlowControl(retval);
+}
+
 /***DOC MAKE
 MAKE varname value
 

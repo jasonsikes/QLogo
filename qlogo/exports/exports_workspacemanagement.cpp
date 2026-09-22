@@ -74,6 +74,29 @@ EXPORTC addr_t stdDefine(addr_t eAddr, addr_t astnodeAddr, addr_t nameAddr, addr
     return reinterpret_cast<addr_t>(node);
 }
 
+/// TEXT: output the DEFINE-form text of a user procedure.
+/// The result is the stored instruction list: a parameter list followed by
+/// one sublist per body line. There is no END line.
+/// @param eAddr a pointer to the Evaluator object
+/// @param nameAddr a word naming the procedure
+/// @return the procedure text as a list of lists, or an Error if the name is a primitive or undefined.
+EXPORTC addr_t stdText(addr_t eAddr, addr_t nameAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *name = reinterpret_cast<Datum *>(nameAddr);
+    try
+    {
+        DatumPtr text = Procedures::get().procedureText(DatumPtr(name));
+        e->watch(text);
+        return reinterpret_cast<addr_t>(text.datumValue());
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+}
+
 // TODO: Should the executor be passed in here instead of getting the local frame from the call stack?
 EXPORTC void setVarAsLocal(addr_t varname)
 {
