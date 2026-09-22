@@ -297,6 +297,8 @@ const QString &cmdStrREMPROP();
 const QString &cmdStrPLIST();
 const QString &cmdStrPROCEDUREP();
 const QString &cmdStrPROCEDURE_Q();
+const QString &cmdStrMACROP();
+const QString &cmdStrMACRO_Q();
 } // namespace StringConstants
 #endif // CMD_STRINGS_H
 

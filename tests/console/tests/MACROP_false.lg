@@ -1,0 +1,6 @@
+to p
+end
+show macrop "show
+show macro? "p
+show macrop "nope
+show macrop 5

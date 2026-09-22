@@ -1740,4 +1740,16 @@ const QString &StringConstants::cmdStrPROCEDURE_Q()
     return str;
 }
 
+const QString &StringConstants::cmdStrMACROP()
+{
+    static const QString str = QObject::tr("MACROP");
+    return str;
+}
+
+const QString &StringConstants::cmdStrMACRO_Q()
+{
+    static const QString str = QObject::tr("MACRO?");
+    return str;
+}
+
 

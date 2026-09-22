@@ -1,0 +1,6 @@
+.macro m
+output [print "hi]
+end
+copydef "n "m
+show macrop "n
+show macro? "N

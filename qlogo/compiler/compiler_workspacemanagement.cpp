@@ -489,3 +489,21 @@ Value *Compiler::genProcedurep(const DatumPtr &node, TypeMask expected)
     name = generateFromDatum(Datum::typeWord, node.astnodeValue(), name);
     return generateCallExtern(stdProcedurep, PaAddr(name));
 }
+
+/***DOC MACROP MACRO?
+MACROP name
+MACRO? name
+
+    outputs TRUE if its input is the name of a macro.
+
+COD***/
+// CMD MACROP 1 1 1 b
+// CMD MACRO? 1 1 1 b
+Value *Compiler::genMacrop(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeBool);
+
+    Value *name = generateChild(node.astnodeValue(), 0, TypeDatum);
+    name = generateFromDatum(Datum::typeWord, node.astnodeValue(), name);
+    return generateCallExtern(stdMacrop, PaAddr(name));
+}

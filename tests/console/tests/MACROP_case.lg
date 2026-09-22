@@ -1,0 +1,6 @@
+.macro Mac
+output []
+end
+show macrop "mac
+show macro? "MAC
+show macrop "Mac

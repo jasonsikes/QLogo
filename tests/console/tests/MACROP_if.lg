@@ -1,0 +1,5 @@
+.macro m
+output []
+end
+if macrop "m [print "yes]
+(if macro? "show [print "no] [print "yes])

@@ -329,3 +329,13 @@ EXPORTC bool stdProcedurep(addr_t nameAddr)
     return Procedures::get().isProcedure(name->toString(Datum::ToStringFlags_Key));
 }
 
+/// MACROP: TRUE if the word names a user macro.
+/// Primitives, ordinary procedures, and unknown names are FALSE.
+/// @param nameAddr a word naming the candidate
+/// @return true if the name is a macro.
+EXPORTC bool stdMacrop(addr_t nameAddr)
+{
+    auto *name = reinterpret_cast<Datum *>(nameAddr);
+    return Procedures::get().isMacro(name->toString(Datum::ToStringFlags_Key));
+}
+

@@ -292,5 +292,7 @@ stringToCmd.insert(StringConstants::cmdStrREMPROP(), Cmd_t{&Compiler::genRemprop
 stringToCmd.insert(StringConstants::cmdStrPLIST(), Cmd_t{&Compiler::genPlist, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrPROCEDUREP(), Cmd_t{&Compiler::genProcedurep, 1, 1, 1, TypeB});
 stringToCmd.insert(StringConstants::cmdStrPROCEDURE_Q(), Cmd_t{&Compiler::genProcedurep, 1, 1, 1, TypeB});
+stringToCmd.insert(StringConstants::cmdStrMACROP(), Cmd_t{&Compiler::genMacrop, 1, 1, 1, TypeB});
+stringToCmd.insert(StringConstants::cmdStrMACRO_Q(), Cmd_t{&Compiler::genMacrop, 1, 1, 1, TypeB});
 
 
