@@ -23,6 +23,8 @@
 #include "compiler_types.h"
 #include "workspace/callframe.h"
 
+#include <QStringList>
+
 /// @brief input a procedure using the system read stream.
 /// @param eAddr a pointer to the Evaluator object
 /// @param nodeAddr a pointer to the node calling this procedure.
@@ -165,56 +167,37 @@ EXPORTC addr_t stdThing(addr_t eAddr, addr_t nameAddr)
     return reinterpret_cast<addr_t>(err);
 }
 
-// TODO: Should the executor be passed in here instead of getting the local frame from the call stack?
-EXPORTC void setVarAsLocal(addr_t varname)
-{
-    auto *varName = reinterpret_cast<Word *>(varname);
-    QString varNameStr = varName->toString(Datum::ToStringFlags_Key);
-    CallFrame *currentFrame = Kernel::get().currentCallFrame();
-    currentFrame->setVarAsLocal(varNameStr);
-}
-
 namespace
 {
 
-/// GLOBAL's inputs are one word, several words, or a single list of words.
-/// A list combined with any other input is rejected. An existing variable is left alone.
-void markGlobalInputs(const DatumPtr &who, Datum **inputs, uint32_t count)
+/// Words, or one list of words. A list combined with other inputs is rejected.
+/// @return Key-form names. Throws before returning if any input is not a word.
+QStringList varNamesFromInputs(const DatumPtr &who, Datum **inputs, uint32_t count)
 {
+    QStringList names;
     if (count > 1 && inputs[0]->isList())
         throw FCError::doesntLike(who, DatumPtr(inputs[0]));
 
     if (count == 1 && inputs[0]->isList())
     {
-        ListIterator validate = inputs[0]->listValue()->newIterator();
-        while (validate.elementExists())
+        ListIterator iter = inputs[0]->listValue()->newIterator();
+        while (iter.elementExists())
         {
-            DatumPtr member = validate.element();
+            DatumPtr member = iter.element();
             if (!member.isWord())
                 throw FCError::doesntLike(who, member);
+            names.append(member.wordValue()->toString(Datum::ToStringFlags_Key));
         }
-        ListIterator apply = inputs[0]->listValue()->newIterator();
-        while (apply.elementExists())
-        {
-            DatumPtr member = apply.element();
-            QString name = member.wordValue()->toString(Datum::ToStringFlags_Key);
-            if (!Kernel::get().doesExist(name))
-                Kernel::get().setDatumForName(nothing(), name);
-        }
-        return;
+        return names;
     }
 
     for (uint32_t i = 0; i < count; ++i)
     {
         if (!inputs[i]->isWord())
             throw FCError::doesntLike(who, DatumPtr(inputs[i]));
+        names.append(inputs[i]->toString(Datum::ToStringFlags_Key));
     }
-    for (uint32_t i = 0; i < count; ++i)
-    {
-        QString name = inputs[i]->toString(Datum::ToStringFlags_Key);
-        if (!Kernel::get().doesExist(name))
-            Kernel::get().setDatumForName(nothing(), name);
-    }
+    return names;
 }
 
 } // namespace
@@ -233,7 +216,38 @@ EXPORTC addr_t stdGlobal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, ui
     auto **inputs = reinterpret_cast<Datum **>(inputsAddr);
     try
     {
-        markGlobalInputs(node->nodeName_, inputs, count);
+        QStringList names = varNamesFromInputs(node->nodeName_, inputs, count);
+        for (const QString &name : names)
+        {
+            if (!Kernel::get().doesExist(name))
+                Kernel::get().setDatumForName(nothing(), name);
+        }
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+
+/// LOCAL: make each name local to the current procedure, with no value.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param inputsAddr a pointer to an array of input Datums
+/// @param count the number of inputs
+/// @return the owning ASTNode, or an Error if an input is not a word or a list of words.
+EXPORTC addr_t stdLocal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, uint32_t count)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto **inputs = reinterpret_cast<Datum **>(inputsAddr);
+    try
+    {
+        QStringList names = varNamesFromInputs(node->nodeName_, inputs, count);
+        CallFrame *currentFrame = Kernel::get().currentCallFrame();
+        for (const QString &name : names)
+            currentFrame->setVarAsLocal(name);
     }
     catch (FCError *err)
     {

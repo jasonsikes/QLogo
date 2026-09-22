@@ -339,17 +339,19 @@ LOCAL varnamelist
     attempts to read their value.
 
 COD***/
-// TODO: list form and (LOCAL varname1 varname2 ...) are not implemented.
 // CMD LOCAL 1 1 -1 n
 Value *Compiler::genLocal(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeNothing);
 
-    Value *varname = generateChild(node.astnodeValue(), 0, TypeDatum);
-    varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
-    generateCallExtern(setVarAsLocal, PaAddr(varname));
-
-    return generateVoidRetval(node);
+    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), TypeDatum, DBG_NAME("localAry"));
+    Value *retval = generateCallExtern(
+        stdLocal,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(ary),
+        PaInt32(ary->getArraySize()));
+    return generateNotFlowControl(retval);
 }
 
 /***DOC GLOBAL
