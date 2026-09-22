@@ -84,6 +84,12 @@ struct Evaluator
     /// @param aList The list to push onto the evaluation stack.
     void pushSublist(Datum *aList);
 
+    /// @brief Abandon a suspended coroutine and evaluate @p aList in its place.
+    /// @param aList The list to evaluate instead of the suspended one.
+    /// @details Used when a tail-position macro returns instructions. The suspended call
+    /// is discarded and @p aList is compiled and run on this same evaluator.
+    void replaceRunningList(const DatumPtr &aList);
+
     /// @brief Set the list to run after the current list has completed.
     /// @param aList The list to run after the current list has completed.
     /// @return Result for this evaluation: error/nothing on failure or empty list;

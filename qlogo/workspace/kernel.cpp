@@ -25,7 +25,9 @@
 #include "interface/streammanager.h"
 #include "interface/textstream.h"
 #include "datum_types.h"
+#include "flowcontrol.h"
 #include "sharedconstants.h"
+#include "treeifyer.h"
 #include "workspace/procedures.h"
 #include "runparser.h"
 #include "workspace/turtle.h"
@@ -638,7 +640,8 @@ void Kernel::ece_exitProcedure()
     }
     case Datum::typeContinuation:
     {
-        // TODO: consider the case if child is a macro...
+        // Tail call inside this frame. Macro calls are not continuations; if this frame
+        // is a macro, isMacroCall_ stays set so the eventual output is still expanded.
         auto *continuation = static_cast<FCContinuation*>(currentCallFrame()->retvalToParent_.flowControlValue());
         auto *procedure = continuation->procedure().astnodeValue();
         auto arguments = continuation->params().first();
@@ -648,24 +651,33 @@ void Kernel::ece_exitProcedure()
     }
     case Datum::typeReturn:
     {
-        // The return value is passed through to the caller.
-        // TODO: consider the case if child is a macro...
         DatumPtr retval = currentCallFrame()->retvalToParent_.flowControlValue()->data_;
+        if (currentCallFrame()->isMacroCall_)
+        {
+            ece_trace("ece_exitProcedure with macro return");
+            ece_expandMacroReturn(retval);
+            break;
+        }
+        // The return value is passed through to the caller.
         ece_trace("ece_exitProcedure with return: popping call frame");
         callFrameStack_.pop_back();
-        currentCallFrame()->topEvaluator()->retvalFromChild_ = retval;
-        nextOperation_ = &Kernel::ece_evaluateStack;
+        ece_resumeCaller(retval);
         break;
     }
     case Datum::typeNothing:
     case Datum::typeNothingPersistent:
     case Datum::typeASTNode:
     {
+        if (currentCallFrame()->isMacroCall_)
+        {
+            ece_trace("ece_exitProcedure macro did not output");
+            ece_expandMacroReturn(nothing());
+            break;
+        }
         DatumPtr retval = currentCallFrame()->sourceNode_;
         ece_trace("ece_exitProcedure with no return value: popping call frame");
         callFrameStack_.pop_back();
-        currentCallFrame()->topEvaluator()->retvalFromChild_ = retval;
-        nextOperation_ = &Kernel::ece_evaluateStack;
+        ece_resumeCaller(retval);
         break;
     }
     case Datum::typeGoto:
@@ -682,8 +694,66 @@ void Kernel::ece_exitProcedure()
         Q_ASSERT(false);
         break;
     }
+}
 
-    // TODO: if is macro...
+void Kernel::ece_resumeCaller(const DatumPtr &result)
+{
+    Q_ASSERT(currentCallFrame()->evaluationStackSize() > 0);
+    currentCallFrame()->topEvaluator()->retvalFromChild_ = result;
+    nextOperation_ = &Kernel::ece_evaluateStack;
+}
+
+void Kernel::ece_expandMacroReturn(const DatumPtr &value)
+{
+    // Hold the output across the frame pop. The frame owns the FCReturn that points at it.
+    DatumPtr expansion = value;
+    bool expectsSingle = currentCallFrame()->macroExpectsSingleExpression_;
+    bool tailSplice = currentCallFrame()->macroTailSplice_;
+
+    ece_trace("ece_expandMacroReturn: popping macro frame");
+    callFrameStack_.pop_back();
+    Q_ASSERT(currentCallFrame()->evaluationStackSize() > 0);
+
+    if (!expansion.isList())
+    {
+        ece_resumeCaller(DatumPtr(FCError::macroReturnedNotList(expansion)));
+        return;
+    }
+
+    if (expectsSingle)
+    {
+        QList<DatumPtr> expressions;
+        try
+        {
+            expressions = Treeifier::astFromList(expansion.listValue());
+        }
+        catch (FCError *err)
+        {
+            ece_resumeCaller(DatumPtr(err));
+            return;
+        }
+        if (expressions.size() != 1)
+        {
+            FCError *err = expressions.isEmpty() ? FCError::macroReturnedNotList(expansion)
+                                                 : FCError::multipleExpressions(expansion);
+            ece_resumeCaller(DatumPtr(err));
+            return;
+        }
+    }
+
+    if (tailSplice)
+    {
+        // The caller is suspended on this macro and has nothing left to run after it.
+        // Replace that suspended line so a recursive expansion reuses the evaluator.
+        ece_trace("ece_expandMacroReturn: splicing into caller line");
+        currentCallFrame()->topEvaluator()->replaceRunningList(expansion);
+        nextOperation_ = &Kernel::ece_evaluateStack;
+        return;
+    }
+
+    ece_trace("ece_expandMacroReturn: running expansion before resuming caller");
+    currentCallFrame()->pushEvaluator(expansion);
+    nextOperation_ = &Kernel::ece_evaluateStack;
 }
 
 void Kernel::ece_processParameters()

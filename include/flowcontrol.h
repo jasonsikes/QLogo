@@ -358,6 +358,14 @@ struct FCError : public FlowControl
     /// @param x The variable that has no value.
     static FCError *noValue(const DatumPtr &x);
 
+    /// @brief A macro output something other than a list of instructions.
+    /// @param value The value the macro output, or nothing if it did not output.
+    static FCError *macroReturnedNotList(const DatumPtr &value);
+
+    /// @brief A macro used as an input output more than one expression.
+    /// @param runlist The list the macro output.
+    static FCError *multipleExpressions(const DatumPtr &runlist);
+
     /// @brief Create an error object for trying to nest FILLED blocks.
     static FCError *alreadyFilling();
 

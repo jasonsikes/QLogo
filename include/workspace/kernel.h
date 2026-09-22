@@ -201,6 +201,13 @@ class Kernel
     /// @brief Exit the current procedure.
     void ece_exitProcedure();
 
+    /// @brief Pop a macro frame and run its output list in the caller's context.
+    /// @param value The macro's output. Must be a list of instructions, otherwise an error.
+    void ece_expandMacroReturn(const DatumPtr &value);
+
+    /// @brief Resume the caller with @p result as the value of the expression it is waiting on.
+    void ece_resumeCaller(const DatumPtr &result);
+
     /// @brief Process the parameters and arguments for the current procedure.
     void ece_processParameters();
 

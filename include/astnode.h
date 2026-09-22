@@ -48,6 +48,11 @@ class ASTNode : public Datum
     /// @brief Set to TRUE iff this node is the last of a list sequence.
     bool inSequenceTail_ = false;
 
+    /// @brief Set when compiling a macro call whose result must be exactly one expression.
+    /// @details Command-position macros splice every expression in the output list.
+    /// A macro used as an input must output a list of one expression, which is then evaluated.
+    bool macroExpectsSingleExpression_ = false;
+
     /// @brief Create an invalid ASTNode.
     ASTNode() = default;
 

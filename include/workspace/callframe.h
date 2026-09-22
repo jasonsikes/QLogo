@@ -51,6 +51,20 @@ struct CallFrame
     /// @brief Set to true iff we are reading arguments for a procedure.
     bool isReadingArgs_ = false;
 
+    /// @brief True when this frame was entered by a macro call.
+    /// @details Stays true across tail continuations so the final output is still expanded
+    /// in the macro's caller. A tail call to a macro is not a continuation; see
+    /// Compiler::generateProcedureExit.
+    bool isMacroCall_ = false;
+
+    /// @brief True when this macro call's output must be a single expression.
+    bool macroExpectsSingleExpression_ = false;
+
+    /// @brief True when the macro output should replace the caller's suspended line.
+    /// @details Used for a macro in tail position so recursive expansions do not grow the
+    /// evaluation stack.
+    bool macroTailSplice_ = false;
+
     /// @brief The current argument being processed (currentParameterName_ and optional default value).
     DatumPtr currentArgument_;
 

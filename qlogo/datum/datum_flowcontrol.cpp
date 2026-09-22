@@ -165,6 +165,20 @@ FCError *FCError::noValue(const DatumPtr &x)
     return new FCError(ERR_NO_VALUE, message);
 }
 
+FCError *FCError::macroReturnedNotList(const DatumPtr &value)
+{
+    QString shown = value.toString(Datum::ToStringFlags_Show);
+    QString message = QObject::tr("Macro returned %1 instead of a list").arg(shown);
+    return new FCError(ERR_MACRO_RETURNED_NOT_LIST, message);
+}
+
+FCError *FCError::multipleExpressions(const DatumPtr &runlist)
+{
+    QString message = QObject::tr("Runlist %1 has more than one expression")
+                          .arg(runlist.toString(Datum::ToStringFlags_Show));
+    return new FCError(ERR_LIST_HAS_MULTIPLE_EXPRESSIONS, message);
+}
+
 FCError *FCError::alreadyFilling()
 {
     QString message = QObject::tr("Already filling");

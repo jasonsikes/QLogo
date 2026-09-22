@@ -1,0 +1,7 @@
+.macro twice :x
+output (list "sum :x :x)
+end
+to foo :x
+output twice :x
+end
+print foo 4

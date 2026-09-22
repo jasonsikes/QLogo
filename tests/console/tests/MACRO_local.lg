@@ -1,0 +1,9 @@
+.macro localmake :name :value
+output (list "local (word "" :name) "make (word "" :name) :value)
+end
+to try
+localmake "this 5
+print :this
+end
+try
+print :this

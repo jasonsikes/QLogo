@@ -1,0 +1,4 @@
+.macro twice :x
+output (list "sum :x :x)
+end
+print twice 4

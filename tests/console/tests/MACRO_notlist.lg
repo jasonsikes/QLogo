@@ -1,0 +1,4 @@
+.macro bad
+output "hello
+end
+bad

@@ -40,6 +40,14 @@ CallFrame::CallFrame(ASTNode *node, Datum **paramAry, uint32_t paramCount)
         arguments_ = DatumPtr(new List(paramAry[i], arguments_.listValue()));
     }
     isReadingArgs_ = true;
+    isMacroCall_ = body.procedureValue()->isMacro_;
+    if (isMacroCall_)
+    {
+        // Captured from the call site. applyContinuation must not overwrite these:
+        // a tail call inside the macro still expands in the original caller's context.
+        macroExpectsSingleExpression_ = node->macroExpectsSingleExpression_;
+        macroTailSplice_ = node->inSequenceTail_ && !macroExpectsSingleExpression_;
+    }
     evaluationStackStartIndex_ = Kernel::get().evaluationStack_.size();
 }
 
@@ -69,6 +77,7 @@ void CallFrame::applyContinuation(ASTNode *node, const DatumPtr &arguments)
     parameters_ = body.procedureValue()->instructionList_.listValue()->head;
     arguments_ = arguments;
     isReadingArgs_ = true;
+    // isMacroCall_ and the splice flags stay as they were for the original call.
 }
 
 Evaluator *CallFrame::topEvaluator()

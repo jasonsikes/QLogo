@@ -1,0 +1,6 @@
+.macro qw
+if :i > 0 [output [make "i :i-1 qw]]
+output []
+end
+make "i 100000
+qw

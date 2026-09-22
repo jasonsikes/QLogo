@@ -145,6 +145,16 @@ void Evaluator::pushSublist(Datum *aList)
     }
 }
 
+void Evaluator::replaceRunningList(const DatumPtr &aList)
+{
+    destroyCoroFrame(handle_);
+    compiledText_.reset();
+    list_ = aList;
+    listToRunAfterCurrentList_ = DatumPtr();
+    retvalToParent_ = Datum::notADatum();
+    retvalFromChild_ = DatumPtr();
+}
+
 Datum *Evaluator::runListAfterCurrentList(Datum *aList)
 {
     try

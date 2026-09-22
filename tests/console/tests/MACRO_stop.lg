@@ -1,0 +1,9 @@
+.macro myif :cond :instr
+if :cond [output :instr]
+output []
+end
+to foo
+myif "true [output "yes]
+print "no
+end
+print foo

@@ -1,0 +1,7 @@
+.macro m
+output helper
+end
+to helper
+output [print "hi]
+end
+m

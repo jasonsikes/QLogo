@@ -1,0 +1,4 @@
+.macro say :w
+output (list "print (word "" :w))
+end
+say "a print "b

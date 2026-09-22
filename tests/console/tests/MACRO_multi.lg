@@ -1,0 +1,4 @@
+.macro two
+output [print "a print "b]
+end
+print two

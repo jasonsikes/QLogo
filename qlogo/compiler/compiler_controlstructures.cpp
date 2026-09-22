@@ -18,6 +18,7 @@
 #include "compiler.h"
 #include "compiler_internal.h"
 #include "workspace/exports.h"
+#include "workspace/procedures.h"
 #include "sharedconstants.h"
 using namespace llvm;
 using namespace llvm::orc;
@@ -351,6 +352,15 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node,
             retval = generateCallExtern(
                 getCtrlReturn, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
             return retval;
+        }
+        if (proc.datumValue()->isa_ == Datum::typeProcedure && proc.procedureValue()->isMacro_)
+        {
+            // A macro must not be tail-called. Its output list is evaluated in this
+            // procedure, and that result is what OUTPUT returns.
+            Value *retval = generateChild(node.astnodeValue(), child, childExpected);
+            retval = generateNotFlowControl(retval);
+            return generateCallExtern(
+                getCtrlReturn, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
         }
         // Else it's a procedure. Generate a tail call to it.
         Value *childAddr = CoAddr(child.astnodeValue());

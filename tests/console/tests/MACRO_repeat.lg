@@ -1,0 +1,5 @@
+.macro myrepeat :num :instructions
+if :num=0 [output []]
+output se :instructions (list "myrepeat :num-1 :instructions)
+end
+myrepeat 3 [print "hello]

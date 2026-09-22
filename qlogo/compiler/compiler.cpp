@@ -837,6 +837,15 @@ Value *Compiler::generateCallListContinuation(Value *list, TypeMask expected)
 
 Value *Compiler::genExecProcedure(const DatumPtr &node, TypeMask expected)
 {
+    ASTNode *ast = node.astnodeValue();
+    DatumPtr proc = ast->procedure_;
+    if (proc.datumValue()->isa_ == Datum::typeProcedure && proc.procedureValue()->isMacro_)
+    {
+        // Command position (Nothing is acceptable) splices the whole output list.
+        // An input must be exactly one expression.
+        ast->macroExpectsSingleExpression_ = (expected & TypeNothing) == 0;
+    }
+
     AllocaInst *paramAry = generateChildrenAlloca(node.astnodeValue(), TypeDatum, DBG_NAME("paramAry"));
     Value *vAstnodeValue = CoAddr(node.astnodeValue());
     Value *vParamArySize = CoInt32(node.astnodeValue()->countOfChildren());
