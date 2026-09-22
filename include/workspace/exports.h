@@ -243,4 +243,5 @@ EXPORTC addr_t stdFulltext(addr_t eAddr, addr_t nameAddr);
 EXPORTC addr_t stdCopydef(addr_t eAddr, addr_t astnodeAddr, addr_t newnameAddr, addr_t oldnameAddr);
 EXPORTC addr_t stdThing(addr_t eAddr, addr_t nameAddr);
 EXPORTC void setVarAsLocal(addr_t varname);
+EXPORTC addr_t stdGlobal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, uint32_t count);
 #endif // WORKSPACE_EXPORTS_H

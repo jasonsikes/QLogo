@@ -1,0 +1,9 @@
+make "a 1
+make "b 2
+global [a b c]
+show :a
+show :b
+show thing "c
+(global "a "d)
+show :a
+show thing "d

@@ -1,0 +1,9 @@
+make "a 1
+to p
+local "a
+make "a 2
+global "a
+show :a
+end
+p
+show :a

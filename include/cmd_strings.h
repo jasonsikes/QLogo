@@ -290,6 +290,7 @@ const QString &cmdStrCOPYDEF();
 const QString &cmdStrTHING();
 const QString &cmdStrMAKE();
 const QString &cmdStrLOCAL();
+const QString &cmdStrGLOBAL();
 } // namespace StringConstants
 #endif // CMD_STRINGS_H
 

@@ -174,3 +174,72 @@ EXPORTC void setVarAsLocal(addr_t varname)
     currentFrame->setVarAsLocal(varNameStr);
 }
 
+namespace
+{
+
+/// GLOBAL's inputs are one word, several words, or a single list of words.
+/// A list combined with any other input is rejected. An existing variable is left alone.
+void markGlobalInputs(const DatumPtr &who, Datum **inputs, uint32_t count)
+{
+    if (count > 1 && inputs[0]->isList())
+        throw FCError::doesntLike(who, DatumPtr(inputs[0]));
+
+    if (count == 1 && inputs[0]->isList())
+    {
+        ListIterator validate = inputs[0]->listValue()->newIterator();
+        while (validate.elementExists())
+        {
+            DatumPtr member = validate.element();
+            if (!member.isWord())
+                throw FCError::doesntLike(who, member);
+        }
+        ListIterator apply = inputs[0]->listValue()->newIterator();
+        while (apply.elementExists())
+        {
+            DatumPtr member = apply.element();
+            QString name = member.wordValue()->toString(Datum::ToStringFlags_Key);
+            if (!Kernel::get().doesExist(name))
+                Kernel::get().setDatumForName(nothing(), name);
+        }
+        return;
+    }
+
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        if (!inputs[i]->isWord())
+            throw FCError::doesntLike(who, DatumPtr(inputs[i]));
+    }
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        QString name = inputs[i]->toString(Datum::ToStringFlags_Key);
+        if (!Kernel::get().doesExist(name))
+            Kernel::get().setDatumForName(nothing(), name);
+    }
+}
+
+} // namespace
+
+/// GLOBAL: create each missing variable with no value.
+/// A variable that already exists is left unchanged. Scope comes from LOCAL.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param inputsAddr a pointer to an array of input Datums
+/// @param count the number of inputs
+/// @return the owning ASTNode, or an Error if an input is not a word or a list of words.
+EXPORTC addr_t stdGlobal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, uint32_t count)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto **inputs = reinterpret_cast<Datum **>(inputsAddr);
+    try
+    {
+        markGlobalInputs(node->nodeName_, inputs, count);
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+

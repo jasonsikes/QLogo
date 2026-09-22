@@ -217,5 +217,6 @@ llvm::Value *genCopydef(const DatumPtr &node, TypeMask expected);
 llvm::Value *genThing(const DatumPtr &node, TypeMask expected);
 llvm::Value *genMake(const DatumPtr &node, TypeMask expected);
 llvm::Value *genLocal(const DatumPtr &node, TypeMask expected);
+llvm::Value *genGlobal(const DatumPtr &node, TypeMask expected);
 #endif // PRIMITIVE_HEADER_H
 

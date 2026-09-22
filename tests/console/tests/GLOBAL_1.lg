@@ -1,0 +1,5 @@
+global "a
+show thing "a
+make "b 3
+global "b
+show :b

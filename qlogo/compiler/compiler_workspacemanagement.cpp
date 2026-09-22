@@ -339,7 +339,7 @@ LOCAL varnamelist
     attempts to read their value.
 
 COD***/
-// TODO: [varname:varnamelist:etc] procedure is duplicated in excGlobal().
+// TODO: list form and (LOCAL varname1 varname2 ...) are not implemented.
 // CMD LOCAL 1 1 -1 n
 Value *Compiler::genLocal(const DatumPtr &node, TypeMask expected)
 {
@@ -350,4 +350,34 @@ Value *Compiler::genLocal(const DatumPtr &node, TypeMask expected)
     generateCallExtern(setVarAsLocal, PaAddr(varname));
 
     return generateVoidRetval(node);
+}
+
+/***DOC GLOBAL
+GLOBAL varname
+GLOBAL varnamelist
+(GLOBAL varname1 varname2 ...)
+
+    command.  Accepts as inputs one or more words, or a list of
+    words.  A global variable is created for each of these words, with
+    that word as its name.  The only reason this is necessary is that
+    you might want to use the "setter" notation SETXYZ for a variable
+    XYZ that does not already have a value; GLOBAL "XYZ makes that legal.
+    Note: If there is currently a local variable of the same name, this
+    command does *not* make Logo use the global value instead of the
+    local one.
+
+COD***/
+// CMD GLOBAL 1 1 -1 n
+Value *Compiler::genGlobal(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), TypeDatum, DBG_NAME("globalAry"));
+    Value *retval = generateCallExtern(
+        stdGlobal,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(ary),
+        PaInt32(ary->getArraySize()));
+    return generateNotFlowControl(retval);
 }

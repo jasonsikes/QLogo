@@ -1698,4 +1698,10 @@ const QString &StringConstants::cmdStrLOCAL()
     return str;
 }
 
+const QString &StringConstants::cmdStrGLOBAL()
+{
+    static const QString str = QObject::tr("GLOBAL");
+    return str;
+}
+
 

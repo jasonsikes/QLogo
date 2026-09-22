@@ -1,0 +1,5 @@
+? global doesn't like {a} as input
+? global doesn't like [b] as input
+? global doesn't like [a b] as input
+? global doesn't like [b] as input
+? ? ok
