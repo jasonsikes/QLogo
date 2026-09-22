@@ -1,0 +1,6 @@
+define "m [[] [print "proc]]
+m
+.defmacro "m [[] [output [print "macro]]]
+m
+define "m [[] [print "proc]]
+m

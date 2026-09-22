@@ -1,0 +1,2 @@
+.defmacro "bad [[] [output "hello]]
+bad

@@ -1,0 +1,2 @@
+.defmacro "twice [[x] [output (list "sum :x :x)]]
+print twice 4

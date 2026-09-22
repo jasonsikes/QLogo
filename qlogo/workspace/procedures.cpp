@@ -155,8 +155,8 @@ void Procedures::defineProcedure(const DatumPtr &cmd,
     if (text->isEmpty())
         throw FCError::doesntLike(cmd, textP);
 
-    // DEFINE's text is a list of lists: parameters, then one instruction line each.
-    // A word or array anywhere in that text is rejected as the whole input.
+    // DEFINE and .DEFMACRO text is a list of lists: parameters, then one instruction
+    // line each. A word or array anywhere in that text is rejected as the whole input.
     ListIterator memberIter = text->newIterator();
     while (memberIter.elementExists())
     {

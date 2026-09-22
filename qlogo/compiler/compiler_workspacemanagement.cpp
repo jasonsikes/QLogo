@@ -162,7 +162,20 @@ line of the body.  (There is no END line in the text input.)
 It is an error to redefine a primitive procedure.
 
 COD***/
+/***DOC .DEFMACRO
+.DEFMACRO procname text
+
+command.  Defines a macro with name "procname" and text "text".
+.DEFMACRO is exactly like DEFINE except that the new procedure
+becomes a macro.  A macro's output is evaluated as Logo
+instructions in the context of the macro's caller.  If there is
+already a procedure with the same name, the new definition
+replaces the old one.  It is an error to redefine a primitive
+procedure.
+
+COD***/
 // CMD DEFINE 2 2 2 n
+// CMD .DEFMACRO 2 2 2 n
 Value *Compiler::genDefine(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeNothing);

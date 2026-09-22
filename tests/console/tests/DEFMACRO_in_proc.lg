@@ -1,0 +1,5 @@
+to d
+.defmacro "e [[] [output [print "hi]]]
+end
+d
+e

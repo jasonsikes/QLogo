@@ -278,6 +278,7 @@ stringToCmd.insert(StringConstants::cmdStrBUTTON(), Cmd_t{&Compiler::genButton, 
 stringToCmd.insert(StringConstants::cmdStrTO(), Cmd_t{&Compiler::genInputProcedure, -1, -1, -1, TypeN});
 stringToCmd.insert(StringConstants::cmdStr_dot_MACRO(), Cmd_t{&Compiler::genInputProcedure, -1, -1, -1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrDEFINE(), Cmd_t{&Compiler::genDefine, 2, 2, 2, TypeN});
+stringToCmd.insert(StringConstants::cmdStr_dot_DEFMACRO(), Cmd_t{&Compiler::genDefine, 2, 2, 2, TypeN});
 stringToCmd.insert(StringConstants::cmdStrMAKE(), Cmd_t{&Compiler::genMake, 2, 2, 2, TypeN});
 stringToCmd.insert(StringConstants::cmdStrLOCAL(), Cmd_t{&Compiler::genLocal, 1, 1, -1, TypeN});
 

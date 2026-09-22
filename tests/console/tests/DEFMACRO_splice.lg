@@ -1,0 +1,2 @@
+.defmacro "say [[w] [output (list "print (word "" :w))]]
+say "a print "b
