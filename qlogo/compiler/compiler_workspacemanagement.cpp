@@ -874,6 +874,23 @@ Value *Compiler::genContents(const DatumPtr &node, TypeMask expected)
     return generateCallExtern(stdContents, PaAddr(scaff_->evaluator_));
 }
 
+/***DOC NODES
+NODES
+
+    outputs a list of two numbers.  The first is the number of nodes of
+    memory currently in use.  The second is the maximum number of nodes
+    used at any time since the last invocation of NODES, or since this
+    session of Logo began if NODES has not been used.
+
+COD***/
+// CMD NODES 0 0 0 d
+Value *Compiler::genNodes(const DatumPtr &node, TypeMask expected)
+{
+    (void)node;
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdNodes, PaAddr(scaff_->evaluator_));
+}
+
 /***DOC PRINTOUT PO
 PRINTOUT contentslist
 PO contentslist

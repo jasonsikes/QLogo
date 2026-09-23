@@ -1890,6 +1890,12 @@ const QString &StringConstants::cmdStrCONTENTS()
     return str;
 }
 
+const QString &StringConstants::cmdStrNODES()
+{
+    static const QString str = QObject::tr("NODES");
+    return str;
+}
+
 const QString &StringConstants::cmdStrPRINTOUT()
 {
     static const QString str = QObject::tr("PRINTOUT");

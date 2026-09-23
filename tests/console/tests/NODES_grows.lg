@@ -1,0 +1,4 @@
+make "waste []
+make "before first nodes
+repeat 200 [make "waste fput 1 :waste]
+show (first nodes) > :before

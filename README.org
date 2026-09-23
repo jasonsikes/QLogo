@@ -120,7 +120,7 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | LABEL          | BITOR         | SETREADPOS             | NOTEQUALP                 | NAMES                |
 |                    | SETLABELHEIGHT | BITXOR        | SETWRITEPOS            | NOTEQUAL?                 | PLISTS               |
 |                    | SETLABELFONT   | BITNOT        | READPOS                | BEFOREP                   | ARITY                |
-|                    | TEXTSCREEN     | ASHIFT        | WRITEPOS               | BEFORE?                   | *TODO* NODES         |
+|                    | TEXTSCREEN     | ASHIFT        | WRITEPOS               | BEFORE?                   | NODES                |
 |                    | TS             | LSHIFT        | EOFP                   | .EQ                       | PRINTOUT             |
 |                    | FULLSCREEN     | AND           | EOF?                   | MEMBERP                   | PO                   |
 |                    | FS             | OR            | KEYP                   | MEMBER?                   | POT                  |

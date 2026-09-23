@@ -317,6 +317,7 @@ stringToCmd.insert(StringConstants::cmdStrPRIMITIVES(), Cmd_t{&Compiler::genPrim
 stringToCmd.insert(StringConstants::cmdStrNAMES(), Cmd_t{&Compiler::genNames, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrPLISTS(), Cmd_t{&Compiler::genPlists, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrCONTENTS(), Cmd_t{&Compiler::genContents, 0, 0, 0, TypeD});
+stringToCmd.insert(StringConstants::cmdStrNODES(), Cmd_t{&Compiler::genNodes, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrPRINTOUT(), Cmd_t{&Compiler::genPrintout, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrPO(), Cmd_t{&Compiler::genPrintout, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrPOT(), Cmd_t{&Compiler::genPot, 1, 1, 1, TypeN});

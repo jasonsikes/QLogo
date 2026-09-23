@@ -65,6 +65,15 @@ class Datum
     /// @return A pointer to the singleton Datum instance.
     static Datum *notADatum();
 
+    /// @brief Number of Datum objects currently allocated.
+    static int countOfNodes();
+
+    /// @brief High-water mark of Datum objects since the last NODES, or session start.
+    static int maxCountOfNodes();
+
+    /// @brief Set the high-water mark to the current allocation count.
+    static void resetMaxCountOfNodes();
+
     // Deleted operators because Datums are not relocatable.
     // Their addresses are used as key values for mapping operations.
     Datum &operator=(const Datum &) = delete;

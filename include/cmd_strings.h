@@ -322,6 +322,7 @@ const QString &cmdStrPRIMITIVES();
 const QString &cmdStrNAMES();
 const QString &cmdStrPLISTS();
 const QString &cmdStrCONTENTS();
+const QString &cmdStrNODES();
 const QString &cmdStrPRINTOUT();
 const QString &cmdStrPO();
 const QString &cmdStrPOT();

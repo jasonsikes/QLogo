@@ -775,6 +775,27 @@ EXPORTC addr_t stdContents(addr_t eAddr)
     return reinterpret_cast<addr_t>(names.datumValue());
 }
 
+/// NODES: output the current and high-water Datum allocation counts.
+/// The first number is live objects. The second is the most that have been
+/// live at once since the previous NODES, or since startup if this is the
+/// first call. After the snapshot, the high-water mark is reset to the
+/// first number. The result list is not included in the snapshot.
+/// @param eAddr a pointer to the Evaluator object
+/// @return a list of two integers.
+EXPORTC addr_t stdNodes(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    const int current = Datum::countOfNodes();
+    const int peak = Datum::maxCountOfNodes();
+    Datum::resetMaxCountOfNodes();
+    ListBuilder builder;
+    builder.append(DatumPtr(current));
+    builder.append(DatumPtr(peak));
+    DatumPtr result = builder.finishedList();
+    e->watch(result);
+    return reinterpret_cast<addr_t>(result.datumValue());
+}
+
 /// BURIEDP: TRUE if the first named procedure, variable, or property list is buried.
 /// Only that first name is tested. An input that names nothing is an error.
 /// @param eAddr a pointer to the Evaluator object

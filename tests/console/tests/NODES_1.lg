@@ -1,0 +1,5 @@
+show count nodes
+show listp nodes
+show numberp first nodes
+show numberp last nodes
+show (last nodes) >= (first nodes)

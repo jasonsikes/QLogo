@@ -1,0 +1,8 @@
+make "waste []
+repeat 80 [make "waste fput 1 :waste]
+make "high last nodes
+make "waste []
+make "mid last nodes
+make "low last nodes
+show :low < :mid
+show :low < :high
