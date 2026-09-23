@@ -1,0 +1,6 @@
+.macro m
+output [print "hi]
+end
+m
+erase "m
+m

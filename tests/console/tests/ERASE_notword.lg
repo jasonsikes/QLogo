@@ -1,0 +1,3 @@
+erase {a}
+erase [[a] [[b]] []]
+erase [[a] [b] [c] extra]

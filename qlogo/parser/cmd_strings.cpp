@@ -1908,6 +1908,18 @@ const QString &StringConstants::cmdStrPOT()
     return str;
 }
 
+const QString &StringConstants::cmdStrERASE()
+{
+    static const QString str = QObject::tr("ERASE");
+    return str;
+}
+
+const QString &StringConstants::cmdStrER()
+{
+    static const QString str = QObject::tr("ER");
+    return str;
+}
+
 const QString &StringConstants::cmdStrBURIEDP()
 {
     static const QString str = QObject::tr("BURIEDP");

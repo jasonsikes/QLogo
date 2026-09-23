@@ -1,0 +1,3 @@
+erase "nosuch
+erase [[] [nosuch] [nosuch]]
+show "ok

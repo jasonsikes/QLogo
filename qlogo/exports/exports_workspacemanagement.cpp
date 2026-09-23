@@ -895,3 +895,29 @@ EXPORTC addr_t stdPot(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
     return reinterpret_cast<addr_t>(node);
 }
 
+/// ERASE / ER: erase the procedures, variables, and property lists named in a
+/// contents list. A word is one procedure. A list of words is procedure names.
+/// A list of lists is procedures, then variables, then property lists. A missing
+/// name is ignored. A primitive procedure is an error.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param contentsAddr a word or a contents list
+/// @return the owning ASTNode, or an Error if the input is rejected.
+EXPORTC addr_t stdErase(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *contents = reinterpret_cast<Datum *>(contentsAddr);
+    try
+    {
+        DatumPtr contentslist = Kernel::get().contentsListFromDatum(node->nodeName_, DatumPtr(contents));
+        Kernel::get().eraseFromContentsList(contentslist);
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+

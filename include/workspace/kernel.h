@@ -152,6 +152,14 @@ class Kernel
     /// or a variable with no value, is an error. A missing property list is omitted.
     QString titlesFromContentsList(const DatumPtr &contentslist) const;
 
+    /// @brief Erase the procedures, variables, and property lists named in a
+    /// contents list from contentsListFromDatum.
+    /// @param contentslist A list of three lists of names.
+    /// @details A missing name is ignored. A primitive procedure is an error
+    /// (REDEFP is not consulted). Names before a rejected primitive stay erased.
+    /// Buried, traced, and stepped marks on a name are left in place.
+    void eraseFromContentsList(const DatumPtr &contentslist);
+
     /// @brief Whether a workspace name is buried, traced, or stepped.
     /// @note Count is the number of marks, not a set to pass to the accessors.
     enum class NameMark

@@ -699,6 +699,34 @@ QString Kernel::titlesFromContentsList(const DatumPtr &contentslist) const
     return retval;
 }
 
+void Kernel::eraseFromContentsList(const DatumPtr &contentslist)
+{
+    List *src = contentslist.listValue();
+    List *proceduresList = src->head.listValue();
+    src = src->tail.listValue();
+    List *variablesList = src->head.listValue();
+    src = src->tail.listValue();
+    List *propertiesList = src->head.listValue();
+
+    ListIterator procedures = proceduresList->newIterator();
+    while (procedures.elementExists())
+        Procedures::get().eraseProcedure(procedures.element());
+
+    ListIterator variables = variablesList->newIterator();
+    while (variables.elementExists())
+    {
+        DatumPtr varnameP = variables.element();
+        eraseVar(varnameP.wordValue()->toString(Datum::ToStringFlags_Key));
+    }
+
+    ListIterator properties = propertiesList->newIterator();
+    while (properties.elementExists())
+    {
+        DatumPtr listnameP = properties.element();
+        plists_.erasePropertyList(listnameP.wordValue()->toString(Datum::ToStringFlags_Key));
+    }
+}
+
 QSet<QString> &Kernel::namesFor(NameMark mark, NameKind kind)
 {
     const auto index = static_cast<qsizetype>(mark) * static_cast<qsizetype>(NameKind::Count)

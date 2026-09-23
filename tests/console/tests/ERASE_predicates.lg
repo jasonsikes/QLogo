@@ -1,0 +1,11 @@
+to foo
+end
+make "bar 1
+pprop "baz "a 1
+show definedp "foo
+show namep "bar
+show plistp "baz
+erase [[foo] [bar] [baz]]
+show definedp "foo
+show namep "bar
+show plistp "baz

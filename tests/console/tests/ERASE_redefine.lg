@@ -1,0 +1,9 @@
+to foo
+print "old
+end
+foo
+erase "foo
+to foo
+print "new
+end
+foo

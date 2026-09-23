@@ -1,0 +1,3 @@
+? erase doesn't like {a} as input
+? erase doesn't like [[a] [[b]] []] as input
+? erase doesn't like [[a] [b] [c] extra] as input

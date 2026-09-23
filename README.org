@@ -124,8 +124,8 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | TS             | LSHIFT        | EOFP                   | .EQ                       | PRINTOUT             |
 |                    | FULLSCREEN     | AND           | EOF?                   | MEMBERP                   | PO                   |
 |                    | FS             | OR            | KEYP                   | MEMBER?                   | POT                  |
-|                    | SPLITSCREEN    | NOT           | KEY?                   | SUBSTRINGP                | *TODO* ERASE         |
-|                    | SS             | +             | CLEARTEXT              | SUBSTRING?                | *TODO* ER            |
+|                    | SPLITSCREEN    | NOT           | KEY?                   | SUBSTRINGP                | ERASE                |
+|                    | SS             | +             | CLEARTEXT              | SUBSTRING?                | ER                   |
 |                    | SETSCRUNCH     | *             | CT                     | NUMBERP                   | *TODO* ERALL         |
 |                    | SHOWNP         | /             | SETCURSOR              | NUMBER?                   | *TODO* ERPS          |
 |                    | SHOWN?         | <             | CURSOR                 | VBARREDP                  | *TODO* ERNS          |

@@ -1,0 +1,10 @@
+to a
+print 1
+end
+to b
+print 2
+end
+a
+b
+erase [a b]
+a

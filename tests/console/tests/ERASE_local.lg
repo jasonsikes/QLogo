@@ -1,0 +1,9 @@
+make "x 1
+to foo
+local "x
+make "x 2
+erase [[] [x]]
+show namep "x
+end
+foo
+show :x

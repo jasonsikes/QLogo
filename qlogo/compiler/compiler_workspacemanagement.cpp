@@ -921,6 +921,30 @@ Value *Compiler::genPot(const DatumPtr &node, TypeMask expected)
     return generateNotFlowControl(retval);
 }
 
+/***DOC ERASE ER
+ERASE contentslist
+ER contentslist
+
+    command.  Erases from the workspace the procedures, variables,
+    and property lists named in the input.  Primitive procedures may
+    not be erased unless the variable REDEFP has the value TRUE.
+
+COD***/
+// CMD ERASE 1 1 1 n
+// CMD ER 1 1 1 n
+Value *Compiler::genErase(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *contents = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdErase,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(contents));
+    return generateNotFlowControl(retval);
+}
+
 /***DOC BURIEDP BURIED?
 BURIEDP contentslist
 BURIED? contentslist
