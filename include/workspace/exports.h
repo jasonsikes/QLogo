@@ -252,4 +252,5 @@ EXPORTC bool stdProcedurep(addr_t nameAddr);
 EXPORTC bool stdMacrop(addr_t nameAddr);
 EXPORTC bool stdPrimitivep(addr_t nameAddr);
 EXPORTC bool stdDefinedp(addr_t nameAddr);
+EXPORTC bool stdNamep(addr_t nameAddr);
 #endif // WORKSPACE_EXPORTS_H

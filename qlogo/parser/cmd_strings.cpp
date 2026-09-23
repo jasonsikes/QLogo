@@ -1776,4 +1776,16 @@ const QString &StringConstants::cmdStrDEFINED_Q()
     return str;
 }
 
+const QString &StringConstants::cmdStrNAMEP()
+{
+    static const QString str = QObject::tr("NAMEP");
+    return str;
+}
+
+const QString &StringConstants::cmdStrNAME_Q()
+{
+    static const QString str = QObject::tr("NAME?");
+    return str;
+}
+
 

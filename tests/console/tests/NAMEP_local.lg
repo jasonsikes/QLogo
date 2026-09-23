@@ -1,0 +1,10 @@
+make "a 1
+to f
+show namep "a
+local "a
+show name? "a
+make "a 2
+show namep "a
+end
+f
+show name? "a

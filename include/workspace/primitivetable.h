@@ -298,5 +298,7 @@ stringToCmd.insert(StringConstants::cmdStrPRIMITIVEP(), Cmd_t{&Compiler::genPrim
 stringToCmd.insert(StringConstants::cmdStrPRIMITIVE_Q(), Cmd_t{&Compiler::genPrimitivep, 1, 1, 1, TypeB});
 stringToCmd.insert(StringConstants::cmdStrDEFINEDP(), Cmd_t{&Compiler::genDefinedp, 1, 1, 1, TypeB});
 stringToCmd.insert(StringConstants::cmdStrDEFINED_Q(), Cmd_t{&Compiler::genDefinedp, 1, 1, 1, TypeB});
+stringToCmd.insert(StringConstants::cmdStrNAMEP(), Cmd_t{&Compiler::genNamep, 1, 1, 1, TypeB});
+stringToCmd.insert(StringConstants::cmdStrNAME_Q(), Cmd_t{&Compiler::genNamep, 1, 1, 1, TypeB});
 
 

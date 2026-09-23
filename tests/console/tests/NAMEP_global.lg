@@ -1,0 +1,4 @@
+global "g
+show namep "g
+make "g 1
+show name? "g

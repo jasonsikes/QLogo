@@ -107,8 +107,8 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 | THROW              | SHOWTURTLE     | RADARCTAN     | OPENAPPEND             | .SETFIRST                 | PRIMITIVE?           |
 | ERROR              | ST             | LESSP         | OPENUPDATE             | .SETBF                    | DEFINEDP             |
 | PAUSE              | HIDETURTLE     | LESS?         | CLOSE                  | .SETITEM                  | DEFINED?             |
-| CONTINUE           | HT             | GREATERP      | ALLOPEN                | WORDP                     | *TODO* NAMEP         |
-| CO                 | CLEAN          | GREATER?      | *LIBRARY* CLOSEALL     | WORD?                     | *TODO* NAME?         |
+| CONTINUE           | HT             | GREATERP      | ALLOPEN                | WORDP                     | NAMEP                |
+| CO                 | CLEAN          | GREATER?      | *LIBRARY* CLOSEALL     | WORD?                     | NAME?                |
 | TAG                | CLEARSCREEN    | LESSEQUALP    | ERASEFILE              | LISTP                     | *TODO* PLISTP        |
 | GOTO               | CS             | LESSEQUAL?    | ERF                    | LIST?                     | *TODO* PLIST?        |
 | APPLY              | WRAP           | GREATEREQUALP | DRIBBLE                | ARRAYP                    | *TODO* CONTENTS      |

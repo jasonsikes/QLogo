@@ -546,3 +546,21 @@ Value *Compiler::genDefinedp(const DatumPtr &node, TypeMask expected)
     name = generateFromDatum(Datum::typeWord, node.astnodeValue(), name);
     return generateCallExtern(stdDefinedp, PaAddr(name));
 }
+
+/***DOC NAMEP NAME?
+NAMEP name
+NAME? name
+
+    outputs TRUE if the input is the name of a variable.
+
+COD***/
+// CMD NAMEP 1 1 1 b
+// CMD NAME? 1 1 1 b
+Value *Compiler::genNamep(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeBool);
+
+    Value *name = generateChild(node.astnodeValue(), 0, TypeDatum);
+    name = generateFromDatum(Datum::typeWord, node.astnodeValue(), name);
+    return generateCallExtern(stdNamep, PaAddr(name));
+}

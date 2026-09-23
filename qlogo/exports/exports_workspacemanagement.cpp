@@ -361,3 +361,15 @@ EXPORTC bool stdDefinedp(addr_t nameAddr)
     return Procedures::get().isDefined(name->toString(Datum::ToStringFlags_Key));
 }
 
+/// NAMEP: TRUE if the word names a variable that has a value.
+/// LOCAL and GLOBAL install a name with no value; that stays FALSE until MAKE.
+/// An unknown name is FALSE. The compiler rejects a non-word before this runs.
+/// @param nameAddr a word naming the candidate
+/// @return true if the name has a value.
+EXPORTC bool stdNamep(addr_t nameAddr)
+{
+    auto *name = reinterpret_cast<Datum *>(nameAddr);
+    DatumPtr val = Kernel::get().datumForName(name->toString(Datum::ToStringFlags_Key));
+    return !val.isNothing();
+}
+
