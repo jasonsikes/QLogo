@@ -713,6 +713,20 @@ EXPORTC addr_t stdProcedures(addr_t eAddr)
     return reinterpret_cast<addr_t>(names.datumValue());
 }
 
+/// PRIMITIVES: output the names of all primitive procedures.
+/// The result is a list of words, not a contents list. User-defined procedures
+/// are omitted. Aliases are included. A name added with COPYDEF of a primitive
+/// is included. Burying a primitive does not remove it.
+/// @param eAddr a pointer to the Evaluator object
+/// @return a list of primitive names.
+EXPORTC addr_t stdPrimitives(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    DatumPtr names = Procedures::get().allPrimitiveProcedureNames();
+    e->watch(names);
+    return reinterpret_cast<addr_t>(names.datumValue());
+}
+
 /// BURIEDP: TRUE if the first named procedure, variable, or property list is buried.
 /// Only that first name is tested. An input that names nothing is an error.
 /// @param eAddr a pointer to the Evaluator object

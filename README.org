@@ -116,7 +116,7 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | FENCE          | RANDOM        | SETREAD                | EMPTYP                    | TRACED               |
 |                    | BOUNDS         | RERANDOM      | SETWRITE               | EMPTY?                    | STEPPED              |
 |                    | SETBOUNDS      | FORM          | READER                 | EQUALP                    | PROCEDURES           |
-|                    | FILLED         | BITAND        | WRITER                 | EQUAL?                    | *TODO* PRIMITIVES    |
+|                    | FILLED         | BITAND        | WRITER                 | EQUAL?                    | PRIMITIVES           |
 |                    | LABEL          | BITOR         | SETREADPOS             | NOTEQUALP                 | *TODO* NAMES         |
 |                    | SETLABELHEIGHT | BITXOR        | SETWRITEPOS            | NOTEQUAL?                 | *TODO* PLISTS        |
 |                    | SETLABELFONT   | BITNOT        | READPOS                | BEFOREP                   | ARITY                |

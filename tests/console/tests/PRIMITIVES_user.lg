@@ -1,0 +1,5 @@
+to foo
+end
+define "bar [[] [print 1]]
+show memberp "FOO primitives
+show memberp "BAR primitives

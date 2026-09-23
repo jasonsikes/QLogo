@@ -808,6 +808,23 @@ Value *Compiler::genProcedures(const DatumPtr &node, TypeMask expected)
     return generateCallExtern(stdProcedures, PaAddr(scaff_->evaluator_));
 }
 
+/***DOC PRIMITIVES
+PRIMITIVES
+
+    outputs a list of the names of all primitive procedures
+    in the workspace.  Note that this is a list of names, not a
+    contents list.  (However, procedures that require a contents list
+    as input will accept this list.)
+
+COD***/
+// CMD PRIMITIVES 0 0 0 d
+Value *Compiler::genPrimitives(const DatumPtr &node, TypeMask expected)
+{
+    (void)node;
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdPrimitives, PaAddr(scaff_->evaluator_));
+}
+
 /***DOC BURIEDP BURIED?
 BURIEDP contentslist
 BURIED? contentslist

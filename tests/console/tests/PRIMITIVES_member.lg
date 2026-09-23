@@ -1,0 +1,7 @@
+show listp primitives
+show wordp first primitives
+show memberp "PRINT primitives
+show memberp "PR primitives
+show memberp "TO primitives
+show memberp ".MACRO primitives
+show memberp "PROCEDURE? primitives

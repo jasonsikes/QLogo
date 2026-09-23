@@ -1866,6 +1866,12 @@ const QString &StringConstants::cmdStrPROCEDURES()
     return str;
 }
 
+const QString &StringConstants::cmdStrPRIMITIVES()
+{
+    static const QString str = QObject::tr("PRIMITIVES");
+    return str;
+}
+
 const QString &StringConstants::cmdStrBURIEDP()
 {
     static const QString str = QObject::tr("BURIEDP");

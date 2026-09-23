@@ -1,0 +1,4 @@
+copydef "myprint "print
+show memberp "MYPRINT primitives
+show memberp "PRINT primitives
+show memberp "MYPRINT procedures

@@ -1,0 +1,4 @@
+make "n count primitives
+bury "print
+show equalp :n count primitives
+show memberp "PRINT primitives
