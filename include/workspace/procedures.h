@@ -59,7 +59,7 @@ class Procedures
     QHash<QString, DatumPtr> procedures_;
     qint64 lastProcedureCreatedTimestamp_;
 
-    DatumPtr procedureForName(const QString &aName) const;
+    DatumPtr procedureForName(const QString &aName);
     bool isNamedProcedure(const QString &aName) const;
 
     /// @brief Load a library row into the procedure table.
@@ -152,7 +152,7 @@ class Procedures
     /// @param cmdP The name of the procedure to search for.
     /// @return A tuple containing a pointer to the created AST node, and three integers representing the arity of the procedure.
     ///         If the procedure is not found, returns a tuple with nothing() as the first element.
-    std::tuple<DatumPtr, int, int, int> astnodeFromProcedure(const DatumPtr &cmdP) const;
+    std::tuple<DatumPtr, int, int, int> astnodeFromProcedure(const DatumPtr &cmdP);
 
     /// @brief Get an AST node from a primitive command.
     /// @param cmdP The name of the command to search for.
@@ -163,12 +163,12 @@ class Procedures
     /// @brief Get an AST node from a command, either a primitive or user-defined procedure.
     /// @param command The name of the command to search for.
     /// @return A tuple containing a pointer to the created AST node, and three integers representing the arity of the command.
-    std::tuple<DatumPtr, int, int, int> astnodeFromCommand(const DatumPtr &command) const;
+    std::tuple<DatumPtr, int, int, int> astnodeFromCommand(const DatumPtr &command);
 
     /// @brief Get the text of a procedure.
     /// @param procnameP The name of the procedure to get the text of.
     /// @return A pointer to the text of the procedure, in the form of a list of sublists.
-    DatumPtr procedureText(const DatumPtr &procnameP) const;
+    DatumPtr procedureText(const DatumPtr &procnameP);
 
     /// @brief Get the full text of a procedure.
     /// @param procnameP The name of the procedure to get the full text of.
@@ -179,14 +179,14 @@ class Procedures
     /// and a final [end] list. That result is not suitable as input to DEFINE.
     /// If shouldValidate is false and the name is undefined, a two-word stand-in
     /// list (a TO line and END) is returned instead of an error.
-    DatumPtr procedureFulltext(const DatumPtr &procnameP, bool shouldValidate = true) const;
+    DatumPtr procedureFulltext(const DatumPtr &procnameP, bool shouldValidate = true);
 
     /// @brief Generate the title line of a procedure that has no stored source text.
     /// @param procnameP The name of the procedure to generate the title line for.
     /// @return A string containing the title of the procedure. A title starts with
     /// 'to' or '.macro', then the name, then the inputs in TO syntax (colons on
     /// input names).
-    QString generateProcedureTitleLine(const DatumPtr &procnameP) const;
+    QString generateProcedureTitleLine(const DatumPtr &procnameP);
 
     /// @brief Check if a name is a procedure.
     /// @param procname The name to check.

@@ -456,7 +456,7 @@ static DatumPtr generatedTitleList(const Procedure *body, const DatumPtr &procna
     return title.finishedList();
 }
 
-DatumPtr Procedures::procedureText(const DatumPtr &procnameP) const
+DatumPtr Procedures::procedureText(const DatumPtr &procnameP)
 {
     QString procname = procnameP.toString(Datum::ToStringFlags_Key);
 
@@ -472,7 +472,7 @@ DatumPtr Procedures::procedureText(const DatumPtr &procnameP) const
     return body->instructionList_;
 }
 
-DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldValidate) const
+DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldValidate)
 {
     const QString procname = procnameP.toString(Datum::ToStringFlags_Key);
     if (stringToCmd.contains(procname))
@@ -520,7 +520,7 @@ DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldVal
     return retvalBuilder.finishedList();
 }
 
-QString Procedures::generateProcedureTitleLine(const DatumPtr &procnameP) const
+QString Procedures::generateProcedureTitleLine(const DatumPtr &procnameP)
 {
     QString procname = procnameP.toString(Datum::ToStringFlags_Key);
 
@@ -536,7 +536,7 @@ QString Procedures::generateProcedureTitleLine(const DatumPtr &procnameP) const
     return generatedTitleList(body, procnameP).toString(Datum::ToStringFlags_None);
 }
 
-DatumPtr Procedures::procedureForName(const QString &aName) const
+DatumPtr Procedures::procedureForName(const QString &aName)
 {
     if (procedures_.contains(aName))
         return procedures_[aName];
@@ -544,7 +544,9 @@ DatumPtr Procedures::procedureForName(const QString &aName) const
     if (!Library::get().allProcedureNames().contains(aName))
         return nothing();
 
-    // TODO: Procedure is in our library, add it to our procedures table.
+    loadLibraryProcedure(aName);
+    if (procedures_.contains(aName))
+        return procedures_[aName];
     return nothing();
 }
 
@@ -568,7 +570,7 @@ std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromPrimitive(const Datum
     return {node, command.countOfMinParams_, command.countOfDefaultParams_, command.countOfMaxParams_};
 }
 
-std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromProcedure(const DatumPtr &cmdP) const
+std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromProcedure(const DatumPtr &cmdP)
 {
     QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
     DatumPtr procBody = procedureForName(cmdString);
@@ -584,7 +586,7 @@ std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromProcedure(const Datum
     return {node, procBody.procedureValue()->countOfMinParams_, procBody.procedureValue()->countOfDefaultParams_, procBody.procedureValue()->countOfMaxParams_};
 }
 
-std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromCommand(const DatumPtr &cmdP) const
+std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromCommand(const DatumPtr &cmdP)
 {
     QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
 
