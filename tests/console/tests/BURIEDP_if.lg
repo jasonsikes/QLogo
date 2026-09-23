@@ -1,0 +1,4 @@
+bury "foo
+if buriedp "foo [print "yes]
+if not buried? "bar [print "no]
+print "done

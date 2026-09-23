@@ -1,0 +1,4 @@
+bury "foo
+show buriedp "foo
+unbury "foo
+show buriedp "foo

@@ -745,3 +745,84 @@ Value *Compiler::genUnstep(const DatumPtr &node, TypeMask expected)
         PaAddr(contents));
     return generateNotFlowControl(retval);
 }
+
+/***DOC BURIEDP BURIED?
+BURIEDP contentslist
+BURIED? contentslist
+
+    outputs TRUE if the first procedure, variable, or property list
+    named in the contents list is buried, FALSE if not.  Only the
+    first thing in the list is tested; the most common use will be
+    with a word as input, naming a procedure, but a contents list
+    is allowed so that you can BURIEDP [[] [VARIABLE]] or
+    BURIEDP [[] [] [PROPLIST]].
+
+COD***/
+// CMD BURIEDP 1 1 1 d
+// CMD BURIED? 1 1 1 d
+Value *Compiler::genBuriedp(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected & (TypeDatum | TypeBool | TypeNothing));
+
+    Value *contents = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdBuriedp,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(contents));
+    return generateNotFlowControl(retval);
+}
+
+/***DOC TRACEDP TRACED?
+TRACEDP contentslist
+TRACED? contentslist
+
+    outputs TRUE if the first procedure, variable, or property list
+    named in the contents list is traced, FALSE if not.  Only the
+    first thing in the list is tested; the most common use will be
+    with a word as input, naming a procedure, but a contents list
+    is allowed so that you can TRACEDP [[] [VARIABLE]] or
+    TRACEDP [[] [] [PROPLIST]].
+
+COD***/
+// CMD TRACEDP 1 1 1 d
+// CMD TRACED? 1 1 1 d
+Value *Compiler::genTracedp(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected & (TypeDatum | TypeBool | TypeNothing));
+
+    Value *contents = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdTracedp,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(contents));
+    return generateNotFlowControl(retval);
+}
+
+/***DOC STEPPEDP STEPPED?
+STEPPEDP contentslist
+STEPPED? contentslist
+
+    outputs TRUE if the first procedure, variable, or property list
+    named in the contents list is stepped, FALSE if not.  Only the
+    first thing in the list is tested; the most common use will be
+    with a word as input, naming a procedure, but a contents list
+    is allowed so that you can STEPPEDP [[] [VARIABLE]] or
+    STEPPEDP [[] [] [PROPLIST]].
+
+COD***/
+// CMD STEPPEDP 1 1 1 d
+// CMD STEPPED? 1 1 1 d
+Value *Compiler::genSteppedp(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected & (TypeDatum | TypeBool | TypeNothing));
+
+    Value *contents = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdSteppedp,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(contents));
+    return generateNotFlowControl(retval);
+}

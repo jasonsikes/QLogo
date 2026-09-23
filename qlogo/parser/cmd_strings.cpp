@@ -1842,4 +1842,40 @@ const QString &StringConstants::cmdStrUNSTEP()
     return str;
 }
 
+const QString &StringConstants::cmdStrBURIEDP()
+{
+    static const QString str = QObject::tr("BURIEDP");
+    return str;
+}
+
+const QString &StringConstants::cmdStrBURIED_Q()
+{
+    static const QString str = QObject::tr("BURIED?");
+    return str;
+}
+
+const QString &StringConstants::cmdStrTRACEDP()
+{
+    static const QString str = QObject::tr("TRACEDP");
+    return str;
+}
+
+const QString &StringConstants::cmdStrTRACED_Q()
+{
+    static const QString str = QObject::tr("TRACED?");
+    return str;
+}
+
+const QString &StringConstants::cmdStrSTEPPEDP()
+{
+    static const QString str = QObject::tr("STEPPEDP");
+    return str;
+}
+
+const QString &StringConstants::cmdStrSTEPPED_Q()
+{
+    static const QString str = QObject::tr("STEPPED?");
+    return str;
+}
+
 

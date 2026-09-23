@@ -314,6 +314,12 @@ const QString &cmdStrSTEP();
 const QString &cmdStrUNBURY();
 const QString &cmdStrUNTRACE();
 const QString &cmdStrUNSTEP();
+const QString &cmdStrBURIEDP();
+const QString &cmdStrBURIED_Q();
+const QString &cmdStrTRACEDP();
+const QString &cmdStrTRACED_Q();
+const QString &cmdStrSTEPPEDP();
+const QString &cmdStrSTEPPED_Q();
 } // namespace StringConstants
 #endif // CMD_STRINGS_H
 

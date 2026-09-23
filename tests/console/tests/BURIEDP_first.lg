@@ -1,0 +1,3 @@
+bury [[a]]
+show buriedp [[b a]]
+show buriedp [[a b]]

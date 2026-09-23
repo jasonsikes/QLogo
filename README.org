@@ -132,16 +132,16 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | SCREENMODE     | >             | SETTEXTCOLOR           | VBARRED?                  | *TODO* ERPLS         |
 |                    | TURTLEMODE     | =             | SETTC                  | COUNT                     | BURY                 |
 |                    | LABELSIZE      | <=            | INCREASEFONT           | ASCII                     | UNBURY               |
-|                    | LABELFONT      | >=            | DECREASEFONT           | RAWASCII                  | *TODO* BURIEDP       |
-|                    | *NO* MATRIX    | <>            | SETTEXTSIZE            | CHAR                      | *TODO* BURIED?       |
+|                    | LABELFONT      | >=            | DECREASEFONT           | RAWASCII                  | BURIEDP              |
+|                    | *NO* MATRIX    | <>            | SETTEXTSIZE            | CHAR                      | BURIED?              |
 |                    | PENDOWN        |               | TEXTSIZE               | MEMBER                    | TRACE                |
 |                    | PD             |               | SETFONT                | LOWERCASE                 | UNTRACE              |
-|                    | PENUP          |               | FONT                   | UPPERCASE                 | *TODO* TRACEDP       |
-|                    | PU             |               | ALLFONTS               | STANDOUT                  | *TODO* TRACED?       |
+|                    | PENUP          |               | FONT                   | UPPERCASE                 | TRACEDP              |
+|                    | PU             |               | ALLFONTS               | STANDOUT                  | TRACED?              |
 |                    | PENPAINT       |               | CURSORINSERT           | PARSE                     | STEP                 |
 |                    | PPT            |               | CURSOROVERWRITE        | RUNPARSE                  | UNSTEP               |
-|                    | PENERASE       |               | CURSORMODE             |                           | *TODO* STEPPEDP      |
-|                    | PE             |               | WAIT                   |                           | *TODO* STEPPED?      |
+|                    | PENERASE       |               | CURSORMODE             |                           | STEPPEDP             |
+|                    | PE             |               | WAIT                   |                           | STEPPED?             |
 |                    | PENREVERSE     |               |                        |                           | *TODO* EDIT          |
 |                    | PX             |               |                        |                           | *TODO* ED            |
 |                    | SETPENCOLOR    |               |                        |                           | *TODO* EDITFILE      |
