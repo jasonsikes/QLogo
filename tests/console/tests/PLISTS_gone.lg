@@ -1,0 +1,5 @@
+pprop "city "name "Berkeley
+bury [[] [] [city]]
+remprop "city "name
+show plists
+show buried

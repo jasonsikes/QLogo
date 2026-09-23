@@ -1,0 +1,4 @@
+pprop "city "name "Berkeley
+trace [[] [] [city]]
+step [[] [] [city]]
+show plists

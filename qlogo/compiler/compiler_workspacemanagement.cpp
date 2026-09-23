@@ -841,6 +841,22 @@ Value *Compiler::genNames(const DatumPtr &node, TypeMask expected)
     return generateCallExtern(stdNames, PaAddr(scaff_->evaluator_));
 }
 
+/***DOC PLISTS
+PLISTS
+
+    outputs a contents list consisting of two empty lists (indicating
+    no procedures or variables) followed by a list of all unburied
+    nonempty property lists in the workspace.
+
+COD***/
+// CMD PLISTS 0 0 0 d
+Value *Compiler::genPlists(const DatumPtr &node, TypeMask expected)
+{
+    (void)node;
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdPlists, PaAddr(scaff_->evaluator_));
+}
+
 /***DOC BURIEDP BURIED?
 BURIEDP contentslist
 BURIED? contentslist

@@ -1,0 +1,9 @@
+pprop "city "name "Berkeley
+pprop "team "name "Bears
+bury [[] [] [city]]
+show memberp "CITY last plists
+show memberp "TEAM last plists
+show count last plists
+unbury [[] [] [city]]
+show memberp "CITY last plists
+show count last plists

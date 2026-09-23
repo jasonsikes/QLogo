@@ -1878,6 +1878,12 @@ const QString &StringConstants::cmdStrNAMES()
     return str;
 }
 
+const QString &StringConstants::cmdStrPLISTS()
+{
+    static const QString str = QObject::tr("PLISTS");
+    return str;
+}
+
 const QString &StringConstants::cmdStrBURIEDP()
 {
     static const QString str = QObject::tr("BURIEDP");

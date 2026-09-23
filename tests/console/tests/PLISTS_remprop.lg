@@ -1,0 +1,3 @@
+pprop "city "name "Berkeley
+remprop "city "name
+show plists

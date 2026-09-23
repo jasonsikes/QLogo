@@ -16,6 +16,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "workspace/propertylists.h"
+#include "workspace/kernel.h"
 #include "datum_types.h"
 
 PropertyLists::PropertyLists() = default;
@@ -72,11 +73,14 @@ bool PropertyLists::isPropertyList(const QString &plistname) const
     return plists_.contains(plistname);
 }
 
-DatumPtr PropertyLists::allPLists() const
+DatumPtr PropertyLists::allPLists(bool unburiedOnly) const
 {
     ListBuilder builder;
     for (const auto name : plists_.keys())
     {
+        if (unburiedOnly
+            && Kernel::get().containsName(Kernel::NameMark::Buried, Kernel::NameKind::PropertyLists, name))
+            continue;
         builder.append(DatumPtr(name));
     }
     return builder.finishedList();

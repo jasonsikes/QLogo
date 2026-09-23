@@ -64,9 +64,10 @@ class PropertyLists
     /// @return True if the property list exists, false otherwise.
     bool isPropertyList(const QString &plistname) const;
 
-    /// @brief Get all property lists.
-    /// @return A list of all property lists.
-    DatumPtr allPLists() const;
+    /// @brief Get the names of the property lists.
+    /// @param unburiedOnly When true, omit a property list that is buried.
+    /// @return A list of words. A property list is present only while it has a property.
+    DatumPtr allPLists(bool unburiedOnly = false) const;
 };
 
 #endif // PROPERTYLISTS_H
