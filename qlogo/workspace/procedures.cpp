@@ -420,6 +420,11 @@ DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldVal
 
 QString Procedures::generateProcedureTitleLine(const DatumPtr &procnameP) const
 {
+    return procedureTitleList(procnameP).toString(Datum::ToStringFlags_None);
+}
+
+DatumPtr Procedures::procedureTitleList(const DatumPtr &procnameP) const
+{
     QString procname = procnameP.toString(Datum::ToStringFlags_Key);
 
     if (stringToCmd.contains(procname))
@@ -428,7 +433,7 @@ QString Procedures::generateProcedureTitleLine(const DatumPtr &procnameP) const
         throw FCError::noHow(procnameP);
 
     Procedure *body = procedureForName(procname).procedureValue();
-    return generatedTitleList(body, procnameP).toString(Datum::ToStringFlags_None);
+    return generatedTitleList(body, procnameP);
 }
 
 DatumPtr Procedures::procedureForName(const QString &aName) const

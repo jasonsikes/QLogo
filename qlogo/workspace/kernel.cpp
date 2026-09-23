@@ -491,21 +491,107 @@ DatumPtr Kernel::contentsListFromDatum(const DatumPtr &who, const DatumPtr &sour
 namespace
 {
 
+QString unreadDatum(const DatumPtr &value, bool isInList);
+
+QString unreadWord(Word *word, bool isInList)
+{
+    word->numberValue();
+    if (word->numberIsValid)
+        return word->toString();
+
+    QString retval;
+    if (!isInList)
+        retval = QLatin1Char('"');
+
+    const QString src = word->toString();
+    if (src.isEmpty())
+        return retval + QStringLiteral("||");
+
+    if (word->isForeverSpecial)
+    {
+        retval.append(QLatin1Char('|'));
+        for (auto iter = src.cbegin(); iter != src.cend(); ++iter)
+        {
+            const QChar letter = *iter;
+            if ((iter == src.cbegin()) && (letter == QLatin1Char('"')))
+                retval = QStringLiteral("\"|");
+            else
+            {
+                if (letter == QLatin1Char('|'))
+                    retval.append(QLatin1Char('\\'));
+                retval.append(letter);
+            }
+        }
+        retval.append(QLatin1Char('|'));
+        return retval;
+    }
+
+    for (QChar letter : src)
+    {
+        if ((letter == QLatin1Char(' ')) || (letter == QLatin1Char('[')) || (letter == QLatin1Char(']'))
+            || (letter == QLatin1Char('{')) || (letter == QLatin1Char('}')) || (letter == QLatin1Char('|'))
+            || (letter == QLatin1Char('\n')))
+            retval.append(QLatin1Char('\\'));
+        retval.append(letter);
+    }
+    return retval;
+}
+
+QString unreadList(List *list, bool isInList)
+{
+    QString retval;
+    if (isInList)
+        retval = QLatin1Char('[');
+    ListIterator iter = list->newIterator();
+    while (iter.elementExists())
+    {
+        if ((retval != QLatin1String("[")) && (!retval.isEmpty()))
+            retval.append(QLatin1Char(' '));
+        retval += unreadDatum(iter.element(), true);
+    }
+    if (isInList)
+        retval.append(QLatin1Char(']'));
+    return retval;
+}
+
+QString unreadArray(Array *array)
+{
+    QString retval(QLatin1Char('{'));
+    for (const auto &item : array->array)
+    {
+        if (retval.size() > 1)
+            retval.append(QLatin1Char(' '));
+        retval += unreadDatum(item, true);
+    }
+    retval.append(QLatin1Char('}'));
+    return retval;
+}
+
+QString unreadDatum(const DatumPtr &value, bool isInList)
+{
+    if (value.isWord())
+        return unreadWord(value.wordValue(), isInList);
+    if (value.isList())
+        return unreadList(value.listValue(), isInList);
+    if (value.isArray())
+        return unreadArray(value.arrayValue());
+    Q_ASSERT(false);
+    return QString();
+}
+
 /// Format a value so PRINTOUT / SAVE can be read back as Logo.
 /// A number prints without a quote. A non-numeric word is quoted and escaped.
 /// A list or array is shown with brackets or braces.
 QString printoutDatum(const DatumPtr &value)
 {
     if (value.isWord())
-    {
-        Word *word = value.wordValue();
-        word->numberValue();
-        if (word->numberIsValid)
-            return word->toString();
-        return word->toString(Datum::ToStringFlags_Source);
-    }
-    const auto flags = static_cast<Datum::ToStringFlags>(Datum::ToStringFlags_Show | Datum::ToStringFlags_FullPrint);
-    return value.toString(flags);
+        return unreadWord(value.wordValue(), false);
+    if (value.isList())
+        return unreadList(value.listValue(), true);
+    if (value.isArray())
+        return unreadArray(value.arrayValue());
+    Q_ASSERT(false);
+    return QString();
 }
 
 } // namespace
@@ -564,6 +650,51 @@ QString Kernel::printoutFromContentsList(const DatumPtr &contentslist, bool shou
             retval += QObject::tr("Pprop %1 %2 %3\n")
                           .arg(printoutDatum(listnameP), printoutDatum(nameP), printoutDatum(valueP));
         }
+    }
+    return retval;
+}
+
+QString Kernel::titlesFromContentsList(const DatumPtr &contentslist) const
+{
+    QString retval;
+
+    List *src = contentslist.listValue();
+    List *proceduresList = src->head.listValue();
+    src = src->tail.listValue();
+    List *variablesList = src->head.listValue();
+    src = src->tail.listValue();
+    List *propertiesList = src->head.listValue();
+
+    ListIterator procedures = proceduresList->newIterator();
+    while (procedures.elementExists())
+    {
+        DatumPtr procname = procedures.element();
+        DatumPtr title = Procedures::get().procedureTitleList(procname);
+        retval += unreadList(title.listValue(), false);
+        retval += QLatin1Char('\n');
+    }
+
+    ListIterator variables = variablesList->newIterator();
+    while (variables.elementExists())
+    {
+        DatumPtr varnameP = variables.element();
+        const QString varname = varnameP.wordValue()->toString(Datum::ToStringFlags_Key);
+        DatumPtr value = datumForName(varname);
+        if (value.isNothing())
+            throw FCError::noValue(varnameP);
+        retval += QObject::tr("Make \"%1 %2\n").arg(varname, printoutDatum(value));
+    }
+
+    ListIterator properties = propertiesList->newIterator();
+    while (properties.elementExists())
+    {
+        DatumPtr listnameP = properties.element();
+        const QString listname = listnameP.wordValue()->toString(Datum::ToStringFlags_Key);
+        DatumPtr proplist = plists_.getPropertyList(listname);
+        if (proplist.listValue()->isEmpty())
+            continue;
+        retval += QObject::tr("Plist %1 = %2\n")
+                      .arg(printoutDatum(listnameP), printoutDatum(proplist));
     }
     return retval;
 }

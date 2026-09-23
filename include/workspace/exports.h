@@ -273,4 +273,5 @@ EXPORTC addr_t stdTracedp(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 EXPORTC addr_t stdSteppedp(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
 EXPORTC addr_t stdArity(addr_t eAddr, addr_t nameAddr);
 EXPORTC addr_t stdPrintout(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
+EXPORTC addr_t stdPot(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
 #endif // WORKSPACE_EXPORTS_H

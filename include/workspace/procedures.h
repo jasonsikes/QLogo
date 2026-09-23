@@ -152,12 +152,18 @@ class Procedures
     /// list (a TO line and END) is returned instead of an error.
     DatumPtr procedureFulltext(const DatumPtr &procnameP, bool shouldValidate = true) const;
 
-    /// @brief Generate the title line of a procedure that has no stored source text.
+    /// @brief Generate the title line of a procedure.
     /// @param procnameP The name of the procedure to generate the title line for.
     /// @return A string containing the title of the procedure. A title starts with
     /// 'to' or '.macro', then the name, then the inputs in TO syntax (colons on
-    /// input names).
+    /// input names). A primitive or unknown name is an error.
     QString generateProcedureTitleLine(const DatumPtr &procnameP) const;
+
+    /// @brief The title of a procedure as a list of words and sublists.
+    /// @param procnameP The name of the procedure.
+    /// @return [to-or-.macro name :input1 [:optional default] [:rest] defaultcount].
+    /// A primitive or unknown name is an error.
+    DatumPtr procedureTitleList(const DatumPtr &procnameP) const;
 
     /// @brief Check if a name is a procedure.
     /// @param procname The name to check.

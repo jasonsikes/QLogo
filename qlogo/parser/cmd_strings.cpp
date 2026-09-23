@@ -1902,6 +1902,12 @@ const QString &StringConstants::cmdStrPO()
     return str;
 }
 
+const QString &StringConstants::cmdStrPOT()
+{
+    static const QString str = QObject::tr("POT");
+    return str;
+}
+
 const QString &StringConstants::cmdStrBURIEDP()
 {
     static const QString str = QObject::tr("BURIEDP");

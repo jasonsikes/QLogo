@@ -145,6 +145,13 @@ class Kernel
     /// ending with a newline.
     QString printoutFromContentsList(const DatumPtr &contentslist, bool shouldValidate = true) const;
 
+    /// @brief POT text for the names in a contents list from contentsListFromDatum.
+    /// @param contentslist A list of three lists of names.
+    /// @return Title lines for procedures, MAKE lines for variables, and one
+    /// Plist line per nonempty property list. A primitive or unknown procedure,
+    /// or a variable with no value, is an error. A missing property list is omitted.
+    QString titlesFromContentsList(const DatumPtr &contentslist) const;
+
     /// @brief Whether a workspace name is buried, traced, or stepped.
     /// @note Count is the number of marks, not a set to pass to the accessors.
     enum class NameMark

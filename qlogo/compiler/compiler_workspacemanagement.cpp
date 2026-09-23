@@ -898,6 +898,29 @@ Value *Compiler::genPrintout(const DatumPtr &node, TypeMask expected)
     return generateNotFlowControl(retval);
 }
 
+/***DOC POT
+POT contentslist
+
+    command.  Prints the title lines of the named procedures and
+    the definitions of the named variables and property lists.
+    For property lists, the entire list is shown on one line
+    instead of as a series of PPROP instructions as in PO.
+
+COD***/
+// CMD POT 1 1 1 n
+Value *Compiler::genPot(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *contents = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdPot,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(contents));
+    return generateNotFlowControl(retval);
+}
+
 /***DOC BURIEDP BURIED?
 BURIEDP contentslist
 BURIED? contentslist

@@ -244,6 +244,7 @@ llvm::Value *genNames(const DatumPtr &node, TypeMask expected);
 llvm::Value *genPlists(const DatumPtr &node, TypeMask expected);
 llvm::Value *genContents(const DatumPtr &node, TypeMask expected);
 llvm::Value *genPrintout(const DatumPtr &node, TypeMask expected);
+llvm::Value *genPot(const DatumPtr &node, TypeMask expected);
 llvm::Value *genBuriedp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genTracedp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSteppedp(const DatumPtr &node, TypeMask expected);

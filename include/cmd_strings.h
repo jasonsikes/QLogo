@@ -324,6 +324,7 @@ const QString &cmdStrPLISTS();
 const QString &cmdStrCONTENTS();
 const QString &cmdStrPRINTOUT();
 const QString &cmdStrPO();
+const QString &cmdStrPOT();
 const QString &cmdStrBURIEDP();
 const QString &cmdStrBURIED_Q();
 const QString &cmdStrTRACEDP();

@@ -867,3 +867,31 @@ EXPORTC addr_t stdPrintout(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr
     return reinterpret_cast<addr_t>(node);
 }
 
+/// POT: print title lines of named procedures, MAKE of variables, and one Plist
+/// line per nonempty property list. A word is one procedure. A list of words is
+/// procedure names. A list of lists is procedures, then variables, then property
+/// lists. A primitive or unknown procedure, or a variable with no value, is an
+/// error. A missing property list prints nothing.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param contentsAddr a word or a contents list
+/// @return the owning ASTNode, or an Error if the input is rejected.
+EXPORTC addr_t stdPot(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *contents = reinterpret_cast<Datum *>(contentsAddr);
+    try
+    {
+        DatumPtr contentslist = Kernel::get().contentsListFromDatum(node->nodeName_, DatumPtr(contents));
+        QString output = Kernel::get().titlesFromContentsList(contentslist);
+        StreamManager::get().print(output);
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+
