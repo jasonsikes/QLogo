@@ -257,5 +257,8 @@ EXPORTC bool stdPlistp(addr_t nameAddr);
 EXPORTC addr_t stdBury(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
 EXPORTC addr_t stdTrace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
 EXPORTC addr_t stdStep(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
+EXPORTC addr_t stdUnbury(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
+EXPORTC addr_t stdUntrace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
+EXPORTC addr_t stdUnstep(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
 EXPORTC addr_t stdArity(addr_t eAddr, addr_t nameAddr);
 #endif // WORKSPACE_EXPORTS_H

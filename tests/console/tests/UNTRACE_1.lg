@@ -1,0 +1,12 @@
+untrace "foo
+untrace [bar baz]
+untrace [[a1] [q] [1 2]]
+untrace [[] [q] [1 2]]
+untrace [[a1] [] [1 2]]
+untrace [[a1] [q] [1]]
+untrace [[a1]]
+untrace []
+untrace [[] "q]
+untrace [[a] [b] [c] extra]
+trace "foo
+untrace "foo

@@ -1,0 +1,12 @@
+unbury "foo
+unbury [bar baz]
+unbury [[a1] [q] [1 2]]
+unbury [[] [q] [1 2]]
+unbury [[a1] [] [1 2]]
+unbury [[a1] [q] [1]]
+unbury [[a1]]
+unbury []
+unbury [[] "q]
+unbury [[a] [b] [c] extra]
+bury "foo
+unbury "foo

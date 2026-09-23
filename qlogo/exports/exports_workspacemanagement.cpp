@@ -387,16 +387,18 @@ EXPORTC bool stdPlistp(addr_t nameAddr)
 namespace
 {
 
-/// Add each word in @p names to the @p mark set for @p kind.
+/// Add or remove each word in @p names for @p mark and @p kind.
 /// A word is one name. A list is those names. A list or array member is rejected.
-/// A name already in the set is left there.
-void markNames(Kernel::NameMark mark, Kernel::NameKind kind, Datum *names, const DatumPtr &who)
+/// Adding a name already present leaves it. Removing a missing name does nothing.
+/// @param clear When true, remove the names. When false, add them.
+void markNames(Kernel::NameMark mark, Kernel::NameKind kind, Datum *names, const DatumPtr &who, bool clear)
 {
+    auto apply = clear ? &Kernel::removeName : &Kernel::addName;
     if (!names->isList())
     {
         if (!names->isWord())
             throw FCError::doesntLike(who, DatumPtr(names));
-        Kernel::get().addName(mark, kind, names->toString(Datum::ToStringFlags_Key));
+        (Kernel::get().*apply)(mark, kind, names->toString(Datum::ToStringFlags_Key));
         return;
     }
 
@@ -406,7 +408,7 @@ void markNames(Kernel::NameMark mark, Kernel::NameKind kind, Datum *names, const
         DatumPtr member = iter.element();
         if (!member.isWord())
             throw FCError::doesntLike(who, member);
-        Kernel::get().addName(mark, kind, member.wordValue()->toString(Datum::ToStringFlags_Key));
+        (Kernel::get().*apply)(mark, kind, member.wordValue()->toString(Datum::ToStringFlags_Key));
     }
 }
 
@@ -414,12 +416,13 @@ void markNames(Kernel::NameMark mark, Kernel::NameKind kind, Datum *names, const
 /// procedures. A list whose first member is a list is procedures, then variables,
 /// then property lists. A word in the variable or property-list position is one
 /// name. Members past the third are ignored. Names need not already exist.
-/// Names before a rejected member stay marked.
-void markContents(Kernel::NameMark mark, const DatumPtr &who, Datum *input)
+/// Names before a rejected member stay added or removed.
+/// @param clear When true, remove the names. When false, add them.
+void markContents(Kernel::NameMark mark, const DatumPtr &who, Datum *input, bool clear)
 {
     if (!input->isList())
     {
-        markNames(mark, Kernel::NameKind::Procedures, input, who);
+        markNames(mark, Kernel::NameKind::Procedures, input, who, clear);
         return;
     }
 
@@ -429,31 +432,31 @@ void markContents(Kernel::NameMark mark, const DatumPtr &who, Datum *input)
 
     if (!contents->head.isList())
     {
-        markNames(mark, Kernel::NameKind::Procedures, input, who);
+        markNames(mark, Kernel::NameKind::Procedures, input, who, clear);
         return;
     }
 
-    markNames(mark, Kernel::NameKind::Procedures, contents->head.datumValue(), who);
+    markNames(mark, Kernel::NameKind::Procedures, contents->head.datumValue(), who, clear);
 
     const List *rest = contents->tail.listValue();
     if (rest->isEmpty())
         return;
-    markNames(mark, Kernel::NameKind::Variables, rest->head.datumValue(), who);
+    markNames(mark, Kernel::NameKind::Variables, rest->head.datumValue(), who, clear);
 
     rest = rest->tail.listValue();
     if (rest->isEmpty())
         return;
-    markNames(mark, Kernel::NameKind::PropertyLists, rest->head.datumValue(), who);
+    markNames(mark, Kernel::NameKind::PropertyLists, rest->head.datumValue(), who, clear);
 }
 
-addr_t markWorkspace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr, Kernel::NameMark mark)
+addr_t markWorkspace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr, Kernel::NameMark mark, bool clear)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *contents = reinterpret_cast<Datum *>(contentsAddr);
     try
     {
-        markContents(mark, node->nodeName_, contents);
+        markContents(mark, node->nodeName_, contents, clear);
     }
     catch (FCError *err)
     {
@@ -473,7 +476,7 @@ addr_t markWorkspace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr, Kern
 /// @return the owning ASTNode, or an Error if a name is not a word.
 EXPORTC addr_t stdBury(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 {
-    return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Buried);
+    return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Buried, false);
 }
 
 /// TRACE: mark the named procedures, variables, and property lists as traced.
@@ -484,7 +487,7 @@ EXPORTC addr_t stdBury(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 /// @return the owning ASTNode, or an Error if a name is not a word.
 EXPORTC addr_t stdTrace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 {
-    return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Traced);
+    return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Traced, false);
 }
 
 /// STEP: mark the named procedures, variables, and property lists as stepped.
@@ -495,7 +498,40 @@ EXPORTC addr_t stdTrace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 /// @return the owning ASTNode, or an Error if a name is not a word.
 EXPORTC addr_t stdStep(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 {
-    return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Stepped);
+    return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Stepped, false);
+}
+
+/// UNBURY: remove the buried mark from the named procedures, variables, and property lists.
+/// A name that is not buried is ignored. The input is a contents list.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param contentsAddr a word or a contents list
+/// @return the owning ASTNode, or an Error if a name is not a word.
+EXPORTC addr_t stdUnbury(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+{
+    return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Buried, true);
+}
+
+/// UNTRACE: remove the traced mark from the named procedures, variables, and property lists.
+/// A name that is not traced is ignored. The input is a contents list.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param contentsAddr a word or a contents list
+/// @return the owning ASTNode, or an Error if a name is not a word.
+EXPORTC addr_t stdUntrace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+{
+    return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Traced, true);
+}
+
+/// UNSTEP: remove the stepped mark from the named procedures, variables, and property lists.
+/// A name that is not stepped is ignored. The input is a contents list.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param contentsAddr a word or a contents list
+/// @return the owning ASTNode, or an Error if a name is not a word.
+EXPORTC addr_t stdUnstep(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+{
+    return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Stepped, true);
 }
 
 /// ARITY: output the minimum, default, and maximum input counts of a procedure.

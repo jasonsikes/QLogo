@@ -306,5 +306,8 @@ stringToCmd.insert(StringConstants::cmdStrARITY(), Cmd_t{&Compiler::genArity, 1,
 stringToCmd.insert(StringConstants::cmdStrBURY(), Cmd_t{&Compiler::genBury, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrTRACE(), Cmd_t{&Compiler::genTrace, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrSTEP(), Cmd_t{&Compiler::genStep, 1, 1, 1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrUNBURY(), Cmd_t{&Compiler::genUnbury, 1, 1, 1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrUNTRACE(), Cmd_t{&Compiler::genUntrace, 1, 1, 1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrUNSTEP(), Cmd_t{&Compiler::genUnstep, 1, 1, 1, TypeN});
 
 

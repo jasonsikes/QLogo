@@ -683,3 +683,65 @@ Value *Compiler::genStep(const DatumPtr &node, TypeMask expected)
         PaAddr(contents));
     return generateNotFlowControl(retval);
 }
+
+/***DOC UNBURY
+UNBURY contentslist
+
+    command.  Unburies the procedures, variables, and property
+    lists named in the input.  That is, the named items will be
+    returned to view in CONTENTS, etc.
+
+COD***/
+// CMD UNBURY 1 1 1 n
+Value *Compiler::genUnbury(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *contents = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdUnbury,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(contents));
+    return generateNotFlowControl(retval);
+}
+
+/***DOC UNTRACE
+UNTRACE contentslist
+
+    command.  Turns off tracing for the named items.
+
+COD***/
+// CMD UNTRACE 1 1 1 n
+Value *Compiler::genUntrace(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *contents = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdUntrace,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(contents));
+    return generateNotFlowControl(retval);
+}
+
+/***DOC UNSTEP
+UNSTEP contentslist
+
+    command.  Turns off stepping for the named items.
+
+COD***/
+// CMD UNSTEP 1 1 1 n
+Value *Compiler::genUnstep(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *contents = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdUnstep,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(contents));
+    return generateNotFlowControl(retval);
+}

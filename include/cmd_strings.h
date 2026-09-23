@@ -311,6 +311,9 @@ const QString &cmdStrARITY();
 const QString &cmdStrBURY();
 const QString &cmdStrTRACE();
 const QString &cmdStrSTEP();
+const QString &cmdStrUNBURY();
+const QString &cmdStrUNTRACE();
+const QString &cmdStrUNSTEP();
 } // namespace StringConstants
 #endif // CMD_STRINGS_H
 

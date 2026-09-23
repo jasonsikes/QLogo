@@ -1824,4 +1824,22 @@ const QString &StringConstants::cmdStrSTEP()
     return str;
 }
 
+const QString &StringConstants::cmdStrUNBURY()
+{
+    static const QString str = QObject::tr("UNBURY");
+    return str;
+}
+
+const QString &StringConstants::cmdStrUNTRACE()
+{
+    static const QString str = QObject::tr("UNTRACE");
+    return str;
+}
+
+const QString &StringConstants::cmdStrUNSTEP()
+{
+    static const QString str = QObject::tr("UNSTEP");
+    return str;
+}
+
 

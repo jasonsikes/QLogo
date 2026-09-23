@@ -1,0 +1,4 @@
+unbury [foo [bar]]
+unbury [[a] [[b]] []]
+unbury {a}
+unbury [[a] {b} []]
