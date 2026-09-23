@@ -1788,4 +1788,16 @@ const QString &StringConstants::cmdStrNAME_Q()
     return str;
 }
 
+const QString &StringConstants::cmdStrPLISTP()
+{
+    static const QString str = QObject::tr("PLISTP");
+    return str;
+}
+
+const QString &StringConstants::cmdStrPLIST_Q()
+{
+    static const QString str = QObject::tr("PLIST?");
+    return str;
+}
+
 

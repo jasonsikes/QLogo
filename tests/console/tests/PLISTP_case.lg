@@ -1,0 +1,4 @@
+pprop "City "Name "Berkeley
+show plistp "city
+show plist? "CITY
+show plistp "name

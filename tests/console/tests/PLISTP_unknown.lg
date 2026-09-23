@@ -1,0 +1,3 @@
+show plist "nope
+show plistp "nope
+show plist? "nope

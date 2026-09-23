@@ -1,0 +1,6 @@
+pprop "a "b 1
+pprop "a "c 2
+remprop "a "b
+show plistp "a
+remprop "a "c
+show plist? "a

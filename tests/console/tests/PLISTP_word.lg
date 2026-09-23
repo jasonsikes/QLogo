@@ -1,0 +1,5 @@
+pprop 1 2 3
+show plistp "1
+show plist? 1
+make "city 9
+show plistp "city

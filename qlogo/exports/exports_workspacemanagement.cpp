@@ -373,3 +373,14 @@ EXPORTC bool stdNamep(addr_t nameAddr)
     return !val.isNothing();
 }
 
+/// PLISTP: TRUE if the word names a nonempty property list.
+/// A name with no properties is FALSE. Removing the last property erases the list.
+/// The compiler rejects a non-word before this runs.
+/// @param nameAddr a word naming the candidate
+/// @return true if the name has at least one property.
+EXPORTC bool stdPlistp(addr_t nameAddr)
+{
+    auto *name = reinterpret_cast<Datum *>(nameAddr);
+    return Kernel::get().plists_.isPropertyList(name->toString(Datum::ToStringFlags_Key));
+}
+

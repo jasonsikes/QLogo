@@ -1,0 +1,2 @@
+show plistp [p]
+show plist? {a}

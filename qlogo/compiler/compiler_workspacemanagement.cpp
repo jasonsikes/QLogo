@@ -564,3 +564,23 @@ Value *Compiler::genNamep(const DatumPtr &node, TypeMask expected)
     name = generateFromDatum(Datum::typeWord, node.astnodeValue(), name);
     return generateCallExtern(stdNamep, PaAddr(name));
 }
+
+/***DOC PLISTP PLIST?
+PLISTP name
+PLIST? name
+
+    outputs TRUE if the input is the name of a nonempty property list.
+    (In principle every word is the name of a property list; if you haven't
+    put any properties in it, PLIST of that name outputs an empty list.)
+
+COD***/
+// CMD PLISTP 1 1 1 b
+// CMD PLIST? 1 1 1 b
+Value *Compiler::genPlistp(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeBool);
+
+    Value *name = generateChild(node.astnodeValue(), 0, TypeDatum);
+    name = generateFromDatum(Datum::typeWord, node.astnodeValue(), name);
+    return generateCallExtern(stdPlistp, PaAddr(name));
+}

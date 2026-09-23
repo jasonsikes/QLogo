@@ -1,0 +1,3 @@
+pprop "a "b 1
+if plistp "a [print "yes]
+(if plist? "b [print "no] [print "yes])

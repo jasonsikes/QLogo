@@ -305,6 +305,8 @@ const QString &cmdStrDEFINEDP();
 const QString &cmdStrDEFINED_Q();
 const QString &cmdStrNAMEP();
 const QString &cmdStrNAME_Q();
+const QString &cmdStrPLISTP();
+const QString &cmdStrPLIST_Q();
 } // namespace StringConstants
 #endif // CMD_STRINGS_H
 
