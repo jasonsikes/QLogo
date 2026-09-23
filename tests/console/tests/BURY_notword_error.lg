@@ -1,0 +1,4 @@
+bury [foo [bar]]
+bury [[a] [[b]] []]
+bury {a}
+bury [[a] {b} []]

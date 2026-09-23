@@ -384,6 +384,120 @@ EXPORTC bool stdPlistp(addr_t nameAddr)
     return Kernel::get().plists_.isPropertyList(name->toString(Datum::ToStringFlags_Key));
 }
 
+namespace
+{
+
+/// Add each word in @p names to the @p mark set for @p kind.
+/// A word is one name. A list is those names. A list or array member is rejected.
+/// A name already in the set is left there.
+void markNames(Kernel::NameMark mark, Kernel::NameKind kind, Datum *names, const DatumPtr &who)
+{
+    if (!names->isList())
+    {
+        if (!names->isWord())
+            throw FCError::doesntLike(who, DatumPtr(names));
+        Kernel::get().addName(mark, kind, names->toString(Datum::ToStringFlags_Key));
+        return;
+    }
+
+    ListIterator iter = names->listValue()->newIterator();
+    while (iter.elementExists())
+    {
+        DatumPtr member = iter.element();
+        if (!member.isWord())
+            throw FCError::doesntLike(who, member);
+        Kernel::get().addName(mark, kind, member.wordValue()->toString(Datum::ToStringFlags_Key));
+    }
+}
+
+/// UCBLogo three_lists: a word, or a list whose first member is a word, names
+/// procedures. A list whose first member is a list is procedures, then variables,
+/// then property lists. A word in the variable or property-list position is one
+/// name. Members past the third are ignored. Names need not already exist.
+/// Names before a rejected member stay marked.
+void markContents(Kernel::NameMark mark, const DatumPtr &who, Datum *input)
+{
+    if (!input->isList())
+    {
+        markNames(mark, Kernel::NameKind::Procedures, input, who);
+        return;
+    }
+
+    List *contents = input->listValue();
+    if (contents->isEmpty())
+        return;
+
+    if (!contents->head.isList())
+    {
+        markNames(mark, Kernel::NameKind::Procedures, input, who);
+        return;
+    }
+
+    markNames(mark, Kernel::NameKind::Procedures, contents->head.datumValue(), who);
+
+    const List *rest = contents->tail.listValue();
+    if (rest->isEmpty())
+        return;
+    markNames(mark, Kernel::NameKind::Variables, rest->head.datumValue(), who);
+
+    rest = rest->tail.listValue();
+    if (rest->isEmpty())
+        return;
+    markNames(mark, Kernel::NameKind::PropertyLists, rest->head.datumValue(), who);
+}
+
+addr_t markWorkspace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr, Kernel::NameMark mark)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *contents = reinterpret_cast<Datum *>(contentsAddr);
+    try
+    {
+        markContents(mark, node->nodeName_, contents);
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+
+} // namespace
+
+/// BURY: mark the named procedures, variables, and property lists as buried.
+/// The input is a contents list. See markContents for the accepted forms.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param contentsAddr a word or a contents list
+/// @return the owning ASTNode, or an Error if a name is not a word.
+EXPORTC addr_t stdBury(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+{
+    return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Buried);
+}
+
+/// TRACE: mark the named procedures, variables, and property lists as traced.
+/// The input is a contents list. See markContents for the accepted forms.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param contentsAddr a word or a contents list
+/// @return the owning ASTNode, or an Error if a name is not a word.
+EXPORTC addr_t stdTrace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+{
+    return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Traced);
+}
+
+/// STEP: mark the named procedures, variables, and property lists as stepped.
+/// The input is a contents list. See markContents for the accepted forms.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param contentsAddr a word or a contents list
+/// @return the owning ASTNode, or an Error if a name is not a word.
+EXPORTC addr_t stdStep(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+{
+    return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Stepped);
+}
+
 /// ARITY: output the minimum, default, and maximum input counts of a procedure.
 /// The name may be a primitive or a user procedure, including a macro.
 /// An unknown name is an error. The compiler rejects a non-word before this runs.

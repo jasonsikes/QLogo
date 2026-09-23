@@ -1,0 +1,11 @@
+bury "foo
+bury [bar baz]
+bury [[a1] [q] [1 2]]
+bury [[] [q] [1 2]]
+bury [[a1] [] [1 2]]
+bury [[a1] [q] [1]]
+bury [[a1]]
+bury []
+bury [[] "q]
+bury [[a] [b] [c] extra]
+bury "foo

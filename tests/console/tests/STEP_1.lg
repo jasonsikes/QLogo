@@ -1,0 +1,11 @@
+step "foo
+step [bar baz]
+step [[a1] [q] [1 2]]
+step [[] [q] [1 2]]
+step [[a1] [] [1 2]]
+step [[a1] [q] [1]]
+step [[a1]]
+step []
+step [[] "q]
+step [[a] [b] [c] extra]
+step "foo

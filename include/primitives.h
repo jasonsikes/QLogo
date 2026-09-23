@@ -229,5 +229,8 @@ llvm::Value *genDefinedp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genNamep(const DatumPtr &node, TypeMask expected);
 llvm::Value *genPlistp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genArity(const DatumPtr &node, TypeMask expected);
+llvm::Value *genBury(const DatumPtr &node, TypeMask expected);
+llvm::Value *genTrace(const DatumPtr &node, TypeMask expected);
+llvm::Value *genStep(const DatumPtr &node, TypeMask expected);
 #endif // PRIMITIVE_HEADER_H
 

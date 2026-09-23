@@ -1806,4 +1806,22 @@ const QString &StringConstants::cmdStrARITY()
     return str;
 }
 
+const QString &StringConstants::cmdStrBURY()
+{
+    static const QString str = QObject::tr("BURY");
+    return str;
+}
+
+const QString &StringConstants::cmdStrTRACE()
+{
+    static const QString str = QObject::tr("TRACE");
+    return str;
+}
+
+const QString &StringConstants::cmdStrSTEP()
+{
+    static const QString str = QObject::tr("STEP");
+    return str;
+}
+
 

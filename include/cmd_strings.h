@@ -308,6 +308,9 @@ const QString &cmdStrNAME_Q();
 const QString &cmdStrPLISTP();
 const QString &cmdStrPLIST_Q();
 const QString &cmdStrARITY();
+const QString &cmdStrBURY();
+const QString &cmdStrTRACE();
+const QString &cmdStrSTEP();
 } // namespace StringConstants
 #endif // CMD_STRINGS_H
 

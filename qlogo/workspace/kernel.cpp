@@ -428,6 +428,38 @@ DatumPtr Kernel::allVariables() const
     return builder.finishedList();
 }
 
+QSet<QString> &Kernel::namesFor(NameMark mark, NameKind kind)
+{
+    const auto index = static_cast<qsizetype>(mark) * static_cast<qsizetype>(NameKind::Count)
+                       + static_cast<qsizetype>(kind);
+    return nameSets_[index];
+}
+
+const QSet<QString> &Kernel::namesFor(NameMark mark, NameKind kind) const
+{
+    return const_cast<Kernel *>(this)->namesFor(mark, kind);
+}
+
+void Kernel::addName(NameMark mark, NameKind kind, const QString &name)
+{
+    namesFor(mark, kind).insert(name);
+}
+
+void Kernel::removeName(NameMark mark, NameKind kind, const QString &name)
+{
+    namesFor(mark, kind).remove(name);
+}
+
+bool Kernel::containsName(NameMark mark, NameKind kind, const QString &name) const
+{
+    return namesFor(mark, kind).contains(name);
+}
+
+const QSet<QString> &Kernel::nameList(NameMark mark, NameKind kind) const
+{
+    return namesFor(mark, kind);
+}
+
 void Kernel::setTest(bool isTrue)
 {
     currentCallFrame()->testState_ = isTrue ? 3 : 2;

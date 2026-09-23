@@ -122,6 +122,51 @@ class Kernel
     /// @return A list of all variables defined.
     DatumPtr allVariables() const;
 
+    /// @brief Whether a workspace name is buried, traced, or stepped.
+    /// @note Count is the number of marks, not a set to pass to the accessors.
+    enum class NameMark
+    {
+        Buried,
+        Traced,
+        Stepped,
+        Count
+    };
+
+    /// @brief Which kind of workspace name a mark applies to.
+    /// @note Count is the number of kinds, not a set to pass to the accessors.
+    enum class NameKind
+    {
+        Procedures,
+        Variables,
+        PropertyLists,
+        Count
+    };
+
+    /// @brief Add @p name to the set for @p mark and @p kind.
+    /// @param mark Buried, traced, or stepped.
+    /// @param kind Procedures, variables, or property lists.
+    /// @param name The workspace name. A name already in the set is left there.
+    /// @note For example, addName(NameMark::Buried, NameKind::Procedures, "FOO").
+    void addName(NameMark mark, NameKind kind, const QString &name);
+
+    /// @brief Remove @p name from the set for @p mark and @p kind.
+    /// @param mark Buried, traced, or stepped.
+    /// @param kind Procedures, variables, or property lists.
+    /// @param name The workspace name. A name that is not in the set is ignored.
+    void removeName(NameMark mark, NameKind kind, const QString &name);
+
+    /// @brief Return true if @p name is in the set for @p mark and @p kind.
+    /// @param mark Buried, traced, or stepped.
+    /// @param kind Procedures, variables, or property lists.
+    /// @param name The workspace name.
+    bool containsName(NameMark mark, NameKind kind, const QString &name) const;
+
+    /// @brief The names in the set for @p mark and @p kind.
+    /// @param mark Buried, traced, or stepped.
+    /// @param kind Procedures, variables, or property lists.
+    /// @note Iteration order is hash order and need not stay the same across runs.
+    const QSet<QString> &nameList(NameMark mark, NameKind kind) const;
+
     /// @brief Repcount is for use in looping functions (e.g. REPEAT)
     double repcount_ = -1;
 
@@ -211,7 +256,17 @@ class Kernel
     /// @brief The collection of property lists.
     PropertyLists plists_;
 
+  private:
+    /// @brief The nine name sets, indexed by NameMark then NameKind.
+    /// @details A name may be in more than one set.
+    QList<QSet<QString>> nameSets_ = QList<QSet<QString>>(
+        static_cast<qsizetype>(NameMark::Count) * static_cast<qsizetype>(NameKind::Count));
 
+    /// @brief The set selected by @p mark and @p kind.
+    QSet<QString> &namesFor(NameMark mark, NameKind kind);
+    const QSet<QString> &namesFor(NameMark mark, NameKind kind) const;
+
+  public:
     /// @brief READ a line of input, EVALUATE it, PRINT the result, LOOP.
     /// @param isPausing Whether we are in a PAUSE loop.
     /// @param prompt The prompt to display to the user.

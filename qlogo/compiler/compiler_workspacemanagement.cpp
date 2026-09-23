@@ -606,3 +606,80 @@ Value *Compiler::genArity(const DatumPtr &node, TypeMask expected)
     Value *retval = generateCallExtern(stdArity, PaAddr(scaff_->evaluator_), PaAddr(name));
     return generateNotFlowControl(retval);
 }
+
+/***DOC BURY
+BURY contentslist
+
+    command.  Buries the procedures, variables, and property
+    lists named in the input.  A buried object is not included
+    in the lists output by CONTENTS, PROCEDURES, NAMES, and
+    PLISTS, but is included in the list output by BURIED.  By
+    implication, buried things are not printed by POALL or
+    saved by SAVE.
+
+COD***/
+// CMD BURY 1 1 1 n
+Value *Compiler::genBury(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *contents = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdBury,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(contents));
+    return generateNotFlowControl(retval);
+}
+
+/***DOC TRACE
+TRACE contentslist
+
+    command.  Marks the named items for tracing.  A message is
+    printed whenever a traced procedure is invoked, giving the
+    actual input values, and whenever a traced procedure STOPs
+    or OUTPUTs.  A message is printed whenever a new value is
+    assigned to a traced variable using MAKE.  A message is
+    printed whenever a new property is given to a traced
+    property list using PPROP.
+
+COD***/
+// CMD TRACE 1 1 1 n
+Value *Compiler::genTrace(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *contents = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdTrace,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(contents));
+    return generateNotFlowControl(retval);
+}
+
+/***DOC STEP
+STEP contentslist
+
+    command.  Marks the named items for stepping.  Whenever a
+    stepped procedure is invoked, each instruction line in the
+    procedure body is printed before being executed, and Logo
+    waits for the user to type a newline at the terminal.  A
+    message is printed whenever a stepped variable name is
+    "shadowed" because a local variable of the same name is
+    created either as a procedure input or by the LOCAL command.
+
+COD***/
+// CMD STEP 1 1 1 n
+Value *Compiler::genStep(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *contents = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdStep,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(contents));
+    return generateNotFlowControl(retval);
+}

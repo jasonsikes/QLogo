@@ -1,0 +1,4 @@
+? trace doesn't like [bar] as input
+? trace doesn't like [b] as input
+? trace doesn't like {a} as input
+? trace doesn't like {b} as input
