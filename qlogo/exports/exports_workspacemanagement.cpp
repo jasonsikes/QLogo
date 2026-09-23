@@ -763,6 +763,25 @@ EXPORTC addr_t stdPlists(addr_t eAddr)
     return reinterpret_cast<addr_t>(names.datumValue());
 }
 
+/// CONTENTS: output a contents list of every unburied named item.
+/// The three sublists are user procedures, variables, and property lists,
+/// the same names PROCEDURES, NAMES, and PLISTS report. A buried name is
+/// omitted until UNBURY. Traced and stepped names stay. A variable with no
+/// value is included. A property list is included only while it has a property.
+/// @param eAddr a pointer to the Evaluator object
+/// @return a list of three lists.
+EXPORTC addr_t stdContents(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    ListBuilder contents;
+    contents.append(Procedures::get().unburiedProcedureNames());
+    contents.append(Kernel::get().allVariables(true));
+    contents.append(Kernel::get().plists_.allPLists(true));
+    DatumPtr names = contents.finishedList();
+    e->watch(names);
+    return reinterpret_cast<addr_t>(names.datumValue());
+}
+
 /// BURIEDP: TRUE if the first named procedure, variable, or property list is buried.
 /// Only that first name is tested. An input that names nothing is an error.
 /// @param eAddr a pointer to the Evaluator object

@@ -1,0 +1,9 @@
+to foo
+end
+make "user 1
+pprop "city "name "Berkeley
+trace [[foo] [user] [city]]
+step [[foo] [user] [city]]
+show memberp "FOO first contents
+show memberp "USER item 2 contents
+show memberp "CITY last contents

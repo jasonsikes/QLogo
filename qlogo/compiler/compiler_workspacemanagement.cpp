@@ -857,6 +857,23 @@ Value *Compiler::genPlists(const DatumPtr &node, TypeMask expected)
     return generateCallExtern(stdPlists, PaAddr(scaff_->evaluator_));
 }
 
+/***DOC CONTENTS
+CONTENTS
+
+    outputs a "contents list," i.e., a list of three lists containing
+    names of defined procedures, variables, and property lists
+    respectively.  This list includes all unburied named items in
+    the workspace.
+
+COD***/
+// CMD CONTENTS 0 0 0 d
+Value *Compiler::genContents(const DatumPtr &node, TypeMask expected)
+{
+    (void)node;
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdContents, PaAddr(scaff_->evaluator_));
+}
+
 /***DOC BURIEDP BURIED?
 BURIEDP contentslist
 BURIED? contentslist
