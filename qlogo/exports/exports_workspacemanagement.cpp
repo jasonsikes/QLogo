@@ -700,6 +700,19 @@ EXPORTC addr_t stdStepped(addr_t eAddr)
     return reinterpret_cast<addr_t>(contents.datumValue());
 }
 
+/// PROCEDURES: output the names of unburied user-defined procedures.
+/// The result is a list of words, not a contents list. Primitives are omitted.
+/// Buried procedures are omitted. Traced and stepped procedures stay.
+/// @param eAddr a pointer to the Evaluator object
+/// @return a list of procedure names.
+EXPORTC addr_t stdProcedures(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    DatumPtr names = Procedures::get().unburiedProcedureNames();
+    e->watch(names);
+    return reinterpret_cast<addr_t>(names.datumValue());
+}
+
 /// BURIEDP: TRUE if the first named procedure, variable, or property list is buried.
 /// Only that first name is tested. An input that names nothing is an error.
 /// @param eAddr a pointer to the Evaluator object

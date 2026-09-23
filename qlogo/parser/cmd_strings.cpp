@@ -1860,6 +1860,12 @@ const QString &StringConstants::cmdStrSTEPPED()
     return str;
 }
 
+const QString &StringConstants::cmdStrPROCEDURES()
+{
+    static const QString str = QObject::tr("PROCEDURES");
+    return str;
+}
+
 const QString &StringConstants::cmdStrBURIEDP()
 {
     static const QString str = QObject::tr("BURIEDP");

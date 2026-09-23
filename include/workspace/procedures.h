@@ -185,6 +185,11 @@ class Procedures
     /// @return A pointer to a list of all procedure names.
     DatumPtr allProcedureNames() const;
 
+    /// @brief Names of user-defined procedures that are not buried.
+    /// @return A list of words. Primitives are omitted. A buried procedure is
+    /// omitted until it is unburied. Traced and stepped procedures are included.
+    DatumPtr unburiedProcedureNames() const;
+
     /// @brief Get all primitive procedure names.
     /// @return A pointer to a list of all primitive procedure names.
     DatumPtr allPrimitiveProcedureNames() const;

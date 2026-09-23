@@ -17,6 +17,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "workspace/procedures.h"
+#include "workspace/kernel.h"
 #include "workspace/library.h"
 #include <QCoreApplication>
 #include "astnode.h"
@@ -560,6 +561,18 @@ DatumPtr Procedures::allProcedureNames() const
         retvalBuilder.append(DatumPtr(iter.first));
     }
     return retvalBuilder.finishedList();
+}
+
+DatumPtr Procedures::unburiedProcedureNames() const
+{
+    ListBuilder builder;
+    for (const auto &iter : procedures_.asKeyValueRange())
+    {
+        if (Kernel::get().containsName(Kernel::NameMark::Buried, Kernel::NameKind::Procedures, iter.first))
+            continue;
+        builder.append(DatumPtr(iter.first));
+    }
+    return builder.finishedList();
 }
 
 DatumPtr Procedures::allPrimitiveProcedureNames() const

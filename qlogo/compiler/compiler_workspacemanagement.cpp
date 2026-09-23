@@ -791,6 +791,23 @@ Value *Compiler::genStepped(const DatumPtr &node, TypeMask expected)
     return generateCallExtern(stdStepped, PaAddr(scaff_->evaluator_));
 }
 
+/***DOC PROCEDURES
+PROCEDURES
+
+    outputs a list of the names of all unburied user-defined procedures
+    in the workspace.  Note that this is a list of names, not a
+    contents list.  (However, procedures that require a contents list
+    as input will accept this list.)
+
+COD***/
+// CMD PROCEDURES 0 0 0 d
+Value *Compiler::genProcedures(const DatumPtr &node, TypeMask expected)
+{
+    (void)node;
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdProcedures, PaAddr(scaff_->evaluator_));
+}
+
 /***DOC BURIEDP BURIED?
 BURIEDP contentslist
 BURIED? contentslist

@@ -1,0 +1,11 @@
+to foo
+end
+to bar
+end
+bury "foo
+show memberp "FOO procedures
+show memberp "BAR procedures
+show count procedures
+unbury "foo
+show memberp "FOO procedures
+show count procedures

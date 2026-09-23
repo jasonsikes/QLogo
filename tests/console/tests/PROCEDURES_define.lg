@@ -1,0 +1,2 @@
+define "p [[] [print 1]]
+show procedures
