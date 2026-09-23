@@ -58,6 +58,16 @@ class Procedures
     DatumPtr procedureForName(const QString &aName) const;
     bool isNamedProcedure(const QString &aName) const;
 
+    /// @brief Load a library row into the procedure table.
+    /// @param aName The Key-form name of the LIBRARY.COMMAND to load.
+    /// @return False if there is no CODE for that name. True if a row was ingested.
+    /// @details Parses the row as TO / .MACRO … END text. One row may define
+    /// several procedures. Already-defined names (including primitives) are
+    /// skipped so a user TO of a helper is kept. BURY and other non-definition
+    /// lines are ignored. Does not print "defined" and does not use
+    /// Kernel::inputProcedure.
+    bool loadLibraryProcedure(const QString &aName);
+
 
     /// @brief Private constructor for singleton pattern.
     Procedures();
