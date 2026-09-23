@@ -181,14 +181,11 @@ class Procedures
     /// installed in the procedure table.
     bool isDefined(const QString &procname) const;
 
-    /// @brief Get all procedure names.
-    /// @return A pointer to a list of all procedure names.
-    DatumPtr allProcedureNames() const;
-
-    /// @brief Names of user-defined procedures that are not buried.
+    /// @brief Names of user-defined procedures.
+    /// @param unburiedOnly When true, omit a procedure that is buried.
     /// @return A list of words. Primitives are omitted. A buried procedure is
     /// omitted until it is unburied. Traced and stepped procedures are included.
-    DatumPtr unburiedProcedureNames() const;
+    DatumPtr allProcedureNames(bool unburiedOnly = false) const;
 
     /// @brief Get all primitive procedure names.
     /// @return A pointer to a list of all primitive procedure names.

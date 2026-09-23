@@ -708,7 +708,7 @@ EXPORTC addr_t stdStepped(addr_t eAddr)
 EXPORTC addr_t stdProcedures(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    DatumPtr names = Procedures::get().unburiedProcedureNames();
+    DatumPtr names = Procedures::get().allProcedureNames(true);
     e->watch(names);
     return reinterpret_cast<addr_t>(names.datumValue());
 }
@@ -774,7 +774,7 @@ EXPORTC addr_t stdContents(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     ListBuilder contents;
-    contents.append(Procedures::get().unburiedProcedureNames());
+    contents.append(Procedures::get().allProcedureNames(true));
     contents.append(Kernel::get().allVariables(true));
     contents.append(Kernel::get().plists_.allPLists(true));
     DatumPtr names = contents.finishedList();

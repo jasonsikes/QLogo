@@ -553,22 +553,13 @@ bool Procedures::isDefined(const QString &procname) const
     return (procedures_.contains(procname));
 }
 
-DatumPtr Procedures::allProcedureNames() const
-{
-    ListBuilder retvalBuilder;
-    for (const auto &iter : procedures_.asKeyValueRange())
-    {
-        retvalBuilder.append(DatumPtr(iter.first));
-    }
-    return retvalBuilder.finishedList();
-}
-
-DatumPtr Procedures::unburiedProcedureNames() const
+DatumPtr Procedures::allProcedureNames(bool unburiedOnly) const
 {
     ListBuilder builder;
     for (const auto &iter : procedures_.asKeyValueRange())
     {
-        if (Kernel::get().containsName(Kernel::NameMark::Buried, Kernel::NameKind::Procedures, iter.first))
+        if (unburiedOnly
+            && Kernel::get().containsName(Kernel::NameMark::Buried, Kernel::NameKind::Procedures, iter.first))
             continue;
         builder.append(DatumPtr(iter.first));
     }
