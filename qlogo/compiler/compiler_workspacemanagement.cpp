@@ -776,6 +776,21 @@ Value *Compiler::genTraced(const DatumPtr &node, TypeMask expected)
     return generateCallExtern(stdTraced, PaAddr(scaff_->evaluator_));
 }
 
+/***DOC STEPPED
+STEPPED
+
+    outputs a contents list including all stepped named items
+    in the workspace.
+
+COD***/
+// CMD STEPPED 0 0 0 d
+Value *Compiler::genStepped(const DatumPtr &node, TypeMask expected)
+{
+    (void)node;
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdStepped, PaAddr(scaff_->evaluator_));
+}
+
 /***DOC BURIEDP BURIED?
 BURIEDP contentslist
 BURIED? contentslist

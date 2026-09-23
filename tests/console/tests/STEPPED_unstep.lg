@@ -1,0 +1,5 @@
+to foo
+end
+step "foo
+unstep "foo
+show stepped

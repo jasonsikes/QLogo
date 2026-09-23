@@ -316,6 +316,7 @@ const QString &cmdStrUNTRACE();
 const QString &cmdStrUNSTEP();
 const QString &cmdStrBURIED();
 const QString &cmdStrTRACED();
+const QString &cmdStrSTEPPED();
 const QString &cmdStrBURIEDP();
 const QString &cmdStrBURIED_Q();
 const QString &cmdStrTRACEDP();

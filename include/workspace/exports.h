@@ -262,6 +262,7 @@ EXPORTC addr_t stdUntrace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 EXPORTC addr_t stdUnstep(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
 EXPORTC addr_t stdBuried(addr_t eAddr);
 EXPORTC addr_t stdTraced(addr_t eAddr);
+EXPORTC addr_t stdStepped(addr_t eAddr);
 EXPORTC addr_t stdBuriedp(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
 EXPORTC addr_t stdTracedp(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
 EXPORTC addr_t stdSteppedp(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);

@@ -1,0 +1,5 @@
+pprop "p "a 1
+step [[] [] [p]]
+remprop "p "a
+show stepped
+show steppedp [[] [] [p]]

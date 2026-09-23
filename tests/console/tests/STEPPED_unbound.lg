@@ -1,0 +1,4 @@
+global "ghost
+step [[] [ghost] []]
+show stepped
+show steppedp [[] [ghost] []]
