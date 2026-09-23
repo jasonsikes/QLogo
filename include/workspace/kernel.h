@@ -124,6 +124,27 @@ class Kernel
     /// @return A list of words.
     DatumPtr allVariables(bool unburiedOnly = false) const;
 
+    /// @brief Parse a PRINTOUT/ERASE-style contents-list input into three lists.
+    /// @param who The primitive that rejected the input, used in doesn't-like.
+    /// @param source A word (one procedure name), a list of words (procedure
+    /// names), or a list of up to three lists: procedures, then variables, then
+    /// property lists. A word at a given level is one name of that kind.
+    /// Members past the third list are rejected.
+    /// @return A list of three lists. Throws FCError::doesntLike if a member is
+    /// not a word or a list of words, or if the input is an array.
+    DatumPtr contentsListFromDatum(const DatumPtr &who, const DatumPtr &source) const;
+
+    /// @brief Logo source for the procedures, variables, and property lists named
+    /// in a contents list from contentsListFromDatum.
+    /// @param contentslist A list of three lists of names.
+    /// @param shouldValidate When true, a primitive or unknown procedure, or a
+    /// variable with no value, is an error. When false, FULLTEXT of a missing
+    /// procedure is a stand-in empty definition and a missing variable is omitted.
+    /// A missing property list prints nothing either way.
+    /// @return Text suitable for the write stream or a SAVE file, each definition
+    /// ending with a newline.
+    QString printoutFromContentsList(const DatumPtr &contentslist, bool shouldValidate = true) const;
+
     /// @brief Whether a workspace name is buried, traced, or stepped.
     /// @note Count is the number of marks, not a set to pass to the accessors.
     enum class NameMark

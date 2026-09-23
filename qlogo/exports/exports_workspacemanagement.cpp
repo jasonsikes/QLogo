@@ -22,6 +22,7 @@
 #include "flowcontrol.h"
 #include "compiler_types.h"
 #include "workspace/callframe.h"
+#include "interface/streammanager.h"
 
 #include <QObject>
 #include <QStringList>
@@ -836,5 +837,33 @@ EXPORTC addr_t stdArity(addr_t eAddr, addr_t nameAddr)
         e->watch(err);
         return reinterpret_cast<addr_t>(err);
     }
+}
+
+/// PRINTOUT / PO: print the definitions named in a contents list to the write stream.
+/// A word is one procedure. A list of words is procedure names. A list of lists
+/// is procedures, then variables, then property lists. A primitive or unknown
+/// procedure, or a variable with no value, is an error. A missing property list
+/// prints nothing.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param contentsAddr a word or a contents list
+/// @return the owning ASTNode, or an Error if the input is rejected.
+EXPORTC addr_t stdPrintout(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *contents = reinterpret_cast<Datum *>(contentsAddr);
+    try
+    {
+        DatumPtr contentslist = Kernel::get().contentsListFromDatum(node->nodeName_, DatumPtr(contents));
+        QString output = Kernel::get().printoutFromContentsList(contentslist);
+        StreamManager::get().print(output);
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
 }
 

@@ -1890,6 +1890,18 @@ const QString &StringConstants::cmdStrCONTENTS()
     return str;
 }
 
+const QString &StringConstants::cmdStrPRINTOUT()
+{
+    static const QString str = QObject::tr("PRINTOUT");
+    return str;
+}
+
+const QString &StringConstants::cmdStrPO()
+{
+    static const QString str = QObject::tr("PO");
+    return str;
+}
+
 const QString &StringConstants::cmdStrBURIEDP()
 {
     static const QString str = QObject::tr("BURIEDP");

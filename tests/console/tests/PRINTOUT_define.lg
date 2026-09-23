@@ -1,0 +1,2 @@
+define "qw [[] [show "Hello]]
+po "qw

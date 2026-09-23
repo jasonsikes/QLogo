@@ -874,6 +874,30 @@ Value *Compiler::genContents(const DatumPtr &node, TypeMask expected)
     return generateCallExtern(stdContents, PaAddr(scaff_->evaluator_));
 }
 
+/***DOC PRINTOUT PO
+PRINTOUT contentslist
+PO contentslist
+
+    command.  Prints to the write stream the definitions of all
+    procedures, variables, and property lists named in the input
+    contents list.
+
+COD***/
+// CMD PRINTOUT 1 1 1 n
+// CMD PO 1 1 1 n
+Value *Compiler::genPrintout(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *contents = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdPrintout,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(contents));
+    return generateNotFlowControl(retval);
+}
+
 /***DOC BURIEDP BURIED?
 BURIEDP contentslist
 BURIED? contentslist

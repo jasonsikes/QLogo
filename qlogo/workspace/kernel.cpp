@@ -430,6 +430,144 @@ DatumPtr Kernel::allVariables(bool unburiedOnly) const
     return builder.finishedList();
 }
 
+DatumPtr Kernel::contentsListFromDatum(const DatumPtr &who, const DatumPtr &source) const
+{
+    ListBuilder procedures;
+    ListBuilder variables;
+    ListBuilder properties;
+    ListBuilder *sublists[3] = {&procedures, &variables, &properties};
+
+    auto reject = [&]() {
+        throw FCError::doesntLike(who, source);
+    };
+
+    if (source.isWord())
+    {
+        procedures.append(source);
+    }
+    else if (source.isList())
+    {
+        unsigned parseLevel = 0;
+        ListIterator iter = source.listValue()->newIterator();
+        while (iter.elementExists())
+        {
+            if (parseLevel > 2)
+                reject();
+            DatumPtr member = iter.element();
+            if (member.isWord())
+            {
+                sublists[parseLevel]->append(member);
+            }
+            else if (member.isList())
+            {
+                ListIterator inner = member.listValue()->newIterator();
+                while (inner.elementExists())
+                {
+                    DatumPtr name = inner.element();
+                    if (!name.isWord())
+                        reject();
+                    sublists[parseLevel]->append(name);
+                }
+                ++parseLevel;
+            }
+            else
+            {
+                reject();
+            }
+        }
+    }
+    else
+    {
+        reject();
+    }
+
+    ListBuilder contents;
+    contents.append(procedures.finishedList());
+    contents.append(variables.finishedList());
+    contents.append(properties.finishedList());
+    return contents.finishedList();
+}
+
+namespace
+{
+
+/// Format a value so PRINTOUT / SAVE can be read back as Logo.
+/// A number prints without a quote. A non-numeric word is quoted and escaped.
+/// A list or array is shown with brackets or braces.
+QString printoutDatum(const DatumPtr &value)
+{
+    if (value.isWord())
+    {
+        Word *word = value.wordValue();
+        word->numberValue();
+        if (word->numberIsValid)
+            return word->toString();
+        return word->toString(Datum::ToStringFlags_Source);
+    }
+    const auto flags = static_cast<Datum::ToStringFlags>(Datum::ToStringFlags_Show | Datum::ToStringFlags_FullPrint);
+    return value.toString(flags);
+}
+
+} // namespace
+
+QString Kernel::printoutFromContentsList(const DatumPtr &contentslist, bool shouldValidate) const
+{
+    QString retval;
+
+    List *src = contentslist.listValue();
+    List *proceduresList = src->head.listValue();
+    src = src->tail.listValue();
+    List *variablesList = src->head.listValue();
+    src = src->tail.listValue();
+    List *propertiesList = src->head.listValue();
+
+    ListIterator procedures = proceduresList->newIterator();
+    while (procedures.elementExists())
+    {
+        DatumPtr procname = procedures.element();
+        DatumPtr procedureText = Procedures::get().procedureFulltext(procname, shouldValidate);
+        ListIterator lines = procedureText.listValue()->newIterator();
+        while (lines.elementExists())
+        {
+            DatumPtr line = lines.element();
+            retval += line.isWord() ? line.toString() : line.toString(Datum::ToStringFlags_None);
+            retval += QLatin1Char('\n');
+        }
+    }
+
+    ListIterator variables = variablesList->newIterator();
+    while (variables.elementExists())
+    {
+        DatumPtr varnameP = variables.element();
+        const QString varname = varnameP.wordValue()->toString(Datum::ToStringFlags_Key);
+        DatumPtr value = datumForName(varname);
+        if (value.isNothing())
+        {
+            if (shouldValidate)
+                throw FCError::noValue(varnameP);
+            continue;
+        }
+        retval += QObject::tr("Make \"%1 %2\n").arg(varname, printoutDatum(value));
+    }
+
+    ListIterator properties = propertiesList->newIterator();
+    while (properties.elementExists())
+    {
+        DatumPtr listnameP = properties.element();
+        const QString listname = listnameP.wordValue()->toString(Datum::ToStringFlags_Key);
+        DatumPtr proplist = plists_.getPropertyList(listname);
+        ListIterator pairs = proplist.listValue()->newIterator();
+        while (pairs.elementExists())
+        {
+            DatumPtr nameP = pairs.element();
+            DatumPtr valueP = pairs.element();
+            retval += QObject::tr("Pprop %1 %2 %3\n")
+                          .arg(printoutDatum(listnameP), printoutDatum(nameP), printoutDatum(valueP));
+        }
+    }
+    return retval;
+}
+
 QSet<QString> &Kernel::namesFor(NameMark mark, NameKind kind)
 {
     const auto index = static_cast<qsizetype>(mark) * static_cast<qsizetype>(NameKind::Count)
