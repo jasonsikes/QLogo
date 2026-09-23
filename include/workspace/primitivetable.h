@@ -302,5 +302,6 @@ stringToCmd.insert(StringConstants::cmdStrNAMEP(), Cmd_t{&Compiler::genNamep, 1,
 stringToCmd.insert(StringConstants::cmdStrNAME_Q(), Cmd_t{&Compiler::genNamep, 1, 1, 1, TypeB});
 stringToCmd.insert(StringConstants::cmdStrPLISTP(), Cmd_t{&Compiler::genPlistp, 1, 1, 1, TypeB});
 stringToCmd.insert(StringConstants::cmdStrPLIST_Q(), Cmd_t{&Compiler::genPlistp, 1, 1, 1, TypeB});
+stringToCmd.insert(StringConstants::cmdStrARITY(), Cmd_t{&Compiler::genArity, 1, 1, 1, TypeD});
 
 

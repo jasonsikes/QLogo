@@ -1,0 +1,7 @@
+to a1 :p0 [:p1] 5
+(print :p0 :p1)
+end
+copydef "a2 "a1
+show arity "a2
+copydef "myprint "print
+show arity "myprint

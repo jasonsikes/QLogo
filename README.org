@@ -119,7 +119,7 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | FILLED         | BITAND        | WRITER                 | EQUAL?                    | *TODO* PRIMITIVES    |
 |                    | LABEL          | BITOR         | SETREADPOS             | NOTEQUALP                 | *TODO* NAMES         |
 |                    | SETLABELHEIGHT | BITXOR        | SETWRITEPOS            | NOTEQUAL?                 | *TODO* PLISTS        |
-|                    | SETLABELFONT   | BITNOT        | READPOS                | BEFOREP                   | *TODO* ARITY         |
+|                    | SETLABELFONT   | BITNOT        | READPOS                | BEFOREP                   | ARITY                |
 |                    | TEXTSCREEN     | ASHIFT        | WRITEPOS               | BEFORE?                   | *TODO* NODES         |
 |                    | TS             | LSHIFT        | EOFP                   | .EQ                       | *TODO* PRINTOUT      |
 |                    | FULLSCREEN     | AND           | EOF?                   | MEMBERP                   | *TODO* PO            |

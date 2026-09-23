@@ -384,3 +384,26 @@ EXPORTC bool stdPlistp(addr_t nameAddr)
     return Kernel::get().plists_.isPropertyList(name->toString(Datum::ToStringFlags_Key));
 }
 
+/// ARITY: output the minimum, default, and maximum input counts of a procedure.
+/// The name may be a primitive or a user procedure, including a macro.
+/// An unknown name is an error. The compiler rejects a non-word before this runs.
+/// @param eAddr a pointer to the Evaluator object
+/// @param nameAddr a word naming the procedure
+/// @return a list of three integers, or an Error if the name is not a procedure.
+EXPORTC addr_t stdArity(addr_t eAddr, addr_t nameAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *name = reinterpret_cast<Datum *>(nameAddr);
+    try
+    {
+        DatumPtr arity = Procedures::get().arity(DatumPtr(name));
+        e->watch(arity);
+        return reinterpret_cast<addr_t>(arity.datumValue());
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+}
+

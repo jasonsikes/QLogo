@@ -1,0 +1,2 @@
+define "a1 [[p0] [print :p0]]
+show arity "a1

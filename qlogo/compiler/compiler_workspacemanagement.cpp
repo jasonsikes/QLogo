@@ -584,3 +584,25 @@ Value *Compiler::genPlistp(const DatumPtr &node, TypeMask expected)
     name = generateFromDatum(Datum::typeWord, node.astnodeValue(), name);
     return generateCallExtern(stdPlistp, PaAddr(name));
 }
+
+/***DOC ARITY
+ARITY procedurename
+
+    outputs a list of three numbers: the minimum, default, and
+    maximum number of inputs for the procedure whose name is the
+    input.  It is an error if the input is not the name of a
+    procedure.  The maximum is -1 if the procedure takes a
+    variable number of inputs.
+
+COD***/
+// CMD ARITY 1 1 1 d
+Value *Compiler::genArity(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+
+    Value *name = generateChild(node.astnodeValue(), 0, TypeDatum);
+    name = generateFromDatum(Datum::typeWord, node.astnodeValue(), name);
+
+    Value *retval = generateCallExtern(stdArity, PaAddr(scaff_->evaluator_), PaAddr(name));
+    return generateNotFlowControl(retval);
+}

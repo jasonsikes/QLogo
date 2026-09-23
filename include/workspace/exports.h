@@ -254,4 +254,5 @@ EXPORTC bool stdPrimitivep(addr_t nameAddr);
 EXPORTC bool stdDefinedp(addr_t nameAddr);
 EXPORTC bool stdNamep(addr_t nameAddr);
 EXPORTC bool stdPlistp(addr_t nameAddr);
+EXPORTC addr_t stdArity(addr_t eAddr, addr_t nameAddr);
 #endif // WORKSPACE_EXPORTS_H

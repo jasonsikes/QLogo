@@ -1,0 +1,6 @@
+to Proc1 :P
+print :P
+end
+show arity "proc1
+show arity "PROC1
+show arity "Print

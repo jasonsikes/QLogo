@@ -228,5 +228,6 @@ llvm::Value *genPrimitivep(const DatumPtr &node, TypeMask expected);
 llvm::Value *genDefinedp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genNamep(const DatumPtr &node, TypeMask expected);
 llvm::Value *genPlistp(const DatumPtr &node, TypeMask expected);
+llvm::Value *genArity(const DatumPtr &node, TypeMask expected);
 #endif // PRIMITIVE_HEADER_H
 

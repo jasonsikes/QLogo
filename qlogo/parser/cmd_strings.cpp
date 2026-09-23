@@ -1800,4 +1800,10 @@ const QString &StringConstants::cmdStrPLIST_Q()
     return str;
 }
 
+const QString &StringConstants::cmdStrARITY()
+{
+    static const QString str = QObject::tr("ARITY");
+    return str;
+}
+
 

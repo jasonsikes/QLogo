@@ -1,0 +1,4 @@
+.macro m :p
+output :p
+end
+show arity "m
