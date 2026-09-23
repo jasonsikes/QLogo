@@ -29,6 +29,7 @@
 #include "sharedconstants.h"
 #include "treeifyer.h"
 #include "workspace/procedures.h"
+#include "workspace/specialvars.h"
 #include "runparser.h"
 #include "workspace/turtle.h"
 #include "interface/logointerface.h"
@@ -381,10 +382,10 @@ void Kernel::initVariables()
     DatumPtr trueDatumPtr(QObject::tr("true"));
     DatumPtr commandLine = builder.finishedList();
 
-    setDatumForName(commandLine, QObject::tr("COMMANDLINE"));
-    setDatumForName(platform, QObject::tr("LOGOPLATFORM"));
-    setDatumForName(version, QObject::tr("LOGOVERSION"));
-    setDatumForName(trueDatumPtr, QObject::tr("ALLOWGETSET"));
+    setDatumForName(commandLine, SpecialVars::name(SpecialVars::Id::CommandLine));
+    setDatumForName(platform, SpecialVars::name(SpecialVars::Id::LogoPlatform));
+    setDatumForName(version, SpecialVars::name(SpecialVars::Id::LogoVersion));
+    setDatumForName(trueDatumPtr, SpecialVars::name(SpecialVars::Id::AllowGetSet));
     // TODO: Bury these variables:
     // "LOGOPLATFORM"
     // "LOGOVERSION"
@@ -832,20 +833,6 @@ void Kernel::ece_processParameters()
 /***************************************************
  * Miscellaneous operations
  ***************************************************/
-
-Datum *Kernel::specialVar(SpecialNames name) const
-{
-    switch (name)
-    {
-    case ERRACT:
-    {
-        static DatumPtr erract = DatumPtr(new Word("ERRACT"));
-        return erract.datumValue();
-    }
-    default:
-        return nullptr;
-    }
-}
 
 DatumPtr Kernel::pause()
 {

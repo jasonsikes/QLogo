@@ -1,6 +1,7 @@
 #include "workspace/evaluator.h"
 #include "datum_types.h"
 #include "workspace/kernel.h"
+#include "workspace/specialvars.h"
 #include "compiler.h"
 #include "flowcontrol.h"
 #include "runparser.h"
@@ -191,7 +192,7 @@ Datum *Evaluator::watch(Datum *d)
 
 bool Evaluator::varCASEIGNOREDP()
 {
-    QString name = QObject::tr("CASEIGNOREDP");
+    const QString &name = SpecialVars::name(SpecialVars::Id::CaseIgnoredP);
     DatumPtr val = Kernel::get().datumForName(name);
     bool retval = false;
     if (val.isWord())

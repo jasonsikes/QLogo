@@ -47,13 +47,6 @@ class ProcedureScope;
 class TextStream;
 struct Evaluator;
 
-/// @brief Special variables.
-/// @note These are variable names that are used to store special values.
-enum SpecialNames
-{
-    ERRACT
-};
-
 /// @brief The Kernel class does most of the work for the QLogo interpreter.
 /// @details The Kernel class is the evaluator of the QLogo
 /// language and maintains the state of execution of the QLogo code.
@@ -105,9 +98,6 @@ class Kernel
 
     /// @brief The variables hash.
     QHash<QString, DatumPtr> variables_;
-
-    // SPECIAL VARIABLES
-    Datum *specialVar(SpecialNames name) const;
 
     /// @brief Set a value for a variable.
     /// @param aDatum The value to store.

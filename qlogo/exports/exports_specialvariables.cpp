@@ -17,8 +17,7 @@
 #include "workspace/exports_internal.h"
 #include "datum_types.h"
 #include "workspace/kernel.h"
-
-#include <QObject>
+#include "workspace/specialvars.h"
 
 /// @brief Get the value of the ERRORACT variable.
 /// @param eAddr the address of the evaluator.
@@ -31,7 +30,7 @@
 /// 2 b. The value is a list AND the list is not empty.
 EXPORTC bool getvarErroract(void)
 {
-    QString name = QObject::tr("ERRACT");
+    const QString &name = SpecialVars::name(SpecialVars::Id::ErrAct);
     DatumPtr val = Kernel::get().datumForName(name);
     if (val.isWord())
     {

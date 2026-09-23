@@ -19,6 +19,7 @@
 #include "compiler.h"
 #include "workspace/exports_internal.h"
 #include "workspace/kernel.h"
+#include "workspace/specialvars.h"
 #include "astnode.h"
 #include "flowcontrol.h"
 
@@ -185,15 +186,14 @@ EXPORTC addr_t repcountAddr(void)
 
 EXPORTC addr_t beginCatch(void)
 {
-    auto *erractWord = reinterpret_cast<Word *>(Kernel::get().specialVar(SpecialNames::ERRACT));
-    Datum *erractValue =
-        Kernel::get().datumForName(erractWord->toString(Datum::ToStringFlags_Key)).datumValue();
+    const QString &erractName = SpecialVars::name(SpecialVars::Id::ErrAct);
+    Datum *erractValue = Kernel::get().datumForName(erractName).datumValue();
 
     // Save the erract value.
     if ( (erractValue->isa_ & Datum::typeNothing) == 0)
     {
         erractValue->retainCount_++;
-        Kernel::get().setDatumForName(nothing(), erractWord->toString(Datum::ToStringFlags_Key));
+        Kernel::get().setDatumForName(nothing(), erractName);
     }
     return reinterpret_cast<addr_t>(erractValue);
 }
@@ -201,7 +201,7 @@ EXPORTC addr_t beginCatch(void)
 EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t resultAddr, addr_t tagAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *erractWord = reinterpret_cast<Word *>(Kernel::get().specialVar(SpecialNames::ERRACT));
+    const QString &erractName = SpecialVars::name(SpecialVars::Id::ErrAct);
     auto *erractValue = reinterpret_cast<Datum *>(errActAddr);
     auto *result = reinterpret_cast<Datum *>(resultAddr);
     auto *tag = reinterpret_cast<Word *>(tagAddr);
@@ -210,7 +210,7 @@ EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t
     if ( (erractValue->isa_ & Datum::typeNothing) == 0)
     {
         DatumPtr erractValuePtr = DatumPtr(erractValue);
-        Kernel::get().setDatumForName(erractValuePtr, erractWord->toString(Datum::ToStringFlags_Key));
+        Kernel::get().setDatumForName(erractValuePtr, erractName);
         erractValue->retainCount_--;
     }
 
