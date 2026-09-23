@@ -118,9 +118,11 @@ class Kernel
     /// @param name The name of the variable to erase.
     void eraseVar(const QString &name);
 
-    /// @brief Return a list of all variables defined.
-    /// @return A list of all variables defined.
-    DatumPtr allVariables() const;
+    /// @brief Return variable names from the variables hash.
+    /// @param unburiedOnly When true, omit buried variables. A variable with no
+    /// value is included either way. Traced and stepped variables are included.
+    /// @return A list of words.
+    DatumPtr allVariables(bool unburiedOnly = false) const;
 
     /// @brief Whether a workspace name is buried, traced, or stepped.
     /// @note Count is the number of marks, not a set to pass to the accessors.

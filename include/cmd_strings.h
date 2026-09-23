@@ -319,6 +319,7 @@ const QString &cmdStrTRACED();
 const QString &cmdStrSTEPPED();
 const QString &cmdStrPROCEDURES();
 const QString &cmdStrPRIMITIVES();
+const QString &cmdStrNAMES();
 const QString &cmdStrBURIEDP();
 const QString &cmdStrBURIED_Q();
 const QString &cmdStrTRACEDP();

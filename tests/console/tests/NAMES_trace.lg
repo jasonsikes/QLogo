@@ -1,0 +1,4 @@
+make "user 1
+trace [[] [user] []]
+step [[] [user] []]
+show memberp "USER last names

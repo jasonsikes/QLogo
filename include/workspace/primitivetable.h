@@ -314,6 +314,7 @@ stringToCmd.insert(StringConstants::cmdStrTRACED(), Cmd_t{&Compiler::genTraced, 
 stringToCmd.insert(StringConstants::cmdStrSTEPPED(), Cmd_t{&Compiler::genStepped, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrPROCEDURES(), Cmd_t{&Compiler::genProcedures, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrPRIMITIVES(), Cmd_t{&Compiler::genPrimitives, 0, 0, 0, TypeD});
+stringToCmd.insert(StringConstants::cmdStrNAMES(), Cmd_t{&Compiler::genNames, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrBURIEDP(), Cmd_t{&Compiler::genBuriedp, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrBURIED_Q(), Cmd_t{&Compiler::genBuriedp, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrTRACEDP(), Cmd_t{&Compiler::genTracedp, 1, 1, 1, TypeD});

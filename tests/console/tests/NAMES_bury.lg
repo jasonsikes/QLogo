@@ -1,0 +1,7 @@
+make "user 1
+bury [[] [user] []]
+show memberp "USER last names
+show count last names
+unbury [[] [user] []]
+show memberp "USER last names
+show count last names

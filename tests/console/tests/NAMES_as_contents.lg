@@ -1,0 +1,4 @@
+make "user 1
+bury names
+show memberp "USER last names
+show memberp "ALLOWGETSET last names

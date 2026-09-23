@@ -418,11 +418,13 @@ bool Kernel::doesExist(const QString &name) const
     return variables_.contains(name);
 }
 
-DatumPtr Kernel::allVariables() const
+DatumPtr Kernel::allVariables(bool unburiedOnly) const
 {
     ListBuilder builder;
     for (auto &varname : variables_.keys())
     {
+        if (unburiedOnly && containsName(NameMark::Buried, NameKind::Variables, varname))
+            continue;
         builder.append(DatumPtr(varname));
     }
     return builder.finishedList();

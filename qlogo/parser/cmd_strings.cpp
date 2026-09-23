@@ -1872,6 +1872,12 @@ const QString &StringConstants::cmdStrPRIMITIVES()
     return str;
 }
 
+const QString &StringConstants::cmdStrNAMES()
+{
+    static const QString str = QObject::tr("NAMES");
+    return str;
+}
+
 const QString &StringConstants::cmdStrBURIEDP()
 {
     static const QString str = QObject::tr("BURIEDP");

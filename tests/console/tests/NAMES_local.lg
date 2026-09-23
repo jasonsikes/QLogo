@@ -1,0 +1,8 @@
+to p :x
+local "inner
+show memberp "X last names
+show memberp "INNER last names
+end
+p 1
+show memberp "X last names
+show memberp "INNER last names

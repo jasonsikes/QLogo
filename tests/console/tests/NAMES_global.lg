@@ -1,0 +1,5 @@
+global "ghost
+show memberp "GHOST last names
+show namep "ghost
+make "ghost 1
+show memberp "GHOST last names

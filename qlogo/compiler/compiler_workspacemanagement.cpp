@@ -825,6 +825,22 @@ Value *Compiler::genPrimitives(const DatumPtr &node, TypeMask expected)
     return generateCallExtern(stdPrimitives, PaAddr(scaff_->evaluator_));
 }
 
+/***DOC NAMES
+NAMES
+
+    outputs a contents list consisting of an empty list (indicating
+    no procedure names) followed by a list of all unburied variable
+    names in the workspace.
+
+COD***/
+// CMD NAMES 0 0 0 d
+Value *Compiler::genNames(const DatumPtr &node, TypeMask expected)
+{
+    (void)node;
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdNames, PaAddr(scaff_->evaluator_));
+}
+
 /***DOC BURIEDP BURIED?
 BURIEDP contentslist
 BURIED? contentslist
