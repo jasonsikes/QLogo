@@ -19,7 +19,11 @@
 
 #include "compiler_types.h"
 #include "datum_ptr.h"
+#include "datum_types.h"
 #include <QHash>
+#include <QList>
+
+class TextStream;
 
 /// @brief A structure to hold a command's details for the treeifyer.
 /// @note This is used to map a command name to its method, minimum, default, maximum
@@ -114,6 +118,21 @@ class Procedures
                          const DatumPtr &procnameP,
                          const DatumPtr &text,
                          const QList<DatumPtr> &sourceText);
+
+    /// @brief Strip ':' and '"' from a TO / .MACRO formal.
+    /// @param cmd The defining command, used if the formal is rejected.
+    /// @param parameter A word, or a list whose first member is the input name.
+    static DatumPtr cleanFormal(const DatumPtr &cmd, const DatumPtr &parameter);
+
+    /// @brief Read instruction lines from a stream until END or EOF.
+    /// @param reader The stream (commander, string buffer, or file).
+    /// @param textBuilder Parameter list already appended; body lines are appended.
+    /// @param sourceText Raw lines; each body line (including empty and END) is appended.
+    /// @param prompt Shown only when @p reader is the terminal.
+    static void readProcedureBody(TextStream &reader,
+                                  ListBuilder &textBuilder,
+                                  QList<DatumPtr> &sourceText,
+                                  const QString &prompt);
 
     /// @brief Copy a procedure to a new name.
     /// @param cmd The COPYDEF command, used when an input is rejected.

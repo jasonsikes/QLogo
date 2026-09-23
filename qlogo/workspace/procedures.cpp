@@ -189,23 +189,18 @@ void Procedures::defineProcedure(const DatumPtr &cmd,
     procedures_[procname] = bodyP;
 }
 
-static DatumPtr cleanLibraryParamWord(const DatumPtr &parameter)
-{
-    Q_ASSERT(parameter.isWord());
-    QString parameterName = parameter.wordValue()->toString();
-    if (parameterName.startsWith(':') || parameterName.startsWith('"'))
-    {
-        parameterName.remove(0, 1);
-        return DatumPtr(parameterName);
-    }
-    return parameter;
-}
-
-/// Strip ':' / '"' from a TO formal, matching Kernel::inputProcedure.
-static DatumPtr cleanLibraryParameter(const DatumPtr &cmd, const DatumPtr &parameter)
+DatumPtr Procedures::cleanFormal(const DatumPtr &cmd, const DatumPtr &parameter)
 {
     if (parameter.isWord())
-        return cleanLibraryParamWord(parameter);
+    {
+        QString parameterName = parameter.wordValue()->toString();
+        if (parameterName.startsWith(':') || parameterName.startsWith('"'))
+        {
+            parameterName.remove(0, 1);
+            return DatumPtr(parameterName);
+        }
+        return parameter;
+    }
 
     if (!parameter.isList() || parameter.listValue()->isEmpty())
         throw FCError::doesntLike(cmd, parameter);
@@ -214,30 +209,25 @@ static DatumPtr cleanLibraryParameter(const DatumPtr &cmd, const DatumPtr &param
     if (!first.isWord())
         throw FCError::doesntLike(cmd, parameter);
 
-    first = cleanLibraryParamWord(first);
+    first = cleanFormal(cmd, first);
     return DatumPtr(new List(first, parameter.listValue()->tail.listValue()));
 }
 
-static bool isEndLine(const DatumPtr &line)
-{
-    if (line.listValue()->isEmpty())
-        return false;
-    DatumPtr first = line.listValue()->head;
-    return first.isWord() && first.toString(Datum::ToStringFlags_Key) == QObject::tr("END");
-}
-
-/// Read body lines until END or EOF. Empty lines are kept in sourceText only.
-static void readLibraryProcedureBody(TextStream &reader, ListBuilder &textBuilder, QList<DatumPtr> &sourceText)
+void Procedures::readProcedureBody(TextStream &reader,
+                                   ListBuilder &textBuilder,
+                                   QList<DatumPtr> &sourceText,
+                                   const QString &prompt)
 {
     forever
     {
-        DatumPtr line = reader.readListWithPrompt(QString(), true);
+        DatumPtr line = reader.readListWithPrompt(prompt, true);
         if (!line.isList())
             return;
         sourceText.append(reader.listReaderLineHistory());
         if (line.listValue()->isEmpty())
             continue;
-        if (isEndLine(line))
+        DatumPtr head = line.listValue()->head;
+        if (head.isWord() && head.toString(Datum::ToStringFlags_Key) == QObject::tr("END"))
             return;
         textBuilder.append(line);
     }
@@ -275,18 +265,18 @@ bool Procedures::loadLibraryProcedure(const QString &aName)
         if (!iter.elementExists())
         {
             ListBuilder ignored;
-            readLibraryProcedureBody(reader, ignored, sourceText);
+            readProcedureBody(reader, ignored, sourceText, QString());
             continue;
         }
 
         DatumPtr procnameP = iter.element();
         ListBuilder paramBuilder;
         while (iter.elementExists())
-            paramBuilder.append(cleanLibraryParameter(first, iter.element()));
+            paramBuilder.append(cleanFormal(first, iter.element()));
 
         ListBuilder textBuilder;
         textBuilder.append(paramBuilder.finishedList());
-        readLibraryProcedureBody(reader, textBuilder, sourceText);
+        readProcedureBody(reader, textBuilder, sourceText, QString());
 
         if (!procnameP.isWord())
             continue;

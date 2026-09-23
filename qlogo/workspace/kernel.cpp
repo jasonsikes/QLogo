@@ -56,50 +56,6 @@ void ece_trace(const QString &msg)
 #define ece_trace(msg) ((void)0)
 #endif
 
-/// @brief Clean a procedure parameter by removing ':' and '"' from the parameter name if it is a word.
-/// @param parameter The parameter to clean.
-/// @return The cleaned parameter.
-DatumPtr cleanParameterWord(const DatumPtr &parameter)
-{
-    Q_ASSERT (parameter.isWord());
-    QString parameterName = parameter.wordValue()->toString();
-    if (parameterName.startsWith(':') || parameterName.startsWith('"'))
-    {
-        parameterName.remove(0, 1);
-        return DatumPtr(parameterName);
-    }
-    return parameter;
-}
-
-/// Clean a procedure parameter by removing ':' and '"' from the parameter name if it is a word or list.
-DatumPtr cleanParameter(ASTNode *node, const DatumPtr &parameter)
-{
-    DatumPtr first;
-
-    // The parameter can be a word.
-    if (parameter.isWord())
-    {
-        return cleanParameterWord(parameter);
-    }
-
-    // If not a word, the parameter must be a list with the head being a word.
-    if ( ! parameter.isList())
-    {
-        goto error;
-    }
-
-    first = parameter.listValue()->head;
-    if ( ! first.isWord())
-    {
-        goto error;
-    }
-    first = cleanParameterWord(first);
-    return new List(first, parameter.listValue()->tail.listValue());
-
-error:
-    throw FCError::doesntLike(node, parameter);
-}
-
 bool Kernel::numbersFromList(QVector<double> &retval, const DatumPtr &listP) const
 {
     if (!listP.isList())
@@ -267,7 +223,7 @@ DatumPtr Kernel::procParametersFromNode(ASTNode *node)
     ListBuilder paramListBuilder;
     for (int i = 1; i < node->countOfChildren(); ++i)
     {
-        paramListBuilder.append(cleanParameter(node, node->childAtIndex(i)));
+        paramListBuilder.append(Procedures::cleanFormal(node->nodeName_, node->childAtIndex(i)));
     }
     return paramListBuilder.finishedList();
 }
@@ -297,28 +253,9 @@ Datum *Kernel::inputProcedure(ASTNode *node)
         Procedures::get().validateParameters(command, parameterList);
 
         QList<DatumPtr> sourceText = StreamManager::get().programReaderLineHistory();
-        // Now read in the body
         ListBuilder textBuilder;
         textBuilder.append(parameterList);
-
-        forever
-        {
-            DatumPtr line = StreamManager::get().readProgramList("> ", true);
-            if (!line.isList()) // this must be the end of the input
-                break;
-            sourceText.append(StreamManager::get().programReaderLineHistory());
-            if (line.listValue()->isEmpty())
-                continue;
-
-            DatumPtr first = line.listValue()->head;
-            if (first.isWord())
-            {
-                QString firstWord = first.toString(Datum::ToStringFlags_Key);
-                if (firstWord == QObject::tr("END"))
-                    break;
-            }
-            textBuilder.append(line);
-        }
+        Procedures::readProcedureBody(*StreamManager::get().programReader(), textBuilder, sourceText, QStringLiteral("> "));
         DatumPtr textP = textBuilder.finishedList();
 
         Procedures::get().defineProcedure(command, procnameP, textP, sourceText);
