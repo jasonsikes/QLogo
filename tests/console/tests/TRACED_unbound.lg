@@ -1,0 +1,4 @@
+global "ghost
+trace [[] [ghost] []]
+show traced
+show tracedp [[] [ghost] []]

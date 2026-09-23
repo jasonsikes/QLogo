@@ -1,0 +1,5 @@
+to foo
+end
+trace "foo
+untrace "foo
+show traced

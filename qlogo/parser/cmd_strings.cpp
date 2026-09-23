@@ -1848,6 +1848,12 @@ const QString &StringConstants::cmdStrBURIED()
     return str;
 }
 
+const QString &StringConstants::cmdStrTRACED()
+{
+    static const QString str = QObject::tr("TRACED");
+    return str;
+}
+
 const QString &StringConstants::cmdStrBURIEDP()
 {
     static const QString str = QObject::tr("BURIEDP");

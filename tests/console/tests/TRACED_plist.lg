@@ -1,0 +1,3 @@
+pprop "baz "a 1
+trace [[] [] [baz]]
+show traced

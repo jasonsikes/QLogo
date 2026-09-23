@@ -761,6 +761,21 @@ Value *Compiler::genBuried(const DatumPtr &node, TypeMask expected)
     return generateCallExtern(stdBuried, PaAddr(scaff_->evaluator_));
 }
 
+/***DOC TRACED
+TRACED
+
+    outputs a contents list including all traced named items
+    in the workspace.
+
+COD***/
+// CMD TRACED 0 0 0 d
+Value *Compiler::genTraced(const DatumPtr &node, TypeMask expected)
+{
+    (void)node;
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdTraced, PaAddr(scaff_->evaluator_));
+}
+
 /***DOC BURIEDP BURIED?
 BURIEDP contentslist
 BURIED? contentslist

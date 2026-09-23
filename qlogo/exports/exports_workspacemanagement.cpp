@@ -661,12 +661,6 @@ EXPORTC addr_t stdUnstep(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
     return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Stepped, true);
 }
 
-/// BURIEDP: TRUE if the first named procedure, variable, or property list is buried.
-/// Only that first name is tested. An input that names nothing is an error.
-/// @param eAddr a pointer to the Evaluator object
-/// @param astnodeAddr a pointer to the owning ASTNode object
-/// @param contentsAddr a word or a contents list
-/// @return the word TRUE or FALSE, or an Error if the input names nothing or a name is not a word.
 /// BURIED: output a contents list of buried procedures, variables, and property lists.
 /// A buried name is included only while it exists: a user procedure, a variable
 /// with a value, or a nonempty property list.
@@ -680,6 +674,25 @@ EXPORTC addr_t stdBuried(addr_t eAddr)
     return reinterpret_cast<addr_t>(contents.datumValue());
 }
 
+/// TRACED: output a contents list of traced procedures, variables, and property lists.
+/// A traced name is included only while it exists: a user procedure, a variable
+/// with a value, or a nonempty property list.
+/// @param eAddr a pointer to the Evaluator object
+/// @return a list of three lists, procedures then variables then property lists.
+EXPORTC addr_t stdTraced(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    DatumPtr contents = contentsOfMark(Kernel::NameMark::Traced);
+    e->watch(contents);
+    return reinterpret_cast<addr_t>(contents.datumValue());
+}
+
+/// BURIEDP: TRUE if the first named procedure, variable, or property list is buried.
+/// Only that first name is tested. An input that names nothing is an error.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param contentsAddr a word or a contents list
+/// @return the word TRUE or FALSE, or an Error if the input names nothing or a name is not a word.
 EXPORTC addr_t stdBuriedp(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 {
     return queryWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Buried);

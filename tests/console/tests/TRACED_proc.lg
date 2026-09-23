@@ -1,0 +1,4 @@
+to foo
+end
+trace "foo
+show traced

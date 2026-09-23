@@ -1,0 +1,5 @@
+pprop "p "a 1
+trace [[] [] [p]]
+remprop "p "a
+show traced
+show tracedp [[] [] [p]]
