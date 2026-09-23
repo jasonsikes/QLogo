@@ -359,8 +359,10 @@ DatumPtr Procedures::procedureText(const DatumPtr &procnameP) const
         throw FCError::isPrimitive(procnameP);
     if (!isNamedProcedure(procname))
         throw FCError::noHow(procnameP);
-    Procedure *body = procedureForName(procname).procedureValue();
-
+    DatumPtr bodyP = procedureForName(procname);
+    if (bodyP.isNothing())
+        throw FCError::noHow(procnameP);
+    Procedure *body = bodyP.procedureValue();
 
     return body->instructionList_;
 }
@@ -371,9 +373,10 @@ DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldVal
     if (stringToCmd.contains(procname))
         throw FCError::isPrimitive(procnameP);
 
-    if (isNamedProcedure(procname))
+    DatumPtr bodyP = procedureForName(procname);
+    if (!bodyP.isNothing())
     {
-        Procedure *body = procedureForName(procname).procedureValue();
+        Procedure *body = bodyP.procedureValue();
 
         // DEFINE and .DEFMACRO store no source lines. Rebuild a TO-shaped
         // definition as a list of lists: title, one list per body line, [end].
@@ -395,20 +398,15 @@ DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldVal
             retvalBuilder.append(endLine.finishedList());
             return retvalBuilder.finishedList();
         }
-        else
-        {
-            ListBuilder retvalBuilder;
-            for (const auto &line : body->sourceText_)
-            {
-                retvalBuilder.append(line);
-            }
-            return retvalBuilder.finishedList();
-        }
+
+        ListBuilder retvalBuilder;
+        for (const auto &line : body->sourceText_)
+            retvalBuilder.append(line);
+        return retvalBuilder.finishedList();
     }
-    else if (shouldValidate)
-    {
+
+    if (shouldValidate)
         throw FCError::noHow(procnameP);
-    }
 
     // If there is no procedure by that name, generate an empty procedure.
     ListBuilder retvalBuilder;
@@ -426,22 +424,23 @@ QString Procedures::generateProcedureTitleLine(const DatumPtr &procnameP) const
     if (!isNamedProcedure(procname))
         throw FCError::noHow(procnameP);
 
-    Procedure *body = procedureForName(procname).procedureValue();
+    DatumPtr bodyP = procedureForName(procname);
+    if (bodyP.isNothing())
+        throw FCError::noHow(procnameP);
+    Procedure *body = bodyP.procedureValue();
     return generatedTitleList(body, procnameP).toString(Datum::ToStringFlags_None);
 }
 
 DatumPtr Procedures::procedureForName(const QString &aName) const
 {
-    if (!procedures_.contains(aName))
-    {
-        if (!Library::get().allProcedureNames().contains(aName))
-        {
-            return nothing();
-        }
-        // TODO: Procedure is in our library, add it to our procedures table.
-    }
-    Q_ASSERT(procedures_.contains(aName));
-    return procedures_[aName];
+    if (procedures_.contains(aName))
+        return procedures_[aName];
+
+    if (!Library::get().allProcedureNames().contains(aName))
+        return nothing();
+
+    // TODO: Procedure is in our library, add it to our procedures table.
+    return nothing();
 }
 
 bool Procedures::isNamedProcedure(const QString &aName) const

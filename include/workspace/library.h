@@ -62,8 +62,10 @@ class DatabaseConnection
 /// @brief The Library class provides access to the QLogo standard library.
 class Library : public DatabaseConnection
 {
-    // Commented out because it is never populated. Restore it when we get it working again.
-    // QStringList allProcedures;
+    /// @brief Cached COMMAND keys from LIBRARY. Empty if the DB is missing or invalid.
+    /// @note Populated once; the table is read-only. Names are uppercase (Key form).
+    mutable QStringList allProcedures_;
+    mutable bool namesLoaded_ = false;
 
     bool validateSchema(const QStringList &tables) const override;
 

@@ -147,24 +147,23 @@ QString Library::procedureText(const QString &cmdName)
 
 QStringList Library::allProcedureNames() const
 {
-    // This is disabled to prevent confusion.
-    // We shouldn't read procedure names if we can't yet input procedure bodies.
+    if (namesLoaded_)
+        return allProcedures_;
 
-    // if (allProcedures.isEmpty())
-    // {
-    //     getConnection();
+    getConnection();
 
-    //     if (connectionIsValid)
-    //     {
-    //         QSqlDatabase db = QSqlDatabase::database(connectionName);
-    //         QSqlQuery query("SELECT COMMAND FROM LIBRARY", db);
-    //         while (query.next())
-    //         {
-    //             allProcedures.append(query.value(0).toString());
-    //         }
-    //     }
-    // }
-    return {}; // Return allProcedures;
+    if (connectionIsValid_)
+    {
+        QSqlDatabase db = QSqlDatabase::database(connectionName_);
+        QSqlQuery query(QStringLiteral("SELECT COMMAND FROM LIBRARY"), db);
+        while (query.next())
+        {
+            allProcedures_.append(query.value(0).toString().toUpper());
+        }
+    }
+
+    namesLoaded_ = true;
+    return allProcedures_;
 }
 
 Help::Help()
