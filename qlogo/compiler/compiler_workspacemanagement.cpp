@@ -746,6 +746,21 @@ Value *Compiler::genUnstep(const DatumPtr &node, TypeMask expected)
     return generateNotFlowControl(retval);
 }
 
+/***DOC BURIED
+BURIED
+
+    outputs a contents list including all buried named items
+    in the workspace.
+
+COD***/
+// CMD BURIED 0 0 0 d
+Value *Compiler::genBuried(const DatumPtr &node, TypeMask expected)
+{
+    (void)node;
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdBuried, PaAddr(scaff_->evaluator_));
+}
+
 /***DOC BURIEDP BURIED?
 BURIEDP contentslist
 BURIED? contentslist

@@ -536,6 +536,44 @@ bool queryContents(Kernel::NameMark mark, const DatumPtr &who, Datum *input)
     return marked;
 }
 
+bool keepDefinedProcedure(const QString &name)
+{
+    return Procedures::get().isDefined(name);
+}
+
+bool keepValuedVariable(const QString &name)
+{
+    return !Kernel::get().datumForName(name).isNothing();
+}
+
+bool keepPropertyList(const QString &name)
+{
+    return Kernel::get().plists_.isPropertyList(name);
+}
+
+/// Contents list of names carrying @p mark that currently exist.
+/// Procedures must be user-defined. Variables must have a value.
+/// Property lists must be nonempty. Buried primitives and names that
+/// do not exist yet are omitted until they qualify.
+DatumPtr contentsOfMark(Kernel::NameMark mark)
+{
+    auto names = [mark](Kernel::NameKind kind, bool (*keep)(const QString &)) {
+        ListBuilder builder;
+        for (const QString &name : Kernel::get().nameList(mark, kind))
+        {
+            if (keep(name))
+                builder.append(DatumPtr(name));
+        }
+        return builder.finishedList();
+    };
+
+    ListBuilder contents;
+    contents.append(names(Kernel::NameKind::Procedures, keepDefinedProcedure));
+    contents.append(names(Kernel::NameKind::Variables, keepValuedVariable));
+    contents.append(names(Kernel::NameKind::PropertyLists, keepPropertyList));
+    return contents.finishedList();
+}
+
 addr_t queryWorkspace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr, Kernel::NameMark mark)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
@@ -629,6 +667,19 @@ EXPORTC addr_t stdUnstep(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param contentsAddr a word or a contents list
 /// @return the word TRUE or FALSE, or an Error if the input names nothing or a name is not a word.
+/// BURIED: output a contents list of buried procedures, variables, and property lists.
+/// A buried name is included only while it exists: a user procedure, a variable
+/// with a value, or a nonempty property list.
+/// @param eAddr a pointer to the Evaluator object
+/// @return a list of three lists, procedures then variables then property lists.
+EXPORTC addr_t stdBuried(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    DatumPtr contents = contentsOfMark(Kernel::NameMark::Buried);
+    e->watch(contents);
+    return reinterpret_cast<addr_t>(contents.datumValue());
+}
+
 EXPORTC addr_t stdBuriedp(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 {
     return queryWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Buried);

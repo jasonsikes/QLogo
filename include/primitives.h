@@ -235,6 +235,7 @@ llvm::Value *genStep(const DatumPtr &node, TypeMask expected);
 llvm::Value *genUnbury(const DatumPtr &node, TypeMask expected);
 llvm::Value *genUntrace(const DatumPtr &node, TypeMask expected);
 llvm::Value *genUnstep(const DatumPtr &node, TypeMask expected);
+llvm::Value *genBuried(const DatumPtr &node, TypeMask expected);
 llvm::Value *genBuriedp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genTracedp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSteppedp(const DatumPtr &node, TypeMask expected);

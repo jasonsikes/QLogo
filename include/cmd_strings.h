@@ -314,6 +314,7 @@ const QString &cmdStrSTEP();
 const QString &cmdStrUNBURY();
 const QString &cmdStrUNTRACE();
 const QString &cmdStrUNSTEP();
+const QString &cmdStrBURIED();
 const QString &cmdStrBURIEDP();
 const QString &cmdStrBURIED_Q();
 const QString &cmdStrTRACEDP();

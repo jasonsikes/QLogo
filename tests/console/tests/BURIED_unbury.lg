@@ -1,0 +1,5 @@
+to foo
+end
+bury "foo
+unbury "foo
+show buried

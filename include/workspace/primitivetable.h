@@ -309,6 +309,7 @@ stringToCmd.insert(StringConstants::cmdStrSTEP(), Cmd_t{&Compiler::genStep, 1, 1
 stringToCmd.insert(StringConstants::cmdStrUNBURY(), Cmd_t{&Compiler::genUnbury, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrUNTRACE(), Cmd_t{&Compiler::genUntrace, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrUNSTEP(), Cmd_t{&Compiler::genUnstep, 1, 1, 1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrBURIED(), Cmd_t{&Compiler::genBuried, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrBURIEDP(), Cmd_t{&Compiler::genBuriedp, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrBURIED_Q(), Cmd_t{&Compiler::genBuriedp, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrTRACEDP(), Cmd_t{&Compiler::genTracedp, 1, 1, 1, TypeD});

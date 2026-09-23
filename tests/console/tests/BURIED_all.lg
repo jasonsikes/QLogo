@@ -1,0 +1,6 @@
+to foo
+end
+make "bar 1
+pprop "baz "a 1
+bury [[foo] [bar] [baz]]
+show buried

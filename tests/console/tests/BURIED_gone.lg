@@ -1,0 +1,5 @@
+pprop "p "a 1
+bury [[] [] [p]]
+remprop "p "a
+show buried
+show buriedp [[] [] [p]]
