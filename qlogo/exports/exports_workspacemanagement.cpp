@@ -755,11 +755,7 @@ EXPORTC addr_t stdNames(addr_t eAddr)
 EXPORTC addr_t stdPlists(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    ListBuilder contents;
-    contents.append(emptyList());
-    contents.append(emptyList());
-    contents.append(Kernel::get().plists_.allPLists(true));
-    DatumPtr names = contents.finishedList();
+    DatumPtr names = Kernel::get().unburiedContents(false, false, true);
     e->watch(names);
     return reinterpret_cast<addr_t>(names.datumValue());
 }
@@ -774,11 +770,7 @@ EXPORTC addr_t stdPlists(addr_t eAddr)
 EXPORTC addr_t stdContents(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    ListBuilder contents;
-    contents.append(Procedures::get().allProcedureNames(true));
-    contents.append(Kernel::get().allVariables(true));
-    contents.append(Kernel::get().plists_.allPLists(true));
-    DatumPtr names = contents.finishedList();
+    DatumPtr names = Kernel::get().unburiedContents(true, true, true);
     e->watch(names);
     return reinterpret_cast<addr_t>(names.datumValue());
 }
@@ -839,6 +831,31 @@ EXPORTC addr_t stdArity(addr_t eAddr, addr_t nameAddr)
     }
 }
 
+namespace
+{
+
+/// Parse a PRINTOUT/ERASE contents-list input, then run @p fn on the three lists.
+/// A rejected input becomes the Error return. Success returns the AST node.
+template <typename Fn>
+addr_t withContentsList(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr, Fn &&fn)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *contents = reinterpret_cast<Datum *>(contentsAddr);
+    try
+    {
+        fn(Kernel::get().contentsListFromDatum(node->nodeName_, DatumPtr(contents)));
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+
+} // namespace
+
 /// PRINTOUT / PO: print the definitions named in a contents list to the write stream.
 /// A word is one procedure. A list of words is procedure names. A list of lists
 /// is procedures, then variables, then property lists. A primitive or unknown
@@ -850,21 +867,9 @@ EXPORTC addr_t stdArity(addr_t eAddr, addr_t nameAddr)
 /// @return the owning ASTNode, or an Error if the input is rejected.
 EXPORTC addr_t stdPrintout(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
-    auto *contents = reinterpret_cast<Datum *>(contentsAddr);
-    try
-    {
-        DatumPtr contentslist = Kernel::get().contentsListFromDatum(node->nodeName_, DatumPtr(contents));
-        QString output = Kernel::get().printoutFromContentsList(contentslist);
-        StreamManager::get().print(output);
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    return withContentsList(eAddr, astnodeAddr, contentsAddr, [](const DatumPtr &contentslist) {
+        StreamManager::get().print(Kernel::get().printoutFromContentsList(contentslist));
+    });
 }
 
 /// POT: print title lines of named procedures, MAKE of variables, and one Plist
@@ -878,21 +883,9 @@ EXPORTC addr_t stdPrintout(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr
 /// @return the owning ASTNode, or an Error if the input is rejected.
 EXPORTC addr_t stdPot(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
-    auto *contents = reinterpret_cast<Datum *>(contentsAddr);
-    try
-    {
-        DatumPtr contentslist = Kernel::get().contentsListFromDatum(node->nodeName_, DatumPtr(contents));
-        QString output = Kernel::get().titlesFromContentsList(contentslist);
-        StreamManager::get().print(output);
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    return withContentsList(eAddr, astnodeAddr, contentsAddr, [](const DatumPtr &contentslist) {
+        StreamManager::get().print(Kernel::get().titlesFromContentsList(contentslist));
+    });
 }
 
 /// ERASE / ER: erase the procedures, variables, and property lists named in a
@@ -905,19 +898,17 @@ EXPORTC addr_t stdPot(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 /// @return the owning ASTNode, or an Error if the input is rejected.
 EXPORTC addr_t stdErase(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
-    auto *contents = reinterpret_cast<Datum *>(contentsAddr);
-    try
-    {
-        DatumPtr contentslist = Kernel::get().contentsListFromDatum(node->nodeName_, DatumPtr(contents));
+    return withContentsList(eAddr, astnodeAddr, contentsAddr, [](const DatumPtr &contentslist) {
         Kernel::get().eraseFromContentsList(contentslist);
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
+}
+
+/// ERALL / ERPS / ERNS / ERPLS: erase unburied procedures, variables, and/or
+/// property lists. Buried names stay. The three flags select which kinds
+/// CONTENTS would report. Special variables that CONTENTS still lists are
+/// erased when variables are selected.
+EXPORTC void stdEraseUnburied(bool procedures, bool variables, bool plists)
+{
+    Kernel::get().eraseUnburied(procedures, variables, plists);
 }
 

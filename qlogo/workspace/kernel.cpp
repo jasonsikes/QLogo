@@ -579,6 +579,26 @@ QString unreadDatum(const DatumPtr &value, bool isInList)
     return QString();
 }
 
+/// A contents list from contentsListFromDatum is always three lists of names.
+struct ContentsNames
+{
+    List *procedures;
+    List *variables;
+    List *properties;
+};
+
+ContentsNames splitContentsList(const DatumPtr &contentslist)
+{
+    List *src = contentslist.listValue();
+    ContentsNames names;
+    names.procedures = src->head.listValue();
+    src = src->tail.listValue();
+    names.variables = src->head.listValue();
+    src = src->tail.listValue();
+    names.properties = src->head.listValue();
+    return names;
+}
+
 /// Format a value so PRINTOUT / SAVE can be read back as Logo.
 /// A number prints without a quote. A non-numeric word is quoted and escaped.
 /// A list or array is shown with brackets or braces.
@@ -599,15 +619,9 @@ QString printoutDatum(const DatumPtr &value)
 QString Kernel::printoutFromContentsList(const DatumPtr &contentslist, bool shouldValidate) const
 {
     QString retval;
+    const ContentsNames names = splitContentsList(contentslist);
 
-    List *src = contentslist.listValue();
-    List *proceduresList = src->head.listValue();
-    src = src->tail.listValue();
-    List *variablesList = src->head.listValue();
-    src = src->tail.listValue();
-    List *propertiesList = src->head.listValue();
-
-    ListIterator procedures = proceduresList->newIterator();
+    ListIterator procedures = names.procedures->newIterator();
     while (procedures.elementExists())
     {
         DatumPtr procname = procedures.element();
@@ -621,7 +635,7 @@ QString Kernel::printoutFromContentsList(const DatumPtr &contentslist, bool shou
         }
     }
 
-    ListIterator variables = variablesList->newIterator();
+    ListIterator variables = names.variables->newIterator();
     while (variables.elementExists())
     {
         DatumPtr varnameP = variables.element();
@@ -636,7 +650,7 @@ QString Kernel::printoutFromContentsList(const DatumPtr &contentslist, bool shou
         retval += QObject::tr("Make \"%1 %2\n").arg(varname, printoutDatum(value));
     }
 
-    ListIterator properties = propertiesList->newIterator();
+    ListIterator properties = names.properties->newIterator();
     while (properties.elementExists())
     {
         DatumPtr listnameP = properties.element();
@@ -657,15 +671,9 @@ QString Kernel::printoutFromContentsList(const DatumPtr &contentslist, bool shou
 QString Kernel::titlesFromContentsList(const DatumPtr &contentslist) const
 {
     QString retval;
+    const ContentsNames names = splitContentsList(contentslist);
 
-    List *src = contentslist.listValue();
-    List *proceduresList = src->head.listValue();
-    src = src->tail.listValue();
-    List *variablesList = src->head.listValue();
-    src = src->tail.listValue();
-    List *propertiesList = src->head.listValue();
-
-    ListIterator procedures = proceduresList->newIterator();
+    ListIterator procedures = names.procedures->newIterator();
     while (procedures.elementExists())
     {
         DatumPtr procname = procedures.element();
@@ -674,7 +682,7 @@ QString Kernel::titlesFromContentsList(const DatumPtr &contentslist) const
         retval += QLatin1Char('\n');
     }
 
-    ListIterator variables = variablesList->newIterator();
+    ListIterator variables = names.variables->newIterator();
     while (variables.elementExists())
     {
         DatumPtr varnameP = variables.element();
@@ -685,7 +693,7 @@ QString Kernel::titlesFromContentsList(const DatumPtr &contentslist) const
         retval += QObject::tr("Make \"%1 %2\n").arg(varname, printoutDatum(value));
     }
 
-    ListIterator properties = propertiesList->newIterator();
+    ListIterator properties = names.properties->newIterator();
     while (properties.elementExists())
     {
         DatumPtr listnameP = properties.element();
@@ -701,30 +709,39 @@ QString Kernel::titlesFromContentsList(const DatumPtr &contentslist) const
 
 void Kernel::eraseFromContentsList(const DatumPtr &contentslist)
 {
-    List *src = contentslist.listValue();
-    List *proceduresList = src->head.listValue();
-    src = src->tail.listValue();
-    List *variablesList = src->head.listValue();
-    src = src->tail.listValue();
-    List *propertiesList = src->head.listValue();
+    const ContentsNames names = splitContentsList(contentslist);
 
-    ListIterator procedures = proceduresList->newIterator();
+    ListIterator procedures = names.procedures->newIterator();
     while (procedures.elementExists())
         Procedures::get().eraseProcedure(procedures.element());
 
-    ListIterator variables = variablesList->newIterator();
+    ListIterator variables = names.variables->newIterator();
     while (variables.elementExists())
     {
         DatumPtr varnameP = variables.element();
         eraseVar(varnameP.wordValue()->toString(Datum::ToStringFlags_Key));
     }
 
-    ListIterator properties = propertiesList->newIterator();
+    ListIterator properties = names.properties->newIterator();
     while (properties.elementExists())
     {
         DatumPtr listnameP = properties.element();
         plists_.erasePropertyList(listnameP.wordValue()->toString(Datum::ToStringFlags_Key));
     }
+}
+
+DatumPtr Kernel::unburiedContents(bool procedures, bool variables, bool plists) const
+{
+    ListBuilder contents;
+    contents.append(procedures ? Procedures::get().allProcedureNames(true) : emptyList());
+    contents.append(variables ? allVariables(true) : emptyList());
+    contents.append(plists ? plists_.allPLists(true) : emptyList());
+    return contents.finishedList();
+}
+
+void Kernel::eraseUnburied(bool procedures, bool variables, bool plists)
+{
+    eraseFromContentsList(unburiedContents(procedures, variables, plists));
 }
 
 QSet<QString> &Kernel::namesFor(NameMark mark, NameKind kind)

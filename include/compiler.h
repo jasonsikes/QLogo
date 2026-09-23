@@ -338,6 +338,10 @@ class Compiler
     // generate the common code for IFTRUE and IFFALSE.
     llvm::Value *generateIftruefalse(const DatumPtr &node, TypeMask expected, bool testForTrue);
 
+    // generate the common code for ERALL, ERPS, ERNS, and ERPLS.
+    llvm::Value *generateEraseUnburied(const DatumPtr &node, TypeMask expected,
+                                       bool procedures, bool variables, bool plists);
+
     // generate the common code for FPUT and LPUT.
     llvm::Value *generateFputlput(const DatumPtr &node, TypeMask expected, bool isLput);
 

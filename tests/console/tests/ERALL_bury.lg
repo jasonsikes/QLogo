@@ -1,0 +1,16 @@
+to keep
+end
+to gone
+end
+make "keepv 1
+make "gonev 2
+pprop "keepp "a 1
+pprop "gonep "a 1
+bury [[keep] [keepv] [keepp]]
+erall
+show definedp "keep
+show definedp "gone
+show namep "keepv
+show namep "gonev
+show plistp "keepp
+show plistp "gonep

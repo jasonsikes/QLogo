@@ -160,6 +160,21 @@ class Kernel
     /// Buried, traced, and stepped marks on a name are left in place.
     void eraseFromContentsList(const DatumPtr &contentslist);
 
+    /// @brief Unburied workspace names as a contents list of three lists.
+    /// @param procedures When true, include unburied user procedures.
+    /// @param variables When true, include unburied variables. A variable with
+    /// no value is included.
+    /// @param plists When true, include unburied nonempty property lists.
+    /// @return A list of three lists. An omitted kind is an empty list.
+    /// CONTENTS is all three. NAMES is two lists and is not this method.
+    DatumPtr unburiedContents(bool procedures, bool variables, bool plists) const;
+
+    /// @brief Erase the unburied names that unburiedContents would report.
+    /// @details Buried names are left in place. ERALL, ERPS, ERNS, and ERPLS
+    /// select which kinds to erase. Special variables that CONTENTS still
+    /// lists are erased with the rest of the unburied names.
+    void eraseUnburied(bool procedures, bool variables, bool plists);
+
     /// @brief Whether a workspace name is buried, traced, or stepped.
     /// @note Count is the number of marks, not a set to pass to the accessors.
     enum class NameMark

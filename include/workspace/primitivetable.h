@@ -322,6 +322,10 @@ stringToCmd.insert(StringConstants::cmdStrPO(), Cmd_t{&Compiler::genPrintout, 1,
 stringToCmd.insert(StringConstants::cmdStrPOT(), Cmd_t{&Compiler::genPot, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrERASE(), Cmd_t{&Compiler::genErase, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrER(), Cmd_t{&Compiler::genErase, 1, 1, 1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrERALL(), Cmd_t{&Compiler::genErall, 0, 0, 0, TypeN});
+stringToCmd.insert(StringConstants::cmdStrERPS(), Cmd_t{&Compiler::genErps, 0, 0, 0, TypeN});
+stringToCmd.insert(StringConstants::cmdStrERNS(), Cmd_t{&Compiler::genErns, 0, 0, 0, TypeN});
+stringToCmd.insert(StringConstants::cmdStrERPLS(), Cmd_t{&Compiler::genErpls, 0, 0, 0, TypeN});
 stringToCmd.insert(StringConstants::cmdStrBURIEDP(), Cmd_t{&Compiler::genBuriedp, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrBURIED_Q(), Cmd_t{&Compiler::genBuriedp, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrTRACEDP(), Cmd_t{&Compiler::genTracedp, 1, 1, 1, TypeD});

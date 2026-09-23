@@ -275,4 +275,5 @@ EXPORTC addr_t stdArity(addr_t eAddr, addr_t nameAddr);
 EXPORTC addr_t stdPrintout(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
 EXPORTC addr_t stdPot(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
 EXPORTC addr_t stdErase(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
+EXPORTC void stdEraseUnburied(bool procedures, bool variables, bool plists);
 #endif // WORKSPACE_EXPORTS_H

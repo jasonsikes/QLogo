@@ -1920,6 +1920,30 @@ const QString &StringConstants::cmdStrER()
     return str;
 }
 
+const QString &StringConstants::cmdStrERALL()
+{
+    static const QString str = QObject::tr("ERALL");
+    return str;
+}
+
+const QString &StringConstants::cmdStrERPS()
+{
+    static const QString str = QObject::tr("ERPS");
+    return str;
+}
+
+const QString &StringConstants::cmdStrERNS()
+{
+    static const QString str = QObject::tr("ERNS");
+    return str;
+}
+
+const QString &StringConstants::cmdStrERPLS()
+{
+    static const QString str = QObject::tr("ERPLS");
+    return str;
+}
+
 const QString &StringConstants::cmdStrBURIEDP()
 {
     static const QString str = QObject::tr("BURIEDP");

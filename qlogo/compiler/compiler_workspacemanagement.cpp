@@ -945,6 +945,70 @@ Value *Compiler::genErase(const DatumPtr &node, TypeMask expected)
     return generateNotFlowControl(retval);
 }
 
+Value *Compiler::generateEraseUnburied(const DatumPtr &node, TypeMask expected,
+                                       bool procedures, bool variables, bool plists)
+{
+    Q_ASSERT(expected && TypeNothing);
+    generateCallExtern(
+        stdEraseUnburied,
+        PaBool(CoBool(procedures)),
+        PaBool(CoBool(variables)),
+        PaBool(CoBool(plists)));
+    return generateVoidRetval(node);
+}
+
+/***DOC ERALL
+ERALL
+
+    command.  Erases all unburied procedures, variables, and property
+    lists from the workspace.  Abbreviates ERASE CONTENTS.
+
+COD***/
+// CMD ERALL 0 0 0 n
+Value *Compiler::genErall(const DatumPtr &node, TypeMask expected)
+{
+    return generateEraseUnburied(node, expected, true, true, true);
+}
+
+/***DOC ERPS
+ERPS
+
+    command.  Erases all unburied procedures from the workspace.
+    Abbreviates ERASE PROCEDURES.
+
+COD***/
+// CMD ERPS 0 0 0 n
+Value *Compiler::genErps(const DatumPtr &node, TypeMask expected)
+{
+    return generateEraseUnburied(node, expected, true, false, false);
+}
+
+/***DOC ERNS
+ERNS
+
+    command.  Erases all unburied variables from the workspace.
+    Abbreviates ERASE NAMES.
+
+COD***/
+// CMD ERNS 0 0 0 n
+Value *Compiler::genErns(const DatumPtr &node, TypeMask expected)
+{
+    return generateEraseUnburied(node, expected, false, true, false);
+}
+
+/***DOC ERPLS
+ERPLS
+
+    command.  Erases all unburied property lists from the workspace.
+    Abbreviates ERASE PLISTS.
+
+COD***/
+// CMD ERPLS 0 0 0 n
+Value *Compiler::genErpls(const DatumPtr &node, TypeMask expected)
+{
+    return generateEraseUnburied(node, expected, false, false, true);
+}
+
 /***DOC BURIEDP BURIED?
 BURIEDP contentslist
 BURIED? contentslist

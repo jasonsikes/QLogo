@@ -126,10 +126,10 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | FS             | OR            | KEYP                   | MEMBER?                   | POT                  |
 |                    | SPLITSCREEN    | NOT           | KEY?                   | SUBSTRINGP                | ERASE                |
 |                    | SS             | +             | CLEARTEXT              | SUBSTRING?                | ER                   |
-|                    | SETSCRUNCH     | *             | CT                     | NUMBERP                   | *TODO* ERALL         |
-|                    | SHOWNP         | /             | SETCURSOR              | NUMBER?                   | *TODO* ERPS          |
-|                    | SHOWN?         | <             | CURSOR                 | VBARREDP                  | *TODO* ERNS          |
-|                    | SCREENMODE     | >             | SETTEXTCOLOR           | VBARRED?                  | *TODO* ERPLS         |
+|                    | SETSCRUNCH     | *             | CT                     | NUMBERP                   | ERALL                |
+|                    | SHOWNP         | /             | SETCURSOR              | NUMBER?                   | ERPS                 |
+|                    | SHOWN?         | <             | CURSOR                 | VBARREDP                  | ERNS                 |
+|                    | SCREENMODE     | >             | SETTEXTCOLOR           | VBARRED?                  | ERPLS                |
 |                    | TURTLEMODE     | =             | SETTC                  | COUNT                     | BURY                 |
 |                    | LABELSIZE      | <=            | INCREASEFONT           | ASCII                     | UNBURY               |
 |                    | LABELFONT      | >=            | DECREASEFONT           | RAWASCII                  | BURIEDP              |
