@@ -1,0 +1,2 @@
+show definedp [p]
+show defined? {a}

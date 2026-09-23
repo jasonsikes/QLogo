@@ -1,0 +1,5 @@
+show definedp "show
+show defined? "nope
+show definedp 5
+copydef "myshow "show
+show definedp "myshow

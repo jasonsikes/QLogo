@@ -1,0 +1,4 @@
+to p
+end
+if definedp "p [print "yes]
+(if defined? "show [print "no] [print "yes])

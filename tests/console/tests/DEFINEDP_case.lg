@@ -1,0 +1,5 @@
+to Proc1
+end
+show definedp "proc1
+show defined? "PROC1
+show definedp "SHOW

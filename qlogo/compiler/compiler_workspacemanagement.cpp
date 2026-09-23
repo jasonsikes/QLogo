@@ -527,3 +527,22 @@ Value *Compiler::genPrimitivep(const DatumPtr &node, TypeMask expected)
     name = generateFromDatum(Datum::typeWord, node.astnodeValue(), name);
     return generateCallExtern(stdPrimitivep, PaAddr(name));
 }
+
+/***DOC DEFINEDP DEFINED?
+DEFINEDP name
+DEFINED? name
+
+    outputs TRUE if the input is the name of a user-defined procedure,
+    including a library procedure.
+
+COD***/
+// CMD DEFINEDP 1 1 1 b
+// CMD DEFINED? 1 1 1 b
+Value *Compiler::genDefinedp(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeBool);
+
+    Value *name = generateChild(node.astnodeValue(), 0, TypeDatum);
+    name = generateFromDatum(Datum::typeWord, node.astnodeValue(), name);
+    return generateCallExtern(stdDefinedp, PaAddr(name));
+}

@@ -296,5 +296,7 @@ stringToCmd.insert(StringConstants::cmdStrMACROP(), Cmd_t{&Compiler::genMacrop, 
 stringToCmd.insert(StringConstants::cmdStrMACRO_Q(), Cmd_t{&Compiler::genMacrop, 1, 1, 1, TypeB});
 stringToCmd.insert(StringConstants::cmdStrPRIMITIVEP(), Cmd_t{&Compiler::genPrimitivep, 1, 1, 1, TypeB});
 stringToCmd.insert(StringConstants::cmdStrPRIMITIVE_Q(), Cmd_t{&Compiler::genPrimitivep, 1, 1, 1, TypeB});
+stringToCmd.insert(StringConstants::cmdStrDEFINEDP(), Cmd_t{&Compiler::genDefinedp, 1, 1, 1, TypeB});
+stringToCmd.insert(StringConstants::cmdStrDEFINED_Q(), Cmd_t{&Compiler::genDefinedp, 1, 1, 1, TypeB});
 
 

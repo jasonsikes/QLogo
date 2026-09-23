@@ -350,3 +350,14 @@ EXPORTC bool stdPrimitivep(addr_t nameAddr)
     return Procedures::get().isPrimitive(name->toString(Datum::ToStringFlags_Key));
 }
 
+/// DEFINEDP: TRUE if the word names a user-defined procedure.
+/// TO, DEFINE, .MACRO, .DEFMACRO, and COPYDEF of one of those all count.
+/// Primitives, names created by COPYDEF from a primitive, and unknown names are FALSE.
+/// @param nameAddr a word naming the candidate
+/// @return true if the name is a user-defined procedure.
+EXPORTC bool stdDefinedp(addr_t nameAddr)
+{
+    auto *name = reinterpret_cast<Datum *>(nameAddr);
+    return Procedures::get().isDefined(name->toString(Datum::ToStringFlags_Key));
+}
+

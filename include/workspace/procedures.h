@@ -174,10 +174,11 @@ class Procedures
     /// @return True if the name is a primitive, false otherwise.
     bool isPrimitive(const QString &procname) const;
 
-    /// @brief Check if a name is defined.
+    /// @brief Check if a name is a user-defined procedure.
     /// @param procname The name to check.
-    /// @return True if the name is defined, false otherwise.
-    /// @note This checks both user-defined and primitive procedures.
+    /// @return True if the name is a user-defined procedure. Primitives and
+    /// unknown names are false. A library procedure counts once it has been
+    /// installed in the procedure table.
     bool isDefined(const QString &procname) const;
 
     /// @brief Get all procedure names.

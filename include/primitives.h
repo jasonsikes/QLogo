@@ -225,5 +225,6 @@ llvm::Value *genPlist(const DatumPtr &node, TypeMask expected);
 llvm::Value *genProcedurep(const DatumPtr &node, TypeMask expected);
 llvm::Value *genMacrop(const DatumPtr &node, TypeMask expected);
 llvm::Value *genPrimitivep(const DatumPtr &node, TypeMask expected);
+llvm::Value *genDefinedp(const DatumPtr &node, TypeMask expected);
 #endif // PRIMITIVE_HEADER_H
 

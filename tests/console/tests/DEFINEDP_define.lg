@@ -1,0 +1,3 @@
+define "p [[x] [print :x]]
+show definedp "p
+show defined? "P

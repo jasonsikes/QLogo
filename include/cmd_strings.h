@@ -301,6 +301,8 @@ const QString &cmdStrMACROP();
 const QString &cmdStrMACRO_Q();
 const QString &cmdStrPRIMITIVEP();
 const QString &cmdStrPRIMITIVE_Q();
+const QString &cmdStrDEFINEDP();
+const QString &cmdStrDEFINED_Q();
 } // namespace StringConstants
 #endif // CMD_STRINGS_H
 

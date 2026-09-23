@@ -1,0 +1,6 @@
+.macro m
+output []
+end
+show definedp "m
+.defmacro "m2 [[] [output [print "hi]]]
+show defined? "m2

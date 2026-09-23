@@ -1764,4 +1764,16 @@ const QString &StringConstants::cmdStrPRIMITIVE_Q()
     return str;
 }
 
+const QString &StringConstants::cmdStrDEFINEDP()
+{
+    static const QString str = QObject::tr("DEFINEDP");
+    return str;
+}
+
+const QString &StringConstants::cmdStrDEFINED_Q()
+{
+    static const QString str = QObject::tr("DEFINED?");
+    return str;
+}
+
 
