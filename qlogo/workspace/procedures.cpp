@@ -488,24 +488,29 @@ std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromProcedure(const Datum
 
 std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromCommand(const DatumPtr &cmdP) const
 {
-    QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
-
     auto [node, minParams, defaultParams, maxParams] = astnodeFromPrimitive(cmdP);
     if (node != nothing())
-    { // This is a primitive.
         return {node, minParams, defaultParams, maxParams};
-    }
-    
+
     auto [procNode, procMinParams, procDefaultParams, procMaxParams] = astnodeFromProcedure(cmdP);
-    if (procNode.isNothing())
-    {
-        // This is not a command.
+    if (procNode != nothing())
+        return {procNode, procMinParams, procDefaultParams, procMaxParams};
+
+    if (!Kernel::get().specialVarIsTrue(SpecialVars::Id::AllowGetSet))
         throw FCError::noHow(cmdP);
+
+    QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
+    auto ast = DatumPtr(new ASTNode(cmdP));
+    if (cmdString.startsWith(QObject::tr("SET")) && cmdString.size() > 3)
+    {
+        ast.astnodeValue()->genExpression_ = &Compiler::genSetfoo;
+        ast.astnodeValue()->produces_ = TypeN;
+        return {ast, 1, 1, 1};
     }
 
-    // This is a procedure.
-    return {procNode, procMinParams, procDefaultParams, procMaxParams};
-    // TODO: Foo and setFoo
+    ast.astnodeValue()->genExpression_ = &Compiler::genFoo;
+    ast.astnodeValue()->produces_ = TypeD;
+    return {ast, 0, 0, 0};
 }
 
 DatumPtr Procedures::astnodeWithLiterals(const DatumPtr &cmd, const DatumPtr &params)

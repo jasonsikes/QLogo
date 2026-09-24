@@ -323,6 +323,28 @@ Value *Compiler::genMake(const DatumPtr &node, TypeMask expected)
     return generateVoidRetval(node);
 }
 
+Value *Compiler::genFoo(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+
+    Value *retval = generateCallExtern(
+        stdFoo, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())));
+    return generateNotFlowControl(retval);
+}
+
+Value *Compiler::genSetfoo(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *value = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdSetfoo,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(value));
+    return generateNotFlowControl(retval);
+}
+
 /***DOC LOCAL
 LOCAL varname
 LOCAL varnamelist

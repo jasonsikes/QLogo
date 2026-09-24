@@ -134,6 +134,10 @@ class Procedures
     /// @brief Get an AST node from a command, either a primitive or user-defined procedure.
     /// @param command The name of the command to search for.
     /// @return A tuple containing a pointer to the created AST node, and three integers representing the arity of the command.
+    /// @details If the name is not a primitive or procedure and ALLOWGETSET is TRUE,
+    /// a SET-prefixed name of at least four characters is a setter (arity 1) and
+    /// any other name is a getter (arity 0). Existence of the variable is not
+    /// checked here.
     std::tuple<DatumPtr, int, int, int> astnodeFromCommand(const DatumPtr &command) const;
 
     /// @brief Get the text of a procedure.

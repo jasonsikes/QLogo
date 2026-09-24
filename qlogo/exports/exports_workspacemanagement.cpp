@@ -169,6 +169,49 @@ EXPORTC addr_t stdThing(addr_t eAddr, addr_t nameAddr)
     return reinterpret_cast<addr_t>(err);
 }
 
+/// FOO: output the value of the variable named by this command.
+/// The name is the AST node's command word, not an input. A missing or
+/// valueless name is "I don't know how", not "has no value".
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @return the variable's value, or an Error if it has no value.
+EXPORTC addr_t stdFoo(addr_t eAddr, addr_t astnodeAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    QString name = node->nodeName_.toString(Datum::ToStringFlags_Key);
+    DatumPtr val = Kernel::get().datumForName(name);
+    if (!val.isNothing())
+        return reinterpret_cast<addr_t>(val.datumValue());
+
+    FCError *err = FCError::noHow(node->nodeName_);
+    e->watch(err);
+    return reinterpret_cast<addr_t>(err);
+}
+
+/// SETFOO: assign to the variable named by this command without SET.
+/// The variable must already exist. A missing name is "I don't know how".
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param valueAddr the value to store
+/// @return the owning ASTNode, or an Error if the variable does not exist.
+EXPORTC addr_t stdSetfoo(addr_t eAddr, addr_t astnodeAddr, addr_t valueAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *value = reinterpret_cast<Datum *>(valueAddr);
+    QString cmd = node->nodeName_.toString(Datum::ToStringFlags_Key);
+    QString name = cmd.mid(QObject::tr("SET").size());
+    if (!Kernel::get().doesExist(name))
+    {
+        FCError *err = FCError::noHow(node->nodeName_);
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    Kernel::get().setDatumForName(DatumPtr(value), name);
+    return reinterpret_cast<addr_t>(node);
+}
+
 namespace
 {
 

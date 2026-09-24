@@ -119,6 +119,9 @@ struct Evaluator
     /// @brief Returns TRUE if CASEIGNOREDP is TRUE, otherwise FALSE.
     bool varCASEIGNOREDP();
 
+    /// @brief Returns TRUE if ALLOWGETSET is TRUE, otherwise FALSE.
+    bool varALLOWGETSET();
+
     Evaluator() = delete;
     Evaluator(const Evaluator &) = delete;
     Evaluator(Evaluator *) = delete;

@@ -21,6 +21,7 @@
 #include "workspace/callframe.h"
 #include "workspace/evaluator.h"
 #include "workspace/propertylists.h"
+#include "workspace/specialvars.h"
 #include <QColor>
 #include <QList>
 #include <QSet>
@@ -113,6 +114,12 @@ class Kernel
     /// @param name The name of the variable to search for.
     /// @return True if the variable exists, false otherwise.
     bool doesExist(const QString &name) const;
+
+    /// @brief True if the special variable is the word TRUE.
+    /// @param id The interpreter-owned variable.
+    /// @return True only if the stored value is a word whose key is TRUE.
+    /// A missing name, a non-word, or any other word is false.
+    bool specialVarIsTrue(SpecialVars::Id id) const;
 
     /// @brief Erase name and its value from the variables hash.
     /// @param name The name of the variable to erase.

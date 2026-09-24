@@ -192,13 +192,10 @@ Datum *Evaluator::watch(Datum *d)
 
 bool Evaluator::varCASEIGNOREDP()
 {
-    const QString &name = SpecialVars::name(SpecialVars::Id::CaseIgnoredP);
-    DatumPtr val = Kernel::get().datumForName(name);
-    bool retval = false;
-    if (val.isWord())
-    {
-        QString word = val.toString(Datum::ToStringFlags_Key);
-        retval = word == QObject::tr("TRUE");
-    }
-    return retval;
+    return Kernel::get().specialVarIsTrue(SpecialVars::Id::CaseIgnoredP);
+}
+
+bool Evaluator::varALLOWGETSET()
+{
+    return Kernel::get().specialVarIsTrue(SpecialVars::Id::AllowGetSet);
 }

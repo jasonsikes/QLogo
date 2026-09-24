@@ -1,0 +1,6 @@
+make "foo 1
+to foo
+output 2
+end
+print foo
+print :foo

@@ -148,8 +148,8 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | SETPC          |               |                        |                           | *TODO* SAVE          |
 |                    | ALLCOLORS      |               |                        |                           | *TODO* LOAD          |
 |                    | SETPALETTE     |               |                        |                           | *TODO* HELP          |
-|                    | SETPENSIZE     |               |                        |                           | *TODO* FOO           |
-|                    | SETBACKGROUND  |               |                        |                           | *TODO* SETFOO        |
+|                    | SETPENSIZE     |               |                        |                           | FOO                  |
+|                    | SETBACKGROUND  |               |                        |                           | SETFOO               |
 |                    | SETBG          |               |                        |                           |                      |
 |                    | PENDOWNP       |               |                        |                           |                      |
 |                    | PENDOWN?       |               |                        |                           |                      |

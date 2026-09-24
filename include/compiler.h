@@ -358,6 +358,12 @@ class Compiler
 
     llvm::Value *genExecProcedure(const DatumPtr &node, TypeMask expected);
 
+    /// Implicit getter for a variable of the same name when ALLOWGETSET is TRUE.
+    llvm::Value *genFoo(const DatumPtr &node, TypeMask expected);
+
+    /// Implicit setter: SETFOO value is MAKE of FOO when ALLOWGETSET is TRUE.
+    llvm::Value *genSetfoo(const DatumPtr &node, TypeMask expected);
+
     // Typed wrapper: derives LLVM types from C function signature for single-source-of-truth verification.
     template <typename Ret, typename... Args>
     llvm::Value *generateCallExternTyped(Ret (*)(Args...),

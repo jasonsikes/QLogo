@@ -418,6 +418,14 @@ bool Kernel::doesExist(const QString &name) const
     return variables_.contains(name);
 }
 
+bool Kernel::specialVarIsTrue(SpecialVars::Id id) const
+{
+    DatumPtr val = datumForName(SpecialVars::name(id));
+    if (!val.isWord())
+        return false;
+    return val.toString(Datum::ToStringFlags_Key) == QObject::tr("TRUE");
+}
+
 DatumPtr Kernel::allVariables(bool unburiedOnly) const
 {
     ListBuilder builder;

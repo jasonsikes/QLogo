@@ -242,6 +242,8 @@ EXPORTC addr_t stdText(addr_t eAddr, addr_t nameAddr);
 EXPORTC addr_t stdFulltext(addr_t eAddr, addr_t nameAddr);
 EXPORTC addr_t stdCopydef(addr_t eAddr, addr_t astnodeAddr, addr_t newnameAddr, addr_t oldnameAddr);
 EXPORTC addr_t stdThing(addr_t eAddr, addr_t nameAddr);
+EXPORTC addr_t stdFoo(addr_t eAddr, addr_t astnodeAddr);
+EXPORTC addr_t stdSetfoo(addr_t eAddr, addr_t astnodeAddr, addr_t valueAddr);
 EXPORTC addr_t stdGlobal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, uint32_t count);
 EXPORTC addr_t stdLocal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, uint32_t count);
 EXPORTC void stdPprop(addr_t plistnameAddr, addr_t propnameAddr, addr_t valueAddr);
