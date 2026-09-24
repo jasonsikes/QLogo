@@ -334,16 +334,6 @@ Datum *Kernel::inputProcedure(ASTNode *node)
     return retval;
 }
 
-/***DOC ERRACT
-ERRACT							(variable)
-
-    When set to a value that is not FALSE nor an empty string nor an empty list,
-    the command interpreter will execute PAUSE to enable the user to
-    inspect the state of the program.
-
-
-COD***/
-
 void Kernel::initPalette()
 {
     // UCBLogo has 101 colors, from 0 to 100.
