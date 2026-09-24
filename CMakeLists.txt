@@ -57,7 +57,7 @@ file(GLOB QLOGO_COMPILER_SOURCES CONFIGURE_DEPENDS
 if(NOT QLOGO_COMPILER_SOURCES)
     message(FATAL_ERROR "No compiler .cpp files found")
 endif()
-set(QLOGO_HELP_JSON "${CMAKE_SOURCE_DIR}/util/logolib_help.json")
+set(QLOGO_HELP_JSON "${CMAKE_SOURCE_DIR}/util/help.json")
 
 set(_qt_host_env_args)
 if(WIN32)

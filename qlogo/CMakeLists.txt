@@ -6,7 +6,6 @@ set(QLOGO_SOURCES
   compiler/compiler_workspacemanagement.cpp
   compiler/compiler_controlstructures.cpp
   compiler/compiler_graphics.cpp
-  compiler/compiler_specialvariables.cpp
   exports/exports.cpp
   exports/exports_arithmetic.cpp
   exports/exports_communication.cpp

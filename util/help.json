@@ -817,5 +817,153 @@
         "? show iseq 7 3",
         "[7 6 5 4 3]",
         ""
+    ],
+    "ERRACT": [
+        "ERRACT                          (variable)",
+        "",
+        "    When set to a value that is not FALSE nor an empty string nor an empty list,",
+        "    the command interpreter will execute PAUSE to enable the user to",
+        "    inspect the state of the program.",
+        ""
+    ],
+    "LOGOPLATFORM": [
+        "LOGOPLATFORM\t\t\t\t\t\t(variable)",
+        "",
+        "    one of the following words: OSX, WINDOWS, or UNIX.",
+        "",
+        ""
+    ],
+    "LOGOVERSION": [
+        "LOGOVERSION\t\t\t\t\t\t(variable)",
+        "",
+        "    a real number indicating the Logo version number, e.g., 5.5",
+        ""
+    ],
+    "COMMANDLINE": [
+        "COMMANDLINE\t\t\t\t\t\t(variable)",
+        "",
+        "    contains all text on the command line used to start Logo.",
+        ""
+    ],
+    "BUTTONACT": [
+        "BUTTONACT\t\t\t\t\t\t(variable)",
+        "",
+        "\tif nonempty, should be an instruction list that will be evaluated",
+        "\twhenever a mouse button is pressed.  Note that the user may have",
+        "\treleased the button before the instructions are evaluated.  BUTTON",
+        "\twill still output which button was most recently pressed.  CLICKPOS",
+        "\twill output the position of the mouse cursor at the moment the",
+        "\tbutton was pressed; this may be different from MOUSEPOS if the",
+        "\tuser moves the mouse after clicking.",
+        "",
+        "\tNote that it's possible for the user to press a button during the",
+        "\tevaluation of the instruction list.  If this would confuse your",
+        "\tprogram, prevent it by temporarily setting BUTTONACT to the empty",
+        "\tlist.  One easy way to do that is the following:",
+        "",
+        "\t\tmake \"buttonact [button.action]",
+        "",
+        "\t\tto button.action [:buttonact []]",
+        "\t\t... ; whatever you want the button to do",
+        "\t\tend",
+        ""
+    ],
+    "KEYACT": [
+        "KEYACT\t\t\t\t\t\t\t(variable)",
+        "",
+        "\tif nonempty, should be an instruction list that will be evaluated",
+        "\twhenever a key is pressed on the keyboard.  The instruction list",
+        "\tcan use READCHAR to find out what key was pressed.  Note that only",
+        "\tkeys that produce characters qualify; pressing SHIFT or CONTROL",
+        "\talone will not cause KEYACT to be evaluated.",
+        "",
+        "\tNote that it's possible for the user to press a key during the",
+        "\tevaluation of the instruction list.  If this would confuse your",
+        "\tprogram, prevent it by temporarily setting KEYACT to the empty",
+        "\tlist.  One easy way to do that is the following:",
+        "",
+        "\t\tmake \"keyact [key.action]",
+        "",
+        "\t\tto key.action [:keyact []]",
+        "\t\t... ; whatever you want the key to do",
+        "\t\tend",
+        ""
+    ],
+    "LOADNOISILY": [
+        "LOADNOISILY\t\t\t\t\t\t(variable)",
+        "",
+        "\tif TRUE, prints the names of procedures defined when loading",
+        "\tfrom a file (including the temporary file made by EDIT).",
+        ""
+    ],
+    "PRINTDEPTHLIMIT": [
+        "PRINTDEPTHLIMIT\t\t\t\t\t\t(variable)",
+        "",
+        "\tif a nonnegative integer, indicates the maximum depth of sublist",
+        "\tstructure that will be printed by PRINT, etc.",
+        ""
+    ],
+    "PRINTWIDTHLIMIT": [
+        "PRINTWIDTHLIMIT\t\t\t\t\t\t(variable)",
+        "",
+        "\tif a nonnegative integer, indicates the maximum number of members",
+        "\tin any one list that will be printed by PRINT, etc.",
+        ""
+    ],
+    "REDEFP": [
+        "REDEFP\t\t\t\t\t\t\t(variable)",
+        "",
+        "\tif TRUE, allows primitives to be erased (ERASE) or redefined (COPYDEF).",
+        ""
+    ],
+    "STARTUP": [
+        "STARTUP\t\t\t\t\t\t\t(variable)",
+        "",
+        "\tif assigned a list value in a file loaded by LOAD, that value is",
+        "\trun as an instructionlist after the loading.",
+        ""
+    ],
+    "UNBURYONEDIT": [
+        "UNBURYONEDIT\t\t\t\t\t\t(variable)",
+        "",
+        "\tif TRUE, causes any procedure defined during EDIT or LOAD to be",
+        "\tunburied, so that it will be saved by a later SAVE.  Files that",
+        "\twant to define and bury procedures must do it in that order.",
+        ""
+    ],
+    "FULLPRINTP": [
+        "FULLPRINTP\t\t\t\t\t\t(variable)",
+        "",
+        "\tif TRUE, then words that were created using backslash or vertical bar",
+        "\t(to include characters that would otherwise not be treated as part of",
+        "\ta word) are printed with the backslashes or vertical bars shown, so",
+        "\tthat the printed result could be re-read by Logo to produce the same",
+        "\tvalue.  If FULLPRINTP is TRUE then the empty word (however it was",
+        "\tcreated) prints as ||.  (Otherwise it prints as nothing at all.)",
+        ""
+    ],
+    "USEALTERNATENAMES": [
+        "USEALTERNATENAMES\t\t\t\t\t(variable)",
+        "",
+        "\tif TRUE, causes Logo to generate non-English words (from the",
+        "\tMessages file) instead of TRUE, FALSE, END, etc.",
+        ""
+    ],
+    "ALLOWGETSET": [
+        "ALLOWGETSET\t\t\t\t\t\t(variable)",
+        "",
+        "\tif TRUE, indicates that an attempt to use a procedure that doesn't",
+        "\texist should be taken as an implicit getter or setter procedure",
+        "\t(setter if the first three letters of the name are SET) for a variable",
+        "\tof the same name (without the SET if appropriate).",
+        ""
+    ],
+    "CASEIGNOREDP": [
+        "CASEIGNOREDP\t\t\t\t\t\t(variable)",
+        "",
+        "\tif TRUE, indicates that lower case and upper case letters should be",
+        "\tconsidered equal by EQUALP, BEFOREP, MEMBERP, etc.  Logo initially",
+        "\tmakes this variable TRUE, and buries it.",
+        ""
     ]
 }

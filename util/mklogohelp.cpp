@@ -11,12 +11,13 @@
 /// \file
 /// Host tool that packs help text into qlogo_help.db.
 ///
-/// Usage: mklogohelp <compiler-dir> <logolib-help.json> <output-db>
+/// Usage: mklogohelp <compiler-dir> <help.json> <output-db>
 ///
 /// Primitive help is taken from /***DOC ... COD***/ blocks in the compiler
 /// .cpp files. The first name after /***DOC is the HELPTEXT key; every name
-/// on that line (including the first) is an ALIASES entry. Library help is
-/// taken from the JSON object of command -> list of text lines.
+/// on that line (including the first) is an ALIASES entry. Help for library
+/// procedures and special variables is taken from the JSON object of name ->
+/// list of text lines.
 ///
 //===----------------------------------------------------------------------===//
 
@@ -153,7 +154,7 @@ bool processCompilerDir(const QString &sourceDirPath, QSqlQuery &aliasQuery, QSq
     return true;
 }
 
-bool processLibraryHelpJson(const QString &jsonPath, QSqlQuery &aliasQuery, QSqlQuery &textQuery)
+bool processHelpJson(const QString &jsonPath, QSqlQuery &aliasQuery, QSqlQuery &textQuery)
 {
     QFile file(jsonPath);
     if (!file.open(QIODevice::ReadOnly))
@@ -210,7 +211,7 @@ int main(int argc, char *argv[])
 
     if (argc != 4)
     {
-        err() << "Usage: mklogohelp <compiler-dir> <logolib-help.json> <output-db>\n";
+        err() << "Usage: mklogohelp <compiler-dir> <help.json> <output-db>\n";
         return 1;
     }
 
@@ -262,7 +263,7 @@ int main(int argc, char *argv[])
     }
 
     if (!processCompilerDir(compilerDirPath, aliasQuery, textQuery) ||
-        !processLibraryHelpJson(jsonPath, aliasQuery, textQuery))
+        !processHelpJson(jsonPath, aliasQuery, textQuery))
     {
         db.rollback();
         return 1;
