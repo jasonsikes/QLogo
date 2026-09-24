@@ -20,7 +20,7 @@ Contains the implementation of the `LogoInterfaceGUI` class, which extends `Logo
 
 ### logointerfacecurses.cpp
 
-Contains the implementation of the `LogoInterfaceCurses` class, which extends `LogoInterface` and talks to an interactive terminal through ncursesw. CMake compiles this file only when ncursesw is available; `logo_main.cpp` selects the TUI in that case. It is used automatically when both stdin and stdout are terminals. Use `--tui` to require it, or `--no-tui` to keep the plain command-line interface.
+Contains the implementation of the `LogoInterfaceCurses` class, which extends `LogoInterface` and talks to an interactive terminal through ncursesw. CMake compiles this file only when ncursesw is available; `logo_main.cpp` selects the TUI in that case. It implements the Logo text console (print, line input, `SETTEXTCOLOR`, `CLEARTEXT`, `SETCURSOR`/`CURSOR`, `KEYP`, and `STANDOUT`).
 
 ### textstream.cpp
 

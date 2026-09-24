@@ -122,9 +122,83 @@ void LogoInterfaceCurses::printToConsole(const QString &text)
 {
     if (!cursesActive_)
         return;
-    const std::wstring wide = text.toStdWString();
-    addwstr(wide.c_str());
+
+    const QStringList parts = text.split(Config::get().escapeChar_);
+    for (int i = 0; i < parts.size(); ++i)
+    {
+        if (i != 0)
+        {
+            standoutOn_ = !standoutOn_;
+            applyStandoutAttr();
+        }
+        const std::wstring wide = parts[i].toStdWString();
+        addwstr(wide.c_str());
+    }
     refresh();
+}
+
+QString LogoInterfaceCurses::addStandoutToString(const QString &src)
+{
+    return Config::get().escapeString_ + src + Config::get().escapeString_;
+}
+
+void LogoInterfaceCurses::clearScreenText()
+{
+    if (!cursesActive_)
+        return;
+    erase();
+    wmove(stdscr, 0, 0);
+    applyCurrentPair();
+    applyStandoutAttr();
+    refresh();
+}
+
+void LogoInterfaceCurses::getTextCursorPos(int &row, int &col)
+{
+    if (!cursesActive_)
+    {
+        row = 0;
+        col = 0;
+        return;
+    }
+    getyx(stdscr, row, col);
+}
+
+void LogoInterfaceCurses::setTextCursorPos(int row, int col)
+{
+    if (!cursesActive_)
+        return;
+
+    int maxy = 0;
+    int maxx = 0;
+    getmaxyx(stdscr, maxy, maxx);
+    if (row < 0)
+        row = 0;
+    if (col < 0)
+        col = 0;
+    if (maxy > 0 && row >= maxy)
+        row = maxy - 1;
+    if (maxx > 0 && col >= maxx)
+        col = maxx - 1;
+    wmove(stdscr, row, col);
+    refresh();
+}
+
+bool LogoInterfaceCurses::keyQueueHasChars()
+{
+    if (!cursesActive_ || atEnd())
+        return false;
+
+    nodelay(stdscr, TRUE);
+    noecho();
+    wint_t ch = 0;
+    const int rc = get_wch(&ch);
+    echo();
+    nodelay(stdscr, FALSE);
+    if (rc == ERR)
+        return false;
+    unget_wch(ch);
+    return true;
 }
 
 QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
@@ -212,6 +286,16 @@ void LogoInterfaceCurses::applyCurrentPair()
     wcolor_set(stdscr, currentPair_, nullptr);
 }
 
+void LogoInterfaceCurses::applyStandoutAttr()
+{
+    if (!cursesActive_)
+        return;
+    if (standoutOn_)
+        attron(A_REVERSE);
+    else
+        attroff(A_REVERSE);
+}
+
 void LogoInterfaceCurses::rebindPairsToBackground(int newBg)
 {
     QHash<quint64, short> rebound;
@@ -286,6 +370,7 @@ void LogoInterfaceCurses::setTextColor(const QColor &foregroundColor, const QCol
     {
         currentPair_ = ensurePair(fgNum_, bgNum_);
         applyCurrentPair();
+        applyStandoutAttr();
         refresh();
     }
 }

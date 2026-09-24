@@ -25,8 +25,9 @@
 /// @brief The LogoInterfaceCurses class is a LogoInterface that talks to the
 /// terminal through ncursesw.
 ///
-/// It implements console printing, raw-line input, and SETTEXTCOLOR. Turtle
-/// graphics remain unavailable.
+/// It implements the Logo text console: printing, line input, SETTEXTCOLOR,
+/// CLEARTEXT, SETCURSOR/CURSOR, KEYP, and STANDOUT. Turtle graphics remain
+/// unavailable.
 class LogoInterfaceCurses : public LogoInterface
 {
     bool cursesActive_ = false;
@@ -37,11 +38,13 @@ class LogoInterfaceCurses : public LogoInterface
     short currentPair_ = 0;
     int nextPair_ = 1;
     QHash<quint64, short> pairByFgBg_;
+    bool standoutOn_ = false;
 
     int colorNumber(const QColor &color) const;
     short ensurePair(int fg, int bg);
     void initColorPair(short pair, int fg, int bg);
     void applyCurrentPair();
+    void applyStandoutAttr();
     void rebindPairsToBackground(int newBg);
     void recolorDefaultCells(int newBg);
 
@@ -71,6 +74,27 @@ class LogoInterfaceCurses : public LogoInterface
     /// @brief Reads a single character from the terminal.
     /// @return The character that was read, or nothing on EOF.
     DatumPtr readchar() override;
+
+    /// @brief True if a character is waiting on the terminal (KEYP / KEY?).
+    bool keyQueueHasChars() override;
+
+    /// @brief Wraps a string in STANDOUT markers (ESC). Printing toggles A_REVERSE.
+    /// @param src The string to mark.
+    /// @return The marked string.
+    QString addStandoutToString(const QString &src) override;
+
+    /// @brief CLEARTEXT / CT: erase the screen and home the cursor.
+    void clearScreenText() override;
+
+    /// @brief CURSOR: current text cursor as row and column.
+    /// @param row The row (0 is the top).
+    /// @param col The column (0 is the left).
+    void getTextCursorPos(int &row, int &col) override;
+
+    /// @brief SETCURSOR: move the text cursor. Logo order is [column row].
+    /// @param row The row (0 is the top).
+    /// @param col The column (0 is the left).
+    void setTextCursorPos(int row, int col) override;
 
     /// @brief Sets the text color.
     /// @param foregroundColor The color of future printed text.
