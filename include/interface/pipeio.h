@@ -74,4 +74,14 @@ inline int stdoutFd()
 }
 #endif
 
+/// @brief True if both stdin and stdout are terminal devices (not pipes or files).
+inline bool stdioIsInteractive()
+{
+#ifdef _WIN32
+    return _isatty(stdinFd()) != 0 && _isatty(stdoutFd()) != 0;
+#else
+    return isatty(stdinFd()) != 0 && isatty(stdoutFd()) != 0;
+#endif
+}
+
 #endif // PIPEIO_H

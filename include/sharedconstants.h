@@ -172,6 +172,12 @@ const bool debugBuild_ = false;
     // Set to true iff qlogo is communicating with Psychi.
     bool hasGUI_ = false;
 
+    // Set to true iff qlogo is using the ncurses text user interface.
+    bool hasTUI_ = false;
+
+    // Set to true iff the user forbade the ncurses text user interface.
+    bool noTUI_ = false;
+
     // Set to true iff compiler should show IR code.
     bool showIR_ = false;
 

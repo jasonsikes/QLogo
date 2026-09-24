@@ -18,6 +18,10 @@ Contains the implementation of the `LogoInterface` class, which is the base clas
 
 Contains the implementation of the `LogoInterfaceGUI` class, which extends `LogoInterface` and provides additional methods to handle GUI user interactions and graphics input/output. Since the process for user interaction is different for a GUI application, the `LogoInterfaceGUI` class adds a separate thread to wait for user input and a message queue to handle the input events.
 
+### logointerfacecurses.cpp
+
+Contains the implementation of the `LogoInterfaceCurses` class, which extends `LogoInterface` and talks to an interactive terminal through ncursesw. CMake compiles this file only when ncursesw is available; `logo_main.cpp` selects the TUI in that case. It is used automatically when both stdin and stdout are terminals. Use `--tui` to require it, or `--no-tui` to keep the plain command-line interface.
+
 ### textstream.cpp
 
 Contains the implementation of the `TextStream` class, which is used to read text from any kind of text stream. It provides methods to read lists, lines, words, and characters from the stream, with support for tokenization, comment removal, and special character processing.
