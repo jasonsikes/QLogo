@@ -48,6 +48,7 @@ saved_argc=$#
 
 # Change to the directory of the test script.
 test_dir=$(dirname $0)
+console_dir=$(cd "$test_dir" && pwd)
 if [ "$blacklisted" = true ]; then
     cd $test_dir/blacklisted
 else
@@ -207,6 +208,12 @@ MAKEEOF
         reported_tests=$(cat "$reported_test_file")
     fi
     rm -f "$reported_test_file"
+
+    if [ "$blacklisted" != true ]; then
+        cmdline_dir="$console_dir/cmdline"
+        . "$console_dir/cmdline.sh"
+        run_cmdline_tests
+    fi
     
     if has_gnu_date; then
         end_time=`date +%s%3N`

@@ -25,8 +25,8 @@
 #include <QList>
 #include <QSet>
 #include <QStack>
-#include <deque>
 #include <QVector>
+#include <deque>
 #include <memory>
 
 /// @brief One variable snapshot for a lambda APPLY binding.
@@ -52,6 +52,25 @@ struct Evaluator;
 /// language and maintains the state of execution of the QLogo code.
 class Kernel
 {
+  public:
+    /// @brief Result of evaluating one top-level instruction list.
+    enum class TopLevelResult
+    {
+        /// @brief The instruction finished; read another from this source.
+        Continue,
+        /// @brief The commander is exhausted.
+        EndOfInput,
+        /// @brief A runtime error or THROW "TOPLEVEL.
+        /// @details The REPL reads another line. A file stops, and Kernel::run
+        /// then enters the prompt.
+        StopThenPrompt,
+        /// @brief THROW "SYSTEM (BYE). Do not enter the prompt.
+        ExitProcess,
+        /// @brief THROW "PAUSE while already pausing.
+        PauseReturn
+    };
+
+  private:
     bool isPausing_;
 
     void initPalette();
@@ -63,6 +82,14 @@ class Kernel
 
     /// Initialize LOGO system variables
     void initVariables();
+
+    /// @brief Evaluate one instruction list from the commander.
+    /// @param prompt Prompt shown only when the commander is the terminal.
+    /// @param isPausing Whether this is a PAUSE session.
+    /// @param resultOut Optional; receives the instruction result (PAUSE value).
+    /// @return What the session should do next.
+    /// @note The caller must already have a base call frame on the stack.
+    TopLevelResult executeTopLevelList(const QString &prompt, bool isPausing, DatumPtr *resultOut = nullptr);
 
     /// @brief Private constructor for singleton pattern.
     Kernel();
@@ -195,7 +222,7 @@ class Kernel
     /************ ECE ************/
 
     /// @brief The next operation to perform.
-    void(Kernel::*nextOperation_)() = nullptr;
+    void (Kernel::*nextOperation_)() = nullptr;
 
     /// @brief The source list that returned the return value.
     DatumPtr retvalSourceList_;
@@ -259,8 +286,8 @@ class Kernel
   private:
     /// @brief The nine name sets, indexed by NameMark then NameKind.
     /// @details A name may be in more than one set.
-    QList<QSet<QString>> nameSets_ = QList<QSet<QString>>(
-        static_cast<qsizetype>(NameMark::Count) * static_cast<qsizetype>(NameKind::Count));
+    QList<QSet<QString>> nameSets_ =
+        QList<QSet<QString>>(static_cast<qsizetype>(NameMark::Count) * static_cast<qsizetype>(NameKind::Count));
 
     /// @brief The set selected by @p mark and @p kind.
     QSet<QString> &namesFor(NameMark mark, NameKind kind);
@@ -273,6 +300,12 @@ class Kernel
     /// @return The result of the last expression entered.
     /// @note The return value is useful only in the case of PAUSE.
     DatumPtr readEvalPrintLoop(bool isPausing, const QString &prompt = QString());
+
+    /// @brief Execute instructions from the current commander until they stop.
+    /// @return Why the loop stopped.
+    /// @note The caller must already have redirected the commander. This is
+    ///       the entry point LOAD will use.
+    TopLevelResult runProgram();
 
     /// @brief Get the procedure name from a TO or .MACRO node.
     /// @param node The ASTNode that holds the command, the procedure name and parameters.
@@ -301,7 +334,6 @@ class Kernel
     /// @return The QVector<double>.
     bool numbersFromList(QVector<double> &retval, const DatumPtr &listP) const;
 
-
     /// @brief Perform pause, essentially a REPL loop.
     /// @return The value passed to CONTINUE, if any.
     DatumPtr pause();
@@ -309,7 +341,8 @@ class Kernel
     /// @brief Runs the main loop of the QLogo interpreter.
     /// @return The exit code of the application.
     /// @note This method initializes the interface, sets up signal handlers,
-    /// runs the read-eval-print loop, and at termination restores signal handlers.
+    /// optionally runs a startup script, runs the read-eval-print loop, and
+    /// at termination restores signal handlers.
     int run();
 };
 

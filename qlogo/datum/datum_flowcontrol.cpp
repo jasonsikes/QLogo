@@ -20,8 +20,8 @@
 
 #include "astnode.h"
 #include "flowcontrol.h"
-#include "workspace/kernel.h"
 #include "sharedconstants.h"
+#include "workspace/kernel.h"
 #include "workspace/procedures.h"
 #include <QObject>
 
@@ -30,8 +30,9 @@ void FCError::commonInit()
     Kernel *k = &Kernel::get();
 
     // If the error is a bad default expression, don't report the procedure
-    // or line.
-    if (code_ != ERR_BAD_DEFAULT_EXPRESSION)
+    // or line. There is also no procedure when an error is created before
+    // the interpreter has a call frame (e.g. a missing startup script).
+    if (code_ != ERR_BAD_DEFAULT_EXPRESSION && !k->callFrameStack_.empty())
     {
         CallFrame *cf = k->currentCallFrame();
         if (cf->sourceNode_.isASTNode())
@@ -174,8 +175,8 @@ FCError *FCError::macroReturnedNotList(const DatumPtr &value)
 
 FCError *FCError::multipleExpressions(const DatumPtr &runlist)
 {
-    QString message = QObject::tr("Runlist %1 has more than one expression")
-                          .arg(runlist.toString(Datum::ToStringFlags_Show));
+    QString message =
+        QObject::tr("Runlist %1 has more than one expression").arg(runlist.toString(Datum::ToStringFlags_Show));
     return new FCError(ERR_LIST_HAS_MULTIPLE_EXPRESSIONS, message);
 }
 

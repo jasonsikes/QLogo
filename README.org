@@ -192,6 +192,8 @@ This enables multiple colors and fonts on the same console.
   
 *** QLogo does not look for nor automatically load ~STARTUP.LG~.
 
+~qlogo file.lg~ runs that file as Logo instructions and then presents the prompt.
+
 *** ~COMMANDLINE~ contains **ALL** of the parameters used to start qlogo instead of just the ones that appear after a hyphen.
 
 *** If ~ERRACT~ is set and its size is greater than zero, then any errors execute ~PAUSE~.

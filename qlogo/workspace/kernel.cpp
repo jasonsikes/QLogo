@@ -22,26 +22,25 @@
 #include "workspace/kernel.h"
 #include "astnode.h"
 #include "compiler.h"
-#include "interface/streammanager.h"
-#include "interface/textstream.h"
 #include "datum_types.h"
 #include "flowcontrol.h"
+#include "interface/logointerface.h"
+#include "interface/streammanager.h"
+#include "interface/textstream.h"
+#include "runparser.h"
 #include "sharedconstants.h"
 #include "treeifyer.h"
 #include "workspace/procedures.h"
 #include "workspace/specialvars.h"
-#include "runparser.h"
 #include "workspace/turtle.h"
-#include "interface/logointerface.h"
-#include <QCoreApplication> // quit()
 #include <QColor>
+#include <QCoreApplication> // quit()
 #include <QDebug>
 #include <QDir>
 #include <QFont>
 #include <QImage>
-#include <iostream>
 #include <cstdlib> // arc4random_uniform()
-
+#include <iostream>
 
 #ifdef QLOGO_DEBUG
 void ece_trace(const QString &msg)
@@ -113,6 +112,104 @@ bool Kernel::colorFromDatumPtr(QColor &retval, const DatumPtr &colorP) const
     return false;
 }
 
+Kernel::TopLevelResult Kernel::executeTopLevelList(const QString &prompt, bool isPausing, DatumPtr *resultOut)
+{
+    DatumPtr result;
+    try
+    {
+        DatumPtr line = StreamManager::get().readProgramList(prompt, true);
+
+        Q_ASSERT(callFrameStack_.back().evaluationStackSize() == 0);
+        Q_ASSERT(callFrameStack_.back().sourceNode_.isNothing());
+
+        if (line.isNothing())
+        {
+            if (resultOut != nullptr)
+                *resultOut = nothing();
+            return TopLevelResult::EndOfInput;
+        }
+        callFrameStack_.back().pushEvaluator(line);
+        result = runECE();
+    }
+    catch (FCError *e)
+    {
+        // While FCError objects can be returned from an execution in the form of a DatumPtr,
+        // sometimes exceptions are thrown by the parser.
+        // When that happens, wrap it into a DatumPtr.
+        result = DatumPtr(e);
+    }
+
+    if ((result.datumValue()->isa_ & Datum::typeDataMask) != 0)
+    {
+        result = DatumPtr(FCError::dontSay(result));
+    }
+
+    if (result.isFlowControl())
+    {
+        // Flow control instructions are not allowed at this level.
+        DatumPtr blame;
+
+        if (result.flowControlValue()->isa_ == Datum::typeReturn)
+        {
+            blame = result.flowControlValue()->sourceNode_.astnodeValue()->nodeName_;
+            result = DatumPtr(FCError::notInsideProcedure(blame));
+        }
+        // TODO: other flow control types
+    }
+
+    if (result.isErr())
+    {
+        FCError *e = result.errValue();
+        if (e->tag().isWord() && (e->code_ == ErrCode::ERR_NO_CATCH))
+        {
+            if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("TOPLEVEL"))
+            {
+                StreamManager::get().printToTerminal("\n");
+                if (resultOut != nullptr)
+                    *resultOut = result;
+                return TopLevelResult::StopThenPrompt;
+            }
+            if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("SYSTEM"))
+            {
+                StreamManager::get().printToTerminal("\n");
+                Config::get().mainInterface()->closeInterface();
+                QCoreApplication::quit();
+                if (resultOut != nullptr)
+                    *resultOut = nothing();
+                return TopLevelResult::ExitProcess;
+            }
+            if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("PAUSE") && isPausing)
+            {
+                if (resultOut != nullptr)
+                    *resultOut = e->output();
+                return TopLevelResult::PauseReturn;
+            }
+        }
+        StreamManager::get().printToTerminal(e->toString() + "\n");
+        if (resultOut != nullptr)
+            *resultOut = result;
+        return TopLevelResult::StopThenPrompt;
+    }
+
+    if (resultOut != nullptr)
+        *resultOut = result;
+    return TopLevelResult::Continue;
+}
+
+Kernel::TopLevelResult Kernel::runProgram()
+{
+    callFrameStack_.emplace_back(nullptr, nullptr, 0);
+    TopLevelResult action = TopLevelResult::EndOfInput;
+    forever
+    {
+        action = executeTopLevelList(QString(), false);
+        if (action != TopLevelResult::Continue)
+            break;
+    }
+    callFrameStack_.pop_back();
+    return action;
+}
+
 DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
 {
     ReplScope repl;
@@ -121,78 +218,11 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
     DatumPtr result;
     forever
     {
-        try
-        {
-            DatumPtr line = StreamManager::get().readProgramList(localPrompt, true);
-
-            Q_ASSERT(callFrameStack_.back().evaluationStackSize() == 0);
-            Q_ASSERT(callFrameStack_.back().sourceNode_.isNothing());
-
-            if (line.isNothing())
-            {
-                 // EOF
-                result = nothing();
-                goto bailout;
-            }
-            callFrameStack_.back().pushEvaluator(line);
-            result = runECE();
-        }
-        catch (FCError *e)
-        {
-            // While FCError objects can be returned from an execution in the form of a DatumPtr,
-            // sometimes exceptions are thrown by the parser.
-            // When that happens, wrap it into a DatumPtr.
-            result = DatumPtr(e);
-        }
-
-        if ((result.datumValue()->isa_ & Datum::typeDataMask) != 0)
-        {
-            result = DatumPtr(FCError::dontSay(result));
-        }
-
-        if (result.isFlowControl())
-        {
-            // Flow control instructions are not allowed in the REPL.
-            DatumPtr blame;
-
-            if (result.flowControlValue()->isa_ == Datum::typeReturn)
-            {
-                blame = result.flowControlValue()->sourceNode_.astnodeValue()->nodeName_;
-                result = DatumPtr(FCError::notInsideProcedure(blame));
-            }
-            // TODO: other flow control types
-        }
-
-        if (result.isErr())
-        {
-            FCError *e = result.errValue();
-            if (e->tag().isWord() && (e->code_ == ErrCode::ERR_NO_CATCH))
-            {
-                if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("TOPLEVEL"))
-                {
-                    StreamManager::get().printToTerminal("\n");
-                    continue;
-                }
-                if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("SYSTEM"))
-                {
-                    StreamManager::get().printToTerminal("\n");
-                    Config::get().mainInterface()->closeInterface();
-                    QCoreApplication::quit();
-                    result = nothing();
-                    goto bailout;
-                }
-                if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("PAUSE") && isPausing)
-                {
-                    result = e->output();
-                    goto bailout;
-                }
-            }
-            StreamManager::get().printToTerminal(e->toString() + "\n");
+        TopLevelResult action = executeTopLevelList(localPrompt, isPausing, &result);
+        if (action == TopLevelResult::Continue || action == TopLevelResult::StopThenPrompt)
             continue;
-        }
+        break;
     }
-
-bailout:
     callFrameStack_.pop_back();
     return result;
 }
@@ -255,7 +285,8 @@ Datum *Kernel::inputProcedure(ASTNode *node)
         QList<DatumPtr> sourceText = StreamManager::get().programReaderLineHistory();
         ListBuilder textBuilder;
         textBuilder.append(parameterList);
-        Procedures::readProcedureBody(*StreamManager::get().programReader(), textBuilder, sourceText, QStringLiteral("> "));
+        Procedures::readProcedureBody(
+            *StreamManager::get().programReader(), textBuilder, sourceText, QStringLiteral("> "));
         DatumPtr textP = textBuilder.finishedList();
 
         Procedures::get().defineProcedure(command, procnameP, textP, sourceText);
@@ -367,8 +398,8 @@ DatumPtr Kernel::allVariables() const
 
 QSet<QString> &Kernel::namesFor(NameMark mark, NameKind kind)
 {
-    const auto index = static_cast<qsizetype>(mark) * static_cast<qsizetype>(NameKind::Count)
-                       + static_cast<qsizetype>(kind);
+    const auto index =
+        static_cast<qsizetype>(mark) * static_cast<qsizetype>(NameKind::Count) + static_cast<qsizetype>(kind);
     return nameSets_[index];
 }
 
@@ -422,7 +453,6 @@ DatumPtr Kernel::explicitSlotList() const
     return explicitSlotListStack_.top();
 }
 
-
 Kernel::Kernel()
 {
     initVariables();
@@ -457,20 +487,20 @@ Evaluator *Kernel::currentEvaluator()
     return currentCallFrame()->topEvaluator();
 }
 
- DatumPtr Kernel::runECE()
- {
-     nextOperation_ = &Kernel::ece_evaluateStack;
-     currentCallFrame()->retvalToParent_ = nothing();
- 
-     while (nextOperation_ != nullptr)
-     {
-         (this->*nextOperation_)();
-     }
- 
-     return currentCallFrame()->retvalToParent_;
- }
+DatumPtr Kernel::runECE()
+{
+    nextOperation_ = &Kernel::ece_evaluateStack;
+    currentCallFrame()->retvalToParent_ = nothing();
 
- void Kernel::ece_evaluateStack()
+    while (nextOperation_ != nullptr)
+    {
+        (this->*nextOperation_)();
+    }
+
+    return currentCallFrame()->retvalToParent_;
+}
+
+void Kernel::ece_evaluateStack()
 {
     ece_trace("ece_evaluateStack: executing " + currentEvaluator()->list_.toString());
     // GOTO stores the destination block on the CallFrame; consume it here so the
@@ -515,7 +545,7 @@ void Kernel::ece_decideEmptyEvaluationStack()
     if (currentCallFrame()->isReadingArgs_)
     {
         // We are processing the arguments.
-        if ( ! currentCallFrame()->currentParameterName_.isEmpty())
+        if (!currentCallFrame()->currentParameterName_.isEmpty())
         {
             // We have finished processing a default value for an optional parameter.
             DatumPtr defaultValue = currentCallFrame()->retvalToParent_;
@@ -523,12 +553,14 @@ void Kernel::ece_decideEmptyEvaluationStack()
             // Any result that is not a data type gets converted to a bad default error.
             if ((defaultValue.isa() & Datum::typeDataMask) == 0)
             {
-                currentCallFrame()->retvalToParent_ = DatumPtr(FCError::badDefault(currentCallFrame()->currentArgument_));
+                currentCallFrame()->retvalToParent_ =
+                    DatumPtr(FCError::badDefault(currentCallFrame()->currentArgument_));
                 nextOperation_ = &Kernel::ece_exitProcedure;
             }
 
             currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
-            ece_trace("ece_decideEmptyEvaluationStack: setting variable " + currentCallFrame()->currentParameterName_ + " to " + defaultValue.toString());
+            ece_trace("ece_decideEmptyEvaluationStack: setting variable " + currentCallFrame()->currentParameterName_ +
+                      " to " + defaultValue.toString());
             setDatumForName(defaultValue, currentCallFrame()->currentParameterName_);
             currentCallFrame()->currentParameterName_.clear();
             nextOperation_ = &Kernel::ece_processParameters;
@@ -542,7 +574,8 @@ void Kernel::ece_decideEmptyEvaluationStack()
     }
 
     // If there is a flow control instruction, or we have reached the end of the procedure, we need to handle it.
-    if (currentCallFrame()->retvalToParent_.isFlowControl() || currentCallFrame()->runningSourceList_.listValue()->isEmpty())
+    if (currentCallFrame()->retvalToParent_.isFlowControl() ||
+        currentCallFrame()->runningSourceList_.listValue()->isEmpty())
     {
         nextOperation_ = &Kernel::ece_exitProcedure;
         return;
@@ -564,7 +597,8 @@ void Kernel::ece_popEvaluator()
     DatumPtr startingList = e->startingList_;
     cf->retvalToParent_ = DatumPtr(e->retvalToParent_);
     retvalSourceList_ = completedList;
-    ece_trace("ece_popEvaluator: returning value " + cf->retvalToParent_.toString() + " from source list " + retvalSourceList_.toString());
+    ece_trace("ece_popEvaluator: returning value " + cf->retvalToParent_.toString() + " from source list " +
+              retvalSourceList_.toString());
 
     cf->popEvaluator();
 
@@ -591,7 +625,7 @@ void Kernel::ece_popEvaluator()
 void Kernel::ece_exitProcedure()
 {
     ece_trace("ece_exitProcedure");
-    
+
     // There shouldn't be any remaining evaluators on the evaluation stack.
     Q_ASSERT(currentCallFrame()->evaluationStackSize() == 0);
 
@@ -612,7 +646,7 @@ void Kernel::ece_exitProcedure()
     {
         // Tail call inside this frame. Macro calls are not continuations; if this frame
         // is a macro, isMacroCall_ stays set so the eventual output is still expanded.
-        auto *continuation = static_cast<FCContinuation*>(currentCallFrame()->retvalToParent_.flowControlValue());
+        auto *continuation = static_cast<FCContinuation *>(currentCallFrame()->retvalToParent_.flowControlValue());
         auto *procedure = continuation->procedure().astnodeValue();
         auto arguments = continuation->params().first();
         currentCallFrame()->applyContinuation(procedure, arguments);
@@ -652,7 +686,7 @@ void Kernel::ece_exitProcedure()
     }
     case Datum::typeGoto:
     {
-        auto *gotoControl = static_cast<FCGoto*>(currentCallFrame()->retvalToParent_.flowControlValue());
+        auto *gotoControl = static_cast<FCGoto *>(currentCallFrame()->retvalToParent_.flowControlValue());
         auto [location, blockId] = gotoControl->location();
         currentCallFrame()->runningSourceList_ = location;
         currentCallFrame()->jumpLocation_ = blockId;
@@ -729,7 +763,7 @@ void Kernel::ece_expandMacroReturn(const DatumPtr &value)
 void Kernel::ece_processParameters()
 {
     ece_trace("ece_processParameters");
-    while ( ! currentCallFrame()->parameters_.listValue()->isEmpty())
+    while (!currentCallFrame()->parameters_.listValue()->isEmpty())
     {
         currentCallFrame()->currentArgument_ = currentCallFrame()->parameters_.listValue()->head;
         DatumPtr parameter = currentCallFrame()->currentArgument_;
@@ -750,7 +784,8 @@ void Kernel::ece_processParameters()
             DatumPtr tail = currentCallFrame()->arguments_.listValue()->tail;
             currentCallFrame()->arguments_ = tail;
             currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
-            ece_trace("ece_processParameters: setting variable " + currentCallFrame()->currentParameterName_ + " to " + argument.toString());
+            ece_trace("ece_processParameters: setting variable " + currentCallFrame()->currentParameterName_ + " to " +
+                      argument.toString());
             setDatumForName(argument, currentCallFrame()->currentParameterName_);
         }
         else
@@ -836,13 +871,34 @@ int Kernel::run()
 
     LogoInterface::initSignals();
 
-    readEvalPrintLoop(false);
+    int exitCode = 0;
+    bool enterPrompt = true;
+
+    if (!Config::get().startupScriptPath_.isEmpty())
+    {
+        try
+        {
+            ProgramReadScope scope(DatumPtr(Config::get().startupScriptPath_));
+            if (runProgram() == TopLevelResult::ExitProcess)
+                enterPrompt = false;
+        }
+        catch (FCError *e)
+        {
+            DatumPtr err(e);
+            StreamManager::get().printToTerminal(err.errValue()->toString() + "\n");
+            enterPrompt = false;
+            exitCode = 1;
+        }
+    }
+
+    if (enterPrompt)
+        readEvalPrintLoop(false);
 
     LogoInterface::restoreSignals();
 
     Compiler::releaseAllCompiledText();
 
-    return 0;
+    return exitCode;
 }
 
 /// @brief Print stack trace.
@@ -854,20 +910,16 @@ void bt()
         CallFrame *frame = &(k.callFrameStack_[i]);
         if (frame->sourceNode_.isNothing())
             std::cerr << "frame " << i << ": REPL Base" << std::endl;
-        else if (frame->sourceNode_.isASTNode()
-                 && frame->sourceNode_.astnodeValue()->countOfChildren() > 0)
+        else if (frame->sourceNode_.isASTNode() && frame->sourceNode_.astnodeValue()->countOfChildren() > 0)
             std::cerr << "frame " << i << ": "
-                      << frame->sourceNode_.astnodeValue()->nodeName_
-                             .toString(Datum::ToStringFlags_Key)
-                             .toStdString()
+                      << frame->sourceNode_.astnodeValue()->nodeName_.toString(Datum::ToStringFlags_Key).toStdString()
                       << std::endl;
         else
             std::cerr << "frame " << i << ": ?" << std::endl;
         for (size_t j = 0; j < frame->evaluationStackSize(); ++j)
         {
             Evaluator *ev = frame->evaluatorAtIndex(j);
-            std::cerr << "  list: "
-                      << ev->list_.toString(Datum::ToStringFlags_Show).toStdString() << std::endl;
+            std::cerr << "  list: " << ev->list_.toString(Datum::ToStringFlags_Show).toStdString() << std::endl;
         }
     }
 }

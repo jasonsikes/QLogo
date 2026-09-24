@@ -1,0 +1,6 @@
+; leading comment
+#! unix-style comment
+
+print [ok]
+
+print [still]

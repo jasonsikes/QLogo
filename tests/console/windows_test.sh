@@ -9,6 +9,7 @@
 # If FILENAMES is omitted, all *.lg files in the tests directory are run.
 
 test_dir=$(dirname "$0")
+console_dir=$(cd "$test_dir" && pwd)
 tests_dir=$(cd "$test_dir/tests" && pwd)
 cd "$tests_dir" || exit 1
 
@@ -94,6 +95,11 @@ else
         [ -f "$a" ] || continue
         run_test "$a"
     done
+
+    qlogo_run_dir="$logo_dir"
+    cmdline_dir="$console_dir/cmdline"
+    . "$console_dir/cmdline.sh"
+    run_cmdline_tests
 fi
 
 if [ -n "$reported_tests" ]; then

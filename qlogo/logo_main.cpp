@@ -89,9 +89,7 @@ void processOptions(QCoreApplication *a)
          QCoreApplication::translate(mainString,
                                      "Show every change in the Count Of Nodes. "
                                      "(for debugging).")},
-        {optTraceEvaluator,
-         QCoreApplication::translate(mainString,
-                                     "Trace evaluator execution (for debugging).")},
+        {optTraceEvaluator, QCoreApplication::translate(mainString, "Trace evaluator execution (for debugging).")},
     });
 #ifdef QLOGO_HAS_CURSES
     commandlineParser.addOptions({
@@ -100,12 +98,20 @@ void processOptions(QCoreApplication *a)
                                      "Force the ncurses text user interface. This is the default "
                                      "when both stdin and stdout are terminals.")},
         {optNoTui,
-         QCoreApplication::translate(mainString,
-                                     "Do not use the ncurses text user interface, even on a terminal.")},
+         QCoreApplication::translate(mainString, "Do not use the ncurses text user interface, even on a terminal.")},
     });
 #endif
 
+    commandlineParser.addPositionalArgument(
+        "script", QCoreApplication::translate(mainString, "Logo file run before the prompt."), "[script]");
+
     commandlineParser.process(*a);
+
+    const QStringList positional = commandlineParser.positionalArguments();
+    if (!positional.isEmpty())
+    {
+        Config::get().startupScriptPath_ = positional.first();
+    }
 
     if (commandlineParser.isSet(optPsychi))
     {
