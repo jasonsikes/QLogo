@@ -14,10 +14,6 @@ Generates the string, header, and table files for QLogo primitives from source f
 
 Generates the help text for QLogo commands from source files.
 
-## generate_library.py
-
-Generates the library files for QLogo from the source json file.
-
 ## createDesktopIcons.sh
 
 Reads `icons/qlogo_icon_1024.png` and generates platform icon files under `icons/macos/`, `icons/windows/`, and `icons/linux/hicolor/`, plus `qlogo_logo.png` for the README.
@@ -121,6 +117,3 @@ find qlogo Psychi include -name "*.cpp" -o -name "*.h" | xargs clang-tidy -p .
 
 Contains the help text for QLogo library routines. The script, `generate_help.py`, reads this file and generates the help text SQLite database.
 
-## logolib.json
-
-Contains the library routines for QLogo. The script, `generate_library.py`, reads this file and generates the QLogo library SQLite database.

@@ -3,8 +3,9 @@
 # findDBPath (../Resources/) can find them when qlogo runs from Psychi.
 set(RESOURCE_FILES
   "${CMAKE_SOURCE_DIR}/share/${QLOGO_HELP}"
-  "${CMAKE_SOURCE_DIR}/share/${QLOGO_LIB}"
+  "${QLOGO_LIB_DB}"
 )
+set_source_files_properties("${QLOGO_LIB_DB}" PROPERTIES GENERATED TRUE)
 set(GUI_SOURCES
   canvas.cpp
   console.cpp

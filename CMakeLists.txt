@@ -36,13 +36,46 @@ set(QLOGO_DATA_DIR "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_DATADIR}/${QLOGO_BIN}"
 set(QLOGO_HELP_DB "${QLOGO_DATA_DIR}/${QLOGO_HELP}")
 set(QLOGO_LIB_DB "${QLOGO_DATA_DIR}/${QLOGO_LIB}")
 
+file(MAKE_DIRECTORY "${QLOGO_DATA_DIR}")
+
+qt_add_executable(mklogolib util/mklogolib.cpp)
+target_link_libraries(mklogolib PRIVATE Qt6::Core Qt6::Sql)
+set_target_properties(mklogolib PROPERTIES WIN32_EXECUTABLE FALSE)
+
+file(GLOB LOGOLIB_SOURCES CONFIGURE_DEPENDS LIST_DIRECTORIES false
+    "${CMAKE_SOURCE_DIR}/logolib/*"
+)
+if(NOT LOGOLIB_SOURCES)
+    message(FATAL_ERROR "No files found in logolib/")
+endif()
+
+set(_mklogolib_env_args)
+if(WIN32)
+    get_target_property(_mklogolib_qt_qmake Qt6::qmake IMPORTED_LOCATION)
+    get_filename_component(_mklogolib_qt_bin "${_mklogolib_qt_qmake}" DIRECTORY)
+    list(APPEND _mklogolib_env_args "PATH=${_mklogolib_qt_bin};$ENV{PATH}")
+endif()
+
+add_custom_command(
+    OUTPUT "${QLOGO_LIB_DB}"
+    COMMAND "${CMAKE_COMMAND}" -E env ${_mklogolib_env_args}
+            "$<TARGET_FILE:mklogolib>"
+            "${CMAKE_SOURCE_DIR}/logolib"
+            "${QLOGO_LIB_DB}"
+    DEPENDS mklogolib ${LOGOLIB_SOURCES}
+    COMMENT "Generating ${QLOGO_LIB} from logolib"
+    VERBATIM
+)
+add_custom_target(qlogo_library_db ALL DEPENDS "${QLOGO_LIB_DB}")
+
 add_subdirectory("${QLOGO_BIN}")
 
 add_subdirectory("${QLOGO_GUI}")
 
-file(MAKE_DIRECTORY "${QLOGO_DATA_DIR}")
+add_dependencies("${QLOGO_BIN}" qlogo_library_db)
+add_dependencies("${QLOGO_GUI}" qlogo_library_db)
 
-file(COPY "share/${QLOGO_HELP}" "share/${QLOGO_LIB}"
+file(COPY "share/${QLOGO_HELP}"
     DESTINATION "${QLOGO_DATA_DIR}"
 )
 
