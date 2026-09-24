@@ -2,10 +2,10 @@
 # but on macOS they live in the GUI bundle's Contents/Resources so
 # findDBPath (../Resources/) can find them when qlogo runs from Psychi.
 set(RESOURCE_FILES
-  "${CMAKE_SOURCE_DIR}/share/${QLOGO_HELP}"
+  "${QLOGO_HELP_DB}"
   "${QLOGO_LIB_DB}"
 )
-set_source_files_properties("${QLOGO_LIB_DB}" PROPERTIES GENERATED TRUE)
+set_source_files_properties("${QLOGO_HELP_DB}" "${QLOGO_LIB_DB}" PROPERTIES GENERATED TRUE)
 set(GUI_SOURCES
   canvas.cpp
   console.cpp
