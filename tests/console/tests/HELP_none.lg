@@ -1,0 +1,9 @@
+openwrite [buf]
+setwrite [buf]
+help
+setwrite []
+close [buf]
+print substringp "FORWARD :buf
+print substringp "ERRACT :buf
+print substringp "FOREACH :buf
+print substringp "HELP :buf

@@ -341,6 +341,7 @@ const QString &cmdStrTRACEDP();
 const QString &cmdStrTRACED_Q();
 const QString &cmdStrSTEPPEDP();
 const QString &cmdStrSTEPPED_Q();
+const QString &cmdStrHELP();
 } // namespace StringConstants
 #endif // CMD_STRINGS_H
 

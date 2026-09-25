@@ -17,6 +17,7 @@
 #include "workspace/exports_internal.h"
 #include "datum_types.h"
 #include "workspace/kernel.h"
+#include "workspace/library.h"
 #include "workspace/procedures.h"
 #include "astnode.h"
 #include "flowcontrol.h"
@@ -950,6 +951,61 @@ EXPORTC addr_t stdPot(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
     return withContentsList(eAddr, astnodeAddr, contentsAddr, [](const DatumPtr &contentslist) {
         StreamManager::get().print(Kernel::get().titlesFromContentsList(contentslist));
     });
+}
+
+/// HELP: print help text for a name, or list every documented name.
+/// With no input, prints a SHOW-style list of aliases. With one word, looks
+/// up that name. A missing name prints a sorry message rather than an error.
+/// A non-word is "doesn't like".
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param nameAddr the evaluated name, or 0 if HELP was given no input
+/// @return the owning ASTNode, or an Error if the input is rejected.
+EXPORTC addr_t stdHelp(addr_t eAddr, addr_t astnodeAddr, addr_t nameAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    try
+    {
+        QString output;
+        if (nameAddr == 0)
+        {
+            QStringList names = Help::get().allCommands();
+            names.sort();
+            ListBuilder list;
+            for (const QString &name : names)
+                list.append(DatumPtr(name));
+            output = list.finishedList().toString(Datum::ToStringFlags_Show);
+            output += QLatin1Char('\n');
+        }
+        else
+        {
+            DatumPtr nameP(reinterpret_cast<Datum *>(nameAddr));
+            if (!nameP.isWord())
+                throw FCError::doesntLike(node->nodeName_, nameP);
+
+            const QString key = nameP.toString(Datum::ToStringFlags_Key);
+            const QString text = Help::get().helpText(key);
+            if (text.isEmpty())
+            {
+                output = QObject::tr("Sorry, no help available on %1\n")
+                             .arg(nameP.toString(Datum::ToStringFlags_Show));
+            }
+            else
+            {
+                output = text;
+                if (!output.endsWith(QLatin1Char('\n')))
+                    output += QLatin1Char('\n');
+            }
+        }
+        StreamManager::get().print(output);
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
 }
 
 /// ERASE / ER: erase the procedures, variables, and property lists named in a

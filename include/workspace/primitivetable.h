@@ -336,5 +336,6 @@ stringToCmd.insert(StringConstants::cmdStrTRACEDP(), Cmd_t{&Compiler::genTracedp
 stringToCmd.insert(StringConstants::cmdStrTRACED_Q(), Cmd_t{&Compiler::genTracedp, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrSTEPPEDP(), Cmd_t{&Compiler::genSteppedp, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrSTEPPED_Q(), Cmd_t{&Compiler::genSteppedp, 1, 1, 1, TypeD});
+stringToCmd.insert(StringConstants::cmdStrHELP(), Cmd_t{&Compiler::genHelp, 0, -1, 1, TypeN});
 
 

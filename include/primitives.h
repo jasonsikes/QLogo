@@ -256,5 +256,6 @@ llvm::Value *genErpls(const DatumPtr &node, TypeMask expected);
 llvm::Value *genBuriedp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genTracedp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSteppedp(const DatumPtr &node, TypeMask expected);
+llvm::Value *genHelp(const DatumPtr &node, TypeMask expected);
 #endif // PRIMITIVE_HEADER_H
 

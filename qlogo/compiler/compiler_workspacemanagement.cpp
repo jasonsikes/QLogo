@@ -1128,3 +1128,33 @@ Value *Compiler::genSteppedp(const DatumPtr &node, TypeMask expected)
         PaAddr(contents));
     return generateNotFlowControl(retval);
 }
+
+/***DOC HELP
+HELP name
+(HELP)
+
+    command.  Prints information from the reference manual about
+    the primitive procedure named by the input.  With no input,
+    lists all the primitives about which help is available.
+
+    If HELP is called with the name of a defined procedure for which there
+    is no help file, it will print the title line of the procedure
+    followed by lines from the procedure body that start with semicolon,
+    stopping when a non-semicolon line is seen.
+
+    Exceptionally, the HELP command can be used without its default
+    input and without parentheses provided that nothing follows it on
+    the instruction line.
+
+COD***/
+// CMD HELP 0 -1 1 n
+Value *Compiler::genHelp(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    Value *nameAddr = CoAddr(0);
+    if (node.astnodeValue()->countOfChildren() > 0)
+        nameAddr = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdHelp, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(nameAddr));
+    return generateNotFlowControl(retval);
+}

@@ -2004,4 +2004,10 @@ const QString &StringConstants::cmdStrSTEPPED_Q()
     return str;
 }
 
+const QString &StringConstants::cmdStrHELP()
+{
+    static const QString str = QObject::tr("HELP");
+    return str;
+}
+
 
