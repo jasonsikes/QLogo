@@ -335,8 +335,17 @@ class Kernel
     bool numbersFromList(QVector<double> &retval, const DatumPtr &listP) const;
 
     /// @brief Perform pause, essentially a REPL loop.
-    /// @return The value passed to CONTINUE, if any.
+    /// @return The value passed to CONTINUE, if any. An uncaught TOPLEVEL or
+    /// SYSTEM throw is returned as an FCError so the caller can unwind.
     DatumPtr pause();
+
+    /// @brief Consume a pending terminal signal on the interpreter thread.
+    /// @param resultOut Receives the FCError for TOPLEVEL/SYSTEM, or the return
+    /// value of pause() for PAUSE. Unchanged meaning: nothing() if no signal.
+    /// @return True if a signal was pending and consumed.
+    /// @note Call this only from the interpreter thread. The signal handler
+    /// never calls it.
+    bool consumePendingSignal(DatumPtr *resultOut);
 
     /// @brief Runs the main loop of the QLogo interpreter.
     /// @return The exit code of the application.

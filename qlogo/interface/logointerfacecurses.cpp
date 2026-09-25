@@ -15,7 +15,7 @@
 
 #include "interface/logointerfacecurses.h"
 #include "interface/pipeio.h"
-#include <QThread>
+#include <cerrno>
 #include <clocale>
 #include <cstdio>
 #include <cstring>
@@ -203,44 +203,63 @@ bool LogoInterfaceCurses::keyQueueHasChars()
 
 QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
 {
-    if (atEnd())
-        return {};
-
-    printToConsole(prompt);
-
-    wint_t buffer[65536];
-    const int rc = getn_wstr(buffer, 65535);
-    if (rc == ERR)
+    for (;;)
     {
+        if (atEnd())
+            return {};
+
+        printToConsole(prompt);
+
+        wint_t buffer[65536];
+        errno = 0;
+        const int rc = getn_wstr(buffer, 65535);
+        if (rc != ERR)
+        {
+            std::u32string u32;
+            for (int i = 0; i < 65535 && buffer[i] != 0; ++i)
+                u32.push_back(static_cast<char32_t>(buffer[i]));
+            return QString::fromStdU32String(u32);
+        }
+        if (errno == EINTR)
+        {
+            retryAfterInterrupt();
+            continue;
+        }
         inputAtEof_ = true;
         return {};
     }
-
-    std::u32string u32;
-    for (int i = 0; i < 65535 && buffer[i] != 0; ++i)
-        u32.push_back(static_cast<char32_t>(buffer[i]));
-    return QString::fromStdU32String(u32);
 }
 
 DatumPtr LogoInterfaceCurses::readchar()
 {
-    if (!cursesActive_ || atEnd())
+    if (!cursesActive_)
         return nothing();
-
-    refresh();
-    noecho();
-    wint_t ch = 0;
-    const int rc = get_wch(&ch);
-    echo();
-    if (rc == ERR)
+    for (;;)
     {
+        if (atEnd())
+            return nothing();
+
+        refresh();
+        noecho();
+        wint_t ch = 0;
+        errno = 0;
+        const int rc = get_wch(&ch);
+        echo();
+        if (rc != ERR)
+        {
+            if (rc == KEY_CODE_YES)
+                return nothing();
+            char32_t ucs4 = static_cast<char32_t>(ch);
+            return DatumPtr(QString::fromUcs4(&ucs4, 1));
+        }
+        if (errno == EINTR)
+        {
+            retryAfterInterrupt();
+            continue;
+        }
         inputAtEof_ = true;
         return nothing();
     }
-    if (rc == KEY_CODE_YES)
-        return nothing();
-    char32_t ucs4 = static_cast<char32_t>(ch);
-    return DatumPtr(QString::fromUcs4(&ucs4, 1));
 }
 
 int LogoInterfaceCurses::colorNumber(const QColor &color) const
@@ -379,5 +398,5 @@ void LogoInterfaceCurses::mwait(unsigned long msecs)
 {
     if (cursesActive_)
         refresh();
-    QThread::msleep(msecs);
+    LogoInterface::mwait(msecs);
 }

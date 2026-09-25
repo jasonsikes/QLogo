@@ -175,7 +175,7 @@ Kernel::TopLevelResult Kernel::executeTopLevelList(const QString &prompt, bool i
                 Config::get().mainInterface()->closeInterface();
                 QCoreApplication::quit();
                 if (resultOut != nullptr)
-                    *resultOut = nothing();
+                    *resultOut = result;
                 return TopLevelResult::ExitProcess;
             }
             if (e->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("PAUSE") && isPausing)
@@ -219,8 +219,17 @@ DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
     forever
     {
         TopLevelResult action = executeTopLevelList(localPrompt, isPausing, &result);
-        if (action == TopLevelResult::Continue || action == TopLevelResult::StopThenPrompt)
+        if (action == TopLevelResult::Continue)
             continue;
+        if (action == TopLevelResult::StopThenPrompt)
+        {
+            // Uncaught TOPLEVEL in a pause REPL must leave the pause, not prompt again.
+            if (isPausing && result.isErr() && result.errValue()->code_ == ErrCode::ERR_NO_CATCH &&
+                result.errValue()->tag().isWord() &&
+                result.errValue()->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("TOPLEVEL"))
+                break;
+            continue;
+        }
         break;
     }
     callFrameStack_.pop_back();
@@ -487,6 +496,35 @@ Evaluator *Kernel::currentEvaluator()
     return currentCallFrame()->topEvaluator();
 }
 
+bool Kernel::consumePendingSignal(DatumPtr *resultOut)
+{
+    switch (LogoInterface::latestSignal())
+    {
+    case noSignal:
+        if (resultOut != nullptr)
+            *resultOut = nothing();
+        return false;
+    case toplevelSignal:
+        if (resultOut != nullptr)
+            *resultOut = DatumPtr(FCError::custom(DatumPtr(QObject::tr("TOPLEVEL"))));
+        return true;
+    case systemSignal:
+        if (resultOut != nullptr)
+            *resultOut = DatumPtr(FCError::custom(DatumPtr(QObject::tr("SYSTEM"))));
+        return true;
+    case pauseSignal:
+    {
+        DatumPtr paused = pause();
+        if (resultOut != nullptr)
+            *resultOut = paused;
+        return true;
+    }
+    }
+    if (resultOut != nullptr)
+        *resultOut = nothing();
+    return false;
+}
+
 DatumPtr Kernel::runECE()
 {
     nextOperation_ = &Kernel::ece_evaluateStack;
@@ -494,6 +532,29 @@ DatumPtr Kernel::runECE()
 
     while (nextOperation_ != nullptr)
     {
+        if (nextOperation_ == &Kernel::ece_evaluateStack)
+        {
+            DatumPtr signalResult;
+            if (consumePendingSignal(&signalResult))
+            {
+                if (signalResult.isErr())
+                {
+                    currentCallFrame()->jumpLocation_ = 0;
+                    if (currentCallFrame()->evaluationStackSize() > 0)
+                    {
+                        currentEvaluator()->retvalToParent_ = signalResult.datumValue();
+                        nextOperation_ = &Kernel::ece_popEvaluator;
+                    }
+                    else
+                    {
+                        currentCallFrame()->retvalToParent_ = signalResult;
+                        nextOperation_ = nullptr;
+                    }
+                    continue;
+                }
+                // PAUSE returned a normal value: continue the interrupted instruction.
+            }
+        }
         (this->*nextOperation_)();
     }
 
@@ -840,36 +901,43 @@ void Kernel::ece_processParameters()
 
 DatumPtr Kernel::pause()
 {
-    // if (isPausing)
-    // {
-    //     StreamManager::get().printToTerminal(QObject::tr("Already Pausing\n"));
-    //     return nothing();
-    // }
+    if (isPausing_)
+    {
+        StreamManager::get().printToTerminal(QObject::tr("Already Pausing\n"));
+        return nothing();
+    }
 
-    // isPausing = true;
-    // DatumPtr sourceNode = callStack.localFrame()->sourceNode;
-    // QString sourceNodeName;
-    // if (sourceNode.isASTNode())
-    // {
-    //     sourceNodeName = sourceNode.astnodeValue()->nodeName.toString();
-    // }
+    QString sourceNodeName;
+    if (!callFrameStack_.empty())
+    {
+        DatumPtr sourceNode = currentCallFrame()->sourceNode_;
+        if (sourceNode.isASTNode())
+            sourceNodeName = sourceNode.astnodeValue()->nodeName_.toString();
+    }
 
-    // CallFrame frame(callStack, nothing());
+    StreamManager::get().printToTerminal(QObject::tr("Pausing...\n"));
 
-    // StreamManager::get().printToTerminal(QObject::tr("Pausing...\n"));
-
-    // DatumPtr result = readEvalPrintLoop(true, sourceNodeName);
-
-    // isPausing = false;
-    // return result;
-    return nothing();
+    isPausing_ = true;
+    DatumPtr result;
+    try
+    {
+        result = readEvalPrintLoop(true, sourceNodeName);
+    }
+    catch (...)
+    {
+        isPausing_ = false;
+        throw;
+    }
+    isPausing_ = false;
+    return result;
 }
 
 int Kernel::run()
 {
     Config::get().mainInterface()->initialize();
 
-    LogoInterface::initSignals();
+    if (!Config::get().hasGUI_)
+        LogoInterface::initSignals();
 
     int exitCode = 0;
     bool enterPrompt = true;
@@ -894,7 +962,8 @@ int Kernel::run()
     if (enterPrompt)
         readEvalPrintLoop(false);
 
-    LogoInterface::restoreSignals();
+    if (!Config::get().hasGUI_)
+        LogoInterface::restoreSignals();
 
     Compiler::releaseAllCompiledText();
 

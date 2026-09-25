@@ -21,56 +21,81 @@
 #include <QFile>
 #include <QIODevice>
 #include <QThread>
+#include <cerrno>
 #include <cstdio>
 #include <csignal>
 
 #ifdef _WIN32
 #include <io.h>
 #else
+#include <ctime>
+#include <poll.h>
 #include <unistd.h>
 #endif
 
-volatile SignalsEnum_t LogoInterface::lastSignal_ = noSignal;
+volatile sig_atomic_t LogoInterface::lastSignal_ = noSignal;
 
 /// @brief Handles a signal.
 /// @param sig The signal to handle.
-/// The function sets lastSignal to the most recent signal that was received from the operating system.
-/// The LogoInterface class can query the last signal and take appropriate action.
+/// Stores lastSignal_. SYSTEM outranks TOPLEVEL, which outranks PAUSE. The
+/// handler only writes a sig_atomic_t; it must not allocate, print, or throw.
 static void handle_signal(int sig)
 {
+    sig_atomic_t incoming = noSignal;
     switch (sig)
     {
     case SIGINT:
-        LogoInterface::lastSignal_ = toplevelSignal; // Ctrl+C
+        incoming = toplevelSignal;
         break;
 #ifndef _WIN32
     case SIGTSTP:
-        LogoInterface::lastSignal_ = pauseSignal; // Ctrl+Z
+        incoming = pauseSignal;
         break;
     case SIGQUIT:
-        LogoInterface::lastSignal_ = systemSignal; // Ctrl+[backslash]
+        incoming = systemSignal;
         break;
 #endif
     default:
-        qWarning() << "Not expecting signal: " << sig;
+        return;
     }
+    const sig_atomic_t current = LogoInterface::lastSignal_;
+    if (current == noSignal || incoming < current)
+        LogoInterface::lastSignal_ = incoming;
 }
+
+#ifndef _WIN32
+static void setSignalHandler(int sig, void (*handler)(int))
+{
+    struct sigaction sa;
+    sigemptyset(&sa.sa_mask);
+    sigaddset(&sa.sa_mask, SIGINT);
+    sigaddset(&sa.sa_mask, SIGQUIT);
+    sigaddset(&sa.sa_mask, SIGTSTP);
+    sa.sa_flags = 0; // no SA_RESTART: blocking reads must fail with EINTR
+    sa.sa_handler = handler;
+    sigaction(sig, &sa, nullptr);
+}
+#endif
 
 void LogoInterface::initSignals()
 {
-    signal(SIGINT, handle_signal); // TOPLEVEL
-#ifndef _WIN32
-    signal(SIGTSTP, handle_signal); // PAUSE
-    signal(SIGQUIT, handle_signal); // SYSTEM
+#ifdef _WIN32
+    signal(SIGINT, handle_signal);
+#else
+    setSignalHandler(SIGINT, handle_signal);
+    setSignalHandler(SIGTSTP, handle_signal);
+    setSignalHandler(SIGQUIT, handle_signal);
 #endif
 }
 
 void LogoInterface::restoreSignals()
 {
+#ifdef _WIN32
     signal(SIGINT, SIG_DFL);
-#ifndef _WIN32
-    signal(SIGTSTP, SIG_DFL);
-    signal(SIGQUIT, SIG_DFL);
+#else
+    setSignalHandler(SIGINT, SIG_DFL);
+    setSignalHandler(SIGTSTP, SIG_DFL);
+    setSignalHandler(SIGQUIT, SIG_DFL);
 #endif
 }
 
@@ -101,69 +126,166 @@ bool LogoInterface::keyQueueHasChars()
     return !atEnd();
 }
 
+void LogoInterface::retryAfterInterrupt()
+{
+    DatumPtr result;
+    if (Kernel::get().consumePendingSignal(&result) && result.isErr())
+        throw result.errValue();
+}
+
+bool LogoInterface::waitForInteractiveInput()
+{
+#ifdef _WIN32
+    return true;
+#else
+    for (;;)
+    {
+        DatumPtr result;
+        if (Kernel::get().consumePendingSignal(&result) && result.isErr())
+            throw result.errValue();
+        pollfd pfd{};
+        pfd.fd = stdinFd();
+        pfd.events = POLLIN;
+        errno = 0;
+        const int prc = poll(&pfd, 1, 50);
+        if (prc < 0)
+        {
+            if (errno == EINTR)
+                retryAfterInterrupt();
+            continue;
+        }
+        if (prc == 0)
+            continue;
+        if (pfd.revents & POLLIN)
+            return true;
+        return false;
+    }
+#endif
+}
+
+#ifdef _WIN32
+static bool stdinIsInteractive()
+{
+    return _isatty(stdinFd()) != 0;
+}
+#else
+static bool stdinIsInteractive()
+{
+    return isatty(stdinFd()) != 0;
+}
+#endif
+
 // This is READRAWLINE
 QString LogoInterface::inputRawlineWithPrompt(const QString &prompt)
 {
-    if (atEnd())
-        return {};
-
-    // feof() is only set after a failed read. For redirected stdin (console tests),
-    // peek first so we do not print a trailing prompt after the last script line.
-    // Interactive ttys still print the prompt before blocking on input.
-#ifdef _WIN32
-    const bool interactive = _isatty(stdinFd()) != 0;
-#else
-    const bool interactive = isatty(stdinFd()) != 0;
-#endif
-    if (!interactive)
+    for (;;)
     {
-        const int ch = fgetc(stdin);
-        if (ch == EOF)
+        if (atEnd())
+            return {};
+
+        // feof() is only set after a failed read. For redirected stdin (console tests),
+        // peek first so we do not print a trailing prompt after the last script line.
+        // Interactive ttys still print the prompt before blocking on input.
+        const bool interactive = stdinIsInteractive();
+        if (!interactive)
+        {
+            for (;;)
+            {
+                errno = 0;
+                const int ch = fgetc(stdin);
+                if (ch != EOF)
+                {
+                    ungetc(ch, stdin);
+                    break;
+                }
+                if (errno == EINTR)
+                {
+                    clearerr(stdin);
+                    continue;
+                }
+                inputAtEof_ = true;
+                return {};
+            }
+        }
+
+        printToConsole(prompt);
+
+        if (interactive && !waitForInteractiveInput())
         {
             inputAtEof_ = true;
             return {};
         }
-        ungetc(ch, stdin);
-    }
 
-    printToConsole(prompt);
-
-    char buffer[65536];
-    if (!fgets(buffer, sizeof(buffer), stdin))
-    {
+        char buffer[65536];
+        errno = 0;
+        if (fgets(buffer, sizeof(buffer), stdin))
+        {
+            QString retval = QString::fromLocal8Bit(buffer);
+            if (retval.endsWith(QLatin1Char('\n')))
+                retval.chop(1);
+            if (retval.endsWith(QLatin1Char('\r')))
+                retval.chop(1);
+            return retval;
+        }
+        if (errno == EINTR)
+        {
+            clearerr(stdin);
+            if (interactive)
+                retryAfterInterrupt();
+            continue;
+        }
         inputAtEof_ = true;
         return {};
     }
-
-    QString retval = QString::fromLocal8Bit(buffer);
-    if (retval.endsWith(QLatin1Char('\n')))
-        retval.chop(1);
-    if (retval.endsWith(QLatin1Char('\r')))
-        retval.chop(1);
-
-    return retval;
 }
 
 // This is READCHAR
 DatumPtr LogoInterface::readchar()
 {
     fflush(stdout);
-    if (atEnd())
-        return nothing();
-
-    const int ch = fgetc(stdin);
-    if (ch == EOF)
+    for (;;)
     {
+        if (atEnd())
+            return nothing();
+
+        if (stdinIsInteractive() && !waitForInteractiveInput())
+        {
+            inputAtEof_ = true;
+            return nothing();
+        }
+
+        errno = 0;
+        const int ch = fgetc(stdin);
+        if (ch != EOF)
+            return DatumPtr(QString(QChar(ch)));
+        if (errno == EINTR)
+        {
+            clearerr(stdin);
+            if (stdinIsInteractive())
+                retryAfterInterrupt();
+            continue;
+        }
         inputAtEof_ = true;
         return nothing();
     }
-    return DatumPtr(QString(QChar(ch)));
 }
 
 SignalsEnum_t LogoInterface::latestSignal()
 {
-    SignalsEnum_t retval = lastSignal_;
+#ifndef _WIN32
+    sigset_t block;
+    sigset_t old;
+    sigemptyset(&block);
+    sigaddset(&block, SIGINT);
+    sigaddset(&block, SIGQUIT);
+    sigaddset(&block, SIGTSTP);
+    sigprocmask(SIG_BLOCK, &block, &old);
+#endif
+    const SignalsEnum_t retval = static_cast<SignalsEnum_t>(lastSignal_);
     lastSignal_ = noSignal;
+#ifndef _WIN32
+    sigprocmask(SIG_SETMASK, &old, nullptr);
+#endif
     return retval;
 }
 
@@ -175,5 +297,23 @@ void LogoInterface::closeInterface()
 void LogoInterface::mwait(unsigned long msecs)
 {
     fflush(stdout);
+    if (msecs == 0)
+        return;
+#ifdef _WIN32
     QThread::msleep(msecs);
+#else
+    unsigned long remaining = msecs;
+    while (remaining > 0)
+    {
+        const unsigned long sliceMs = remaining < 50UL ? remaining : 50UL;
+        timespec req{};
+        req.tv_sec = static_cast<time_t>(sliceMs / 1000);
+        req.tv_nsec = static_cast<long>((sliceMs % 1000) * 1000000UL);
+        nanosleep(&req, nullptr);
+        remaining -= sliceMs;
+        DatumPtr result;
+        if (Kernel::get().consumePendingSignal(&result) && result.isErr())
+            throw result.errValue();
+    }
+#endif
 }

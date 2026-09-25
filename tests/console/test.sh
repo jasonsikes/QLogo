@@ -213,6 +213,8 @@ MAKEEOF
         cmdline_dir="$console_dir/cmdline"
         . "$console_dir/cmdline.sh"
         run_cmdline_tests
+        . "$console_dir/signals.sh"
+        run_signal_tests
     fi
     
     if has_gnu_date; then

@@ -542,7 +542,10 @@ COD***/
 // CMD PAUSE 0 0 0 dn
 Value *Compiler::genPause(const DatumPtr &node, TypeMask expected)
 {
-    return generateCallExtern(callPause, PaAddr(scaff_->evaluator_));
+    Q_UNUSED(node);
+    Q_UNUSED(expected);
+    Value *retval = generateCallExtern(callPause, PaAddr(scaff_->evaluator_));
+    return generateNotFlowControl(retval);
 }
 
 /***DOC CONTINUE CO

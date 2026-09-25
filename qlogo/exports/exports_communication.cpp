@@ -791,6 +791,12 @@ EXPORTC addr_t stdWait(addr_t eAddr, addr_t astnodeAddr, double sixtieths)
                 waitMs = static_cast<unsigned long>(msecs);
         }
         Config::get().mainInterface()->mwait(waitMs);
+        DatumPtr signalResult;
+        if (Kernel::get().consumePendingSignal(&signalResult) && signalResult.isErr())
+        {
+            e->watch(signalResult.datumValue());
+            return reinterpret_cast<addr_t>(signalResult.datumValue());
+        }
     }
     catch (FCError *err)
     {
