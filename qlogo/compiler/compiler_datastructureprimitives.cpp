@@ -510,6 +510,44 @@ Value *Compiler::genButfirst(const DatumPtr &node, TypeMask expected)
 
     return generateCallExtern(butFirstOfDatum, PaAddr(scaff_->evaluator_), PaAddr(wordorlist));
 }
+/***DOC FIRSTS
+FIRSTS list
+
+    outputs a list of the first items of the members of its input, which
+    must be a list of lists or a list of words.
+
+COD***/
+// CMD FIRSTS 1 1 1 d
+Value *Compiler::genFirsts(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
+    list = generateListFromDatum(node.astnodeValue(), list);
+    return generateCallExtern(firstsOfList,
+                              PaAddr(scaff_->evaluator_),
+                              PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
+                              PaAddr(list));
+}
+/***DOC BUTFIRSTS BFS
+BUTFIRSTS list
+BFS list
+
+    outputs a list of the butfirsts of the members of its input, which
+    must be a list of lists or a list of words.
+
+COD***/
+// CMD BUTFIRSTS 1 1 1 d
+// CMD BFS 1 1 1 d
+Value *Compiler::genButfirsts(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
+    list = generateListFromDatum(node.astnodeValue(), list);
+    return generateCallExtern(butfirstsOfList,
+                              PaAddr(scaff_->evaluator_),
+                              PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
+                              PaAddr(list));
+}
 /***DOC BUTLAST BL
 BUTLAST wordorlist
 BL wordorlist
