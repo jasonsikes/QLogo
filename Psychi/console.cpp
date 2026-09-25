@@ -182,7 +182,8 @@ void Console::setTextCursorPosition(int row, int col)
 
 void Console::keyPressEvent(QKeyEvent *event)
 {
-    // TODO: User interface interrupt event handling
+    // Interrupt keys (Ctrl-C / Ctrl-Z / Quit) are handled by MainWindow's event
+    // filter so they reach qlogo as S_TOPLEVEL, S_PAUSE, or S_SYSTEM.
     switch (consoleMode_)
     {
     case consoleModeWaitingForRawline:

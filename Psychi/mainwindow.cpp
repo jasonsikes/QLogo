@@ -22,11 +22,14 @@
 #include "ui_mainwindow.h"
 #include <QDebug>
 #include <QDir>
+#include <QEvent>
 #include <QFileDialog>
 #include <QFontDatabase>
 #include <QKeyEvent>
+#include <QKeySequence>
 #include <QMessageBox>
 #include <QScrollBar>
+#include <QTextCursor>
 #include <QTextStream>
 #include <QThread>
 #include <QTimer>
@@ -555,6 +558,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainW
     ui_->setupUi(this);
 
     windowMode_ = windowMode_noWait;
+
+    ui_->mainConsole->installEventFilter(this);
+    ui_->mainCanvas->installEventFilter(this);
 }
 
 void MainWindow::show()
@@ -661,6 +667,85 @@ void MainWindow::closeEvent(QCloseEvent *event)
     {
         event->accept();
     }
+}
+
+namespace
+{
+bool isPhysicalControlHeld(const QKeyEvent *event)
+{
+    const Qt::KeyboardModifiers mods =
+        event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier);
+#ifdef Q_OS_MACOS
+    // Qt maps ControlModifier to Command on macOS. The physical Control key is Meta.
+    return mods == Qt::MetaModifier;
+#else
+    return mods == Qt::ControlModifier;
+#endif
+}
+
+message_t interruptKindForKey(const QKeyEvent *keyEvent, bool copyHasSelection)
+{
+#ifdef Q_OS_MACOS
+    Q_UNUSED(copyHasSelection);
+#endif
+    if (keyEvent->matches(QKeySequence::Quit))
+        return S_SYSTEM;
+#ifndef Q_OS_MACOS
+    if (isPhysicalControlHeld(keyEvent) &&
+        (keyEvent->key() == Qt::Key_Q || keyEvent->key() == Qt::Key_Backslash))
+        return S_SYSTEM;
+#endif
+    if (isPhysicalControlHeld(keyEvent) && keyEvent->key() == Qt::Key_Z)
+        return S_PAUSE;
+    if (isPhysicalControlHeld(keyEvent) && keyEvent->key() == Qt::Key_C)
+    {
+#ifndef Q_OS_MACOS
+        if (copyHasSelection && keyEvent->matches(QKeySequence::Copy))
+            return W_ZERO;
+#endif
+        return S_TOPLEVEL;
+    }
+    return W_ZERO;
+}
+} // namespace
+
+bool MainWindow::maybeSendInterrupt(QKeyEvent *keyEvent)
+{
+    if (logoProcess == nullptr || logoProcess->processId() <= 0)
+        return false;
+
+    const bool copyHasSelection = ui_->mainConsole->textCursor().hasSelection();
+    const message_t kind = interruptKindForKey(keyEvent, copyHasSelection);
+    if (kind == W_ZERO)
+        return false;
+
+    message(kind);
+    return true;
+}
+
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    Q_UNUSED(watched);
+    if (event->type() != QEvent::ShortcutOverride && event->type() != QEvent::KeyPress)
+        return QMainWindow::eventFilter(watched, event);
+
+    auto *keyEvent = static_cast<QKeyEvent *>(event);
+    const bool copyHasSelection = ui_->mainConsole->textCursor().hasSelection();
+    if (interruptKindForKey(keyEvent, copyHasSelection) == W_ZERO)
+        return QMainWindow::eventFilter(watched, event);
+
+    if (event->type() == QEvent::ShortcutOverride)
+    {
+        event->accept();
+        // Cmd-Q is an application shortcut; send here in case no KeyPress follows.
+        if (keyEvent->matches(QKeySequence::Quit))
+            maybeSendInterrupt(keyEvent);
+        return true;
+    }
+
+    if (!keyEvent->matches(QKeySequence::Quit))
+        maybeSendInterrupt(keyEvent);
+    return true;
 }
 
 void MainWindow::initialize()

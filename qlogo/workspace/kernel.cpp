@@ -531,38 +531,35 @@ DatumPtr Kernel::runECE()
     currentCallFrame()->retvalToParent_ = nothing();
 
     while (nextOperation_ != nullptr)
-    {
-        if (nextOperation_ == &Kernel::ece_evaluateStack)
-        {
-            DatumPtr signalResult;
-            if (consumePendingSignal(&signalResult))
-            {
-                if (signalResult.isErr())
-                {
-                    currentCallFrame()->jumpLocation_ = 0;
-                    if (currentCallFrame()->evaluationStackSize() > 0)
-                    {
-                        currentEvaluator()->retvalToParent_ = signalResult.datumValue();
-                        nextOperation_ = &Kernel::ece_popEvaluator;
-                    }
-                    else
-                    {
-                        currentCallFrame()->retvalToParent_ = signalResult;
-                        nextOperation_ = nullptr;
-                    }
-                    continue;
-                }
-                // PAUSE returned a normal value: continue the interrupted instruction.
-            }
-        }
         (this->*nextOperation_)();
-    }
 
     return currentCallFrame()->retvalToParent_;
 }
 
 void Kernel::ece_evaluateStack()
 {
+    Config::get().mainInterface()->processInputMessageQueue();
+    DatumPtr signalResult;
+    if (consumePendingSignal(&signalResult))
+    {
+        if (signalResult.isErr())
+        {
+            currentCallFrame()->jumpLocation_ = 0;
+            if (currentCallFrame()->evaluationStackSize() > 0)
+            {
+                currentEvaluator()->retvalToParent_ = signalResult.datumValue();
+                nextOperation_ = &Kernel::ece_popEvaluator;
+            }
+            else
+            {
+                currentCallFrame()->retvalToParent_ = signalResult;
+                nextOperation_ = nullptr;
+            }
+            return;
+        }
+        // PAUSE returned a normal value: continue the interrupted instruction.
+    }
+
     ece_trace("ece_evaluateStack: executing " + currentEvaluator()->list_.toString());
     // GOTO stores the destination block on the CallFrame; consume it here so the
     // newly pushed line starts at the tagged block.

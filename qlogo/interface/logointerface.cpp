@@ -35,32 +35,37 @@
 
 volatile sig_atomic_t LogoInterface::lastSignal_ = noSignal;
 
+void LogoInterface::noteSignal(SignalsEnum_t incoming)
+{
+    if (incoming == noSignal)
+        return;
+    const sig_atomic_t current = lastSignal_;
+    if (current == noSignal || incoming < current)
+        lastSignal_ = incoming;
+}
+
 /// @brief Handles a signal.
 /// @param sig The signal to handle.
 /// Stores lastSignal_. SYSTEM outranks TOPLEVEL, which outranks PAUSE. The
 /// handler only writes a sig_atomic_t; it must not allocate, print, or throw.
 static void handle_signal(int sig)
 {
-    sig_atomic_t incoming = noSignal;
     switch (sig)
     {
     case SIGINT:
-        incoming = toplevelSignal;
+        LogoInterface::noteSignal(toplevelSignal);
         break;
 #ifndef _WIN32
     case SIGTSTP:
-        incoming = pauseSignal;
+        LogoInterface::noteSignal(pauseSignal);
         break;
     case SIGQUIT:
-        incoming = systemSignal;
+        LogoInterface::noteSignal(systemSignal);
         break;
 #endif
     default:
-        return;
+        break;
     }
-    const sig_atomic_t current = LogoInterface::lastSignal_;
-    if (current == noSignal || incoming < current)
-        LogoInterface::lastSignal_ = incoming;
 }
 
 #ifndef _WIN32

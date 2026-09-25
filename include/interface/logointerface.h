@@ -55,11 +55,15 @@ class LogoInterface : public QObject
 {
     Q_OBJECT
 
+  public:
+    /// @brief Drain pending Psychi pipe messages without blocking.
+    /// @note Console interfaces have no message queue. The GUI override records
+    /// S_SYSTEM / S_TOPLEVEL / S_PAUSE so the evaluator can consume them at a
+    /// safepoint. Safe to call when the queue is empty.
     virtual void processInputMessageQueue()
     {
     }
 
-  public:
     /// @brief Constructor
     /// @param parent The Qt parent object.
     LogoInterface(QObject *parent = nullptr);
@@ -72,6 +76,12 @@ class LogoInterface : public QObject
     /// @note This method is meant to be called by the main loop to check for
     /// signals that are sent to the application.
     static SignalsEnum_t latestSignal();
+
+    /// @brief Record an interrupt from a Unix signal or a Psychi pipe message.
+    /// @param incoming The signal to record.
+    /// @details SYSTEM outranks TOPLEVEL, which outranks PAUSE. Safe to call
+    /// from a signal handler: it only stores a sig_atomic_t.
+    static void noteSignal(SignalsEnum_t incoming);
 
     /// @brief Initializes the interface.
     /// @note The base method does nothing. Subclasses can override this method to perform

@@ -79,9 +79,9 @@ class LogoInterfaceGUI : public LogoInterface
     QString labelFontName_;
     double labelFontSize_;
 
+  public:
     void processInputMessageQueue() override;
 
-  public:
     /// @brief Constructor for the LogoInterfaceGUI class.
     /// @param parent The parent Qt object.
     LogoInterfaceGUI(QObject *parent = nullptr);
