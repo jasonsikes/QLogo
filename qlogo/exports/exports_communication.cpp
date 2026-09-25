@@ -19,6 +19,7 @@
 #include "interface/textstream.h"
 #include "workspace/exports_internal.h"
 #include <limits>
+#include "astnode.h"
 #include "datum_types.h"
 #include "workspace/kernel.h"
 #include "flowcontrol.h"
@@ -356,8 +357,10 @@ EXPORTC addr_t stdPrefix(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
-/// Return true if the datum is a valid OPEN* argument: a word, or a non-empty
-/// list whose first element is a word (the buffer's variable name).
+/// Return true if the datum is a valid OPENWRITE / CLOSE / SETWRITE argument:
+/// a word filename, or a non-empty list whose first element is a word (the
+/// character buffer's variable name). OPENREAD, OPENAPPEND, and OPENUPDATE
+/// accept only a word.
 EXPORTC bool isValidOpenSpec(addr_t specAddr)
 {
     auto *d = reinterpret_cast<Datum *>(specAddr);
@@ -374,10 +377,11 @@ EXPORTC bool isValidOpenSpec(addr_t specAddr)
 /// OPENREAD / OPENWRITE / OPENAPPEND / OPENUPDATE.
 /// @param eAddr a pointer to the Evaluator object
 /// @param astnodeAddr a pointer to the owning ASTNode object
-/// @param specAddr a word filename, or a list whose first element is a variable name
+/// @param specAddr a word filename, or (OPENWRITE only) a list whose first
+///        element is a variable name for a character buffer
 /// @param mode OpenMode as int32 (Read=0, Write=1, Append=2, Update=3)
-/// @return the owning ASTNode, or an Error if the stream is already open, the
-///         open fails, or OPENREAD names a variable that has no value.
+/// @return the owning ASTNode, or an Error if the stream is already open or
+///         the open fails.
 EXPORTC addr_t stdOpen(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr, int32_t mode)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
@@ -390,19 +394,15 @@ EXPORTC addr_t stdOpen(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr, int32_
         {
             StreamManager::get().open(spec->wordValue()->toString(), openMode, DatumPtr(spec));
         }
-        else
+        else if (openMode == OpenMode::Write)
         {
             DatumPtr nameWord = spec->listValue()->head;
             QString name = nameWord.wordValue()->toString(Datum::ToStringFlags_Key);
-            if (openMode == OpenMode::Read && !Kernel::get().doesExist(name))
-            {
-                throw FCError::noValue(nameWord);
-            }
-            QString initial;
-            DatumPtr existing = Kernel::get().datumForName(name);
-            if (existing.isWord())
-                initial = existing.wordValue()->toString();
-            StreamManager::get().openBuffer(name, initial, openMode, DatumPtr(spec));
+            StreamManager::get().openBuffer(name, DatumPtr(spec));
+        }
+        else
+        {
+            throw FCError::doesntLike(node->nodeName_, DatumPtr(spec));
         }
     }
     catch (FCError *err)
@@ -524,8 +524,7 @@ static QString openStreamNameFromWord(Datum *spec)
 /// SETREAD: make the named open stream the current reader, or [] for the terminal.
 /// @param eAddr a pointer to the Evaluator object
 /// @param astnodeAddr a pointer to the owning ASTNode object
-/// @param specAddr a word filename, a list whose first element is a buffer
-///        variable name, or the empty list for the terminal
+/// @param specAddr a word filename, or the empty list for the terminal
 /// @return the owning ASTNode, or an Error if the name is not open for reading.
 EXPORTC addr_t stdSetRead(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr)
 {
@@ -540,8 +539,7 @@ EXPORTC addr_t stdSetRead(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr)
         }
         else
         {
-            const QString name = spec->isWord() ? openStreamNameFromWord(spec) : streamNameFromSpec(spec);
-            StreamManager::get().setReader(name, DatumPtr(spec));
+            StreamManager::get().setReader(openStreamNameFromWord(spec), DatumPtr(spec));
         }
     }
     catch (FCError *err)

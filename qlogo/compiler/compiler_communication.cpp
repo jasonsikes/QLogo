@@ -359,11 +359,6 @@ OPENREAD filename
     command.  Opens the named file for reading.  The read position is
     initially at the beginning of the file.
 
-    The input may also be a list whose first element is a variable
-    name; any remaining members are ignored.  The named variable's
-    word value is opened as a character buffer.  It is an error if
-    the variable has no value.
-
 COD***/
 // CMD OPENREAD 1 1 1 n
 Value *Compiler::genOpenread(const DatumPtr &node, TypeMask expected)
@@ -377,14 +372,27 @@ OPENWRITE filename
     command.  Opens the named file for writing.  If the file already
     existed, the old version is deleted and a new, empty file created.
 
-    The input may also be a list whose first element is a variable
-    name; any remaining members are ignored.  (The other OPEN variants
-    accept this list form as well.)  A character buffer is created and
-    identified by that variable name (not by list identity).  After
-    SETWRITE with the same name, printed characters are stored in the
-    buffer.  After CLOSE with the same name, the buffer contents
-    (treated as one long word, even if spaces and newlines are
-    included) become the value of the specified variable.
+    OPENWRITE, but not the other OPEN variants, will accept as input
+    a list, in which the first element must be a variable name.  A
+    character buffer will be created. Any further members are ignored.
+
+    Any future references to this buffer may use the variable name as
+    well as a list object. So something like:
+
+        ? openwrite [foo]
+        ? setwrite "foo
+        ? close [foo]
+
+    will have the same effect as:
+
+        ? openwrite [foo]
+        ? setwrite [foo]
+        ? close "foo
+
+    When a SETWRITE is done, the printed characters are stored in the
+    buffer. When a CLOSE is done, the characters from the buffer
+    (treated as one long word, even if spaces and newlines are included)
+    become the value of the specified variable.
 
 COD***/
 // CMD OPENWRITE 1 1 1 n
@@ -398,12 +406,7 @@ OPENAPPEND filename
 
     command.  Opens the named file for writing.  If the file already
     exists, the write position is initially set to the end of the old
-    file, so that newly written data will be appended to it.  If the
-    file does not exist, it is created.
-
-    The input may also be a list whose first element is a variable
-    name; any remaining members are ignored.  If the named variable
-    has no value, an empty buffer is created.
+    file, so that newly written data will be appended to it.
 
 COD***/
 // CMD OPENAPPEND 1 1 1 n
@@ -417,17 +420,12 @@ OPENUPDATE filename
 
     command.  Opens the named file for reading and writing.  The read and
     write position is initially set to the end of the old file, if any.
-    If the file does not exist, it is created.  Note: each open file has
-    only one position, for both reading and writing.  If a file opened
-    for update is both READER and WRITER at the same time, then
-    SETREADPOS will also affect WRITEPOS and vice versa.  Also, if you
-    alternate reading and writing the same file, you must SETREADPOS
-    between a write and a read, and SETWRITEPOS between a read and a
-    write.
-
-    The input may also be a list whose first element is a variable
-    name; any remaining members are ignored.  If the named variable
-    has no value, an empty buffer is created.
+    Note: each open file has only one position, for both reading and
+    writing.  If a file opened for update is both READER and WRITER at
+    the same time, then SETREADPOS will also affect WRITEPOS and vice
+    versa.  Also, if you alternate reading and writing the same file,
+    you must SETREADPOS between a write and a read, and SETWRITEPOS
+    between a read and a write.
 
 COD***/
 // CMD OPENUPDATE 1 1 1 n
@@ -441,11 +439,18 @@ Value *Compiler::generateOpen(const DatumPtr &node, TypeMask expected, int32_t m
     Q_ASSERT(expected && TypeNothing);
 
     Value *spec = generateChild(node.astnodeValue(), 0, TypeDatum);
-    auto validator = [this](Value *candidate) {
-        Value *isValid = generateCallExtern(isValidOpenSpec, PaAddr(candidate));
-        return scaff_->builder_.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isValidOpenSpecCond"));
-    };
-    spec = generateValidationDatum(node.astnodeValue(), spec, validator);
+    if (mode == static_cast<int32_t>(OpenMode::Write))
+    {
+        auto validator = [this](Value *candidate) {
+            Value *isValid = generateCallExtern(isValidOpenSpec, PaAddr(candidate));
+            return scaff_->builder_.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isValidOpenSpecCond"));
+        };
+        spec = generateValidationDatum(node.astnodeValue(), spec, validator);
+    }
+    else
+    {
+        spec = generateFromDatum(Datum::typeWord, node.astnodeValue(), spec);
+    }
 
     Value *retval = generateCallExtern(
         stdOpen,
@@ -575,10 +580,6 @@ SETREAD filename
     file that was previously the read stream, so it is possible to
     alternate between files.
 
-    In QLogo the input may also be a list whose first element is a
-    variable name, matching OPENREAD's character-buffer form.  The
-    buffer must already be open.
-
 COD***/
 // CMD SETREAD 1 1 1 n
 Value *Compiler::genSetread(const DatumPtr &node, TypeMask expected)
@@ -587,15 +588,15 @@ Value *Compiler::genSetread(const DatumPtr &node, TypeMask expected)
 
     Value *spec = generateChild(node.astnodeValue(), 0, TypeDatum);
     auto validator = [this](Value *candidate) {
-        Value *isOpenSpec = generateCallExtern(isValidOpenSpec, PaAddr(candidate));
-        Value *openOk = scaff_->builder_.CreateICmpEQ(isOpenSpec, CoBool(true), DBG_NAME("isValidOpenSpecCond"));
         Value *isa = generateGetDatumIsa(candidate);
+        Value *wordMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeWord), DBG_NAME("wordMask"));
+        Value *isWord = scaff_->builder_.CreateICmpNE(wordMask, CoInt32(0), DBG_NAME("isWord"));
         Value *listMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeList), DBG_NAME("listMask"));
         Value *isList = scaff_->builder_.CreateICmpNE(listMask, CoInt32(0), DBG_NAME("isList"));
         Value *empty = generateCallExtern(isEmpty, PaAddr(candidate));
         Value *isEmptyVal = scaff_->builder_.CreateICmpEQ(empty, CoBool(true), DBG_NAME("isEmpty"));
         Value *isEmptyList = scaff_->builder_.CreateAnd(isList, isEmptyVal, DBG_NAME("isEmptyList"));
-        return scaff_->builder_.CreateOr(openOk, isEmptyList, DBG_NAME("isValidSetRead"));
+        return scaff_->builder_.CreateOr(isWord, isEmptyList, DBG_NAME("isValidSetRead"));
     };
     spec = generateValidationDatum(node.astnodeValue(), spec, validator);
 

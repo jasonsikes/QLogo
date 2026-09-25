@@ -1,4 +1,0 @@
-make "a "hello
-openread [a]
-close [a]
-print :a

@@ -193,13 +193,13 @@ class StreamManager
     ///       the file system operation fails.
     void open(const QString &name, OpenMode mode, const DatumPtr &spec);
 
-    /// @brief OPENREAD / OPENWRITE / OPENAPPEND / OPENUPDATE for a character buffer.
+    /// @brief OPENWRITE for a character buffer.
     /// @param name The variable name that identifies the buffer (also the stream key).
-    /// @param initial Starting contents, typically the variable's current word value.
-    /// @param mode How to open the buffer.
     /// @param spec The original Logo input, used in error messages.
+    /// @details The buffer starts empty. After CLOSE, the caller assigns the
+    ///          contents to the named variable.
     /// @note Throws FCError::alreadyOpen if a stream is already registered under this name.
-    void openBuffer(const QString &name, const QString &initial, OpenMode mode, const DatumPtr &spec);
+    void openBuffer(const QString &name, const DatumPtr &spec);
 
     /// @brief CLOSE: close one open stream; reverts reader/writer to the terminal
     /// if needed. Program and REPL stacks are not affected.

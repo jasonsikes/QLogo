@@ -1,7 +1,0 @@
-make "a "hello
-openread [a]
-setread [a]
-print readpos
-print readchars 2
-print readpos
-close [a]

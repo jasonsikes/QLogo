@@ -362,7 +362,9 @@ On the command-line interface this is a no-op. A parenthesized call with one inp
 
 On the command-line interface ~SETTEXTSIZE~, ~INCREASEFONT~, ~DECREASEFONT~, and ~SETFONT~ are no-ops; ~TEXTSIZE~ outputs ~12~ and ~FONT~ outputs the empty word. ~INCREASEFONT~ and ~DECREASEFONT~ change the point size by 2; ~DECREASEFONT~ will not go below 2. ~SETFONT~ and ~FONT~ apply to the text and edit windows, not the turtle canvas. Use ~SETLABELFONT~ and ~LABELFONT~ for the font family of ~LABEL~ on the canvas.
 
-**** ~OPENREAD~, ~OPENWRITE~, ~OPENAPPEND~, and ~OPENUPDATE~:
+**** ~OPENWRITE~ character buffers:
 
-In UCBLogo only ~OPENWRITE~ accepts a list, which names a character buffer, and ~SETWRITE~/~CLOSE~ must be given that same list object (~.EQ~), not a copy. In QLogo every OPEN variant accepts the list form, and the buffer is identified by the variable named in the first element rather than by list identity. ~SETREAD~ and ~SETWRITE~ accept that same list form (UCBLogo ~SETREAD~ does not; UCBLogo ~SETWRITE~ uses list identity and may open a sized buffer implicitly). ~OPENREAD [FOO]~ / ~SETREAD [FOO]~ / ~CLOSE [FOO]~, and the write-side equivalents, name the same buffer. Any further members are ignored. Only ~OPENREAD~ requires the file or variable to already exist; ~OPENWRITE~, ~OPENAPPEND~, and ~OPENUPDATE~ create a missing file, and they create the named variable when the buffer is closed. The buffer must already be open before ~SETREAD~ or ~SETWRITE~.
+As in UCBLogo, ~OPENWRITE~ accepts a list, which names a character buffer. QLogo identifies the buffer by the variable named in the first element rather than by list identity (~.EQ~). Any further members are ignored. After, for example, `OPENWRITE [FOO]`, the commands `SETWRITE [FOO]` and `SETWRITE "FOO` have identical meanings.
+
+UCBLogo may use the second list element as the buffer size, but QLogo has no size limit.
 

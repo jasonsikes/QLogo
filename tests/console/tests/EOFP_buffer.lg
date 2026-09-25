@@ -1,7 +1,0 @@
-make "a "hello
-openread [a]
-setread [a]
-print eofp
-print readword
-print eofp
-close [a]

@@ -351,21 +351,19 @@ void StreamManager::open(const QString &name, OpenMode mode, const DatumPtr &spe
     openStreams_.insert(name, openStream(filepath, mode, spec));
 }
 
-void StreamManager::openBuffer(const QString &name, const QString &initial, OpenMode mode, const DatumPtr &spec)
+void StreamManager::openBuffer(const QString &name, const DatumPtr &spec)
 {
     if (isOpen(name))
         throw FCError::alreadyOpen(spec);
 
-    auto *buffer = new QString(initial);
-    auto *textStream = new QTextStream(buffer, flagsForMode(mode));
-    if (mode == OpenMode::Update)
-        textStream->seek(buffer->size());
+    auto *buffer = new QString;
+    auto *textStream = new QTextStream(buffer, QIODevice::WriteOnly | QIODevice::Truncate);
 
     auto *os = new OpenStream;
     os->buffer = buffer;
     os->textStream = textStream;
     os->stream = new TextStream(textStream);
-    os->mode = mode;
+    os->mode = OpenMode::Write;
     openStreams_.insert(name, os);
 }
 
