@@ -25,9 +25,12 @@
 #include "compiler.h"
 #include "datum_types.h"
 #include "flowcontrol.h"
+#include "interface/textstream.h"
 #include "sharedconstants.h"
 #include <QDateTime>
+#include <QIODevice>
 #include <QObject>
+#include <QTextStream>
 #include <cmath>
 
 Procedures::Procedures()
@@ -185,6 +188,108 @@ void Procedures::defineProcedure(const DatumPtr &cmd,
     lastProcedureCreatedTimestamp_ = QDateTime::currentMSecsSinceEpoch();
 
     procedures_[procname] = bodyP;
+}
+
+DatumPtr Procedures::cleanFormal(const DatumPtr &cmd, const DatumPtr &parameter)
+{
+    if (parameter.isWord())
+    {
+        QString parameterName = parameter.wordValue()->toString();
+        if (parameterName.startsWith(':') || parameterName.startsWith('"'))
+        {
+            parameterName.remove(0, 1);
+            return DatumPtr(parameterName);
+        }
+        return parameter;
+    }
+
+    if (!parameter.isList() || parameter.listValue()->isEmpty())
+        throw FCError::doesntLike(cmd, parameter);
+
+    DatumPtr first = parameter.listValue()->head;
+    if (!first.isWord())
+        throw FCError::doesntLike(cmd, parameter);
+
+    first = cleanFormal(cmd, first);
+    return DatumPtr(new List(first, parameter.listValue()->tail.listValue()));
+}
+
+void Procedures::readProcedureBody(TextStream &reader,
+                                   ListBuilder &textBuilder,
+                                   QList<DatumPtr> &sourceText,
+                                   const QString &prompt)
+{
+    forever
+    {
+        DatumPtr line = reader.readListWithPrompt(prompt, true);
+        if (!line.isList())
+            return;
+        sourceText.append(reader.listReaderLineHistory());
+        if (line.listValue()->isEmpty())
+            continue;
+        DatumPtr head = line.listValue()->head;
+        if (head.isWord() && head.toString(Datum::ToStringFlags_Key) == QObject::tr("END"))
+            return;
+        textBuilder.append(line);
+    }
+}
+
+bool Procedures::loadLibraryProcedure(const QString &aName)
+{
+    QString code = Library::get().procedureText(aName);
+    if (code.isEmpty())
+        return false;
+
+    QTextStream qstream(&code, QIODevice::ReadOnly);
+    TextStream reader(&qstream);
+
+    for (;;)
+    {
+        DatumPtr line = reader.readListWithPrompt(QString(), true);
+        if (!line.isList())
+            break;
+        if (line.listValue()->isEmpty())
+            continue;
+
+        DatumPtr first = line.listValue()->head;
+        if (!first.isWord())
+            continue;
+
+        const QString firstWord = first.toString(Datum::ToStringFlags_Key);
+        if (firstWord != StringConstants::cmdStrTO() && firstWord != StringConstants::cmdStr_dot_MACRO())
+            continue;
+
+        QList<DatumPtr> sourceText = reader.listReaderLineHistory();
+
+        ListIterator iter = line.listValue()->newIterator();
+        iter.element(); // TO or .MACRO
+        if (!iter.elementExists())
+        {
+            ListBuilder ignored;
+            readProcedureBody(reader, ignored, sourceText, QString());
+            continue;
+        }
+
+        DatumPtr procnameP = iter.element();
+        ListBuilder paramBuilder;
+        while (iter.elementExists())
+            paramBuilder.append(cleanFormal(first, iter.element()));
+
+        ListBuilder textBuilder;
+        textBuilder.append(paramBuilder.finishedList());
+        readProcedureBody(reader, textBuilder, sourceText, QString());
+
+        if (!procnameP.isWord())
+            continue;
+
+        const QString procname = procnameP.toString(Datum::ToStringFlags_Key);
+        if (isProcedure(procname))
+            continue;
+
+        defineProcedure(first, procnameP, textBuilder.finishedList(), sourceText);
+    }
+
+    return true;
 }
 
 
@@ -352,7 +457,7 @@ static DatumPtr generatedTitleList(const Procedure *body, const DatumPtr &procna
     return title.finishedList();
 }
 
-DatumPtr Procedures::procedureText(const DatumPtr &procnameP) const
+DatumPtr Procedures::procedureText(const DatumPtr &procnameP)
 {
     QString procname = procnameP.toString(Datum::ToStringFlags_Key);
 
@@ -360,21 +465,24 @@ DatumPtr Procedures::procedureText(const DatumPtr &procnameP) const
         throw FCError::isPrimitive(procnameP);
     if (!isNamedProcedure(procname))
         throw FCError::noHow(procnameP);
-    Procedure *body = procedureForName(procname).procedureValue();
-
+    DatumPtr bodyP = procedureForName(procname);
+    if (bodyP.isNothing())
+        throw FCError::noHow(procnameP);
+    Procedure *body = bodyP.procedureValue();
 
     return body->instructionList_;
 }
 
-DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldValidate) const
+DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldValidate)
 {
     const QString procname = procnameP.toString(Datum::ToStringFlags_Key);
     if (stringToCmd.contains(procname))
         throw FCError::isPrimitive(procnameP);
 
-    if (isNamedProcedure(procname))
+    DatumPtr bodyP = procedureForName(procname);
+    if (!bodyP.isNothing())
     {
-        Procedure *body = procedureForName(procname).procedureValue();
+        Procedure *body = bodyP.procedureValue();
 
         // DEFINE and .DEFMACRO store no source lines. Rebuild a TO-shaped
         // definition as a list of lists: title, one list per body line, [end].
@@ -396,20 +504,15 @@ DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldVal
             retvalBuilder.append(endLine.finishedList());
             return retvalBuilder.finishedList();
         }
-        else
-        {
-            ListBuilder retvalBuilder;
-            for (const auto &line : body->sourceText_)
-            {
-                retvalBuilder.append(line);
-            }
-            return retvalBuilder.finishedList();
-        }
+
+        ListBuilder retvalBuilder;
+        for (const auto &line : body->sourceText_)
+            retvalBuilder.append(line);
+        return retvalBuilder.finishedList();
     }
-    else if (shouldValidate)
-    {
+
+    if (shouldValidate)
         throw FCError::noHow(procnameP);
-    }
 
     // If there is no procedure by that name, generate an empty procedure.
     ListBuilder retvalBuilder;
@@ -418,7 +521,7 @@ DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldVal
     return retvalBuilder.finishedList();
 }
 
-QString Procedures::generateProcedureTitleLine(const DatumPtr &procnameP) const
+QString Procedures::generateProcedureTitleLine(const DatumPtr &procnameP)
 {
     return procedureTitleList(procnameP).toString(Datum::ToStringFlags_None);
 }
@@ -432,22 +535,25 @@ DatumPtr Procedures::procedureTitleList(const DatumPtr &procnameP) const
     if (!isNamedProcedure(procname))
         throw FCError::noHow(procnameP);
 
-    Procedure *body = procedureForName(procname).procedureValue();
-    return generatedTitleList(body, procnameP);
+    DatumPtr bodyP = procedureForName(procname);
+    if (bodyP.isNothing())
+        throw FCError::noHow(procnameP);
+    Procedure *body = bodyP.procedureValue();
+    return generatedTitleList(body, procnameP).toString(Datum::ToStringFlags_None);
 }
 
-DatumPtr Procedures::procedureForName(const QString &aName) const
+DatumPtr Procedures::procedureForName(const QString &aName)
 {
-    if (!procedures_.contains(aName))
-    {
-        if (!Library::get().allProcedureNames().contains(aName))
-        {
-            return nothing();
-        }
-        // TODO: Procedure is in our library, add it to our procedures table.
-    }
-    Q_ASSERT(procedures_.contains(aName));
-    return procedures_[aName];
+    if (procedures_.contains(aName))
+        return procedures_[aName];
+
+    if (!Library::get().allProcedureNames().contains(aName))
+        return nothing();
+
+    loadLibraryProcedure(aName);
+    if (procedures_.contains(aName))
+        return procedures_[aName];
+    return nothing();
 }
 
 bool Procedures::isNamedProcedure(const QString &aName) const
@@ -470,7 +576,7 @@ std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromPrimitive(const Datum
     return {node, command.countOfMinParams_, command.countOfDefaultParams_, command.countOfMaxParams_};
 }
 
-std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromProcedure(const DatumPtr &cmdP) const
+std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromProcedure(const DatumPtr &cmdP)
 {
     QString cmdString = cmdP.toString(Datum::ToStringFlags_Key);
     DatumPtr procBody = procedureForName(cmdString);
@@ -486,7 +592,7 @@ std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromProcedure(const Datum
     return {node, procBody.procedureValue()->countOfMinParams_, procBody.procedureValue()->countOfDefaultParams_, procBody.procedureValue()->countOfMaxParams_};
 }
 
-std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromCommand(const DatumPtr &cmdP) const
+std::tuple<DatumPtr, int, int, int> Procedures::astnodeFromCommand(const DatumPtr &cmdP)
 {
     auto [node, minParams, defaultParams, maxParams] = astnodeFromPrimitive(cmdP);
     if (node != nothing())

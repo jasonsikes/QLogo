@@ -156,6 +156,9 @@ stringToCmd.insert(StringConstants::cmdStrFIRST(), Cmd_t{&Compiler::genFirst, 1,
 stringToCmd.insert(StringConstants::cmdStrLAST(), Cmd_t{&Compiler::genLast, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrBUTFIRST(), Cmd_t{&Compiler::genButfirst, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrBF(), Cmd_t{&Compiler::genButfirst, 1, 1, 1, TypeD});
+stringToCmd.insert(StringConstants::cmdStrFIRSTS(), Cmd_t{&Compiler::genFirsts, 1, 1, 1, TypeD});
+stringToCmd.insert(StringConstants::cmdStrBUTFIRSTS(), Cmd_t{&Compiler::genButfirsts, 1, 1, 1, TypeD});
+stringToCmd.insert(StringConstants::cmdStrBFS(), Cmd_t{&Compiler::genButfirsts, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrBUTLAST(), Cmd_t{&Compiler::genButlast, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrBL(), Cmd_t{&Compiler::genButlast, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrITEM(), Cmd_t{&Compiler::genItem, 2, 2, 2, TypeD});

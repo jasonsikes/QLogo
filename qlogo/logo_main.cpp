@@ -18,10 +18,15 @@
 //===----------------------------------------------------------------------===//
 
 #include "interface/logointerfacegui.h"
+#ifdef QLOGO_HAS_CURSES
+#include "interface/logointerfacecurses.h"
+#include "interface/pipeio.h"
+#endif
 #include "sharedconstants.h"
 #include "workspace/kernel.h"
 #include <QCommandLineParser>
 #include <QCoreApplication>
+#include <cstdio>
 #include <memory>
 
 /// Process command line options and set the configuration accordingly.
@@ -30,6 +35,8 @@
 void processOptions(QCoreApplication *a)
 {
     QString optPsychi = "Psychi";
+    QString optTui = "tui";
+    QString optNoTui = "no-tui";
     QString optsetlibloc = "setlibloc";
     QString optsethelploc = "sethelploc";
     QString optshowIR = "showIR";
@@ -82,17 +89,46 @@ void processOptions(QCoreApplication *a)
          QCoreApplication::translate(mainString,
                                      "Show every change in the Count Of Nodes. "
                                      "(for debugging).")},
-        {optTraceEvaluator,
-         QCoreApplication::translate(mainString,
-                                     "Trace evaluator execution (for debugging).")},
+        {optTraceEvaluator, QCoreApplication::translate(mainString, "Trace evaluator execution (for debugging).")},
     });
+#ifdef QLOGO_HAS_CURSES
+    commandlineParser.addOptions({
+        {optTui,
+         QCoreApplication::translate(mainString,
+                                     "Force the ncurses text user interface. This is the default "
+                                     "when both stdin and stdout are terminals.")},
+        {optNoTui,
+         QCoreApplication::translate(mainString, "Do not use the ncurses text user interface, even on a terminal.")},
+    });
+#endif
+
+    commandlineParser.addPositionalArgument(
+        "script", QCoreApplication::translate(mainString, "Logo file run before the prompt."), "[script]");
 
     commandlineParser.process(*a);
+
+    const QStringList positional = commandlineParser.positionalArguments();
+    if (!positional.isEmpty())
+    {
+        Config::get().startupScriptPath_ = positional.first();
+    }
 
     if (commandlineParser.isSet(optPsychi))
     {
         Config::get().hasGUI_ = true;
     }
+
+#ifdef QLOGO_HAS_CURSES
+    if (commandlineParser.isSet(optTui))
+    {
+        Config::get().hasTUI_ = true;
+    }
+
+    if (commandlineParser.isSet(optNoTui))
+    {
+        Config::get().noTUI_ = true;
+    }
+#endif
 
     if (commandlineParser.isSet(optsetlibloc))
     {
@@ -147,11 +183,41 @@ int main(int argc, char **argv)
 
     processOptions(&application);
 
+#ifdef QLOGO_HAS_CURSES
+    if (Config::get().hasGUI_ && Config::get().hasTUI_)
+    {
+        fprintf(stderr, "qlogo: --Psychi and --tui cannot be used together\n");
+        return 1;
+    }
+
+    if (Config::get().hasTUI_ && Config::get().noTUI_)
+    {
+        fprintf(stderr, "qlogo: --tui and --no-tui cannot be used together\n");
+        return 1;
+    }
+
+    if (!Config::get().hasGUI_ && !Config::get().hasTUI_ && !Config::get().noTUI_ && stdioIsInteractive())
+    {
+        Config::get().hasTUI_ = true;
+    }
+#endif
+
     std::unique_ptr<LogoInterface> mainInterface;
     if (Config::get().hasGUI_)
     {
         mainInterface = std::make_unique<LogoInterfaceGUI>();
     }
+#ifdef QLOGO_HAS_CURSES
+    else if (Config::get().hasTUI_)
+    {
+        if (!stdioIsInteractive())
+        {
+            fprintf(stderr, "qlogo: --tui requires an interactive terminal\n");
+            return 1;
+        }
+        mainInterface = std::make_unique<LogoInterfaceCurses>();
+    }
+#endif
     else
     {
         mainInterface = std::make_unique<LogoInterface>();

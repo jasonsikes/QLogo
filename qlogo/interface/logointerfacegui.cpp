@@ -19,6 +19,7 @@
 
 #include "interface/logointerfacegui.h"
 #include "interface/pipeio.h"
+#include "workspace/kernel.h"
 #include <QCoreApplication>
 #include <QByteArray>
 #include <QDataStream>
@@ -83,13 +84,15 @@ message_t LogoInterfaceGUI::getMessage()
         break;
     }
     case S_SYSTEM:
-        throw FCError::custom(DatumPtr(QObject::tr("SYSTEM")));
+        LogoInterface::noteSignal(systemSignal);
         break;
     case S_TOPLEVEL:
-        throw FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")));
+        LogoInterface::noteSignal(toplevelSignal);
         break;
     case S_PAUSE:
-        throw FCError::custom(DatumPtr(QObject::tr("PAUSE")));
+        LogoInterface::noteSignal(pauseSignal);
+        break;
+    case W_TIMER_END:
         break;
     case C_CONSOLE_RAWLINE_READ:
         bufferStream >> rawLine_;
@@ -144,6 +147,15 @@ void LogoInterfaceGUI::waitForMessage(message_t expectedType)
     do
     {
         type = getMessage();
+        if (LogoInterface::lastSignal_ == noSignal)
+            continue;
+        // Nested pause() would wait for a prompt and could swallow Psychi's
+        // timer reply, hanging WAIT. Return and let stdWait pause instead.
+        if (LogoInterface::lastSignal_ == pauseSignal && expectedType == W_TIMER_END)
+            return;
+        DatumPtr result;
+        if (Kernel::get().consumePendingSignal(&result) && result.isErr())
+            throw result.errValue();
     } while (type != expectedType);
 }
 

@@ -123,6 +123,8 @@ llvm::Value *genArraytolist(const DatumPtr &node, TypeMask expected);
 llvm::Value *genFirst(const DatumPtr &node, TypeMask expected);
 llvm::Value *genLast(const DatumPtr &node, TypeMask expected);
 llvm::Value *genButfirst(const DatumPtr &node, TypeMask expected);
+llvm::Value *genFirsts(const DatumPtr &node, TypeMask expected);
+llvm::Value *genButfirsts(const DatumPtr &node, TypeMask expected);
 llvm::Value *genButlast(const DatumPtr &node, TypeMask expected);
 llvm::Value *genItem(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSetitem(const DatumPtr &node, TypeMask expected);

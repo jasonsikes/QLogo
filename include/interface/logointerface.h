@@ -29,6 +29,7 @@
 #include <QTextStream>
 #include <QThread>
 #include <QVector2D>
+#include <csignal>
 
 class QTransform;
 class Kernel;
@@ -54,11 +55,15 @@ class LogoInterface : public QObject
 {
     Q_OBJECT
 
+  public:
+    /// @brief Drain pending Psychi pipe messages without blocking.
+    /// @note Console interfaces have no message queue. The GUI override records
+    /// S_SYSTEM / S_TOPLEVEL / S_PAUSE so the evaluator can consume them at a
+    /// safepoint. Safe to call when the queue is empty.
     virtual void processInputMessageQueue()
     {
     }
 
-  public:
     /// @brief Constructor
     /// @param parent The Qt parent object.
     LogoInterface(QObject *parent = nullptr);
@@ -70,7 +75,13 @@ class LogoInterface : public QObject
     /// @return The most recent interrupt signal that was received, if any.
     /// @note This method is meant to be called by the main loop to check for
     /// signals that are sent to the application.
-    SignalsEnum_t latestSignal();
+    static SignalsEnum_t latestSignal();
+
+    /// @brief Record an interrupt from a Unix signal or a Psychi pipe message.
+    /// @param incoming The signal to record.
+    /// @details SYSTEM outranks TOPLEVEL, which outranks PAUSE. Safe to call
+    /// from a signal handler: it only stores a sig_atomic_t.
+    static void noteSignal(SignalsEnum_t incoming);
 
     /// @brief Initializes the interface.
     /// @note The base method does nothing. Subclasses can override this method to perform
@@ -106,9 +117,10 @@ class LogoInterface : public QObject
 
     /// @brief The most recent signal that was received.
     /// The value of this variable is set by the handle_signal function. When the latestSignal
-    /// method is called, the value is reset to noSignal.
+    /// method is called, the value is reset to noSignal. A stronger signal (SYSTEM, then
+    /// TOPLEVEL, then PAUSE) is kept if a second signal arrives before the first is consumed.
     /// @note This is a static member to allow access from the signal handler.
-    static volatile SignalsEnum_t lastSignal_;
+    static volatile sig_atomic_t lastSignal_;
 
     /// @brief Stops communication and initiates cleanup tasks.
     virtual void closeInterface();
@@ -578,12 +590,24 @@ class LogoInterface : public QObject
 
     /// @brief Delay execution for the given number of milliseconds.
     /// @param msecs Milliseconds to wait. Zero flushes terminal output without sleeping.
-    /// @details The command-line interface flushes stdout and calls QThread::msleep.
-    /// The GUI override asks Psychi to run the timer so the UI stays responsive.
+    /// @details The command-line interface flushes stdout and sleeps with nanosleep,
+    /// consuming a pending terminal signal if the sleep is interrupted. The GUI
+    /// override asks Psychi to run the timer so the UI stays responsive.
     virtual void mwait(unsigned long msecs);
 
   protected:
     bool inputAtEof_ = false;
+
+    /// @brief Consume a pending terminal signal after a blocking read returned EINTR.
+    /// @details Throws FCError for TOPLEVEL and SYSTEM. Returns after PAUSE (or if
+    /// no Logo signal was pending) so the caller can retry the read.
+    void retryAfterInterrupt();
+
+    /// @brief Wait until stdin has data, a hangup, or a consumed terminal signal.
+    /// @return True if stdin is readable, false on hangup or error.
+    /// @details Polls in short slices so a signal delivered to another thread
+    /// is still noticed. Throws FCError for TOPLEVEL and SYSTEM.
+    bool waitForInteractiveInput();
 };
 
 #endif // LOGOINTERFACE_H

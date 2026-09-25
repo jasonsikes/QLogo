@@ -396,6 +396,10 @@ class StreamManager
     /// @note Prefer ProgramReadScope for exception-safe restore.
     void beginProgramRead(const DatumPtr &filename);
 
+    /// @brief The commander stream (REPL lines, TO...END bodies, and LOAD text).
+    /// @details Always valid; the terminal unless redirected.
+    TextStream *programReader() const { return istreamProgram_; }
+
     /// @brief Read the next list from the commander (terminal unless redirected).
     /// @param prompt Prompt shown only when the source is the terminal.
     /// @param shouldRemoveComments Strip QLogo-formatted comments.

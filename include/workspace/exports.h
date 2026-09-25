@@ -146,6 +146,8 @@ EXPORTC addr_t arrayToList(addr_t eAddr, addr_t arrayAddr);
 EXPORTC addr_t firstOfDatum(addr_t eAddr, addr_t thingAddr);
 EXPORTC addr_t lastOfDatum(addr_t eAddr, addr_t thingAddr);
 EXPORTC addr_t butFirstOfDatum(addr_t eAddr, addr_t thingAddr);
+EXPORTC addr_t firstsOfList(addr_t eAddr, addr_t parentNameAddr, addr_t listAddr);
+EXPORTC addr_t butfirstsOfList(addr_t eAddr, addr_t parentNameAddr, addr_t listAddr);
 EXPORTC addr_t butLastOfDatum(addr_t eAddr, addr_t thingAddr);
 EXPORTC bool isDatumIndexValid(addr_t thingAddr, double dIndex, addr_t listItemPtrAddr);
 EXPORTC addr_t itemOfDatum(addr_t eAddr, addr_t thingAddr, double dIndex, addr_t listItemPtrAddr);

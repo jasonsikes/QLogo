@@ -24,9 +24,11 @@
 
 CallFrame::CallFrame(ASTNode *node, Datum **paramAry, uint32_t paramCount)
 {
+    evaluationStackStartIndex_ = Kernel::get().evaluationStack_.size();
     if (node == nullptr)
     {
-        // nullptr source node means this frame is REPL.
+        // nullptr source node means this frame is REPL. Keep any evaluators
+        // belonging to a paused procedure below this frame's stack view.
         return;
     }
     DatumPtr body = node->procedure_;

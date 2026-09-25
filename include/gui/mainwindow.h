@@ -19,12 +19,14 @@
 
 #include "sharedconstants.h"
 #include <QDataStream>
+#include <QEvent>
 #include <QMainWindow>
 #include <QProcess>
 
 class Canvas;
 class Console;
 class EditorWindow;
+class QKeyEvent;
 
 namespace Ui
 {
@@ -85,7 +87,12 @@ class MainWindow : public QMainWindow
 
   protected:
     void closeEvent(QCloseEvent *event) override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
     QString findQlogoExe();
+
+    /// @brief If @p key is a Logo interrupt shortcut, send the matching pipe message.
+    /// @return True if the key was consumed.
+    bool maybeSendInterrupt(QKeyEvent *keyEvent);
 
   public:
     /// @brief Constructor.

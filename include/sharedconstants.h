@@ -172,6 +172,12 @@ const bool debugBuild_ = false;
     // Set to true iff qlogo is communicating with Psychi.
     bool hasGUI_ = false;
 
+    // Set to true iff qlogo is using the ncurses text user interface.
+    bool hasTUI_ = false;
+
+    // Set to true iff the user forbade the ncurses text user interface.
+    bool noTUI_ = false;
+
     // Set to true iff compiler should show IR code.
     bool showIR_ = false;
 
@@ -195,6 +201,11 @@ const bool debugBuild_ = false;
 
     // ARGV initialization parameters
     QStringList ARGV_;
+
+    /// @brief Logo file to run before the interactive prompt, if any.
+    /// @details Empty when no positional script argument was given. Further
+    /// positional arguments are not additional scripts; they remain only in ARGV_.
+    QString startupScriptPath_;
 
     /// @brief The path to the library database file.
     QString paramLibraryDatabaseFilepath_;

@@ -924,6 +924,24 @@ const QString &StringConstants::cmdStrBF()
     return str;
 }
 
+const QString &StringConstants::cmdStrFIRSTS()
+{
+    static const QString str = QObject::tr("FIRSTS");
+    return str;
+}
+
+const QString &StringConstants::cmdStrBUTFIRSTS()
+{
+    static const QString str = QObject::tr("BUTFIRSTS");
+    return str;
+}
+
+const QString &StringConstants::cmdStrBFS()
+{
+    static const QString str = QObject::tr("BFS");
+    return str;
+}
+
 const QString &StringConstants::cmdStrBUTLAST()
 {
     static const QString str = QObject::tr("BUTLAST");

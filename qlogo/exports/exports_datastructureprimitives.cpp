@@ -21,6 +21,7 @@
 #include "workspace/visited.h"
 #include "workspace/exports_internal.h"
 #include "datum_types.h"
+#include "flowcontrol.h"
 #include "workspace/kernel.h"
 
 bool areDatumsEqual(VisitedMap &visited, Datum *d1, Datum *d2, Qt::CaseSensitivity cs);
@@ -409,6 +410,51 @@ EXPORTC addr_t butFirstOfDatum(addr_t eAddr, addr_t thingAddr)
     }
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
+}
+
+static bool isNonEmptyWordOrList(Datum *d)
+{
+    if (d->isWord())
+        return !d->toString(Datum::ToStringFlags_Raw).isEmpty();
+    if (d->isList())
+        return !d->listValue()->isEmpty();
+    return false;
+}
+
+static addr_t mapFirstOrButfirstOverList(addr_t eAddr, addr_t parentNameAddr, addr_t listAddr, bool butfirst)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *parentName = reinterpret_cast<Datum *>(parentNameAddr);
+    auto *list = reinterpret_cast<List *>(listAddr);
+    ListBuilder builder;
+    ListIterator it = list->newIterator();
+    while (it.elementExists())
+    {
+        DatumPtr member = it.element();
+        Datum *d = member.datumValue();
+        if (!isNonEmptyWordOrList(d))
+        {
+            FCError *err = FCError::doesntLike(DatumPtr(parentName), member);
+            e->watch(err);
+            return reinterpret_cast<addr_t>(err);
+        }
+        Datum *mapped = butfirst ? reinterpret_cast<Datum *>(butFirstOfDatum(eAddr, reinterpret_cast<addr_t>(d)))
+                                 : reinterpret_cast<Datum *>(firstOfDatum(eAddr, reinterpret_cast<addr_t>(d)));
+        builder.append(DatumPtr(mapped));
+    }
+    DatumPtr retval = builder.finishedList();
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval.datumValue());
+}
+
+EXPORTC addr_t firstsOfList(addr_t eAddr, addr_t parentNameAddr, addr_t listAddr)
+{
+    return mapFirstOrButfirstOverList(eAddr, parentNameAddr, listAddr, false);
+}
+
+EXPORTC addr_t butfirstsOfList(addr_t eAddr, addr_t parentNameAddr, addr_t listAddr)
+{
+    return mapFirstOrButfirstOverList(eAddr, parentNameAddr, listAddr, true);
 }
 
 EXPORTC addr_t butLastOfDatum(addr_t eAddr, addr_t thingAddr)

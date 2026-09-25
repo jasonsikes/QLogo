@@ -52,6 +52,7 @@ set(QLOGO_SOURCES
   ../include/interface/pipeio.h
   ../include/interface/logointerface.h
   ../include/interface/logointerfacegui.h
+  ../include/interface/logointerfacecurses.h
   ../include/interface/streammanager.h
   ../include/interface/textstream.h
   ../include/datum_core.h
@@ -151,6 +152,23 @@ else()
       Qt6::Sql
       -Xlinker --export-dynamic
       ${llvm_libs}
+  )
+endif()
+
+if(NOT WIN32)
+  set(CURSES_NEED_NCURSES TRUE)
+  set(CURSES_NEED_WIDE TRUE)
+  find_package(Curses)
+  if(NOT CURSES_FOUND)
+    set(CURSES_NEED_WIDE FALSE)
+    find_package(Curses REQUIRED)
+  endif()
+  target_sources("${QLOGO_BIN}" PRIVATE interface/logointerfacecurses.cpp)
+  target_include_directories("${QLOGO_BIN}" PRIVATE ${CURSES_INCLUDE_DIRS})
+  target_link_libraries("${QLOGO_BIN}" PRIVATE ${CURSES_LIBRARIES})
+  target_compile_definitions("${QLOGO_BIN}" PRIVATE QLOGO_HAS_CURSES)
+  set_property(SOURCE interface/logointerfacecurses.cpp APPEND PROPERTY
+    COMPILE_DEFINITIONS NCURSES_WIDECHAR=1
   )
 endif()
 

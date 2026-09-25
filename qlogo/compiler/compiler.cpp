@@ -506,7 +506,16 @@ Value *Compiler::generateCast(Value *src, ASTNode *parent, const DatumPtr &node,
     TypeMask produces = node.astnodeValue()->produces_;
 
     if (produces == expected)
+    {
+        // RUNRESULT, RUN, and user procedures are typed as Datum but can
+        // return THROW/OUTPUT/STOP. Those must still propagate when the
+        // declared type matches; otherwise they are passed as procedure
+        // inputs (e.g. foreach.done's :foreach.result) and surface as
+        // "X has no value".
+        if (src->getType()->isPointerTy())
+            src = generateNotFlowControl(src);
         return src;
+    }
 
     if (src->getType()->isDoubleTy())
         return generateCastFromDouble(src, parent, expected);

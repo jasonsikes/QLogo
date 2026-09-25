@@ -846,9 +846,9 @@ SETTC foreground background
 (SETTEXTCOLOR foreground)
 (SETTC foreground)
 
-    command (GUI only). The inputs are colors. The foreground color will
-    be used as the text color for future printing to the text window. The
-    text already printed will not be affected. If a background color is
+    command (GUI and TUI only). The inputs are colors. The foreground color
+    will be used as the text color for future printing to the text window.
+    The text already printed will not be affected. If a background color is
     specified, it will immediately change the background color of all
     text already on the screen.
 
