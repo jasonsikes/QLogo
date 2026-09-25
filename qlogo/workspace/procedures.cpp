@@ -521,12 +521,7 @@ DatumPtr Procedures::procedureFulltext(const DatumPtr &procnameP, bool shouldVal
     return retvalBuilder.finishedList();
 }
 
-QString Procedures::generateProcedureTitleLine(const DatumPtr &procnameP)
-{
-    return procedureTitleList(procnameP).toString(Datum::ToStringFlags_None);
-}
-
-DatumPtr Procedures::procedureTitleList(const DatumPtr &procnameP) const
+DatumPtr Procedures::procedureTitleList(const DatumPtr &procnameP)
 {
     QString procname = procnameP.toString(Datum::ToStringFlags_Key);
 
@@ -539,7 +534,7 @@ DatumPtr Procedures::procedureTitleList(const DatumPtr &procnameP) const
     if (bodyP.isNothing())
         throw FCError::noHow(procnameP);
     Procedure *body = bodyP.procedureValue();
-    return generatedTitleList(body, procnameP).toString(Datum::ToStringFlags_None);
+    return generatedTitleList(body, procnameP);
 }
 
 DatumPtr Procedures::procedureForName(const QString &aName)

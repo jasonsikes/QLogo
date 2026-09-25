@@ -24,6 +24,7 @@
 #endif
 #include "sharedconstants.h"
 #include "workspace/kernel.h"
+#include "workspace/library.h"
 #include <QCommandLineParser>
 #include <QCoreApplication>
 #include <cstdio>
@@ -223,5 +224,7 @@ int main(int argc, char **argv)
         mainInterface = std::make_unique<LogoInterface>();
     }
     int retval = Kernel::get().run();
+    Library::get().closeConnection();
+    Help::get().closeConnection();
     return retval;
 }

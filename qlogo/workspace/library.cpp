@@ -77,12 +77,29 @@ bool initDBConnection(const QString &connectionName, const QString &paramFilePat
     return isSuccessful;
 }
 
+void DatabaseConnection::closeConnection() const
+{
+    if (!connectionIsValid_)
+        return;
+
+    if (QCoreApplication::instance() == nullptr)
+    {
+        connectionIsValid_ = false;
+        return;
+    }
+
+    {
+        QSqlDatabase db = QSqlDatabase::database(connectionName_);
+        if (db.isOpen())
+            db.close();
+    }
+    QSqlDatabase::removeDatabase(connectionName_);
+    connectionIsValid_ = false;
+}
+
 DatabaseConnection::~DatabaseConnection()
 {
-    if (connectionIsValid_)
-    {
-        QSqlDatabase::removeDatabase(connectionName_);
-    }
+    closeConnection();
 }
 
 void DatabaseConnection::getConnection() const

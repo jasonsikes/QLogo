@@ -53,6 +53,9 @@ class DatabaseConnection
     void getConnection() const;
 
   public:
+    /// @brief Close the named Qt SQL connection while QCoreApplication is alive.
+    void closeConnection() const;
+
     virtual ~DatabaseConnection();
 
     DatabaseConnection(const DatabaseConnection &) = delete;

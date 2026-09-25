@@ -191,8 +191,6 @@ class Procedures
     /// 'to' or '.macro', then the name, then the inputs in TO syntax (colons on
     /// input names).
     QString generateProcedureTitleLine(const DatumPtr &procnameP);
-    /// input names). A primitive or unknown name is an error.
-    QString generateProcedureTitleLine(const DatumPtr &procnameP);
 
     /// @brief The title of a procedure as a list of words and sublists.
     /// @param procnameP The name of the procedure.
