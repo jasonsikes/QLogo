@@ -36,49 +36,51 @@ W_INITIALIZE = 1
 W_CLOSE_PIPE = 2
 W_SET_SCREENMODE = 3
 W_FILE_DIALOG_GET_PATH = 4
+W_TIMER_START = 5
+W_TIMER_END = 6
 
-S_SYSTEM = 5
-S_TOPLEVEL = 6
-S_PAUSE = 7
+S_SYSTEM = 7
+S_TOPLEVEL = 8
+S_PAUSE = 9
 
-C_CONSOLE_PRINT_STRING = 8
-C_CONSOLE_REQUEST_LINE = 9
-C_CONSOLE_REQUEST_CHAR = 10
-C_CONSOLE_RAWLINE_READ = 11
-C_CONSOLE_CHAR_READ = 12
-C_CONSOLE_SET_FONT_NAME = 13
-C_CONSOLE_SET_FONT_SIZE = 14
-C_CONSOLE_BEGIN_EDIT_TEXT = 15
-C_CONSOLE_END_EDIT_TEXT = 16
-C_CONSOLE_TEXT_CURSOR_POS = 17
-C_CONSOLE_SET_TEXT_CURSOR_POS = 18
-C_CONSOLE_SET_CURSOR_MODE = 19
-C_CONSOLE_SET_TEXT_COLOR = 20
-C_CONSOLE_CLEAR_SCREEN_TEXT = 21
+C_CONSOLE_PRINT_STRING = 10
+C_CONSOLE_REQUEST_LINE = 11
+C_CONSOLE_REQUEST_CHAR = 12
+C_CONSOLE_RAWLINE_READ = 13
+C_CONSOLE_CHAR_READ = 14
+C_CONSOLE_SET_FONT_NAME = 15
+C_CONSOLE_SET_FONT_SIZE = 16
+C_CONSOLE_BEGIN_EDIT_TEXT = 17
+C_CONSOLE_END_EDIT_TEXT = 18
+C_CONSOLE_TEXT_CURSOR_POS = 19
+C_CONSOLE_SET_TEXT_CURSOR_POS = 20
+C_CONSOLE_SET_CURSOR_MODE = 21
+C_CONSOLE_SET_TEXT_COLOR = 22
+C_CONSOLE_CLEAR_SCREEN_TEXT = 23
 
-C_CANVAS_UPDATE_TURTLE_POS = 22
-C_CANVAS_EMIT_VERTEX = 23
-C_CANVAS_SET_FOREGROUND_COLOR = 24
-C_CANVAS_SET_BACKGROUND_COLOR = 25
-C_CANVAS_SET_BACKGROUND_IMAGE = 26
-C_CANVAS_BEGIN_POLYGON = 27
-C_CANVAS_END_POLYGON = 28
-C_CANVAS_SET_TURTLE_IS_VISIBLE = 29
-C_CANVAS_DRAW_LABEL = 30
-C_CANVAS_DRAW_ARC = 31
-C_CANVAS_CLEAR_SCREEN = 32
-C_CANVAS_SETBOUNDS = 33
-C_CANVAS_SET_IS_BOUNDED = 34
-C_CANVAS_SET_PENSIZE = 35
-C_CANVAS_SET_PENUPDOWN = 36
-C_CANVAS_SET_FONT_NAME = 37
-C_CANVAS_SET_FONT_SIZE = 38
-C_CANVAS_GET_IMAGE = 39
-C_CANVAS_GET_SVG = 40
-C_CANVAS_MOUSE_BUTTON_DOWN = 41
-C_CANVAS_MOUSE_MOVED = 42
-C_CANVAS_MOUSE_BUTTON_UP = 43
-C_CANVAS_SET_PENMODE = 44
+C_CANVAS_UPDATE_TURTLE_POS = 24
+C_CANVAS_EMIT_VERTEX = 25
+C_CANVAS_SET_FOREGROUND_COLOR = 26
+C_CANVAS_SET_BACKGROUND_COLOR = 27
+C_CANVAS_SET_BACKGROUND_IMAGE = 28
+C_CANVAS_BEGIN_POLYGON = 29
+C_CANVAS_END_POLYGON = 30
+C_CANVAS_SET_TURTLE_IS_VISIBLE = 31
+C_CANVAS_DRAW_LABEL = 32
+C_CANVAS_DRAW_ARC = 33
+C_CANVAS_CLEAR_SCREEN = 34
+C_CANVAS_SETBOUNDS = 35
+C_CANVAS_SET_IS_BOUNDED = 36
+C_CANVAS_SET_PENSIZE = 37
+C_CANVAS_SET_PENUPDOWN = 38
+C_CANVAS_SET_FONT_NAME = 39
+C_CANVAS_SET_FONT_SIZE = 40
+C_CANVAS_GET_IMAGE = 41
+C_CANVAS_GET_SVG = 42
+C_CANVAS_MOUSE_BUTTON_DOWN = 43
+C_CANVAS_MOUSE_MOVED = 44
+C_CANVAS_MOUSE_BUTTON_UP = 45
+C_CANVAS_SET_PENMODE = 46
 
 # Screen mode constants
 INIT_SCREEN_MODE = 0
@@ -98,6 +100,8 @@ MESSAGE_NAMES = {
     'W_CLOSE_PIPE': W_CLOSE_PIPE,
     'W_SET_SCREENMODE': W_SET_SCREENMODE,
     'W_FILE_DIALOG_GET_PATH': W_FILE_DIALOG_GET_PATH,
+    'W_TIMER_START': W_TIMER_START,
+    'W_TIMER_END': W_TIMER_END,
     'S_SYSTEM': S_SYSTEM,
     'S_TOPLEVEL': S_TOPLEVEL,
     'S_PAUSE': S_PAUSE,
@@ -304,6 +308,10 @@ class TestRunner:
             elif 'point' in data:
                 point = data['point']
                 return [{'x': point.get('x', 0), 'y': point.get('y', 0)}]
+            elif message_type == C_CONSOLE_END_EDIT_TEXT:
+                return [bool(data.get('accepted', False)), str(data.get('text', ''))]
+            elif message_type == C_CONSOLE_BEGIN_EDIT_TEXT:
+                return [str(data.get('title', '')), str(data.get('text', ''))]
             else:
                 # Assume it's a direct mapping
                 return [data]
@@ -367,6 +375,33 @@ class TestRunner:
                 char = stream.readQChar()
                 if isinstance(expected, str) and len(expected) > 0 and expected[0] != char:
                     return (False, f"Char mismatch: expected '{expected[0]}', got '{char}'")
+            
+            elif message_type == C_CONSOLE_BEGIN_EDIT_TEXT:
+                title = stream.readQString()
+                text = stream.readQString()
+                if isinstance(expected, dict):
+                    if expected.get('title') is not None and expected.get('title') != title:
+                        return (False, f"Title mismatch: expected '{expected.get('title')}', got '{title}'")
+                    if expected.get('text') is not None and expected.get('text') != text:
+                        return (False, f"Text mismatch: expected '{expected.get('text')}', got '{text}'")
+                elif isinstance(expected, str) and expected != text:
+                    return (False, f"Text mismatch: expected '{expected}', got '{text}'")
+            
+            elif message_type == C_CONSOLE_END_EDIT_TEXT:
+                accepted = stream.readBool()
+                text = stream.readQString()
+                if isinstance(expected, dict):
+                    if expected.get('accepted') is not None and bool(expected.get('accepted')) != accepted:
+                        return (False, f"Accepted mismatch: expected {expected.get('accepted')}, got {accepted}")
+                    if expected.get('text') is not None and expected.get('text') != text:
+                        return (False, f"Text mismatch: expected '{expected.get('text')}', got '{text}'")
+            
+            elif message_type == W_TIMER_START:
+                msecs = stream.readInt32()
+                if isinstance(expected, (int, float)) and int(expected) != msecs:
+                    return (False, f"Timer mismatch: expected {expected}, got {msecs}")
+                if isinstance(expected, dict) and expected.get('msecs') is not None and expected.get('msecs') != msecs:
+                    return (False, f"Timer mismatch: expected {expected.get('msecs')}, got {msecs}")
             
             # Add more message type handlers as needed
             

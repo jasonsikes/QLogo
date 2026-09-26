@@ -71,7 +71,7 @@ class MainWindow : public QMainWindow
     void initialize();
     void introduceCanvas();
     void setSplitterforMode(ScreenModeEnum mode);
-    void openEditorWindow(const QString &startingText);
+    void openEditorWindow(const QString &title, const QString &startingText);
 
     void sendCanvasImage();
     void sendCanvasSvg();
@@ -133,7 +133,9 @@ class MainWindow : public QMainWindow
     void splitterHasMovedSlot(int, int);
 
     /// @brief Handle the editing being ended.
-    void editingHasEndedSlot(const QString &text);
+    /// @param accepted True if the user saved, false if they reverted.
+    /// @param text The edited text if saved; empty if reverted.
+    void editingHasEndedSlot(bool accepted, const QString &text);
 
     /// @brief Handle a mouse button being clicked.
     void mouseclickedSlot(QPointF QPointF, int buttonID);

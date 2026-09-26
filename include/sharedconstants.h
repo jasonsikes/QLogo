@@ -56,8 +56,8 @@ enum messageCategory : message_t
     C_CONSOLE_CHAR_READ,           // A char returned from the GUI
     C_CONSOLE_SET_FONT_NAME,       // Set the console font name
     C_CONSOLE_SET_FONT_SIZE,       // Set the console font size
-    C_CONSOLE_BEGIN_EDIT_TEXT,     // Open the text editor window
-    C_CONSOLE_END_EDIT_TEXT,       // Text editor has finished
+    C_CONSOLE_BEGIN_EDIT_TEXT,     // Open the editor: QString title, QString startingText
+    C_CONSOLE_END_EDIT_TEXT,       // Editor finished: bool accepted, QString text
     C_CONSOLE_TEXT_CURSOR_POS,     // Position of text cursor (row,col)
     C_CONSOLE_SET_TEXT_CURSOR_POS, // Set text cursor position
     C_CONSOLE_SET_CURSOR_MODE,     // Set text cursor insert/overwrite

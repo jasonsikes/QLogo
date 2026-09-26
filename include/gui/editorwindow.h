@@ -20,6 +20,8 @@
 #include <QMainWindow>
 #include <QTextCharFormat>
 
+class QCloseEvent;
+
 namespace Ui
 {
 class EditorWindow;
@@ -28,14 +30,16 @@ class EditorWindow;
 /// @brief The editor window.
 ///
 /// This class is the editor window for the QLogo GUI. It is a QMainWindow that
-/// contains a QTextEdit widget to edit text when the user requests to edit the
-/// text.
+/// contains a QPlainTextEdit widget to edit text.
 class EditorWindow : public QMainWindow
 {
     Q_OBJECT
 
     Ui::EditorWindow *ui_;
+    bool ended_ = false;
     bool eventFilter(QObject *watched, QEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
+    void finish(bool accepted);
 
   public:
     /// @brief Constructor.
@@ -67,9 +71,9 @@ class EditorWindow : public QMainWindow
     ///
     /// This signal is emitted when the user has ended editing the text.
     ///
-    /// @param text The text that the user has edited. May be an empty string if
-    /// the user cancelled the editing.
-    void editingHasEndedSignal(QString text);
+    /// @param accepted True if the user saved, false if they reverted or closed.
+    /// @param text The edited text if saved; empty if reverted.
+    void editingHasEndedSignal(bool accepted, const QString &text);
 
   public slots:
 

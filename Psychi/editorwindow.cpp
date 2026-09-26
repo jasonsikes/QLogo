@@ -16,8 +16,9 @@
 //===----------------------------------------------------------------------===//
 
 #include "gui/editorwindow.h"
-#include "QDebug"
 #include "ui_editorwindow.h"
+#include <QCloseEvent>
+#include <QKeyEvent>
 #include <QTimer>
 
 /// @brief The key sequence for reverting changes.
@@ -35,8 +36,8 @@ EditorWindow::EditorWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::E
     flags = flags & (~closeFlag);
     setWindowFlags(flags);
 
-    connect(ui_->acceptButton, SIGNAL(clicked(bool)), this, SLOT(acceptChanges()));
-    connect(ui_->revertButton, SIGNAL(clicked(bool)), this, SLOT(revertChanges()));
+    connect(ui_->acceptButton, &QPushButton::clicked, this, &EditorWindow::acceptChanges);
+    connect(ui_->revertButton, &QPushButton::clicked, this, &EditorWindow::revertChanges);
     ui_->plainTextEdit->installEventFilter(this);
 }
 
@@ -47,6 +48,7 @@ EditorWindow::~EditorWindow()
 
 void EditorWindow::setContents(const QString &startingText)
 {
+    ended_ = false;
     ui_->plainTextEdit->setPlainText(startingText);
 }
 
@@ -66,17 +68,35 @@ void EditorWindow::show()
     QTimer::singleShot(0, ui_->plainTextEdit, SLOT(setFocus()));
 }
 
+void EditorWindow::finish(bool accepted)
+{
+    if (ended_)
+        return;
+    ended_ = true;
+    const QString text = accepted ? ui_->plainTextEdit->toPlainText() : QString();
+    emit editingHasEndedSignal(accepted, text);
+    close();
+}
+
 void EditorWindow::acceptChanges()
 {
-    QString text = ui_->plainTextEdit->toPlainText();
-    emit editingHasEndedSignal(text);
-    close();
+    finish(true);
 }
 
 void EditorWindow::revertChanges()
 {
-    emit editingHasEndedSignal("");
-    close();
+    finish(false);
+}
+
+void EditorWindow::closeEvent(QCloseEvent *event)
+{
+    // Window-manager close must not leave qlogo blocked on END_EDIT_TEXT.
+    if (!ended_)
+    {
+        ended_ = true;
+        emit editingHasEndedSignal(false, QString());
+    }
+    QMainWindow::closeEvent(event);
 }
 
 bool EditorWindow::eventFilter(QObject *watched, QEvent *event)

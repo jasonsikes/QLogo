@@ -48,8 +48,9 @@ class LogoInterfaceGUI : public LogoInterface
     int cursorRow_;
     int cursorCol_;
 
-    // Text returned from editor winow
+    // Text returned from the editor window, and whether the user saved.
     QString editorText_;
+    bool editorAccepted_ = false;
 
     double penSize_;
 
@@ -109,10 +110,12 @@ class LogoInterfaceGUI : public LogoInterface
 
     QString fileDialogModal() override;
 
-    /// @brief Edits text in the GUI.
+    /// @brief Edits text in the Psychi editor window.
     /// @param startText The text to edit.
-    /// @return The edited text.
-    QString editText(const QString &startText) override;
+    /// @param accepted Set to true if the user saved, false if they reverted.
+    /// @param title Window title; empty keeps the default "Editor".
+    /// @return The edited text if saved; empty if reverted.
+    QString editText(const QString &startText, bool *accepted, const QString &title = {}) override;
 
     /// @brief Sets the turtle position.
     /// @param newTurtlePos The new turtle position.

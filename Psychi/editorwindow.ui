@@ -21,10 +21,10 @@
     <item>
      <widget class="QPlainTextEdit" name="plainTextEdit">
       <property name="cursor" stdset="0">
-       <cursorShape>ArrowCursor</cursorShape>
+       <cursorShape>IBeamCursor</cursorShape>
       </property>
       <property name="focusPolicy">
-       <enum>Qt::ClickFocus</enum>
+       <enum>Qt::StrongFocus</enum>
       </property>
       <property name="cursorWidth">
        <number>3</number>

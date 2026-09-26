@@ -272,17 +272,23 @@ static QString serializeMessageData(message_t type, const QByteArray &dataBuffer
     }
     case C_CONSOLE_BEGIN_EDIT_TEXT:
     {
+        QString title;
         QString text;
-        readStream >> text;
-        yaml << " \"" << yamlEscape(text) << "\"\n";
+        readStream >> title >> text;
+        yaml << "\n";
+        yaml << "        title: \"" << yamlEscape(title) << "\"\n";
+        yaml << "        text: \"" << yamlEscape(text) << "\"\n";
         hasData = true;
         break;
     }
     case C_CONSOLE_END_EDIT_TEXT:
     {
+        bool accepted;
         QString text;
-        readStream >> text;
-        yaml << " \"" << yamlEscape(text) << "\"\n";
+        readStream >> accepted >> text;
+        yaml << "\n";
+        yaml << "        accepted: " << (accepted ? "true" : "false") << "\n";
+        yaml << "        text: \"" << yamlEscape(text) << "\"\n";
         hasData = true;
         break;
     }
@@ -772,25 +778,25 @@ void MainWindow::startWaitTimer(qint32 msecs)
     QTimer::singleShot(msecs, this, [this]() { message(W_TIMER_END); });
 }
 
-void MainWindow::openEditorWindow(const QString &startingText)
+void MainWindow::openEditorWindow(const QString &title, const QString &startingText)
 {
     if (editWindow_ == nullptr)
     {
         editWindow_ = new EditorWindow;
 
-        connect(editWindow_, SIGNAL(editingHasEndedSignal(QString)), this, SLOT(editingHasEndedSlot(QString)));
+        connect(editWindow_, &EditorWindow::editingHasEndedSignal, this, &MainWindow::editingHasEndedSlot);
     }
 
+    editWindow_->setWindowTitle(title.isEmpty() ? tr("Editor") : title);
     editWindow_->setTextFormat(ui_->mainConsole->getFont());
     editWindow_->setContents(startingText);
     editWindow_->show();
     editWindow_->activateWindow();
-    editWindow_->setFocus();
 }
 
-void MainWindow::editingHasEndedSlot(const QString &text)
+void MainWindow::editingHasEndedSlot(bool accepted, const QString &text)
 {
-    message(C_CONSOLE_END_EDIT_TEXT) << text;
+    message(C_CONSOLE_END_EDIT_TEXT) << accepted << text;
 }
 
 void MainWindow::introduceCanvas()
@@ -949,9 +955,10 @@ void MainWindow::processReadBuffer()
         break;
     case C_CONSOLE_BEGIN_EDIT_TEXT:
     {
+        QString title;
         QString startingText;
-        dataStream >> startingText;
-        openEditorWindow(startingText);
+        dataStream >> title >> startingText;
+        openEditorWindow(title, startingText);
         break;
     }
     case C_CONSOLE_TEXT_CURSOR_POS:

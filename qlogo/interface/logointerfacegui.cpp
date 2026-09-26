@@ -104,7 +104,7 @@ message_t LogoInterfaceGUI::getMessage()
         bufferStream >> filePath_;
         break;
     case C_CONSOLE_END_EDIT_TEXT:
-        bufferStream >> editorText_;
+        bufferStream >> editorAccepted_ >> editorText_;
         break;
     case C_CONSOLE_TEXT_CURSOR_POS:
         bufferStream >> cursorRow_ >> cursorCol_;
@@ -194,12 +194,14 @@ void LogoInterfaceGUI::setTextColor(const QColor &foregroundColor, const QColor 
     message(C_CONSOLE_SET_TEXT_COLOR) << foregroundColor << backgroundColor;
 }
 
-QString LogoInterfaceGUI::editText(const QString &startText)
+QString LogoInterfaceGUI::editText(const QString &startText, bool *accepted, const QString &title)
 {
-    message(C_CONSOLE_BEGIN_EDIT_TEXT) << startText;
+    message(C_CONSOLE_BEGIN_EDIT_TEXT) << title << startText;
 
     waitForMessage(C_CONSOLE_END_EDIT_TEXT);
 
+    if (accepted)
+        *accepted = editorAccepted_;
     return editorText_;
 }
 

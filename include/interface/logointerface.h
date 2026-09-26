@@ -135,13 +135,17 @@ class LogoInterface : public QObject
         return {};
     }
 
-    /// @brief Edits a text string.
+    /// @brief Present @p text in the editor and wait until the user is done.
     /// @param text The text to edit.
-    /// @return The edited text.
-    /// @note The base method triggers an error message. Subclasses can override this method to
-    /// perform the necessary tasks to edit the text.
-    virtual QString editText(const QString &text)
+    /// @param accepted Set to true if the user saved, false if they reverted.
+    /// @param title Window title; empty keeps the default "Editor".
+    /// @return The edited text if saved; empty if reverted.
+    /// @note GUI only. The base method aborts. CLI and TUI have no editor.
+    virtual QString editText(const QString &text, bool *accepted, const QString &title = {})
     {
+        Q_UNUSED(text);
+        Q_UNUSED(accepted);
+        Q_UNUSED(title);
         exit(1);
         return {};
     }
