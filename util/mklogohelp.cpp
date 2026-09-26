@@ -11,13 +11,11 @@
 /// \file
 /// Host tool that packs help text into qlogo_help.db.
 ///
-/// Usage: mklogohelp <compiler-dir> <help.json> <output-db>
+/// Usage: mklogohelp <compiler-dir> <output-db>
 ///
-/// Primitive help is taken from /***DOC ... COD***/ blocks in the compiler
-/// .cpp files. The first name after /***DOC is the HELPTEXT key; every name
-/// on that line (including the first) is an ALIASES entry. Help for library
-/// procedures and special variables is taken from the JSON object of name ->
-/// list of text lines.
+/// Help is taken from /***DOC ... COD***/ blocks in the compiler .cpp files.
+/// The first name after /***DOC is the HELPTEXT key; every name on that line
+/// (including the first) is an ALIASES entry.
 ///
 //===----------------------------------------------------------------------===//
 
@@ -25,11 +23,6 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QJsonArray>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonParseError>
-#include <QJsonValue>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -154,70 +147,20 @@ bool processCompilerDir(const QString &sourceDirPath, QSqlQuery &aliasQuery, QSq
     return true;
 }
 
-bool processHelpJson(const QString &jsonPath, QSqlQuery &aliasQuery, QSqlQuery &textQuery)
-{
-    QFile file(jsonPath);
-    if (!file.open(QIODevice::ReadOnly))
-    {
-        err() << "Cannot read '" << jsonPath << "': " << file.errorString() << '\n';
-        return false;
-    }
-
-    QJsonParseError parseError;
-    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &parseError);
-    if (parseError.error != QJsonParseError::NoError || !doc.isObject())
-    {
-        err() << "Invalid JSON in '" << jsonPath << "': " << parseError.errorString() << '\n';
-        return false;
-    }
-
-    const QJsonObject root = doc.object();
-    for (auto it = root.begin(); it != root.end(); ++it)
-    {
-        if (!it.value().isArray())
-        {
-            err() << "Help for '" << it.key() << "' is not an array of lines\n";
-            return false;
-        }
-
-        QStringList lines;
-        const QJsonArray array = it.value().toArray();
-        for (const QJsonValue &lineVal : array)
-        {
-            if (!lineVal.isString())
-            {
-                err() << "Help for '" << it.key() << "' contains a non-string line\n";
-                return false;
-            }
-            lines.append(lineVal.toString());
-        }
-
-        const QString helpText = lines.join(QLatin1Char('\n')) + QLatin1Char('\n');
-        QStringList names{it.key()};
-        if (it.key() == QLatin1String("FILEP"))
-            names.append(QStringLiteral("FILE?"));
-
-        if (!insertEntry(aliasQuery, textQuery, names, helpText))
-            return false;
-    }
-    return true;
-}
-
 } // namespace
 
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
 
-    if (argc != 4)
+    if (argc != 3)
     {
-        err() << "Usage: mklogohelp <compiler-dir> <help.json> <output-db>\n";
+        err() << "Usage: mklogohelp <compiler-dir> <output-db>\n";
         return 1;
     }
 
     const QString compilerDirPath = QString::fromLocal8Bit(argv[1]);
-    const QString jsonPath = QString::fromLocal8Bit(argv[2]);
-    const QString destPath = QString::fromLocal8Bit(argv[3]);
+    const QString destPath = QString::fromLocal8Bit(argv[2]);
 
     QFile::remove(destPath);
 
@@ -262,8 +205,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (!processCompilerDir(compilerDirPath, aliasQuery, textQuery) ||
-        !processHelpJson(jsonPath, aliasQuery, textQuery))
+    if (!processCompilerDir(compilerDirPath, aliasQuery, textQuery))
     {
         db.rollback();
         return 1;

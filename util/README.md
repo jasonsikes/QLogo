@@ -12,7 +12,7 @@ Generates the string, header, and table files for QLogo primitives from source f
 
 ## mklogohelp.cpp
 
-CMake host tool that builds `qlogo_help.db` from `/***DOC` blocks in `qlogo/compiler/*.cpp` and from `help.json`.
+CMake host tool that builds `qlogo_help.db` from `/***DOC` blocks in `qlogo/compiler/*.cpp`.
 
 ## createDesktopIcons.sh
 
@@ -110,10 +110,4 @@ clang-tidy -p . path/to/file.cpp
 # Run clang-tidy on all files
 find qlogo Psychi include -name "*.cpp" -o -name "*.h" | xargs clang-tidy -p .
 ```
-
-# Supporting Files
-
-## help.json
-
-Contains help text for QLogo library procedures and special variables. The `mklogohelp` host tool reads this file when generating the help SQLite database.
 

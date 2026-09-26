@@ -57,7 +57,6 @@ file(GLOB QLOGO_COMPILER_SOURCES CONFIGURE_DEPENDS
 if(NOT QLOGO_COMPILER_SOURCES)
     message(FATAL_ERROR "No compiler .cpp files found")
 endif()
-set(QLOGO_HELP_JSON "${CMAKE_SOURCE_DIR}/util/help.json")
 
 set(_qt_host_env_args)
 if(WIN32)
@@ -83,9 +82,8 @@ add_custom_command(
     COMMAND "${CMAKE_COMMAND}" -E env ${_qt_host_env_args}
             "$<TARGET_FILE:mklogohelp>"
             "${CMAKE_SOURCE_DIR}/qlogo/compiler"
-            "${QLOGO_HELP_JSON}"
             "${QLOGO_HELP_DB}"
-    DEPENDS mklogohelp ${QLOGO_COMPILER_SOURCES} "${QLOGO_HELP_JSON}"
+    DEPENDS mklogohelp ${QLOGO_COMPILER_SOURCES}
     COMMENT "Generating ${QLOGO_HELP} from compiler sources"
     VERBATIM
 )
