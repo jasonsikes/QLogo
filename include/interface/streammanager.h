@@ -372,16 +372,6 @@ class StreamManager
     /// On the command-line interface this is empty.
     QStringList allFontNames() const;
 
-    /// @brief CURSORINSERT / CURSOROVERWRITE: set the text console cursor mode.
-    /// @param overwrite True for overwrite mode, false for insert mode.
-    /// @details In Psychi this changes how future printing occupies existing
-    /// text. The command-line interface has no text window, so this is a no-op.
-    void setCursorOverwriteMode(bool overwrite);
-
-    /// @brief CURSORMODE: true if the text console cursor is in overwrite mode.
-    /// @details On the command-line interface this is always false (insert).
-    bool cursorOverwriteMode() const;
-
     /************ command interpreter ************/
     //
     // The commander (istreamProgram_) is always valid (terminal by default).

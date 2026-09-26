@@ -48,9 +48,6 @@ class LogoInterfaceGUI : public LogoInterface
     int cursorRow_;
     int cursorCol_;
 
-    // cursorModeIsOverwrite is true if the cursor overwrites previously-written text, false if the cursor inserts text.
-    bool cursorModeIsOverwrite_ = false;
-
     // Text returned from editor winow
     QString editorText_;
 
@@ -287,14 +284,6 @@ class LogoInterfaceGUI : public LogoInterface
     /// @param foregroundColor The new foreground color.
     /// @param backgroundColor The new background color.
     void setTextColor(const QColor &foregroundColor, const QColor &backgroundColor) override;
-
-    /// @brief Sets the cursor overwrite mode.
-    /// @param isOverwriteMode True if the cursor should overwrite text, false otherwise.
-    void setCursorOverwriteMode(bool isOverwriteMode) override;
-
-    /// @brief Gets if the cursor is in overwrite mode.
-    /// @return True if the cursor is in overwrite mode, false otherwise.
-    bool cursorOverwriteMode() const override;
 
     /// @brief Sets the label font size.
     /// @param aSize The new font size.

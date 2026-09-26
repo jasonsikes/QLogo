@@ -636,24 +636,6 @@ const QString &StringConstants::cmdStrALLFONTS()
     return str;
 }
 
-const QString &StringConstants::cmdStrCURSORINSERT()
-{
-    static const QString str = QObject::tr("CURSORINSERT");
-    return str;
-}
-
-const QString &StringConstants::cmdStrCURSOROVERWRITE()
-{
-    static const QString str = QObject::tr("CURSOROVERWRITE");
-    return str;
-}
-
-const QString &StringConstants::cmdStrCURSORMODE()
-{
-    static const QString str = QObject::tr("CURSORMODE");
-    return str;
-}
-
 const QString &StringConstants::cmdStrWAIT()
 {
     static const QString str = QObject::tr("WAIT");

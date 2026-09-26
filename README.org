@@ -138,10 +138,10 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | PD             |               | SETFONT                | LOWERCASE                 | UNTRACE              |
 |                    | PENUP          |               | FONT                   | UPPERCASE                 | TRACEDP              |
 |                    | PU             |               | ALLFONTS               | STANDOUT                  | TRACED?              |
-|                    | PENPAINT       |               | CURSORINSERT           | PARSE                     | STEP                 |
-|                    | PPT            |               | CURSOROVERWRITE        | RUNPARSE                  | UNSTEP               |
-|                    | PENERASE       |               | CURSORMODE             |                           | STEPPEDP             |
-|                    | PE             |               | WAIT                   |                           | STEPPED?             |
+|                    | PENPAINT       |               | WAIT                   | PARSE                     | STEP                 |
+|                    | PPT            |               |                        | RUNPARSE                  | UNSTEP               |
+|                    | PENERASE       |               |                        |                           | STEPPEDP             |
+|                    | PE             |               |                        |                           | STEPPED?             |
 |                    | PENREVERSE     |               |                        |                           | *TODO* EDIT          |
 |                    | PX             |               |                        |                           | *TODO* ED            |
 |                    | SETPENCOLOR    |               |                        |                           | *TODO* EDITFILE      |
@@ -315,10 +315,6 @@ This is mostly for my own curiosity and for debugging. ~TIME~ will take one para
 **** ~MARK~:
 
 This is for debugging memory management. ~MARK~ will take one parameter, set a flag on it, and output that parameter. At the moment it is marked, a debugging message will be printed out. Later, if/when the item is deleted, another debugging message will be printed.
-
-**** ~CURSORINSERT~, ~CURSOROVERWRITE~, and ~CURSORMODE~:
-
-~CURSORINSERT~ sets the text cursor to insert mode (the default). ~CURSOROVERWRITE~ sets overwrite mode. ~CURSORMODE~ outputs ~INSERT~ or ~OVERWRITE~. On the command-line interface the setters are no-ops and ~CURSORMODE~ outputs ~INSERT~.
 
 **** ~STANDOUT~:
 
