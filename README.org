@@ -145,17 +145,17 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | PENERASE       |               |                        |                           | EDIT                 |
 |                    | PE             |               |                        |                           | ED                   |
 |                    | PENREVERSE     |               |                        |                           | EDITFILE             |
-|                    | PX             |               |                        |                           | SAVE                 |
-|                    | SETPENCOLOR    |               |                        |                           | LOAD                 |
-|                    | SETPC          |               |                        |                           | HELP                 |
-|                    | ALLCOLORS      |               |                        |                           | FOO                  |
-|                    | SETPALETTE     |               |                        |                           | SETFOO               |
-|                    | SETPENSIZE     |               |                        |                           | GC                   |
-|                    | SETBACKGROUND  |               |                        |                           | .SETSEGMENTSIZE      |
-|                    | SETBG          |               |                        |                           |                      |
-|                    | PENDOWNP       |               |                        |                           |                      |
-|                    | PENDOWN?       |               |                        |                           |                      |
-|                    | PENMODE        |               |                        |                           |                      |
+|                    | PX             |               |                        |                           | SETEDITOR            |
+|                    | SETPENCOLOR    |               |                        |                           | EDITOR               |
+|                    | SETPC          |               |                        |                           | SETTEMPLOC           |
+|                    | ALLCOLORS      |               |                        |                           | TEMPLOC              |
+|                    | SETPALETTE     |               |                        |                           | SAVE                 |
+|                    | SETPENSIZE     |               |                        |                           | LOAD                 |
+|                    | SETBACKGROUND  |               |                        |                           | HELP                 |
+|                    | SETBG          |               |                        |                           | FOO                  |
+|                    | PENDOWNP       |               |                        |                           | SETFOO               |
+|                    | PENDOWN?       |               |                        |                           | GC                   |
+|                    | PENMODE        |               |                        |                           | .SETSEGMENTSIZE      |
 |                    | PENCOLOR       |               |                        |                           |                      |
 |                    | PC             |               |                        |                           |                      |
 |                    | PALETTE        |               |                        |                           |                      |
@@ -258,7 +258,7 @@ Not implemented yet.
 
 **** ~SETEDITOR~:
 
-When QLogo is talking to Psychi, EDIT uses Psychi's built-in editor. From a terminal, EDIT runs the command given to ~SETEDITOR~ (default: the ~EDITOR~ environment variable, or ~nano~). The file path is appended as a last argument.
+When QLogo is talking to Psychi, EDIT uses Psychi's built-in editor. From a terminal, EDIT runs the command given to ~SETEDITOR~ (default: the ~EDITOR~ environment variable, or ~nano~). The file path is appended as a last argument. The ~EDITOR~ command outputs the current ~SETEDITOR~ value.
 
 **** ~SETLIBLOC~:
 
@@ -270,7 +270,7 @@ Not implemented. QLogo uses a SQLite database to store its help text. You can us
 
 **** ~SETTEMPLOC~:
 
-Sets the directory where ~EDIT~ writes its temporary file. The empty list selects the system temporary directory. ~THROW "SYSTEM~ leaves that file on disk; a normal finish deletes it.
+Sets the directory where ~EDIT~ writes its temporary file. The empty list selects the system temporary directory. ~THROW "SYSTEM~ leaves that file on disk; a normal finish deletes it. ~TEMPLOC~ outputs that directory.
 
 **** ~NOREFRESH~ and ~REFRESH~:
 
@@ -339,6 +339,14 @@ Outputs a list of two numbers giving the maximum bounds (x,y) of the canvas.
 **** ~FILEDIALOG~:
 
 GUI only. Presents a modal file dialog so the user can select a file. Outputs the chosen path as a word, or the empty list if the user cancels.
+
+**** ~EDITOR~:
+
+Outputs the current ~SETEDITOR~ command: a word, or a list of words. See ~SETEDITOR~.
+
+**** ~TEMPLOC~:
+
+Outputs the directory ~EDIT~ uses for its temporary file. See ~SETTEMPLOC~.
 
 *** The following commands are slightly different:
 
