@@ -894,3 +894,480 @@ Value *Compiler::genQ(const DatumPtr &node, TypeMask expected)
                                        PaAddr(index));
     return generateNotFlowControl(result);
 }
+
+
+/***DOC IGNORE
+IGNORE value						(library procedure)
+
+	command.  Does nothing.  Used when an expression is evaluated for
+	a side effect and its actual value is unimportant.
+
+COD***/
+
+/***DOC `
+` list							(library procedure)
+
+	outputs a list equal to its input but with certain substitutions.
+	If a member of the input list is the word "," (comma) then the
+	following member should be an instructionlist that produces an
+	output when run.  That output value replaces the comma and the
+	instructionlist.  If a member of the input list is the word ",@"
+	(comma atsign) then the following member should be an instructionlist
+	that outputs a list when run.  The members of that list replace the
+	,@ and the instructionlist.  Example:
+
+		show `[foo baz ,[bf [a b c]] garply ,@[bf [a b c]]]
+
+	will print
+
+		[foo baz [b c] garply b c]
+
+	A word starting with , or ,@ is treated as if the rest of the word
+	were a one-word list, e.g., ,:FOO is equivalent to ,[:FOO].
+
+	A word starting with ", (quote comma) or :, (colon comma) becomes a
+	word starting with " or : but with the result of running the
+	substitution (or its first word, if the result is a list) replacing
+	what comes after the comma.
+
+	Backquotes can be nested.  Substitution is done only for commas at
+	the same depth as the backquote in which they are found:
+
+		? show `[a `[b ,[1+2] ,[foo ,[1+3] d] e] f]
+		[a ` [b , [1+2] , [foo 4 d] e] f]
+
+		?make "name1 "x
+		?make "name2 "y
+		? show `[a `[b ,:,:name1 ,",:name2 d] e]
+		[a ` [b , [:x] , ["y] d] e]
+
+COD***/
+
+/***DOC FOR
+FOR forcontrol instructionlist				(library procedure)
+
+	command.  The first input must be a list containing three or four
+	members: (1) a word, which will be used as the name of a local
+	variable; (2) a word or list that will be evaluated as by RUN to
+	determine a number, the starting value of the variable; (3) a word
+	or list that will be evaluated to determine a number, the limit value
+	of the variable; (4) an optional word or list that will be evaluated
+	to determine the step size.  If the fourth member is missing, the
+	step size will be 1 or -1 depending on whether the limit value is
+	greater than or less than the starting value, respectively.
+
+	The second input is an instructionlist.  The effect of FOR is to run
+	that instructionlist repeatedly, assigning a new value to the control
+	variable (the one named by the first member of the forcontrol list)
+	each time.  First the starting value is assigned to the control
+	variable.  Then the value is compared to the limit value.  FOR is
+	complete when the sign of (current - limit) is the same as the sign
+	of the step size.  (If no explicit step size is provided, the
+	instructionlist is always run at least once.  An explicit step size
+	can lead to a zero-trip FOR, e.g., FOR [I 1 0 1] ...)  Otherwise, the
+	instructionlist is run, then the step is added to the current value
+	of the control variable and FOR returns to the comparison step.
+
+		? for [i 2 7 1.5] [print :i]
+		2
+		3.5
+		5
+		6.5
+		?
+
+COD***/
+
+/***DOC DO.WHILE
+DO.WHILE instructionlist tfexpression			(library procedure)
+
+	command.  Repeatedly evaluates the "instructionlist" as long as the
+	evaluated "tfexpression" remains TRUE.  Evaluates the first input
+	first, so the "instructionlist" is always run at least once.  The
+	"tfexpression" must be an expressionlist whose value when evaluated
+	is TRUE or FALSE.
+
+COD***/
+
+/***DOC WHILE
+WHILE tfexpression instructionlist			(library procedure)
+
+	command.  Repeatedly evaluates the "instructionlist" as long as the
+	evaluated "tfexpression" remains TRUE.  Evaluates the first input
+	first, so the "instructionlist" may never be run at all.  The
+	"tfexpression" must be an expressionlist whose value when evaluated
+	is TRUE or FALSE.
+
+COD***/
+
+/***DOC DO.UNTIL
+DO.UNTIL instructionlist tfexpression			(library procedure)
+
+	command.  Repeatedly evaluates the "instructionlist" as long as the
+	evaluated "tfexpression" remains FALSE.  Evaluates the first input
+	first, so the "instructionlist" is always run at least once.  The
+	"tfexpression" must be an expressionlist whose value when evaluated
+	is TRUE or FALSE.
+
+COD***/
+
+/***DOC UNTIL
+UNTIL tfexpression instructionlist			(library procedure)
+
+	command.  Repeatedly evaluates the "instructionlist" as long as the
+	evaluated "tfexpression" remains FALSE.  Evaluates the first input
+	first, so the "instructionlist" may never be run at all.  The
+	"tfexpression" must be an expressionlist whose value when evaluated
+	is TRUE or FALSE.
+
+COD***/
+
+/***DOC CASE
+CASE value clauses					(library procedure)
+
+	command or operation.  The second input is a list of lists (clauses);
+	each clause is a list whose first element is either a list of values
+	or the word ELSE and whose butfirst is a Logo expression or
+	instruction.  CASE examines the clauses in order.  If a clause begins
+	with the word ELSE (upper or lower case), then the butfirst of that
+	clause is evaluated and CASE outputs its value, if any.  If the first
+	input to CASE is a member of the first element of a clause, then the
+	butfirst of that clause is evaluated and CASE outputs its value, if
+	any.  If neither of these conditions is met, then CASE goes on to the
+	next clause.  If no clause is satisfied, CASE does nothing.  Example:
+
+		to vowelp :letter
+		output case :letter [ [[a e i o u] "true] [else "false] ]
+		end
+
+COD***/
+
+/***DOC COND
+COND clauses						(library procedure)
+
+	command or operation.  The input is a list of lists (clauses); each
+	clause is a list whose first element is either an expression whose
+	value is TRUE or FALSE, or the word ELSE, and whose butfirst is a Logo
+	expression or instruction.  COND examines the clauses in order.  If a
+	clause begins with the word ELSE (upper or lower case), then the
+	butfirst of that clause is evaluated and CASE outputs its value, if
+	any.  Otherwise, the first element of the clause is evaluated; the
+	resulting value must be TRUE or FALSE.  If it's TRUE, then the
+	butfirst of that clause is evaluated and COND outputs its value, if
+	any.  If the value is FALSE, then COND goes on to the next clause.  If
+	no clause is satisfied, COND does nothing.  Example:
+
+		to evens :numbers	; select even numbers from a list
+		op cond [ [[emptyp :numbers] []]
+		          [[evenp first :numbers]  ; assuming EVENP is defined
+		           fput first :numbers evens butfirst :numbers]
+		          [else evens butfirst :numbers] ]
+		end
+
+
+COD***/
+
+/***DOC INVOKE
+INVOKE template input					(library procedure)
+(INVOKE template input1 input2 ...)
+
+	command or operation.  Exactly like APPLY except that the inputs
+	are provided as separate expressions rather than in a list.
+
+COD***/
+
+/***DOC FOREACH
+FOREACH data template					(library procedure)
+(FOREACH data1 data2 ... template)
+
+	command.  Evaluates the template list repeatedly, once for each
+	member of the data list.  If more than one data list are given,
+	each of them must be the same length.  (The data inputs can be
+	words, in which case the template is evaluated once for each
+	character.)
+
+	In a template, the symbol ?REST represents the portion of the
+	data input to the right of the member currently being used as
+	the ? slot-filler.  That is, if the data input is [A B C D E]
+	and the template is being evaluated with ? replaced by B, then
+	?REST would be replaced by [C D E].  If multiple parallel slots
+	are used, then (?REST 1) goes with ?1, etc.
+
+	In a template, the symbol # represents the position in the data
+	input of the member currently being used as the ? slot-filler.
+	That is, if the data input is [A B C D E] and the template is
+	being evaluated with ? replaced by B, then # would be replaced
+	by 2.
+
+COD***/
+
+/***DOC MAP
+MAP template data					(library procedure)
+(MAP template data1 data2 ...)
+
+	outputs a word or list, depending on the type of the data input,
+	of the same length as that data input.  (If more than one data
+	input are given, the output is of the same type as data1.)  Each
+	member of the output is the result of evaluating the template
+	list, filling the slots with the corresponding member(s) of the
+	data input(s).  (All data inputs must be the same length.)  In the
+	case of a word output, the results of the template evaluation must
+	be words, and they are concatenated with WORD.
+
+	In a template, the symbol ?REST represents the portion of the
+	data input to the right of the member currently being used as
+	the ? slot-filler.  That is, if the data input is [A B C D E]
+	and the template is being evaluated with ? replaced by B, then
+	?REST would be replaced by [C D E].  If multiple parallel slots
+	are used, then (?REST 1) goes with ?1, etc.
+
+	In a template, the symbol # represents the position in the data
+	input of the member currently being used as the ? slot-filler.
+	That is, if the data input is [A B C D E] and the template is
+	being evaluated with ? replaced by B, then # would be replaced
+	by 2.
+
+COD***/
+
+/***DOC MAP.SE
+MAP.SE template data					(library procedure)
+(MAP.SE template data1 data2 ...)
+
+	outputs a list formed by evaluating the template list repeatedly
+	and concatenating the results using SENTENCE.  That is, the
+	members of the output are the members of the results of the
+	evaluations.  The output list might, therefore, be of a different
+	length from that of the data input(s).  (If the result of an
+	evaluation is the empty list, it contributes nothing to the final
+	output.)  The data inputs may be words or lists.
+
+	In a template, the symbol ?REST represents the portion of the
+	data input to the right of the member currently being used as
+	the ? slot-filler.  That is, if the data input is [A B C D E]
+	and the template is being evaluated with ? replaced by B, then
+	?REST would be replaced by [C D E].  If multiple parallel slots
+	are used, then (?REST 1) goes with ?1, etc.
+
+	In a template, the symbol # represents the position in the data
+	input of the member currently being used as the ? slot-filler.
+	That is, if the data input is [A B C D E] and the template is
+	being evaluated with ? replaced by B, then # would be replaced
+	by 2.
+
+COD***/
+
+/***DOC FILTER
+FILTER tftemplate data					(library procedure)
+
+	outputs a word or list, depending on the type of the data input,
+	containing a subset of the members (for a list) or characters (for
+	a word) of the input.  The template is evaluated once for each
+	member or character of the data, and it must produce a TRUE or
+	FALSE value.  If the value is TRUE, then the corresponding input
+	constituent is included in the output.
+
+		? print filter "vowelp "elephant
+		eea
+		?
+
+	In a template, the symbol ?REST represents the portion of the
+	data input to the right of the member currently being used as
+	the ? slot-filler.  That is, if the data input is [A B C D E]
+	and the template is being evaluated with ? replaced by B, then
+	?REST would be replaced by [C D E].
+
+	In a template, the symbol # represents the position in the data
+	input of the member currently being used as the ? slot-filler.
+	That is, if the data input is [A B C D E] and the template is
+	being evaluated with ? replaced by B, then # would be replaced
+	by 2.
+
+COD***/
+
+/***DOC FIND
+FIND tftemplate data					(library procedure)
+
+	outputs the first constituent of the data input (the first member
+	of a list, or the first character of a word) for which the value
+	produced by evaluating the template with that consituent in its
+	slot is TRUE.  If there is no such constituent, the empty list
+	is output.
+
+	In a template, the symbol ?REST represents the portion of the
+	data input to the right of the member currently being used as
+	the ? slot-filler.  That is, if the data input is [A B C D E]
+	and the template is being evaluated with ? replaced by B, then
+	?REST would be replaced by [C D E].
+
+	In a template, the symbol # represents the position in the data
+	input of the member currently being used as the ? slot-filler.
+	That is, if the data input is [A B C D E] and the template is
+	being evaluated with ? replaced by B, then # would be replaced
+	by 2.
+
+COD***/
+
+/***DOC REDUCE
+REDUCE template data					(library procedure)
+
+	outputs the result of applying the template to accumulate the
+	members of the data input.  The template must be a two-slot
+	function.  Typically it is an associative function name like SUM.
+	If the data input has only one constituent (member in a list or
+	character in a word), the output is that consituent.  Otherwise,
+	the template is first applied with ?1 filled with the next-to-last
+	consitient and ?2 with the last constituent.  Then, if there are
+	more constituents, the template is applied with ?1 filled with the
+	next constituent to the left and ?2 with the result from the
+	previous evaluation.  This process continues until all constituents
+	have been used.  The data input may not be empty.
+
+	Note: If the template is, like SUM, the name of a procedure that is
+	capable of accepting arbitrarily many inputs, it is more efficient
+	to use APPLY instead of REDUCE.  The latter is good for associative
+	procedures that have been written to accept exactly two inputs:
+
+		to max :a :b
+		output ifelse :a > :b [:a] [:b]
+		end
+
+		print reduce "max [...]
+
+	Alternatively, REDUCE can be used to write MAX as a procedure
+	that accepts any number of inputs, as SUM does:
+
+		to max [:inputs] 2
+		if emptyp :inputs ~
+		   [(throw "error [not enough inputs to max])]
+		output reduce [ifelse ?1 > ?2 [?1] [?2]] :inputs
+		end
+
+COD***/
+
+/***DOC CROSSMAP
+CROSSMAP template listlist				(library procedure)
+(CROSSMAP template data1 data2 ...)
+
+	outputs a list containing the results of template evaluations.
+	Each data list contributes to a slot in the template; the number
+	of slots is equal to the number of data list inputs.  As a special
+	case, if only one data list input is given, that list is taken as
+	a list of data lists, and each of its members contributes values
+	to a slot.  CROSSMAP differs from MAP in that instead of taking
+	members from the data inputs in parallel, it takes all possible
+	combinations of members of data inputs, which need not be the same
+	length.
+
+		? show (crossmap [word ?1 ?2] [a b c] [1 2 3 4])
+		[a1 a2 a3 a4 b1 b2 b3 b4 c1 c2 c3 c4]
+		?
+
+	For compatibility with the version in the first edition of CSLS,
+	CROSSMAP templates may use the notation :1 instead of ?1 to indicate
+	slots.
+
+COD***/
+
+/***DOC CASCADE
+CASCADE endtest template startvalue			(library procedure)
+(CASCADE endtest tmp1 sv1 tmp2 sv2 ...)
+(CASCADE endtest tmp1 sv1 tmp2 sv2 ... finaltemplate)
+
+	outputs the result of applying a template (or several templates,
+	as explained below) repeatedly, with a given value filling the
+	slot the first time, and the result of each application filling
+	the slot for the following application.
+
+	In the simplest case, CASCADE has three inputs.  The second input
+	is a one-slot expression template.  That template is evaluated
+	some number of times (perhaps zero).  On the first evaluation,
+	the slot is filled with the third input; on subsequent evaluations,
+	the slot is filled with the result of the previous evaluation.
+	The number of evaluations is determined by the first input.  This
+	can be either a nonnegative integer, in which case the template is
+	evaluated that many times, or a predicate expression template, in
+	which case it is evaluated (with the same slot filler that will be
+	used for the evaluation of the second input) repeatedly, and the
+	CASCADE evaluation continues as long as the predicate value is
+	FALSE.  (In other words, the predicate template indicates the
+	condition for stopping.)
+
+	If the template is evaluated zero times, the output from CASCADE
+	is the third (startvalue) input.  Otherwise, the output is the
+	value produced by the last template evaluation.
+
+	CASCADE templates may include the symbol # to represent the number
+	of times the template has been evaluated.  This slot is filled with
+	1 for the first evaluation, 2 for the second, and so on.
+
+		? show cascade 5 [lput # ?] []
+		[1 2 3 4 5]
+		? show cascade [vowelp first ?] [bf ?] "spring
+		ing
+		? show cascade 5 [# * ?] 1
+		120
+		?
+
+	Several cascaded results can be computed in parallel by providing
+	additional template-startvalue pairs as inputs to CASCADE.  In this
+	case, all templates (including the endtest template, if used) are
+	multi-slot, with the number of slots equal to the number of pairs of
+	inputs.  In each round of evaluations, ?2, for example, represents the
+	result of evaluating the second template in the previous round.  If
+	the total number of inputs (including the first endtest input) is odd,
+	then the output from CASCADE is the final value of the first template.
+	If the total number of inputs is even, then the last input is a
+	template that is evaluated once, after the end test is satisfied, to
+	determine the output from CASCADE.
+
+		to fibonacci :n
+		output (cascade :n [?1 + ?2] 1 [?1] 0)
+		end
+
+		to piglatin :word
+		output (cascade [vowelp first ?] ~
+				[word bf ? first ?] ~
+				:word ~
+				[word ? "ay])
+		end
+
+COD***/
+
+/***DOC TRANSFER
+TRANSFER endtest template inbasket			(library procedure)
+
+	outputs the result of repeated evaluation of the template.
+	The template is evaluated once for each member of the list
+	"inbasket."  TRANSFER maintains an "outbasket" that is
+	initially the empty list.  After each evaluation of the
+	template, the resulting value becomes the new outbasket.
+
+	In the template, the symbol ?IN represents the current member
+	from the inbasket; the symbol ?OUT represents the entire
+	current outbasket.  Other slot symbols should not be used.
+
+	If the first (endtest) input is an empty list, evaluation
+	continues until all inbasket members have been used.  If not,
+	the first input must be a predicate expression template, and
+	evaluation continues until either that template's value is TRUE
+	or the inbasket is used up.
+
+
+COD***/
+
+/***DOC MACROEXPAND
+MACROEXPAND expr					(library procedure)
+
+	takes as its input a Logo expression that invokes a macro (that is,
+	one that begins with the name of a macro) and outputs the the Logo
+	expression into which the macro would translate the input expression.
+
+
+		.macro localmake :name :value
+		op `[local ,[word "" :name] apply "make [,[:name] ,[:value]]]
+		end
+
+		? show macroexpand [localmake "pi 3.14159]
+		[local "pi apply "make [pi 3.14159]]
+
+
+COD***/

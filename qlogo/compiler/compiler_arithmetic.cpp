@@ -1142,3 +1142,29 @@ Value *Compiler::generateListExecIfList(ASTNode *parent, Value *c)
 
     return retval;
 }
+
+/***DOC ISEQ
+ISEQ from to						(library procedure)
+
+	outputs a list of the integers from FROM to TO, inclusive.
+
+		? show iseq 3 7
+		[3 4 5 6 7]
+		? show iseq 7 3
+		[7 6 5 4 3]
+
+COD***/
+
+/***DOC RSEQ
+RSEQ from to count					(library procedure)
+
+	outputs a list of COUNT equally spaced rational numbers
+	between FROM and TO, inclusive.
+
+		? show rseq 3 5 9
+		[3 3.25 3.5 3.75 4 4.25 4.5 4.75 5]
+		? show rseq 3 5 5
+		[3 3.5 4 4.5 5]
+
+
+COD***/

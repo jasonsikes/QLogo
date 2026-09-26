@@ -1103,3 +1103,143 @@ Value *Compiler::genRunparse(const DatumPtr &node, TypeMask expected)
     wordorlist = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), wordorlist);
     return generateCallExtern(runparseDatum, PaAddr(scaff_->evaluator_), PaAddr(wordorlist));
 }
+
+/***DOC MDARRAY
+MDARRAY sizelist					(library procedure)
+(MDARRAY sizelist origin)
+
+	outputs a multi-dimensional array.  The first input must be a list
+	of one or more positive integers.  The second input, if present,
+	must be a single integer that applies to every dimension of the array.
+	Ex: (MDARRAY [3 5] 0) outputs a two-dimensional array whose members
+	range from [0 0] to [2 4].
+
+COD***/
+
+/***DOC COMBINE
+COMBINE thing1 thing2					(library procedure)
+
+	if thing2 is a word, outputs WORD thing1 thing2.  If thing2 is a list,
+	outputs FPUT thing1 thing2.
+
+COD***/
+
+/***DOC REVERSE
+REVERSE list						(library procedure)
+
+	outputs a list whose members are the members of the input list, in
+	reverse order.
+
+COD***/
+
+/***DOC GENSYM
+GENSYM							(library procedure)
+
+	outputs a unique word each time it's invoked.  The words are of the
+	form G1, G2, etc.
+
+
+COD***/
+
+/***DOC MDITEM
+MDITEM indexlist array					(library procedure)
+
+	outputs the member of the multidimensional "array" selected by
+	the list of numbers "indexlist".
+
+COD***/
+
+/***DOC PICK
+PICK list						(library procedure)
+
+	outputs a randomly chosen member of the input list.
+
+COD***/
+
+/***DOC REMOVE
+REMOVE thing list					(library procedure)
+
+	outputs a copy of "list" with every member equal to "thing" removed.
+
+COD***/
+
+/***DOC REMDUP
+REMDUP list						(library procedure)
+
+	outputs a copy of "list" with duplicate members removed.  If two or
+	more members of the input are equal, the rightmost of those members
+	is the one that remains in the output.
+
+COD***/
+
+/***DOC QUOTED
+QUOTED thing						(library procedure)
+
+	outputs its input, if a list; outputs its input with a quotation
+	mark prepended, if a word.
+
+
+COD***/
+
+/***DOC MDSETITEM
+MDSETITEM indexlist array value				(library procedure)
+
+	command.  Replaces the member of "array" chosen by "indexlist"
+	with the new "value".
+
+COD***/
+
+/***DOC PUSH
+PUSH stackname thing					(library procedure)
+
+	command.  Adds the "thing" to the stack that is the value of the
+	variable whose name is "stackname".  This variable must have a list
+	as its value; the initial value should be the empty list.  New
+	members are added at the front of the list.
+
+COD***/
+
+/***DOC POP
+POP stackname						(library procedure)
+
+	outputs the most recently PUSHed member of the stack that is the
+	value of the variable whose name is "stackname" and removes that
+	member from the stack.
+
+COD***/
+
+/***DOC QUEUE
+QUEUE queuename thing					(library procedure)
+
+	command.  Adds the "thing" to the queue that is the value of the
+	variable whose name is "queuename".  This variable must have a list
+	as its value; the initial value should be the empty list.  New
+	members are added at the back of the list.
+
+COD***/
+
+/***DOC DEQUEUE
+DEQUEUE queuename					(library procedure)
+
+	outputs the least recently QUEUEd member of the queue that is the
+	value of the variable whose name is "queuename" and removes that
+	member from the queue.
+
+COD***/
+
+/***DOC BACKSLASHEDP BACKSLASHED?
+VBARREDP char
+VBARRED? char
+BACKSLASHED? char                               (library procedure)
+
+	outputs TRUE if the input character was originally entered into Logo
+	within vertical bars (|) to prevent its usual special syntactic
+	meaning, FALSE otherwise.  (Outputs TRUE only if the character is a
+	backslashed space, tab, newline, or one of ()[]+-*/=<>":;\~?| )
+
+	The names BACKSLASHEDP and BACKSLASHED? are included in the Logo
+	library for backward compatibility with the former names of this
+	primitive, although it does *not* output TRUE for characters
+	originally entered with backslashes.
+
+COD***/

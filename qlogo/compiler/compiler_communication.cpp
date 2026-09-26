@@ -1061,3 +1061,21 @@ Value *Compiler::genWait(const DatumPtr &node, TypeMask expected)
         stdWait, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaDouble(time));
     return generateNotFlowControl(retval);
 }
+
+/***DOC CLOSEALL
+CLOSEALL						(library procedure)
+
+	command.  Closes all open files.  Abbreviates
+	FOREACH ALLOPEN [CLOSE ?]
+
+COD***/
+
+/***DOC FILEP FILE?
+FILEP filename
+FILE? filename						(library procedure)
+
+	predicate, outputs TRUE if a file of the specified name exists
+	and can be read, FALSE otherwise.
+
+
+COD***/

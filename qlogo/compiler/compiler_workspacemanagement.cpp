@@ -1405,3 +1405,201 @@ Value *Compiler::genDotSetsegmentsize(const DatumPtr &node, TypeMask expected)
     generateChild(node.astnodeValue(), 0, TypeDatum);
     return generateVoidRetval(node);
 }
+
+
+/***DOC NAME
+NAME value varname					(library procedure)
+
+	command.  Same as MAKE but with the inputs in reverse order.
+
+COD***/
+
+/***DOC LOCALMAKE
+LOCALMAKE varname value				(library procedure)
+
+	command.  Makes the named variable local, like LOCAL, and
+	assigns it the given value, like MAKE.
+
+COD***/
+
+/***DOC NAMELIST
+NAMELIST varname					(library procedure)
+NAMELIST varnamelist
+
+	outputs a contents list consisting of an empty list followed by
+	a list of the name or names given as input.  This is useful in
+	conjunction with workspace control procedures that require a contents
+	list as input.
+
+COD***/
+
+/***DOC PLLIST
+PLLIST plname						(library procedure)
+PLLIST plnamelist
+
+	outputs a contents list consisting of two empty lists followed by
+	a list of the name or names given as input.  This is useful in
+	conjunction with workspace control procedures that require a contents
+	list as input.
+
+COD***/
+
+/***DOC POALL
+POALL							(library procedure)
+
+	command.  Prints all unburied definitions in the workspace.
+	Abbreviates PO CONTENTS.
+
+COD***/
+
+/***DOC POPS
+POPS							(library procedure)
+
+	command.  Prints the definitions of all unburied procedures in
+	the workspace.  Abbreviates PO PROCEDURES.
+
+COD***/
+
+/***DOC PONS
+PONS							(library procedure)
+
+	command.  Prints the definitions of all unburied variables in
+	the workspace.  Abbreviates PO NAMES.
+
+COD***/
+
+/***DOC POPLS
+POPLS							(library procedure)
+
+	command.  Prints the contents of all unburied nonempty property
+	lists in the workspace.  Abbreviates PO PLISTS.
+
+COD***/
+
+/***DOC PON
+PON varname						(library procedure)
+PON varnamelist
+
+	command.  Prints the definitions of the named variable(s).
+	Abbreviates PO NAMELIST varname(list).
+
+COD***/
+
+/***DOC POPL
+POPL plname						(library procedure)
+POPL plnamelist
+
+	command.  Prints the definitions of the named property list(s).
+	Abbreviates PO PLLIST plname(list).
+
+COD***/
+
+/***DOC POTS
+POTS							(library procedure)
+
+	command.  Prints the title lines of all unburied procedures
+	in the workspace.  Abbreviates POT PROCEDURES.
+
+
+COD***/
+
+/***DOC ERN
+ERN varname						(library procedure)
+ERN varnamelist
+
+	command.  Erases from the workspace the variable(s) named in the
+	input.  Abbreviates ERASE NAMELIST varname(list).
+
+COD***/
+
+/***DOC ERPL
+ERPL plname						(library procedure)
+ERPL plnamelist
+
+	command.  Erases from the workspace the property list(s) named in the
+	input.  Abbreviates ERASE PLLIST plname(list).
+
+COD***/
+
+/***DOC BURYALL
+BURYALL							(library procedure)
+
+	command.  Abbreviates BURY CONTENTS.
+
+COD***/
+
+/***DOC BURYNAME
+BURYNAME varname					(library procedure)
+BURYNAME varnamelist
+
+	command.  Abbreviates BURY NAMELIST varname(list).
+
+COD***/
+
+/***DOC UNBURYALL
+UNBURYALL						(library procedure)
+
+	command.  Abbreviates UNBURY BURIED.
+
+COD***/
+
+/***DOC UNBURYNAME
+UNBURYNAME varname					(library procedure)
+UNBURYNAME varnamelist
+
+	command.  Abbreviates UNBURY NAMELIST varname(list).
+
+COD***/
+
+/***DOC EDALL
+EDALL							(library procedure)
+
+	command.  Abbreviates EDIT CONTENTS.
+
+COD***/
+
+/***DOC EDPS
+EDPS							(library procedure)
+
+	command.  Abbreviates EDIT PROCEDURES.
+
+COD***/
+
+/***DOC EDNS
+EDNS							(library procedure)
+
+	command.  Abbreviates EDIT NAMES.
+
+COD***/
+
+/***DOC EDPLS
+EDPLS							(library procedure)
+
+	command.  Abbreviates EDIT PLISTS.
+
+COD***/
+
+/***DOC EDN
+EDN varname						(library procedure)
+EDN varnamelist
+
+	command.  Abbreviates EDIT NAMELIST varname(list).
+
+COD***/
+
+/***DOC EDPL
+EDPL plname						(library procedure)
+EDPL plnamelist
+
+	command.  Abbreviates EDIT PLLIST plname(list).
+
+COD***/
+
+/***DOC SAVEL
+SAVEL contentslist filename				(library procedure)
+
+	command.  Saves the definitions of the procedures, variables, and
+	property lists specified by "contentslist" to the file named
+	"filename".
+
+COD***/

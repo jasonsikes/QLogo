@@ -1166,3 +1166,34 @@ Value *Compiler::genButton(const DatumPtr &node, TypeMask expected)
     CHECK_GRAPHICS_MODE
     return generateCallExtern(getMouseButton);
 }
+
+/***DOC XCOR
+XCOR							(library procedure)
+
+	outputs a number, the turtle's X coordinate.
+
+COD***/
+
+/***DOC YCOR
+YCOR							(library procedure)
+
+	outputs a number, the turtle's Y coordinate.
+
+COD***/
+
+/***DOC SETPEN
+SETPEN list						(library procedure)
+
+	sets the pen's position, mode, thickness, and hardware-dependent
+	characteristics according to the information in the input list, which
+	should be taken from an earlier invocation of PEN.
+
+COD***/
+
+/***DOC PEN
+PEN							(library procedure)
+
+	outputs a list containing the pen's position, mode, thickness, and
+	hardware-specific characteristics, for use by SETPEN.
+
+COD***/
