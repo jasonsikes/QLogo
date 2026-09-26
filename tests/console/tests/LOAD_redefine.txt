@@ -1,0 +1,4 @@
+to loadredef
+print 2
+end
+loadredef

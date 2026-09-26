@@ -146,7 +146,7 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | PX             |               |                        |                           | *TODO* ED            |
 |                    | SETPENCOLOR    |               |                        |                           | *TODO* EDITFILE      |
 |                    | SETPC          |               |                        |                           | *TODO* SAVE          |
-|                    | ALLCOLORS      |               |                        |                           | *TODO* LOAD          |
+|                    | ALLCOLORS      |               |                        |                           | LOAD                 |
 |                    | SETPALETTE     |               |                        |                           | HELP                 |
 |                    | SETPENSIZE     |               |                        |                           | FOO                  |
 |                    | SETBACKGROUND  |               |                        |                           | SETFOO               |

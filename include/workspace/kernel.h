@@ -92,6 +92,26 @@ class Kernel
     /// @note The caller must already have a base call frame on the stack.
     TopLevelResult executeTopLevelList(const QString &prompt, bool isPausing, DatumPtr *resultOut = nullptr);
 
+    /// @brief Classify a top-level result: print errors, map THROW tags.
+    /// @param resultIn The value returned by runECE or a caught FCError.
+    /// @param isPausing Whether this is a PAUSE session.
+    /// @param resultOut Optional; receives the instruction result (PAUSE value).
+    /// @return What the session should do next.
+    TopLevelResult finishTopLevelResult(const DatumPtr &resultIn, bool isPausing, DatumPtr *resultOut);
+
+    /// @brief Run STARTUP if this load assigned it a list.
+    /// @param startupBefore The STARTUP binding before the file ran.
+    /// @return EndOfInput if STARTUP was not assigned a new list; otherwise the
+    /// result of running that list.
+    TopLevelResult runAssignedStartup(const DatumPtr &startupBefore);
+
+    /// @brief Run the current commander, then STARTUP if this load assigned it.
+    /// @param startupBefore The STARTUP binding before the commander ran.
+    /// @return Why the load stopped.
+    /// @note Shared by loadFile and loadText. The caller must already have
+    /// redirected the commander.
+    TopLevelResult runLoadedProgram(const DatumPtr &startupBefore);
+
     /// @brief Open @p path as the commander and run it.
     /// @param path The file to run.
     /// @param exitCode Set to 1 if the file cannot be opened.
@@ -369,9 +389,25 @@ class Kernel
 
     /// @brief Execute instructions from the current commander until they stop.
     /// @return Why the loop stopped.
-    /// @note The caller must already have redirected the commander. This is
-    ///       the entry point LOAD will use.
+    /// @note The caller must already have redirected the commander.
     TopLevelResult runProgram();
+
+    /// @brief Open @p filename as the commander, run it, then run STARTUP if
+    /// this file assigned that variable a list.
+    /// @param filename A word naming the file. PREFIX applies to relative names.
+    /// @return Why the load stopped.
+    /// @note Shared by LOAD, EDITFILE, and Kernel::runFile. Failure to open the
+    /// file is thrown. Errors inside the file are printed and returned as
+    /// StopThenPrompt.
+    TopLevelResult loadFile(const DatumPtr &filename);
+
+    /// @brief Run @p text as the commander, then run STARTUP if this text
+    /// assigned that variable a list.
+    /// @param text Logo source (library CODE, editor buffer).
+    /// @return Why the load stopped.
+    /// @note Same TO / LOADNOISILY / STARTUP rules as loadFile. Shared by
+    /// library autoload and EDIT (in-memory; QLogo does not write temp files).
+    TopLevelResult loadText(const QString &text);
 
     /// @brief Get the procedure name from a TO or .MACRO node.
     /// @param node The ASTNode that holds the command, the procedure name and parameters.

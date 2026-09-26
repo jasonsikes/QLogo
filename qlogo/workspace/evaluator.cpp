@@ -84,23 +84,29 @@ bool Evaluator::exec(int32_t jumpLocation)
             retvalToParent_ = Datum::notADatum();
             return true;
         }
+        DatumPtr savedTagLocation = Compiler::get().tagLineLocation();
         try
         {
             // When compiling a procedure body line, register TAGs against the body
             // suffix that starts at this line. Skip for RUN/sublists (list_ is not
-            // the head of runningSourceList_).
+            // the head of runningSourceList_). Nested compiles (library autoload
+            // during treeify) must not keep this location, and must restore it.
             DatumPtr lineLoc = owningFrame_->runningSourceList_;
             if (lineLoc.isList() && !lineLoc.listValue()->isEmpty() &&
                 lineLoc.listValue()->head.datumValue() == list_.datumValue())
             {
                 Compiler::get().setTagLineLocation(lineLoc);
             }
+            else
+            {
+                Compiler::get().clearTagLineLocation();
+            }
             compiledText_ = Compiler::get().compiledTextFromList(list_.listValue());
-            Compiler::get().clearTagLineLocation();
+            Compiler::get().setTagLineLocation(savedTagLocation);
         }
         catch (FCError *e)
         {
-            Compiler::get().clearTagLineLocation();
+            Compiler::get().setTagLineLocation(savedTagLocation);
             compiledText_.reset();
             retvalToParent_ = e;
             return true;

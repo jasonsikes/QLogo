@@ -1,0 +1,5 @@
+to p
+foreach [ok] [print ?]
+end
+p
+show buriedp "foreach

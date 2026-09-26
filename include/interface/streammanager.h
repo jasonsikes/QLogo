@@ -97,9 +97,9 @@ class StreamManager
     TextStream *istreamRead_;
 
     /// @brief The commander: REPL lines, TO...END bodies, and LOAD text.
-    /// @details Terminal by default; a file during LOAD / EDIT / `qlogo script.lg`;
-    /// the terminal again for the duration of a REPL/PAUSE session even if a
-    /// load is in progress.
+    /// @details Terminal by default; a file during LOAD / EDITFILE / `qlogo script.lg`;
+    /// an in-memory buffer during library autoload / EDIT; the terminal again
+    /// for the duration of a REPL/PAUSE session even if a load is in progress.
     TextStream *istreamProgram_;
 
     /// @brief The current writer (SETWRITE). PRINT/TYPE/SHOW use this unless a
@@ -121,9 +121,10 @@ class StreamManager
     QTextStream *dribbleStream_;
 
     // Active program-source/destination redirects, innermost last. Each entry is
-    // an owned open file; istreamProgram_/ostreamProgram_ alias the top of the
-    // stack (or the terminal when empty), except that a REPL frame forces the
-    // commander to the terminal until it ends. Stacks so redirects can nest.
+    // an owned file or in-memory buffer; istreamProgram_/ostreamProgram_ alias
+    // the top of the stack (or the terminal when empty), except that a REPL
+    // frame forces the commander to the terminal until it ends. Stacks so
+    // redirects can nest.
     QList<OpenStream *> programReadStack_;
     QList<OpenStream *> programWriteStack_;
 
@@ -375,20 +376,31 @@ class StreamManager
     /************ command interpreter ************/
     //
     // The commander (istreamProgram_) is always valid (terminal by default).
-    // LOAD / EDIT / a startup script redirect it to a file for the duration of
-    // the operation, then restore the previous target. Redirects nest, so a
-    // loaded file may itself LOAD another. Prefer the RAII scopes below.
-    // readProgramList follows the commander, including a REPL frame that has
-    // pointed it at the terminal.
+    // LOAD / a startup script redirect it to a file; library autoload / EDIT
+    // redirect it to in-memory text. Redirects nest, so a loaded file may
+    // itself LOAD another or pull in a library row. Prefer the RAII scopes
+    // below. readProgramList follows the commander, including a REPL frame
+    // that has pointed it at the terminal.
 
-    /// @brief Redirect the commander to a file (LOAD / EDIT / startup script).
+    /// @brief Redirect the commander to a file (LOAD / EDITFILE / startup script).
     /// @details Saves the current target and points istreamProgram_ at the file.
     /// @note Prefer ProgramReadScope for exception-safe restore.
     void beginProgramRead(const DatumPtr &filename);
 
+    /// @brief Redirect the commander to in-memory Logo source (library / EDIT).
+    /// @details Copies @p text and points istreamProgram_ at that buffer.
+    /// @note Prefer ProgramReadTextScope for exception-safe restore.
+    void beginProgramReadText(const QString &text);
+
     /// @brief The commander stream (REPL lines, TO...END bodies, and LOAD text).
     /// @details Always valid; the terminal unless redirected.
     TextStream *programReader() const { return istreamProgram_; }
+
+    /// @brief True when the commander is the terminal, not a redirected source.
+    /// @details TO uses this to decide whether a redefinition is an error and
+    /// whether to print "name defined". A REPL/PAUSE frame counts as terminal
+    /// even if a LOAD is in progress underneath.
+    bool programReaderIsTerminal() const { return istreamProgram_ == terminalStream_; }
 
     /// @brief Read the next list from the commander (terminal unless redirected).
     /// @param prompt Prompt shown only when the source is the terminal.
@@ -471,6 +483,24 @@ class ProgramReadScope
     }
     ProgramReadScope(const ProgramReadScope &) = delete;
     ProgramReadScope &operator=(const ProgramReadScope &) = delete;
+};
+
+/// @brief RAII guard: redirects the commander to in-memory text on construction
+/// and restores the previous target on destruction (including when a FCError
+/// unwinds the stack).
+class ProgramReadTextScope
+{
+  public:
+    explicit ProgramReadTextScope(const QString &text)
+    {
+        StreamManager::get().beginProgramReadText(text);
+    }
+    ~ProgramReadTextScope()
+    {
+        StreamManager::get().endProgramRead();
+    }
+    ProgramReadTextScope(const ProgramReadTextScope &) = delete;
+    ProgramReadTextScope &operator=(const ProgramReadTextScope &) = delete;
 };
 
 /// @brief RAII guard: redirects the listing destination to a file on construction

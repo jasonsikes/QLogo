@@ -320,6 +320,11 @@ class Compiler
     /// @param location List whose head is the line being compiled; tail is the remaining body.
     void setTagLineLocation(const DatumPtr &location) { tagLineLocation_ = location; }
 
+    /// @brief The current TAG registration line location.
+    /// @details Nested compiles (library autoload during treeify) must save and
+    /// restore this so an inner compile does not drop the outer line.
+    DatumPtr tagLineLocation() const { return tagLineLocation_; }
+
     /// @brief Clear the TAG registration line location after compiling.
     void clearTagLineLocation() { tagLineLocation_ = nothing(); }
 

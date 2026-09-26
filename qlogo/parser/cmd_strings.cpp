@@ -1986,6 +1986,12 @@ const QString &StringConstants::cmdStrSTEPPED_Q()
     return str;
 }
 
+const QString &StringConstants::cmdStrLOAD()
+{
+    static const QString str = QObject::tr("LOAD");
+    return str;
+}
+
 const QString &StringConstants::cmdStrHELP()
 {
     static const QString str = QObject::tr("HELP");

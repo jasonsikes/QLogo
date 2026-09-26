@@ -26,11 +26,8 @@
 #include "datum_types.h"
 #include "flowcontrol.h"
 #include "interface/textstream.h"
-#include "sharedconstants.h"
 #include <QDateTime>
-#include <QIODevice>
 #include <QObject>
-#include <QTextStream>
 #include <cmath>
 
 Procedures::Procedures()
@@ -151,7 +148,7 @@ void Procedures::defineProcedure(const DatumPtr &cmd,
     if ((firstChar == '"') || (firstChar == ':'))
         throw FCError::doesntLike(cmd, procnameP);
 
-    // TODO: We should allow conditional redefinition of procedures, such as after editing.
+    // User procedures may be replaced (DEFINE, LOAD, COPYDEF). Primitives may not.
     if (stringToCmd.contains(procname))
         throw FCError::isPrimitive(procnameP);
 
@@ -240,55 +237,7 @@ bool Procedures::loadLibraryProcedure(const QString &aName)
     if (code.isEmpty())
         return false;
 
-    QTextStream qstream(&code, QIODevice::ReadOnly);
-    TextStream reader(&qstream);
-
-    for (;;)
-    {
-        DatumPtr line = reader.readListWithPrompt(QString(), true);
-        if (!line.isList())
-            break;
-        if (line.listValue()->isEmpty())
-            continue;
-
-        DatumPtr first = line.listValue()->head;
-        if (!first.isWord())
-            continue;
-
-        const QString firstWord = first.toString(Datum::ToStringFlags_Key);
-        if (firstWord != StringConstants::cmdStrTO() && firstWord != StringConstants::cmdStr_dot_MACRO())
-            continue;
-
-        QList<DatumPtr> sourceText = reader.listReaderLineHistory();
-
-        ListIterator iter = line.listValue()->newIterator();
-        iter.element(); // TO or .MACRO
-        if (!iter.elementExists())
-        {
-            ListBuilder ignored;
-            readProcedureBody(reader, ignored, sourceText, QString());
-            continue;
-        }
-
-        DatumPtr procnameP = iter.element();
-        ListBuilder paramBuilder;
-        while (iter.elementExists())
-            paramBuilder.append(cleanFormal(first, iter.element()));
-
-        ListBuilder textBuilder;
-        textBuilder.append(paramBuilder.finishedList());
-        readProcedureBody(reader, textBuilder, sourceText, QString());
-
-        if (!procnameP.isWord())
-            continue;
-
-        const QString procname = procnameP.toString(Datum::ToStringFlags_Key);
-        if (isProcedure(procname))
-            continue;
-
-        defineProcedure(first, procnameP, textBuilder.finishedList(), sourceText);
-    }
-
+    Kernel::get().loadText(code);
     return true;
 }
 

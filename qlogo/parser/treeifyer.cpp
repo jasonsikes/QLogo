@@ -78,7 +78,9 @@ bool isTag(const DatumPtr &node)
 // Note that this static method maintains the singleton instance of the Treeifier class
 QList<DatumPtr> Treeifier::astFromList(List *aList)
 {
-    static Treeifier instance;
+    // A local instance so library autoload (loadText during lookup) can
+    // treeify TO/BURY lines without clobbering the caller's parse state.
+    Treeifier instance;
 
     // Mark the list with current timestamp to track compilation time
     aList->compileTimeStamp = QDateTime::currentMSecsSinceEpoch();

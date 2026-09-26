@@ -1,0 +1,3 @@
+print [outer start]
+load "LOAD_nested_inner.txt
+print [outer end]

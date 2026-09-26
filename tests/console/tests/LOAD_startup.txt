@@ -1,0 +1,2 @@
+make "startup [print [from startup]]
+print [from file]

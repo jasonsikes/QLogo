@@ -498,6 +498,19 @@ void StreamManager::beginProgramRead(const DatumPtr &filename)
     istreamProgram_ = os->stream;
 }
 
+void StreamManager::beginProgramReadText(const QString &text)
+{
+    auto *buffer = new QString(text);
+    auto *textStream = new QTextStream(buffer, QIODevice::ReadOnly);
+    auto *os = new OpenStream;
+    os->buffer = buffer;
+    os->textStream = textStream;
+    os->stream = new TextStream(textStream);
+    os->mode = OpenMode::Read;
+    programReadStack_.append(os);
+    istreamProgram_ = os->stream;
+}
+
 DatumPtr StreamManager::readProgramList(const QString &prompt, bool shouldRemoveComments)
 {
     return istreamProgram_->readListWithPrompt(prompt, shouldRemoveComments);

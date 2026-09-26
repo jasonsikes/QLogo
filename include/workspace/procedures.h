@@ -65,11 +65,11 @@ class Procedures
     /// @brief Load a library row into the procedure table.
     /// @param aName The Key-form name of the LIBRARY.COMMAND to load.
     /// @return False if there is no CODE for that name. True if a row was ingested.
-    /// @details Parses the row as TO / .MACRO … END text. One row may define
-    /// several procedures. Already-defined names (including primitives) are
-    /// skipped so a user TO of a helper is kept. BURY and other non-definition
-    /// lines are ignored. Does not print "defined" and does not use
-    /// Kernel::inputProcedure.
+    /// @details Runs the row through Kernel::loadText so TO / .MACRO, BURY, and
+    /// any other top-level commands share LOAD's rules. One row may define
+    /// several procedures. A TO in the row may replace a user procedure;
+    /// primitives are still rejected. Does not print "defined" unless
+    /// LOADNOISILY is TRUE.
     bool loadLibraryProcedure(const QString &aName);
 
 

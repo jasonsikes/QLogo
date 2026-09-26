@@ -953,6 +953,31 @@ EXPORTC addr_t stdPot(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
     });
 }
 
+/// LOAD: open a file as the commander and execute it.
+/// TO in the file may replace a user procedure. STARTUP is run if this file
+/// assigned it a list. Failure to open the file is an error. Errors inside
+/// the file are printed and stop the rest of the file.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param filenameAddr a word naming the file
+/// @return the owning ASTNode, or an Error if the file cannot be opened.
+EXPORTC addr_t stdLoad(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *filename = reinterpret_cast<Datum *>(filenameAddr);
+    try
+    {
+        Kernel::get().loadFile(DatumPtr(filename));
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+
 /// HELP: print help text for a name, or list every documented name.
 /// With no input, prints a SHOW-style list of aliases. With one word, looks
 /// up that name. A missing name prints a sorry message rather than an error.

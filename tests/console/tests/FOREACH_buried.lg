@@ -1,0 +1,6 @@
+foreach [1 2 3] [print ?]
+show buriedp "foreach
+show definedp "foreach
+show memberp "foreach procedures
+show memberp "foreach1 procedures
+show buriedp "?rest

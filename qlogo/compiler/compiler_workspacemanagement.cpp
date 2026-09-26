@@ -1129,6 +1129,37 @@ Value *Compiler::genSteppedp(const DatumPtr &node, TypeMask expected)
     return generateNotFlowControl(retval);
 }
 
+/***DOC LOAD
+LOAD filename
+
+    command.  Reads instructions from the named file and executes
+    them.  The file can include procedure definitions with TO, and
+    these are accepted even if a procedure by the same name already
+    exists.  If the file assigns a list value to a variable named
+    STARTUP, then that list is run as an instructionlist after the
+    file is loaded.  If there is a variable LOADNOISILY whose value
+    is TRUE, then TO commands in the file print "PROCNAME defined"
+    (where PROCNAME is the name of the procedure being defined); if
+    LOADNOISILY is FALSE or undefined, TO commands in the file are
+    carried out silently.
+
+COD***/
+// CMD LOAD 1 1 1 n
+Value *Compiler::genLoad(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *filename = generateChild(node.astnodeValue(), 0, TypeDatum);
+    filename = generateFromDatum(Datum::typeWord, node.astnodeValue(), filename);
+
+    Value *retval = generateCallExtern(
+        stdLoad,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(filename));
+    return generateNotFlowControl(retval);
+}
+
 /***DOC HELP
 HELP name
 (HELP)

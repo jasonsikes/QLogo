@@ -113,32 +113,9 @@ bool Kernel::colorFromDatumPtr(QColor &retval, const DatumPtr &colorP) const
     return false;
 }
 
-Kernel::TopLevelResult Kernel::executeTopLevelList(const QString &prompt, bool isPausing, DatumPtr *resultOut)
+Kernel::TopLevelResult Kernel::finishTopLevelResult(const DatumPtr &resultIn, bool isPausing, DatumPtr *resultOut)
 {
-    DatumPtr result;
-    try
-    {
-        DatumPtr line = StreamManager::get().readProgramList(prompt, true);
-
-        Q_ASSERT(callFrameStack_.back().evaluationStackSize() == 0);
-        Q_ASSERT(callFrameStack_.back().sourceNode_.isNothing());
-
-        if (line.isNothing())
-        {
-            if (resultOut != nullptr)
-                *resultOut = nothing();
-            return TopLevelResult::EndOfInput;
-        }
-        callFrameStack_.back().pushEvaluator(line);
-        result = runECE();
-    }
-    catch (FCError *e)
-    {
-        // While FCError objects can be returned from an execution in the form of a DatumPtr,
-        // sometimes exceptions are thrown by the parser.
-        // When that happens, wrap it into a DatumPtr.
-        result = DatumPtr(e);
-    }
+    DatumPtr result = resultIn;
 
     if ((result.datumValue()->isa_ & Datum::typeDataMask) != 0)
     {
@@ -197,6 +174,81 @@ Kernel::TopLevelResult Kernel::executeTopLevelList(const QString &prompt, bool i
     return TopLevelResult::Continue;
 }
 
+Kernel::TopLevelResult Kernel::executeTopLevelList(const QString &prompt, bool isPausing, DatumPtr *resultOut)
+{
+    DatumPtr result;
+    try
+    {
+        DatumPtr line = StreamManager::get().readProgramList(prompt, true);
+
+        Q_ASSERT(callFrameStack_.back().evaluationStackSize() == 0);
+        Q_ASSERT(callFrameStack_.back().sourceNode_.isNothing());
+
+        if (line.isNothing())
+        {
+            if (resultOut != nullptr)
+                *resultOut = nothing();
+            return TopLevelResult::EndOfInput;
+        }
+        callFrameStack_.back().pushEvaluator(line);
+        result = runECE();
+    }
+    catch (FCError *e)
+    {
+        // While FCError objects can be returned from an execution in the form of a DatumPtr,
+        // sometimes exceptions are thrown by the parser.
+        // When that happens, wrap it into a DatumPtr.
+        result = DatumPtr(e);
+    }
+
+    return finishTopLevelResult(result, isPausing, resultOut);
+}
+
+Kernel::TopLevelResult Kernel::runAssignedStartup(const DatumPtr &startupBefore)
+{
+    DatumPtr startup = datumForName(SpecialVars::name(SpecialVars::Id::Startup));
+    if (!startup.isList() || startup.datumValue() == startupBefore.datumValue())
+        return TopLevelResult::EndOfInput;
+
+    callFrameStack_.emplace_back(nullptr, nullptr, 0);
+    DatumPtr result;
+    try
+    {
+        Q_ASSERT(callFrameStack_.back().evaluationStackSize() == 0);
+        callFrameStack_.back().pushEvaluator(startup);
+        result = runECE();
+    }
+    catch (FCError *e)
+    {
+        result = DatumPtr(e);
+    }
+    TopLevelResult action = finishTopLevelResult(result, false, nullptr);
+    callFrameStack_.pop_back();
+    return action;
+}
+
+Kernel::TopLevelResult Kernel::runLoadedProgram(const DatumPtr &startupBefore)
+{
+    TopLevelResult action = runProgram();
+    if (action != TopLevelResult::EndOfInput)
+        return action;
+    return runAssignedStartup(startupBefore);
+}
+
+Kernel::TopLevelResult Kernel::loadFile(const DatumPtr &filename)
+{
+    DatumPtr startupBefore = datumForName(SpecialVars::name(SpecialVars::Id::Startup));
+    ProgramReadScope scope{filename};
+    return runLoadedProgram(startupBefore);
+}
+
+Kernel::TopLevelResult Kernel::loadText(const QString &text)
+{
+    DatumPtr startupBefore = datumForName(SpecialVars::name(SpecialVars::Id::Startup));
+    ProgramReadTextScope scope{text};
+    return runLoadedProgram(startupBefore);
+}
+
 Kernel::TopLevelResult Kernel::runProgram()
 {
     callFrameStack_.emplace_back(nullptr, nullptr, 0);
@@ -215,8 +267,7 @@ bool Kernel::runFile(const QString &path, int &exitCode)
 {
     try
     {
-        ProgramReadScope scope{DatumPtr(path)};
-        if (runProgram() == TopLevelResult::ExitProcess)
+        if (loadFile(DatumPtr(path)) == TopLevelResult::ExitProcess)
             return false;
     }
     catch (FCError *e)
@@ -301,8 +352,10 @@ Datum *Kernel::inputProcedure(ASTNode *node)
         DatumPtr procnameP = procnameFromNode(node);
         QString procname = procnameP.toString(Datum::ToStringFlags_Key);
 
-        // TODO: Enable conditional redefinition of procedures, such as after editing.
-        if (Procedures::get().isProcedure(procname))
+        // Interactive TO may not replace an existing procedure. LOAD / EDITFILE
+        // / a startup script / library autoload may replace a user procedure;
+        // defineProcedure still rejects primitives.
+        if (StreamManager::get().programReaderIsTerminal() && Procedures::get().isProcedure(procname))
             throw FCError::procDefined(procnameP);
 
         // Assign the procedure's parameter names and default values.
@@ -319,9 +372,12 @@ Datum *Kernel::inputProcedure(ASTNode *node)
 
         Procedures::get().defineProcedure(command, procnameP, textP, sourceText);
 
-        QString message = QObject::tr("%1 defined\n");
-        message = message.arg(procnameP.toString());
-        StreamManager::get().printToTerminal(message);
+        if (StreamManager::get().programReaderIsTerminal() || specialVarIsTrue(SpecialVars::Id::LoadNoisily))
+        {
+            QString message = QObject::tr("%1 defined\n");
+            message = message.arg(procnameP.toString());
+            StreamManager::get().printToTerminal(message);
+        }
     }
     catch (FCError *err)
     {

@@ -1,0 +1,2 @@
+make "startup [print [should not run]]
+load "LOAD_1.txt

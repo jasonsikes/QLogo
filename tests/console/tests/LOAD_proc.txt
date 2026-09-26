@@ -1,0 +1,4 @@
+to loadproc
+print 7
+end
+loadproc
