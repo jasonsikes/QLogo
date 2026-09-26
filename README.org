@@ -190,7 +190,7 @@ The differences between QLogo and UCBLogo are described in the *nuances* section
 
 This enables multiple colors and fonts on the same console.
   
-*** QLogo does not look for nor automatically load ~STARTUP.LG~.
+*** QLogo will look for and automatically load ~startup.lg~ in the user's home directory. It will not search for it in any other path.
 
 ~qlogo file.lg~ runs that file as Logo instructions and then presents the prompt.
 

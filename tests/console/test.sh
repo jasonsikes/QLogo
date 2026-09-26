@@ -117,6 +117,12 @@ then
     exit 0
 fi
 
+# Isolate tests from a real ~/startup.lg.
+qlogo_empty_home=$(mktemp -d /tmp/qlogo_emptyhome_XXXXXX)
+export HOME="$qlogo_empty_home"
+export USERPROFILE="$qlogo_empty_home"
+trap 'rm -rf "$qlogo_empty_home"' EXIT
+
 # Check if system has GNU date (supports %N for nanoseconds)
 has_gnu_date() {
     # GNU date supports --version, BSD date doesn't

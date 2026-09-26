@@ -55,6 +55,12 @@ fi
 logo_dir=$(dirname "$logo_path")
 echo "Using qlogo: $logo_path"
 
+# Isolate tests from a real ~/startup.lg.
+qlogo_empty_home=$(mktemp -d /tmp/qlogo_emptyhome_XXXXXX)
+export HOME="$qlogo_empty_home"
+export USERPROFILE="$qlogo_empty_home"
+trap 'rm -rf "$qlogo_empty_home"' EXIT
+
 reported_tests=""
 test_count=0
 

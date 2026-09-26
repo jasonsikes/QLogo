@@ -92,6 +92,12 @@ class Kernel
     /// @note The caller must already have a base call frame on the stack.
     TopLevelResult executeTopLevelList(const QString &prompt, bool isPausing, DatumPtr *resultOut = nullptr);
 
+    /// @brief Open @p path as the commander and run it.
+    /// @param path The file to run.
+    /// @param exitCode Set to 1 if the file cannot be opened.
+    /// @return False if the caller should skip the prompt (BYE or open failure).
+    bool runFile(const QString &path, int &exitCode);
+
     /// @brief Private constructor for singleton pattern.
     Kernel();
 
@@ -410,8 +416,9 @@ class Kernel
     /// @brief Runs the main loop of the QLogo interpreter.
     /// @return The exit code of the application.
     /// @note This method initializes the interface, sets up signal handlers,
-    /// optionally runs a startup script, runs the read-eval-print loop, and
-    /// at termination restores signal handlers.
+    /// runs ~/startup.lg if that file exists, optionally runs a command-line
+    /// script, runs the read-eval-print loop, and at termination restores
+    /// signal handlers.
     int run();
 };
 

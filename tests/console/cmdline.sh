@@ -20,7 +20,13 @@ cmdline_script_arg() {
 }
 
 cmdline_invoke() {
-    if [ -n "$qlogo_run_dir" ]; then
+    if [ -n "$cmdline_home" ]; then
+        if [ -n "$qlogo_run_dir" ]; then
+            (cd "$qlogo_run_dir" && HOME="$cmdline_home" USERPROFILE="$cmdline_home" "$logo_path" "$@")
+        else
+            HOME="$cmdline_home" USERPROFILE="$cmdline_home" "$logo_path" "$@"
+        fi
+    elif [ -n "$qlogo_run_dir" ]; then
         (cd "$qlogo_run_dir" && "$logo_path" "$@")
     else
         "$logo_path" "$@"
@@ -75,6 +81,7 @@ cmdline_run_case() {
     rm -f "$tmp_out"
     cmdline_stdin=""
     cmdline_expect_status=""
+    cmdline_home=""
     if [ "$failed" = true ]; then
         cmdline_record_failure "$name"
     fi
@@ -118,6 +125,18 @@ run_cmdline_tests() {
     cmdline_expect_status=nonzero
     cmdline_run_case "missing.lg" "$cmdline_dir/missing.expected" \
         this_file_does_not_exist.lg
+
+    home_dir=$(mktemp -d /tmp/qlogo_testhome_XXXXXX)
+    printf 'print [fromhome]\n' >"$home_dir/startup.lg"
+
+    cmdline_home="$home_dir"
+    cmdline_run_case "home_startup.lg" "$cmdline_dir/home_startup.expected"
+
+    cmdline_home="$home_dir"
+    cmdline_run_case "home_then_script.lg" "$cmdline_dir/home_then_script.expected" \
+        $exe_opts "$(cmdline_script_arg print.lg)"
+
+    rm -rf "$home_dir"
 
     cd "$orig_dir" || exit 1
 }

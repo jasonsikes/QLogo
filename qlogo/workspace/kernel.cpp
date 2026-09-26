@@ -37,6 +37,7 @@
 #include <QCoreApplication> // quit()
 #include <QDebug>
 #include <QDir>
+#include <QFileInfo>
 #include <QFont>
 #include <QImage>
 #include <cstdlib> // arc4random_uniform()
@@ -208,6 +209,24 @@ Kernel::TopLevelResult Kernel::runProgram()
     }
     callFrameStack_.pop_back();
     return action;
+}
+
+bool Kernel::runFile(const QString &path, int &exitCode)
+{
+    try
+    {
+        ProgramReadScope scope{DatumPtr(path)};
+        if (runProgram() == TopLevelResult::ExitProcess)
+            return false;
+    }
+    catch (FCError *e)
+    {
+        DatumPtr err(e);
+        StreamManager::get().printToTerminal(err.errValue()->toString() + "\n");
+        exitCode = 1;
+        return false;
+    }
+    return true;
 }
 
 DatumPtr Kernel::readEvalPrintLoop(bool isPausing, const QString &prompt)
@@ -412,9 +431,7 @@ DatumPtr Kernel::contentsListFromDatum(const DatumPtr &who, const DatumPtr &sour
     ListBuilder properties;
     ListBuilder *sublists[3] = {&procedures, &variables, &properties};
 
-    auto reject = [&]() {
-        throw FCError::doesntLike(who, source);
-    };
+    auto reject = [&]() { throw FCError::doesntLike(who, source); };
 
     if (source.isWord())
     {
@@ -503,9 +520,9 @@ QString unreadWord(Word *word, bool isInList)
 
     for (QChar letter : src)
     {
-        if ((letter == QLatin1Char(' ')) || (letter == QLatin1Char('[')) || (letter == QLatin1Char(']'))
-            || (letter == QLatin1Char('{')) || (letter == QLatin1Char('}')) || (letter == QLatin1Char('|'))
-            || (letter == QLatin1Char('\n')))
+        if ((letter == QLatin1Char(' ')) || (letter == QLatin1Char('[')) || (letter == QLatin1Char(']')) ||
+            (letter == QLatin1Char('{')) || (letter == QLatin1Char('}')) || (letter == QLatin1Char('|')) ||
+            (letter == QLatin1Char('\n')))
             retval.append(QLatin1Char('\\'));
         retval.append(letter);
     }
@@ -676,8 +693,7 @@ QString Kernel::titlesFromContentsList(const DatumPtr &contentslist) const
         DatumPtr proplist = plists_.getPropertyList(listname);
         if (proplist.listValue()->isEmpty())
             continue;
-        retval += QObject::tr("Plist %1 = %2\n")
-                      .arg(printoutDatum(listnameP), printoutDatum(proplist));
+        retval += QObject::tr("Plist %1 = %2\n").arg(printoutDatum(listnameP), printoutDatum(proplist));
     }
     return retval;
 }
@@ -1253,21 +1269,17 @@ int Kernel::run()
     int exitCode = 0;
     bool enterPrompt = true;
 
-    if (!Config::get().startupScriptPath_.isEmpty())
+    const QFileInfo homeStartup(QDir::home().filePath(QStringLiteral("startup.lg")));
+    if (homeStartup.isFile())
     {
-        try
-        {
-            ProgramReadScope scope(DatumPtr(Config::get().startupScriptPath_));
-            if (runProgram() == TopLevelResult::ExitProcess)
-                enterPrompt = false;
-        }
-        catch (FCError *e)
-        {
-            DatumPtr err(e);
-            StreamManager::get().printToTerminal(err.errValue()->toString() + "\n");
+        if (!runFile(homeStartup.absoluteFilePath(), exitCode))
             enterPrompt = false;
-            exitCode = 1;
-        }
+    }
+
+    if (enterPrompt && !Config::get().startupScriptPath_.isEmpty())
+    {
+        if (!runFile(Config::get().startupScriptPath_, exitCode))
+            enterPrompt = false;
     }
 
     if (enterPrompt)
