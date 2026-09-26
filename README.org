@@ -127,29 +127,31 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | SPLITSCREEN    | NOT           | KEY?                   | SUBSTRINGP                | ERASE                |
 |                    | SS             | +             | LINEP                  | SUBSTRING?                | ER                   |
 |                    | SETSCRUNCH     | *             | LINE?                  | NUMBERP                   | ERALL                |
-|                    | SHOWNP         | /             | CLEARTEXT              | NUMBER?                   | ERPS                 |
-|                    | SHOWN?         | <             | CT                     | VBARREDP                  | ERNS                 |
-|                    | SCREENMODE     | >             | SETCURSOR              | VBARRED?                  | ERPLS                |
-|                    | TURTLEMODE     | =             | CURSOR                 | COUNT                     | BURY                 |
-|                    | LABELSIZE      | <=            | SETTEXTCOLOR           | ASCII                     | UNBURY               |
-|                    | LABELFONT      | >=            | SETTC                  | RAWASCII                  | BURIEDP              |
-|                    | *NO* MATRIX    | <>            | INCREASEFONT           | CHAR                      | BURIED?              |
-|                    | PENDOWN        |               | DECREASEFONT           | MEMBER                    | TRACE                |
-|                    | PD             |               | SETTEXTSIZE            | LOWERCASE                 | UNTRACE              |
-|                    | PENUP          |               | TEXTSIZE               | UPPERCASE                 | TRACEDP              |
-|                    | PU             |               | SETFONT                | STANDOUT                  | TRACED?              |
-|                    | PENPAINT       |               | FONT                   | PARSE                     | STEP                 |
-|                    | PPT            |               | ALLFONTS               | RUNPARSE                  | UNSTEP               |
-|                    | PENERASE       |               | WAIT                   |                           | STEPPEDP             |
-|                    | PE             |               |                        |                           | STEPPED?             |
-|                    | PENREVERSE     |               |                        |                           | EDIT                 |
-|                    | PX             |               |                        |                           | ED                   |
-|                    | SETPENCOLOR    |               |                        |                           | EDITFILE             |
-|                    | SETPC          |               |                        |                           | SAVE                 |
-|                    | ALLCOLORS      |               |                        |                           | LOAD                 |
-|                    | SETPALETTE     |               |                        |                           | HELP                 |
-|                    | SETPENSIZE     |               |                        |                           | FOO                  |
-|                    | SETBACKGROUND  |               |                        |                           | SETFOO               |
+|                    | REFRESH        | /             | CLEARTEXT              | NUMBER?                   | ERPS                 |
+|                    | NOREFRESH      | <             | CT                     | VBARREDP                  | ERNS                 |
+|                    | SHOWNP         | >             | SETCURSOR              | VBARRED?                  | ERPLS                |
+|                    | SHOWN?         | =             | CURSOR                 | COUNT                     | BURY                 |
+|                    | SCREENMODE     | <=            | SETMARGINS             | ASCII                     | UNBURY               |
+|                    | TURTLEMODE     | >=            | SETTEXTCOLOR           | RAWASCII                  | BURIEDP              |
+|                    | LABELSIZE      | <>            | SETTC                  | CHAR                      | BURIED?              |
+|                    | LABELFONT      |               | INCREASEFONT           | MEMBER                    | TRACE                |
+|                    | *NO* MATRIX    |               | DECREASEFONT           | LOWERCASE                 | UNTRACE              |
+|                    | PENDOWN        |               | SETTEXTSIZE            | UPPERCASE                 | TRACEDP              |
+|                    | PD             |               | TEXTSIZE               | STANDOUT                  | TRACED?              |
+|                    | PENUP          |               | SETFONT                | PARSE                     | STEP                 |
+|                    | PU             |               | FONT                   | RUNPARSE                  | UNSTEP               |
+|                    | PENPAINT       |               | ALLFONTS               |                           | STEPPEDP             |
+|                    | PPT            |               | WAIT                   |                           | STEPPED?             |
+|                    | PENERASE       |               |                        |                           | EDIT                 |
+|                    | PE             |               |                        |                           | ED                   |
+|                    | PENREVERSE     |               |                        |                           | EDITFILE             |
+|                    | PX             |               |                        |                           | SAVE                 |
+|                    | SETPENCOLOR    |               |                        |                           | LOAD                 |
+|                    | SETPC          |               |                        |                           | HELP                 |
+|                    | ALLCOLORS      |               |                        |                           | FOO                  |
+|                    | SETPALETTE     |               |                        |                           | SETFOO               |
+|                    | SETPENSIZE     |               |                        |                           | GC                   |
+|                    | SETBACKGROUND  |               |                        |                           | .SETSEGMENTSIZE      |
 |                    | SETBG          |               |                        |                           |                      |
 |                    | PENDOWNP       |               |                        |                           |                      |
 |                    | PENDOWN?       |               |                        |                           |                      |
@@ -232,7 +234,7 @@ Since ASCII is a subset of Unicode, the behavior of ~CHAR~, ~ASCII~ and ~RAWASCI
 
 **** ~SETMARGINS~:
 
-The original purpose of the command was to enable text to be visible on projectors which cut off outer boundaries of a computer screen. Projectors and monitors produced in recent years show all of the computer screen. In addition, QLogo is a windowed application so an instructor or presenter can move the window to a different position.
+The original purpose of the command was to enable text to be visible on projectors which cut off outer boundaries of a computer screen. Projectors and monitors produced in recent years show all of the computer screen. In addition, QLogo is a windowed application so an instructor or presenter can move the window to a different position. ~SETMARGINS~ is accepted for compatibility and does nothing.
 
 **** ~FILL~:
 
@@ -272,7 +274,7 @@ Sets the directory where ~EDIT~ writes its temporary file. The empty list select
 
 **** ~NOREFRESH~ and ~REFRESH~:
 
-QLogo is designed from the ground up to have a very responsive user interface. The canvas will always redraw itself whenever the window is resized.
+QLogo is designed from the ground up to have a very responsive user interface. The canvas will always redraw itself whenever the window is resized. ~REFRESH~ and ~NOREFRESH~ are accepted for compatibility and do nothing.
 
 **** ~SETPENPATTERN~ and ~PENPATTERN~:
 

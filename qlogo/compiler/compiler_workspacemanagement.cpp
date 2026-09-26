@@ -1372,3 +1372,36 @@ Value *Compiler::genTemploc(const DatumPtr &node, TypeMask expected)
     Q_ASSERT(expected && TypeDatum);
     return generateCallExtern(stdTemploc, PaAddr(scaff_->evaluator_));
 }
+
+/***DOC GC
+GC
+(GC anything)
+
+    command.  In UCBLogo this runs the garbage collector.  QLogo frees
+    memory as soon as a word, list, or array is no longer needed, so
+    this does nothing.  An optional input is accepted and ignored.
+
+COD***/
+// CMD GC 0 0 1 n
+Value *Compiler::genGc(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    generateChildren(node.astnodeValue(), TypeDatum);
+    return generateVoidRetval(node);
+}
+
+/***DOC .SETSEGMENTSIZE
+.SETSEGMENTSIZE num
+
+    command.  In UCBLogo this sets how many nodes are allocated from
+    the operating system at once.  QLogo does not use segment
+    allocation, so this does nothing.
+
+COD***/
+// CMD .SETSEGMENTSIZE 1 1 1 n
+Value *Compiler::genDotSetsegmentsize(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    generateChild(node.astnodeValue(), 0, TypeDatum);
+    return generateVoidRetval(node);
+}

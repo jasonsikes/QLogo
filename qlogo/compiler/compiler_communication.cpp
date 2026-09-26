@@ -859,6 +859,22 @@ Value *Compiler::genCursor(const DatumPtr &node, TypeMask expected)
     return generateCallExtern(stdCursor, PaAddr(scaff_->evaluator_));
 }
 
+/***DOC SETMARGINS
+SETMARGINS vector
+
+    command. In UCBLogo this clears the screen and shifts later
+    printing down and to the right.  QLogo accepts the command for
+    compatibility and does nothing.
+
+COD***/
+// CMD SETMARGINS 1 1 1 n
+Value *Compiler::genSetmargins(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    generateChild(node.astnodeValue(), 0, TypeDatum);
+    return generateVoidRetval(node);
+}
+
 /***DOC SETTEXTCOLOR SETTC
 SETTEXTCOLOR foreground background
 SETTC foreground background

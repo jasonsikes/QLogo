@@ -577,6 +577,35 @@ Value *Compiler::genSetscrunch(const DatumPtr &node, TypeMask expected)
     return generateVoidRetval(node);
 }
 
+/***DOC REFRESH
+REFRESH
+
+    command.  In UCBLogo this remembers turtle motions so the graphics
+    window can be redrawn.  QLogo always redraws the canvas without
+    affecting processing time, so this does nothing.
+
+COD***/
+// CMD REFRESH 0 0 0 n
+Value *Compiler::genRefresh(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    return generateVoidRetval(node);
+}
+
+/***DOC NOREFRESH
+NOREFRESH
+
+    command.  In UCBLogo this stops remembering turtle motions.
+    QLogo always redraws the canvas, so this does nothing.
+
+COD***/
+// CMD NOREFRESH 0 0 0 n
+Value *Compiler::genNorefresh(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    return generateVoidRetval(node);
+}
+
 // TURTLE AND WINDOW QUERIES
 
 /***DOC SHOWNP SHOWN?

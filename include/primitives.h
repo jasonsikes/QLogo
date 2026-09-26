@@ -77,6 +77,7 @@ llvm::Value *genLinep(const DatumPtr &node, TypeMask expected);
 llvm::Value *genCleartext(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSetcursor(const DatumPtr &node, TypeMask expected);
 llvm::Value *genCursor(const DatumPtr &node, TypeMask expected);
+llvm::Value *genSetmargins(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSettextcolor(const DatumPtr &node, TypeMask expected);
 llvm::Value *genIncreasefont(const DatumPtr &node, TypeMask expected);
 llvm::Value *genDecreasefont(const DatumPtr &node, TypeMask expected);
@@ -181,6 +182,8 @@ llvm::Value *genTextscreen(const DatumPtr &node, TypeMask expected);
 llvm::Value *genFullscreen(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSplitscreen(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSetscrunch(const DatumPtr &node, TypeMask expected);
+llvm::Value *genRefresh(const DatumPtr &node, TypeMask expected);
+llvm::Value *genNorefresh(const DatumPtr &node, TypeMask expected);
 llvm::Value *genShownp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genScreenmode(const DatumPtr &node, TypeMask expected);
 llvm::Value *genTurtlemode(const DatumPtr &node, TypeMask expected);
@@ -263,5 +266,7 @@ llvm::Value *genSeteditor(const DatumPtr &node, TypeMask expected);
 llvm::Value *genEditor(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSettemploc(const DatumPtr &node, TypeMask expected);
 llvm::Value *genTemploc(const DatumPtr &node, TypeMask expected);
+llvm::Value *genGc(const DatumPtr &node, TypeMask expected);
+llvm::Value *genDotSetsegmentsize(const DatumPtr &node, TypeMask expected);
 #endif // PRIMITIVE_HEADER_H
 

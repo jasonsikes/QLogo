@@ -582,6 +582,12 @@ const QString &StringConstants::cmdStrCURSOR()
     return str;
 }
 
+const QString &StringConstants::cmdStrSETMARGINS()
+{
+    static const QString str = QObject::tr("SETMARGINS");
+    return str;
+}
+
 const QString &StringConstants::cmdStrSETTEXTCOLOR()
 {
     static const QString str = QObject::tr("SETTEXTCOLOR");
@@ -1410,6 +1416,18 @@ const QString &StringConstants::cmdStrSETSCRUNCH()
     return str;
 }
 
+const QString &StringConstants::cmdStrREFRESH()
+{
+    static const QString str = QObject::tr("REFRESH");
+    return str;
+}
+
+const QString &StringConstants::cmdStrNOREFRESH()
+{
+    static const QString str = QObject::tr("NOREFRESH");
+    return str;
+}
+
 const QString &StringConstants::cmdStrSHOWNP()
 {
     static const QString str = QObject::tr("SHOWNP");
@@ -2055,6 +2073,18 @@ const QString &StringConstants::cmdStrSETTEMPLOC()
 const QString &StringConstants::cmdStrTEMPLOC()
 {
     static const QString str = QObject::tr("TEMPLOC");
+    return str;
+}
+
+const QString &StringConstants::cmdStrGC()
+{
+    static const QString str = QObject::tr("GC");
+    return str;
+}
+
+const QString &StringConstants::cmdStr_dot_SETSEGMENTSIZE()
+{
+    static const QString str = QObject::tr(".SETSEGMENTSIZE");
     return str;
 }
 

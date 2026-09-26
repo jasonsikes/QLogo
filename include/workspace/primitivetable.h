@@ -99,6 +99,7 @@ stringToCmd.insert(StringConstants::cmdStrCLEARTEXT(), Cmd_t{&Compiler::genClear
 stringToCmd.insert(StringConstants::cmdStrCT(), Cmd_t{&Compiler::genCleartext, 0, 0, 0, TypeN});
 stringToCmd.insert(StringConstants::cmdStrSETCURSOR(), Cmd_t{&Compiler::genSetcursor, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrCURSOR(), Cmd_t{&Compiler::genCursor, 0, 0, 0, TypeD});
+stringToCmd.insert(StringConstants::cmdStrSETMARGINS(), Cmd_t{&Compiler::genSetmargins, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrSETTEXTCOLOR(), Cmd_t{&Compiler::genSettextcolor, 1, 2, 2, TypeN});
 stringToCmd.insert(StringConstants::cmdStrSETTC(), Cmd_t{&Compiler::genSettextcolor, 1, 2, 2, TypeN});
 stringToCmd.insert(StringConstants::cmdStrINCREASEFONT(), Cmd_t{&Compiler::genIncreasefont, 0, 0, 0, TypeN});
@@ -237,6 +238,8 @@ stringToCmd.insert(StringConstants::cmdStrFS(), Cmd_t{&Compiler::genFullscreen, 
 stringToCmd.insert(StringConstants::cmdStrSPLITSCREEN(), Cmd_t{&Compiler::genSplitscreen, 0, 0, 0, TypeN});
 stringToCmd.insert(StringConstants::cmdStrSS(), Cmd_t{&Compiler::genSplitscreen, 0, 0, 0, TypeN});
 stringToCmd.insert(StringConstants::cmdStrSETSCRUNCH(), Cmd_t{&Compiler::genSetscrunch, 2, 2, 2, TypeN});
+stringToCmd.insert(StringConstants::cmdStrREFRESH(), Cmd_t{&Compiler::genRefresh, 0, 0, 0, TypeN});
+stringToCmd.insert(StringConstants::cmdStrNOREFRESH(), Cmd_t{&Compiler::genNorefresh, 0, 0, 0, TypeN});
 stringToCmd.insert(StringConstants::cmdStrSHOWNP(), Cmd_t{&Compiler::genShownp, 0, 0, 0, TypeB});
 stringToCmd.insert(StringConstants::cmdStrSHOWN_Q(), Cmd_t{&Compiler::genShownp, 0, 0, 0, TypeB});
 stringToCmd.insert(StringConstants::cmdStrSCREENMODE(), Cmd_t{&Compiler::genScreenmode, 0, 0, 0, TypeD});
@@ -345,5 +348,7 @@ stringToCmd.insert(StringConstants::cmdStrSETEDITOR(), Cmd_t{&Compiler::genSeted
 stringToCmd.insert(StringConstants::cmdStrEDITOR(), Cmd_t{&Compiler::genEditor, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrSETTEMPLOC(), Cmd_t{&Compiler::genSettemploc, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrTEMPLOC(), Cmd_t{&Compiler::genTemploc, 0, 0, 0, TypeD});
+stringToCmd.insert(StringConstants::cmdStrGC(), Cmd_t{&Compiler::genGc, 0, 0, 1, TypeN});
+stringToCmd.insert(StringConstants::cmdStr_dot_SETSEGMENTSIZE(), Cmd_t{&Compiler::genDotSetsegmentsize, 1, 1, 1, TypeN});
 
 

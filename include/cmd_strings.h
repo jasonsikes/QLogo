@@ -104,6 +104,7 @@ const QString &cmdStrCLEARTEXT();
 const QString &cmdStrCT();
 const QString &cmdStrSETCURSOR();
 const QString &cmdStrCURSOR();
+const QString &cmdStrSETMARGINS();
 const QString &cmdStrSETTEXTCOLOR();
 const QString &cmdStrSETTC();
 const QString &cmdStrINCREASEFONT();
@@ -242,6 +243,8 @@ const QString &cmdStrFS();
 const QString &cmdStrSPLITSCREEN();
 const QString &cmdStrSS();
 const QString &cmdStrSETSCRUNCH();
+const QString &cmdStrREFRESH();
+const QString &cmdStrNOREFRESH();
 const QString &cmdStrSHOWNP();
 const QString &cmdStrSHOWN_Q();
 const QString &cmdStrSCREENMODE();
@@ -350,6 +353,8 @@ const QString &cmdStrSETEDITOR();
 const QString &cmdStrEDITOR();
 const QString &cmdStrSETTEMPLOC();
 const QString &cmdStrTEMPLOC();
+const QString &cmdStrGC();
+const QString &cmdStr_dot_SETSEGMENTSIZE();
 } // namespace StringConstants
 #endif // CMD_STRINGS_H
 
