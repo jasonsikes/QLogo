@@ -191,6 +191,13 @@ bool StreamManager::keyAvailable() const
     return !istreamRead_->atEnd();
 }
 
+bool StreamManager::lineAvailable() const
+{
+    if (istreamRead_ == terminalStream_)
+        return Config::get().mainInterface()->lineQueueHasLine();
+    return !istreamRead_->atEnd();
+}
+
 /************ current-writer output ************/
 
 void StreamManager::print(const QString &text)

@@ -279,6 +279,11 @@ class StreamManager
     /// @brief KEYP: true if a character is available on the current reader.
     bool keyAvailable() const;
 
+    /// @brief LINEP: true if a line is available on the current reader.
+    /// @details For a file this is the same as not readerAtEnd(). For the
+    /// terminal, a complete line must already be waiting (return pressed).
+    bool lineAvailable() const;
+
     /// @brief Write to the active writer (PRINT / TYPE / SHOW).
     /// @param text The text to write.
     /// @details During a REPL/PAUSE session whose overlay is still active,

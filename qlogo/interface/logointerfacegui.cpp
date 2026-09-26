@@ -240,6 +240,11 @@ QString LogoInterfaceGUI::inputRawlineWithPrompt(const QString &prompt)
     return rawLine_;
 }
 
+bool LogoInterfaceGUI::lineQueueHasLine()
+{
+    return keyQueueHasChars();
+}
+
 DatumPtr LogoInterfaceGUI::readchar()
 {
     message(C_CONSOLE_REQUEST_CHAR);

@@ -126,9 +126,63 @@ bool LogoInterface::atEnd()
     return inputAtEof_ || feof(stdin) != 0;
 }
 
+#ifdef _WIN32
+static bool stdinIsInteractive()
+{
+    return _isatty(stdinFd()) != 0;
+}
+#else
+static bool stdinIsInteractive()
+{
+    return isatty(stdinFd()) != 0;
+}
+#endif
+
 bool LogoInterface::keyQueueHasChars()
 {
     return !atEnd();
+}
+
+bool LogoInterface::lineQueueHasLine()
+{
+    if (atEnd())
+        return false;
+
+#ifndef _WIN32
+    pollfd pfd{};
+    pfd.fd = stdinFd();
+    pfd.events = POLLIN;
+    errno = 0;
+    const int prc = poll(&pfd, 1, 0);
+    if (prc < 0)
+        return false;
+    if (prc == 0)
+        return false;
+    if (stdinIsInteractive())
+        return (pfd.revents & POLLIN) != 0;
+    if (!(pfd.revents & (POLLIN | POLLHUP | POLLERR)))
+        return false;
+#endif
+
+#ifdef _WIN32
+    if (stdinIsInteractive())
+        return !atEnd();
+#endif
+
+    errno = 0;
+    const int ch = fgetc(stdin);
+    if (ch != EOF)
+    {
+        ungetc(ch, stdin);
+        return true;
+    }
+    if (errno == EINTR)
+    {
+        clearerr(stdin);
+        return false;
+    }
+    inputAtEof_ = true;
+    return false;
 }
 
 void LogoInterface::retryAfterInterrupt()
@@ -167,18 +221,6 @@ bool LogoInterface::waitForInteractiveInput()
     }
 #endif
 }
-
-#ifdef _WIN32
-static bool stdinIsInteractive()
-{
-    return _isatty(stdinFd()) != 0;
-}
-#else
-static bool stdinIsInteractive()
-{
-    return isatty(stdinFd()) != 0;
-}
-#endif
 
 // This is READRAWLINE
 QString LogoInterface::inputRawlineWithPrompt(const QString &prompt)

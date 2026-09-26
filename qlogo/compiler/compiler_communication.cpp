@@ -783,6 +783,25 @@ Value *Compiler::genKeyp(const DatumPtr &node, TypeMask expected)
     return generateCallExtern(stdKeyp);
 }
 
+/***DOC LINEP LINE?
+LINEP
+LINE?
+
+	predicate, outputs TRUE if there is a line waiting to be
+	read from the read stream.  If the read stream is a file, this
+	is equivalent to NOT EOFP.  If the read stream is the terminal,
+	then typed characters will be displayed and may be edited until
+	the return key is pressed.
+
+COD***/
+// CMD LINEP 0 0 0 b
+// CMD LINE? 0 0 0 b
+Value *Compiler::genLinep(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeBool);
+    return generateCallExtern(stdLinep);
+}
+
 /***DOC CLEARTEXT CT
 CLEARTEXT
 CT

@@ -546,6 +546,18 @@ const QString &StringConstants::cmdStrKEY_Q()
     return str;
 }
 
+const QString &StringConstants::cmdStrLINEP()
+{
+    static const QString str = QObject::tr("LINEP");
+    return str;
+}
+
+const QString &StringConstants::cmdStrLINE_Q()
+{
+    static const QString str = QObject::tr("LINE?");
+    return str;
+}
+
 const QString &StringConstants::cmdStrCLEARTEXT()
 {
     static const QString str = QObject::tr("CLEARTEXT");

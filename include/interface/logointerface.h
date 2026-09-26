@@ -235,6 +235,13 @@ class LogoInterface : public QObject
     /// @note The base method calls and returns the result from QTextStream::atEnd().
     virtual bool keyQueueHasChars();
 
+    /// @brief LINEP: true if a complete line is waiting on the terminal.
+    /// @return True if a line can be read without waiting for more typing.
+    /// @note The base method peeks stdin in line mode and does not switch to
+    /// cbreak. Subclasses that do not read Logo input from stdin must override
+    /// this so a peek cannot steal protocol bytes.
+    virtual bool lineQueueHasLine();
+
     /// @brief Sets the bounds of the canvas.
     /// @param x The x coordinate of the upper right corner of the canvas.
     /// @param y The y coordinate of the upper right corner of the canvas.

@@ -73,6 +73,7 @@ llvm::Value *genSetwritepos(const DatumPtr &node, TypeMask expected);
 llvm::Value *genWritepos(const DatumPtr &node, TypeMask expected);
 llvm::Value *genEofp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genKeyp(const DatumPtr &node, TypeMask expected);
+llvm::Value *genLinep(const DatumPtr &node, TypeMask expected);
 llvm::Value *genCleartext(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSetcursor(const DatumPtr &node, TypeMask expected);
 llvm::Value *genCursor(const DatumPtr &node, TypeMask expected);

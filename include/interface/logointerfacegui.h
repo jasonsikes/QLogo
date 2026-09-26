@@ -102,6 +102,10 @@ class LogoInterfaceGUI : public LogoInterface
     /// @return The string entered by the user.
     QString inputRawlineWithPrompt(const QString &prompt) override;
 
+    /// @brief LINEP: do not peek the Psychi pipe. Same as KEYP until a line
+    /// message can be inspected without consuming it.
+    bool lineQueueHasLine() override;
+
     /// @brief Reads a character from the input queue.
     /// @return The character read from the input queue.
     /// @note This function is blocking. It will wait for a character to be

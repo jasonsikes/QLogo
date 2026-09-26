@@ -652,6 +652,13 @@ EXPORTC bool stdKeyp(void)
     return StreamManager::get().keyAvailable();
 }
 
+/// LINEP / LINE?: true if a line is waiting on the current reader.
+/// A file is the same as not EOFP. The terminal stays in line mode.
+EXPORTC bool stdLinep(void)
+{
+    return StreamManager::get().lineAvailable();
+}
+
 /// CLEARTEXT / CT: clear the text console. No-op on the command-line interface.
 EXPORTC void stdClearText(void)
 {

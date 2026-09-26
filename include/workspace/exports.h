@@ -82,6 +82,7 @@ EXPORTC void stdSetWritePos(int32_t pos);
 EXPORTC double stdWritePos(void);
 EXPORTC bool stdEofp(void);
 EXPORTC bool stdKeyp(void);
+EXPORTC bool stdLinep(void);
 EXPORTC void stdClearText(void);
 EXPORTC void stdSetCursor(int32_t row, int32_t col);
 EXPORTC addr_t stdCursor(addr_t eAddr);

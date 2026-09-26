@@ -186,19 +186,61 @@ void LogoInterfaceCurses::setTextCursorPos(int row, int col)
 
 bool LogoInterfaceCurses::keyQueueHasChars()
 {
+    if (!unread_.isEmpty())
+        return true;
     if (!cursesActive_ || atEnd())
         return false;
 
     nodelay(stdscr, TRUE);
     noecho();
-    wint_t ch = 0;
-    const int rc = get_wch(&ch);
+    for (;;)
+    {
+        wint_t ch = 0;
+        const int rc = get_wch(&ch);
+        if (rc == ERR)
+        {
+            echo();
+            nodelay(stdscr, FALSE);
+            return false;
+        }
+        if (rc != KEY_CODE_YES)
+        {
+            unread_.append(static_cast<char32_t>(ch));
+            echo();
+            nodelay(stdscr, FALSE);
+            return true;
+        }
+    }
+}
+
+bool LogoInterfaceCurses::lineQueueHasLine()
+{
+    if (!cursesActive_ || atEnd())
+        return false;
+
+    nodelay(stdscr, TRUE);
+    noecho();
+    for (;;)
+    {
+        wint_t ch = 0;
+        const int rc = get_wch(&ch);
+        if (rc == ERR)
+            break;
+        if (rc == KEY_CODE_YES)
+            continue;
+        unread_.append(static_cast<char32_t>(ch));
+        if (ch == L'\n' || ch == L'\r')
+            break;
+    }
     echo();
     nodelay(stdscr, FALSE);
-    if (rc == ERR)
-        return false;
-    unget_wch(ch);
-    return true;
+
+    for (char32_t ch : unread_)
+    {
+        if (ch == U'\n' || ch == U'\r')
+            return true;
+    }
+    return false;
 }
 
 QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
@@ -210,12 +252,20 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
 
         printToConsole(prompt);
 
+        std::u32string u32;
+        while (!unread_.isEmpty())
+        {
+            const char32_t ch = unread_.takeFirst();
+            if (ch == U'\n' || ch == U'\r')
+                return QString::fromStdU32String(u32);
+            u32.push_back(ch);
+        }
+
         wint_t buffer[65536];
         errno = 0;
         const int rc = getn_wstr(buffer, 65535);
         if (rc != ERR)
         {
-            std::u32string u32;
             for (int i = 0; i < 65535 && buffer[i] != 0; ++i)
                 u32.push_back(static_cast<char32_t>(buffer[i]));
             return QString::fromStdU32String(u32);
@@ -238,6 +288,12 @@ DatumPtr LogoInterfaceCurses::readchar()
     {
         if (atEnd())
             return nothing();
+
+        if (!unread_.isEmpty())
+        {
+            const char32_t ucs4 = unread_.takeFirst();
+            return DatumPtr(QString::fromUcs4(&ucs4, 1));
+        }
 
         refresh();
         noecho();

@@ -125,22 +125,22 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | FULLSCREEN     | AND           | EOF?                   | MEMBERP                   | PO                   |
 |                    | FS             | OR            | KEYP                   | MEMBER?                   | POT                  |
 |                    | SPLITSCREEN    | NOT           | KEY?                   | SUBSTRINGP                | ERASE                |
-|                    | SS             | +             | CLEARTEXT              | SUBSTRING?                | ER                   |
-|                    | SETSCRUNCH     | *             | CT                     | NUMBERP                   | ERALL                |
-|                    | SHOWNP         | /             | SETCURSOR              | NUMBER?                   | ERPS                 |
-|                    | SHOWN?         | <             | CURSOR                 | VBARREDP                  | ERNS                 |
-|                    | SCREENMODE     | >             | SETTEXTCOLOR           | VBARRED?                  | ERPLS                |
-|                    | TURTLEMODE     | =             | SETTC                  | COUNT                     | BURY                 |
-|                    | LABELSIZE      | <=            | INCREASEFONT           | ASCII                     | UNBURY               |
-|                    | LABELFONT      | >=            | DECREASEFONT           | RAWASCII                  | BURIEDP              |
-|                    | *NO* MATRIX    | <>            | SETTEXTSIZE            | CHAR                      | BURIED?              |
-|                    | PENDOWN        |               | TEXTSIZE               | MEMBER                    | TRACE                |
-|                    | PD             |               | SETFONT                | LOWERCASE                 | UNTRACE              |
-|                    | PENUP          |               | FONT                   | UPPERCASE                 | TRACEDP              |
-|                    | PU             |               | ALLFONTS               | STANDOUT                  | TRACED?              |
-|                    | PENPAINT       |               | WAIT                   | PARSE                     | STEP                 |
-|                    | PPT            |               |                        | RUNPARSE                  | UNSTEP               |
-|                    | PENERASE       |               |                        |                           | STEPPEDP             |
+|                    | SS             | +             | LINEP                  | SUBSTRING?                | ER                   |
+|                    | SETSCRUNCH     | *             | LINE?                  | NUMBERP                   | ERALL                |
+|                    | SHOWNP         | /             | CLEARTEXT              | NUMBER?                   | ERPS                 |
+|                    | SHOWN?         | <             | CT                     | VBARREDP                  | ERNS                 |
+|                    | SCREENMODE     | >             | SETCURSOR              | VBARRED?                  | ERPLS                |
+|                    | TURTLEMODE     | =             | CURSOR                 | COUNT                     | BURY                 |
+|                    | LABELSIZE      | <=            | SETTEXTCOLOR           | ASCII                     | UNBURY               |
+|                    | LABELFONT      | >=            | SETTC                  | RAWASCII                  | BURIEDP              |
+|                    | *NO* MATRIX    | <>            | INCREASEFONT           | CHAR                      | BURIED?              |
+|                    | PENDOWN        |               | DECREASEFONT           | MEMBER                    | TRACE                |
+|                    | PD             |               | SETTEXTSIZE            | LOWERCASE                 | UNTRACE              |
+|                    | PENUP          |               | TEXTSIZE               | UPPERCASE                 | TRACEDP              |
+|                    | PU             |               | SETFONT                | STANDOUT                  | TRACED?              |
+|                    | PENPAINT       |               | FONT                   | PARSE                     | STEP                 |
+|                    | PPT            |               | ALLFONTS               | RUNPARSE                  | UNSTEP               |
+|                    | PENERASE       |               | WAIT                   |                           | STEPPEDP             |
 |                    | PE             |               |                        |                           | STEPPED?             |
 |                    | PENREVERSE     |               |                        |                           | EDIT                 |
 |                    | PX             |               |                        |                           | ED                   |

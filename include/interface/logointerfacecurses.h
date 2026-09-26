@@ -21,12 +21,13 @@
 #include "interface/logointerface.h"
 #include <QColor>
 #include <QHash>
+#include <QList>
 
 /// @brief The LogoInterfaceCurses class is a LogoInterface that talks to the
 /// terminal through ncursesw.
 ///
 /// It implements the Logo text console: printing, line input, SETTEXTCOLOR,
-/// CLEARTEXT, SETCURSOR/CURSOR, KEYP, and STANDOUT. Turtle graphics remain
+/// CLEARTEXT, SETCURSOR/CURSOR, KEYP, LINEP, and STANDOUT. Turtle graphics remain
 /// unavailable.
 class LogoInterfaceCurses : public LogoInterface
 {
@@ -39,6 +40,7 @@ class LogoInterfaceCurses : public LogoInterface
     int nextPair_ = 1;
     QHash<quint64, short> pairByFgBg_;
     bool standoutOn_ = false;
+    QList<char32_t> unread_;
 
     int colorNumber(const QColor &color) const;
     short ensurePair(int fg, int bg);
@@ -77,6 +79,9 @@ class LogoInterfaceCurses : public LogoInterface
 
     /// @brief True if a character is waiting on the terminal (KEYP / KEY?).
     bool keyQueueHasChars() override;
+
+    /// @brief True if a complete line is waiting on the terminal (LINEP / LINE?).
+    bool lineQueueHasLine() override;
 
     /// @brief Wraps a string in STANDOUT markers (ESC). Printing toggles A_REVERSE.
     /// @param src The string to mark.
