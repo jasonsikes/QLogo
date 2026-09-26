@@ -18,6 +18,7 @@
 #include "gui/console.h"
 #include "sharedconstants.h"
 #include <QDebug>
+#include <QFontDatabase>
 #include <QKeyEvent>
 #include <QMenu>
 #include <QMimeData>
@@ -27,6 +28,18 @@ Console::Console(QWidget *parent) : QTextEdit(parent)
 {
     consoleMode_ = consoleModeNoWait;
     textFormat_.setForeground(QBrush(QWidget::palette().color(QPalette::Text)));
+    QFont mono = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    mono.setStyleHint(QFont::Monospace);
+    mono.setFixedPitch(true);
+    applyFont(mono);
+}
+
+void Console::applyFont(const QFont &font)
+{
+    textFormat_.setFont(font, QTextCharFormat::FontPropertiesAll);
+    setFont(font);
+    document()->setDefaultFont(font);
+    setCurrentCharFormat(textFormat_);
 }
 
 // Write a fragment of text
@@ -91,16 +104,16 @@ void Console::printString(const QString &text)
 
 void Console::setTextFontName(const QString &aName)
 {
-    QFont f = textFormat_.font();
-    f.setFamily(aName);
-    textFormat_.setFont(f);
+    QFont f = document()->defaultFont();
+    f.setFamilies(QStringList(aName));
+    applyFont(f);
 }
 
 void Console::setTextFontSize(qreal aSize)
 {
-    QFont f = textFormat_.font();
+    QFont f = document()->defaultFont();
     f.setPointSizeF(aSize);
-    textFormat_.setFont(f);
+    applyFont(f);
 }
 
 void Console::setTextFontColor(QColor foreground, QColor background)

@@ -47,6 +47,7 @@ class Console : public QTextEdit
     bool isPrintingStandout_ = false;
     void writeTextFragment(const QString &text);
     void standout();
+    void applyFont(const QFont &font);
 
     // Key press events
     void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;

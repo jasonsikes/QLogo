@@ -25,6 +25,7 @@
 #include <QEvent>
 #include <QFileDialog>
 #include <QFontDatabase>
+#include <QFontInfo>
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QMessageBox>
@@ -756,14 +757,21 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 
 void MainWindow::initialize()
 {
-    QFont defaultFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-    ui_->mainConsole->setTextFontSize(defaultFont.pointSizeF());
-    ui_->mainConsole->setTextFontName(defaultFont.family());
-    ui_->mainCanvas->setLabelFontSize(defaultFont.pointSizeF());
-    ui_->mainCanvas->setLabelFontName(defaultFont.family());
+    const QFontInfo fontInfo(ui_->mainConsole->font());
+    const QString family = fontInfo.family();
+    qreal pointSize = fontInfo.pointSizeF();
+    if (pointSize <= 0)
+    {
+        const int pixels = fontInfo.pixelSize();
+        const qreal dpi = ui_->mainConsole->logicalDpiY();
+        if (pixels > 0 && dpi > 0)
+            pointSize = pixels * 72.0 / dpi;
+    }
+    ui_->mainCanvas->setLabelFontSize(pointSize);
+    ui_->mainCanvas->setLabelFontName(family);
     setSplitterforMode(initScreenMode);
 
-    message(W_INITIALIZE) << QFontDatabase::families() << defaultFont.family() << (double)defaultFont.pointSizeF();
+    message(W_INITIALIZE) << QFontDatabase::families() << family << (double)pointSize;
 }
 
 void MainWindow::fileDialogModal()
