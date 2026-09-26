@@ -379,6 +379,32 @@ class Kernel
     QSet<QString> &namesFor(NameMark mark, NameKind kind);
     const QSet<QString> &namesFor(NameMark mark, NameKind kind) const;
 
+    /// @brief SETEDITOR command: a word, or a list of words.
+    DatumPtr editorCommand_;
+
+    /// @brief SETTEMPLOC directory. Empty means QDir::tempPath().
+    QString tempLoc_;
+
+    /// @brief Absolute path of the current EDIT temp file, or empty.
+    QString editorTempPath_;
+
+    /// @brief True after THROW "SYSTEM so the EDIT temp file is left on disk.
+    bool keepEditorTemp_ = false;
+
+    /// @brief The directory EDIT uses for its temporary file.
+    QString resolvedTempLoc() const;
+
+    /// @brief Write @p text to a new temp file in resolvedTempLoc().
+    QString createEditorTempFile(const QString &text);
+
+    /// @brief Open the editor on @p path. Psychi uses the built-in editor.
+    /// @return False if the user reverted (Psychi); true to LOAD the file.
+    bool runEditorOnFile(const QString &path, const QString &startText, const QString &title);
+
+    /// @brief LOAD @p path, then delete it unless @p deleteAfter is false or
+    /// the load was THROW "SYSTEM.
+    TopLevelResult loadEditedFile(const QString &path, bool deleteAfter);
+
   public:
     /// @brief READ a line of input, EVALUATE it, PRINT the result, LOOP.
     /// @param isPausing Whether we are in a PAUSE loop.
@@ -396,18 +422,45 @@ class Kernel
     /// this file assigned that variable a list.
     /// @param filename A word naming the file. PREFIX applies to relative names.
     /// @return Why the load stopped.
-    /// @note Shared by LOAD, EDITFILE, and Kernel::runFile. Failure to open the
+    /// @note Shared by LOAD, EDIT, EDITFILE, and Kernel::runFile. Failure to open the
     /// file is thrown. Errors inside the file are printed and returned as
     /// StopThenPrompt.
     TopLevelResult loadFile(const DatumPtr &filename);
 
     /// @brief Run @p text as the commander, then run STARTUP if this text
     /// assigned that variable a list.
-    /// @param text Logo source (library CODE, editor buffer).
+    /// @param text Logo source (library CODE).
     /// @return Why the load stopped.
-    /// @note Same TO / LOADNOISILY / STARTUP rules as loadFile. Shared by
-    /// library autoload and EDIT (in-memory; QLogo does not write temp files).
+    /// @note Same TO / LOADNOISILY / STARTUP rules as loadFile. Used by
+    /// library autoload. EDIT writes a temp file and calls loadFile.
     TopLevelResult loadText(const QString &text);
+
+    /// @brief SETEDITOR: the shell command or program used by EDIT / EDITFILE.
+    /// @param command A word, or a non-empty list of words. The filename is
+    /// appended when the editor is launched.
+    void setEditor(const DatumPtr &command);
+
+    /// @brief EDITOR: the current SETEDITOR command.
+    DatumPtr editor() const;
+
+    /// @brief SETTEMPLOC: directory for EDIT's temporary file.
+    /// @param path A word naming a directory, or the empty list for the
+    /// system temp directory.
+    void setTempLoc(const DatumPtr &path);
+
+    /// @brief TEMPLOC: the directory EDIT uses for its temporary file.
+    DatumPtr tempLoc() const;
+
+    /// @brief EDIT: write the named workspace items to a temp file, open the
+    /// editor, LOAD the file, then delete it (unless THROW "SYSTEM).
+    /// @param contentslist A contents list from contentsListFromDatum, or
+    /// nothing() to edit unburied procedures.
+    TopLevelResult editContents(const DatumPtr &contentslist);
+
+    /// @brief EDITFILE: open @p filename in the editor, then LOAD it.
+    /// @param filename A word. PREFIX applies to relative names. A missing
+    /// file is created empty. The file is not deleted.
+    TopLevelResult editFile(const DatumPtr &filename);
 
     /// @brief Get the procedure name from a TO or .MACRO node.
     /// @param node The ASTNode that holds the command, the procedure name and parameters.

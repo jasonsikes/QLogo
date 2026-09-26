@@ -335,5 +335,12 @@ stringToCmd.insert(StringConstants::cmdStrSTEPPEDP(), Cmd_t{&Compiler::genSteppe
 stringToCmd.insert(StringConstants::cmdStrSTEPPED_Q(), Cmd_t{&Compiler::genSteppedp, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrLOAD(), Cmd_t{&Compiler::genLoad, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrHELP(), Cmd_t{&Compiler::genHelp, 0, -1, 1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrEDIT(), Cmd_t{&Compiler::genEdit, 0, -1, 1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrED(), Cmd_t{&Compiler::genEdit, 0, -1, 1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrEDITFILE(), Cmd_t{&Compiler::genEditfile, 1, 1, 1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrSETEDITOR(), Cmd_t{&Compiler::genSeteditor, 1, 1, 1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrEDITOR(), Cmd_t{&Compiler::genEditor, 0, 0, 0, TypeD});
+stringToCmd.insert(StringConstants::cmdStrSETTEMPLOC(), Cmd_t{&Compiler::genSettemploc, 1, 1, 1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrTEMPLOC(), Cmd_t{&Compiler::genTemploc, 0, 0, 0, TypeD});
 
 

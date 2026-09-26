@@ -1,0 +1,6 @@
+to foo
+print 1
+end
+seteditor [sh edit_rewrite_to.sh]
+edit "foo
+foo

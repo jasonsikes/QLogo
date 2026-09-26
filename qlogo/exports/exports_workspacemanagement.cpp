@@ -1057,3 +1057,81 @@ EXPORTC void stdEraseUnburied(bool procedures, bool variables, bool plists)
     Kernel::get().eraseUnburied(procedures, variables, plists);
 }
 
+/// EDIT / ED: write the named workspace items to a temp file, open the editor,
+/// then LOAD. No input means unburied procedures. A cancelled Psychi edit
+/// leaves the workspace unchanged.
+EXPORTC addr_t stdEdit(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    try
+    {
+        DatumPtr contentslist = nothing();
+        if (contentsAddr != 0)
+        {
+            contentslist = Kernel::get().contentsListFromDatum(
+                node->nodeName_, DatumPtr(reinterpret_cast<Datum *>(contentsAddr)));
+        }
+        Kernel::get().editContents(contentslist);
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+
+/// EDITFILE: open the named file in the editor, then LOAD it. A missing file
+/// is created empty. The file is not deleted. A cancelled Psychi edit leaves
+/// the file and workspace unchanged.
+EXPORTC addr_t stdEditfile(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *filename = reinterpret_cast<Datum *>(filenameAddr);
+    try
+    {
+        Kernel::get().editFile(DatumPtr(filename));
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+
+/// SETEDITOR: store the editor command (a word, or a list of words).
+EXPORTC void stdSeteditor(addr_t commandAddr)
+{
+    auto *d = reinterpret_cast<Datum *>(commandAddr);
+    Kernel::get().setEditor(DatumPtr(d));
+}
+
+/// EDITOR: return the current SETEDITOR command.
+EXPORTC addr_t stdEditor(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    DatumPtr retval = Kernel::get().editor();
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval.datumValue());
+}
+
+/// SETTEMPLOC: store the EDIT temp directory (a word, or the empty list for
+/// the system temp directory).
+EXPORTC void stdSettemploc(addr_t pathAddr)
+{
+    auto *d = reinterpret_cast<Datum *>(pathAddr);
+    Kernel::get().setTempLoc(DatumPtr(d));
+}
+
+/// TEMPLOC: return the directory EDIT uses for its temporary file.
+EXPORTC addr_t stdTemploc(addr_t eAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    DatumPtr retval = Kernel::get().tempLoc();
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval.datumValue());
+}
+

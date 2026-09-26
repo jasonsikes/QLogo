@@ -1998,4 +1998,46 @@ const QString &StringConstants::cmdStrHELP()
     return str;
 }
 
+const QString &StringConstants::cmdStrEDIT()
+{
+    static const QString str = QObject::tr("EDIT");
+    return str;
+}
+
+const QString &StringConstants::cmdStrED()
+{
+    static const QString str = QObject::tr("ED");
+    return str;
+}
+
+const QString &StringConstants::cmdStrEDITFILE()
+{
+    static const QString str = QObject::tr("EDITFILE");
+    return str;
+}
+
+const QString &StringConstants::cmdStrSETEDITOR()
+{
+    static const QString str = QObject::tr("SETEDITOR");
+    return str;
+}
+
+const QString &StringConstants::cmdStrEDITOR()
+{
+    static const QString str = QObject::tr("EDITOR");
+    return str;
+}
+
+const QString &StringConstants::cmdStrSETTEMPLOC()
+{
+    static const QString str = QObject::tr("SETTEMPLOC");
+    return str;
+}
+
+const QString &StringConstants::cmdStrTEMPLOC()
+{
+    static const QString str = QObject::tr("TEMPLOC");
+    return str;
+}
+
 

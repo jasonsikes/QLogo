@@ -142,9 +142,9 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | PPT            |               |                        | RUNPARSE                  | UNSTEP               |
 |                    | PENERASE       |               |                        |                           | STEPPEDP             |
 |                    | PE             |               |                        |                           | STEPPED?             |
-|                    | PENREVERSE     |               |                        |                           | *TODO* EDIT          |
-|                    | PX             |               |                        |                           | *TODO* ED            |
-|                    | SETPENCOLOR    |               |                        |                           | *TODO* EDITFILE      |
+|                    | PENREVERSE     |               |                        |                           | EDIT                 |
+|                    | PX             |               |                        |                           | ED                   |
+|                    | SETPENCOLOR    |               |                        |                           | EDITFILE             |
 |                    | SETPC          |               |                        |                           | *TODO* SAVE          |
 |                    | ALLCOLORS      |               |                        |                           | LOAD                 |
 |                    | SETPALETTE     |               |                        |                           | HELP                 |
@@ -256,7 +256,7 @@ Not implemented yet.
 
 **** ~SETEDITOR~:
 
-Psychi has its own built-in editor. If you run the qlogo program from a command line, such as in a terminal, no editor is available.
+When QLogo is talking to Psychi, EDIT uses Psychi's built-in editor. From a terminal, EDIT runs the command given to ~SETEDITOR~ (default: the ~EDITOR~ environment variable, or ~nano~). The file path is appended as a last argument.
 
 **** ~SETLIBLOC~:
 
@@ -268,7 +268,7 @@ Not implemented. QLogo uses a SQLite database to store its help text. You can us
 
 **** ~SETTEMPLOC~:
 
-QLogo doesn't create temporary files.
+Sets the directory where ~EDIT~ writes its temporary file. The empty list selects the system temporary directory. ~THROW "SYSTEM~ leaves that file on disk; a normal finish deletes it.
 
 **** ~NOREFRESH~ and ~REFRESH~:
 

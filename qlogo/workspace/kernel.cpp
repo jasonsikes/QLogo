@@ -37,7 +37,12 @@
 #include <QCoreApplication> // quit()
 #include <QDebug>
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
+#include <QIODevice>
+#include <QProcess>
+#include <QTemporaryFile>
+#include <QTextStream>
 #include <QFont>
 #include <QImage>
 #include <cstdlib> // arc4random_uniform()
@@ -247,6 +252,182 @@ Kernel::TopLevelResult Kernel::loadText(const QString &text)
     DatumPtr startupBefore = datumForName(SpecialVars::name(SpecialVars::Id::Startup));
     ProgramReadTextScope scope{text};
     return runLoadedProgram(startupBefore);
+}
+
+namespace
+{
+
+QString quoteForShell(const QString &s)
+{
+    QString q = s;
+    q.replace(QLatin1Char('\''), QStringLiteral("'\\''"));
+    return QLatin1Char('\'') + q + QLatin1Char('\'');
+}
+
+void writeTextFile(const QString &path, const DatumPtr &spec, const QString &text)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
+        throw FCError::cantOpen(spec);
+    QTextStream out(&file);
+    out << text;
+    out.flush();
+    if (out.status() != QTextStream::Ok)
+        throw FCError::cantOpen(spec);
+}
+
+QString readTextFile(const QString &path, const DatumPtr &spec)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        throw FCError::cantOpen(spec);
+    return QString::fromUtf8(file.readAll());
+}
+
+} // namespace
+
+void Kernel::setEditor(const DatumPtr &command)
+{
+    editorCommand_ = command;
+}
+
+DatumPtr Kernel::editor() const
+{
+    return editorCommand_;
+}
+
+void Kernel::setTempLoc(const DatumPtr &path)
+{
+    if (path.isWord())
+        tempLoc_ = path.wordValue()->toString();
+    else
+        tempLoc_.clear();
+}
+
+DatumPtr Kernel::tempLoc() const
+{
+    return DatumPtr(resolvedTempLoc());
+}
+
+QString Kernel::resolvedTempLoc() const
+{
+    if (tempLoc_.isEmpty())
+        return QDir::tempPath();
+    return tempLoc_;
+}
+
+QString Kernel::createEditorTempFile(const QString &text)
+{
+    if (!keepEditorTemp_ && !editorTempPath_.isEmpty())
+    {
+        QFile::remove(editorTempPath_);
+        editorTempPath_.clear();
+    }
+
+    const QString dir = resolvedTempLoc();
+    if (!QDir(dir).exists() && !QDir().mkpath(dir))
+        throw FCError::cantOpen(DatumPtr(dir));
+
+    QTemporaryFile tmp(dir + QStringLiteral("/qlogoXXXXXX.lg"));
+    tmp.setAutoRemove(false);
+    if (!tmp.open())
+        throw FCError::cantOpen(DatumPtr(dir));
+    editorTempPath_ = tmp.fileName();
+    tmp.close();
+    writeTextFile(editorTempPath_, DatumPtr(editorTempPath_), text);
+    return editorTempPath_;
+}
+
+bool Kernel::runEditorOnFile(const QString &path, const QString &startText, const QString &title)
+{
+    if (Config::get().hasGUI_)
+    {
+        bool accepted = false;
+        const QString result = Config::get().mainInterface()->editText(startText, &accepted, title);
+        if (!accepted)
+            return false;
+        writeTextFile(path, DatumPtr(path), result);
+        return true;
+    }
+
+    QProcess proc;
+    if (editorCommand_.isWord())
+    {
+        const QString cmd = editorCommand_.wordValue()->toString();
+        if (!cmd.contains(QLatin1Char(' ')))
+            proc.start(cmd, QStringList{path});
+        else
+        {
+#ifdef _WIN32
+            proc.start(QStringLiteral("cmd.exe"), QStringList{QStringLiteral("/C"), cmd + QLatin1Char(' ') + path});
+#else
+            proc.start(QStringLiteral("/bin/sh"),
+                       QStringList{QStringLiteral("-c"), cmd + QLatin1Char(' ') + quoteForShell(path)});
+#endif
+        }
+    }
+    else
+    {
+        ListIterator iter = editorCommand_.listValue()->newIterator();
+        const QString program = iter.element().wordValue()->toString();
+        QStringList args;
+        while (iter.elementExists())
+            args.append(iter.element().wordValue()->toString());
+        args.append(path);
+        proc.start(program, args);
+    }
+
+    if (!proc.waitForStarted(-1))
+        throw FCError::fileSystem();
+    proc.waitForFinished(-1);
+    return true;
+}
+
+Kernel::TopLevelResult Kernel::loadEditedFile(const QString &path, bool deleteAfter)
+{
+    const TopLevelResult action = loadFile(DatumPtr(path));
+    if (action == TopLevelResult::ExitProcess)
+    {
+        keepEditorTemp_ = true;
+        return action;
+    }
+    if (deleteAfter)
+    {
+        QFile::remove(path);
+        if (path == editorTempPath_)
+            editorTempPath_.clear();
+    }
+    return action;
+}
+
+Kernel::TopLevelResult Kernel::editContents(const DatumPtr &contentslist)
+{
+    DatumPtr names = contentslist;
+    if (names.isNothing())
+        names = unburiedContents(true, false, false);
+
+    const QString text = printoutFromContentsList(names, false);
+    const QString path = createEditorTempFile(text);
+    if (!runEditorOnFile(path, text, QObject::tr("Editor")))
+    {
+        QFile::remove(path);
+        editorTempPath_.clear();
+        return TopLevelResult::EndOfInput;
+    }
+    return loadEditedFile(path, true);
+}
+
+Kernel::TopLevelResult Kernel::editFile(const DatumPtr &filename)
+{
+    const QString path = StreamManager::get().filepathForFilename(filename);
+    QFileInfo info(path);
+    if (!info.exists())
+        writeTextFile(path, filename, QString());
+
+    const QString text = readTextFile(path, filename);
+    if (!runEditorOnFile(path, text, filename.wordValue()->toString()))
+        return TopLevelResult::EndOfInput;
+    return loadEditedFile(path, false);
 }
 
 Kernel::TopLevelResult Kernel::runProgram()
@@ -854,10 +1035,23 @@ Kernel::Kernel()
     initPalette();
 
     isPausing_ = false;
+
+    QString editor = qEnvironmentVariable("EDITOR");
+    if (editor.isEmpty())
+    {
+#ifdef _WIN32
+        editor = QStringLiteral("notepad");
+#else
+        editor = QStringLiteral("nano");
+#endif
+    }
+    editorCommand_ = DatumPtr(editor);
 }
 
 Kernel::~Kernel()
 {
+    if (!keepEditorTemp_ && !editorTempPath_.isEmpty())
+        QFile::remove(editorTempPath_);
     Q_ASSERT(callFrameStack_.size() == 0);
 }
 

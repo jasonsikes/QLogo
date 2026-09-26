@@ -1189,3 +1189,144 @@ Value *Compiler::genHelp(const DatumPtr &node, TypeMask expected)
         stdHelp, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(nameAddr));
     return generateNotFlowControl(retval);
 }
+
+/***DOC EDIT ED
+EDIT contentslist
+ED contentslist
+(EDIT)
+(ED)
+
+    command.  Edits the definitions of the named item(s), using the
+    Logo editor.  The contents list is in the same format as for
+    PRINTOUT.  If there is no input, EDIT edits all unburied
+    procedures.  Exceptionally, EDIT can be used without its default
+    input and without parentheses provided that nothing follows it
+    on the instruction line.
+
+    EDIT writes the definitions to a temporary file in the directory
+    named by SETTEMPLOC, then invokes the editor named by SETEDITOR
+    (or Psychi's built-in editor when QLogo is talking to Psychi).
+    When the editor finishes, Logo LOADs the file and deletes it.
+    THROW "SYSTEM leaves the temporary file on disk.
+
+COD***/
+// CMD EDIT 0 -1 1 n
+// CMD ED 0 -1 1 n
+Value *Compiler::genEdit(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    Value *contentsAddr = CoAddr(0);
+    if (node.astnodeValue()->countOfChildren() > 0)
+        contentsAddr = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdEdit, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(contentsAddr));
+    return generateNotFlowControl(retval);
+}
+
+/***DOC EDITFILE
+EDITFILE filename
+
+    command.  Starts the Logo editor, like EDIT, but instead of
+    editing a contents list it edits the named file.  When the
+    editor is finished, Logo LOADs the file.  A missing file is
+    created empty.  The file is not deleted.
+
+COD***/
+// CMD EDITFILE 1 1 1 n
+Value *Compiler::genEditfile(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *filename = generateChild(node.astnodeValue(), 0, TypeDatum);
+    filename = generateFromDatum(Datum::typeWord, node.astnodeValue(), filename);
+
+    Value *retval = generateCallExtern(
+        stdEditfile,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(filename));
+    return generateNotFlowControl(retval);
+}
+
+/***DOC SETEDITOR
+SETEDITOR command
+
+    command.  Sets the editor invoked by EDIT and EDITFILE when QLogo
+    is not using Psychi's built-in editor.  The input is a word, or a
+    non-empty list of words.  The file path is appended as a final
+    argument.  The default is the EDITOR environment variable, or nano.
+
+COD***/
+// CMD SETEDITOR 1 1 1 n
+Value *Compiler::genSeteditor(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *command = generateChild(node.astnodeValue(), 0, TypeDatum);
+    auto validator = [this](Value *candidate) {
+        Value *isValid = generateCallExtern(isValidShellCommand, PaAddr(candidate));
+        return scaff_->builder_.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isValidEditorCond"));
+    };
+    command = generateValidationDatum(node.astnodeValue(), command, validator);
+
+    generateCallExtern(stdSeteditor, PaAddr(command));
+    return generateVoidRetval(node);
+}
+
+/***DOC EDITOR
+EDITOR
+
+    outputs the current SETEDITOR command.  See SETEDITOR.
+
+COD***/
+// CMD EDITOR 0 0 0 d
+Value *Compiler::genEditor(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdEditor, PaAddr(scaff_->evaluator_));
+}
+
+/***DOC SETTEMPLOC
+SETTEMPLOC path
+
+    command.  Sets the directory where EDIT writes its temporary file.
+    The input must be a word, unless it is the empty list, to use the
+    system temporary directory.
+
+COD***/
+// CMD SETTEMPLOC 1 1 1 n
+Value *Compiler::genSettemploc(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+
+    Value *path = generateChild(node.astnodeValue(), 0, TypeDatum);
+    auto validator = [this](Value *candidate) {
+        Value *isa = generateGetDatumIsa(candidate);
+        Value *wordMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeWord), DBG_NAME("wordMask"));
+        Value *isWord = scaff_->builder_.CreateICmpNE(wordMask, CoInt32(0), DBG_NAME("isWord"));
+        Value *listMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeList), DBG_NAME("listMask"));
+        Value *isList = scaff_->builder_.CreateICmpNE(listMask, CoInt32(0), DBG_NAME("isList"));
+        Value *empty = generateCallExtern(isEmpty, PaAddr(candidate));
+        Value *isEmptyVal = scaff_->builder_.CreateICmpEQ(empty, CoBool(true), DBG_NAME("isEmpty"));
+        Value *isEmptyList = scaff_->builder_.CreateAnd(isList, isEmptyVal, DBG_NAME("isEmptyList"));
+        return scaff_->builder_.CreateOr(isWord, isEmptyList, DBG_NAME("isValidTempLoc"));
+    };
+    path = generateValidationDatum(node.astnodeValue(), path, validator);
+
+    generateCallExtern(stdSettemploc, PaAddr(path));
+    return generateVoidRetval(node);
+}
+
+/***DOC TEMPLOC
+TEMPLOC
+
+    outputs the directory EDIT uses for its temporary file.  See
+    SETTEMPLOC.
+
+COD***/
+// CMD TEMPLOC 0 0 0 d
+Value *Compiler::genTemploc(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    return generateCallExtern(stdTemploc, PaAddr(scaff_->evaluator_));
+}

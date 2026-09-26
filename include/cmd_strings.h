@@ -340,6 +340,13 @@ const QString &cmdStrSTEPPEDP();
 const QString &cmdStrSTEPPED_Q();
 const QString &cmdStrLOAD();
 const QString &cmdStrHELP();
+const QString &cmdStrEDIT();
+const QString &cmdStrED();
+const QString &cmdStrEDITFILE();
+const QString &cmdStrSETEDITOR();
+const QString &cmdStrEDITOR();
+const QString &cmdStrSETTEMPLOC();
+const QString &cmdStrTEMPLOC();
 } // namespace StringConstants
 #endif // CMD_STRINGS_H
 

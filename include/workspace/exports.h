@@ -281,4 +281,10 @@ EXPORTC addr_t stdLoad(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr);
 EXPORTC addr_t stdHelp(addr_t eAddr, addr_t astnodeAddr, addr_t nameAddr);
 EXPORTC addr_t stdErase(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
 EXPORTC void stdEraseUnburied(bool procedures, bool variables, bool plists);
+EXPORTC addr_t stdEdit(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
+EXPORTC addr_t stdEditfile(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr);
+EXPORTC void stdSeteditor(addr_t commandAddr);
+EXPORTC addr_t stdEditor(addr_t eAddr);
+EXPORTC void stdSettemploc(addr_t pathAddr);
+EXPORTC addr_t stdTemploc(addr_t eAddr);
 #endif // WORKSPACE_EXPORTS_H

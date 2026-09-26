@@ -22,6 +22,7 @@
 #include "flowcontrol.h"
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QIODevice>
 #include <QTextStream>
 
@@ -591,6 +592,8 @@ DatumPtr StreamManager::prefix() const
 QString StreamManager::filepathForFilename(const DatumPtr &filenameP) const
 {
     QString filename = filenameP.wordValue()->toString();
+    if (QFileInfo(filename).isAbsolute())
+        return filename;
 
     if (filePrefix_.isWord())
     {

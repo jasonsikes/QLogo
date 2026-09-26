@@ -1,0 +1,4 @@
+seteditor "true
+show editor
+seteditor [true]
+show editor

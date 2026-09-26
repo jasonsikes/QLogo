@@ -255,5 +255,11 @@ llvm::Value *genTracedp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSteppedp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genLoad(const DatumPtr &node, TypeMask expected);
 llvm::Value *genHelp(const DatumPtr &node, TypeMask expected);
+llvm::Value *genEdit(const DatumPtr &node, TypeMask expected);
+llvm::Value *genEditfile(const DatumPtr &node, TypeMask expected);
+llvm::Value *genSeteditor(const DatumPtr &node, TypeMask expected);
+llvm::Value *genEditor(const DatumPtr &node, TypeMask expected);
+llvm::Value *genSettemploc(const DatumPtr &node, TypeMask expected);
+llvm::Value *genTemploc(const DatumPtr &node, TypeMask expected);
 #endif // PRIMITIVE_HEADER_H
 

@@ -19,6 +19,7 @@
 #include "workspace/procedures.h"
 #include "workspace/kernel.h"
 #include "workspace/library.h"
+#include "workspace/specialvars.h"
 #include <QCoreApplication>
 #include "astnode.h"
 #include "cmd_strings.h"
@@ -185,6 +186,8 @@ void Procedures::defineProcedure(const DatumPtr &cmd,
     lastProcedureCreatedTimestamp_ = QDateTime::currentMSecsSinceEpoch();
 
     procedures_[procname] = bodyP;
+    if (Kernel::get().specialVarIsTrue(SpecialVars::Id::UnburyOnEdit))
+        Kernel::get().removeName(Kernel::NameMark::Buried, Kernel::NameKind::Procedures, procname);
 }
 
 DatumPtr Procedures::cleanFormal(const DatumPtr &cmd, const DatumPtr &parameter)

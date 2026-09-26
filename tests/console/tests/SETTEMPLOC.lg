@@ -1,0 +1,5 @@
+show memberp "/ temploc
+settemploc "EDITTEMP
+show temploc
+settemploc []
+show memberp "/ temploc

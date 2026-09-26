@@ -98,8 +98,9 @@ class StreamManager
 
     /// @brief The commander: REPL lines, TO...END bodies, and LOAD text.
     /// @details Terminal by default; a file during LOAD / EDITFILE / `qlogo script.lg`;
-    /// an in-memory buffer during library autoload / EDIT; the terminal again
-    /// for the duration of a REPL/PAUSE session even if a load is in progress.
+    /// an in-memory buffer during library autoload; a temp file during EDIT;
+    /// the terminal again for the duration of a REPL/PAUSE session even if a
+    /// load is in progress.
     TextStream *istreamProgram_;
 
     /// @brief The current writer (SETWRITE). PRINT/TYPE/SHOW use this unless a
@@ -376,18 +377,18 @@ class StreamManager
     /************ command interpreter ************/
     //
     // The commander (istreamProgram_) is always valid (terminal by default).
-    // LOAD / a startup script redirect it to a file; library autoload / EDIT
-    // redirect it to in-memory text. Redirects nest, so a loaded file may
-    // itself LOAD another or pull in a library row. Prefer the RAII scopes
-    // below. readProgramList follows the commander, including a REPL frame
-    // that has pointed it at the terminal.
+    // LOAD / a startup script redirect it to a file; library autoload
+    // redirects it to in-memory text; EDIT writes a temp file and LOADs it.
+    // Redirects nest, so a loaded file may itself LOAD another. Prefer the
+    // RAII scopes below. readProgramList follows the commander, including a
+    // REPL frame that has pointed it at the terminal.
 
     /// @brief Redirect the commander to a file (LOAD / EDITFILE / startup script).
     /// @details Saves the current target and points istreamProgram_ at the file.
     /// @note Prefer ProgramReadScope for exception-safe restore.
     void beginProgramRead(const DatumPtr &filename);
 
-    /// @brief Redirect the commander to in-memory Logo source (library / EDIT).
+    /// @brief Redirect the commander to in-memory Logo source (library autoload).
     /// @details Copies @p text and points istreamProgram_ at that buffer.
     /// @note Prefer ProgramReadTextScope for exception-safe restore.
     void beginProgramReadText(const QString &text);

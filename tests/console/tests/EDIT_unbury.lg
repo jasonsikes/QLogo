@@ -1,0 +1,9 @@
+to foo
+print 1
+end
+bury "foo
+make "unburyonedit "true
+seteditor "true
+edit "foo
+show buriedp "foo
+foo
