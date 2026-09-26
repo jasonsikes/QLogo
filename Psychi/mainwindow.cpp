@@ -783,7 +783,15 @@ void MainWindow::fileDialogModal()
 
 void MainWindow::startWaitTimer(qint32 msecs)
 {
-    QTimer::singleShot(msecs, this, [this]() { message(W_TIMER_END); });
+    // Do not allow multiple simultaneous timers.
+    static bool timerRunning = false;
+    if (timerRunning)
+    {
+        message(W_TIMER_END);
+        return;
+    }
+    timerRunning = true;
+    QTimer::singleShot(msecs, this, [this]() { message(W_TIMER_END); timerRunning = false;});
 }
 
 void MainWindow::openEditorWindow(const QString &title, const QString &startingText)
