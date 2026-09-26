@@ -1,0 +1,13 @@
+to seed
+print "ok
+end
+save "SAVE_from_load.txt
+erall
+load "SAVE_from_load.txt
+make "z 3
+save
+erall
+load "SAVE_from_load.txt
+show :z
+seed
+erasefile "SAVE_from_load.txt

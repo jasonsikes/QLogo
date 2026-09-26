@@ -247,6 +247,28 @@ Kernel::TopLevelResult Kernel::loadFile(const DatumPtr &filename)
     return runLoadedProgram(startupBefore);
 }
 
+void Kernel::rememberWorkspaceFile(const DatumPtr &filename)
+{
+    lastWorkspaceFile_ = DatumPtr(filename.wordValue()->toString());
+}
+
+DatumPtr Kernel::lastWorkspaceFile() const
+{
+    return lastWorkspaceFile_;
+}
+
+void Kernel::saveWorkspace(const DatumPtr &filename)
+{
+    const QString name = filename.wordValue()->toString();
+    if (StreamManager::get().isOpen(name))
+        throw FCError::alreadyOpen(filename);
+
+    const QString text = printoutFromContentsList(unburiedContents(true, true, true));
+    ProgramWriteScope scope(filename);
+    StreamManager::get().writeProgram(text);
+    rememberWorkspaceFile(filename);
+}
+
 Kernel::TopLevelResult Kernel::loadText(const QString &text)
 {
     DatumPtr startupBefore = datumForName(SpecialVars::name(SpecialVars::Id::Startup));

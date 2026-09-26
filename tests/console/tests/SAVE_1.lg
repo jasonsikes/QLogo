@@ -1,0 +1,14 @@
+to foo
+print 1
+end
+make "x 5
+pprop "pl "a 1
+save "SAVE_1.txt
+erall
+show definedp "foo
+show namep "x
+load "SAVE_1.txt
+foo
+show :x
+show gprop "pl "a
+erasefile "SAVE_1.txt

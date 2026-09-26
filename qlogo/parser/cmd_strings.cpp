@@ -1986,6 +1986,12 @@ const QString &StringConstants::cmdStrSTEPPED_Q()
     return str;
 }
 
+const QString &StringConstants::cmdStrSAVE()
+{
+    static const QString str = QObject::tr("SAVE");
+    return str;
+}
+
 const QString &StringConstants::cmdStrLOAD()
 {
     static const QString str = QObject::tr("LOAD");

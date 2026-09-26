@@ -1,0 +1,11 @@
+to foo
+print 1
+end
+save "SAVE_default.txt
+make "x 99
+save
+erall
+load "SAVE_default.txt
+show :x
+foo
+erasefile "SAVE_default.txt

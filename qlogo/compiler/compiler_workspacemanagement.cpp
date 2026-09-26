@@ -1129,6 +1129,48 @@ Value *Compiler::genSteppedp(const DatumPtr &node, TypeMask expected)
     return generateNotFlowControl(retval);
 }
 
+/***DOC SAVE
+SAVE filename
+
+    command.  Saves the definitions of all unburied procedures, variables,
+    and nonempty property lists in the named file.  Equivalent to
+
+        to save :filename
+        local "oldwriter
+        make "oldwriter writer
+        openwrite :filename
+        setwrite :filename
+        poall
+        setwrite :oldwriter
+        close :filename
+        end
+
+    except that SAVE does not change WRITER.  Buried names are omitted.
+
+    Exceptionally, SAVE can be used with no input and without parentheses
+    if it is the last thing on the command line.  In this case, the
+    filename from the most recent LOAD or SAVE command will be used.
+    (It is an error if there has been no previous LOAD or SAVE.)
+
+COD***/
+// CMD SAVE 0 -1 1 n
+Value *Compiler::genSave(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    Value *filenameAddr = CoAddr(0);
+    if (node.astnodeValue()->countOfChildren() > 0)
+    {
+        Value *filename = generateChild(node.astnodeValue(), 0, TypeDatum);
+        filenameAddr = generateFromDatum(Datum::typeWord, node.astnodeValue(), filename);
+    }
+    Value *retval = generateCallExtern(
+        stdSave,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(filenameAddr));
+    return generateNotFlowControl(retval);
+}
+
 /***DOC LOAD
 LOAD filename
 

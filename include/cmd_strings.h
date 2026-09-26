@@ -338,6 +338,7 @@ const QString &cmdStrTRACEDP();
 const QString &cmdStrTRACED_Q();
 const QString &cmdStrSTEPPEDP();
 const QString &cmdStrSTEPPED_Q();
+const QString &cmdStrSAVE();
 const QString &cmdStrLOAD();
 const QString &cmdStrHELP();
 const QString &cmdStrEDIT();

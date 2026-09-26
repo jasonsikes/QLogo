@@ -1,0 +1,17 @@
+to foo
+print 1
+end
+openwrite "SAVE_writer_dst.txt
+setwrite "SAVE_writer_dst.txt
+save "SAVE_writer_ws.txt
+make "w writer
+setwrite []
+close "SAVE_writer_dst.txt
+show :w
+openread "SAVE_writer_dst.txt
+setread "SAVE_writer_dst.txt
+show eofp
+setread []
+close "SAVE_writer_dst.txt
+erasefile "SAVE_writer_dst.txt
+erasefile "SAVE_writer_ws.txt

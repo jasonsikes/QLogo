@@ -1,0 +1,11 @@
+to dosave :f
+save :f
+end
+to foo
+print 1
+end
+dosave "SAVE_in_proc.txt
+erall
+load "SAVE_in_proc.txt
+foo
+erasefile "SAVE_in_proc.txt

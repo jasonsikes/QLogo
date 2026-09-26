@@ -1,0 +1,4 @@
+openwrite "SAVE_already.txt
+save "SAVE_already.txt
+close "SAVE_already.txt
+erasefile "SAVE_already.txt

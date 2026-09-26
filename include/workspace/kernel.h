@@ -391,6 +391,9 @@ class Kernel
     /// @brief True after THROW "SYSTEM so the EDIT temp file is left on disk.
     bool keepEditorTemp_ = false;
 
+    /// @brief Filename of the most recent LOAD or SAVE command, or nothing().
+    DatumPtr lastWorkspaceFile_;
+
     /// @brief The directory EDIT uses for its temporary file.
     QString resolvedTempLoc() const;
 
@@ -426,6 +429,22 @@ class Kernel
     /// file is thrown. Errors inside the file are printed and returned as
     /// StopThenPrompt.
     TopLevelResult loadFile(const DatumPtr &filename);
+
+    /// @brief SAVE: write unburied procedures, variables, and property lists
+    /// to @p filename.
+    /// @param filename A word naming the file. PREFIX applies to relative names.
+    /// @details Same text as PRINTOUT of CONTENTS. Does not change WRITER. A
+    /// name already in ALLOPEN is already-open. Remembers @p filename for a
+    /// later SAVE with no input.
+    void saveWorkspace(const DatumPtr &filename);
+
+    /// @brief Remember @p filename as the most recent LOAD or SAVE name.
+    /// @details SAVE with no input uses this. EDIT / EDITFILE / library
+    /// autoload / Kernel::runFile do not update it.
+    void rememberWorkspaceFile(const DatumPtr &filename);
+
+    /// @brief The filename of the most recent LOAD or SAVE, or nothing().
+    DatumPtr lastWorkspaceFile() const;
 
     /// @brief Run @p text as the commander, then run STARTUP if this text
     /// assigned that variable a list.

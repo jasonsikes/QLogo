@@ -1,0 +1,15 @@
+to hidden
+print "no
+end
+to visible
+print "yes
+end
+bury "hidden
+save "SAVE_bury.txt
+unbury "hidden
+erase [hidden visible]
+load "SAVE_bury.txt
+show definedp "hidden
+show definedp "visible
+visible
+erasefile "SAVE_bury.txt

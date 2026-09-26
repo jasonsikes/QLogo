@@ -145,7 +145,7 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 |                    | PENREVERSE     |               |                        |                           | EDIT                 |
 |                    | PX             |               |                        |                           | ED                   |
 |                    | SETPENCOLOR    |               |                        |                           | EDITFILE             |
-|                    | SETPC          |               |                        |                           | *TODO* SAVE          |
+|                    | SETPC          |               |                        |                           | SAVE                 |
 |                    | ALLCOLORS      |               |                        |                           | LOAD                 |
 |                    | SETPALETTE     |               |                        |                           | HELP                 |
 |                    | SETPENSIZE     |               |                        |                           | FOO                  |

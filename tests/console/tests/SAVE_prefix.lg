@@ -1,0 +1,10 @@
+setprefix "openread_dir
+to foo
+print 1
+end
+save "SAVE_prefix.txt
+setprefix []
+load "SAVE_prefix.txt
+load "openread_dir/SAVE_prefix.txt
+foo
+erasefile "openread_dir/SAVE_prefix.txt

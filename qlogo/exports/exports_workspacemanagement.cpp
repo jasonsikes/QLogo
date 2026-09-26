@@ -968,7 +968,44 @@ EXPORTC addr_t stdLoad(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr)
     auto *filename = reinterpret_cast<Datum *>(filenameAddr);
     try
     {
-        Kernel::get().loadFile(DatumPtr(filename));
+        DatumPtr file(filename);
+        Kernel::get().loadFile(file);
+        Kernel::get().rememberWorkspaceFile(file);
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+    return reinterpret_cast<addr_t>(node);
+}
+
+/// SAVE: write unburied procedures, variables, and nonempty property lists to
+/// a file, as PRINTOUT of CONTENTS. Does not change WRITER. PREFIX applies.
+/// A name already in ALLOPEN is already-open. No input uses the most recent
+/// LOAD or SAVE filename; none yet is not-enough-inputs.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param filenameAddr a word naming the file, or 0 to reuse the last LOAD/SAVE name
+/// @return the owning ASTNode, or an Error if the file cannot be written.
+EXPORTC addr_t stdSave(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    try
+    {
+        DatumPtr filename;
+        if (filenameAddr == 0)
+        {
+            filename = Kernel::get().lastWorkspaceFile();
+            if (filename.isNothing())
+                throw FCError::notEnoughInputs(node->nodeName_);
+        }
+        else
+        {
+            filename = DatumPtr(reinterpret_cast<Datum *>(filenameAddr));
+        }
+        Kernel::get().saveWorkspace(filename);
     }
     catch (FCError *err)
     {
