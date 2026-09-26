@@ -184,6 +184,11 @@ Kernel::TopLevelResult Kernel::executeTopLevelList(const QString &prompt, bool i
     DatumPtr result;
     try
     {
+        // A line read from the terminal is user interaction. UCBLogo resets its
+        // ERRACT loop detector here so a bad value typed at PAUSE can be tried again.
+        if (StreamManager::get().programReaderIsTerminal())
+            clearErractLoop();
+
         DatumPtr line = StreamManager::get().readProgramList(prompt, true);
 
         Q_ASSERT(callFrameStack_.back().evaluationStackSize() == 0);
@@ -1251,6 +1256,8 @@ void Kernel::ece_decideEmptyEvaluationStack()
 void Kernel::ece_popEvaluator()
 {
     ece_trace("ece_popEvaluator");
+    // The remembered ERRACT output is owned by an evaluator's release pool.
+    clearErractReturnGuard();
     CallFrame *cf = currentCallFrame();
     Evaluator *e = currentEvaluator();
     DatumPtr completedList = e->list_;
@@ -1498,6 +1505,29 @@ void Kernel::ece_processParameters()
  * Miscellaneous operations
  ***************************************************/
 
+namespace {
+
+/// OUTPUT inside an instruction list arrives as FCReturn. The output itself is the result.
+DatumPtr unwrapInstructionOutput(const DatumPtr &result)
+{
+    if (result.isa() == Datum::typeReturn)
+        return static_cast<FCReturn *>(result.flowControlValue())->returnValue();
+    return result;
+}
+
+/// Drop call frames pushed after @p framesBefore, and any evaluators those frames still own.
+void popCallFramesTo(Kernel &kernel, std::size_t framesBefore)
+{
+    while (kernel.callFrameStack_.size() > framesBefore)
+    {
+        while (!kernel.callFrameStack_.back().isEvaluationStackViewEmpty())
+            kernel.callFrameStack_.back().popEvaluator();
+        kernel.callFrameStack_.pop_back();
+    }
+}
+
+} // namespace
+
 DatumPtr Kernel::pause()
 {
     if (isPausing_)
@@ -1506,16 +1536,27 @@ DatumPtr Kernel::pause()
         return nothing();
     }
 
+    // ERRACT runs on its own frame, below which the procedure that failed is still active.
     QString sourceNodeName;
-    if (!callFrameStack_.empty())
+    for (auto it = callFrameStack_.rbegin(); it != callFrameStack_.rend(); ++it)
     {
-        DatumPtr sourceNode = currentCallFrame()->sourceNode_;
-        if (sourceNode.isASTNode())
-            sourceNodeName = sourceNode.astnodeValue()->nodeName_.toString();
+        if (it->sourceNode_.isASTNode())
+        {
+            sourceNodeName = it->sourceNode_.astnodeValue()->nodeName_.toString();
+            break;
+        }
+    }
+
+    // UCBLogo prints the error that invoked ERRACT only when that instruction enters PAUSE.
+    if (erractMessagePending_)
+    {
+        erractMessagePending_ = false;
+        StreamManager::get().printToTerminal(erractMessage_ + "\n");
     }
 
     StreamManager::get().printToTerminal(QObject::tr("Pausing...\n"));
 
+    ++pauseCount_;
     isPausing_ = true;
     DatumPtr result;
     try
@@ -1529,6 +1570,124 @@ DatumPtr Kernel::pause()
     }
     isPausing_ = false;
     return result;
+}
+
+DatumPtr Kernel::runErractInstruction(const DatumPtr &instructionIn)
+{
+    DatumPtr instruction = instructionIn;
+    try
+    {
+        if (instruction.isWord() || instruction.isList())
+            instruction = runparse(instruction);
+    }
+    catch (FCError *err)
+    {
+        return DatumPtr(err);
+    }
+
+    if (!instruction.isList())
+        return DatumPtr(FCError::noHow(instructionIn));
+
+    // A fresh frame makes runECE stop when this list finishes, instead of resuming the
+    // procedure that is suspended inside the error. Variables stay visible: they live in
+    // the kernel table, and the procedure frame underneath is not popped.
+    const std::size_t framesBefore = callFrameStack_.size();
+    callFrameStack_.emplace_back(nullptr, nullptr, 0);
+    DatumPtr result = nothing();
+    try
+    {
+        CallFrame *frame = currentCallFrame();
+        frame->setVarAsLocal(SpecialVars::name(SpecialVars::Id::ErrAct));
+        if (!instruction.listValue()->isEmpty())
+        {
+            frame->pushEvaluator(instruction);
+            result = runECE();
+        }
+    }
+    catch (FCError *err)
+    {
+        popCallFramesTo(*this, framesBefore);
+        return DatumPtr(err);
+    }
+    catch (...)
+    {
+        popCallFramesTo(*this, framesBefore);
+        throw;
+    }
+    popCallFramesTo(*this, framesBefore);
+    return unwrapInstructionOutput(result);
+}
+
+void Kernel::armErractLoop(int code)
+{
+    erractLoopArmed_ = true;
+    erractLoopCode_ = code;
+}
+
+bool Kernel::isErractLoop(int code) const
+{
+    return erractLoopArmed_ && erractLoopCode_ == code;
+}
+
+void Kernel::clearErractLoop()
+{
+    erractLoopArmed_ = false;
+    erractLoopCode_ = -1;
+    clearErractReturnGuard();
+}
+
+void Kernel::clearErractReturnGuard()
+{
+    erractReturned_ = nullptr;
+    erractReturnedIsNumber_ = false;
+    erractReturnedNumber_ = 0;
+    erractReturnedFromUser_ = false;
+}
+
+void Kernel::noteErractReturn(Datum *value, bool fromUser)
+{
+    clearErractLoop();
+    erractReturned_ = value;
+    erractReturnedFromUser_ = fromUser;
+    if (value != nullptr && value->isa_ == Datum::typeWord)
+    {
+        auto *word = static_cast<Word *>(value);
+        double number = word->numberValue();
+        if (word->numberIsValid)
+        {
+            erractReturnedIsNumber_ = true;
+            erractReturnedNumber_ = number;
+        }
+    }
+}
+
+bool Kernel::isErractReturnRetry(const DatumPtr &value) const
+{
+    if (erractReturned_ == nullptr || erractReturnedFromUser_)
+        return false;
+    if (value.datumValue() == erractReturned_)
+        return true;
+    if (erractReturnedIsNumber_ && value.isWord())
+    {
+        Word *word = value.wordValue();
+        double number = word->numberValue();
+        if (word->numberIsValid && number == erractReturnedNumber_)
+            return true;
+    }
+    return false;
+}
+
+void Kernel::armErractMessage(const QString &message)
+{
+    erractMessage_ = message;
+    erractMessagePending_ = true;
+}
+
+bool Kernel::takeErractMessagePending()
+{
+    bool pending = erractMessagePending_;
+    erractMessagePending_ = false;
+    return pending;
 }
 
 int Kernel::run()

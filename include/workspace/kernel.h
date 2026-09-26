@@ -74,6 +74,33 @@ class Kernel
   private:
     bool isPausing_;
 
+    /// @brief True when the next PAUSE should print the error that invoked ERRACT.
+    bool erractMessagePending_ = false;
+
+    /// @brief Text of the error that invoked ERRACT, printed when PAUSE runs.
+    QString erractMessage_;
+
+    /// @brief True after ERRACT has handled an error and the user has not typed a line since.
+    bool erractLoopArmed_ = false;
+
+    /// @brief Error code of the ERRACT attempt recorded by armErractLoop().
+    int erractLoopCode_ = -1;
+
+    /// @brief Datum most recently output by ERRACT, while it is still alive.
+    Datum *erractReturned_ = nullptr;
+
+    /// @brief True when @c erractReturned_ is a word with a valid number.
+    bool erractReturnedIsNumber_ = false;
+
+    /// @brief Number stored in @c erractReturned_, when @c erractReturnedIsNumber_ is set.
+    double erractReturnedNumber_ = 0;
+
+    /// @brief True when that output came from PAUSE, so a bad CONTINUE may try again.
+    bool erractReturnedFromUser_ = false;
+
+    /// @brief How many times PAUSE has been entered. Used to notice user input during ERRACT.
+    uint32_t pauseCount_ = 0;
+
     void initPalette();
 
     /// @brief Run the explicit control evaluator.
@@ -511,7 +538,55 @@ class Kernel
     /// @brief Perform pause, essentially a REPL loop.
     /// @return The value passed to CONTINUE, if any. An uncaught TOPLEVEL or
     /// SYSTEM throw is returned as an FCError so the caller can unwind.
+    /// @note If ERRACT armed an error message, it is printed before the pause prompt.
     DatumPtr pause();
+
+    /// @brief Run the ERRACT instruction in the current dynamic scope.
+    /// @param instruction The value of ERRACT. A word is runparsed; a list is run as-is.
+    /// @return The instruction's output, an error, or nothing if it did not output.
+    /// @details ERRACT is locally unbound for the duration of the instruction, then restored.
+    /// Local variables of the procedure that raised the error remain visible.
+    DatumPtr runErractInstruction(const DatumPtr &instruction);
+
+    /// @brief Remember @p code so a second identical error without user input is an ERRACT loop.
+    /// @param code The ErrCode of the error ERRACT is about to handle.
+    void armErractLoop(int code);
+
+    /// @brief True if @p code repeats the error ERRACT just handled, with no typed line in between.
+    /// @param code The ErrCode of the error about to be handled.
+    /// @return True if running ERRACT again would repeat the same error without user input.
+    bool isErractLoop(int code) const;
+
+    /// @brief Allow the next error to run ERRACT.
+    /// @note Also called when a line is read from the terminal, which is the user-input
+    /// reset used so a bad CONTINUE can try again.
+    void clearErractLoop();
+
+    /// @brief Drop the datum remembered by noteErractReturn().
+    /// @note Call this before that datum can be freed.
+    void clearErractReturnGuard();
+
+    /// @brief Remember a value ERRACT just output, so an immediate rejection is an ERRACT loop.
+    /// @param value The output. Must stay alive until clearErractReturnGuard().
+    /// @param fromUser True if PAUSE ran while producing @p value.
+    void noteErractReturn(Datum *value, bool fromUser);
+
+    /// @brief True if @p value is the output ERRACT just supplied and the user did not type it.
+    /// @param value The input a primitive is rejecting.
+    /// @return True when accepting @p value would repeat the same ERRACT recovery.
+    bool isErractReturnRetry(const DatumPtr &value) const;
+
+    /// @brief How many times PAUSE has been entered.
+    /// @return The pause entry count.
+    uint32_t pauseCount() const { return pauseCount_; }
+
+    /// @brief Ask the next PAUSE to print @p message before its prompt.
+    /// @param message The error text to print.
+    void armErractMessage(const QString &message);
+
+    /// @brief Drop a pending ERRACT message.
+    /// @return True if PAUSE has not printed the message yet.
+    bool takeErractMessagePending();
 
     /// @brief Consume a pending terminal signal on the interpreter thread.
     /// @param resultOut Receives the FCError for TOPLEVEL/SYSTEM, or the return

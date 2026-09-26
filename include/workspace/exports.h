@@ -14,7 +14,6 @@
 //  exports.cpp
 //  -------------------------------------------------------------------
 
-EXPORTC bool getvarErroract(void);
 EXPORTC void printInt(int32_t p);
 EXPORTC double getDoubleForDatum(addr_t eAddr, addr_t datumAddr);
 EXPORTC bool getValidityOfDoubleForDatum(addr_t eAddr, addr_t datumAddr);
@@ -226,12 +225,6 @@ EXPORTC addr_t getMousePos(addr_t eAddr);
 EXPORTC addr_t getClickPos(addr_t eAddr);
 EXPORTC bool isMouseButtonDown(void);
 EXPORTC double getMouseButton(void);
-
-//  -------------------------------------------------------------------
-//  exports_specialvariables.cpp
-//  -------------------------------------------------------------------
-
-EXPORTC bool getvarErroract(void);
 
 //  -------------------------------------------------------------------
 //  exports_workspacemanagement.cpp

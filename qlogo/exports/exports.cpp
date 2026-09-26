@@ -21,10 +21,9 @@
 #include "workspace/exports_internal.h"
 #include "datum_types.h"
 #include "compiler_types.h"
+#include "workspace/specialvars.h"
 
 #include <QObject>
-
-EXPORTC bool getvarErroract(void);
 
 /// Print an integer to the console.
 /// @param p the integer to print.
@@ -35,47 +34,93 @@ EXPORTC void printInt(int32_t p)
     qWarning() << "int = " << p;
 }
 
-/// @brief Handle a bad value. If ERRACT is set, call PAUSE. Otherwise, return an error.
+/// @brief Handle a bad value. If ERRACT has a value, run it as an instruction.
+/// Otherwise, return the error.
 /// @param eAddr a pointer to the Evaluator object
 /// @param parentAddr a pointer to the parent node
 /// @param value the value to handle
 /// @param datatypeTest a function that tests if the value is of the correct type
 /// @return a pointer to the result
+/// @details This is the recoverable "doesn't like" path. When ERRACT's instruction
+/// outputs a value that passes @p datatypeTest, that value replaces the bad input.
+/// PAUSE prints the error before its prompt. The same error twice, with no line
+/// typed in between, is an ERRACT loop and returns to toplevel.
 addr_t handleBadValue(addr_t eAddr, addr_t parentAddr, DatumPtr value,
     std::function<bool(DatumPtr)> datatypeTest)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *parent = reinterpret_cast<ASTNode *>(parentAddr);
+    Kernel &kernel = Kernel::get();
+    const QString &erractName = SpecialVars::name(SpecialVars::Id::ErrAct);
 
     DatumPtr err = {FCError::doesntLike(parent->nodeName_, DatumPtr(value))};
-    if ( ! getvarErroract())
+    if (kernel.datumForName(erractName).isNothing())
     {
         e->watch(err.datumValue());
         return reinterpret_cast<addr_t>(err.datumValue());
     }
 
-    DatumPtr retval;
+    // The compiler calls back immediately when the output is still the wrong kind of
+    // datum. That is an ERRACT loop. A later, different input is a new error.
+    if (kernel.isErractReturnRetry(value))
+    {
+        kernel.clearErractLoop();
+        StreamManager::get().printToTerminal(QObject::tr("Erract loop") + "\n");
+        DatumPtr toplevel = {FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")))};
+        e->watch(toplevel.datumValue());
+        return reinterpret_cast<addr_t>(toplevel.datumValue());
+    }
+    kernel.clearErractReturnGuard();
+
     while (true)
     {
-        StreamManager::get().printToTerminal(err.toString() + "\n");
-        retval = Kernel::get().pause();
+        if (kernel.isErractLoop(static_cast<int>(err.errValue()->code_)))
+        {
+            kernel.clearErractLoop();
+            StreamManager::get().printToTerminal(QObject::tr("Erract loop") + "\n");
+            DatumPtr toplevel = {FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")))};
+            e->watch(toplevel.datumValue());
+            return reinterpret_cast<addr_t>(toplevel.datumValue());
+        }
+
+        kernel.armErractLoop(static_cast<int>(err.errValue()->code_));
+        kernel.armErractMessage(err.toString());
+
+        DatumPtr instruction = kernel.datumForName(erractName);
+        uint32_t pausesBefore = kernel.pauseCount();
+        DatumPtr retval = kernel.runErractInstruction(instruction);
+        bool messageStillPending = kernel.takeErractMessagePending();
+
         if (datatypeTest(retval))
         {
-            break;
+            kernel.noteErractReturn(retval.datumValue(), kernel.pauseCount() != pausesBefore);
+            e->watch(retval.datumValue());
+            return reinterpret_cast<addr_t>(retval.datumValue());
         }
         if (retval.isErr())
         {
-            break;
+            kernel.clearErractLoop();
+            e->watch(retval.datumValue());
+            return reinterpret_cast<addr_t>(retval.datumValue());
         }
-        if (retval.isASTNode())
+        // The instruction did not output. If PAUSE already printed the error, leave
+        // the pause the way CONTINUE without an input does. Otherwise propagate the
+        // original error so toplevel can print it.
+        if ((retval.isa() & Datum::typeDataMask) == 0)
         {
-            retval = {FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")))};
-            break;
+            kernel.clearErractLoop();
+            if (!messageStillPending)
+            {
+                retval = {FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")))};
+                e->watch(retval.datumValue());
+                return reinterpret_cast<addr_t>(retval.datumValue());
+            }
+            e->watch(err.datumValue());
+            return reinterpret_cast<addr_t>(err.datumValue());
         }
+
         err = {FCError::doesntLike(parent->nodeName_, retval)};
-    } // while (true)
-    e->watch(retval.datumValue());
-    return reinterpret_cast<addr_t>(retval.datumValue());
+    }
 }
 
 /// Return the double value of a word object.
@@ -322,7 +367,7 @@ EXPORTC addr_t getErrorCustom(addr_t eAddr, addr_t tagAddr, addr_t outputAddr)
 
 // Functions moved from compiler*.cpp files
 
-/// @brief Handle a bad double value. If ERRACT is set, call PAUSE. Otherwise, return an error.
+/// @brief Handle a bad double value. If ERRACT has a value, run it. Otherwise, return an error.
 /// @param eAddr a pointer to the Evaluator object
 /// @param parentAddr a pointer to the parent node
 /// @param value the value to handle
@@ -341,7 +386,7 @@ EXPORTC addr_t handleBadDouble(addr_t eAddr, addr_t parentAddr, double value)
      });
 }
 
-/// @brief Handle a bad datum value. If ERRACT is set, call PAUSE. Otherwise, return an error.
+/// @brief Handle a bad datum value. If ERRACT has a value, run it. Otherwise, return an error.
 /// @param eAddr a pointer to the Evaluator object
 /// @param parentAddr a pointer to the parent node
 /// @param valueAddr a pointer to a Datum object
