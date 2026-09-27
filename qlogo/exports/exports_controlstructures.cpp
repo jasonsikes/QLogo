@@ -22,8 +22,12 @@
 #include "workspace/specialvars.h"
 #include "astnode.h"
 #include "flowcontrol.h"
+#include "interface/streammanager.h"
 
+#include <QElapsedTimer>
 #include <QObject>
+#include <QStack>
+#include <QString>
 
 /// Push a list onto the evaluation stack for explicit-control evaluation.
 /// The caller will then suspend; the driver runs this list to completion, then resumes the caller.
@@ -56,6 +60,46 @@ EXPORTC addr_t getLastEvaluationResult(addr_t eAddr)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Datum *result = e->retvalFromChild_.datumValue();
     return reinterpret_cast<addr_t>(result);
+}
+
+namespace
+{
+
+QStack<QElapsedTimer> runtimeTimers;
+
+/// Seconds from nanoseconds, with only as many fractional digits as needed.
+QString secondsFromNsecs(qint64 nsecs)
+{
+    QString text = QString::number(nsecs / 1000000000LL);
+    const qint64 frac = nsecs % 1000000000LL;
+    if (frac == 0)
+        return text;
+
+    QString fracStr = QString::number(frac).rightJustified(9, QLatin1Char('0'));
+    while (fracStr.endsWith(QLatin1Char('0')))
+        fracStr.chop(1);
+    return text + QLatin1Char('.') + fracStr;
+}
+
+}
+
+/// RUNTIME: start a timer before the instruction list runs.
+/// Nested RUNTIME calls push another timer so each reports its own elapsed time.
+EXPORTC void stdRuntimeStart(void)
+{
+    QElapsedTimer timer;
+    timer.start();
+    runtimeTimers.push(timer);
+}
+
+/// RUNTIME: print elapsed seconds after the instruction list finishes.
+/// Always paired with stdRuntimeStart in genRuntime, including when the list
+/// returns flow control.
+EXPORTC void stdRuntimeEnd(void)
+{
+    Q_ASSERT(!runtimeTimers.isEmpty());
+    const qint64 nsecs = runtimeTimers.pop().nsecsElapsed();
+    StreamManager::get().print(secondsFromNsecs(nsecs) + QObject::tr(" seconds\n"));
 }
 
 /// @brief Execute a procedure.

@@ -1,0 +1,7 @@
+openwrite [buf]
+setwrite [buf]
+runtime [make "x 1]
+setwrite []
+close [buf]
+print :x
+print substringp "seconds :buf

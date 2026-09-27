@@ -115,6 +115,7 @@ stringToCmd.insert(StringConstants::cmdStrWAIT(), Cmd_t{&Compiler::genWait, 1, 1
 stringToCmd.insert(StringConstants::cmdStrIF(), Cmd_t{&Compiler::genIfelse, 2, 2, 3, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrIFELSE(), Cmd_t{&Compiler::genIfelse, 3, 3, 3, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrRUN(), Cmd_t{&Compiler::genRun, 1, 1, 1, TypeDN});
+stringToCmd.insert(StringConstants::cmdStrRUNTIME(), Cmd_t{&Compiler::genRuntime, 1, 1, 1, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrREPEAT(), Cmd_t{&Compiler::genRepeat, 2, 2, 2, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrREPCOUNT(), Cmd_t{&Compiler::genRepcount, 0, 0, 0, TypeR});
 stringToCmd.insert(StringConstants::cmdStrBYE(), Cmd_t{&Compiler::genBye, 0, 0, 0, TypeN});

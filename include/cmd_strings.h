@@ -120,6 +120,7 @@ const QString &cmdStrWAIT();
 const QString &cmdStrIF();
 const QString &cmdStrIFELSE();
 const QString &cmdStrRUN();
+const QString &cmdStrRUNTIME();
 const QString &cmdStrREPEAT();
 const QString &cmdStrREPCOUNT();
 const QString &cmdStrBYE();

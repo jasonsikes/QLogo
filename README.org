@@ -85,7 +85,7 @@ Development of QLogo is still ongoing. Following is my chart of commands. The co
 | /COMPLETE-ISH/     | /COMPLETE/     | /COMPLETE/    |                        | /COMPLETE/                |                      |
 |--------------------+----------------+---------------+------------------------+---------------------------+----------------------|
 | RUN                | FORWARD        | SUM           | PRINT                  | WORD                      | TO                   |
-| *TODO* TIME        | FD             | DIFFERENCE    | PR                     | LIST                      | .MACRO               |
+| RUNTIME            | FD             | DIFFERENCE    | PR                     | LIST                      | .MACRO               |
 | MARK               | BACK           | MINUS         | TYPE                   | SENTENCE                  | DEFINE               |
 | RUNRESULT          | BK             | -             | SHOW                   | SE                        | .DEFMACRO            |
 | BYE                | LEFT           | PRODUCT       | READLIST               | FPUT                      | TEXT                 |
@@ -310,9 +310,9 @@ These set and report the font family used by ~LABEL~ on the turtle canvas. They 
 
 Returns a list of all the named colors that QLogo knows about.
 
-**** ~TIME~:
+**** ~RUNTIME~:
 
-This is mostly for my own curiosity and for debugging. ~TIME~ will take one parameter, a list, which it will execute. A timer will start when the list is executed and then stop when the list is finished. The total running time of the list will be printed. The output will be whatever the list outputs, if anything.
+This is mostly for my own curiosity and for debugging. ~RUNTIME~ will take one parameter, a list, which it will execute. A timer will start when the list is executed and then stop when the list is finished. The total running time of the list will be printed. The output will be whatever the list outputs, if anything.
 
 **** ~MARK~:
 

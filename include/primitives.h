@@ -89,6 +89,7 @@ llvm::Value *genAllfonts(const DatumPtr &node, TypeMask expected);
 llvm::Value *genWait(const DatumPtr &node, TypeMask expected);
 llvm::Value *genIfelse(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRun(const DatumPtr &node, TypeMask expected);
+llvm::Value *genRuntime(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRepeat(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRepcount(const DatumPtr &node, TypeMask expected);
 llvm::Value *genBye(const DatumPtr &node, TypeMask expected);

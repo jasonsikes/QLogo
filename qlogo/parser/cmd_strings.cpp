@@ -678,6 +678,12 @@ const QString &StringConstants::cmdStrRUN()
     return str;
 }
 
+const QString &StringConstants::cmdStrRUNTIME()
+{
+    static const QString str = QObject::tr("RUNTIME");
+    return str;
+}
+
 const QString &StringConstants::cmdStrREPEAT()
 {
     static const QString str = QObject::tr("REPEAT");

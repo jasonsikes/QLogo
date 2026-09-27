@@ -1,0 +1,7 @@
+openwrite [buf]
+setwrite [buf]
+make "r runtime [sum 1 2]
+setwrite []
+close [buf]
+print :r
+print substringp "seconds :buf

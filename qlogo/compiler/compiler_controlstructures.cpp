@@ -140,6 +140,26 @@ Value *Compiler::genRun(const DatumPtr &node, TypeMask expected)
     return generateCallList(list, expected);
 }
 
+/***DOC RUNTIME
+RUNTIME instructionlist
+
+    command or operation.  Runs the Logo instructions in the input
+    list while measuring elapsed time.  After the list finishes,
+    prints the elapsed time in seconds.  Outputs if the list
+    contains an expression that outputs.
+
+COD***/
+// CMD RUNTIME 1 1 1 dn
+Value *Compiler::genRuntime(const DatumPtr &node, TypeMask expected)
+{
+    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
+    list = generateFromDatum(Datum::typeList, node.astnodeValue(), list);
+    generateCallExtern(stdRuntimeStart);
+    Value *result = generateCallList(list, expected);
+    generateCallExtern(stdRuntimeEnd);
+    return result;
+}
+
 /***DOC REPEAT
 REPEAT num instructionlist
 
