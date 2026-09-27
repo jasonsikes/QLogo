@@ -441,15 +441,18 @@ EXPORTC addr_t buildApplyNamedCall(addr_t eAddr, addr_t astNodeAddr, addr_t temp
     }
 }
 
+EXPORTC addr_t handleBadDatum(addr_t eAddr, addr_t parentAddr, addr_t valueAddr);
+
 /// @brief Return the explicit-slot value for `?` / `(? n)`.
 /// @param eAddr the address of the Evaluator object
-/// @param whoAddr a pointer to the `?` command name (for errors)
+/// @param parentAddr a pointer to the `?` ASTNode (for errors)
 /// @param indexAddr a 1-based slot index, or notADatum if `?` was given no input
 /// @return the slot datum, or an error
-EXPORTC addr_t getExplicitSlot(addr_t eAddr, addr_t whoAddr, addr_t indexAddr)
+EXPORTC addr_t getExplicitSlot(addr_t eAddr, addr_t parentAddr, addr_t indexAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    DatumPtr who(reinterpret_cast<Datum *>(whoAddr));
+    auto *parent = reinterpret_cast<ASTNode *>(parentAddr);
+    DatumPtr who = parent->nodeName_;
     DatumPtr index(reinterpret_cast<Datum *>(indexAddr));
     FCError *err = nullptr;
 
@@ -457,19 +460,12 @@ EXPORTC addr_t getExplicitSlot(addr_t eAddr, addr_t whoAddr, addr_t indexAddr)
     if (!index.isNothing())
     {
         if (!index.isWord())
-        {
-            err = FCError::doesntLike(who, index);
-        }
-        else
-        {
-            Word *w = index.wordValue();
-            double n = w->numberValue();
-            i = static_cast<qsizetype>(n);
-            if (!w->numberIsValid || i != n || i < 1)
-                err = FCError::doesntLike(who, index);
-        }
-        if (err != nullptr)
-            goto bailout;
+            goto recover;
+        Word *w = index.wordValue();
+        double n = w->numberValue();
+        i = static_cast<qsizetype>(n);
+        if (!w->numberIsValid || i != n || i < 1)
+            goto recover;
     }
 
     {
@@ -493,7 +489,16 @@ EXPORTC addr_t getExplicitSlot(addr_t eAddr, addr_t whoAddr, addr_t indexAddr)
             }
         }
 
-        err = FCError::notEnoughInputs(who);
+        goto recover;
+    }
+
+recover:
+    {
+        addr_t recovered = handleBadDatum(eAddr, parentAddr, indexAddr);
+        DatumPtr result(reinterpret_cast<Datum *>(recovered));
+        if (result.isErr())
+            return recovered;
+        return getExplicitSlot(eAddr, parentAddr, recovered);
     }
 
 bailout:

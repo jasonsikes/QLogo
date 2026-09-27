@@ -934,7 +934,7 @@ Value *Compiler::genQ(const DatumPtr &node, TypeMask expected)
 
     Value *result = generateCallExtern(getExplicitSlot,
                                        PaAddr(scaff_->evaluator_),
-                                       PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
+                                       PaAddr(CoAddr(node.astnodeValue())),
                                        PaAddr(index));
     return generateNotFlowControl(result);
 }
