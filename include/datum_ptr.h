@@ -221,7 +221,7 @@ class DatumPtr
     /// a mark on the datum so that a debug message will be printed when the datum is destroyed.
     void alertOnDelete()
     {
-        qInfo() << "MARKED: " << datumValue_ << " " << datumValue_->toString(Datum::ToStringFlags_Show);
+        qInfo() << "MARK: " << datumValue_ << " " << datumValue_->toString(Datum::ToStringFlags_Show);
         datumValue_->alertOnDelete_ = true;
     }
 };

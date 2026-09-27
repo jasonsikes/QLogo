@@ -63,15 +63,7 @@ Evaluator::~Evaluator()
     compiledText_.reset();
 
     // Release the objects in the release pool.
-    for (auto &d : releasePool_)
-    {
-        if ((d->isa_ & Datum::typePersistentMask) == 0)
-        {
-            (d->retainCount_)--;
-            if (d->retainCount_ <= 0)
-                delete d;
-        }
-    }
+    releasePool_.clear();
 }
 
 bool Evaluator::exec(int32_t jumpLocation)
@@ -191,8 +183,7 @@ Datum *Evaluator::watch(const DatumPtr &d)
 
 Datum *Evaluator::watch(Datum *d)
 {
-    (d->retainCount_)++;
-    releasePool_.push_back(d);
+    releasePool_.emplace_back(d);
     return d;
 }
 

@@ -278,7 +278,7 @@ EXPORTC addr_t generateContinue(addr_t eAddr, addr_t outputAddr)
 }
 
 /// MARK: set a debug flag on the datum so its destruction is logged.
-/// Prints MARKED immediately, then DELETING when the last DatumPtr drops.
+/// Prints MARK immediately, then DELE when the last DatumPtr drops.
 /// @param thingAddr a pointer to the Datum to mark
 /// @return the same Datum
 EXPORTC addr_t stdMark(addr_t thingAddr)

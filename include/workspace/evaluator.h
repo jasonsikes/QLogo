@@ -21,6 +21,7 @@
 #include "datum_ptr.h"
 
 #include <memory>
+#include <vector>
 
 class CallFrame;
 
@@ -60,11 +61,12 @@ struct Evaluator
     /// Used by getLastEvaluationResult() after a coroutine suspend/resume for RUN/list call.
     DatumPtr retvalFromChild_;
 
-    /// @brief A pool of objects for garbage collection.
-    /// @note This is the reason the copy operators are deleted. If we enable them, the
-    ///  releasePool can be copied, and both copies will contain pointers to the same Datum objects.
-    ///  This will cause the Datum objects to be deleted twice.
-    std::vector<Datum *> releasePool_;
+    /// @brief Temporary ownership of Datums created during this evaluation.
+    /// @note Compiled code cannot hold DatumPtrs, so watch() stores one here. When
+    ///  this Evaluator is destroyed, these DatumPtrs drop and any unreferenced Datum
+    ///  is deleted (including the MARK / alertOnDelete_ message). Copying Evaluator
+    ///  is still forbidden because of the coroutine handle and JIT module.
+    std::vector<DatumPtr> releasePool_;
 
     // The methods
 
@@ -102,17 +104,15 @@ struct Evaluator
     /// @param paramCount The number of parameters to apply.
     void beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount);
 
-    /// @brief Add a Datum to the release pool
+    /// @brief Keep @p d alive until this evaluation ends.
     /// @return the given pointer (pass-through).
-    /// In other areas of code, memory management is handled by using the DatumPtr class.
-    /// Among other things, the DatumPtr acts like std::shared_ptr. As long as there exists at least one DatumPtr
-    /// pointing to a Datum, the Datum will not be deleted. In compiled code, we use the watch function to add a Datum
-    /// to the release pool. The release pool acts as an array of DatumPtrs. When the Evaluator is destroyed, it will
-    /// iterate through the release pool and decrement the retain count of each Datum that is not the return value.
-    ///  If any retain count reaches 0, the Datum will be deleted.
+    /// @details JIT code holds raw Datum addresses. watch() puts a DatumPtr in
+    ///  the release pool so the object lives for the rest of this Evaluator.
+    ///  The caller of popEvaluator copies retvalToParent_ into a DatumPtr first,
+    ///  so a returned value survives after the pool is dropped.
     Datum *watch(Datum *);
 
-    /// @brief Add a Datum to the release pool
+    /// @brief Keep @p d alive until this evaluation ends.
     /// @return the given pointer (pass-through).
     Datum *watch(const DatumPtr &);
 
