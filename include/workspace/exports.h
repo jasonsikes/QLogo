@@ -35,6 +35,7 @@ EXPORTC addr_t getErrorNoGraphics(addr_t eAddr);
 EXPORTC addr_t getErrorCustom(addr_t eAddr, addr_t tagAddr, addr_t outputAddr);
 EXPORTC addr_t handleBadDouble(addr_t eAddr, addr_t parentAddr, double value);
 EXPORTC addr_t handleBadDatum(addr_t eAddr, addr_t parentAddr, addr_t valueAddr);
+EXPORTC addr_t handleNoValue(addr_t eAddr, addr_t whatAddr);
 EXPORTC addr_t q_malloc(addr_t eAddr, uint32_t size, uint32_t align);
 EXPORTC void q_free(addr_t eAddr, addr_t ptr);
 

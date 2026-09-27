@@ -34,26 +34,21 @@ EXPORTC void printInt(int32_t p)
     qWarning() << "int = " << p;
 }
 
-/// @brief Handle a bad value. If ERRACT has a value, run it as an instruction.
-/// Otherwise, return the error.
+/// @brief Run ERRACT to recover from @p err, or return @p err if ERRACT is unbound.
 /// @param eAddr a pointer to the Evaluator object
-/// @param parentAddr a pointer to the parent node
-/// @param value the value to handle
-/// @param datatypeTest a function that tests if the value is of the correct type
-/// @return a pointer to the result
-/// @details This is the recoverable "doesn't like" path. When ERRACT's instruction
-/// outputs a value that passes @p datatypeTest, that value replaces the bad input.
-/// PAUSE prints the error before its prompt. The same error twice, with no line
-/// typed in between, is an ERRACT loop and returns to toplevel.
-addr_t handleBadValue(addr_t eAddr, addr_t parentAddr, DatumPtr value,
-    std::function<bool(DatumPtr)> datatypeTest)
+/// @param err the error that just occurred
+/// @param rejected the value the primitive rejected, if any; nothing() if there was none
+/// @param datatypeTest true when ERRACT's output can replace the failed expression
+/// @param errorFromOutput builds the next error when ERRACT outputs an unusable datum
+/// @return the replacement value, or an error
+addr_t recoverWithErract(addr_t eAddr, DatumPtr err, DatumPtr rejected,
+    std::function<bool(DatumPtr)> datatypeTest,
+    std::function<DatumPtr(DatumPtr)> errorFromOutput)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *parent = reinterpret_cast<ASTNode *>(parentAddr);
     Kernel &kernel = Kernel::get();
     const QString &erractName = SpecialVars::name(SpecialVars::Id::ErrAct);
 
-    DatumPtr err = {FCError::doesntLike(parent->nodeName_, DatumPtr(value))};
     if (kernel.datumForName(erractName).isNothing())
     {
         e->watch(err.datumValue());
@@ -62,7 +57,7 @@ addr_t handleBadValue(addr_t eAddr, addr_t parentAddr, DatumPtr value,
 
     // The compiler calls back immediately when the output is still the wrong kind of
     // datum. That is an ERRACT loop. A later, different input is a new error.
-    if (kernel.isErractReturnRetry(value))
+    if (kernel.isErractReturnRetry(rejected))
     {
         kernel.clearErractLoop();
         StreamManager::get().printToTerminal(QObject::tr("Erract loop") + "\n");
@@ -119,8 +114,29 @@ addr_t handleBadValue(addr_t eAddr, addr_t parentAddr, DatumPtr value,
             return reinterpret_cast<addr_t>(err.datumValue());
         }
 
-        err = {FCError::doesntLike(parent->nodeName_, retval)};
+        err = errorFromOutput(retval);
     }
+}
+
+/// @brief Handle a bad value. If ERRACT has a value, run it as an instruction.
+/// Otherwise, return the error.
+/// @param eAddr a pointer to the Evaluator object
+/// @param parentAddr a pointer to the parent node
+/// @param value the value to handle
+/// @param datatypeTest a function that tests if the value is of the correct type
+/// @return a pointer to the result
+/// @details This is the recoverable "doesn't like" path. When ERRACT's instruction
+/// outputs a value that passes @p datatypeTest, that value replaces the bad input.
+/// PAUSE prints the error before its prompt. The same error twice, with no line
+/// typed in between, is an ERRACT loop and returns to toplevel.
+addr_t handleBadValue(addr_t eAddr, addr_t parentAddr, DatumPtr value,
+    std::function<bool(DatumPtr)> datatypeTest)
+{
+    auto *parent = reinterpret_cast<ASTNode *>(parentAddr);
+    DatumPtr err = {FCError::doesntLike(parent->nodeName_, DatumPtr(value))};
+    return recoverWithErract(eAddr, err, value, datatypeTest, [parent](DatumPtr output) {
+        return DatumPtr(FCError::doesntLike(parent->nodeName_, output));
+    });
 }
 
 /// Return the double value of a word object.
@@ -397,6 +413,23 @@ EXPORTC addr_t handleBadDatum(addr_t eAddr, addr_t parentAddr, addr_t valueAddr)
     return handleBadValue(eAddr, parentAddr, DatumPtr(value), [](DatumPtr p) {
         return (p.isa() & Datum::typeDataMask) != 0;
     });
+}
+
+/// @brief Handle an unbound variable. If ERRACT has a value, run it. Otherwise, return an error.
+/// @param eAddr a pointer to the Evaluator object
+/// @param whatAddr a pointer to the Word that was looked up
+/// @return the replacement datum, or an error
+EXPORTC addr_t handleNoValue(addr_t eAddr, addr_t whatAddr)
+{
+    auto *what = reinterpret_cast<Datum *>(whatAddr);
+    DatumPtr name(what->toString(Datum::ToStringFlags_Show));
+    DatumPtr err = {FCError::noValue(name)};
+    return recoverWithErract(
+        eAddr,
+        err,
+        nothing(),
+        [](DatumPtr p) { return (p.isa() & Datum::typeDataMask) != 0; },
+        [name](DatumPtr) { return DatumPtr(FCError::noValue(name)); });
 }
 
 /// @brief Allocate memory with a specified alignment.
