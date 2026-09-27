@@ -297,8 +297,30 @@ Value *Compiler::genThing(const DatumPtr &node, TypeMask expected)
     Value *varname = generateChild(node.astnodeValue(), 0, TypeDatum);
     varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
 
-    Value *retval = generateCallExtern(stdThing, PaAddr(scaff_->evaluator_), PaAddr(varname));
-    return generateNotFlowControl(retval);
+    Value *lookedUp = generateCallExtern(getDatumForVarname, PaAddr(varname));
+    BasicBlock *lookupBB = scaff_->builder_.GetInsertBlock();
+    BasicBlock *noValueBB = scaff_->createBasicBlock(DBG_NAME("NoValue"));
+    BasicBlock *hasValueBB = scaff_->createBasicBlock(DBG_NAME("hasValue"));
+
+    scaff_->addColdPathBlocks(noValueBB);
+
+    Value *dType = generateGetDatumIsa(lookedUp);
+    Value *mask = scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeDataMask), DBG_NAME("dataMask"));
+    Value *cond = scaff_->builder_.CreateICmpEQ(mask, CoInt32(0), DBG_NAME("dataMaskTest"));
+    scaff_->builder_.CreateCondBr(cond, noValueBB, hasValueBB);
+
+    // Unbound. Run ERRACT if it has a value; a datum from it stands in for THING.
+    scaff_->builder_.SetInsertPoint(noValueBB);
+    Value *handlerResult = generateCallExtern(handleNoValue, PaAddr(scaff_->evaluator_), PaAddr(varname));
+    handlerResult = generateNotFlowControl(handlerResult);
+    BasicBlock *recoveredBB = scaff_->builder_.GetInsertBlock();
+    scaff_->builder_.CreateBr(hasValueBB);
+
+    scaff_->builder_.SetInsertPoint(hasValueBB);
+    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 2, DBG_NAME("thing"));
+    retval->addIncoming(lookedUp, lookupBB);
+    retval->addIncoming(handlerResult, recoveredBB);
+    return retval;
 }
 
 /***DOC MAKE
