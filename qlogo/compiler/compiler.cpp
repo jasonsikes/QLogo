@@ -1048,30 +1048,50 @@ std::vector<Value *> Compiler::generateChildren(ASTNode *node, std::vector<TypeM
 AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr &srcPtr, int32_t size)
 {
     Value *vSize = CoInt32(size);
-    Value *list = generateChild(parent, srcPtr, TypeDatum);
-    Value *count = generateCallExtern(getCountOfList, PaAddr(list));
-    // There should be two doubles in the list
-    BasicBlock *noLikeBB = scaff_->createBasicBlock(DBG_NAME("noLike"));
-    BasicBlock *continueBB = scaff_->createBasicBlock(DBG_NAME("good"));
-    BasicBlock *gotPosBB = scaff_->createBasicBlock(DBG_NAME("gotPos"));
-
-    scaff_->addColdPathBlocks(noLikeBB);
-
-    Value *countGood = scaff_->builder_.CreateICmpEQ(count, vSize, DBG_NAME("countTest"));
-    scaff_->builder_.CreateCondBr(countGood, continueBB, noLikeBB);
-
-    scaff_->builder_.SetInsertPoint(noLikeBB);
-    Value *errWho = CoAddr(parent->nodeName_.datumValue());
-    Value *errObj = generateCallExtern(getErrorNoLike, PaAddr(scaff_->evaluator_), PaAddr(errWho), PaAddr(list));
-    generateReturn(errObj);
-
-    scaff_->builder_.SetInsertPoint(continueBB);
     AllocaInst *ary = scaff_->builder_.CreateAlloca(TyDouble, vSize, DBG_NAME("ary"));
-    Value *isGood = generateCallExtern(getNumberAryFromList, PaAddr(list), PaAddr(ary));
-    Value *countCond = scaff_->builder_.CreateICmpEQ(isGood, CoInt32(1), DBG_NAME("countTest"));
-    scaff_->builder_.CreateCondBr(countCond, gotPosBB, noLikeBB);
+    Value *list = generateChild(parent, srcPtr, TypeDatum);
 
-    scaff_->builder_.SetInsertPoint(gotPosBB);
+    auto isNumberList = [this, vSize, ary](Value *candidate) {
+        BasicBlock *notListBB = scaff_->createBasicBlock(DBG_NAME("notList"));
+        BasicBlock *isListBB = scaff_->createBasicBlock(DBG_NAME("isList"));
+        BasicBlock *tryFillBB = scaff_->createBasicBlock(DBG_NAME("tryFill"));
+        BasicBlock *isListDoneBB = scaff_->createBasicBlock(DBG_NAME("isListDone"));
+        BasicBlock *checkedBB = scaff_->createBasicBlock(DBG_NAME("checked"));
+
+        scaff_->addColdPathBlocks(notListBB);
+
+        Value *dType = generateGetDatumIsa(candidate);
+        Value *mask = scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeList), DBG_NAME("dataTypeMask"));
+        Value *isList = scaff_->builder_.CreateICmpNE(mask, CoInt32(0), DBG_NAME("isListTest"));
+        scaff_->builder_.CreateCondBr(isList, isListBB, notListBB);
+
+        scaff_->builder_.SetInsertPoint(notListBB);
+        scaff_->builder_.CreateBr(checkedBB);
+
+        scaff_->builder_.SetInsertPoint(isListBB);
+        Value *count = generateCallExtern(getCountOfList, PaAddr(candidate));
+        Value *countGood = scaff_->builder_.CreateICmpEQ(count, vSize, DBG_NAME("countTest"));
+        scaff_->builder_.CreateCondBr(countGood, tryFillBB, isListDoneBB);
+
+        scaff_->builder_.SetInsertPoint(tryFillBB);
+        Value *isGood = generateCallExtern(getNumberAryFromList, PaAddr(candidate), PaAddr(ary));
+        Value *fillGood = scaff_->builder_.CreateICmpEQ(isGood, CoInt32(1), DBG_NAME("fillTest"));
+        scaff_->builder_.CreateBr(isListDoneBB);
+
+        scaff_->builder_.SetInsertPoint(isListDoneBB);
+        PHINode *listOk = scaff_->builder_.CreatePHI(TyBool, 2, DBG_NAME("listOk"));
+        listOk->addIncoming(fillGood, tryFillBB);
+        listOk->addIncoming(CoBool(false), isListBB);
+        scaff_->builder_.CreateBr(checkedBB);
+
+        scaff_->builder_.SetInsertPoint(checkedBB);
+        PHINode *ok = scaff_->builder_.CreatePHI(TyBool, 2, DBG_NAME("isNumberList"));
+        ok->addIncoming(CoBool(false), notListBB);
+        ok->addIncoming(listOk, isListDoneBB);
+        return ok;
+    };
+
+    generateValidationDatum(parent, list, isNumberList);
     return ary;
 }
 
