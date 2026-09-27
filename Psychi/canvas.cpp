@@ -326,7 +326,8 @@ void Canvas::paintEvent(QPaintEvent *event)
 
 void Canvas::drawCanvas()
 {
-    painter->setRenderHint(QPainter::Antialiasing);
+    painter->setRenderHint(QPainter::Antialiasing, false);
+    painter->setRenderHint(QPainter::TextAntialiasing, false);
 
     elementListDrawBackgroundImage();
 
