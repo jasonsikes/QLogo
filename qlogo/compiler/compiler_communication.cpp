@@ -826,7 +826,12 @@ SETCURSOR vector
     corner, positive direction is southeast).  The text cursor is
     moved to the requested position.  In the GUI the text console may
     scroll to reveal the requested position if it was previously
-    outside of the viewing area.  This command also forces the
+    outside of the viewing area. For example,
+    
+        ? setcursor [0 0]
+    
+    Will move the cursor to the very first line of the console window,
+    scrolling up to reveal it, if necessary. This command also forces the
     immediate printing of any buffered characters.
 
 COD***/
