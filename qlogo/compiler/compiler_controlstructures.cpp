@@ -804,7 +804,6 @@ COD***/
 // CMD APPLY 2 2 2 dn
 Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
 {
-    BasicBlock *validTemplateBB = scaff_->createBasicBlock(DBG_NAME("validTemplate"));
     BasicBlock *namedProcedureBB = scaff_->createBasicBlock(DBG_NAME("namedProcedure"));
     BasicBlock *explicitSlotBB = scaff_->createBasicBlock(DBG_NAME("explicitSlot"));
     BasicBlock *lambdaBB = scaff_->createBasicBlock(DBG_NAME("lambda"));
@@ -817,12 +816,12 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
     Value *aTemplate = generateChild(node.astnodeValue(), 0, TypeDatum);
     Value *inputlist = generateChild(node.astnodeValue(), 1, TypeDatum);
 
-    Value *templateForm = generateCallExtern(getTemplateForm, PaAddr(scaff_->evaluator_), PaAddr(aTemplate));
+    Value *templateForm = nullptr;
+    aTemplate = generateValidationDatum(node.astnodeValue(), aTemplate, [this, &templateForm](Value *candidate) {
+        templateForm = generateCallExtern(getTemplateForm, PaAddr(scaff_->evaluator_), PaAddr(candidate));
+        return scaff_->builder_.CreateICmpNE(templateForm, CoInt8(TemplateFormInvalid), DBG_NAME("templateCond"));
+    });
 
-    Value *templateCond = scaff_->builder_.CreateICmpEQ(templateForm, CoInt8(TemplateFormInvalid), DBG_NAME("templateCond"));
-    scaff_->builder_.CreateCondBr(templateCond, invalidTemplateBB, validTemplateBB);
-
-    scaff_->builder_.SetInsertPoint(validTemplateBB);
     Value *inputList = generateListFromDatum(node.astnodeValue(), inputlist);
     SwitchInst *sw = scaff_->builder_.CreateSwitch(templateForm, invalidTemplateBB, 4);
     sw->addCase(CoInt8(TemplateFormNamedProcedure), namedProcedureBB);
