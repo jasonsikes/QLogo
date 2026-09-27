@@ -432,6 +432,29 @@ EXPORTC addr_t handleNoValue(addr_t eAddr, addr_t whatAddr)
         [name](DatumPtr) { return DatumPtr(FCError::noValue(name)); });
 }
 
+/// @brief Handle a command that did not output. If ERRACT has a value, run it.
+/// Otherwise, return an error.
+/// @param eAddr a pointer to the Evaluator object
+/// @param xAddr a pointer to the Datum that did not output
+/// @param yAddr a pointer to the Datum that expected an input
+/// @return the replacement datum, or an error
+EXPORTC addr_t handleDidntOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr)
+{
+    auto *x = reinterpret_cast<Datum *>(xAddr);
+    auto *y = reinterpret_cast<Datum *>(yAddr);
+    if (x->isa_ == Datum::typeASTNode)
+        x = reinterpret_cast<ASTNode *>(x)->nodeName_.datumValue();
+    DatumPtr who(x->toString(Datum::ToStringFlags_Show));
+    DatumPtr what(y->toString(Datum::ToStringFlags_Show));
+    DatumPtr err = {FCError::didntOutput(who, what)};
+    return recoverWithErract(
+        eAddr,
+        err,
+        nothing(),
+        [](DatumPtr p) { return (p.isa() & Datum::typeDataMask) != 0; },
+        [who, what](DatumPtr) { return DatumPtr(FCError::didntOutput(who, what)); });
+}
+
 /// @brief Allocate memory with a specified alignment.
 /// @param eAddr a pointer to the Evaluator object
 /// @param size the size of the memory to allocate

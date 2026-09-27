@@ -167,6 +167,10 @@ class Compiler
     // Generate a call to construct error: "X didn't output to Y"
     llvm::Value *generateErrorNoOutput(llvm::Value *x, ASTNode *y);
 
+    /// Run ERRACT for "X didn't output to Y". Errors and other flow control return
+    /// immediately. A datum from ERRACT replaces the expression that did not output.
+    llvm::Value *generateRecoverDidntOutput(llvm::Value *who, ASTNode *parent);
+
     // Generate a call to construct error: "X has no value"
     llvm::Value *generateErrorNoValue(llvm::Value *what);
 
@@ -248,7 +252,7 @@ class Compiler
     llvm::Value *generateNotEmptyListFromDatum(ASTNode *parent, llvm::Value *src);
 
     // Ensure that the Datum is NOT nothing (NOT ASTNode).
-    // Emit return "didn't output" error if not.
+    // If it is nothing, run ERRACT; a datum from it replaces the expression.
     llvm::Value *generateNotNothingFromDatum(ASTNode *parent, llvm::Value *src);
 
     // If src is flow control (error, STOP, OUTPUT, ...), return it immediately.

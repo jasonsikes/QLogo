@@ -538,7 +538,7 @@ Value *Compiler::generateCastFromDouble(Value *src, ASTNode *parent, TypeMask ex
     if (expected & TypeDatum)
         return srcAsWord;
     if (expected & TypeBool)
-        return generateImmediateReturn(generateErrorNoLike(parent, srcAsWord));
+        return generateBoolFromDatum(parent, srcAsWord);
     Q_ASSERT(expected & TypeNothing);
     return generateImmediateReturn(generateErrorNoSay(srcAsWord));
 }
@@ -551,7 +551,7 @@ Value *Compiler::generateCastFromBool(Value *src, ASTNode *parent, TypeMask expe
     if (expected & TypeDatum)
         return srcAsWord;
     if (expected & TypeReal)
-        return generateImmediateReturn(generateErrorNoLike(parent, srcAsWord));
+        return generateDoubleFromDatum(parent, srcAsWord);
     Q_ASSERT(expected & TypeNothing);
     return generateImmediateReturn(generateErrorNoSay(srcAsWord));
 }
@@ -572,7 +572,13 @@ Value *Compiler::generateCastFromNothing(Value *src, ASTNode *parent, TypeMask e
 {
     if (expected & TypeNothing)
         return src;
-    return generateImmediateReturn(generateErrorNoOutput(src, parent));
+
+    Value *recovered = generateRecoverDidntOutput(src, parent);
+    if (expected & TypeReal)
+        return generateDoubleFromDatum(parent, recovered);
+    if ((expected & TypeBool) && !(expected & TypeDatum))
+        return generateBoolFromDatum(parent, recovered);
+    return recovered;
 }
 
 Value *Compiler::generateCastFromDN(Value *src, ASTNode *parent, TypeMask expected)
@@ -638,6 +644,7 @@ Value *Compiler::generateNotNothingFromDatum(ASTNode *parent, Value *src)
 {
     src = generateNotFlowControl(src);
 
+    BasicBlock *srcBB = scaff_->builder_.GetInsertBlock();
     BasicBlock *isNothingBB = scaff_->createBasicBlock(DBG_NAME("isNothing"));
     BasicBlock *notNothingBB = scaff_->createBasicBlock(DBG_NAME("notNothing"));
 
@@ -649,11 +656,15 @@ Value *Compiler::generateNotNothingFromDatum(ASTNode *parent, Value *src)
     scaff_->builder_.CreateCondBr(isData, notNothingBB, isNothingBB);
 
     scaff_->builder_.SetInsertPoint(isNothingBB);
-    Value *errObj = generateErrorNoOutput(src, parent);
-    generateReturn(errObj);
+    Value *recovered = generateRecoverDidntOutput(src, parent);
+    BasicBlock *recoveredBB = scaff_->builder_.GetInsertBlock();
+    scaff_->builder_.CreateBr(notNothingBB);
 
     scaff_->builder_.SetInsertPoint(notNothingBB);
-    return src;
+    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 2, DBG_NAME("notNothing"));
+    retval->addIncoming(src, srcBB);
+    retval->addIncoming(recovered, recoveredBB);
+    return retval;
 }
 
 Value *Compiler::generateNotFlowControl(Value *src)
@@ -935,6 +946,14 @@ Value *Compiler::generateErrorNoOutput(Value *x, ASTNode *y)
     Value *vY = CoAddr(y->nodeName_.datumValue());
     Value *errObj = generateCallExtern(getErrorNoOutput, PaAddr(scaff_->evaluator_), PaAddr(x), PaAddr(vY));
     return errObj;
+}
+
+Value *Compiler::generateRecoverDidntOutput(Value *who, ASTNode *parent)
+{
+    Value *vY = CoAddr(parent->nodeName_.datumValue());
+    Value *handlerResult =
+        generateCallExtern(handleDidntOutput, PaAddr(scaff_->evaluator_), PaAddr(who), PaAddr(vY));
+    return generateNotFlowControl(handlerResult);
 }
 
 Value *Compiler::generateErrorNotEnoughInputs(ASTNode *x)
