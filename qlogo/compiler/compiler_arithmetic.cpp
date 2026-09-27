@@ -1130,15 +1130,17 @@ Value *Compiler::generateListExecIfList(ASTNode *parent, Value *c)
         scaff_->builder_.CreateICmpEQ(listRunResultType, CoInt32(Datum::typeASTNode), DBG_NAME("listRunResultTypeTest"));
     scaff_->builder_.CreateCondBr(listRunResultCond, isNothingBB, notListBB);
 
-    // List execution resulted in nothing.
+    // List execution resulted in nothing. Run ERRACT; a datum from it stands in for the list.
     scaff_->builder_.SetInsertPoint(isNothingBB);
-    Value *errNoOutput = generateErrorNoOutput(c, parent);
-    generateReturn(errNoOutput);
+    Value *recovered = generateRecoverDidntOutput(c, parent);
+    BasicBlock *recoveredBB = scaff_->builder_.GetInsertBlock();
+    scaff_->builder_.CreateBr(notListBB);
 
     scaff_->builder_.SetInsertPoint(notListBB);
-    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 2, DBG_NAME("isWordPhi"));
+    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 3, DBG_NAME("isWordPhi"));
     retval->addIncoming(listRunResult, listRunResultBB);
     retval->addIncoming(c, listTestBB);
+    retval->addIncoming(recovered, recoveredBB);
 
     return retval;
 }
