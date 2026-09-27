@@ -136,6 +136,7 @@ const QString &cmdStrPAUSE();
 const QString &cmdStrCONTINUE();
 const QString &cmdStrCO();
 const QString &cmdStrRUNRESULT();
+const QString &cmdStrMARK();
 const QString &cmdStrFOREVER();
 const QString &cmdStrTEST();
 const QString &cmdStrIFTRUE();

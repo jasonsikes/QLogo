@@ -774,6 +774,12 @@ const QString &StringConstants::cmdStrRUNRESULT()
     return str;
 }
 
+const QString &StringConstants::cmdStrMARK()
+{
+    static const QString str = QObject::tr("MARK");
+    return str;
+}
+
 const QString &StringConstants::cmdStrFOREVER()
 {
     static const QString str = QObject::tr("FOREVER");

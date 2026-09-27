@@ -277,6 +277,17 @@ EXPORTC addr_t generateContinue(addr_t eAddr, addr_t outputAddr)
     return reinterpret_cast<addr_t>(err);
 }
 
+/// MARK: set a debug flag on the datum so its destruction is logged.
+/// Prints MARKED immediately, then DELETING when the last DatumPtr drops.
+/// @param thingAddr a pointer to the Datum to mark
+/// @return the same Datum
+EXPORTC addr_t stdMark(addr_t thingAddr)
+{
+    DatumPtr thing(reinterpret_cast<Datum *>(thingAddr));
+    thing.alertOnDelete();
+    return thingAddr;
+}
+
 EXPORTC addr_t processRunresult(addr_t eAddr, addr_t resultAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);

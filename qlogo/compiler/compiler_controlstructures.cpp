@@ -596,6 +596,30 @@ Value *Compiler::genRunresult(const DatumPtr &node, TypeMask expected)
     Value *result = generateCallList(instructionlist, TypeDN);
     return generateCallExtern(processRunresult, PaAddr(scaff_->evaluator_), PaAddr(result));
 }
+
+/***DOC MARK
+MARK value
+
+    Takes the input, places a mark on it, and outputs whatever was input. The
+    address of the marked value will be printed out. Later if or when the value
+    is no longer being used by QLogo, a message will again be printed out when
+    the internal representation of the value is destroyed, including the address.
+
+    Example: MAKE "A MARK 2+2
+
+    or:
+
+    PRINT MARK "Hello
+
+COD***/
+// CMD MARK 1 1 1 d
+Value *Compiler::genMark(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeDatum);
+    Value *thing = generateChild(node.astnodeValue(), 0, TypeDatum);
+    return generateCallExtern(stdMark, PaAddr(thing));
+}
+
 /***DOC FOREVER
 FOREVER instructionlist
 

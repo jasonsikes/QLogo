@@ -103,6 +103,7 @@ llvm::Value *genError(const DatumPtr &node, TypeMask expected);
 llvm::Value *genPause(const DatumPtr &node, TypeMask expected);
 llvm::Value *genContinue(const DatumPtr &node, TypeMask expected);
 llvm::Value *genRunresult(const DatumPtr &node, TypeMask expected);
+llvm::Value *genMark(const DatumPtr &node, TypeMask expected);
 llvm::Value *genForever(const DatumPtr &node, TypeMask expected);
 llvm::Value *genTest(const DatumPtr &node, TypeMask expected);
 llvm::Value *generateIftrue(const DatumPtr &node, TypeMask expected);

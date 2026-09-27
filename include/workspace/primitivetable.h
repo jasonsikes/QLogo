@@ -131,6 +131,7 @@ stringToCmd.insert(StringConstants::cmdStrPAUSE(), Cmd_t{&Compiler::genPause, 0,
 stringToCmd.insert(StringConstants::cmdStrCONTINUE(), Cmd_t{&Compiler::genContinue, 0, -1, 1, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrCO(), Cmd_t{&Compiler::genContinue, 0, -1, 1, TypeDN});
 stringToCmd.insert(StringConstants::cmdStrRUNRESULT(), Cmd_t{&Compiler::genRunresult, 1, 1, 1, TypeD});
+stringToCmd.insert(StringConstants::cmdStrMARK(), Cmd_t{&Compiler::genMark, 1, 1, 1, TypeD});
 stringToCmd.insert(StringConstants::cmdStrFOREVER(), Cmd_t{&Compiler::genForever, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrTEST(), Cmd_t{&Compiler::genTest, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrIFTRUE(), Cmd_t{&Compiler::generateIftrue, 1, 1, 1, TypeDN});

@@ -111,6 +111,7 @@ EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t
 EXPORTC addr_t getCurrentError(addr_t eAddr);
 EXPORTC addr_t callPause(addr_t eAddr);
 EXPORTC addr_t generateContinue(addr_t eAddr, addr_t outputAddr);
+EXPORTC addr_t stdMark(addr_t thingAddr);
 EXPORTC addr_t processRunresult(addr_t eAddr, addr_t resultAddr);
 EXPORTC void saveTestResult(bool tf);
 EXPORTC int8_t getTestResult(void);
@@ -225,6 +226,11 @@ EXPORTC addr_t getMousePos(addr_t eAddr);
 EXPORTC addr_t getClickPos(addr_t eAddr);
 EXPORTC bool isMouseButtonDown(void);
 EXPORTC double getMouseButton(void);
+
+//  -------------------------------------------------------------------
+//  exports_specialvariables.cpp
+//  -------------------------------------------------------------------
+
 
 //  -------------------------------------------------------------------
 //  exports_workspacemanagement.cpp
