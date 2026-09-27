@@ -1,6 +1,5 @@
-? ERRACT                          (variable)
+? ERRACT							(variable)
 
-    When set to a value that is not FALSE nor an empty string nor an empty list,
-    the command interpreter will execute PAUSE to enable the user to
-    inspect the state of the program.
+	an instructionlist that will be run in the event of an error.
+	Typically has the value [PAUSE] to allow interactive debugging.
 
