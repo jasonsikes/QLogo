@@ -900,25 +900,15 @@ Value *Compiler::genRandom(const DatumPtr &node, TypeMask expected)
         return generateCallExtern(random1, PaInt32(iChildren[0]));
     }
 
-    BasicBlock *notGTBB = scaff_->createBasicBlock(DBG_NAME("notGT"));
-    BasicBlock *isGTBB = scaff_->createBasicBlock(DBG_NAME("isGT"));
-
-    scaff_->addColdPathBlocks(notGTBB);
-
     Value *start = iChildren[0];
-    Value *end = iChildren[1];
+    Value *endInt = nullptr;
+    auto validator = [this, start, &endInt](Value *candidate) {
+        endInt = scaff_->builder_.CreateFPToSI(candidate, TyInt32, DBG_NAME("FpToInt"));
+        return scaff_->builder_.CreateICmpSLT(start, endInt, DBG_NAME("isValidTest"));
+    };
+    generateValidationDouble(node.astnodeValue(), children[1], validator);
 
-    Value *cond = scaff_->builder_.CreateICmpSLT(start, end, DBG_NAME("isValidTest"));
-    scaff_->builder_.CreateCondBr(cond, isGTBB, notGTBB);
-
-    scaff_->builder_.SetInsertPoint(notGTBB);
-    Value *errWhat = generateWordFromDouble(children[1]);
-    Value *errObj = generateErrorNoLike(node.astnodeValue(), errWhat);
-    generateReturn(errObj);
-
-    scaff_->builder_.SetInsertPoint(isGTBB);
-
-    return generateCallExtern(random2, PaInt32(iChildren[0]), PaInt32(iChildren[1]));
+    return generateCallExtern(random2, PaInt32(start), PaInt32(endInt));
 }
 
 /***DOC RERANDOM
