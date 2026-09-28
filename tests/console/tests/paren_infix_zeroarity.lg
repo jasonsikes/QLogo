@@ -1,0 +1,8 @@
+to z
+output 5
+end
+print (z+2)
+print (z*3)
+print (z=5)
+show (sum -1 2)
+show (sum 7 8 9)

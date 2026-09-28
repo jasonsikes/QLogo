@@ -59,6 +59,7 @@
 #include "workspace/procedures.h"
 #include <qdatetime.h>
 #include <qdebug.h>
+#include <tuple>
 
 using namespace StringConstants;
 
@@ -68,6 +69,16 @@ const QString &specialChars()
 {
     static const QString specialCharsInstance("+-()*%/<>=");
     return specialCharsInstance;
+}
+
+bool isInfixOpToken(const DatumPtr &tok)
+{
+    if (!tok.isWord())
+        return false;
+    const QString s = tok.toString();
+    return s == opPlus() || s == opMinus() || s == opMultiply() || s == opDivide() || s == opModulo() ||
+           s == opDoubleMinus() || s == opEqual() || s == opNotEqual() || s == opLessThan() || s == opGreaterThan() ||
+           s == opLessEqual() || s == opGreaterEqual();
 }
 
 bool isTag(const DatumPtr &node)
@@ -367,7 +378,21 @@ DatumPtr Treeifier::treeifyTermexp()
             if ((firstChar != '"') && (firstChar != ':') && ((firstChar < '0') || (firstChar > '9')) &&
                 !specialChars().contains(firstChar))
             {
-                retval = treeifyCommand(true);
+                // `(xcor+:deltax)` must be infix, not a vararg call to XCOR.
+                // A following infix operator after a 0-input procedure is an
+                // expression; `(sum -1 2)` still uses vararg because SUM's
+                // default arity is not 0.
+                DatumPtr peeked =
+                    (listIter_ != EmptyList::instance()) ? DatumPtr(listIter_->head) : nothing();
+                if (isInfixOpToken(peeked) &&
+                    std::get<2>(Procedures::get().astnodeFromCommand(currentToken_)) == 0)
+                {
+                    retval = treeifyExp();
+                }
+                else
+                {
+                    retval = treeifyCommand(true);
+                }
             }
             else
             {
