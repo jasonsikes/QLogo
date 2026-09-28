@@ -69,10 +69,10 @@ Value *Compiler::genIfelse(const DatumPtr &node, TypeMask expected)
 
     auto generateListFn = node.astnodeValue()->inSequenceTail_ ? &Compiler::generateCallListContinuation : &Compiler::generateCallList;
 
-    std::vector<TypeMask> expectedAry = {TypeDB, expected};
+    std::vector<TypeMask> expectedAry = {TypeDB, TypeDatum};
     if (node.astnodeValue()->countOfChildren() == 3)
     {
-        expectedAry.push_back(expected);
+        expectedAry.push_back(TypeDatum);
     }
     std::vector<Value *> children = generateChildren(node.astnodeValue(), expectedAry);
 
