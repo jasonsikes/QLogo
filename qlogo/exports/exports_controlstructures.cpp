@@ -441,6 +441,7 @@ EXPORTC addr_t buildApplyNamedCall(addr_t eAddr, addr_t astNodeAddr, addr_t temp
     }
 }
 
+// TODO: We should consider including the exports header, because this is kinda out of place.
 EXPORTC addr_t handleBadDatum(addr_t eAddr, addr_t parentAddr, addr_t valueAddr);
 
 /// @brief Return the explicit-slot value for `?` / `(? n)`.

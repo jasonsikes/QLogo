@@ -341,6 +341,13 @@ Value *Compiler::genMake(const DatumPtr &node, TypeMask expected)
     Value *value = generateChild(node.astnodeValue(), 1, TypeDatum);
     varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
 
+    DatumPtr valueNode = node.astnodeValue()->childAtIndex(1);
+    if (valueNode.isASTNode() && valueNode.astnodeValue()->genExpression_ == &Compiler::genLiteral
+        && valueNode.astnodeValue()->childAtIndex(0).isArray())
+    {
+        value = generateCallExtern(copyArray, PaAddr(scaff_->evaluator_), PaAddr(value));
+    }
+
     generateCallExtern(setDatumForWord, PaAddr(value), PaAddr(varname));
     return generateVoidRetval(node);
 }
