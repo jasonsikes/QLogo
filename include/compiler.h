@@ -240,6 +240,10 @@ class Compiler
     // Emit return "doesn't like" error if not.
     llvm::Value *generateArrayFromDatum(ASTNode *parent, llvm::Value *src);
 
+    // Validate that Datum describes a color (palette index, RGB/RGBA list, name, or hex).
+    // Run ERRACT if not; a usable color from it replaces the input.
+    llvm::Value *generateColorFromDatum(ASTNode *parent, llvm::Value *src);
+
     // Common methodology for the generate*FromDatum() methods.
     llvm::Value *generateFromDatum(Datum::DatumType t, ASTNode *parent, llvm::Value *src);
 

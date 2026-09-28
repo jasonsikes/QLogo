@@ -903,20 +903,15 @@ Value *Compiler::genSettextcolor(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeNothing);
 
-    auto colorValidator = [this](Value *candidate) {
-        Value *isValid = generateCallExtern(isValidColor, PaAddr(candidate));
-        return scaff_->builder_.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isValidColor"));
-    };
-
     Value *foreground = generateChild(node.astnodeValue(), 0, TypeDatum);
-    foreground = generateValidationDatum(node.astnodeValue(), foreground, colorValidator);
+    foreground = generateColorFromDatum(node.astnodeValue(), foreground);
 
     const bool hasBackground = node.astnodeValue()->countOfChildren() == 2;
     Value *background = CoAddr(0);
     if (hasBackground)
     {
         background = generateChild(node.astnodeValue(), 1, TypeDatum);
-        background = generateValidationDatum(node.astnodeValue(), background, colorValidator);
+        background = generateColorFromDatum(node.astnodeValue(), background);
     }
 
     generateCallExtern(stdSetTextColor, PaAddr(foreground), PaAddr(background));
