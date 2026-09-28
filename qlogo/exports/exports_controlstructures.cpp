@@ -52,13 +52,15 @@ EXPORTC addr_t runListAfterCurrentList(addr_t eAddr, addr_t listAddr)
     return reinterpret_cast<addr_t>(e->runListAfterCurrentList(aList));
 }
 
-/// After a suspend that pushed a list, return the result of running that list.
+/// After a suspend that pushed a list or called a procedure, return that result.
 /// @param eAddr a pointer to the Evaluator object context.
-/// @return the result of the list execution.
+/// @return the result of the list/procedure execution.
 EXPORTC addr_t getLastEvaluationResult(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Datum *result = e->retvalFromChild_.datumValue();
+    if ((result->isa_ & Datum::typeDataMask) != 0)
+        e->watch(result);
     return reinterpret_cast<addr_t>(result);
 }
 

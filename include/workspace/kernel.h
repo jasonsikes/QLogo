@@ -104,7 +104,6 @@ class Kernel
     void initPalette();
 
     /// @brief Run the explicit control evaluator.
-    /// @param listP The list to run.
     /// @return The result of the last expression in the list.
     DatumPtr runECE();
 

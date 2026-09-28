@@ -1,0 +1,9 @@
+to a
+output equalp 1 2
+end
+to b
+output equalp 1 1
+end
+show list a b
+print and a b
+print or a b

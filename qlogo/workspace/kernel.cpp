@@ -1134,13 +1134,16 @@ bool Kernel::consumePendingSignal(DatumPtr *resultOut)
 
 DatumPtr Kernel::runECE()
 {
+    const auto savedOp = nextOperation_;
     nextOperation_ = &Kernel::ece_evaluateStack;
     currentCallFrame()->retvalToParent_ = nothing();
 
     while (nextOperation_ != nullptr)
         (this->*nextOperation_)();
 
-    return currentCallFrame()->retvalToParent_;
+    DatumPtr result = currentCallFrame()->retvalToParent_;
+    nextOperation_ = savedOp;
+    return result;
 }
 
 void Kernel::ece_evaluateStack()
