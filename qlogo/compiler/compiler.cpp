@@ -585,12 +585,19 @@ Value *Compiler::generateCastFromDN(Value *src, ASTNode *parent, TypeMask expect
 {
     if (expected == TypeNothing)
         return generateNothingFromDatum(parent, src);
-    if (expected == TypeDatum)
-        return generateNotNothingFromDatum(parent, src);
-    if (expected == TypeReal)
-        return generateDoubleFromDatum(parent, src);
-    Q_ASSERT(expected == TypeBool);
-    return generateBoolFromDatum(parent, src);
+
+    // IF's predicate is TypeDB. RUN / user procedures produce TypeDN. Keep a
+    // datum pointer when the parent accepts Datum; recover "did not output"
+    // only when Nothing is not allowed.
+    if (!(expected & TypeNothing))
+        src = generateNotNothingFromDatum(parent, src);
+
+    if (expected & TypeDatum)
+        return src;
+    if (expected & TypeBool)
+        return generateBoolFromDatum(parent, src);
+    Q_ASSERT(expected & TypeReal);
+    return generateDoubleFromDatum(parent, src);
 }
 
 Value *Compiler::generateChild(ASTNode *parent, const DatumPtr &node, TypeMask expected)

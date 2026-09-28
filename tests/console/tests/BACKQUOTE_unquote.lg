@@ -1,0 +1,1 @@
+show `[foo baz ,[bf [a b c]] garply ,@[bf [a b c]]]
