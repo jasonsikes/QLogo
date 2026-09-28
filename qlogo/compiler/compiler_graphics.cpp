@@ -831,25 +831,11 @@ COD***/
 Value *Compiler::genSetpalette(const DatumPtr &node, TypeMask expected)
 {
     CHECK_GRAPHICS_MODE
-    BasicBlock *colorIndexNotGoodBB = scaff_->createBasicBlock(DBG_NAME("colorIndexNotGood"));
-    BasicBlock *colorIndexGoodBB = scaff_->createBasicBlock(DBG_NAME("colorIndexGood"));
-
-    scaff_->addColdPathBlocks(colorIndexNotGoodBB);
-
     Value *colorIndex = generateChild(node.astnodeValue(), 0, TypeDatum);
-    Value *isColorIndexGoodResult =
-        generateCallExtern(isColorIndexGood, PaAddr(colorIndex), PaDouble(CoDouble(8.0)));
-    Value *isColorIndexGoodCmp = scaff_->builder_.CreateICmpEQ(isColorIndexGoodResult, CoBool(true), DBG_NAME("isColorIndexGood"));
-    scaff_->builder_.CreateCondBr(isColorIndexGoodCmp, colorIndexGoodBB, colorIndexNotGoodBB);
-
-    // Color index is not good.
-    scaff_->builder_.SetInsertPoint(colorIndexNotGoodBB);
-    Value *errVal = generateCallExtern(
-        getErrorNoLike, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(colorIndex));
-    generateReturn(errVal);
-
-    // Color index is good.
-    scaff_->builder_.SetInsertPoint(colorIndexGoodBB);
+    colorIndex = generateValidationDatum(node.astnodeValue(), colorIndex, [this](Value *candidate) {
+        Value *isGood = generateCallExtern(isColorIndexGood, PaAddr(candidate), PaDouble(CoDouble(8.0)));
+        return scaff_->builder_.CreateICmpEQ(isGood, CoBool(true), DBG_NAME("isColorIndexGood"));
+    });
     Value *color = generateChild(node.astnodeValue(), 1, TypeDatum);
     color = generateColorFromDatum(node.astnodeValue(), color);
     generateCallExtern(setPalette, PaAddr(colorIndex), PaAddr(color));
@@ -946,26 +932,12 @@ COD***/
 Value *Compiler::genPalette(const DatumPtr &node, TypeMask expected)
 {
     CHECK_GRAPHICS_MODE
-    BasicBlock *colorIndexNotGoodBB = scaff_->createBasicBlock(DBG_NAME("colorIndexNotGood"));
-    BasicBlock *colorIndexGoodBB = scaff_->createBasicBlock(DBG_NAME("colorIndexGood"));
-
-    scaff_->addColdPathBlocks(colorIndexNotGoodBB);
-
     Value *colorIndex = generateChild(node.astnodeValue(), 0, TypeDatum);
-    Value *isColorIndexGood = generateCallExtern(::isColorIndexGood, PaAddr(colorIndex), PaDouble(CoDouble(0.0)));
-    Value *isColorIndexGoodCmp = scaff_->builder_.CreateICmpEQ(isColorIndexGood, CoBool(true), DBG_NAME("isColorIndexGood"));
-    scaff_->builder_.CreateCondBr(isColorIndexGoodCmp, colorIndexGoodBB, colorIndexNotGoodBB);
-
-    // Color index is not good.
-    scaff_->builder_.SetInsertPoint(colorIndexNotGoodBB);
-    Value *errVal = generateCallExtern(
-        getErrorNoLike, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(colorIndex));
-    generateReturn(errVal);
-
-    // Color index is good.
-    scaff_->builder_.SetInsertPoint(colorIndexGoodBB);
-    Value *color = generateCallExtern(getPaletteColor, PaAddr(scaff_->evaluator_), PaAddr(colorIndex));
-    return color;
+    colorIndex = generateValidationDatum(node.astnodeValue(), colorIndex, [this](Value *candidate) {
+        Value *isGood = generateCallExtern(isColorIndexGood, PaAddr(candidate), PaDouble(CoDouble(0.0)));
+        return scaff_->builder_.CreateICmpEQ(isGood, CoBool(true), DBG_NAME("isColorIndexGood"));
+    });
+    return generateCallExtern(getPaletteColor, PaAddr(scaff_->evaluator_), PaAddr(colorIndex));
 }
 /***DOC PENSIZE
 PENSIZE

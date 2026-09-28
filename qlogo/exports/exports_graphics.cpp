@@ -348,7 +348,10 @@ EXPORTC addr_t getAllColors(addr_t eAddr)
 
 EXPORTC bool isColorIndexGood(addr_t colorIndexAddr, double lowerLimit)
 {
-    auto *w = reinterpret_cast<Word *>(colorIndexAddr);
+    auto *d = reinterpret_cast<Datum *>(colorIndexAddr);
+    if (!d->isWord())
+        return false;
+    auto *w = static_cast<Word *>(d);
     double colorIndex = w->numberValue();
 
     return (w->numberIsValid) && (colorIndex == floor(colorIndex)) && (colorIndex >= lowerLimit) &&
