@@ -1,0 +1,7 @@
+if "true [print "ok] print "after
+if "true [if "true [print "inner] print "outer]
+ifelse "true [print "yes] [print "no] print "done
+to t
+if "true [print "a] print "b
+end
+t
