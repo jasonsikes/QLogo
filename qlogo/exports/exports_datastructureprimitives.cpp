@@ -26,88 +26,71 @@
 
 bool areDatumsEqual(VisitedMap &visited, Datum *d1, Datum *d2, Qt::CaseSensitivity cs);
 
-bool isDatumInContainer(VisitedSet &visited, Datum *value, Datum *container, Qt::CaseSensitivity cs);
+bool isDatumInContainer(VisitedSet &visited, Datum *value, Datum *container);
 
-/// @brief Recursively check if a datum is in an array.
+/// @brief Recursively check if a datum is in an array by object identity.
 /// @param visited The set of visited nodes.
 /// @param value The value to check for.
 /// @param array The array to check.
-/// @param cs The case sensitivity to use for the comparison.
 /// @return True if the value is in the array, false otherwise.
-bool isDatumInArray(VisitedSet &visited, Datum *value, Array *array, Qt::CaseSensitivity cs)
+bool isDatumInArray(VisitedSet &visited, Datum *value, Array *array)
 {
-    VisitedMap searched;
     for (auto &item : array->array)
     {
-        searched.clear();
         Datum *itemPtr = item.datumValue();
-        if (areDatumsEqual(searched, itemPtr, value, cs))
+        if (itemPtr == value)
             return true;
         if (itemPtr->isArray() || itemPtr->isList())
         {
-            if ( ! visited.contains(itemPtr))
-            {
-                visited.add(itemPtr);
-                if (isDatumInContainer(visited, itemPtr, value, cs))
-                    return true;
-            }
+            if (isDatumInContainer(visited, value, itemPtr))
+                return true;
         }
     }
     return false;
 }
 
-/// @brief Recursively check if a datum is in a list.
+/// @brief Recursively check if a datum is in a list by object identity.
 /// @param visited The set of visited nodes.
 /// @param value The value to check for.
 /// @param list The list to check.
-/// @param cs The case sensitivity to use for the comparison.
 /// @return True if the value is in the list, false otherwise.
-bool isDatumInList(VisitedSet &visited, Datum *value, List *list, Qt::CaseSensitivity cs)
+bool isDatumInList(VisitedSet &visited, Datum *value, List *list)
 {
-    VisitedMap searched;
     while (list != EmptyList::instance())
     {
         Datum *itemPtr = list->head.datumValue();
-        searched.clear();
-        if (areDatumsEqual(searched, itemPtr, value, cs))
+        if (itemPtr == value)
             return true;
         if (itemPtr->isArray() || itemPtr->isList())
         {
-            if (!visited.contains(itemPtr))
-            {
-                visited.add(itemPtr);
-                if (isDatumInContainer(visited, itemPtr, value, cs))
-                    return true;
-            }
+            if (isDatumInContainer(visited, value, itemPtr))
+                return true;
         }
         list = list->tail.listValue();
     }
     return false;
 }
 
-/// @brief Recursively check if a datum is in a container.
+/// @brief Recursively check if a datum is in a container by object identity.
 /// @param visited The set of visited nodes.
 /// @param value The value to check for.
 /// @param container The container to check.
-/// @param cs The case sensitivity to use for the comparison.
 /// @return True if the value is in the container, false otherwise.
-bool isDatumInContainer(VisitedSet &visited, Datum *value, Datum *container, Qt::CaseSensitivity cs)
+bool isDatumInContainer(VisitedSet &visited, Datum *value, Datum *container)
 {
     if (visited.contains(container))
         return false;
     visited.add(container);
 
-    VisitedMap searched;
-
     if (container->isArray())
     {
         Array *a = container->arrayValue();
-        return isDatumInArray(visited, value, a, cs);
+        return isDatumInArray(visited, value, a);
     }
 
     // If it's not an Array then it must be a List.
     List *l = container->listValue();
-    return isDatumInList(visited, value, l, cs);
+    return isDatumInList(visited, value, l);
 }
 
 /// @brief Get the number of elements in a list.
@@ -569,7 +552,7 @@ EXPORTC addr_t itemOfDatum(addr_t eAddr, addr_t thingAddr, double dIndex, addr_t
 
 EXPORTC bool isDatumContainerOrInContainer(addr_t eAddr, addr_t valueAddr, addr_t containerAddr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    Q_UNUSED(eAddr);
     auto *value = reinterpret_cast<Datum *>(valueAddr);
     auto *container = reinterpret_cast<Datum *>(containerAddr);
 
@@ -581,10 +564,9 @@ EXPORTC bool isDatumContainerOrInContainer(addr_t eAddr, addr_t valueAddr, addr_
     if (value == container)
         return true;
 
-    Qt::CaseSensitivity cs = e->varCASEIGNOREDP() ? Qt::CaseInsensitive : Qt::CaseSensitive;
     VisitedSet visited;
 
-    return isDatumInContainer(visited, value, container, cs);
+    return isDatumInContainer(visited, value, container);
 }
 
 EXPORTC void setDatumAtIndexOfContainer(addr_t valueAddr, double dIndex, addr_t containerAddr)

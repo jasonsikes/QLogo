@@ -1,0 +1,4 @@
+make "a {x}
+make "b {y}
+setitem 1 :b :a
+setitem 1 :a :b

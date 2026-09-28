@@ -1,0 +1,4 @@
+make "a array 5
+make "b array 5
+setitem 1 :a :b
+show :a
