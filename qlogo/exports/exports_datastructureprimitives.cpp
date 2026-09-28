@@ -307,6 +307,19 @@ EXPORTC addr_t createArray(addr_t eAddr, int32_t size, int32_t origin)
     return reinterpret_cast<addr_t>(retval);
 }
 
+EXPORTC addr_t copyArray(addr_t eAddr, addr_t arrayAddr)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *src = reinterpret_cast<Array *>(arrayAddr);
+    auto *retval = new Array(src->origin, src->array.size());
+    for (const auto &item : src->array)
+    {
+        retval->array.append(item);
+    }
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval);
+}
+
 EXPORTC addr_t listToArray(addr_t eAddr, addr_t listAddr, int32_t origin)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
