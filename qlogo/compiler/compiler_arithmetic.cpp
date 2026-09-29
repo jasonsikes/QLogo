@@ -513,11 +513,12 @@ COD***/
 Value *Compiler::genSum(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
+    CallSite cs(this, node, TypeReal);
+    const std::vector<Value *> &children = cs.children();
 
     // No children? Return identity.
     if (children.size() == 0)
-        return CoDouble(0.0);
+        return cs.ret(CoDouble(0.0));
 
     // Loop through the children accumulating from the left.
     Value *accum = children[0];
@@ -525,7 +526,7 @@ Value *Compiler::genSum(const DatumPtr &node, TypeMask expected)
     {
         accum = scaff_->builder_.CreateFAdd(accum, children[i], DBG_NAME("addtmp"));
     }
-    return accum;
+    return cs.ret(accum);
 }
 
 /***DOC DIFFERENCE
@@ -542,10 +543,10 @@ COD***/
 Value *Compiler::genDifference(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    Value *num1 = generateChild(node.astnodeValue(), 0, TypeReal);
-    Value *num2 = generateChild(node.astnodeValue(), 1, TypeReal);
+    CallSite cs(this, node, TypeReal, TypeReal);
+    auto [num1, num2] = cs.children();
 
-    return scaff_->builder_.CreateFSub(num1, num2, DBG_NAME("subtmp"));
+    return cs.ret(scaff_->builder_.CreateFSub(num1, num2, DBG_NAME("subtmp")));
 }
 
 /***DOC QUOTIENT

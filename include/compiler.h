@@ -32,11 +32,19 @@
 #include "llvm/Transforms/Scalar/GVN.h"
 #include "llvm/Transforms/Scalar/Reassociate.h"
 
+#include <array>
+#include <cstddef>
+#include <initializer_list>
 #include <memory>
+#include <string>
+#include <type_traits>
 #include <vector>
 
 struct Scaffold;
 class List;
+
+template <std::size_t N>
+class CallSite;
 
 namespace llvm
 {
@@ -57,6 +65,9 @@ typedef std::function<llvm::Value *(llvm::Value *)> validatorFunction;
 
 class Compiler
 {
+    template <std::size_t N>
+    friend class CallSite;
+
     // Scaffold is a collection of objects needed to compile a function (JIT module).
     Scaffold *scaff_;
 
@@ -410,6 +421,115 @@ class Compiler
     }
     
 }; // class Compiler
+
+/// @brief Evaluates a gen* node's children and is the future TRACE enter/exit site.
+template <std::size_t N>
+class CallSite
+{
+    Compiler *compiler_;
+    DatumPtr node_;
+    std::vector<llvm::Value *> children_;
+
+    void initAll(TypeMask expectedAll)
+    {
+        Q_ASSERT(compiler_ != nullptr);
+        children_ = compiler_->generateChildren(node_.astnodeValue(), expectedAll);
+    }
+
+    void initEach(const std::vector<TypeMask> &expected)
+    {
+        Q_ASSERT(compiler_ != nullptr);
+        children_ = compiler_->generateChildren(node_.astnodeValue(), expected);
+    }
+
+public:
+    template <std::size_t M = N, std::enable_if_t<M == 0, int> = 0>
+    CallSite(Compiler *compiler, const DatumPtr &node, TypeMask expectedAll)
+        : compiler_(compiler)
+        , node_(node)
+    {
+        initAll(expectedAll);
+    }
+
+    template <std::size_t M = N, std::enable_if_t<M == 0, int> = 0>
+    CallSite(Compiler *compiler, const DatumPtr &node, const std::vector<TypeMask> &expected)
+        : compiler_(compiler)
+        , node_(node)
+    {
+        initEach(expected);
+    }
+
+    template <std::size_t M = N, std::enable_if_t<M == 0, int> = 0>
+    CallSite(Compiler *compiler, const DatumPtr &node, std::initializer_list<TypeMask> expected)
+        : CallSite(compiler, node, std::vector<TypeMask>(expected))
+    {
+    }
+
+    template <typename... Masks, std::size_t M = N, std::enable_if_t<(M == sizeof...(Masks) && M > 0), int> = 0>
+    CallSite(Compiler *compiler, const DatumPtr &node, Masks... masks)
+        : compiler_(compiler)
+        , node_(node)
+    {
+        initEach(std::vector<TypeMask>{static_cast<TypeMask>(masks)...});
+    }
+
+    CallSite(const CallSite &) = delete;
+    CallSite &operator=(const CallSite &) = delete;
+    CallSite(CallSite &&) = delete;
+    CallSite &operator=(CallSite &&) = delete;
+
+    ~CallSite() = default;
+
+    const DatumPtr &node() const
+    {
+        return node_;
+    }
+
+    unsigned count() const
+    {
+        return static_cast<unsigned>(children_.size());
+    }
+
+    llvm::Value *child(unsigned index) const
+    {
+        Q_ASSERT(index < children_.size());
+        return children_[index];
+    }
+
+    std::conditional_t<N == 0, const std::vector<llvm::Value *> &, std::array<llvm::Value *, N>> children() const
+    {
+        if constexpr (N == 0)
+        {
+            return children_;
+        }
+        else
+        {
+            Q_ASSERT(children_.size() == N);
+            std::array<llvm::Value *, N> out{};
+            for (std::size_t i = 0; i < N; ++i)
+                out[i] = children_[i];
+            return out;
+        }
+    }
+
+    llvm::AllocaInst *allocaAry(const std::string &name = "")
+    {
+        return compiler_->generateAllocaAry(children_, name);
+    }
+
+    llvm::Value *ret(llvm::Value *value)
+    {
+        Q_ASSERT(value != nullptr);
+        return value;
+    }
+};
+
+CallSite(Compiler *, const DatumPtr &, TypeMask) -> CallSite<0>;
+CallSite(Compiler *, const DatumPtr &, const std::vector<TypeMask> &) -> CallSite<0>;
+CallSite(Compiler *, const DatumPtr &, std::initializer_list<TypeMask>) -> CallSite<0>;
+
+template <typename M1, typename M2, typename... Rest>
+CallSite(Compiler *, const DatumPtr &, M1, M2, Rest...) -> CallSite<2 + sizeof...(Rest)>;
 
 #define generateCallExtern(FUNC, ...) \
 generateCallExternTyped(FUNC, #FUNC, {__VA_ARGS__})
