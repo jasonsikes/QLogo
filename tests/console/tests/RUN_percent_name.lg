@@ -1,0 +1,2 @@
+define (word "basic% 10) [[] [print 42]]
+run (list (word "basic% 10))
