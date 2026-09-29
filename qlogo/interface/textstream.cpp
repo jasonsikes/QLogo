@@ -259,6 +259,7 @@ DatumPtr ListReader::parseListWithPrompt(const QString &prompt,
 
     ListBuilder builder;
     QString currentWord = "";
+    int parenDepth = 0;
 
     forever
     {
@@ -266,7 +267,7 @@ DatumPtr ListReader::parseListWithPrompt(const QString &prompt,
 
         // Process all characters in the current source word
         DatumPtr earlyReturn = processCharacterLoop(builder, currentWord, isCurrentWordVbarred,
-                    isBaseLevel, makeArray, shouldRemoveComments);
+                    isBaseLevel, makeArray, shouldRemoveComments, parenDepth);
         if (!earlyReturn.isNothing())
             return earlyReturn;
 
@@ -275,7 +276,7 @@ DatumPtr ListReader::parseListWithPrompt(const QString &prompt,
 
         // Try to finalize or get more input
         DatumPtr result;
-        if (!finalizeResult(builder, isBaseLevel, makeArray, result))
+        if (!finalizeResult(builder, isBaseLevel, makeArray, parenDepth, result))
             return result;
         // If finalizeResult returns true, it means more input was read and we should continue
     } // /forever
@@ -293,7 +294,7 @@ bool ListReader::initializeBaseLevelReading(const QString &prompt)
 }
 
 DatumPtr ListReader::processCharacterLoop(ListBuilder &builder, QString &currentWord, bool &isCurrentWordVbarred,
-                                          bool isBaseLevel, bool makeArray, bool shouldRemoveComments)
+                                          bool isBaseLevel, bool makeArray, bool shouldRemoveComments, int &parenDepth)
 {
     bool isVbarred = false;
 
@@ -325,6 +326,10 @@ DatumPtr ListReader::processCharacterLoop(ListBuilder &builder, QString &current
         }
         else
         {
+            if (c == '(')
+                ++parenDepth;
+            else if (c == ')')
+                --parenDepth;
             currentWord.push_back(c);
         }
     }
@@ -341,17 +346,19 @@ void ListReader::addCurrentWordToBuilder(ListBuilder &builder, QString &currentW
     }
 }
 
-bool ListReader::finalizeResult(ListBuilder &builder, bool isBaseLevel, bool makeArray, DatumPtr &result)
+bool ListReader::finalizeResult(ListBuilder &builder, bool isBaseLevel, bool makeArray, int parenDepth, DatumPtr &result)
 {
-    if (isBaseLevel)
+    if (isBaseLevel && parenDepth <= 0)
     {
         result = builder.finishedList();
         return false; // Don't continue, we have a result
     }
 
-    // Get some more source material if we can
+    // Unmatched '[', '{', or '(' : keep reading physical lines.
     DatumPtr lineP;
-    if (makeArray)
+    if (isBaseLevel)
+        lineP = wordReader_->readWordWithPrompt("~ ");
+    else if (makeArray)
         lineP = wordReader_->readWordWithPrompt("{ ");
     else
         lineP = wordReader_->readWordWithPrompt("[ ");

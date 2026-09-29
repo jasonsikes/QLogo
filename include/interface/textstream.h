@@ -132,11 +132,11 @@ class ListReader
     bool initializeBaseLevelReading(const QString &prompt);
 
     DatumPtr processCharacterLoop(ListBuilder &builder, QString &currentWord, bool &isCurrentWordVbarred,
-    bool isBaseLevel, bool makeArray, bool shouldRemoveComments);
+    bool isBaseLevel, bool makeArray, bool shouldRemoveComments, int &parenDepth);
 
     void addCurrentWordToBuilder(ListBuilder &builder, QString &currentWord, bool isCurrentWordVbarred);
 
-    bool finalizeResult(ListBuilder &builder, bool isBaseLevel, bool makeArray, DatumPtr &result);
+    bool finalizeResult(ListBuilder &builder, bool isBaseLevel, bool makeArray, int parenDepth, DatumPtr &result);
 
     bool processVbarredCharacter(ushort c, bool &isVbarred, bool &isCurrentWordVbarred, QString &currentWord);
 

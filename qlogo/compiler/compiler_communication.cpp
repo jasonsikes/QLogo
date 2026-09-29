@@ -119,8 +119,9 @@ RL
     outputs the empty word (not the empty list).  READLIST processes
     backslash, vertical bar, and tilde characters in the read stream;
     the output list will not contain these characters but they will have
-    had their usual effect.  READLIST does not, however, treat semicolon
-    as a comment character.
+    had their usual effect.  Unmatched brackets, braces, or parentheses
+    also continue onto the next physical line.  READLIST does not,
+    however, treat semicolon as a comment character.
 
 COD***/
 // CMD READLIST 0 0 0 d

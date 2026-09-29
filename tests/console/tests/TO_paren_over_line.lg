@@ -1,0 +1,5 @@
+to win1
+print (sentence [Pour from] "river
+                [to] 7)
+end
+win1
