@@ -15,6 +15,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "workspace/exports_internal.h"
+#include "compiler.h"
 #include "datum_types.h"
 #include "workspace/kernel.h"
 #include "workspace/library.h"
@@ -507,7 +508,7 @@ addr_t markWorkspace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr, Kern
     {
         markContents(mark, node->nodeName_, contents, clear);
         if (mark == Kernel::NameMark::Traced)
-            Kernel::get().noteTraceChange();
+            Compiler::get().noteCodeChange();
     }
     catch (FCError *err)
     {

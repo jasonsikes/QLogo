@@ -83,6 +83,9 @@ class Compiler
     /// Must be set by the caller of compiledTextFromList() when compiling a procedure line.
     DatumPtr tagLineLocation_;
 
+    /// @brief DEFINE/COPYDEF/ERASE and TRACE/UNTRACE. Cached JIT older than this is dropped.
+    qint64 lastCodeChangeTimestamp_ = 0;
+
     // Child node generation.
 
     // Generate code for all children of the given node and cast them to the expected type.
@@ -343,6 +346,12 @@ class Compiler
 
     /// Get the compiled text for a list (compiling if stale or missing).
     std::shared_ptr<CompiledText> compiledTextFromList(List *aList);
+
+    /// @brief Timestamp of the last procedure or TRACE change.
+    qint64 lastCodeChangeTimestamp() const { return lastCodeChangeTimestamp_; }
+
+    /// @brief Record DEFINE/COPYDEF/ERASE or TRACE/UNTRACE so lists recompile.
+    void noteCodeChange();
 
     /// @brief Set the procedure-body suffix for TAG registration during the next compile.
     /// @param location List whose head is the line being compiled; tail is the remaining body.

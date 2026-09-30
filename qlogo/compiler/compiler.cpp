@@ -28,6 +28,7 @@
 #include "treeifyer.h"
 #include "workspace/callframe.h"
 #include "workspace/kernel.h"
+#include <QDateTime>
 #include "workspace/procedures.h"
 #include <string>
 #include <iostream>
@@ -209,6 +210,11 @@ Compiler::~Compiler()
 {
     // Release ResourceTrackers while lljit is still valid.
     releaseAllCompiledText();
+}
+
+void Compiler::noteCodeChange()
+{
+    lastCodeChangeTimestamp_ = QDateTime::currentMSecsSinceEpoch();
 }
 
 void Compiler::trackCompiledText(const std::shared_ptr<CompiledText> &compiledText)
@@ -482,9 +488,8 @@ QList<QList<DatumPtr>> Compiler::groupConsecutiveExpressions(const QList<DatumPt
 
 std::shared_ptr<CompiledText> Compiler::compiledTextFromList(List *aList)
 {
-    if (aList->compileTimeStamp <= Procedures::get().timeOfLastProcedureCreation() ||
-        aList->compileTimeStamp <= Kernel::get().timeOfLastTraceChange() ||
-        !aList->compiledText_ || !aList->compiledText_->functionPtr_)
+    if (aList->compileTimeStamp <= lastCodeChangeTimestamp_ || !aList->compiledText_ ||
+        !aList->compiledText_->functionPtr_)
     {
         QList<DatumPtr> astFlatList = Treeifier::astFromList(aList);
         QList<QList<DatumPtr>> parsedList = groupConsecutiveExpressions(astFlatList);

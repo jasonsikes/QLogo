@@ -57,7 +57,6 @@ class Procedures
     QHash<QString, Cmd_t> stringToCmd;
 
     QHash<QString, DatumPtr> procedures_;
-    qint64 lastProcedureCreatedTimestamp_;
 
     DatumPtr procedureForName(const QString &aName);
     bool isNamedProcedure(const QString &aName) const;
@@ -94,13 +93,6 @@ class Procedures
 
     /// @brief Destructor.
     ~Procedures() = default;
-
-    /// @brief Return the timestamp of the last procedure creation.
-    /// @return The timestamp of the last procedure creation.
-    qint64 timeOfLastProcedureCreation() const
-    {
-        return lastProcedureCreatedTimestamp_;
-    }
 
     /// @brief Validate a procedure parameters list.
     /// @param cmd The command to validate the parameters list for.
