@@ -172,28 +172,11 @@ Value *Compiler::genRepeat(const DatumPtr &node, TypeMask expected)
     Value *count = generateChild(node.astnodeValue(), 0, TypeReal);
     Value *list = generateChild(node.astnodeValue(), 1, TypeDatum);
 
-    auto countValidator = [this](Value *candidate) {
-        BasicBlock *intCheckBB = scaff_->builder_.GetInsertBlock();
-
-        BasicBlock *negativeCheckBB = scaff_->createBasicBlock(DBG_NAME("negativeCheck"));
-        BasicBlock *mergeBB = scaff_->createBasicBlock(DBG_NAME("merge"));
-
-        Value *candidateInt = scaff_->builder_.CreateFPToSI(candidate, TyInt32, DBG_NAME("FpToInt"));
-        Value *candidateCheck = scaff_->builder_.CreateSIToFP(candidateInt, TyDouble, DBG_NAME("FpToIntCheck"));
-        Value *intCheckCond = scaff_->builder_.CreateFCmpOEQ(candidate, candidateCheck, DBG_NAME("isIntTest"));
-        scaff_->builder_.CreateCondBr(intCheckCond, negativeCheckBB, mergeBB);
-
-        scaff_->builder_.SetInsertPoint(negativeCheckBB);
-        Value *isNegativeCond = scaff_->builder_.CreateFCmpOGE(candidate, CoDouble(0.0), DBG_NAME("isNotNegative"));
-        scaff_->builder_.CreateBr(mergeBB);
-
-        scaff_->builder_.SetInsertPoint(mergeBB);
-        PHINode *phiNode = scaff_->builder_.CreatePHI(isNegativeCond->getType(), 2, DBG_NAME("isNotNegativeIntResult"));
-        phiNode->addIncoming(intCheckCond, intCheckBB);
-        phiNode->addIncoming(isNegativeCond, negativeCheckBB);
-        return phiNode;
-    };
-    count = generateValidationDouble(node.astnodeValue(), count, countValidator);
+    count = generateValidationDouble(node.astnodeValue(), count, [this](Value *candidate) {
+        Value *isInt = generateIsExactInt32(candidate, true);
+        Value *notNeg = scaff_->builder_.CreateFCmpOGE(candidate, CoDouble(0.0), DBG_NAME("isNotNegative"));
+        return scaff_->builder_.CreateAnd(isInt, notNeg, DBG_NAME("isNotNegativeInt"));
+    });
     list = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), list);
 
     // Get the current value of repcount since we are shadowing it.

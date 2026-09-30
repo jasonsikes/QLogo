@@ -26,74 +26,58 @@
 using namespace llvm;
 using namespace llvm::orc;
 
+namespace
+{
+// Exact in IEEE-754 double (powers of two, or integers with |x| <= 2^53).
+constexpr double kInt32MinAsDouble = -2147483648.0;
+constexpr double kInt32MaxAsDouble = 2147483647.0;
+constexpr double kUInt32MaxAsDouble = 4294967295.0;
+} // namespace
+
+Value *Compiler::generateIsExactIntegerInRange(Value *src, double lo, double hi)
+{
+    Value *geLo = scaff_->builder_.CreateFCmpOGE(src, CoDouble(lo), DBG_NAME("geLo"));
+    Value *leHi = scaff_->builder_.CreateFCmpOLE(src, CoDouble(hi), DBG_NAME("leHi"));
+    Value *inRange = scaff_->builder_.CreateAnd(geLo, leHi, DBG_NAME("inRange"));
+    // llvm.trunc stays in double, so this never poisons (unlike fptosi of NaN/Inf/out-of-range).
+    Value *truncated =
+        scaff_->builder_.CreateUnaryIntrinsic(Intrinsic::trunc, src, {}, DBG_NAME("trunc"));
+    Value *isInt = scaff_->builder_.CreateFCmpOEQ(src, truncated, DBG_NAME("isExactInt"));
+    return scaff_->builder_.CreateAnd(inRange, isInt, DBG_NAME("isExactIntInRange"));
+}
+
+Value *Compiler::generateIsExactInt32(Value *src, bool isSigned)
+{
+    if (isSigned)
+        return generateIsExactIntegerInRange(src, kInt32MinAsDouble, kInt32MaxAsDouble);
+    return generateIsExactIntegerInRange(src, 0.0, kUInt32MaxAsDouble);
+}
+
 Value *Compiler::generateInt32FromDouble(ASTNode *parent, Value *src, bool isSigned)
 {
-    Value *retval = nullptr;
-    auto validator = [this, isSigned, &retval](Value *candidate) {
-        retval = isSigned ? scaff_->builder_.CreateFPToSI(candidate, TyInt32, DBG_NAME("FpToInt"))
-                          : scaff_->builder_.CreateFPToUI(candidate, TyInt32, DBG_NAME("FpToInt"));
-        Value *retvalCheck = isSigned ? scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("FpToIntCheck"))
-                                      : scaff_->builder_.CreateUIToFP(retval, TyDouble, DBG_NAME("FpToIntCheck"));
-        return scaff_->builder_.CreateFCmpOEQ(candidate, retvalCheck, DBG_NAME("isValidTest"));
-    };
-    generateValidationDouble(parent, src, validator);
-    return retval;
+    Value *accepted = generateValidationDouble(parent, src, [this, isSigned](Value *candidate) {
+        return generateIsExactInt32(candidate, isSigned);
+    });
+    return isSigned ? scaff_->builder_.CreateFPToSI(accepted, TyInt32, DBG_NAME("FpToInt"))
+                    : scaff_->builder_.CreateFPToUI(accepted, TyInt32, DBG_NAME("FpToInt"));
 }
 
 Value *Compiler::generateNotNegativeInt32FromDouble(ASTNode *parent, Value *src)
 {
-    Value *retvalInt = nullptr;
-    auto validator = [this, &retvalInt](Value *candidate) {
-        BasicBlock *intTestBB = scaff_->builder_.GetInsertBlock();
-
-        BasicBlock *zeroTestBB = scaff_->createBasicBlock(DBG_NAME("zeroTestBB"));
-        BasicBlock *resumeBB = scaff_->createBasicBlock(DBG_NAME("resumeBB"));
-
-        retvalInt = scaff_->builder_.CreateFPToSI(candidate, TyInt32, DBG_NAME("FpToInt"));
-        Value *retvalIntCheck = scaff_->builder_.CreateSIToFP(retvalInt, TyDouble, DBG_NAME("FpToIntCheck"));
-        Value *isIntCond = scaff_->builder_.CreateFCmpOEQ(candidate, retvalIntCheck, DBG_NAME("isIntCond"));
-        scaff_->builder_.CreateCondBr(isIntCond, zeroTestBB, resumeBB);
-
-        scaff_->builder_.SetInsertPoint(zeroTestBB);
-        Value *isZeroCond = scaff_->builder_.CreateICmpSGE(retvalInt, CoInt32(0), DBG_NAME("isZeroCond"));
-        scaff_->builder_.CreateBr(resumeBB);
-
-        scaff_->builder_.SetInsertPoint(resumeBB);
-        PHINode *retval = scaff_->builder_.CreatePHI(isIntCond->getType(), 2, DBG_NAME("retval"));
-        retval->addIncoming(isIntCond, intTestBB);
-        retval->addIncoming(isZeroCond, zeroTestBB);
-        return retval;
-    };
-    generateValidationDouble(parent, src, validator);
-    return retvalInt;
+    Value *accepted = generateValidationDouble(parent, src, [this](Value *candidate) {
+        return generateIsExactIntegerInRange(candidate, 0.0, kInt32MaxAsDouble);
+    });
+    return scaff_->builder_.CreateFPToSI(accepted, TyInt32, DBG_NAME("FpToInt"));
 }
 
 Value *Compiler::generateNotZeroInt32FromDouble(ASTNode *parent, Value *src)
 {
-    Value *retvalInt = nullptr;
-    auto validator = [this, &retvalInt](Value *candidate) {
-        BasicBlock *intTestBB = scaff_->builder_.GetInsertBlock();
-
-        BasicBlock *zeroTestBB = scaff_->createBasicBlock(DBG_NAME("zeroTestBB"));
-        BasicBlock *resumeBB = scaff_->createBasicBlock(DBG_NAME("resumeBB"));
-
-        retvalInt = scaff_->builder_.CreateFPToSI(candidate, TyInt32, DBG_NAME("FpToInt"));
-        Value *retvalIntCheck = scaff_->builder_.CreateSIToFP(retvalInt, TyDouble, DBG_NAME("FpToIntCheck"));
-        Value *isIntCond = scaff_->builder_.CreateFCmpOEQ(candidate, retvalIntCheck, DBG_NAME("isIntCond"));
-        scaff_->builder_.CreateCondBr(isIntCond, zeroTestBB, resumeBB);
-
-        scaff_->builder_.SetInsertPoint(zeroTestBB);
-        Value *isZeroCond = scaff_->builder_.CreateICmpNE(retvalInt, CoInt32(0), DBG_NAME("isZeroCond"));
-        scaff_->builder_.CreateBr(resumeBB);
-
-        scaff_->builder_.SetInsertPoint(resumeBB);
-        PHINode *retval = scaff_->builder_.CreatePHI(isIntCond->getType(), 2, DBG_NAME("retval"));
-        retval->addIncoming(isIntCond, intTestBB);
-        retval->addIncoming(isZeroCond, zeroTestBB);
-        return retval;
-    };
-    generateValidationDouble(parent, src, validator);
-    return retvalInt;
+    Value *accepted = generateValidationDouble(parent, src, [this](Value *candidate) {
+        Value *isInt = generateIsExactInt32(candidate, true);
+        Value *notZero = scaff_->builder_.CreateFCmpONE(candidate, CoDouble(0.0), DBG_NAME("notZero"));
+        return scaff_->builder_.CreateAnd(isInt, notZero, DBG_NAME("isNonzeroInt32"));
+    });
+    return scaff_->builder_.CreateFPToSI(accepted, TyInt32, DBG_NAME("FpToInt"));
 }
 
 Value *Compiler::generateNotZeroFromDouble(ASTNode *parent, Value *src)
@@ -438,12 +422,9 @@ Value *Compiler::genPower(const DatumPtr &node, TypeMask expected)
     scaff_->builder_.CreateCondBr(cond, notNegativeBB, isNegativeBB);
 
     scaff_->builder_.SetInsertPoint(isNegativeBB);
-    auto validator = [this](Value *candidate) {
-        Value *candidateInt = scaff_->builder_.CreateFPToSI(candidate, TyInt32, DBG_NAME("FpToInt"));
-        Value *candidateCheck = scaff_->builder_.CreateSIToFP(candidateInt, TyDouble, DBG_NAME("FpToIntCheck"));
-        return scaff_->builder_.CreateFCmpOEQ(candidate, candidateCheck, DBG_NAME("isValidTest"));
-    };
-    Value *num2Int = generateValidationDouble(node.astnodeValue(), num2, validator);
+    Value *num2Int = generateValidationDouble(node.astnodeValue(), num2, [this](Value *candidate) {
+        return generateIsExactInt32(candidate, true);
+    });
     BasicBlock *postNegativeBB = scaff_->builder_.GetInsertBlock();
     scaff_->builder_.CreateBr(notNegativeBB);
 
@@ -934,12 +915,13 @@ Value *Compiler::genRandom(const DatumPtr &node, TypeMask expected)
         return cs.ret(generateCallExtern(random1, PaInt32(iChildren[0])));
 
     Value *start = iChildren[0];
-    Value *endInt = nullptr;
-    auto validator = [this, start, &endInt](Value *candidate) {
-        endInt = scaff_->builder_.CreateFPToSI(candidate, TyInt32, DBG_NAME("FpToInt"));
-        return scaff_->builder_.CreateICmpSLT(start, endInt, DBG_NAME("isValidTest"));
-    };
-    generateValidationDouble(node.astnodeValue(), children[1], validator);
+    Value *acceptedEnd = generateValidationDouble(node.astnodeValue(), children[1], [this, start](Value *candidate) {
+        Value *isInt = generateIsExactInt32(candidate, true);
+        Value *startAsDouble = scaff_->builder_.CreateSIToFP(start, TyDouble, DBG_NAME("startAsDouble"));
+        Value *endGtStart = scaff_->builder_.CreateFCmpOGT(candidate, startAsDouble, DBG_NAME("endGtStart"));
+        return scaff_->builder_.CreateAnd(isInt, endGtStart, DBG_NAME("isValidTest"));
+    });
+    Value *endInt = scaff_->builder_.CreateFPToSI(acceptedEnd, TyInt32, DBG_NAME("FpToInt"));
 
     return cs.ret(generateCallExtern(random2, PaInt32(start), PaInt32(endInt)));
 }

@@ -991,15 +991,11 @@ Value *Compiler::genChar(const DatumPtr &node, TypeMask expected)
     Q_ASSERT(expected && TypeDatum);
     Value *c = generateChild(node.astnodeValue(), 0, TypeReal);
 
-    Value *retval = nullptr;
-    auto validator = [this, &retval](Value *candidate) {
-        retval = scaff_->builder_.CreateFPToUI(candidate, TyInt32, DBG_NAME("FpToInt"));
-        retval = scaff_->builder_.CreateAnd(retval, CoInt32(65535), DBG_NAME("intMask"));
-        Value *retvalCheck = scaff_->builder_.CreateUIToFP(retval, TyDouble, DBG_NAME("FpToIntCheck"));
-        return scaff_->builder_.CreateFCmpOEQ(candidate, retvalCheck, DBG_NAME("isValidTest"));
-    };
-    generateValidationDouble(node.astnodeValue(), c, validator);
-    return generateCallExtern(chr, PaAddr(scaff_->evaluator_), PaInt32(retval));
+    Value *accepted = generateValidationDouble(node.astnodeValue(), c, [this](Value *candidate) {
+        return generateIsExactIntegerInRange(candidate, 0.0, 65535.0);
+    });
+    Value *asInt = scaff_->builder_.CreateFPToUI(accepted, TyInt32, DBG_NAME("FpToInt"));
+    return generateCallExtern(chr, PaAddr(scaff_->evaluator_), PaInt32(asInt));
 }
 /***DOC MEMBER
 MEMBER thing1 thing2

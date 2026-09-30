@@ -1,0 +1,205 @@
+* Review of ~compiler_arithmetic.cpp~
+
+:PROPERTIES:
+:FILE: qlogo/compiler/compiler_arithmetic.cpp
+:REVIEWER: LLVM frontend notes
+:DATE: 2026-09-30
+:END:
+
+This is a review of the arithmetic (and related boolean / random / FORM) IR generators in the QLogo UCBLogo compiler.
+
+The file is in good shape as a Logo frontend: ~CallSite~, ERRACT via ~generateValidationDouble~, and the empty SUM / PRODUCT identities are the right shape. The problems that matter are LangRef poison, a few semantic bugs, and IR that fights mem2reg.
+
+Suggested implementation order is at the end.
+
+** Context
+
+- Logo values that look like numbers are LLVM ~double~. Integer primitives (BITAND, ASHIFT, RANDOM, …) convert through ~i32~.
+- Invalid numeric inputs are not compile-time errors; they go through ~generateValidationDouble~, which may run ERRACT and retry.
+- ~TypeMask~ is a bitfield (~TypeN~, ~TypeB~, ~TypeD~, ~TypeR~ and combinations). Assertions must use bitwise ~&~, not logical ~&&~.
+
+** Correctness
+
+*** DONE Range-check before every ~fptosi~ / ~fptoui~
+
+~generateIsExactIntegerInRange~ / ~generateIsExactInt32~ prove integer-ness with ~llvm.trunc~ and ordered range compares. ~fptosi~ / ~fptoui~ run only on the accept path of ~generateValidationDouble~.
+
+Same helper is used from:
+
+- ~generateInt32FromDouble~
+- ~generateNotNegativeInt32FromDouble~
+- ~generateNotZeroInt32FromDouble~
+- ~genPower~ (integer-exponent check on a negative base)
+- ~genRandom~ (two-arg ~start < end~ validator)
+- ~genRepeat~
+- ~genChar~ (unsigned ~0..65535~)
+
+The ~isSigned=false~ path of ~generateInt32FromDouble~ remains unused by callers, but it is now range-safe if used.
+
+*** TODO Shift amount ≥ 32 is poison
+
+~CreateShl~ / ~CreateAShr~ / ~CreateLShr~ are poison if the count is ≥ the bitwidth.
+
+- ~ASHIFT 1 32~ is undefined IR, not “shift to zero.”
+- ~LSHIFT 1 -32~ negates the count to 32, then poisons.
+- Negating ~INT_MIN~ wraps to itself, then the shift amount is ~0x80000000~ — also poison.
+
+Clamp or reject the count (~0..31~), or define Logo-level behavior (left → 0, arithmetic right → 0 or ~-1~ by sign).
+
+*** TODO ~srem~ of ~INT_MIN~ / ~-1~ is poison
+
+~genModulo~ and ~genRemainder~ emit ~CreateSRem~ with no guard. That pair is the signed-overflow case in the LangRef. Special-case it (result 0) or reject it with “doesn't like.”
+
+*** TODO ~MODULO~ is wrong when remainder is 0 and divisor is negative
+
+#+BEGIN_SRC C++
+r = CreateSRem(num, denom);
+// if r >= 0 && denom < 0  →  r += denom
+// if r <  0 && denom >= 0 →  r += denom
+#+END_SRC
+
+LLVM ~srem~ already has the sign of the dividend. The diamond adds ~denom~ whenever the signs differ.
+
+~MODULO 6 -3~: ~srem~ is 0, 0 is not ~< 0~, denom is negative → stores ~-3~. Logo modulo should stay 0.
+
+The adjustment is:
+
+#+BEGIN_SRC C++
+if (r != 0 && (r < 0) != (denom < 0))
+    r += denom;
+#+END_SRC
+
+A select/PHI is enough; the alloca is unnecessary (there is already a TODO in the source).
+
+*** TODO One-arg ~RANDOM~ accepts negatives
+
+UCBLogo: “with one input, … which must be a *positive* integer.”
+
+The generator only rejects zero via ~generateNotZeroFromDouble~. ~RANDOM -5~ becomes ~random1(-5)~. ~QRandomGenerator::bounded~ requires ~highest > 0~ and will abort.
+
+Use a single “positive ~i32~” validator (~integer && > 0~).
+
+The two-arg path also converts ~children[1]~ to ~i32~ in the loop, then ignores ~iChildren[1]~ and converts again inside the ~start < end~ validator.
+
+*** TODO Relational predicates are unordered
+
+#+BEGIN_SRC C++
+CreateFCmpULT(num1, num2, "lessp");   // also UGT, ULE, UGE
+#+END_SRC
+
+On ~fcmp~, *U is unordered, not unsigned*. ~ULT~ is true if either operand is NaN, so ~LESSP "NaN 3~ is true.
+
+Validation already uses ordered compares (~OEQ~, ~OGE~, ~OGT~). These should be ~OLT~ / ~OGT~ / ~OLE~ / ~OGE~ unless UCBLogo is explicitly NaN-true.
+
+*** TODO ~Q_ASSERT(expected && TypeReal)~ does not test the mask
+
+~TypeMask~ is a bitfield. ~expected && TypeReal~ is just “expected is nonzero.” Elsewhere the compiler already uses ~&~ correctly, e.g. ~expected & (TypeDatum | TypeBool | TypeNothing)~.
+
+Because of that, these copy-paste asserts never fire:
+
+- ~genBitnot~ asserts ~TypeBool~ but BITNOT produces ~TypeR~
+- ~genForm~ asserts ~TypeBool~ but FORM produces ~TypeD~
+- ~genRandom~ / ~genRerandom~ have no assert at all
+
+Use ~Q_ASSERT(expected & TypeReal)~ (or ~TypeDatum~ / ~TypeNothing~ as appropriate).
+
+** IR quality
+
+*** TODO Allocas as return slots instead of PHIs
+
+~genAshift~, ~genLshift~, and ~genModulo~ allocate, store on each edge, then load.
+
+Worse: the alloca is at the *current* insert point, not the entry block. ~mem2reg~ will not promote those, so ~REPEAT [ASHIFT ...]~ pays real stack traffic.
+
+This is the same CFG as a 2-incoming PHI:
+
+#+BEGIN_SRC C++
+auto *phi = builder.CreatePHI(TyInt32, 2, "shift");
+phi->addIncoming(lsResult, leftShiftBB);
+phi->addIncoming(rsResult, rightShiftBB);
+#+END_SRC
+
+Same for modulo: incoming ~r~ and ~r + denom~.
+
+*** TODO BITAND / BITOR fold the first input twice
+
+#+BEGIN_SRC C++
+retval = children[0];
+for (auto &child : children)
+    retval = CreateAnd(retval, child);   // first iter is and x, x
+#+END_SRC
+
+~BITXOR~ correctly starts at index 1. InstCombine will delete ~and x, x~, but it should not be emitted.
+
+*** TODO Libm calls instead of LLVM math intrinsics
+
+~sin~ / ~cos~ / ~atan~ / ~atan2~ / ~sqrt~ / ~pow~ / ~exp~ / ~log~ / ~log10~ / ~trunc~ / ~round~ all go through ~generateCallExternTyped~ as opaque ABI calls. ~llvm/IR/Intrinsics.h~ is already included and unused.
+
+~CreateIntrinsic(Intrinsic::sin, {TyDouble}, {theta})~ (and friends) lets InstCombine constant-fold, CSE, and lower per-target. Keep libc if exact libm errno / ~pow~ edge cases are required; otherwise prefer the intrinsics.
+
+Either way, mark the callee ~nounwind~ (and ~memory(none)~ where true) so the optimizer can hoist.
+
+Degree conversion (~PI/180~, ~180/PI~) is already a C++ constant, which is good.
+
+*** TODO ~genNot~ on ~i1~
+
+~CreateSub(CoBool(1), tf)~ works by wrap. The idiomatic form is ~CreateNot(tf)~ / ~CreateXor(tf, CoBool(1))~ — easier to read in IR dumps.
+
+*** TODO ~generateAndOr~ CFG vs ~generateImmediateReturn~
+
+~generateImmediateReturn~ is designed so *C++ generation continues* into ~throwAwayBB~. The type-error arm does ~return generateImmediateReturn(...)~, so:
+
+- ~CallSite::ret~ never runs (no TRACE end)
+- ~exitNoContBB~ / ~exitMayContBB~ / ~exitBB~ were created with ~BasicBlock::Create~ and never inserted, while earlier ~CondBr~s already target them
+
+If ~TypeDB~ can only produce ~i1~ or a pointer this is dead, but it is a verifier-shaped landmine. Follow the throw-away-block convention, or finish the PHI and ~cs.ret~ the error path.
+
+Block creation is also inconsistent: most of this file uses ~scaff_->createBasicBlock~ (inserted); ~genPower~ and ~generateAndOr~ mix in uninserted ~BasicBlock::Create~. Stick to the scaffold helper.
+
+** Structure / DRY
+
+*** Integer validators are three copies of the same CFG
+
+~generateInt32FromDouble~, ~generateNotNegativeInt32FromDouble~, and ~generateNotZeroInt32FromDouble~ differ only in the extra ~i32~ predicate. One helper with an optional extra predicate would also shrink ~genPower~, ~genForm~, ~genRerandom~, and ~genRandom~.
+
+~genRerandom~ / ~genForm~ already have a TODO: they do two ERRACT trips (non-negative, then integer) where one would do. ~generateNotNegativeInt32FromDouble~ exists and is used from communication, but not here.
+
+*** Near-duplicate generators
+
+| Pair                         | Difference              |
+|------------------------------+-------------------------|
+| ~genAshift~ / ~genLshift~    | ~AShr~ vs ~LShr~        |
+| ~genArctan~ / ~genRadarctan~ | degree conversion       |
+| ~genSin~ / ~genCos~          | ~sin~ vs ~cos~          |
+
+*** Debug names fight ~-show-ir~
+
+- ~isZeroTest~ is used for ≠ 0, ≥ 0, and > 0
+- ~isZeroCond~ in the “not negative” helper is actually ~>= 0~
+- ~genLessequalp~ still names the cmp ~lessp~
+- ~genPower~ names a double PHI ~num2Int~
+
+*** ISEQ / RSEQ docs at the bottom of the TU
+
+Those are library procedures with no generators here. The ~/***DOC~ blocks belong in the library source.
+
+** What is already right
+
+- Empty ~(SUM)~ / ~(PRODUCT)~ / ~(BITAND)~ / ~(BITOR)~ / ~(BITXOR)~ / ~(AND)~ / ~(OR)~ identities.
+- AND / OR delay list execution (~TypeDB~) so short-circuit matches the manual.
+- ~QUOTIENT~ with one input is a reciprocal; zero denominator is rejected with ordered ~fcmp~.
+- ~SQRT~ / ~LN~ / ~LOG10~ reject the domain before calling libm.
+- ~POWER~ requires an integer exponent only when the base is negative.
+- Two-input ~ARCTAN~ / ~RADARCTAN~ pass ~(y, x)~ to ~atan2~ in the documented order.
+- ~INT~ uses ~trunc~ (toward zero), matching the manual.
+- Signed conversion for bitwise ops is the right way to accept two's-complement patterns such as ~-1~ (all bits set), even though the BITAND doc says “unsigned.”
+
+** Suggested order of work
+
+1. [X] Range-check before every ~fptosi~ / ~fptoui~ (shared helper; also used from REPEAT and CHAR).
+2. Fix ~MODULO~ (~r != 0~ before adding the divisor) and clamp/reject shift counts.
+3. Make one-arg ~RANDOM~ require a positive integer.
+4. Switch relational ~fcmp~ to ordered predicates if that matches UCBLogo.
+5. Replace the shift/modulo allocas with PHIs.
+6. Use ~&~ in the ~Q_ASSERT~s and drop the BITNOT / FORM type mixups.
+7. Fold the integer validators and shift/trig duplicates; switch libm to intrinsics if desired.

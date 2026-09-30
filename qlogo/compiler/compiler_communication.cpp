@@ -840,7 +840,8 @@ COD***/
 Value *Compiler::genSetcursor(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeNothing);
-    AllocaInst *posAry = generateNumberAryFromDatum(node.astnodeValue(), node.astnodeValue()->childAtIndex(0), 2);
+    CallSite cs(this, node, TypeDatum);
+    AllocaInst *posAry = generateNumberAryFromDatum(node.astnodeValue(), cs.child(0), 2);
     Value *colPtr = scaff_->builder_.CreateConstInBoundsGEP1_32(TyDouble, posAry, 0, DBG_NAME("colPtr"));
     Value *rowPtr = scaff_->builder_.CreateConstInBoundsGEP1_32(TyDouble, posAry, 1, DBG_NAME("rowPtr"));
     Value *colD = scaff_->builder_.CreateLoad(TyDouble, colPtr, DBG_NAME("col"));
@@ -848,7 +849,7 @@ Value *Compiler::genSetcursor(const DatumPtr &node, TypeMask expected)
     Value *col = generateNotNegativeInt32FromDouble(node.astnodeValue(), colD);
     Value *row = generateNotNegativeInt32FromDouble(node.astnodeValue(), rowD);
     generateCallExtern(stdSetCursor, PaInt32(row), PaInt32(col));
-    return generateVoidRetval(node);
+    return cs.ret(generateVoidRetval(node));
 }
 
 /***DOC CURSOR

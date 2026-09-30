@@ -219,6 +219,13 @@ class Compiler
     // Emit return "doesn't like" error if conversion not possible.
     llvm::Value *generateDoubleFromDatum(ASTNode *parent, llvm::Value *src);
 
+    // Emit i1: src is a finite integer in [lo, hi] inclusive (ordered fcmp).
+    // Does not convert; llvm.trunc is used so the check itself cannot poison.
+    llvm::Value *generateIsExactIntegerInRange(llvm::Value *src, double lo, double hi);
+
+    // Emit i1: src is a finite integer that fits in signed or unsigned i32.
+    llvm::Value *generateIsExactInt32(llvm::Value *src, bool isSigned);
+
     // Convert a double to an int32.
     // Emit return "doesn't like" error if conversion not possible.
     llvm::Value *generateInt32FromDouble(ASTNode *parent, llvm::Value *src, bool isSigned);
@@ -303,11 +310,8 @@ class Compiler
     // Compile a list of ASTNode trees into a new CompiledText (JIT module) and store it on aList.
     std::shared_ptr<CompiledText> generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, List *aList);
 
-    // Generate a number array from a datum.
-    llvm::AllocaInst *generateNumberAryFromDatum(ASTNode *parent, llvm::Value *src);
-
-    // Generate a number array from a datum with specified size.
-    llvm::AllocaInst *generateNumberAryFromDatum(ASTNode *parent, const DatumPtr &srcPtr, int32_t size);
+    // Generate a number array from an already-evaluated datum.
+    llvm::AllocaInst *generateNumberAryFromDatum(ASTNode *parent, llvm::Value *src, int32_t size);
 
     // Get the tag name from a tag node.
     QString getTagNameFromNode(const DatumPtr &node) const;

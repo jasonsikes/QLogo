@@ -1100,11 +1100,10 @@ std::vector<Value *> Compiler::generateChildren(ASTNode *node, std::vector<TypeM
     return retval;
 }
 
-AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr &srcPtr, int32_t size)
+AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, Value *src, int32_t size)
 {
     Value *vSize = CoInt32(size);
     AllocaInst *ary = scaff_->builder_.CreateAlloca(TyDouble, vSize, DBG_NAME("ary"));
-    Value *list = generateChild(parent, srcPtr, TypeDatum);
 
     auto isNumberList = [this, vSize, ary](Value *candidate) {
         BasicBlock *notListBB = scaff_->createBasicBlock(DBG_NAME("notList"));
@@ -1146,7 +1145,7 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, const DatumPtr
         return ok;
     };
 
-    generateValidationDatum(parent, list, isNumberList);
+    generateValidationDatum(parent, src, isNumberList);
     return ary;
 }
 
