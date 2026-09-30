@@ -1,0 +1,3 @@
+trace [[and sqrt]]
+(and [sqrt -1] "true)
+show sqrt 9

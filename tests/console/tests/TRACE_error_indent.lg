@@ -1,0 +1,3 @@
+trace "sqrt
+sqrt -1
+show sqrt 4

@@ -1,0 +1,6 @@
+? ? ( and [sqrt -1] true )
+ ( sqrt -1 )
+and doesn't like sqrt doesn't like -1 as input as input
+? ( sqrt 9 )
+sqrt outputs 3
+3

@@ -7,12 +7,26 @@
 #include "runparser.h"
 #include <QObject>
 
-Evaluator::Evaluator(CallFrame *aOwningFrame, const DatumPtr &aList)
-    : owningFrame_(aOwningFrame), list_(aList), startingList_(aList)
+namespace {
+
+bool retvalIsError(Datum *retval)
 {
+    return retval != nullptr && retval->isa_ == Datum::typeError;
 }
 
-namespace {
+void unwindTraceDepth(Evaluator &e)
+{
+    Kernel::get().restoreTraceDepth(e.traceDepthAtEntry_);
+}
+
+/// Restore TRACE indent on error. On success, every begin in this list should have ended.
+void finishTraceDepth(Evaluator &e)
+{
+    if (retvalIsError(e.retvalToParent_))
+        unwindTraceDepth(e);
+    else
+        Q_ASSERT(Kernel::get().traceDepth() == e.traceDepthAtEntry_);
+}
 
 /// Free the LLVM coro frame if destroy is present, then drop the host handle.
 void destroyCoroFrame(LLVMCoroFrameHeader *&handle)
@@ -54,6 +68,14 @@ Datum *normalizeListToRun(Evaluator &e, Datum *&aList)
 
 } // namespace
 
+Evaluator::Evaluator(CallFrame *aOwningFrame, const DatumPtr &aList)
+    : owningFrame_(aOwningFrame)
+    , list_(aList)
+    , startingList_(aList)
+    , traceDepthAtEntry_(Kernel::get().traceDepth())
+{
+}
+
 Evaluator::~Evaluator()
 {
     // Suspended frames should not reach destruction (ECE only pops when complete).
@@ -61,6 +83,9 @@ Evaluator::~Evaluator()
     destroyCoroFrame(handle_);
     // Drop JIT ownership after the frame is gone (resume/destroy point into the module).
     compiledText_.reset();
+
+    if (Kernel::get().traceDepth() > traceDepthAtEntry_)
+        unwindTraceDepth(*this);
 
     // Release the objects in the release pool.
     releasePool_.clear();
@@ -74,6 +99,7 @@ bool Evaluator::exec(int32_t jumpLocation)
         if (list_.listValue() == EmptyList::instance())
         {
             retvalToParent_ = Datum::notADatum();
+            finishTraceDepth(*this);
             return true;
         }
         DatumPtr savedTagLocation = Compiler::get().tagLineLocation();
@@ -101,6 +127,7 @@ bool Evaluator::exec(int32_t jumpLocation)
             Compiler::get().setTagLineLocation(savedTagLocation);
             compiledText_.reset();
             retvalToParent_ = e;
+            finishTraceDepth(*this);
             return true;
         }
 
@@ -109,6 +136,7 @@ bool Evaluator::exec(int32_t jumpLocation)
         {
             compiledText_.reset();
             retvalToParent_ = FCError::fatalInternal();
+            finishTraceDepth(*this);
             return true;
         }
 
@@ -125,6 +153,7 @@ bool Evaluator::exec(int32_t jumpLocation)
     {
         destroyCoroFrame(handle_);
         compiledText_.reset();
+        finishTraceDepth(*this);
         return true;
     }
     return false;
@@ -148,6 +177,7 @@ void Evaluator::replaceRunningList(const DatumPtr &aList)
 {
     destroyCoroFrame(handle_);
     compiledText_.reset();
+    unwindTraceDepth(*this);
     list_ = aList;
     listToRunAfterCurrentList_ = DatumPtr();
     retvalToParent_ = Datum::notADatum();

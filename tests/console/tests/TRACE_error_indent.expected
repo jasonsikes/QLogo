@@ -1,0 +1,5 @@
+? ? ( sqrt -1 )
+sqrt doesn't like -1 as input
+? ( sqrt 4 )
+sqrt outputs 2
+2

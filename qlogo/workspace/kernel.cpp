@@ -1031,6 +1031,19 @@ const QSet<QString> &Kernel::nameList(NameMark mark, NameKind kind) const
     return namesFor(mark, kind);
 }
 
+void Kernel::decrementTraceDepth()
+{
+    Q_ASSERT(traceDepth_ > 0);
+    --traceDepth_;
+}
+
+void Kernel::restoreTraceDepth(int depth)
+{
+    Q_ASSERT(depth >= 0);
+    Q_ASSERT(depth <= traceDepth_);
+    traceDepth_ = depth;
+}
+
 void Kernel::setTest(bool isTrue)
 {
     currentCallFrame()->testState_ = isTrue ? 3 : 2;

@@ -702,8 +702,6 @@ QString traceArgToString(Datum *d, int printDepthLimit, int printWidthLimit)
     return d->toString(Datum::ToStringFlags_Show, printDepthLimit, printWidthLimit);
 }
 
-int traceDepth = 0;
-
 bool isTracedOutputValue(Datum *d)
 {
     return d != nullptr && (d->isa_ & Datum::typeDataMask) != 0;
@@ -724,7 +722,7 @@ EXPORTC void stdTraceBegin(addr_t eAddr, addr_t astnodeAddr, addr_t argsAddr, ui
     const int printDepthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintDepthLimit);
     const int printWidthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintWidthLimit);
 
-    QString output(traceDepth, QLatin1Char(' '));
+    QString output(Kernel::get().traceDepth(), QLatin1Char(' '));
     output = output % QLatin1String("( ") % node->nodeName_.toString();
     for (uint32_t i = 0; i < count; ++i)
         output = output % QLatin1Char(' ') % traceArgToString(args[i], printDepthLimit, printWidthLimit);
@@ -733,7 +731,7 @@ EXPORTC void stdTraceBegin(addr_t eAddr, addr_t astnodeAddr, addr_t argsAddr, ui
     try
     {
         StreamManager::get().print(output);
-        ++traceDepth;
+        Kernel::get().incrementTraceDepth();
     }
     catch (FCError *err)
     {
@@ -751,13 +749,13 @@ EXPORTC void stdTraceEnd(addr_t eAddr, addr_t astnodeAddr, addr_t resultAddr)
     Q_UNUSED(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *result = reinterpret_cast<Datum *>(resultAddr);
-    Q_ASSERT(traceDepth > 0);
-    --traceDepth;
+    Q_ASSERT(Kernel::get().traceDepth() > 0);
+    Kernel::get().decrementTraceDepth();
 
     const int printDepthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintDepthLimit);
     const int printWidthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintWidthLimit);
 
-    QString output(traceDepth, QLatin1Char(' '));
+    QString output(Kernel::get().traceDepth(), QLatin1Char(' '));
     output = output % node->nodeName_.toString();
     if (isTracedOutputValue(result))
         output = output % QObject::tr(" outputs ") % traceArgToString(result, printDepthLimit, printWidthLimit);

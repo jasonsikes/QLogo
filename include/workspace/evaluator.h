@@ -61,6 +61,11 @@ struct Evaluator
     /// Used by getLastEvaluationResult() after a coroutine suspend/resume for RUN/list call.
     DatumPtr retvalFromChild_;
 
+    /// @brief TRACE indent when this evaluator was created.
+    /// @details Restored if the list finishes with an error or its coroutine is
+    /// abandoned, so stdTraceBegin without stdTraceEnd cannot leak indent.
+    int traceDepthAtEntry_ = 0;
+
     /// @brief Temporary ownership of Datums created during this evaluation.
     /// @note Compiled code cannot hold DatumPtrs, so watch() stores one here. When
     ///  this Evaluator is destroyed, these DatumPtrs drop and any unreferenced Datum

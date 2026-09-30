@@ -306,6 +306,24 @@ class Kernel
     /// @note Iteration order is hash order and need not stay the same across runs.
     const QSet<QString> &nameList(NameMark mark, NameKind kind) const;
 
+    /// @brief Spaces printed before a TRACE line.
+    /// @details stdTraceBegin increments this after printing the enter line.
+    /// stdTraceEnd decrements it before printing the exit line. An Evaluator
+    /// snapshots the value on construction and restores it if that list
+    /// finishes with an error, so a skipped TRACE exit cannot leak indent.
+    int traceDepth() const { return traceDepth_; }
+
+    /// @brief Enter a traced call after its begin line has been printed.
+    void incrementTraceDepth() { ++traceDepth_; }
+
+    /// @brief Leave a traced call before its exit line is printed.
+    void decrementTraceDepth();
+
+    /// @brief Set TRACE indent back to a saved value.
+    /// @param depth A snapshot taken when an Evaluator started. Must be between
+    /// 0 and the current depth, inclusive.
+    void restoreTraceDepth(int depth);
+
     /// @brief Repcount is for use in looping functions (e.g. REPEAT)
     double repcount_ = -1;
 
@@ -396,6 +414,9 @@ class Kernel
     PropertyLists plists_;
 
   private:
+    /// @brief Nested TRACE indent. See traceDepth().
+    int traceDepth_ = 0;
+
     /// @brief The nine name sets, indexed by NameMark then NameKind.
     /// @details A name may be in more than one set.
     QList<QSet<QString>> nameSets_ =
