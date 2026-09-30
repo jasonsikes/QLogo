@@ -18,10 +18,10 @@
 #include "compiler.h"
 #include "compiler_internal.h"
 #include "datum_types.h"
-#include "workspace/exports.h"
 #include "sharedconstants.h"
-#include "workspace/kernel.h"
 #include "workspace/callframe.h"
+#include "workspace/exports.h"
+#include "workspace/kernel.h"
 
 using namespace llvm;
 using namespace llvm::orc;
@@ -98,20 +98,23 @@ Value *Compiler::generateNotZeroInt32FromDouble(ASTNode *parent, Value *src)
 
 Value *Compiler::generateNotZeroFromDouble(ASTNode *parent, Value *src)
 {
-    return generateValidationDouble(
-        parent, src, [this](Value *val) { return scaff_->builder_.CreateFCmpONE(val, CoDouble(0.0), DBG_NAME("isZeroTest")); });
+    return generateValidationDouble(parent, src, [this](Value *val) {
+        return scaff_->builder_.CreateFCmpONE(val, CoDouble(0.0), DBG_NAME("isZeroTest"));
+    });
 }
 
 Value *Compiler::generateNotNegativeFromDouble(ASTNode *parent, Value *src)
 {
-    return generateValidationDouble(
-        parent, src, [this](Value *val) { return scaff_->builder_.CreateFCmpOGE(val, CoDouble(0.0), DBG_NAME("isZeroTest")); });
+    return generateValidationDouble(parent, src, [this](Value *val) {
+        return scaff_->builder_.CreateFCmpOGE(val, CoDouble(0.0), DBG_NAME("isZeroTest"));
+    });
 }
 
 Value *Compiler::generateGTZeroFromDouble(ASTNode *parent, Value *src)
 {
-    return generateValidationDouble(
-        parent, src, [this](Value *val) { return scaff_->builder_.CreateFCmpOGT(val, CoDouble(0.0), DBG_NAME("isZeroTest")); });
+    return generateValidationDouble(parent, src, [this](Value *val) {
+        return scaff_->builder_.CreateFCmpOGT(val, CoDouble(0.0), DBG_NAME("isZeroTest"));
+    });
 }
 
 /***DOC ARCTAN
@@ -127,7 +130,8 @@ COD***/
 Value *Compiler::genArctan(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
+    CallSite cs(this, node, TypeReal);
+    const std::vector<Value *> &children = cs.children();
 
     Value *radToDeg = CoDouble(180 / PI);
     Value *retval;
@@ -139,10 +143,11 @@ Value *Compiler::genArctan(const DatumPtr &node, TypeMask expected)
     }
     else
     {
-        retval = generateCallExternTyped(static_cast<double (*)(double, double)>(atan2), "atan2", {PaDouble(children[1]), PaDouble(children[0])});
+        retval = generateCallExternTyped(
+            static_cast<double (*)(double, double)>(atan2), "atan2", {PaDouble(children[1]), PaDouble(children[0])});
     }
     retval = scaff_->builder_.CreateFMul(retval, radToDeg, DBG_NAME("theta"));
-    return retval;
+    return cs.ret(retval);
 }
 
 /***DOC ASHIFT
@@ -157,8 +162,8 @@ COD***/
 Value *Compiler::genAshift(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    Value *num1 = generateChild(node.astnodeValue(), 0, TypeReal);
-    Value *num2 = generateChild(node.astnodeValue(), 1, TypeReal);
+    CallSite cs(this, node, TypeReal, TypeReal);
+    auto [num1, num2] = cs.children();
 
     num1 = generateInt32FromDouble(node.astnodeValue(), num1, true);
     num2 = generateInt32FromDouble(node.astnodeValue(), num2, true);
@@ -184,7 +189,7 @@ Value *Compiler::genAshift(const DatumPtr &node, TypeMask expected)
 
     scaff_->builder_.SetInsertPoint(mergeBB);
     retval = scaff_->builder_.CreateLoad(TyInt32, retval, DBG_NAME("loadResult"));
-    return scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP"));
+    return cs.ret(scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP")));
 }
 
 /***DOC LSHIFT
@@ -199,8 +204,8 @@ COD***/
 Value *Compiler::genLshift(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    Value *num1 = generateChild(node.astnodeValue(), 0, TypeReal);
-    Value *num2 = generateChild(node.astnodeValue(), 1, TypeReal);
+    CallSite cs(this, node, TypeReal, TypeReal);
+    auto [num1, num2] = cs.children();
 
     num1 = generateInt32FromDouble(node.astnodeValue(), num1, true);
     num2 = generateInt32FromDouble(node.astnodeValue(), num2, true);
@@ -226,7 +231,7 @@ Value *Compiler::genLshift(const DatumPtr &node, TypeMask expected)
 
     scaff_->builder_.SetInsertPoint(mergeBB);
     retval = scaff_->builder_.CreateLoad(TyInt32, retval, DBG_NAME("loadResult"));
-    return scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP"));
+    return cs.ret(scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP")));
 }
 
 /***DOC BITAND
@@ -240,7 +245,8 @@ COD***/
 Value *Compiler::genBitand(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
+    CallSite cs(this, node, TypeReal);
+    std::vector<Value *> children = cs.children();
 
     for (auto &child : children)
     {
@@ -248,9 +254,7 @@ Value *Compiler::genBitand(const DatumPtr &node, TypeMask expected)
     }
 
     if (children.size() == 0)
-    {
-        return CoDouble(-1.0);
-    }
+        return cs.ret(CoDouble(-1.0));
 
     Value *retval = children[0];
 
@@ -258,7 +262,7 @@ Value *Compiler::genBitand(const DatumPtr &node, TypeMask expected)
     {
         retval = scaff_->builder_.CreateAnd(retval, child, DBG_NAME("BitAND"));
     }
-    return scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP"));
+    return cs.ret(scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP")));
 }
 
 /***DOC BITOR
@@ -272,7 +276,8 @@ COD***/
 Value *Compiler::genBitor(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
+    CallSite cs(this, node, TypeReal);
+    std::vector<Value *> children = cs.children();
 
     for (auto &child : children)
     {
@@ -280,9 +285,7 @@ Value *Compiler::genBitor(const DatumPtr &node, TypeMask expected)
     }
 
     if (children.size() == 0)
-    {
-        return CoDouble(0.0);
-    }
+        return cs.ret(CoDouble(0.0));
 
     Value *retval = children[0];
 
@@ -290,7 +293,7 @@ Value *Compiler::genBitor(const DatumPtr &node, TypeMask expected)
     {
         retval = scaff_->builder_.CreateOr(retval, child, DBG_NAME("BitOR"));
     }
-    return scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP"));
+    return cs.ret(scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP")));
 }
 
 /***DOC BITXOR
@@ -305,7 +308,8 @@ COD***/
 Value *Compiler::genBitxor(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
+    CallSite cs(this, node, TypeReal);
+    std::vector<Value *> children = cs.children();
 
     for (auto &child : children)
     {
@@ -313,9 +317,7 @@ Value *Compiler::genBitxor(const DatumPtr &node, TypeMask expected)
     }
 
     if (children.size() == 0)
-    {
-        return CoDouble(0.0);
-    }
+        return cs.ret(CoDouble(0.0));
 
     Value *retval = children[0];
 
@@ -323,7 +325,7 @@ Value *Compiler::genBitxor(const DatumPtr &node, TypeMask expected)
     {
         retval = scaff_->builder_.CreateXor(retval, children[i], DBG_NAME("BitXOR"));
     }
-    return scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP"));
+    return cs.ret(scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP")));
 }
 
 /***DOC BITNOT
@@ -336,12 +338,13 @@ COD***/
 Value *Compiler::genBitnot(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeBool);
-    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
+    CallSite cs(this, node, TypeReal);
+    Value *num = cs.child(0);
 
     num = generateInt32FromDouble(node.astnodeValue(), num, true);
     num = scaff_->builder_.CreateXor(num, CoInt32(-1), DBG_NAME("bitNOT"));
 
-    return scaff_->builder_.CreateSIToFP(num, TyDouble, DBG_NAME("IntToFP"));
+    return cs.ret(scaff_->builder_.CreateSIToFP(num, TyDouble, DBG_NAME("IntToFP")));
 }
 
 /***DOC MODULO
@@ -355,8 +358,8 @@ COD***/
 Value *Compiler::genModulo(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
-    Value *denom = generateChild(node.astnodeValue(), 1, TypeReal);
+    CallSite cs(this, node, TypeReal, TypeReal);
+    auto [num, denom] = cs.children();
 
     num = generateInt32FromDouble(node.astnodeValue(), num, true);
     denom = generateNotZeroInt32FromDouble(node.astnodeValue(), denom);
@@ -391,7 +394,7 @@ Value *Compiler::genModulo(const DatumPtr &node, TypeMask expected)
 
     // TODO: Do we need load and store here?
     r = scaff_->builder_.CreateLoad(TyInt32, retvalLoc);
-    return scaff_->builder_.CreateSIToFP(r, TyDouble, DBG_NAME("IntToFP"));
+    return cs.ret(scaff_->builder_.CreateSIToFP(r, TyDouble, DBG_NAME("IntToFP")));
 }
 
 /***DOC SQRT
@@ -404,10 +407,11 @@ COD***/
 Value *Compiler::genSqrt(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
+    CallSite cs(this, node, TypeReal);
+    Value *num = cs.child(0);
 
     num = generateNotNegativeFromDouble(node.astnodeValue(), num);
-    return generateCallExternTyped(static_cast<double (*)(double)>(sqrt), "sqrt", {PaDouble(num)});
+    return cs.ret(generateCallExternTyped(static_cast<double (*)(double)>(sqrt), "sqrt", {PaDouble(num)}));
 }
 
 /***DOC POWER
@@ -421,8 +425,8 @@ COD***/
 Value *Compiler::genPower(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    Value *num1 = generateChild(node.astnodeValue(), 0, TypeReal);
-    Value *num2 = generateChild(node.astnodeValue(), 1, TypeReal);
+    CallSite cs(this, node, TypeReal, TypeReal);
+    auto [num1, num2] = cs.children();
 
     BasicBlock *startBB = scaff_->builder_.GetInsertBlock();
     Function *theFunction = startBB->getParent();
@@ -448,7 +452,8 @@ Value *Compiler::genPower(const DatumPtr &node, TypeMask expected)
     PHINode *num2Phi = scaff_->builder_.CreatePHI(TyDouble, 2, DBG_NAME("num2Phi"));
     num2Phi->addIncoming(num2, startBB);
     num2Phi->addIncoming(num2Int, postNegativeBB);
-    return generateCallExternTyped(static_cast<double (*)(double, double)>(pow), "pow", {PaDouble(num1), PaDouble(num2Phi)});
+    return cs.ret(generateCallExternTyped(
+        static_cast<double (*)(double, double)>(pow), "pow", {PaDouble(num1), PaDouble(num2Phi)}));
 }
 
 /***DOC MINUS
@@ -469,9 +474,10 @@ COD***/
 Value *Compiler::genMinus(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
+    CallSite cs(this, node, TypeReal);
+    Value *num = cs.child(0);
 
-    return scaff_->builder_.CreateFNeg(num, DBG_NAME("negtmp"));
+    return cs.ret(scaff_->builder_.CreateFNeg(num, DBG_NAME("negtmp")));
 }
 
 /***DOC PRODUCT
@@ -486,11 +492,12 @@ COD***/
 Value *Compiler::genProduct(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
+    CallSite cs(this, node, TypeReal);
+    const std::vector<Value *> &children = cs.children();
 
     // No children? Return identity.
     if (children.size() == 0)
-        return CoDouble(1.0);
+        return cs.ret(CoDouble(1.0));
 
     // Loop through the children accumulating from the left.
     Value *accum = children[0];
@@ -498,7 +505,7 @@ Value *Compiler::genProduct(const DatumPtr &node, TypeMask expected)
     {
         accum = scaff_->builder_.CreateFMul(accum, children[i], DBG_NAME("multmp"));
     }
-    return accum;
+    return cs.ret(accum);
 }
 
 /***DOC SUM
@@ -565,7 +572,8 @@ COD***/
 Value *Compiler::genQuotient(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
+    CallSite cs(this, node, TypeReal);
+    const std::vector<Value *> &children = cs.children();
 
     Value *num;
     Value *denom;
@@ -583,7 +591,7 @@ Value *Compiler::genQuotient(const DatumPtr &node, TypeMask expected)
     }
 
     denom = generateNotZeroFromDouble(node.astnodeValue(), denom);
-    return scaff_->builder_.CreateFDiv(num, denom, DBG_NAME("quotmp"));
+    return cs.ret(scaff_->builder_.CreateFDiv(num, denom, DBG_NAME("quotmp")));
 }
 
 /***DOC REMAINDER
@@ -597,12 +605,13 @@ COD***/
 Value *Compiler::genRemainder(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
-    Value *denom = generateChild(node.astnodeValue(), 1, TypeReal);
+    CallSite cs(this, node, TypeReal, TypeReal);
+    auto [num, denom] = cs.children();
+
     num = generateInt32FromDouble(node.astnodeValue(), num, true);
     denom = generateNotZeroInt32FromDouble(node.astnodeValue(), denom);
     Value *retval = scaff_->builder_.CreateSRem(num, denom, DBG_NAME("remainder"));
-    return scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP"));
+    return cs.ret(scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP")));
 }
 
 /***DOC SIN
@@ -615,11 +624,12 @@ COD***/
 Value *Compiler::genSin(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
+    CallSite cs(this, node, TypeReal);
+    Value *num = cs.child(0);
 
     Value *degToRad = CoDouble(PI / 180);
     Value *theta = scaff_->builder_.CreateFMul(num, degToRad, DBG_NAME("theta"));
-    return generateCallExternTyped(static_cast<double (*)(double)>(sin), "sin", {PaDouble(theta)});
+    return cs.ret(generateCallExternTyped(static_cast<double (*)(double)>(sin), "sin", {PaDouble(theta)}));
 }
 
 /***DOC INT
@@ -635,8 +645,10 @@ COD***/
 Value *Compiler::genInt(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
-    return generateCallExternTyped(static_cast<double (*)(double)>(trunc), "trunc", {PaDouble(num)});
+    CallSite cs(this, node, TypeReal);
+    Value *num = cs.child(0);
+
+    return cs.ret(generateCallExternTyped(static_cast<double (*)(double)>(trunc), "trunc", {PaDouble(num)}));
 }
 
 /***DOC ROUND
@@ -649,8 +661,10 @@ COD***/
 Value *Compiler::genRound(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
-    return generateCallExternTyped(static_cast<double (*)(double)>(round), "round", {PaDouble(num)});
+    CallSite cs(this, node, TypeReal);
+    Value *num = cs.child(0);
+
+    return cs.ret(generateCallExternTyped(static_cast<double (*)(double)>(round), "round", {PaDouble(num)}));
 }
 
 /***DOC EXP
@@ -663,8 +677,10 @@ COD***/
 Value *Compiler::genExp(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
-    return generateCallExternTyped(static_cast<double (*)(double)>(exp), "exp", {PaDouble(num)});
+    CallSite cs(this, node, TypeReal);
+    Value *num = cs.child(0);
+
+    return cs.ret(generateCallExternTyped(static_cast<double (*)(double)>(exp), "exp", {PaDouble(num)}));
 }
 
 /***DOC LOG10
@@ -678,9 +694,11 @@ COD***/
 Value *Compiler::genLog10(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
+    CallSite cs(this, node, TypeReal);
+    Value *num = cs.child(0);
+
     num = generateGTZeroFromDouble(node.astnodeValue(), num);
-    return generateCallExternTyped(static_cast<double (*)(double)>(log10), "log10", {PaDouble(num)});
+    return cs.ret(generateCallExternTyped(static_cast<double (*)(double)>(log10), "log10", {PaDouble(num)}));
 }
 
 /***DOC LN
@@ -694,9 +712,11 @@ COD***/
 Value *Compiler::genLn(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
+    CallSite cs(this, node, TypeReal);
+    Value *num = cs.child(0);
+
     num = generateGTZeroFromDouble(node.astnodeValue(), num);
-    return generateCallExternTyped(static_cast<double (*)(double)>(log), "log", {PaDouble(num)});
+    return cs.ret(generateCallExternTyped(static_cast<double (*)(double)>(log), "log", {PaDouble(num)}));
 }
 
 /***DOC RADSIN
@@ -709,8 +729,10 @@ COD***/
 Value *Compiler::genRadsin(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
-    return generateCallExternTyped(static_cast<double (*)(double)>(sin), "sin", {PaDouble(num)});
+    CallSite cs(this, node, TypeReal);
+    Value *num = cs.child(0);
+
+    return cs.ret(generateCallExternTyped(static_cast<double (*)(double)>(sin), "sin", {PaDouble(num)}));
 }
 
 /***DOC RADCOS
@@ -723,8 +745,10 @@ COD***/
 Value *Compiler::genRadcos(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
-    return generateCallExternTyped(static_cast<double (*)(double)>(cos), "cos", {PaDouble(num)});
+    CallSite cs(this, node, TypeReal);
+    Value *num = cs.child(0);
+
+    return cs.ret(generateCallExternTyped(static_cast<double (*)(double)>(cos), "cos", {PaDouble(num)}));
 }
 
 /***DOC RADARCTAN
@@ -743,7 +767,8 @@ COD***/
 Value *Compiler::genRadarctan(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
+    CallSite cs(this, node, TypeReal);
+    const std::vector<Value *> &children = cs.children();
 
     Value *retval;
 
@@ -754,9 +779,10 @@ Value *Compiler::genRadarctan(const DatumPtr &node, TypeMask expected)
     }
     else
     {
-        retval = generateCallExternTyped(static_cast<double (*)(double, double)>(atan2), "atan2", {PaDouble(children[1]), PaDouble(children[0])});
+        retval = generateCallExternTyped(
+            static_cast<double (*)(double, double)>(atan2), "atan2", {PaDouble(children[1]), PaDouble(children[0])});
     }
-    return retval;
+    return cs.ret(retval);
 }
 
 /***DOC COS
@@ -769,11 +795,12 @@ COD***/
 Value *Compiler::genCos(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeReal);
-    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
+    CallSite cs(this, node, TypeReal);
+    Value *num = cs.child(0);
 
     Value *degToRad = CoDouble(PI / 180);
     Value *theta = scaff_->builder_.CreateFMul(num, degToRad, DBG_NAME("theta"));
-    return generateCallExternTyped(static_cast<double (*)(double)>(cos), "cos", {PaDouble(theta)});
+    return cs.ret(generateCallExternTyped(static_cast<double (*)(double)>(cos), "cos", {PaDouble(theta)}));
 }
 
 /***DOC LESSP LESS?
@@ -789,9 +816,10 @@ COD***/
 Value *Compiler::genLessp(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeBool);
-    Value *num1 = generateChild(node.astnodeValue(), 0, TypeReal);
-    Value *num2 = generateChild(node.astnodeValue(), 1, TypeReal);
-    return scaff_->builder_.CreateFCmpULT(num1, num2, DBG_NAME("lessp"));
+    CallSite cs(this, node, TypeReal, TypeReal);
+    auto [num1, num2] = cs.children();
+
+    return cs.ret(scaff_->builder_.CreateFCmpULT(num1, num2, DBG_NAME("lessp")));
 }
 
 /***DOC GREATERP GREATER?
@@ -807,9 +835,10 @@ COD***/
 Value *Compiler::genGreaterp(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeBool);
-    Value *num1 = generateChild(node.astnodeValue(), 0, TypeReal);
-    Value *num2 = generateChild(node.astnodeValue(), 1, TypeReal);
-    return scaff_->builder_.CreateFCmpUGT(num1, num2, DBG_NAME("greaterp"));
+    CallSite cs(this, node, TypeReal, TypeReal);
+    auto [num1, num2] = cs.children();
+
+    return cs.ret(scaff_->builder_.CreateFCmpUGT(num1, num2, DBG_NAME("greaterp")));
 }
 
 /***DOC LESSEQUALP LESSEQUAL?
@@ -825,9 +854,10 @@ COD***/
 Value *Compiler::genLessequalp(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeBool);
-    Value *num1 = generateChild(node.astnodeValue(), 0, TypeReal);
-    Value *num2 = generateChild(node.astnodeValue(), 1, TypeReal);
-    return scaff_->builder_.CreateFCmpULE(num1, num2, DBG_NAME("lessp"));
+    CallSite cs(this, node, TypeReal, TypeReal);
+    auto [num1, num2] = cs.children();
+
+    return cs.ret(scaff_->builder_.CreateFCmpULE(num1, num2, DBG_NAME("lessp")));
 }
 
 /***DOC GREATEREQUALP GREATEREQUAL?
@@ -843,9 +873,10 @@ COD***/
 Value *Compiler::genGreaterequalp(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeBool);
-    Value *num1 = generateChild(node.astnodeValue(), 0, TypeReal);
-    Value *num2 = generateChild(node.astnodeValue(), 1, TypeReal);
-    return scaff_->builder_.CreateFCmpUGE(num1, num2, DBG_NAME("greaterp"));
+    CallSite cs(this, node, TypeReal, TypeReal);
+    auto [num1, num2] = cs.children();
+
+    return cs.ret(scaff_->builder_.CreateFCmpUGE(num1, num2, DBG_NAME("greaterp")));
 }
 
 /***DOC NOT
@@ -861,8 +892,10 @@ COD***/
 Value *Compiler::genNot(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeBool);
-    Value *tf = generateChild(node.astnodeValue(), 0, TypeBool);
-    return scaff_->builder_.CreateSub(CoBool(1), tf, DBG_NAME("not"));
+    CallSite cs(this, node, TypeBool);
+    Value *tf = cs.child(0);
+
+    return cs.ret(scaff_->builder_.CreateSub(CoBool(1), tf, DBG_NAME("not")));
 }
 
 /***DOC RANDOM
@@ -882,7 +915,8 @@ COD***/
 // CMD RANDOM 1 1 2 r
 Value *Compiler::genRandom(const DatumPtr &node, TypeMask expected)
 {
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
+    CallSite cs(this, node, TypeReal);
+    std::vector<Value *> children = cs.children();
     std::vector<Value *> iChildren;
     iChildren.reserve(children.size());
 
@@ -897,9 +931,7 @@ Value *Compiler::genRandom(const DatumPtr &node, TypeMask expected)
     }
 
     if (children.size() == 1)
-    {
-        return generateCallExtern(random1, PaInt32(iChildren[0]));
-    }
+        return cs.ret(generateCallExtern(random1, PaInt32(iChildren[0])));
 
     Value *start = iChildren[0];
     Value *endInt = nullptr;
@@ -909,7 +941,7 @@ Value *Compiler::genRandom(const DatumPtr &node, TypeMask expected)
     };
     generateValidationDouble(node.astnodeValue(), children[1], validator);
 
-    return generateCallExtern(random2, PaInt32(start), PaInt32(endInt));
+    return cs.ret(generateCallExtern(random2, PaInt32(start), PaInt32(endInt)));
 }
 
 /***DOC RERANDOM
@@ -928,7 +960,8 @@ COD***/
 // CMD RERANDOM 0 0 1 n
 Value *Compiler::genRerandom(const DatumPtr &node, TypeMask expected)
 {
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeReal);
+    CallSite cs(this, node, TypeReal);
+    const std::vector<Value *> &children = cs.children();
 
     if (children.size() == 1)
     {
@@ -940,7 +973,7 @@ Value *Compiler::genRerandom(const DatumPtr &node, TypeMask expected)
     {
         generateCallExtern(setRandom);
     }
-    return generateVoidRetval(node);
+    return cs.ret(generateVoidRetval(node));
 }
 
 /***DOC FORM
@@ -958,16 +991,16 @@ COD***/
 Value *Compiler::genForm(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeBool);
-    Value *num = generateChild(node.astnodeValue(), 0, TypeReal);
-    Value *width = generateChild(node.astnodeValue(), 1, TypeReal);
-    Value *precision = generateChild(node.astnodeValue(), 2, TypeReal);
+    CallSite cs(this, node, TypeReal, TypeReal, TypeReal);
+    auto [num, width, precision] = cs.children();
+
     width = generateInt32FromDouble(node.astnodeValue(), width, true);
 
     // TODO: Combine into one validation function.
     precision = generateNotNegativeFromDouble(node.astnodeValue(), precision);
     precision = generateInt32FromDouble(node.astnodeValue(), precision, true);
-    return generateCallExtern(
-        getFormForNumber, PaAddr(scaff_->evaluator_), PaDouble(num), PaInt32(width), PaInt32(precision));
+    return cs.ret(generateCallExtern(
+        getFormForNumber, PaAddr(scaff_->evaluator_), PaDouble(num), PaInt32(width), PaInt32(precision)));
 }
 
 // Add infix entries to table. This will cause an error if they are used as
@@ -1041,11 +1074,12 @@ Value *Compiler::generateAndOr(const DatumPtr &node, TypeMask expected, bool isA
     Function *theFunction = scaff_->builder_.GetInsertBlock()->getParent();
 
     Q_ASSERT(expected && TypeBool);
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeDB);
+    CallSite cs(this, node, TypeDB);
+    const std::vector<Value *> &children = cs.children();
 
     // If there are no children, simply return isAnd
     if (children.size() == 0)
-        return CoBool(isAnd);
+        return cs.ret(CoBool(isAnd));
 
     BasicBlock *continueBB; // Where to go if a test results in mayContinue
     BasicBlock *exitNoContBB = BasicBlock::Create(*scaff_->theContext_, DBG_NAME("exitNoCont"));
@@ -1094,7 +1128,7 @@ Value *Compiler::generateAndOr(const DatumPtr &node, TypeMask expected, bool isA
     PHINode *phiNode = scaff_->builder_.CreatePHI(TyBool, 2, DBG_NAME("retval"));
     phiNode->addIncoming(CoBool(!isAnd), exitNoContBB);
     phiNode->addIncoming(CoBool(isAnd), exitMayContBB);
-    return phiNode;
+    return cs.ret(phiNode);
 }
 
 Value *Compiler::generateListExecIfList(ASTNode *parent, Value *c)
@@ -1117,8 +1151,8 @@ Value *Compiler::generateListExecIfList(ASTNode *parent, Value *c)
     Value *listRunResult = generateCallList(c, TypeDatum);
     BasicBlock *listRunResultBB = scaff_->builder_.GetInsertBlock();
     Value *listRunResultType = generateGetDatumIsa(listRunResult);
-    Value *listRunResultCond =
-        scaff_->builder_.CreateICmpEQ(listRunResultType, CoInt32(Datum::typeASTNode), DBG_NAME("listRunResultTypeTest"));
+    Value *listRunResultCond = scaff_->builder_.CreateICmpEQ(
+        listRunResultType, CoInt32(Datum::typeASTNode), DBG_NAME("listRunResultTypeTest"));
     scaff_->builder_.CreateCondBr(listRunResultCond, isNothingBB, notListBB);
 
     // List execution resulted in nothing. Run ERRACT; a datum from it stands in for the list.
@@ -1139,25 +1173,25 @@ Value *Compiler::generateListExecIfList(ASTNode *parent, Value *c)
 /***DOC ISEQ
 ISEQ from to						(library procedure)
 
-	outputs a list of the integers from FROM to TO, inclusive.
+    outputs a list of the integers from FROM to TO, inclusive.
 
-		? show iseq 3 7
-		[3 4 5 6 7]
-		? show iseq 7 3
-		[7 6 5 4 3]
+        ? show iseq 3 7
+        [3 4 5 6 7]
+        ? show iseq 7 3
+        [7 6 5 4 3]
 
 COD***/
 
 /***DOC RSEQ
 RSEQ from to count					(library procedure)
 
-	outputs a list of COUNT equally spaced rational numbers
-	between FROM and TO, inclusive.
+    outputs a list of COUNT equally spaced rational numbers
+    between FROM and TO, inclusive.
 
-		? show rseq 3 5 9
-		[3 3.25 3.5 3.75 4 4.25 4.5 4.75 5]
-		? show rseq 3 5 5
-		[3 3.5 4 4.5 5]
+        ? show rseq 3 5 9
+        [3 3.25 3.5 3.75 4 4.25 4.5 4.75 5]
+        ? show rseq 3 5 5
+        [3 3.5 4 4.5 5]
 
 
 COD***/
