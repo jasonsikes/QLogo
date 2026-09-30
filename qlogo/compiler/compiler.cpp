@@ -483,6 +483,7 @@ QList<QList<DatumPtr>> Compiler::groupConsecutiveExpressions(const QList<DatumPt
 std::shared_ptr<CompiledText> Compiler::compiledTextFromList(List *aList)
 {
     if (aList->compileTimeStamp <= Procedures::get().timeOfLastProcedureCreation() ||
+        aList->compileTimeStamp <= Kernel::get().timeOfLastTraceChange() ||
         !aList->compiledText_ || !aList->compiledText_->functionPtr_)
     {
         QList<DatumPtr> astFlatList = Treeifier::astFromList(aList);
@@ -1034,6 +1035,48 @@ AllocaInst *Compiler::generateAllocaAry(const std::vector<llvm::Value *> &values
             aryPtr = scaff_->builder_.CreatePtrAdd(aryPtr, offset, name + "Incr");
     }
     return retval;
+}
+
+Value *Compiler::generateDatumForTrace(Value *value)
+{
+    if (value->getType()->isDoubleTy())
+        return generateWordFromDouble(value);
+    if (value->getType()->isIntegerTy(1))
+        return generateWordFromBool(value);
+    Q_ASSERT(value->getType()->isPointerTy());
+    return value;
+}
+
+void Compiler::generateTraceBegin(ASTNode *node, const std::vector<Value *> &children)
+{
+    const QString key = node->nodeName_.toString(Datum::ToStringFlags_Key);
+    if (!Kernel::get().containsName(Kernel::NameMark::Traced, Kernel::NameKind::Procedures, key))
+        return;
+
+    std::vector<Value *> boxed;
+    boxed.reserve(children.size());
+    for (Value *child : children)
+        boxed.push_back(generateDatumForTrace(child));
+
+    Value *ary = boxed.empty() ? static_cast<Value *>(CoAddr(0))
+                               : static_cast<Value *>(generateAllocaAry(boxed, DBG_NAME("traceAry")));
+    generateCallExtern(stdTraceBegin,
+                       PaAddr(scaff_->evaluator_),
+                       PaAddr(CoAddr(node)),
+                       PaAddr(ary),
+                       PaInt32(CoInt32(static_cast<int32_t>(boxed.size()))));
+}
+
+void Compiler::generateTraceEnd(ASTNode *node, Value *result)
+{
+    const QString key = node->nodeName_.toString(Datum::ToStringFlags_Key);
+    if (!Kernel::get().containsName(Kernel::NameMark::Traced, Kernel::NameKind::Procedures, key))
+        return;
+
+    generateCallExtern(stdTraceEnd,
+                       PaAddr(scaff_->evaluator_),
+                       PaAddr(CoAddr(node)),
+                       PaAddr(generateDatumForTrace(result)));
 }
 
 std::vector<Value *> Compiler::generateChildren(ASTNode *node, std::vector<TypeMask> expectedAry)

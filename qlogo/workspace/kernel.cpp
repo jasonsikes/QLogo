@@ -35,6 +35,7 @@
 #include "workspace/turtle.h"
 #include <QColor>
 #include <QCoreApplication> // quit()
+#include <QDateTime>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
@@ -1029,6 +1030,11 @@ bool Kernel::containsName(NameMark mark, NameKind kind, const QString &name) con
 const QSet<QString> &Kernel::nameList(NameMark mark, NameKind kind) const
 {
     return namesFor(mark, kind);
+}
+
+void Kernel::noteTraceChange()
+{
+    lastTraceChangeTimestamp_ = QDateTime::currentMSecsSinceEpoch();
 }
 
 void Kernel::setTest(bool isTrue)

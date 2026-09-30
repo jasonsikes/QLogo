@@ -97,6 +97,15 @@ class Compiler
     // Generate code to save a vector of values to an alloca array.
     llvm::AllocaInst *generateAllocaAry(const std::vector<llvm::Value *> &values, const std::string &name = "");
 
+    // Box an LLVM double/bool/datum as a Datum pointer for TRACE messages.
+    llvm::Value *generateDatumForTrace(llvm::Value *value);
+
+    // If the node's name is traced, emit stdTraceBegin with the evaluated inputs.
+    void generateTraceBegin(ASTNode *node, const std::vector<llvm::Value *> &children);
+
+    // If the node's name is traced, emit stdTraceEnd with the call result.
+    void generateTraceEnd(ASTNode *node, llvm::Value *result);
+
     // Glue to cast child's produced type to the type the parent expects.
     llvm::Value *generateCast(llvm::Value *child, ASTNode *parent, const DatumPtr &, TypeMask expected);
 
@@ -434,12 +443,14 @@ class CallSite
     {
         Q_ASSERT(compiler_ != nullptr);
         children_ = compiler_->generateChildren(node_.astnodeValue(), expectedAll);
+        compiler_->generateTraceBegin(node_.astnodeValue(), children_);
     }
 
     void initEach(const std::vector<TypeMask> &expected)
     {
         Q_ASSERT(compiler_ != nullptr);
         children_ = compiler_->generateChildren(node_.astnodeValue(), expected);
+        compiler_->generateTraceBegin(node_.astnodeValue(), children_);
     }
 
 public:
@@ -520,6 +531,7 @@ public:
     llvm::Value *ret(llvm::Value *value)
     {
         Q_ASSERT(value != nullptr);
+        compiler_->generateTraceEnd(node_.astnodeValue(), value);
         return value;
     }
 };

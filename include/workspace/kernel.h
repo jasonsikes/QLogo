@@ -306,6 +306,15 @@ class Kernel
     /// @note Iteration order is hash order and need not stay the same across runs.
     const QSet<QString> &nameList(NameMark mark, NameKind kind) const;
 
+    /// @brief Timestamp of the last TRACE or UNTRACE. Cached JIT is dropped when older.
+    qint64 timeOfLastTraceChange() const
+    {
+        return lastTraceChangeTimestamp_;
+    }
+
+    /// @brief Record that traced names changed so lists recompile.
+    void noteTraceChange();
+
     /// @brief Repcount is for use in looping functions (e.g. REPEAT)
     double repcount_ = -1;
 
@@ -396,6 +405,9 @@ class Kernel
     PropertyLists plists_;
 
   private:
+    /// @brief TRACE/UNTRACE time. Lists compiled before this are recompiled.
+    qint64 lastTraceChangeTimestamp_ = 0;
+
     /// @brief The nine name sets, indexed by NameMark then NameKind.
     /// @details A name may be in more than one set.
     QList<QSet<QString>> nameSets_ =

@@ -19,13 +19,16 @@
 #include "workspace/kernel.h"
 #include "workspace/library.h"
 #include "workspace/procedures.h"
+#include "workspace/specialvars.h"
 #include "astnode.h"
 #include "flowcontrol.h"
 #include "compiler_types.h"
 #include "workspace/callframe.h"
 #include "interface/streammanager.h"
 
+#include <QDebug>
 #include <QObject>
+#include <QStringBuilder>
 #include <QStringList>
 
 /// @brief input a procedure using the system read stream.
@@ -503,6 +506,8 @@ addr_t markWorkspace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr, Kern
     try
     {
         markContents(mark, node->nodeName_, contents, clear);
+        if (mark == Kernel::NameMark::Traced)
+            Kernel::get().noteTraceChange();
     }
     catch (FCError *err)
     {
@@ -660,6 +665,114 @@ EXPORTC addr_t stdBury(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 EXPORTC addr_t stdTrace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 {
     return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Traced, false);
+}
+
+namespace
+{
+
+int printLimitFromSpecialVar(SpecialVars::Id id)
+{
+    DatumPtr val = Kernel::get().datumForName(SpecialVars::name(id));
+    if (!val.isWord())
+        return -1;
+    Word *w = val.wordValue();
+    w->numberValue();
+    if (!w->numberIsValid)
+        return -1;
+    return static_cast<int>(w->numberValue());
+}
+
+QString traceArgToString(Datum *d, int printDepthLimit, int printWidthLimit)
+{
+    if (d->isWord())
+    {
+        Word *w = d->wordValue();
+        w->numberValue();
+        if (w->numberIsValid)
+            return w->toString(Datum::ToStringFlags_None, printDepthLimit, printWidthLimit);
+        w->boolValue();
+        if (w->boolIsValid)
+            return w->toString(Datum::ToStringFlags_None, printDepthLimit, printWidthLimit);
+        Datum::ToStringFlags flags = Datum::ToStringFlags_Source;
+        if (Kernel::get().specialVarIsTrue(SpecialVars::Id::FullPrintP))
+            flags = static_cast<Datum::ToStringFlags>(flags | Datum::ToStringFlags_FullPrint);
+        return w->toString(flags, printDepthLimit, printWidthLimit);
+    }
+    return d->toString(Datum::ToStringFlags_Show, printDepthLimit, printWidthLimit);
+}
+
+int traceDepth = 0;
+
+bool isTracedOutputValue(Datum *d)
+{
+    return d != nullptr && (d->isa_ & Datum::typeDataMask) != 0;
+}
+
+} // namespace
+
+/// Print a TRACE begin line: indent, then `( name input1 input2 ... )`.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the traced call's ASTNode (provides the name)
+/// @param argsAddr an array of Datum pointers, the evaluated inputs
+/// @param count the number of inputs
+EXPORTC void stdTraceBegin(addr_t eAddr, addr_t astnodeAddr, addr_t argsAddr, uint32_t count)
+{
+    Q_UNUSED(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto **args = reinterpret_cast<Datum **>(argsAddr);
+    const int printDepthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintDepthLimit);
+    const int printWidthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintWidthLimit);
+
+    QString output(traceDepth, QLatin1Char(' '));
+    output = output % QLatin1String("( ") % node->nodeName_.toString();
+    for (uint32_t i = 0; i < count; ++i)
+        output = output % QLatin1Char(' ') % traceArgToString(args[i], printDepthLimit, printWidthLimit);
+    output = output % QLatin1String(" )\n");
+
+    try
+    {
+        StreamManager::get().print(output);
+        ++traceDepth;
+    }
+    catch (FCError *err)
+    {
+        DatumPtr owned(err);
+        qWarning() << owned.toString();
+    }
+}
+
+/// Print a TRACE exit line: indent, then `name outputs value` or `name stops`.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the traced call's ASTNode (provides the name)
+/// @param resultAddr the output Datum, or null / non-data if the call stopped
+EXPORTC void stdTraceEnd(addr_t eAddr, addr_t astnodeAddr, addr_t resultAddr)
+{
+    Q_UNUSED(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *result = reinterpret_cast<Datum *>(resultAddr);
+    Q_ASSERT(traceDepth > 0);
+    --traceDepth;
+
+    const int printDepthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintDepthLimit);
+    const int printWidthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintWidthLimit);
+
+    QString output(traceDepth, QLatin1Char(' '));
+    output = output % node->nodeName_.toString();
+    if (isTracedOutputValue(result))
+        output = output % QObject::tr(" outputs ") % traceArgToString(result, printDepthLimit, printWidthLimit);
+    else
+        output = output % QObject::tr(" stops");
+    output = output % QLatin1Char('\n');
+
+    try
+    {
+        StreamManager::get().print(output);
+    }
+    catch (FCError *err)
+    {
+        DatumPtr owned(err);
+        qWarning() << owned.toString();
+    }
 }
 
 /// STEP: mark the named procedures, variables, and property lists as stepped.
