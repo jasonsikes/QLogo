@@ -80,6 +80,43 @@ Value *Compiler::generateNotZeroInt32FromDouble(ASTNode *parent, Value *src)
     return scaff_->builder_.CreateFPToSI(accepted, TyInt32, DBG_NAME("FpToInt"));
 }
 
+Value *Compiler::generateI32Shift(Value *value, Value *count, bool arithmetic)
+{
+    Value *isLeft = scaff_->builder_.CreateICmpSGE(count, CoInt32(0), DBG_NAME("isLeft"));
+    // Wrapping negate: INT_MIN stays INT_MIN, then tooBig catches it as unsigned 2^31.
+    Value *negCount = scaff_->builder_.CreateSub(CoInt32(0), count, DBG_NAME("negCount"));
+    Value *absCount = scaff_->builder_.CreateSelect(isLeft, count, negCount, DBG_NAME("absCount"));
+    Value *tooBig = scaff_->builder_.CreateICmpUGE(absCount, CoInt32(32), DBG_NAME("tooBig"));
+    // Shift amount is always 0..31, so shl/ashr/lshr are defined.
+    Value *safeAmt = scaff_->builder_.CreateSelect(tooBig, CoInt32(31), absCount, DBG_NAME("safeAmt"));
+
+    Value *left = scaff_->builder_.CreateShl(value, safeAmt, DBG_NAME("leftShift"));
+    left = scaff_->builder_.CreateSelect(tooBig, CoInt32(0), left, DBG_NAME("leftSat"));
+
+    Value *right;
+    if (arithmetic)
+    {
+        // ashr by 31 already sign-fills; no extra select.
+        right = scaff_->builder_.CreateAShr(value, safeAmt, DBG_NAME("rightShift"));
+    }
+    else
+    {
+        right = scaff_->builder_.CreateLShr(value, safeAmt, DBG_NAME("rightShift"));
+        right = scaff_->builder_.CreateSelect(tooBig, CoInt32(0), right, DBG_NAME("rightSat"));
+    }
+    return scaff_->builder_.CreateSelect(isLeft, left, right, DBG_NAME("shiftResult"));
+}
+
+Value *Compiler::generateI32SRem(Value *num, Value *denom)
+{
+    Value *isMin = scaff_->builder_.CreateICmpEQ(num, CoInt32(0x80000000), DBG_NAME("isIntMin"));
+    Value *isNegOne = scaff_->builder_.CreateICmpEQ(denom, CoInt32(-1), DBG_NAME("isNegOne"));
+    Value *overflow = scaff_->builder_.CreateAnd(isMin, isNegOne, DBG_NAME("sremOverflow"));
+    // srem INT_MIN, 1 == 0, which is the mathematical remainder of INT_MIN / -1.
+    Value *safeDenom = scaff_->builder_.CreateSelect(overflow, CoInt32(1), denom, DBG_NAME("safeDenom"));
+    return scaff_->builder_.CreateSRem(num, safeDenom, DBG_NAME("remainder"));
+}
+
 Value *Compiler::generateNotZeroFromDouble(ASTNode *parent, Value *src)
 {
     return generateValidationDouble(parent, src, [this](Value *val) {
@@ -151,28 +188,7 @@ Value *Compiler::genAshift(const DatumPtr &node, TypeMask expected)
 
     num1 = generateInt32FromDouble(node.astnodeValue(), num1, true);
     num2 = generateInt32FromDouble(node.astnodeValue(), num2, true);
-    Value *retval = scaff_->builder_.CreateAlloca(TyInt32, CoInt32(1), DBG_NAME("ashiftAlloca"));
-
-    BasicBlock *leftShiftBB = scaff_->createBasicBlock(DBG_NAME("leftShiftBB"));
-    BasicBlock *rightShiftBB = scaff_->createBasicBlock(DBG_NAME("rightShiftBB"));
-    BasicBlock *mergeBB = scaff_->createBasicBlock(DBG_NAME("shiftCont"));
-
-    Value *cond = scaff_->builder_.CreateICmpSGE(num2, CoInt32(0), DBG_NAME("isGE0"));
-    scaff_->builder_.CreateCondBr(cond, leftShiftBB, rightShiftBB);
-
-    scaff_->builder_.SetInsertPoint(leftShiftBB);
-    Value *lsResult = scaff_->builder_.CreateShl(num1, num2, DBG_NAME("leftShift"));
-    scaff_->builder_.CreateStore(lsResult, retval);
-    scaff_->builder_.CreateBr(mergeBB);
-
-    scaff_->builder_.SetInsertPoint(rightShiftBB);
-    num2 = scaff_->builder_.CreateSub(CoInt32(0), num2, DBG_NAME("negNum2"));
-    Value *rsResult = scaff_->builder_.CreateAShr(num1, num2, DBG_NAME("rightShift"));
-    scaff_->builder_.CreateStore(rsResult, retval);
-    scaff_->builder_.CreateBr(mergeBB);
-
-    scaff_->builder_.SetInsertPoint(mergeBB);
-    retval = scaff_->builder_.CreateLoad(TyInt32, retval, DBG_NAME("loadResult"));
+    Value *retval = generateI32Shift(num1, num2, true);
     return cs.ret(scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP")));
 }
 
@@ -193,28 +209,7 @@ Value *Compiler::genLshift(const DatumPtr &node, TypeMask expected)
 
     num1 = generateInt32FromDouble(node.astnodeValue(), num1, true);
     num2 = generateInt32FromDouble(node.astnodeValue(), num2, true);
-    Value *retval = scaff_->builder_.CreateAlloca(TyInt32, CoInt32(1), DBG_NAME("lshiftAlloca"));
-
-    BasicBlock *leftShiftBB = scaff_->createBasicBlock(DBG_NAME("leftShiftBB"));
-    BasicBlock *rightShiftBB = scaff_->createBasicBlock(DBG_NAME("rightShiftBB"));
-    BasicBlock *mergeBB = scaff_->createBasicBlock(DBG_NAME("shiftCont"));
-
-    Value *cond = scaff_->builder_.CreateICmpSGE(num2, CoInt32(0), DBG_NAME("isGE0"));
-    scaff_->builder_.CreateCondBr(cond, leftShiftBB, rightShiftBB);
-
-    scaff_->builder_.SetInsertPoint(leftShiftBB);
-    Value *lsResult = scaff_->builder_.CreateShl(num1, num2, DBG_NAME("leftShift"));
-    scaff_->builder_.CreateStore(lsResult, retval);
-    scaff_->builder_.CreateBr(mergeBB);
-
-    scaff_->builder_.SetInsertPoint(rightShiftBB);
-    num2 = scaff_->builder_.CreateSub(CoInt32(0), num2, DBG_NAME("negNum2"));
-    Value *rsResult = scaff_->builder_.CreateLShr(num1, num2, DBG_NAME("rightShift"));
-    scaff_->builder_.CreateStore(rsResult, retval);
-    scaff_->builder_.CreateBr(mergeBB);
-
-    scaff_->builder_.SetInsertPoint(mergeBB);
-    retval = scaff_->builder_.CreateLoad(TyInt32, retval, DBG_NAME("loadResult"));
+    Value *retval = generateI32Shift(num1, num2, false);
     return cs.ret(scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP")));
 }
 
@@ -348,36 +343,14 @@ Value *Compiler::genModulo(const DatumPtr &node, TypeMask expected)
     num = generateInt32FromDouble(node.astnodeValue(), num, true);
     denom = generateNotZeroInt32FromDouble(node.astnodeValue(), denom);
 
-    Value *retvalLoc = scaff_->builder_.CreateAlloca(TyInt32, CoInt32(1), DBG_NAME("retvalLoc"));
-
-    BasicBlock *pos1BB = scaff_->createBasicBlock(DBG_NAME("pos1BB"));
-    BasicBlock *neg1BB = scaff_->createBasicBlock(DBG_NAME("neg1BB"));
-    BasicBlock *addbBB = scaff_->createBasicBlock(DBG_NAME("addbBB"));
-    BasicBlock *contBB = scaff_->createBasicBlock(DBG_NAME("contBB"));
-
-    Value *r = scaff_->builder_.CreateSRem(num, denom, DBG_NAME("remainder"));
-    scaff_->builder_.CreateStore(r, retvalLoc);
-
-    Value *c1 = scaff_->builder_.CreateICmpSLT(r, CoInt32(0), DBG_NAME("cond1"));
-    scaff_->builder_.CreateCondBr(c1, neg1BB, pos1BB);
-
-    scaff_->builder_.SetInsertPoint(pos1BB);
-    Value *c2 = scaff_->builder_.CreateICmpSLT(denom, CoInt32(0), DBG_NAME("cond2"));
-    scaff_->builder_.CreateCondBr(c2, addbBB, contBB);
-
-    scaff_->builder_.SetInsertPoint(neg1BB);
-    Value *c3 = scaff_->builder_.CreateICmpSLT(denom, CoInt32(0), DBG_NAME("cond3"));
-    scaff_->builder_.CreateCondBr(c3, contBB, addbBB);
-
-    scaff_->builder_.SetInsertPoint(addbBB);
-    Value *retvalRB = scaff_->builder_.CreateAdd(r, denom, DBG_NAME("addB"));
-    scaff_->builder_.CreateStore(retvalRB, retvalLoc);
-    scaff_->builder_.CreateBr(contBB);
-
-    scaff_->builder_.SetInsertPoint(contBB);
-
-    // TODO: Do we need load and store here?
-    r = scaff_->builder_.CreateLoad(TyInt32, retvalLoc);
+    Value *r = generateI32SRem(num, denom);
+    // UCBLogo (math.c, fcn 'm'): if ((r < 0) != (d < 0)) r += d;
+    // Zero is treated as non-negative, so MODULO 6 -3 is -3, not 0.
+    Value *rNeg = scaff_->builder_.CreateICmpSLT(r, CoInt32(0), DBG_NAME("rNeg"));
+    Value *dNeg = scaff_->builder_.CreateICmpSLT(denom, CoInt32(0), DBG_NAME("dNeg"));
+    Value *adjust = scaff_->builder_.CreateXor(rNeg, dNeg, DBG_NAME("signsDiffer"));
+    Value *adjusted = scaff_->builder_.CreateAdd(r, denom, DBG_NAME("rPlusDenom"));
+    r = scaff_->builder_.CreateSelect(adjust, adjusted, r, DBG_NAME("modulo"));
     return cs.ret(scaff_->builder_.CreateSIToFP(r, TyDouble, DBG_NAME("IntToFP")));
 }
 
@@ -591,7 +564,7 @@ Value *Compiler::genRemainder(const DatumPtr &node, TypeMask expected)
 
     num = generateInt32FromDouble(node.astnodeValue(), num, true);
     denom = generateNotZeroInt32FromDouble(node.astnodeValue(), denom);
-    Value *retval = scaff_->builder_.CreateSRem(num, denom, DBG_NAME("remainder"));
+    Value *retval = generateI32SRem(num, denom);
     return cs.ret(scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP")));
 }
 

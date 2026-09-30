@@ -230,6 +230,13 @@ class Compiler
     // Emit return "doesn't like" error if conversion not possible.
     llvm::Value *generateInt32FromDouble(ASTNode *parent, llvm::Value *src, bool isSigned);
 
+    // Shift an i32 by a signed count. Negative count shifts the other way.
+    // |count| >= 32 saturates: shl/lshr → 0, ashr → sign fill. Never poison.
+    llvm::Value *generateI32Shift(llvm::Value *value, llvm::Value *count, bool arithmetic);
+
+    // Signed i32 remainder. INT_MIN % -1 is 0 (LLVM srem of that pair is poison).
+    llvm::Value *generateI32SRem(llvm::Value *num, llvm::Value *denom);
+
     // Convert a Datum pointer to a boolean.
     // Emit return "doesn't like" error if conversion not possible.
     llvm::Value *generateBoolFromDatum(ASTNode *parent, llvm::Value *src);
