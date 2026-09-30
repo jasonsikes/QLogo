@@ -1,0 +1,7 @@
+to foo
+show 2+3
+end
+trace [[+]]
+foo
+untrace [[+]]
+foo

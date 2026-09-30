@@ -1,0 +1,5 @@
+? > > foo defined
+? ? ( + 2 3 )
++ outputs 5
+5
+? ? 5
