@@ -1,0 +1,2 @@
+show runparse [basic%10]
+show runparse [:%x]

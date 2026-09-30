@@ -67,7 +67,7 @@ using namespace StringConstants;
 /// A string of special characters that are used in the treeifyer.
 const QString &specialChars()
 {
-    static const QString specialCharsInstance("+-()*%/<>=");
+    static const QString specialCharsInstance("+-()*/<>=");
     return specialCharsInstance;
 }
 
