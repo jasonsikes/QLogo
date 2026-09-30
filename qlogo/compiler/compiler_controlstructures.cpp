@@ -74,7 +74,8 @@ Value *Compiler::genIfelse(const DatumPtr &node, TypeMask expected)
     {
         expectedAry.push_back(TypeDatum);
     }
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), expectedAry);
+    CallSite cs(this, node, expectedAry);
+    const std::vector<Value *> &children = cs.children();
 
     BasicBlock *thenBB = scaff_->createBasicBlock(DBG_NAME("then"));
     BasicBlock *elseBB = scaff_->createBasicBlock(DBG_NAME("else"));
@@ -120,7 +121,7 @@ Value *Compiler::genIfelse(const DatumPtr &node, TypeMask expected)
     {
         retval = (this->*generateListFn)(retval, expected);
     }
-    return retval;
+    return cs.ret(retval);
 }
 
 /***DOC RUN
@@ -133,11 +134,12 @@ COD***/
 // CMD RUN 1 1 1 dn
 Value *Compiler::genRun(const DatumPtr &node, TypeMask expected)
 {
-    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *list = cs.child(0);
     if (node.astnodeValue()->inSequenceTail_) {
-        return generateCallListContinuation(list, expected);
+        return cs.ret(generateCallListContinuation(list, expected));
     }
-    return generateCallList(list, expected);
+    return cs.ret(generateCallList(list, expected));
 }
 
 /***DOC RUNTIME
@@ -152,12 +154,13 @@ COD***/
 // CMD RUNTIME 1 1 1 dn
 Value *Compiler::genRuntime(const DatumPtr &node, TypeMask expected)
 {
-    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *list = cs.child(0);
     list = generateFromDatum(Datum::typeList, node.astnodeValue(), list);
     generateCallExtern(stdRuntimeStart);
     Value *result = generateCallList(list, expected);
     generateCallExtern(stdRuntimeEnd);
-    return result;
+    return cs.ret(result);
 }
 
 /***DOC REPEAT
@@ -169,8 +172,8 @@ COD***/
 // CMD REPEAT 2 2 2 dn
 Value *Compiler::genRepeat(const DatumPtr &node, TypeMask expected)
 {
-    Value *count = generateChild(node.astnodeValue(), 0, TypeReal);
-    Value *list = generateChild(node.astnodeValue(), 1, TypeDatum);
+    CallSite cs(this, node, TypeReal, TypeDatum);
+    auto [count, list] = cs.children();
 
     count = generateValidationDouble(node.astnodeValue(), count, [this](Value *candidate) {
         Value *isInt = generateIsExactInt32(candidate, true);
@@ -240,7 +243,7 @@ Value *Compiler::genRepeat(const DatumPtr &node, TypeMask expected)
     phiNode->addIncoming(generateVoidRetval(node), loopBB);
     phiNode->addIncoming(result, datumIsLastBB);
     scaff_->builder_.CreateStore(shadowedRepcount, repcountAddress);
-    return phiNode;
+    return cs.ret(phiNode);
 }
 
 /***DOC REPCOUNT #
@@ -259,9 +262,10 @@ COD***/
 // CMD REPCOUNT 0 0 0 r
 Value *Compiler::genRepcount(const DatumPtr &node, TypeMask expected)
 {
+    CallSite cs(this, node, TypeNothing);
     Value *repcountAddress = generateCallExtern(repcountAddr);
     Value *repcount = scaff_->builder_.CreateLoad(TyDouble, repcountAddress, DBG_NAME("repcount"));
-    return repcount;
+    return cs.ret(repcount);
 }
 
 /***DOC BYE
@@ -273,6 +277,7 @@ COD***/
 // CMD BYE 0 0 0 n
 Value *Compiler::genBye(const DatumPtr &node, TypeMask expected)
 {
+    CallSite cs(this, node, TypeNothing);
     return generateImmediateReturn(generateErrorSystem());
 }
 
@@ -350,22 +355,25 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node,
         {
             // It's a primitive, not a procedure. Generate a call to it.
             // Then generate a return of the value.
-            Value *retval = generateChild(node.astnodeValue(), child, childExpected);
+            CallSite cs(this, node, childExpected);
+            Value *retval = cs.child(0);
 
             retval = generateCallExtern(
                 getCtrlReturn, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
-            return retval;
+            return cs.ret(retval);
         }
         if (proc.datumValue()->isa_ == Datum::typeProcedure && proc.procedureValue()->isMacro_)
         {
             // A macro must not be tail-called. Its output list is evaluated in this
             // procedure, and that result is what OUTPUT returns.
-            Value *retval = generateChild(node.astnodeValue(), child, childExpected);
+            CallSite cs(this, node, childExpected);
+            Value *retval = cs.child(0);
             retval = generateNotFlowControl(retval);
-            return generateCallExtern(
-                getCtrlReturn, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
+            return cs.ret(generateCallExtern(
+                getCtrlReturn, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval)));
         }
         // Else it's a procedure. Generate a tail call to it.
+        // Nested AST: CallSite would evaluate the child instead of tail-calling.
         Value *childAddr = CoAddr(child.astnodeValue());
 
         // TODO: Instead of TypeDatum, should we use childExpected?
@@ -378,9 +386,10 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node,
         return retObj;
     }
     // There is no child. Return nothing.
+    CallSite cs(this, node, TypeNothing);
     Value *retval = generateVoidRetval(node);
-    return generateCallExtern(
-        getCtrlReturn, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
+    return cs.ret(generateCallExtern(
+        getCtrlReturn, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval)));
 }
 
 /***DOC TAG
@@ -420,7 +429,8 @@ COD***/
 Value *Compiler::genGoto(const DatumPtr &node, TypeMask expected)
 {
     Value *nodeAddr = CoAddr(node.astnodeValue());
-    Value *tag = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *tag = cs.child(0);
     tag = generateWordFromDatum(node.astnodeValue(), tag);
     Value *retObj = generateCallExtern(getCtrlGoto, PaAddr(scaff_->evaluator_), PaAddr(nodeAddr), PaAddr(tag));
     generateImmediateReturn(retObj);
@@ -451,8 +461,8 @@ COD***/
 // CMD CATCH 2 2 2 dn
 Value *Compiler::genCatch(const DatumPtr &node, TypeMask expected)
 {
-    Value *tag = generateChild(node.astnodeValue(), 0, TypeDatum);
-    Value *instructionlist = generateChild(node.astnodeValue(), 1, TypeDatum);
+    CallSite cs(this, node, TypeDatum, TypeDatum);
+    auto [tag, instructionlist] = cs.children();
     generateWordFromDatum(node.astnodeValue(), tag);
     Value *errActStash = generateCallExtern(beginCatch);
 
@@ -464,7 +474,7 @@ Value *Compiler::genCatch(const DatumPtr &node, TypeMask expected)
                                        PaAddr(errActStash),
                                        PaAddr(result),
                                        PaAddr(tag));
-    return retval;
+    return cs.ret(retval);
 }
 
 /***DOC THROW
@@ -504,7 +514,8 @@ COD***/
 // CMD THROW 1 1 2 n
 Value *Compiler::genThrow(const DatumPtr &node, TypeMask expected)
 {
-    std::vector<Value *> children = generateChildren(node.astnodeValue(), TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    const std::vector<Value *> &children = cs.children();
     Value *tag = generateWordFromDatum(node.astnodeValue(), children[0]);
     Value *output = (children.size() == 1) ? CoAddr(Datum::notADatum()) : children[1];
     Value *errObj = generateCallExtern(getErrorCustom, PaAddr(scaff_->evaluator_), PaAddr(tag), PaAddr(output));
@@ -526,7 +537,8 @@ COD***/
 // CMD ERROR 0 0 0 d
 Value *Compiler::genError(const DatumPtr &node, TypeMask expected)
 {
-    return generateCallExtern(getCurrentError, PaAddr(scaff_->evaluator_));
+    CallSite cs(this, node, TypeNothing);
+    return cs.ret(generateCallExtern(getCurrentError, PaAddr(scaff_->evaluator_)));
 }
 /***DOC PAUSE
 PAUSE
@@ -545,10 +557,10 @@ COD***/
 // CMD PAUSE 0 0 0 dn
 Value *Compiler::genPause(const DatumPtr &node, TypeMask expected)
 {
-    Q_UNUSED(node);
     Q_UNUSED(expected);
+    CallSite cs(this, node, TypeNothing);
     Value *retval = generateCallExtern(callPause, PaAddr(scaff_->evaluator_));
-    return generateNotFlowControl(retval);
+    return cs.ret(generateNotFlowControl(retval));
 }
 
 /***DOC CONTINUE CO
@@ -571,12 +583,13 @@ COD***/
 // CMD CO 0 -1 1 dn
 Value *Compiler::genContinue(const DatumPtr &node, TypeMask expected)
 {
+    CallSite cs(this, node, TypeDatum);
     Value *output = CoAddr(node.astnodeValue());
-    if (node.astnodeValue()->countOfChildren() == 1)
+    if (cs.count() == 1)
     {
-        output = generateChild(node.astnodeValue(), 0, TypeDatum);
+        output = cs.child(0);
     }
-    return generateCallExtern(generateContinue, PaAddr(scaff_->evaluator_), PaAddr(output));
+    return cs.ret(generateCallExtern(generateContinue, PaAddr(scaff_->evaluator_), PaAddr(output)));
 }
 /***DOC RUNRESULT
 RUNRESULT instructionlist
@@ -595,9 +608,10 @@ COD***/
 // CMD RUNRESULT 1 1 1 d
 Value *Compiler::genRunresult(const DatumPtr &node, TypeMask expected)
 {
-    Value *instructionlist = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *instructionlist = cs.child(0);
     Value *result = generateCallList(instructionlist, TypeDN);
-    return generateCallExtern(processRunresult, PaAddr(scaff_->evaluator_), PaAddr(result));
+    return cs.ret(generateCallExtern(processRunresult, PaAddr(scaff_->evaluator_), PaAddr(result)));
 }
 
 /***DOC MARK
@@ -619,8 +633,9 @@ COD***/
 Value *Compiler::genMark(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *thing = generateChild(node.astnodeValue(), 0, TypeDatum);
-    return generateCallExtern(stdMark, PaAddr(thing));
+    CallSite cs(this, node, TypeDatum);
+    Value *thing = cs.child(0);
+    return cs.ret(generateCallExtern(stdMark, PaAddr(thing)));
 }
 
 /***DOC FOREVER
@@ -633,7 +648,8 @@ COD***/
 // CMD FOREVER 1 1 1 n
 Value *Compiler::genForever(const DatumPtr &node, TypeMask expected)
 {
-    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *list = cs.child(0);
     list = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), list);
 
     // Get the current value of repcount since we are shadowing it.
@@ -695,9 +711,10 @@ COD***/
 // CMD TEST 1 1 1 n
 Value *Compiler::genTest(const DatumPtr &node, TypeMask expected)
 {
-    Value *tf = generateChild(node.astnodeValue(), 0, TypeBool);
+    CallSite cs(this, node, TypeBool);
+    Value *tf = cs.child(0);
     generateCallExtern(saveTestResult, PaBool(tf));
-    return generateVoidRetval(node);
+    return cs.ret(generateVoidRetval(node));
 }
 /***DOC IFTRUE IFT
 IFTRUE instructionlist
@@ -746,7 +763,8 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, TypeMask expected, bo
     int8_t runCondition = testForTrue ? 3 : 2;
     int8_t noRunCondition = testForTrue ? 2 : 3;
 
-    Value *instructionlist = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *instructionlist = cs.child(0);
     Value *testResult = generateCallExtern(getTestResult);
     SwitchInst *sw = scaff_->builder_.CreateSwitch(testResult, notTestedBB, 3);
     sw->addCase(CoInt8(0), notTestedBB);
@@ -770,7 +788,7 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, TypeMask expected, bo
     PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 2, DBG_NAME("retval"));
     retval->addIncoming(listRetval, listRetvalBB);
     retval->addIncoming(noRetval, noRunListBB);
-    return retval;
+    return cs.ret(retval);
 }
 
 
@@ -796,8 +814,8 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
 
     scaff_->addColdPathBlocks(invalidTemplateBB);
 
-    Value *aTemplate = generateChild(node.astnodeValue(), 0, TypeDatum);
-    Value *inputlist = generateChild(node.astnodeValue(), 1, TypeDatum);
+    CallSite cs(this, node, TypeDatum, TypeDatum);
+    auto [aTemplate, inputlist] = cs.children();
 
     Value *templateForm = nullptr;
     aTemplate = generateValidationDatum(node.astnodeValue(), aTemplate, [this, &templateForm](Value *candidate) {
@@ -842,7 +860,7 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
     retval->addIncoming(slotResult, explicitSlotDestBB);
     retval->addIncoming(lambdaResult, lambdaDestBB);
     retval->addIncoming(procedureTextResult, procedureTextDestBB);
-    return retval;
+    return cs.ret(retval);
 }
 
 Value *Compiler::generateApplyNamedProcedure(const DatumPtr &node, TypeMask expected,
@@ -910,15 +928,16 @@ Value *Compiler::genQ(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
 
+    CallSite cs(this, node, TypeDatum);
     Value *index = CoAddr(Datum::notADatum());
-    if (node.astnodeValue()->countOfChildren() == 1)
-        index = generateChild(node.astnodeValue(), 0, TypeDatum);
+    if (cs.count() == 1)
+        index = cs.child(0);
 
     Value *result = generateCallExtern(getExplicitSlot,
                                        PaAddr(scaff_->evaluator_),
                                        PaAddr(CoAddr(node.astnodeValue())),
                                        PaAddr(index));
-    return generateNotFlowControl(result);
+    return cs.ret(generateNotFlowControl(result));
 }
 
 
