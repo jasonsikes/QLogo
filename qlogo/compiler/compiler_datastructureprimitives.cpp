@@ -163,13 +163,8 @@ thing1 = thing2
 COD***/
 // CMD EQUALP 2 2 2 b
 // CMD EQUAL? 2 2 2 b
-Value *Compiler::genEqualp(const DatumPtr &node, TypeMask expected)
+Value *Compiler::generateEqualpCompare(Value *thing1, Value *thing2)
 {
-    Q_ASSERT(expected && TypeBool);
-
-    Value *thing1 = generateChild(node.astnodeValue(), 0, TypeDatum);
-    Value *thing2 = generateChild(node.astnodeValue(), 1, TypeDatum);
-
     Type *typeOfThing1 = thing1->getType();
     Type *typeOfThing2 = thing2->getType();
 
@@ -214,6 +209,15 @@ Value *Compiler::genEqualp(const DatumPtr &node, TypeMask expected)
     return generateCallExtern(cmpDatumToDatum, PaAddr(scaff_->evaluator_), PaAddr(thing1), PaAddr(thing2));
 }
 
+Value *Compiler::genEqualp(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeBool);
+
+    CallSite cs(this, node, TypeDatum, TypeDatum);
+    auto [thing1, thing2] = cs.children();
+    return cs.ret(generateEqualpCompare(thing1, thing2));
+}
+
 /***DOC NOTEQUALP NOTEQUAL?
 NOTEQUALP thing1 thing2
 NOTEQUAL? thing1 thing2
@@ -227,8 +231,11 @@ COD***/
 // CMD NOTEQUAL? 2 2 2 b
 Value *Compiler::genNotequalp(const DatumPtr &node, TypeMask expected)
 {
-    Value *eq = genEqualp(node, expected);
-    return scaff_->builder_.CreateSub(CoBool(1), eq, "noteq");
+    Q_ASSERT(expected && TypeBool);
+    CallSite cs(this, node, TypeDatum, TypeDatum);
+    auto [thing1, thing2] = cs.children();
+    Value *eq = generateEqualpCompare(thing1, thing2);
+    return cs.ret(scaff_->builder_.CreateSub(CoBool(1), eq, "noteq"));
 }
 
 // CONSTRUCTORS
@@ -244,8 +251,9 @@ COD***/
 Value *Compiler::genWord(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), TypeDatum, DBG_NAME("wordAry"));
-    return generateCallExtern(concatWord, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize()));
+    CallSite cs(this, node, TypeDatum);
+    AllocaInst *ary = cs.allocaAry(DBG_NAME("wordAry"));
+    return cs.ret(generateCallExtern(concatWord, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize())));
 }
 
 /***DOC LIST
@@ -260,8 +268,9 @@ COD***/
 Value *Compiler::genList(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), TypeDatum, DBG_NAME("listAry"));
-    return generateCallExtern(createList, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize()));
+    CallSite cs(this, node, TypeDatum);
+    AllocaInst *ary = cs.allocaAry(DBG_NAME("listAry"));
+    return cs.ret(generateCallExtern(createList, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize())));
 }
 
 /***DOC SENTENCE SE
@@ -279,8 +288,9 @@ COD***/
 Value *Compiler::genSentence(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    AllocaInst *ary = generateChildrenAlloca(node.astnodeValue(), TypeDatum, DBG_NAME("sentenceAry"));
-    return generateCallExtern(createSentence, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize()));
+    CallSite cs(this, node, TypeDatum);
+    AllocaInst *ary = cs.allocaAry(DBG_NAME("sentenceAry"));
+    return cs.ret(generateCallExtern(createSentence, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize())));
 }
 /***DOC FPUT
 FPUT thing list
@@ -314,8 +324,8 @@ Value *Compiler::genLput(const DatumPtr &node, TypeMask expected)
 Value *Compiler::generateFputlput(const DatumPtr &node, TypeMask expected, bool isLput)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *thing = generateChild(node.astnodeValue(), 0, TypeDatum);
-    Value *list = generateChild(node.astnodeValue(), 1, TypeDatum);
+    CallSite cs(this, node, TypeDatum, TypeDatum);
+    auto [thing, list] = cs.children();
     Value *listWordTest = nullptr;
 
     auto wordVector = isLput ? std::vector<Value *>{list, thing} : std::vector<Value *>{thing, list};
@@ -370,7 +380,7 @@ Value *Compiler::generateFputlput(const DatumPtr &node, TypeMask expected, bool 
     PHINode *phi = scaff_->builder_.CreatePHI(list->getType(), 2, DBG_NAME("putRetval"));
     phi->addIncoming(listRetval, listBB);
     phi->addIncoming(wordRetval, wordBB);
-    return phi;
+    return cs.ret(phi);
 }
 /***DOC ARRAY
 ARRAY size
@@ -390,12 +400,12 @@ COD***/
 Value *Compiler::genArray(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *size = generateChild(node.astnodeValue(), 0, TypeReal);
+    CallSite cs(this, node, TypeReal);
+    Value *size = cs.child(0);
     Value *origin = nullptr;
-    if (node.astnodeValue()->countOfChildren() == 2)
+    if (cs.count() == 2)
     {
-        origin = generateChild(node.astnodeValue(), 1, TypeReal);
-        origin = generateInt32FromDouble(node.astnodeValue(), origin, true);
+        origin = generateInt32FromDouble(node.astnodeValue(), cs.child(1), true);
     }
     else
     {
@@ -405,7 +415,7 @@ Value *Compiler::genArray(const DatumPtr &node, TypeMask expected)
     size = generateNotNegativeFromDouble(node.astnodeValue(), size);
     size = generateInt32FromDouble(node.astnodeValue(), size, true);
 
-    return generateCallExtern(createArray, PaAddr(scaff_->evaluator_), PaInt32(size), PaInt32(origin));
+    return cs.ret(generateCallExtern(createArray, PaAddr(scaff_->evaluator_), PaInt32(size), PaInt32(origin)));
 }
 /***DOC LISTTOARRAY
 LISTTOARRAY list
@@ -419,20 +429,23 @@ COD***/
 Value *Compiler::genListtoarray(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
+    std::vector<TypeMask> childTypes{TypeDatum};
+    if (node.astnodeValue()->countOfChildren() == 2)
+        childTypes.push_back(TypeReal);
+    CallSite cs(this, node, childTypes);
+    Value *list = cs.child(0);
     list = generateListFromDatum(node.astnodeValue(), list);
     Value *origin = nullptr;
-    if (node.astnodeValue()->countOfChildren() == 2)
+    if (cs.count() == 2)
     {
-        origin = generateChild(node.astnodeValue(), 1, TypeReal);
-        origin = generateInt32FromDouble(node.astnodeValue(), origin, true);
+        origin = generateInt32FromDouble(node.astnodeValue(), cs.child(1), true);
     }
     else
     {
         origin = CoInt32(1);
     }
 
-    return generateCallExtern(listToArray, PaAddr(scaff_->evaluator_), PaAddr(list), PaInt32(origin));
+    return cs.ret(generateCallExtern(listToArray, PaAddr(scaff_->evaluator_), PaAddr(list), PaInt32(origin)));
 }
 /***DOC ARRAYTOLIST
 ARRAYTOLIST array
@@ -446,9 +459,10 @@ COD***/
 Value *Compiler::genArraytolist(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *array = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *array = cs.child(0);
     array = generateArrayFromDatum(node.astnodeValue(), array);
-    return generateCallExtern(arrayToList, PaAddr(scaff_->evaluator_), PaAddr(array));
+    return cs.ret(generateCallExtern(arrayToList, PaAddr(scaff_->evaluator_), PaAddr(array)));
 }
 /***DOC FIRST
 FIRST thing
@@ -463,7 +477,8 @@ COD***/
 Value *Compiler::genFirst(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *thing = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *thing = cs.child(0);
 
     auto validator = [this](Value *thing) {
         Value *isEmpty = generateCallExtern(isDatumEmpty, PaAddr(thing));
@@ -471,7 +486,7 @@ Value *Compiler::genFirst(const DatumPtr &node, TypeMask expected)
     };
     thing = generateValidationDatum(node.astnodeValue(), thing, validator);
 
-    return generateCallExtern(firstOfDatum, PaAddr(scaff_->evaluator_), PaAddr(thing));
+    return cs.ret(generateCallExtern(firstOfDatum, PaAddr(scaff_->evaluator_), PaAddr(thing)));
 }
 /***DOC LAST
 LAST wordorlist
@@ -484,11 +499,12 @@ COD***/
 Value *Compiler::genLast(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *wordorlist = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *wordorlist = cs.child(0);
 
     wordorlist = generateNotEmptyWordOrListFromDatum(node.astnodeValue(), wordorlist);
 
-    return generateCallExtern(lastOfDatum, PaAddr(scaff_->evaluator_), PaAddr(wordorlist));
+    return cs.ret(generateCallExtern(lastOfDatum, PaAddr(scaff_->evaluator_), PaAddr(wordorlist)));
 }
 /***DOC BUTFIRST BF
 BUTFIRST wordorlist
@@ -504,11 +520,12 @@ COD***/
 Value *Compiler::genButfirst(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *wordorlist = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *wordorlist = cs.child(0);
 
     wordorlist = generateNotEmptyWordOrListFromDatum(node.astnodeValue(), wordorlist);
 
-    return generateCallExtern(butFirstOfDatum, PaAddr(scaff_->evaluator_), PaAddr(wordorlist));
+    return cs.ret(generateCallExtern(butFirstOfDatum, PaAddr(scaff_->evaluator_), PaAddr(wordorlist)));
 }
 /***DOC FIRSTS
 FIRSTS list
@@ -521,12 +538,13 @@ COD***/
 Value *Compiler::genFirsts(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *list = cs.child(0);
     list = generateListFromDatum(node.astnodeValue(), list);
-    return generateCallExtern(firstsOfList,
+    return cs.ret(generateCallExtern(firstsOfList,
                               PaAddr(scaff_->evaluator_),
                               PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
-                              PaAddr(list));
+                              PaAddr(list)));
 }
 /***DOC BUTFIRSTS BFS
 BUTFIRSTS list
@@ -541,12 +559,13 @@ COD***/
 Value *Compiler::genButfirsts(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *list = cs.child(0);
     list = generateListFromDatum(node.astnodeValue(), list);
-    return generateCallExtern(butfirstsOfList,
+    return cs.ret(generateCallExtern(butfirstsOfList,
                               PaAddr(scaff_->evaluator_),
                               PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
-                              PaAddr(list));
+                              PaAddr(list)));
 }
 /***DOC BUTLAST BL
 BUTLAST wordorlist
@@ -562,11 +581,12 @@ COD***/
 Value *Compiler::genButlast(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *wordorlist = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *wordorlist = cs.child(0);
 
     wordorlist = generateNotEmptyWordOrListFromDatum(node.astnodeValue(), wordorlist);
 
-    return generateCallExtern(butLastOfDatum, PaAddr(scaff_->evaluator_), PaAddr(wordorlist));
+    return cs.ret(generateCallExtern(butLastOfDatum, PaAddr(scaff_->evaluator_), PaAddr(wordorlist)));
 }
 /***DOC ITEM
 ITEM index thing
@@ -583,8 +603,8 @@ COD***/
 Value *Compiler::genItem(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *index = generateChild(node.astnodeValue(), 0, TypeReal);
-    Value *thing = generateChild(node.astnodeValue(), 1, TypeDatum);
+    CallSite cs(this, node, TypeReal, TypeDatum);
+    auto [index, thing] = cs.children();
 
     // Instead of iterating a list twice, we'll save the list item if we find it when counting.
     Datum *listItem = nullptr;
@@ -597,8 +617,8 @@ Value *Compiler::genItem(const DatumPtr &node, TypeMask expected)
     };
     index = generateValidationDouble(node.astnodeValue(), index, validator);
 
-    return generateCallExtern(
-        itemOfDatum, PaAddr(scaff_->evaluator_), PaAddr(thing), PaDouble(index), PaAddr(CoAddr(listItemPtr)));
+    return cs.ret(generateCallExtern(
+        itemOfDatum, PaAddr(scaff_->evaluator_), PaAddr(thing), PaDouble(index), PaAddr(CoAddr(listItemPtr))));
 }
 /***DOC SETITEM
 SETITEM index array value
@@ -635,8 +655,8 @@ Value *Compiler::genDotSetitem(const DatumPtr &node, TypeMask expected)
 Value *Compiler::generateSetitem(const DatumPtr &node, TypeMask expected, bool isDangerous)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *index = generateChild(node.astnodeValue(), 0, TypeReal);
-    Value *array = generateChild(node.astnodeValue(), 1, TypeDatum);
+    CallSite cs(this, node, TypeReal, TypeDatum, TypeDatum);
+    auto [index, array, value] = cs.children();
     array = generateArrayFromDatum(node.astnodeValue(), array);
 
     auto indexValidator = [this, array](Value *index) {
@@ -645,8 +665,6 @@ Value *Compiler::generateSetitem(const DatumPtr &node, TypeMask expected, bool i
         return scaff_->builder_.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isDatumIndexValidCond"));
     };
     index = generateValidationDouble(node.astnodeValue(), index, indexValidator);
-
-    Value *value = generateChild(node.astnodeValue(), 2, TypeDatum);
 
     if (!isDangerous)
     {
@@ -659,7 +677,7 @@ Value *Compiler::generateSetitem(const DatumPtr &node, TypeMask expected, bool i
     }
 
     generateCallExtern(setDatumAtIndexOfContainer, PaAddr(value), PaDouble(index), PaAddr(array));
-    return generateVoidRetval(node.astnodeValue());
+    return cs.ret(generateVoidRetval(node));
 }
 
 /***DOC .SETFIRST
@@ -678,11 +696,11 @@ COD***/
 Value *Compiler::genDotSetfirst(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
-    Value *value = generateChild(node.astnodeValue(), 1, TypeDatum);
+    CallSite cs(this, node, TypeDatum, TypeDatum);
+    auto [list, value] = cs.children();
     list = generateNotEmptyListFromDatum(node.astnodeValue(), list);
     generateCallExtern(setFirstOfList, PaAddr(list), PaAddr(value));
-    return generateVoidRetval(node.astnodeValue());
+    return cs.ret(generateVoidRetval(node));
 }
 /***DOC .SETBF
 .SETBF list value
@@ -701,12 +719,12 @@ COD***/
 Value *Compiler::genDotSetbf(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
-    Value *value = generateChild(node.astnodeValue(), 1, TypeDatum);
+    CallSite cs(this, node, TypeDatum, TypeDatum);
+    auto [list, value] = cs.children();
     list = generateNotEmptyListFromDatum(node.astnodeValue(), list);
     value = generateListFromDatum(node.astnodeValue(), value);
     generateCallExtern(setButfirstOfList, PaAddr(list), PaAddr(value));
-    return generateVoidRetval(node.astnodeValue());
+    return cs.ret(generateVoidRetval(node));
 }
 /***DOC WORDP WORD?
 WORDP thing
@@ -720,10 +738,11 @@ COD***/
 Value *Compiler::genWordp(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *thing = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *thing = cs.child(0);
     Value *thingType = generateGetDatumIsa(thing);
     Value *isType = scaff_->builder_.CreateICmpEQ(thingType, CoInt32(Datum::typeWord), DBG_NAME("isDatumTypeCond"));
-    return scaff_->builder_.CreateSelect(isType, CoBool(true), CoBool(false), DBG_NAME("isDatumTypeResult"));
+    return cs.ret(scaff_->builder_.CreateSelect(isType, CoBool(true), CoBool(false), DBG_NAME("isDatumTypeResult")));
 }
 
 /***DOC ARRAYP ARRAY?
@@ -738,10 +757,11 @@ COD***/
 Value *Compiler::genArrayp(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *thing = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *thing = cs.child(0);
     Value *thingType = generateGetDatumIsa(thing);
     Value *isType = scaff_->builder_.CreateICmpEQ(thingType, CoInt32(Datum::typeArray), DBG_NAME("isDatumTypeCond"));
-    return scaff_->builder_.CreateSelect(isType, CoBool(true), CoBool(false), DBG_NAME("isDatumTypeResult"));
+    return cs.ret(scaff_->builder_.CreateSelect(isType, CoBool(true), CoBool(false), DBG_NAME("isDatumTypeResult")));
 }
 
 /***DOC LISTP LIST?
@@ -756,11 +776,12 @@ COD***/
 Value *Compiler::genListp(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *thing = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *thing = cs.child(0);
     Value *thingType = generateGetDatumIsa(thing);
     Value *mask = scaff_->builder_.CreateAnd(thingType, CoInt32(Datum::typeList), DBG_NAME("dataTypeMask"));
     Value *cond = scaff_->builder_.CreateICmpNE(mask, CoInt32(0), DBG_NAME("typeTest"));
-    return scaff_->builder_.CreateSelect(cond, CoBool(true), CoBool(false), DBG_NAME("isDatumTypeResult"));
+    return cs.ret(scaff_->builder_.CreateSelect(cond, CoBool(true), CoBool(false), DBG_NAME("isDatumTypeResult")));
 }
 
 /***DOC EMPTYP EMPTY?
@@ -776,8 +797,9 @@ COD***/
 Value *Compiler::genEmptyp(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *thing = generateChild(node.astnodeValue(), 0, TypeDatum);
-    return generateCallExtern(isEmpty, PaAddr(thing));
+    CallSite cs(this, node, TypeDatum);
+    Value *thing = cs.child(0);
+    return cs.ret(generateCallExtern(isEmpty, PaAddr(thing)));
 }
 /***DOC BEFOREP BEFORE?
 BEFOREP word1 word2
@@ -795,11 +817,11 @@ COD***/
 Value *Compiler::genBeforep(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *word1 = generateChild(node.astnodeValue(), 0, TypeDatum);
-    Value *word2 = generateChild(node.astnodeValue(), 1, TypeDatum);
+    CallSite cs(this, node, TypeDatum, TypeDatum);
+    auto [word1, word2] = cs.children();
     word1 = generateWordFromDatum(node.astnodeValue(), word1);
     word2 = generateWordFromDatum(node.astnodeValue(), word2);
-    return generateCallExtern(isBefore, PaAddr(scaff_->evaluator_), PaAddr(word1), PaAddr(word2));
+    return cs.ret(generateCallExtern(isBefore, PaAddr(scaff_->evaluator_), PaAddr(word1), PaAddr(word2)));
 }
 /***DOC .EQ
 .EQ thing1 thing2
@@ -816,10 +838,10 @@ COD***/
 Value *Compiler::genDotEq(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *thing1 = generateChild(node.astnodeValue(), 0, TypeDatum);
-    Value *thing2 = generateChild(node.astnodeValue(), 1, TypeDatum);
+    CallSite cs(this, node, TypeDatum, TypeDatum);
+    auto [thing1, thing2] = cs.children();
     Value *isEqualCond = scaff_->builder_.CreateICmpEQ(thing1, thing2, DBG_NAME("isEqualCond"));
-    return scaff_->builder_.CreateSelect(isEqualCond, CoBool(true), CoBool(false), DBG_NAME("isEqualResult"));
+    return cs.ret(scaff_->builder_.CreateSelect(isEqualCond, CoBool(true), CoBool(false), DBG_NAME("isEqualResult")));
 }
 
 /***DOC MEMBERP MEMBER?
@@ -837,9 +859,9 @@ COD***/
 Value *Compiler::genMemberp(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *thing1 = generateChild(node.astnodeValue(), 0, TypeDatum); // thing
-    Value *thing2 = generateChild(node.astnodeValue(), 1, TypeDatum); // container
-    return generateCallExtern(isMember, PaAddr(scaff_->evaluator_), PaAddr(thing1), PaAddr(thing2));
+    CallSite cs(this, node, TypeDatum, TypeDatum);
+    auto [thing1, thing2] = cs.children(); // thing, container
+    return cs.ret(generateCallExtern(isMember, PaAddr(scaff_->evaluator_), PaAddr(thing1), PaAddr(thing2)));
 }
 /***DOC SUBSTRINGP SUBSTRING?
 SUBSTRINGP thing1 thing2
@@ -855,9 +877,9 @@ COD***/
 Value *Compiler::genSubstringp(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *thing1 = generateChild(node.astnodeValue(), 0, TypeDatum);
-    Value *thing2 = generateChild(node.astnodeValue(), 1, TypeDatum);
-    return generateCallExtern(isSubstring, PaAddr(thing1), PaAddr(thing2));
+    CallSite cs(this, node, TypeDatum, TypeDatum);
+    auto [thing1, thing2] = cs.children();
+    return cs.ret(generateCallExtern(isSubstring, PaAddr(thing1), PaAddr(thing2)));
 }
 /***DOC NUMBERP NUMBER?
 NUMBERP thing
@@ -871,8 +893,9 @@ COD***/
 Value *Compiler::genNumberp(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *thing = generateChild(node.astnodeValue(), 0, TypeDatum);
-    return generateCallExtern(isNumber, PaAddr(thing));
+    CallSite cs(this, node, TypeDatum);
+    Value *thing = cs.child(0);
+    return cs.ret(generateCallExtern(isNumber, PaAddr(thing)));
 }
 /***DOC VBARREDP VBARRED? BACKSLASHEDP BACKSLASHED?
 VBARREDP char
@@ -897,7 +920,8 @@ COD***/
 Value *Compiler::genVbarredp(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *c = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *c = cs.child(0);
 
     auto validator = [this](Value *candidate) {
         Value *isGoodChar = generateCallExtern(isSingleCharWord, PaAddr(candidate));
@@ -905,7 +929,7 @@ Value *Compiler::genVbarredp(const DatumPtr &node, TypeMask expected)
     };
     c = generateValidationDatum(node.astnodeValue(), c, validator);
 
-    return generateCallExtern(isVbarred, PaAddr(c));
+    return cs.ret(generateCallExtern(isVbarred, PaAddr(c)));
 }
 /***DOC COUNT
 COUNT thing
@@ -920,8 +944,9 @@ COD***/
 Value *Compiler::genCount(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *thing = generateChild(node.astnodeValue(), 0, TypeDatum);
-    return generateCallExtern(datumCount, PaAddr(thing));
+    CallSite cs(this, node, TypeDatum);
+    Value *thing = cs.child(0);
+    return cs.ret(generateCallExtern(datumCount, PaAddr(thing)));
 }
 /***DOC ASCII
 ASCII char
@@ -941,7 +966,8 @@ COD***/
 Value *Compiler::genAscii(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *c = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *c = cs.child(0);
 
     auto validator = [this](Value *candidate) {
         Value *isGoodChar = generateCallExtern(isSingleCharWord, PaAddr(candidate));
@@ -949,7 +975,7 @@ Value *Compiler::genAscii(const DatumPtr &node, TypeMask expected)
     };
     c = generateValidationDatum(node.astnodeValue(), c, validator);
 
-    return generateCallExtern(ascii, PaAddr(c));
+    return cs.ret(generateCallExtern(ascii, PaAddr(c)));
 }
 /***DOC RAWASCII
 RAWASCII char
@@ -966,7 +992,8 @@ COD***/
 Value *Compiler::genRawascii(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *c = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *c = cs.child(0);
 
     auto validator = [this](Value *candidate) {
         Value *isGoodChar = generateCallExtern(isSingleCharWord, PaAddr(candidate));
@@ -974,7 +1001,7 @@ Value *Compiler::genRawascii(const DatumPtr &node, TypeMask expected)
     };
     c = generateValidationDatum(node.astnodeValue(), c, validator);
 
-    return generateCallExtern(rawascii, PaAddr(c));
+    return cs.ret(generateCallExtern(rawascii, PaAddr(c)));
 }
 /***DOC CHAR
 CHAR int
@@ -989,13 +1016,14 @@ COD***/
 Value *Compiler::genChar(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *c = generateChild(node.astnodeValue(), 0, TypeReal);
+    CallSite cs(this, node, TypeReal);
+    Value *c = cs.child(0);
 
     Value *accepted = generateValidationDouble(node.astnodeValue(), c, [this](Value *candidate) {
         return generateIsExactIntegerInRange(candidate, 0.0, 65535.0);
     });
     Value *asInt = scaff_->builder_.CreateFPToUI(accepted, TyInt32, DBG_NAME("FpToInt"));
-    return generateCallExtern(chr, PaAddr(scaff_->evaluator_), PaInt32(asInt));
+    return cs.ret(generateCallExtern(chr, PaAddr(scaff_->evaluator_), PaInt32(asInt)));
 }
 /***DOC MEMBER
 MEMBER thing1 thing2
@@ -1011,11 +1039,11 @@ COD***/
 Value *Compiler::genMember(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *thing1 = generateChild(node.astnodeValue(), 0, TypeDatum);
-    Value *thing2 = generateChild(node.astnodeValue(), 1, TypeDatum);
+    CallSite cs(this, node, TypeDatum, TypeDatum);
+    auto [thing1, thing2] = cs.children();
 
     thing2 = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), thing2);
-    return generateCallExtern(member, PaAddr(scaff_->evaluator_), PaAddr(thing1), PaAddr(thing2));
+    return cs.ret(generateCallExtern(member, PaAddr(scaff_->evaluator_), PaAddr(thing1), PaAddr(thing2)));
 }
 /***DOC LOWERCASE
 LOWERCASE word
@@ -1028,9 +1056,10 @@ COD***/
 Value *Compiler::genLowercase(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *word = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *word = cs.child(0);
     word = generateFromDatum(Datum::typeWord, node.astnodeValue(), word);
-    return generateCallExtern(lowercase, PaAddr(scaff_->evaluator_), PaAddr(word));
+    return cs.ret(generateCallExtern(lowercase, PaAddr(scaff_->evaluator_), PaAddr(word)));
 }
 /***DOC UPPERCASE
 UPPERCASE word
@@ -1043,9 +1072,10 @@ COD***/
 Value *Compiler::genUppercase(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *word = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *word = cs.child(0);
     word = generateFromDatum(Datum::typeWord, node.astnodeValue(), word);
-    return generateCallExtern(uppercase, PaAddr(scaff_->evaluator_), PaAddr(word));
+    return cs.ret(generateCallExtern(uppercase, PaAddr(scaff_->evaluator_), PaAddr(word)));
 }
 /***DOC STANDOUT
 STANDOUT thing
@@ -1062,8 +1092,9 @@ COD***/
 Value *Compiler::genStandout(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *thing = generateChild(node.astnodeValue(), 0, TypeDatum);
-    return generateCallExtern(standout, PaAddr(scaff_->evaluator_), PaAddr(thing));
+    CallSite cs(this, node, TypeDatum);
+    Value *thing = cs.child(0);
+    return cs.ret(generateCallExtern(standout, PaAddr(scaff_->evaluator_), PaAddr(thing)));
 }
 /***DOC PARSE
 PARSE word
@@ -1077,9 +1108,10 @@ COD***/
 Value *Compiler::genParse(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *word = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *word = cs.child(0);
     word = generateFromDatum(Datum::typeWord, node.astnodeValue(), word);
-    return generateCallExtern(parse, PaAddr(scaff_->evaluator_), PaAddr(word));
+    return cs.ret(generateCallExtern(parse, PaAddr(scaff_->evaluator_), PaAddr(word)));
 }
 /***DOC RUNPARSE
 RUNPARSE wordorlist
@@ -1095,9 +1127,10 @@ COD***/
 Value *Compiler::genRunparse(const DatumPtr &node, TypeMask expected)
 {
     Q_ASSERT(expected && TypeDatum);
-    Value *wordorlist = generateChild(node.astnodeValue(), 0, TypeDatum);
+    CallSite cs(this, node, TypeDatum);
+    Value *wordorlist = cs.child(0);
     wordorlist = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), wordorlist);
-    return generateCallExtern(runparseDatum, PaAddr(scaff_->evaluator_), PaAddr(wordorlist));
+    return cs.ret(generateCallExtern(runparseDatum, PaAddr(scaff_->evaluator_), PaAddr(wordorlist)));
 }
 
 /***DOC MDARRAY

@@ -398,6 +398,9 @@ class Compiler
     // generate the common code for FPUT and LPUT.
     llvm::Value *generateFputlput(const DatumPtr &node, TypeMask expected, bool isLput);
 
+    // generate the common comparison for EQUALP and NOTEQUALP.
+    llvm::Value *generateEqualpCompare(llvm::Value *thing1, llvm::Value *thing2);
+
     // generate the common code for SETITEM.
     llvm::Value *generateSetitem(const DatumPtr &node, TypeMask expected, bool isDangerous);
 
