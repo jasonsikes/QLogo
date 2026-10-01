@@ -150,7 +150,7 @@ COD***/
 // CMD ARCTAN 1 1 2 r
 Value *Compiler::genArctan(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     const std::vector<Value *> &children = cs.children();
 
@@ -182,7 +182,7 @@ COD***/
 // CMD ASHIFT 2 2 2 r
 Value *Compiler::genAshift(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [num1, num2] = cs.children();
 
@@ -203,7 +203,7 @@ COD***/
 // CMD LSHIFT 2 2 2 r
 Value *Compiler::genLshift(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [num1, num2] = cs.children();
 
@@ -223,7 +223,7 @@ COD***/
 // CMD BITAND 0 2 -1 r
 Value *Compiler::genBitand(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     std::vector<Value *> children = cs.children();
 
@@ -254,7 +254,7 @@ COD***/
 // CMD BITOR 0 2 -1 r
 Value *Compiler::genBitor(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     std::vector<Value *> children = cs.children();
 
@@ -286,7 +286,7 @@ COD***/
 // CMD BITXOR 0 2 -1 r
 Value *Compiler::genBitxor(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     std::vector<Value *> children = cs.children();
 
@@ -316,7 +316,7 @@ COD***/
 // CMD BITNOT 1 1 1 r
 Value *Compiler::genBitnot(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     Value *num = cs.child(0);
 
@@ -336,7 +336,7 @@ COD***/
 // CMD MODULO 2 2 2 r
 Value *Compiler::genModulo(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [num, denom] = cs.children();
 
@@ -363,7 +363,7 @@ COD***/
 // CMD SQRT 1 1 1 r
 Value *Compiler::genSqrt(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     Value *num = cs.child(0);
 
@@ -381,7 +381,7 @@ COD***/
 // CMD POWER 2 2 2 r
 Value *Compiler::genPower(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [num1, num2] = cs.children();
 
@@ -427,7 +427,7 @@ COD***/
 // CMD - 1 1 1 r
 Value *Compiler::genMinus(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     Value *num = cs.child(0);
 
@@ -445,7 +445,7 @@ COD***/
 // CMD PRODUCT 0 2 -1 r
 Value *Compiler::genProduct(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     const std::vector<Value *> &children = cs.children();
 
@@ -473,7 +473,7 @@ COD***/
 // CMD SUM 0 2 -1 r
 Value *Compiler::genSum(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     const std::vector<Value *> &children = cs.children();
 
@@ -503,7 +503,7 @@ COD***/
 // CMD DIFFERENCE 2 2 2 r
 Value *Compiler::genDifference(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [num1, num2] = cs.children();
 
@@ -525,7 +525,7 @@ COD***/
 // CMD QUOTIENT 1 2 2 r
 Value *Compiler::genQuotient(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     const std::vector<Value *> &children = cs.children();
 
@@ -558,7 +558,7 @@ COD***/
 // CMD REMAINDER 2 2 2 r
 Value *Compiler::genRemainder(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [num, denom] = cs.children();
 
@@ -577,7 +577,7 @@ COD***/
 // CMD SIN 1 1 1 r
 Value *Compiler::genSin(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     Value *num = cs.child(0);
 
@@ -598,7 +598,7 @@ COD***/
 // CMD INT 1 1 1 r
 Value *Compiler::genInt(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     Value *num = cs.child(0);
 
@@ -614,7 +614,7 @@ COD***/
 // CMD ROUND 1 1 1 r
 Value *Compiler::genRound(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     Value *num = cs.child(0);
 
@@ -630,7 +630,7 @@ COD***/
 // CMD EXP 1 1 1 r
 Value *Compiler::genExp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     Value *num = cs.child(0);
 
@@ -647,7 +647,7 @@ COD***/
 // CMD LOG10 1 1 1 r
 Value *Compiler::genLog10(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     Value *num = cs.child(0);
 
@@ -665,7 +665,7 @@ COD***/
 // CMD LN 1 1 1 r
 Value *Compiler::genLn(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     Value *num = cs.child(0);
 
@@ -682,7 +682,7 @@ COD***/
 // CMD RADSIN 1 1 1 r
 Value *Compiler::genRadsin(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     Value *num = cs.child(0);
 
@@ -698,7 +698,7 @@ COD***/
 // CMD RADCOS 1 1 1 r
 Value *Compiler::genRadcos(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     Value *num = cs.child(0);
 
@@ -720,7 +720,7 @@ COD***/
 // CMD RADARCTAN 1 1 2 r
 Value *Compiler::genRadarctan(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     const std::vector<Value *> &children = cs.children();
 
@@ -748,7 +748,7 @@ COD***/
 // CMD COS 1 1 1 r
 Value *Compiler::genCos(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     Value *num = cs.child(0);
 
@@ -769,7 +769,7 @@ COD***/
 // CMD LESS? 2 2 2 b
 Value *Compiler::genLessp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
+    Q_ASSERT(expected & TypeBool);
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [num1, num2] = cs.children();
 
@@ -788,7 +788,7 @@ COD***/
 // CMD GREATER? 2 2 2 b
 Value *Compiler::genGreaterp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
+    Q_ASSERT(expected & TypeBool);
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [num1, num2] = cs.children();
 
@@ -807,7 +807,7 @@ COD***/
 // CMD LESSEQUAL? 2 2 2 b
 Value *Compiler::genLessequalp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
+    Q_ASSERT(expected & TypeBool);
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [num1, num2] = cs.children();
 
@@ -826,7 +826,7 @@ COD***/
 // CMD GREATEREQUAL? 2 2 2 b
 Value *Compiler::genGreaterequalp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
+    Q_ASSERT(expected & TypeBool);
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [num1, num2] = cs.children();
 
@@ -845,7 +845,7 @@ COD***/
 // CMD NOT 1 1 1 b
 Value *Compiler::genNot(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
+    Q_ASSERT(expected & TypeBool);
     CallSite cs(this, node, TypeBool);
     Value *tf = cs.child(0);
 
@@ -869,6 +869,7 @@ COD***/
 // CMD RANDOM 1 1 2 r
 Value *Compiler::genRandom(const DatumPtr &node, TypeMask expected)
 {
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeReal);
     std::vector<Value *> children = cs.children();
 
@@ -909,6 +910,7 @@ COD***/
 // CMD RERANDOM 0 0 1 n
 Value *Compiler::genRerandom(const DatumPtr &node, TypeMask expected)
 {
+    Q_ASSERT(expected & TypeNothing);
     CallSite cs(this, node, TypeReal);
     const std::vector<Value *> &children = cs.children();
 
@@ -939,7 +941,7 @@ COD***/
 // CMD FORM 3 3 3 d
 Value *Compiler::genForm(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
+    Q_ASSERT(expected & TypeDatum);
     CallSite cs(this, node, TypeReal, TypeReal, TypeReal);
     auto [num, width, precision] = cs.children();
 
@@ -965,7 +967,7 @@ Value *Compiler::genForm(const DatumPtr &node, TypeMask expected)
 // CMD <> 1 1 1 d
 Value *Compiler::genInfixError(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
+    Q_ASSERT(expected & TypeDatum);
     generateChild(node.astnodeValue(), 0, TypeDatum);
 
     Value *err = generateErrorNotEnoughInputs(node.astnodeValue());
@@ -1022,7 +1024,7 @@ Value *Compiler::generateAndOr(const DatumPtr &node, TypeMask expected, bool isA
 {
     Function *theFunction = scaff_->builder_.GetInsertBlock()->getParent();
 
-    Q_ASSERT(expected && TypeBool);
+    Q_ASSERT(expected & TypeBool);
     CallSite cs(this, node, TypeDB);
     const std::vector<Value *> &children = cs.children();
 

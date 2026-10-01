@@ -128,7 +128,8 @@ class Compiler
     // Generate a query to return a datum type (isa) of a given object.
     llvm::Value *generateGetDatumIsa(llvm::Value *objAddr);
 
-    // Generate a call to a child node
+    // Generate a child node in its native `produces_` kind. `expected` is what
+    // the parent wants; generateCast converts after this returns.
     llvm::Value *generateChildOfNode(ASTNode *parent, const DatumPtr &, TypeMask expected);
 
     // Generate a void return value using the ASTNode to represent the source (for blame).
