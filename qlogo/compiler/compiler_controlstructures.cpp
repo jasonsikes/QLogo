@@ -463,7 +463,7 @@ Value *Compiler::genCatch(const DatumPtr &node, TypeMask expected)
 {
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [tag, instructionlist] = cs.children();
-    generateWordFromDatum(node.astnodeValue(), tag);
+    tag = generateWordFromDatum(node.astnodeValue(), tag);
     Value *errActStash = generateCallExtern(beginCatch);
 
     Value *result = generateCallList(instructionlist, expected);
