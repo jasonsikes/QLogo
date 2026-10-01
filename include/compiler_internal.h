@@ -96,6 +96,15 @@ struct Scaffold
     // The new block is inserted after the last block of the function.
     llvm::BasicBlock *createBasicBlock(const std::string &name);
 
+    // Alloca in the current entry block so the allocation is static (not a
+    // dynamic stack bump each time the emitting block runs).
+    llvm::AllocaInst *createEntryBlockAlloca(llvm::Type *type, llvm::Value *arraySize,
+                                             const std::string &name = "");
+
+    // After TOC / coro prologue prepend a new entry, move every alloca there
+    // so they stay static and dominate all uses (including after suspend).
+    void hoistAllocasToEntry();
+
     // add one or more basic blocks to the cold path.
     template <typename... Blocks>
     std::enable_if_t<(std::is_same_v<Blocks, llvm::BasicBlock> && ...)>

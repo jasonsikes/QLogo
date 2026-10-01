@@ -187,6 +187,39 @@ BasicBlock *Scaffold::createBasicBlock(const std::string &name)
     return BasicBlock::Create(*theContext_, name, theFunction_);
 }
 
+AllocaInst *Scaffold::createEntryBlockAlloca(Type *type, Value *arraySize, const std::string &name)
+{
+    BasicBlock &entry = theFunction_->getEntryBlock();
+    IRBuilder<> tmp(&entry, entry.begin());
+    return tmp.CreateAlloca(type, arraySize, name);
+}
+
+void Scaffold::hoistAllocasToEntry()
+{
+    BasicBlock &entry = theFunction_->getEntryBlock();
+    std::vector<AllocaInst *> allocas;
+    for (BasicBlock &bb : *theFunction_)
+    {
+        for (Instruction &inst : bb)
+        {
+            if (auto *ai = dyn_cast<AllocaInst>(&inst))
+                allocas.push_back(ai);
+        }
+    }
+
+    Instruction *insertBefore = &*entry.getFirstInsertionPt();
+    while (insertBefore && isa<AllocaInst>(insertBefore))
+        insertBefore = insertBefore->getNextNode();
+    Q_ASSERT(insertBefore != nullptr);
+
+    for (AllocaInst *ai : allocas)
+    {
+        if (ai->getParent() == &entry)
+            continue;
+        ai->moveBefore(insertBefore->getIterator());
+    }
+}
+
 
 CompiledText::~CompiledText()
 {
@@ -401,6 +434,8 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     {
         generateTOC(blocks, scaff_->theFunction_);
     }
+
+    scaff_->hoistAllocasToEntry();
 
     if (Config::get().showIR_)
     {
@@ -1032,7 +1067,7 @@ AllocaInst *Compiler::generateAllocaAry(const std::vector<llvm::Value *> &values
 {
     Value *childCount = CoInt32(values.size());
     Value *offset = CoInt64(lljit_->getDataLayout().getPointerSize());
-    AllocaInst *retval = scaff_->builder_.CreateAlloca(TyAddr, childCount, name);
+    AllocaInst *retval = scaff_->createEntryBlockAlloca(TyAddr, childCount, name);
     Value *aryPtr = retval;
     for (int i = 0; i < values.size(); ++i)
     {
@@ -1104,7 +1139,7 @@ std::vector<Value *> Compiler::generateChildren(ASTNode *node, std::vector<TypeM
 AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, Value *src, int32_t size)
 {
     Value *vSize = CoInt32(size);
-    AllocaInst *ary = scaff_->builder_.CreateAlloca(TyDouble, vSize, DBG_NAME("ary"));
+    AllocaInst *ary = scaff_->createEntryBlockAlloca(TyDouble, vSize, DBG_NAME("ary"));
 
     auto isNumberList = [this, vSize, ary](Value *candidate) {
         BasicBlock *notListBB = scaff_->createBasicBlock(DBG_NAME("notList"));
