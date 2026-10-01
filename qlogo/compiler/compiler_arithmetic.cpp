@@ -223,25 +223,7 @@ COD***/
 // CMD BITAND 0 2 -1 r
 Value *Compiler::genBitand(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected & TypeReal);
-    CallSite cs(this, node, TypeReal);
-    std::vector<Value *> children = cs.children();
-
-    for (auto &child : children)
-    {
-        child = generateInt32FromDouble(node.astnodeValue(), child, true);
-    }
-
-    if (children.size() == 0)
-        return cs.ret(CoDouble(-1.0));
-
-    Value *retval = children[0];
-
-    for (auto &child : children)
-    {
-        retval = scaff_->builder_.CreateAnd(retval, child, DBG_NAME("BitAND"));
-    }
-    return cs.ret(scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP")));
+    return generateBitOp(node, expected, Instruction::And);
 }
 
 /***DOC BITOR
@@ -254,25 +236,7 @@ COD***/
 // CMD BITOR 0 2 -1 r
 Value *Compiler::genBitor(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected & TypeReal);
-    CallSite cs(this, node, TypeReal);
-    std::vector<Value *> children = cs.children();
-
-    for (auto &child : children)
-    {
-        child = generateInt32FromDouble(node.astnodeValue(), child, true);
-    }
-
-    if (children.size() == 0)
-        return cs.ret(CoDouble(0.0));
-
-    Value *retval = children[0];
-
-    for (auto &child : children)
-    {
-        retval = scaff_->builder_.CreateOr(retval, child, DBG_NAME("BitOR"));
-    }
-    return cs.ret(scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP")));
+    return generateBitOp(node, expected, Instruction::Or);
 }
 
 /***DOC BITXOR
@@ -286,24 +250,27 @@ COD***/
 // CMD BITXOR 0 2 -1 r
 Value *Compiler::genBitxor(const DatumPtr &node, TypeMask expected)
 {
+    return generateBitOp(node, expected, Instruction::Xor);
+}
+
+Value *Compiler::generateBitOp(const DatumPtr &node, TypeMask expected, Instruction::BinaryOps op)
+{
     Q_ASSERT(expected & TypeReal);
+    Q_ASSERT(op == Instruction::And || op == Instruction::Or || op == Instruction::Xor);
+
     CallSite cs(this, node, TypeReal);
     std::vector<Value *> children = cs.children();
 
     for (auto &child : children)
-    {
         child = generateInt32FromDouble(node.astnodeValue(), child, true);
-    }
 
     if (children.size() == 0)
-        return cs.ret(CoDouble(0.0));
+        return cs.ret(CoDouble(op == Instruction::And ? -1.0 : 0.0));
 
+    const char *opName = op == Instruction::And ? "BitAND" : op == Instruction::Or ? "BitOR" : "BitXOR";
     Value *retval = children[0];
-
     for (int i = 1; i < children.size(); ++i)
-    {
-        retval = scaff_->builder_.CreateXor(retval, children[i], DBG_NAME("BitXOR"));
-    }
+        retval = scaff_->builder_.CreateBinOp(op, retval, children[i], DBG_NAME(opName));
     return cs.ret(scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP")));
 }
 

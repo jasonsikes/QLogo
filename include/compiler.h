@@ -309,6 +309,9 @@ class Compiler
     // @param isAnd true if AND, false if OR
     llvm::Value *generateAndOr(const DatumPtr &node, TypeMask expected, bool isAnd);
 
+    // BITAND / BITOR / BITXOR. `op` is And, Or, or Xor.
+    llvm::Value *generateBitOp(const DatumPtr &node, TypeMask expected, llvm::Instruction::BinaryOps op);
+
     // OPENREAD / OPENWRITE / OPENAPPEND / OPENUPDATE. `mode` is OpenMode as int32.
     llvm::Value *generateOpen(const DatumPtr &node, TypeMask expected, int32_t mode);
 
