@@ -871,23 +871,17 @@ Value *Compiler::genRandom(const DatumPtr &node, TypeMask expected)
 {
     CallSite cs(this, node, TypeReal);
     std::vector<Value *> children = cs.children();
-    std::vector<Value *> iChildren;
-    iChildren.reserve(children.size());
 
     if (children.size() == 1)
     {
-        children[0] = generateNotZeroFromDouble(node.astnodeValue(), children[0]);
+        Value *accepted = generateValidationDouble(node.astnodeValue(), children[0], [this](Value *candidate) {
+            return generateIsExactIntegerInRange(candidate, 1.0, kInt32MaxAsDouble);
+        });
+        Value *num = scaff_->builder_.CreateFPToSI(accepted, TyInt32, DBG_NAME("FpToInt"));
+        return cs.ret(generateCallExtern(random1, PaInt32(num)));
     }
 
-    for (auto &child : children)
-    {
-        iChildren.push_back(generateInt32FromDouble(node.astnodeValue(), child, true));
-    }
-
-    if (children.size() == 1)
-        return cs.ret(generateCallExtern(random1, PaInt32(iChildren[0])));
-
-    Value *start = iChildren[0];
+    Value *start = generateInt32FromDouble(node.astnodeValue(), children[0], true);
     Value *acceptedEnd = generateValidationDouble(node.astnodeValue(), children[1], [this, start](Value *candidate) {
         Value *isInt = generateIsExactInt32(candidate, true);
         Value *startAsDouble = scaff_->builder_.CreateSIToFP(start, TyDouble, DBG_NAME("startAsDouble"));
