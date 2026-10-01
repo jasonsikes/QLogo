@@ -886,7 +886,8 @@ Value *Compiler::genExecProcedure(const DatumPtr &node, TypeMask expected)
         ast->macroExpectsSingleExpression_ = (expected & TypeNothing) == 0;
     }
 
-    AllocaInst *paramAry = generateChildrenAlloca(node.astnodeValue(), TypeDatum, DBG_NAME("paramAry"));
+    CallSite cs(this, node, TypeDatum);
+    AllocaInst *paramAry = cs.allocaAry(DBG_NAME("paramAry"));
     Value *vAstnodeValue = CoAddr(node.astnodeValue());
     Value *vParamArySize = CoInt32(node.astnodeValue()->countOfChildren());
     generateCallExtern(beginProcedure, PaAddr(scaff_->evaluator_), PaAddr(vAstnodeValue), PaAddr(paramAry), PaInt32(vParamArySize));
@@ -904,7 +905,7 @@ Value *Compiler::genExecProcedure(const DatumPtr &node, TypeMask expected)
     sw->addCase(CoInt8(1), scaff_->cleanupBB_);
 
     scaff_->builder_.SetInsertPoint(continueBB);
-    return generateCallExtern(getLastEvaluationResult, PaAddr(scaff_->evaluator_));
+    return cs.ret(generateCallExtern(getLastEvaluationResult, PaAddr(scaff_->evaluator_)));
 }
 
 Value *Compiler::generateWordFromDouble(Value *val)
