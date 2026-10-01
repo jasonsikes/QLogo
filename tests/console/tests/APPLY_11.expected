@@ -2,5 +2,5 @@
 ? 5
 ? "hello
 ? apply doesn't like hello as input
-? not enough inputs to ? in p
+? ? doesn't like nothing as input in p
 [show ?]
