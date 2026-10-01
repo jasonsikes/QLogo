@@ -773,7 +773,7 @@ Value *Compiler::genLessp(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [num1, num2] = cs.children();
 
-    return cs.ret(scaff_->builder_.CreateFCmpULT(num1, num2, DBG_NAME("lessp")));
+    return cs.ret(scaff_->builder_.CreateFCmpOLT(num1, num2, DBG_NAME("lessp")));
 }
 
 /***DOC GREATERP GREATER?
@@ -792,7 +792,7 @@ Value *Compiler::genGreaterp(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [num1, num2] = cs.children();
 
-    return cs.ret(scaff_->builder_.CreateFCmpUGT(num1, num2, DBG_NAME("greaterp")));
+    return cs.ret(scaff_->builder_.CreateFCmpOGT(num1, num2, DBG_NAME("greaterp")));
 }
 
 /***DOC LESSEQUALP LESSEQUAL?
@@ -811,7 +811,7 @@ Value *Compiler::genLessequalp(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [num1, num2] = cs.children();
 
-    return cs.ret(scaff_->builder_.CreateFCmpULE(num1, num2, DBG_NAME("lessp")));
+    return cs.ret(scaff_->builder_.CreateFCmpOLE(num1, num2, DBG_NAME("lessp")));
 }
 
 /***DOC GREATEREQUALP GREATEREQUAL?
@@ -830,7 +830,7 @@ Value *Compiler::genGreaterequalp(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [num1, num2] = cs.children();
 
-    return cs.ret(scaff_->builder_.CreateFCmpUGE(num1, num2, DBG_NAME("greaterp")));
+    return cs.ret(scaff_->builder_.CreateFCmpOGE(num1, num2, DBG_NAME("greaterp")));
 }
 
 /***DOC NOT
