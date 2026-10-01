@@ -41,16 +41,7 @@ COD***/
 // CMD PR 0 1 -1 n
 Value *Compiler::genPrint(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected & TypeNothing);
-
-    CallSite cs(this, node, TypeDatum);
-    AllocaInst *ary = cs.allocaAry(DBG_NAME("printAry"));
-    Value *useShow = CoBool(false);
-    Value *addNewline = CoBool(true);
-
-    Value *retval = generateCallExtern(
-        stdWriteDatumAry, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
-    return cs.ret(generateNotFlowControl(retval));
+    return generateWrite(node, expected, false, true);
 }
 
 /***DOC SHOW
@@ -65,16 +56,7 @@ COD***/
 // CMD SHOW 0 1 -1 n
 Value *Compiler::genShow(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected & TypeNothing);
-
-    CallSite cs(this, node, TypeDatum);
-    AllocaInst *ary = cs.allocaAry(DBG_NAME("showAry"));
-    Value *useShow = CoBool(true);
-    Value *addNewline = CoBool(true);
-
-    Value *retval = generateCallExtern(
-        stdWriteDatumAry, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
-    return cs.ret(generateNotFlowControl(retval));
+    return generateWrite(node, expected, true, true);
 }
 
 /***DOC TYPE
@@ -102,15 +84,24 @@ COD***/
 // CMD TYPE 0 1 -1 n
 Value *Compiler::genType(const DatumPtr &node, TypeMask expected)
 {
+    return generateWrite(node, expected, false, false);
+}
+
+Value *Compiler::generateWrite(const DatumPtr &node, TypeMask expected, bool useShow, bool addWhitespace)
+{
     Q_ASSERT(expected & TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
-    AllocaInst *ary = cs.allocaAry(DBG_NAME("typeAry"));
-    Value *useShow = CoBool(false);
-    Value *addNewline = CoBool(false);
+    AllocaInst *ary = cs.allocaAry(DBG_NAME("writeAry"));
 
     Value *retval = generateCallExtern(
-        stdWriteDatumAry, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
+        stdWriteDatumAry,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(ary),
+        PaInt32(ary->getArraySize()),
+        PaBool(CoBool(useShow)),
+        PaBool(CoBool(addWhitespace)));
     return cs.ret(generateNotFlowControl(retval));
 }
 

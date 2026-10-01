@@ -312,6 +312,9 @@ class Compiler
     // OPENREAD / OPENWRITE / OPENAPPEND / OPENUPDATE. `mode` is OpenMode as int32.
     llvm::Value *generateOpen(const DatumPtr &node, TypeMask expected, int32_t mode);
 
+    // PRINT / SHOW / TYPE. `useShow` brackets lists; `addWhitespace` adds spaces and a newline.
+    llvm::Value *generateWrite(const DatumPtr &node, TypeMask expected, bool useShow, bool addWhitespace);
+
     // Group consecutive expressions of the same type (tag or non-tag) together.
     QList<QList<DatumPtr>> groupConsecutiveExpressions(const QList<DatumPtr> &expressions);
 
