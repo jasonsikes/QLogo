@@ -844,12 +844,12 @@ Value *Compiler::genCleartext(const DatumPtr &node, TypeMask expected)
 /***DOC SETCURSOR
 SETCURSOR vector
 
-    command.  The input is a list of two numbers, the column and row
-    coordinates of a text window position (origin in the upper left
-    corner, positive direction is southeast).  The text cursor is
-    moved to the requested position.  In the GUI the text console may
-    scroll to reveal the requested position if it was previously
-    outside of the viewing area. For example,
+    command.  The input is a list of two nonnegative integers, the
+    column and row coordinates of a text window position (origin in
+    the upper left corner, positive direction is southeast).  The text
+    cursor is moved to the requested position.  In the GUI the text
+    console may scroll to reveal the requested position if it was
+    previously outside of the viewing area. For example,
     
         ? setcursor [0 0]
     
