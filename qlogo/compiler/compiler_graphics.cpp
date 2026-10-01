@@ -610,7 +610,6 @@ COD***/
 // CMD REFRESH 0 0 0 n
 Value *Compiler::genRefresh(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateVoidRetval(node));
 }
@@ -625,7 +624,6 @@ COD***/
 // CMD NOREFRESH 0 0 0 n
 Value *Compiler::genNorefresh(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateVoidRetval(node));
 }

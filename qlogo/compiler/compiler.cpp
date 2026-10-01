@@ -580,7 +580,6 @@ Value *Compiler::generateCastFromDouble(Value *src, ASTNode *parent, TypeMask ex
         return srcAsWord;
     if (expected & TypeBool)
         return generateBoolFromDatum(parent, srcAsWord);
-    Q_ASSERT(expected & TypeNothing);
     return generateImmediateReturn(generateErrorNoSay(srcAsWord));
 }
 
@@ -593,7 +592,6 @@ Value *Compiler::generateCastFromBool(Value *src, ASTNode *parent, TypeMask expe
         return srcAsWord;
     if (expected & TypeReal)
         return generateDoubleFromDatum(parent, srcAsWord);
-    Q_ASSERT(expected & TypeNothing);
     return generateImmediateReturn(generateErrorNoSay(srcAsWord));
 }
 
@@ -605,7 +603,6 @@ Value *Compiler::generateCastFromDatum(Value *src, ASTNode *parent, TypeMask exp
         return generateBoolFromDatum(parent, src);
     if (expected & TypeReal)
         return generateDoubleFromDatum(parent, src);
-    Q_ASSERT(expected & TypeNothing);
     return generateImmediateReturn(generateErrorNoSay(src));
 }
 
@@ -637,7 +634,6 @@ Value *Compiler::generateCastFromDN(Value *src, ASTNode *parent, TypeMask expect
         return src;
     if (expected & TypeBool)
         return generateBoolFromDatum(parent, src);
-    Q_ASSERT(expected & TypeReal);
     return generateDoubleFromDatum(parent, src);
 }
 

@@ -139,7 +139,6 @@ COD***/
 // CMD .MACRO -1 -1 -1 n
 Value *Compiler::genInputProcedure(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
     // We take the parameters as literals; we don't generate children.
     // Pass the node directly to the input function.
     return generateCallExtern(inputProcedure, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.datumValue())));
@@ -178,7 +177,6 @@ COD***/
 // CMD .DEFMACRO 2 2 2 n
 Value *Compiler::genDefine(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [procname, text] = cs.children();
@@ -208,7 +206,6 @@ COD***/
 // CMD TEXT 1 1 1 d
 Value *Compiler::genText(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
 
     CallSite cs(this, node, TypeDatum);
     Value *procname = cs.child(0);
@@ -236,7 +233,6 @@ COD***/
 // CMD FULLTEXT 1 1 1 d
 Value *Compiler::genFulltext(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
 
     CallSite cs(this, node, TypeDatum);
     Value *procname = cs.child(0);
@@ -261,7 +257,6 @@ COD***/
 // CMD COPYDEF 2 2 2 n
 Value *Compiler::genCopydef(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [newname, oldname] = cs.children();
@@ -294,7 +289,6 @@ COD***/
 // CMD THING 1 1 1 d
 Value *Compiler::genThing(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
 
     CallSite cs(this, node, TypeDatum);
     Value *varname = cs.child(0);
@@ -338,7 +332,6 @@ COD***/
 // CMD MAKE 2 2 2 n
 Value *Compiler::genMake(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [varname, value] = cs.children();
@@ -357,7 +350,6 @@ Value *Compiler::genMake(const DatumPtr &node, TypeMask expected)
 
 Value *Compiler::genFoo(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
 
     CallSite cs(this, node, TypeNothing);
     Value *retval = generateCallExtern(
@@ -367,7 +359,6 @@ Value *Compiler::genFoo(const DatumPtr &node, TypeMask expected)
 
 Value *Compiler::genSetfoo(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *value = cs.child(0);
@@ -398,7 +389,6 @@ COD***/
 // CMD LOCAL 1 1 -1 n
 Value *Compiler::genLocal(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     AllocaInst *ary = cs.allocaAry(DBG_NAME("localAry"));
@@ -429,7 +419,6 @@ COD***/
 // CMD GLOBAL 1 1 -1 n
 Value *Compiler::genGlobal(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     AllocaInst *ary = cs.allocaAry(DBG_NAME("globalAry"));
@@ -452,7 +441,6 @@ COD***/
 // CMD PPROP 3 3 3 n
 Value *Compiler::genPprop(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum, TypeDatum, TypeDatum);
     auto [plistname, propname, value] = cs.children();
@@ -473,7 +461,6 @@ COD***/
 // CMD GPROP 2 2 2 d
 Value *Compiler::genGprop(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
 
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [plistname, propname] = cs.children();
@@ -494,7 +481,6 @@ COD***/
 // CMD REMPROP 2 2 2 n
 Value *Compiler::genRemprop(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [plistname, propname] = cs.children();
@@ -518,7 +504,6 @@ COD***/
 // CMD PLIST 1 1 1 d
 Value *Compiler::genPlist(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
 
     CallSite cs(this, node, TypeDatum);
     Value *plistname = cs.child(0);
@@ -541,7 +526,6 @@ COD***/
 // CMD PROCEDURE? 1 1 1 b
 Value *Compiler::genProcedurep(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
 
     CallSite cs(this, node, TypeDatum);
     Value *name = cs.child(0);
@@ -560,7 +544,6 @@ COD***/
 // CMD MACRO? 1 1 1 b
 Value *Compiler::genMacrop(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
 
     CallSite cs(this, node, TypeDatum);
     Value *name = cs.child(0);
@@ -581,7 +564,6 @@ COD***/
 // CMD PRIMITIVE? 1 1 1 b
 Value *Compiler::genPrimitivep(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
 
     CallSite cs(this, node, TypeDatum);
     Value *name = cs.child(0);
@@ -601,7 +583,6 @@ COD***/
 // CMD DEFINED? 1 1 1 b
 Value *Compiler::genDefinedp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
 
     CallSite cs(this, node, TypeDatum);
     Value *name = cs.child(0);
@@ -620,7 +601,6 @@ COD***/
 // CMD NAME? 1 1 1 b
 Value *Compiler::genNamep(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
 
     CallSite cs(this, node, TypeDatum);
     Value *name = cs.child(0);
@@ -641,7 +621,6 @@ COD***/
 // CMD PLIST? 1 1 1 b
 Value *Compiler::genPlistp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
 
     CallSite cs(this, node, TypeDatum);
     Value *name = cs.child(0);
@@ -662,7 +641,6 @@ COD***/
 // CMD ARITY 1 1 1 d
 Value *Compiler::genArity(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
 
     CallSite cs(this, node, TypeDatum);
     Value *name = cs.child(0);
@@ -686,7 +664,6 @@ COD***/
 // CMD BURY 1 1 1 n
 Value *Compiler::genBury(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *contents = cs.child(0);
@@ -713,7 +690,6 @@ COD***/
 // CMD TRACE 1 1 1 n
 Value *Compiler::genTrace(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *contents = cs.child(0);
@@ -740,7 +716,6 @@ COD***/
 // CMD STEP 1 1 1 n
 Value *Compiler::genStep(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *contents = cs.child(0);
@@ -763,7 +738,6 @@ COD***/
 // CMD UNBURY 1 1 1 n
 Value *Compiler::genUnbury(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *contents = cs.child(0);
@@ -784,7 +758,6 @@ COD***/
 // CMD UNTRACE 1 1 1 n
 Value *Compiler::genUntrace(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *contents = cs.child(0);
@@ -805,7 +778,6 @@ COD***/
 // CMD UNSTEP 1 1 1 n
 Value *Compiler::genUnstep(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *contents = cs.child(0);
@@ -827,7 +799,6 @@ COD***/
 // CMD BURIED 0 0 0 d
 Value *Compiler::genBuried(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdBuried, PaAddr(scaff_->evaluator_)));
 }
@@ -842,7 +813,6 @@ COD***/
 // CMD TRACED 0 0 0 d
 Value *Compiler::genTraced(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdTraced, PaAddr(scaff_->evaluator_)));
 }
@@ -857,7 +827,6 @@ COD***/
 // CMD STEPPED 0 0 0 d
 Value *Compiler::genStepped(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdStepped, PaAddr(scaff_->evaluator_)));
 }
@@ -874,7 +843,6 @@ COD***/
 // CMD PROCEDURES 0 0 0 d
 Value *Compiler::genProcedures(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdProcedures, PaAddr(scaff_->evaluator_)));
 }
@@ -891,7 +859,6 @@ COD***/
 // CMD PRIMITIVES 0 0 0 d
 Value *Compiler::genPrimitives(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdPrimitives, PaAddr(scaff_->evaluator_)));
 }
@@ -907,7 +874,6 @@ COD***/
 // CMD NAMES 0 0 0 d
 Value *Compiler::genNames(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdNames, PaAddr(scaff_->evaluator_)));
 }
@@ -923,7 +889,6 @@ COD***/
 // CMD PLISTS 0 0 0 d
 Value *Compiler::genPlists(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdPlists, PaAddr(scaff_->evaluator_)));
 }
@@ -940,7 +905,6 @@ COD***/
 // CMD CONTENTS 0 0 0 d
 Value *Compiler::genContents(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdContents, PaAddr(scaff_->evaluator_)));
 }
@@ -957,7 +921,6 @@ COD***/
 // CMD NODES 0 0 0 d
 Value *Compiler::genNodes(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdNodes, PaAddr(scaff_->evaluator_)));
 }
@@ -975,7 +938,6 @@ COD***/
 // CMD PO 1 1 1 n
 Value *Compiler::genPrintout(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *contents = cs.child(0);
@@ -999,7 +961,6 @@ COD***/
 // CMD POT 1 1 1 n
 Value *Compiler::genPot(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *contents = cs.child(0);
@@ -1024,7 +985,6 @@ COD***/
 // CMD ER 1 1 1 n
 Value *Compiler::genErase(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *contents = cs.child(0);
@@ -1039,7 +999,6 @@ Value *Compiler::genErase(const DatumPtr &node, TypeMask expected)
 Value *Compiler::generateEraseUnburied(const DatumPtr &node, TypeMask expected,
                                        bool procedures, bool variables, bool plists)
 {
-    Q_ASSERT(expected && TypeNothing);
     CallSite cs(this, node, TypeNothing);
     generateCallExtern(
         stdEraseUnburied,
@@ -1117,7 +1076,6 @@ COD***/
 // CMD BURIED? 1 1 1 d
 Value *Compiler::genBuriedp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected & (TypeDatum | TypeBool | TypeNothing));
 
     CallSite cs(this, node, TypeDatum);
     Value *contents = cs.child(0);
@@ -1145,7 +1103,6 @@ COD***/
 // CMD TRACED? 1 1 1 d
 Value *Compiler::genTracedp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected & (TypeDatum | TypeBool | TypeNothing));
 
     CallSite cs(this, node, TypeDatum);
     Value *contents = cs.child(0);
@@ -1173,7 +1130,6 @@ COD***/
 // CMD STEPPED? 1 1 1 d
 Value *Compiler::genSteppedp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected & (TypeDatum | TypeBool | TypeNothing));
 
     CallSite cs(this, node, TypeDatum);
     Value *contents = cs.child(0);
@@ -1212,7 +1168,6 @@ COD***/
 // CMD SAVE 0 -1 1 n
 Value *Compiler::genSave(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
     CallSite cs(this, node, TypeDatum);
     Value *filenameAddr = CoAddr(0);
     if (cs.count() > 0)
@@ -1245,7 +1200,6 @@ COD***/
 // CMD LOAD 1 1 1 n
 Value *Compiler::genLoad(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *filename = cs.child(0);
@@ -1280,7 +1234,6 @@ COD***/
 // CMD HELP 0 -1 1 n
 Value *Compiler::genHelp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
     CallSite cs(this, node, TypeDatum);
     Value *nameAddr = CoAddr(0);
     if (cs.count() > 0)
@@ -1314,7 +1267,6 @@ COD***/
 // CMD ED 0 -1 1 n
 Value *Compiler::genEdit(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
     CallSite cs(this, node, TypeDatum);
     Value *contentsAddr = CoAddr(0);
     if (cs.count() > 0)
@@ -1336,7 +1288,6 @@ COD***/
 // CMD EDITFILE 1 1 1 n
 Value *Compiler::genEditfile(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *filename = cs.child(0);
@@ -1362,7 +1313,6 @@ COD***/
 // CMD SETEDITOR 1 1 1 n
 Value *Compiler::genSeteditor(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *command = cs.child(0);
@@ -1385,7 +1335,6 @@ COD***/
 // CMD EDITOR 0 0 0 d
 Value *Compiler::genEditor(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdEditor, PaAddr(scaff_->evaluator_)));
 }
@@ -1401,7 +1350,6 @@ COD***/
 // CMD SETTEMPLOC 1 1 1 n
 Value *Compiler::genSettemploc(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *path = cs.child(0);
@@ -1432,7 +1380,6 @@ COD***/
 // CMD TEMPLOC 0 0 0 d
 Value *Compiler::genTemploc(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdTemploc, PaAddr(scaff_->evaluator_)));
 }
@@ -1449,7 +1396,6 @@ COD***/
 // CMD GC 0 0 1 n
 Value *Compiler::genGc(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
     CallSite cs(this, node, TypeDatum);
     return cs.ret(generateVoidRetval(node));
 }
@@ -1465,7 +1411,6 @@ COD***/
 // CMD .SETSEGMENTSIZE 1 1 1 n
 Value *Compiler::genDotSetsegmentsize(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
     CallSite cs(this, node, TypeDatum);
     return cs.ret(generateVoidRetval(node));
 }
