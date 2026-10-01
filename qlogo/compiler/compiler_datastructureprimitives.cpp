@@ -211,7 +211,6 @@ Value *Compiler::generateEqualpCompare(Value *thing1, Value *thing2)
 
 Value *Compiler::genEqualp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
 
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [thing1, thing2] = cs.children();
@@ -231,7 +230,6 @@ COD***/
 // CMD NOTEQUAL? 2 2 2 b
 Value *Compiler::genNotequalp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [thing1, thing2] = cs.children();
     Value *eq = generateEqualpCompare(thing1, thing2);
@@ -250,7 +248,6 @@ COD***/
 // CMD WORD 0 2 -1 d
 Value *Compiler::genWord(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     AllocaInst *ary = cs.allocaAry(DBG_NAME("wordAry"));
     return cs.ret(generateCallExtern(concatWord, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize())));
@@ -267,7 +264,6 @@ COD***/
 // CMD LIST 0 2 -1 d
 Value *Compiler::genList(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     AllocaInst *ary = cs.allocaAry(DBG_NAME("listAry"));
     return cs.ret(generateCallExtern(createList, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize())));
@@ -287,7 +283,6 @@ COD***/
 // CMD SE 0 2 -1 d
 Value *Compiler::genSentence(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     AllocaInst *ary = cs.allocaAry(DBG_NAME("sentenceAry"));
     return cs.ret(generateCallExtern(createSentence, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize())));
@@ -323,7 +318,6 @@ Value *Compiler::genLput(const DatumPtr &node, TypeMask expected)
 
 Value *Compiler::generateFputlput(const DatumPtr &node, TypeMask expected, bool isLput)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [thing, list] = cs.children();
     Value *listWordTest = nullptr;
@@ -399,7 +393,6 @@ COD***/
 // CMD ARRAY 1 1 2 d
 Value *Compiler::genArray(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeReal);
     Value *size = cs.child(0);
     Value *origin = nullptr;
@@ -428,7 +421,6 @@ COD***/
 // CMD LISTTOARRAY 1 1 2 d
 Value *Compiler::genListtoarray(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     std::vector<TypeMask> childTypes{TypeDatum};
     if (node.astnodeValue()->countOfChildren() == 2)
         childTypes.push_back(TypeReal);
@@ -458,7 +450,6 @@ COD***/
 // CMD ARRAYTOLIST 1 1 1 d
 Value *Compiler::genArraytolist(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *array = cs.child(0);
     array = generateArrayFromDatum(node.astnodeValue(), array);
@@ -476,7 +467,6 @@ COD***/
 // CMD FIRST 1 1 1 d
 Value *Compiler::genFirst(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *thing = cs.child(0);
 
@@ -498,7 +488,6 @@ COD***/
 // CMD LAST 1 1 1 d
 Value *Compiler::genLast(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *wordorlist = cs.child(0);
 
@@ -519,7 +508,6 @@ COD***/
 // CMD BF 1 1 1 d
 Value *Compiler::genButfirst(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *wordorlist = cs.child(0);
 
@@ -537,7 +525,6 @@ COD***/
 // CMD FIRSTS 1 1 1 d
 Value *Compiler::genFirsts(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *list = cs.child(0);
     list = generateListFromDatum(node.astnodeValue(), list);
@@ -558,7 +545,6 @@ COD***/
 // CMD BFS 1 1 1 d
 Value *Compiler::genButfirsts(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *list = cs.child(0);
     list = generateListFromDatum(node.astnodeValue(), list);
@@ -580,7 +566,6 @@ COD***/
 // CMD BL 1 1 1 d
 Value *Compiler::genButlast(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *wordorlist = cs.child(0);
 
@@ -602,7 +587,6 @@ COD***/
 // CMD ITEM 2 2 2 d
 Value *Compiler::genItem(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeReal, TypeDatum);
     auto [index, thing] = cs.children();
 
@@ -654,7 +638,6 @@ Value *Compiler::genDotSetitem(const DatumPtr &node, TypeMask expected)
 
 Value *Compiler::generateSetitem(const DatumPtr &node, TypeMask expected, bool isDangerous)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeReal, TypeDatum, TypeDatum);
     auto [index, array, value] = cs.children();
     array = generateArrayFromDatum(node.astnodeValue(), array);
@@ -695,7 +678,6 @@ COD***/
 // CMD .SETFIRST 2 2 2 n
 Value *Compiler::genDotSetfirst(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [list, value] = cs.children();
     list = generateNotEmptyListFromDatum(node.astnodeValue(), list);
@@ -718,7 +700,6 @@ COD***/
 // CMD .SETBF 2 2 2 n
 Value *Compiler::genDotSetbf(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [list, value] = cs.children();
     list = generateNotEmptyListFromDatum(node.astnodeValue(), list);
@@ -737,7 +718,6 @@ COD***/
 // CMD WORD? 1 1 1 b
 Value *Compiler::genWordp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *thing = cs.child(0);
     Value *thingType = generateGetDatumIsa(thing);
@@ -756,7 +736,6 @@ COD***/
 // CMD ARRAY? 1 1 1 b
 Value *Compiler::genArrayp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *thing = cs.child(0);
     Value *thingType = generateGetDatumIsa(thing);
@@ -775,7 +754,6 @@ COD***/
 // CMD LIST? 1 1 1 b
 Value *Compiler::genListp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *thing = cs.child(0);
     Value *thingType = generateGetDatumIsa(thing);
@@ -796,7 +774,6 @@ COD***/
 // CMD EMPTY? 1 1 1 b
 Value *Compiler::genEmptyp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *thing = cs.child(0);
     return cs.ret(generateCallExtern(isEmpty, PaAddr(thing)));
@@ -816,7 +793,6 @@ COD***/
 // CMD BEFORE? 2 2 2 b
 Value *Compiler::genBeforep(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [word1, word2] = cs.children();
     word1 = generateWordFromDatum(node.astnodeValue(), word1);
@@ -837,7 +813,6 @@ COD***/
 // CMD .EQ 2 2 2 b
 Value *Compiler::genDotEq(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [thing1, thing2] = cs.children();
     Value *isEqualCond = scaff_->builder_.CreateICmpEQ(thing1, thing2, DBG_NAME("isEqualCond"));
@@ -858,7 +833,6 @@ COD***/
 // CMD MEMBER? 2 2 2 b
 Value *Compiler::genMemberp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [thing1, thing2] = cs.children(); // thing, container
     return cs.ret(generateCallExtern(isMember, PaAddr(scaff_->evaluator_), PaAddr(thing1), PaAddr(thing2)));
@@ -876,7 +850,6 @@ COD***/
 // CMD SUBSTRING? 2 2 2 b
 Value *Compiler::genSubstringp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [thing1, thing2] = cs.children();
     return cs.ret(generateCallExtern(isSubstring, PaAddr(thing1), PaAddr(thing2)));
@@ -892,7 +865,6 @@ COD***/
 // CMD NUMBER? 1 1 1 b
 Value *Compiler::genNumberp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *thing = cs.child(0);
     return cs.ret(generateCallExtern(isNumber, PaAddr(thing)));
@@ -919,7 +891,6 @@ COD***/
 // CMD VBARRED? 1 1 1 b
 Value *Compiler::genVbarredp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *c = cs.child(0);
 
@@ -943,7 +914,6 @@ COD***/
 // CMD COUNT 1 1 1 n
 Value *Compiler::genCount(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *thing = cs.child(0);
     return cs.ret(generateCallExtern(datumCount, PaAddr(thing)));
@@ -965,7 +935,6 @@ COD***/
 // CMD ASCII 1 1 1 n
 Value *Compiler::genAscii(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *c = cs.child(0);
 
@@ -991,7 +960,6 @@ COD***/
 // CMD RAWASCII 1 1 1 n
 Value *Compiler::genRawascii(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *c = cs.child(0);
 
@@ -1015,7 +983,6 @@ COD***/
 // CMD CHAR 1 1 1 d
 Value *Compiler::genChar(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeReal);
     Value *c = cs.child(0);
 
@@ -1038,7 +1005,6 @@ COD***/
 // CMD MEMBER 2 2 2 d
 Value *Compiler::genMember(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [thing1, thing2] = cs.children();
 
@@ -1055,7 +1021,6 @@ COD***/
 // CMD LOWERCASE 1 1 1 d
 Value *Compiler::genLowercase(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *word = cs.child(0);
     word = generateFromDatum(Datum::typeWord, node.astnodeValue(), word);
@@ -1071,7 +1036,6 @@ COD***/
 // CMD UPPERCASE 1 1 1 d
 Value *Compiler::genUppercase(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *word = cs.child(0);
     word = generateFromDatum(Datum::typeWord, node.astnodeValue(), word);
@@ -1091,7 +1055,6 @@ COD***/
 // CMD STANDOUT 1 1 1 d
 Value *Compiler::genStandout(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *thing = cs.child(0);
     return cs.ret(generateCallExtern(standout, PaAddr(scaff_->evaluator_), PaAddr(thing)));
@@ -1107,7 +1070,6 @@ COD***/
 // CMD PARSE 1 1 1 d
 Value *Compiler::genParse(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *word = cs.child(0);
     word = generateFromDatum(Datum::typeWord, node.astnodeValue(), word);
@@ -1126,7 +1088,6 @@ COD***/
 // CMD RUNPARSE 1 1 1 d
 Value *Compiler::genRunparse(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *wordorlist = cs.child(0);
     wordorlist = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), wordorlist);

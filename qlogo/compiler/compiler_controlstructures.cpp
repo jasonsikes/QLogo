@@ -632,7 +632,6 @@ COD***/
 // CMD MARK 1 1 1 d
 Value *Compiler::genMark(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
     CallSite cs(this, node, TypeDatum);
     Value *thing = cs.child(0);
     return cs.ret(generateCallExtern(stdMark, PaAddr(thing)));
@@ -926,8 +925,6 @@ COD***/
 // CMD ? 0 0 1 d
 Value *Compiler::genQ(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
-
     CallSite cs(this, node, TypeDatum);
     Value *index = CoAddr(Datum::notADatum());
     if (cs.count() == 1)
