@@ -834,13 +834,17 @@ COD***/
 Value *Compiler::genSetcursor(const DatumPtr &node, TypeMask expected)
 {
     CallSite cs(this, node, TypeDatum);
-    AllocaInst *posAry = generateNumberAryFromDatum(node.astnodeValue(), cs.child(0), 2);
+    // Nonnegative exact integers in signed i32 (INT_MAX is exact in double).
+    // Checked with the list so setcursor [1.5 0] is one ERRACT trip on the vector.
+    AllocaInst *posAry = generateNumberAryFromDatum(node.astnodeValue(), cs.child(0), 2, [this](Value *n) {
+        return generateIsExactIntegerInRange(n, 0.0, 2147483647.0);
+    });
     Value *colPtr = scaff_->builder_.CreateConstInBoundsGEP1_32(TyDouble, posAry, 0, DBG_NAME("colPtr"));
     Value *rowPtr = scaff_->builder_.CreateConstInBoundsGEP1_32(TyDouble, posAry, 1, DBG_NAME("rowPtr"));
     Value *colD = scaff_->builder_.CreateLoad(TyDouble, colPtr, DBG_NAME("col"));
     Value *rowD = scaff_->builder_.CreateLoad(TyDouble, rowPtr, DBG_NAME("row"));
-    Value *col = generateNotNegativeInt32FromDouble(node.astnodeValue(), colD);
-    Value *row = generateNotNegativeInt32FromDouble(node.astnodeValue(), rowD);
+    Value *col = scaff_->builder_.CreateFPToSI(colD, TyInt32, DBG_NAME("colI"));
+    Value *row = scaff_->builder_.CreateFPToSI(rowD, TyInt32, DBG_NAME("rowI"));
     generateCallExtern(stdSetCursor, PaInt32(row), PaInt32(col));
     return cs.ret(generateVoidRetval(node));
 }

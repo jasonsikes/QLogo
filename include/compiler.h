@@ -227,9 +227,11 @@ class Compiler
     // Emit i1: src is a finite integer that fits in signed or unsigned i32.
     llvm::Value *generateIsExactInt32(llvm::Value *src, bool isSigned);
 
-    // Convert a double to an int32.
-    // Emit return "doesn't like" error if conversion not possible.
-    llvm::Value *generateInt32FromDouble(ASTNode *parent, llvm::Value *src, bool isSigned);
+    // Convert a double to an int32. Must be an exact integer that fits in
+    // signed or unsigned i32. `extra`, if set, is ANDed into the ERRACT
+    // predicate so extra constraints share one trip.
+    llvm::Value *generateInt32FromDouble(ASTNode *parent, llvm::Value *src, bool isSigned,
+                                        const validatorFunction &extra = {});
 
     // Shift an i32 by a signed count. Negative count shifts the other way.
     // |count| >= 32 saturates: shl/lshr → 0, ashr → sign fill. Never poison.
@@ -312,6 +314,15 @@ class Compiler
     // BITAND / BITOR / BITXOR. `op` is And, Or, or Xor.
     llvm::Value *generateBitOp(const DatumPtr &node, TypeMask expected, llvm::Instruction::BinaryOps op);
 
+    // ASHIFT / LSHIFT. `arithmetic` selects sign-fill vs zero-fill on a right shift.
+    llvm::Value *generateShift(const DatumPtr &node, TypeMask expected, bool arithmetic);
+
+    // ARCTAN / RADARCTAN. `toDegrees` converts the radian result.
+    llvm::Value *generateArctan(const DatumPtr &node, TypeMask expected, bool toDegrees);
+
+    // SIN / COS / RADSIN / RADCOS. `id` is sin or cos; `fromDegrees` converts the input.
+    llvm::Value *generateTrig(const DatumPtr &node, TypeMask expected, llvm::Intrinsic::ID id, bool fromDegrees);
+
     // OPENREAD / OPENWRITE / OPENAPPEND / OPENUPDATE. `mode` is OpenMode as int32.
     llvm::Value *generateOpen(const DatumPtr &node, TypeMask expected, int32_t mode);
 
@@ -325,7 +336,11 @@ class Compiler
     std::shared_ptr<CompiledText> generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, List *aList);
 
     // Generate a number array from an already-evaluated datum.
-    llvm::AllocaInst *generateNumberAryFromDatum(ASTNode *parent, llvm::Value *src, int32_t size);
+    // `elementOk`, if set, is applied to each stored double and ANDed into the
+    // list predicate, so those constraints share the list's ERRACT trip.
+    // A failure blames the list, not the extracted number.
+    llvm::AllocaInst *generateNumberAryFromDatum(ASTNode *parent, llvm::Value *src, int32_t size,
+                                                 const validatorFunction &elementOk = {});
 
     // Get the tag name from a tag node.
     QString getTagNameFromNode(const DatumPtr &node) const;

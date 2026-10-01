@@ -1132,12 +1132,13 @@ std::vector<Value *> Compiler::generateChildren(ASTNode *node, std::vector<TypeM
     return retval;
 }
 
-AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, Value *src, int32_t size)
+AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, Value *src, int32_t size,
+                                                 const validatorFunction &elementOk)
 {
     Value *vSize = CoInt32(size);
     AllocaInst *ary = scaff_->createEntryBlockAlloca(TyDouble, vSize, DBG_NAME("ary"));
 
-    auto isNumberList = [this, vSize, ary](Value *candidate) {
+    auto isNumberList = [this, vSize, ary, size, &elementOk](Value *candidate) {
         BasicBlock *notListBB = scaff_->createBasicBlock(DBG_NAME("notList"));
         BasicBlock *isListBB = scaff_->createBasicBlock(DBG_NAME("isList"));
         BasicBlock *tryFillBB = scaff_->createBasicBlock(DBG_NAME("tryFill"));
@@ -1162,11 +1163,48 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, Value *src, in
         scaff_->builder_.SetInsertPoint(tryFillBB);
         Value *isGood = generateCallExtern(getNumberAryFromList, PaAddr(candidate), PaAddr(ary));
         Value *fillGood = scaff_->builder_.CreateICmpEQ(isGood, CoInt32(1), DBG_NAME("fillTest"));
-        scaff_->builder_.CreateBr(isListDoneBB);
+
+        // Optional per-element predicate. Runs only after a complete numeric fill,
+        // and a failure still rejects the list (one ERRACT trip).
+        BasicBlock *elementsBB = nullptr;
+        BasicBlock *fillFailBB = nullptr;
+        Value *elementsOk = nullptr;
+        if (elementOk)
+        {
+            elementsBB = scaff_->createBasicBlock(DBG_NAME("elements"));
+            fillFailBB = scaff_->createBasicBlock(DBG_NAME("fillFail"));
+            scaff_->builder_.CreateCondBr(fillGood, elementsBB, fillFailBB);
+
+            scaff_->builder_.SetInsertPoint(elementsBB);
+            elementsOk = CoBool(true);
+            for (int32_t i = 0; i < size; ++i)
+            {
+                Value *ptr = scaff_->builder_.CreateConstInBoundsGEP1_32(
+                    TyDouble, ary, static_cast<unsigned>(i), DBG_NAME("elemPtr"));
+                Value *elem = scaff_->builder_.CreateLoad(TyDouble, ptr, DBG_NAME("elem"));
+                elementsOk = scaff_->builder_.CreateAnd(elementsOk, elementOk(elem), DBG_NAME("elemOk"));
+            }
+            scaff_->builder_.CreateBr(isListDoneBB);
+
+            scaff_->builder_.SetInsertPoint(fillFailBB);
+            scaff_->builder_.CreateBr(isListDoneBB);
+        }
+        else
+        {
+            scaff_->builder_.CreateBr(isListDoneBB);
+        }
 
         scaff_->builder_.SetInsertPoint(isListDoneBB);
-        PHINode *listOk = scaff_->builder_.CreatePHI(TyBool, 2, DBG_NAME("listOk"));
-        listOk->addIncoming(fillGood, tryFillBB);
+        PHINode *listOk = scaff_->builder_.CreatePHI(TyBool, elementOk ? 3 : 2, DBG_NAME("listOk"));
+        if (elementOk)
+        {
+            listOk->addIncoming(elementsOk, elementsBB);
+            listOk->addIncoming(CoBool(false), fillFailBB);
+        }
+        else
+        {
+            listOk->addIncoming(fillGood, tryFillBB);
+        }
         listOk->addIncoming(CoBool(false), isListBB);
         scaff_->builder_.CreateBr(checkedBB);
 

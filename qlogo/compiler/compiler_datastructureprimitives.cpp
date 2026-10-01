@@ -405,8 +405,7 @@ Value *Compiler::genArray(const DatumPtr &node, TypeMask expected)
         origin = CoInt32(1);
     }
 
-    size = generateNotNegativeFromDouble(node.astnodeValue(), size);
-    size = generateInt32FromDouble(node.astnodeValue(), size, true);
+    size = generateNotNegativeInt32FromDouble(node.astnodeValue(), size);
 
     return cs.ret(generateCallExtern(createArray, PaAddr(scaff_->evaluator_), PaInt32(size), PaInt32(origin)));
 }

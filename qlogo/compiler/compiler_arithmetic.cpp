@@ -53,10 +53,14 @@ Value *Compiler::generateIsExactInt32(Value *src, bool isSigned)
     return generateIsExactIntegerInRange(src, 0.0, kUInt32MaxAsDouble);
 }
 
-Value *Compiler::generateInt32FromDouble(ASTNode *parent, Value *src, bool isSigned)
+Value *Compiler::generateInt32FromDouble(ASTNode *parent, Value *src, bool isSigned,
+                                        const validatorFunction &extra)
 {
-    Value *accepted = generateValidationDouble(parent, src, [this, isSigned](Value *candidate) {
-        return generateIsExactInt32(candidate, isSigned);
+    Value *accepted = generateValidationDouble(parent, src, [this, isSigned, extra](Value *candidate) {
+        Value *ok = generateIsExactInt32(candidate, isSigned);
+        if (extra)
+            ok = scaff_->builder_.CreateAnd(ok, extra(candidate), DBG_NAME("int32AndExtra"));
+        return ok;
     });
     return isSigned ? scaff_->builder_.CreateFPToSI(accepted, TyInt32, DBG_NAME("FpToInt"))
                     : scaff_->builder_.CreateFPToUI(accepted, TyInt32, DBG_NAME("FpToInt"));
@@ -64,20 +68,16 @@ Value *Compiler::generateInt32FromDouble(ASTNode *parent, Value *src, bool isSig
 
 Value *Compiler::generateNotNegativeInt32FromDouble(ASTNode *parent, Value *src)
 {
-    Value *accepted = generateValidationDouble(parent, src, [this](Value *candidate) {
-        return generateIsExactIntegerInRange(candidate, 0.0, kInt32MaxAsDouble);
+    return generateInt32FromDouble(parent, src, true, [this](Value *candidate) {
+        return scaff_->builder_.CreateFCmpOGE(candidate, CoDouble(0.0), DBG_NAME("notNegative"));
     });
-    return scaff_->builder_.CreateFPToSI(accepted, TyInt32, DBG_NAME("FpToInt"));
 }
 
 Value *Compiler::generateNotZeroInt32FromDouble(ASTNode *parent, Value *src)
 {
-    Value *accepted = generateValidationDouble(parent, src, [this](Value *candidate) {
-        Value *isInt = generateIsExactInt32(candidate, true);
-        Value *notZero = scaff_->builder_.CreateFCmpONE(candidate, CoDouble(0.0), DBG_NAME("notZero"));
-        return scaff_->builder_.CreateAnd(isInt, notZero, DBG_NAME("isNonzeroInt32"));
+    return generateInt32FromDouble(parent, src, true, [this](Value *candidate) {
+        return scaff_->builder_.CreateFCmpONE(candidate, CoDouble(0.0), DBG_NAME("notZero"));
     });
-    return scaff_->builder_.CreateFPToSI(accepted, TyInt32, DBG_NAME("FpToInt"));
 }
 
 Value *Compiler::generateI32Shift(Value *value, Value *count, bool arithmetic)
@@ -150,23 +150,22 @@ COD***/
 // CMD ARCTAN 1 1 2 r
 Value *Compiler::genArctan(const DatumPtr &node, TypeMask expected)
 {
+    return generateArctan(node, expected, true);
+}
+
+Value *Compiler::generateArctan(const DatumPtr &node, TypeMask expected, bool toDegrees)
+{
     CallSite cs(this, node, TypeReal);
     const std::vector<Value *> &children = cs.children();
 
-    Value *radToDeg = CoDouble(180 / PI);
     Value *retval;
-
-    // Calculate atan() or atan2() depending on number of children.
     if (children.size() == 1)
-    {
         retval = scaff_->builder_.CreateUnaryIntrinsic(Intrinsic::atan, children[0], {}, DBG_NAME("atan"));
-    }
     else
-    {
         retval = scaff_->builder_.CreateBinaryIntrinsic(
             Intrinsic::atan2, children[1], children[0], {}, DBG_NAME("atan2"));
-    }
-    retval = scaff_->builder_.CreateFMul(retval, radToDeg, DBG_NAME("theta"));
+    if (toDegrees)
+        retval = scaff_->builder_.CreateFMul(retval, CoDouble(180 / PI), DBG_NAME("theta"));
     return cs.ret(retval);
 }
 
@@ -181,13 +180,7 @@ COD***/
 // CMD ASHIFT 2 2 2 r
 Value *Compiler::genAshift(const DatumPtr &node, TypeMask expected)
 {
-    CallSite cs(this, node, TypeReal, TypeReal);
-    auto [num1, num2] = cs.children();
-
-    num1 = generateInt32FromDouble(node.astnodeValue(), num1, true);
-    num2 = generateInt32FromDouble(node.astnodeValue(), num2, true);
-    Value *retval = generateI32Shift(num1, num2, true);
-    return cs.ret(scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP")));
+    return generateShift(node, expected, true);
 }
 
 /***DOC LSHIFT
@@ -201,12 +194,17 @@ COD***/
 // CMD LSHIFT 2 2 2 r
 Value *Compiler::genLshift(const DatumPtr &node, TypeMask expected)
 {
+    return generateShift(node, expected, false);
+}
+
+Value *Compiler::generateShift(const DatumPtr &node, TypeMask expected, bool arithmetic)
+{
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [num1, num2] = cs.children();
 
     num1 = generateInt32FromDouble(node.astnodeValue(), num1, true);
     num2 = generateInt32FromDouble(node.astnodeValue(), num2, true);
-    Value *retval = generateI32Shift(num1, num2, false);
+    Value *retval = generateI32Shift(num1, num2, arithmetic);
     return cs.ret(scaff_->builder_.CreateSIToFP(retval, TyDouble, DBG_NAME("IntToFP")));
 }
 
@@ -526,12 +524,7 @@ COD***/
 // CMD SIN 1 1 1 r
 Value *Compiler::genSin(const DatumPtr &node, TypeMask expected)
 {
-    CallSite cs(this, node, TypeReal);
-    Value *num = cs.child(0);
-
-    Value *degToRad = CoDouble(PI / 180);
-    Value *theta = scaff_->builder_.CreateFMul(num, degToRad, DBG_NAME("theta"));
-    return cs.ret(scaff_->builder_.CreateUnaryIntrinsic(Intrinsic::sin, theta, {}, DBG_NAME("sin")));
+    return generateTrig(node, expected, Intrinsic::sin, true);
 }
 
 /***DOC INT
@@ -625,10 +618,7 @@ COD***/
 // CMD RADSIN 1 1 1 r
 Value *Compiler::genRadsin(const DatumPtr &node, TypeMask expected)
 {
-    CallSite cs(this, node, TypeReal);
-    Value *num = cs.child(0);
-
-    return cs.ret(scaff_->builder_.CreateUnaryIntrinsic(Intrinsic::sin, num, {}, DBG_NAME("sin")));
+    return generateTrig(node, expected, Intrinsic::sin, false);
 }
 
 /***DOC RADCOS
@@ -640,10 +630,7 @@ COD***/
 // CMD RADCOS 1 1 1 r
 Value *Compiler::genRadcos(const DatumPtr &node, TypeMask expected)
 {
-    CallSite cs(this, node, TypeReal);
-    Value *num = cs.child(0);
-
-    return cs.ret(scaff_->builder_.CreateUnaryIntrinsic(Intrinsic::cos, num, {}, DBG_NAME("cos")));
+    return generateTrig(node, expected, Intrinsic::cos, false);
 }
 
 /***DOC RADARCTAN
@@ -661,22 +648,7 @@ COD***/
 // CMD RADARCTAN 1 1 2 r
 Value *Compiler::genRadarctan(const DatumPtr &node, TypeMask expected)
 {
-    CallSite cs(this, node, TypeReal);
-    const std::vector<Value *> &children = cs.children();
-
-    Value *retval;
-
-    // Calculate atan() or atan2() depending on number of children.
-    if (children.size() == 1)
-    {
-        retval = scaff_->builder_.CreateUnaryIntrinsic(Intrinsic::atan, children[0], {}, DBG_NAME("atan"));
-    }
-    else
-    {
-        retval = scaff_->builder_.CreateBinaryIntrinsic(
-            Intrinsic::atan2, children[1], children[0], {}, DBG_NAME("atan2"));
-    }
-    return cs.ret(retval);
+    return generateArctan(node, expected, false);
 }
 
 /***DOC COS
@@ -688,12 +660,17 @@ COD***/
 // CMD COS 1 1 1 r
 Value *Compiler::genCos(const DatumPtr &node, TypeMask expected)
 {
+    return generateTrig(node, expected, Intrinsic::cos, true);
+}
+
+Value *Compiler::generateTrig(const DatumPtr &node, TypeMask expected, Intrinsic::ID id, bool fromDegrees)
+{
     CallSite cs(this, node, TypeReal);
     Value *num = cs.child(0);
-
-    Value *degToRad = CoDouble(PI / 180);
-    Value *theta = scaff_->builder_.CreateFMul(num, degToRad, DBG_NAME("theta"));
-    return cs.ret(scaff_->builder_.CreateUnaryIntrinsic(Intrinsic::cos, theta, {}, DBG_NAME("cos")));
+    if (fromDegrees)
+        num = scaff_->builder_.CreateFMul(num, CoDouble(PI / 180), DBG_NAME("theta"));
+    const char *name = id == Intrinsic::sin ? "sin" : "cos";
+    return cs.ret(scaff_->builder_.CreateUnaryIntrinsic(id, num, {}, DBG_NAME(name)));
 }
 
 /***DOC LESSP LESS?
@@ -808,21 +785,17 @@ Value *Compiler::genRandom(const DatumPtr &node, TypeMask expected)
 
     if (children.size() == 1)
     {
-        Value *accepted = generateValidationDouble(node.astnodeValue(), children[0], [this](Value *candidate) {
-            return generateIsExactIntegerInRange(candidate, 1.0, kInt32MaxAsDouble);
+        Value *num = generateInt32FromDouble(node.astnodeValue(), children[0], true, [this](Value *candidate) {
+            return scaff_->builder_.CreateFCmpOGE(candidate, CoDouble(1.0), DBG_NAME("ge1"));
         });
-        Value *num = scaff_->builder_.CreateFPToSI(accepted, TyInt32, DBG_NAME("FpToInt"));
         return cs.ret(generateCallExtern(random1, PaInt32(num)));
     }
 
     Value *start = generateInt32FromDouble(node.astnodeValue(), children[0], true);
-    Value *acceptedEnd = generateValidationDouble(node.astnodeValue(), children[1], [this, start](Value *candidate) {
-        Value *isInt = generateIsExactInt32(candidate, true);
+    Value *endInt = generateInt32FromDouble(node.astnodeValue(), children[1], true, [this, start](Value *candidate) {
         Value *startAsDouble = scaff_->builder_.CreateSIToFP(start, TyDouble, DBG_NAME("startAsDouble"));
-        Value *endGtStart = scaff_->builder_.CreateFCmpOGT(candidate, startAsDouble, DBG_NAME("endGtStart"));
-        return scaff_->builder_.CreateAnd(isInt, endGtStart, DBG_NAME("isValidTest"));
+        return scaff_->builder_.CreateFCmpOGT(candidate, startAsDouble, DBG_NAME("endGtStart"));
     });
-    Value *endInt = scaff_->builder_.CreateFPToSI(acceptedEnd, TyInt32, DBG_NAME("FpToInt"));
 
     return cs.ret(generateCallExtern(random2, PaInt32(start), PaInt32(endInt)));
 }
@@ -848,8 +821,7 @@ Value *Compiler::genRerandom(const DatumPtr &node, TypeMask expected)
 
     if (children.size() == 1)
     {
-        Value *seed = generateNotNegativeFromDouble(node.astnodeValue(), children[0]);
-        seed = generateInt32FromDouble(node.astnodeValue(), seed, true);
+        Value *seed = generateNotNegativeInt32FromDouble(node.astnodeValue(), children[0]);
         generateCallExtern(setRandomWithSeed, PaInt32(seed));
     }
     else
@@ -877,10 +849,7 @@ Value *Compiler::genForm(const DatumPtr &node, TypeMask expected)
     auto [num, width, precision] = cs.children();
 
     width = generateInt32FromDouble(node.astnodeValue(), width, true);
-
-    // TODO: Combine into one validation function.
-    precision = generateNotNegativeFromDouble(node.astnodeValue(), precision);
-    precision = generateInt32FromDouble(node.astnodeValue(), precision, true);
+    precision = generateNotNegativeInt32FromDouble(node.astnodeValue(), precision);
     return cs.ret(generateCallExtern(
         getFormForNumber, PaAddr(scaff_->evaluator_), PaDouble(num), PaInt32(width), PaInt32(precision)));
 }

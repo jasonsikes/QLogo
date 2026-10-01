@@ -1,0 +1,8 @@
+? ? ? ? ok
+? setcursor doesn't like [1.5 0] as input
+? setcursor doesn't like [-1 0] as input
+? setcursor doesn't like [1.5 -1] as input
+? setcursor doesn't like [1] as input
+? setcursor doesn't like hello as input
+? setcursor doesn't like [2147483648 0] as input
+? ? ? ? 1

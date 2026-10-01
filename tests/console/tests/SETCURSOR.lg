@@ -1,0 +1,14 @@
+setcursor [0 0]
+setcursor [1.0 2]
+setcursor [2147483647 0]
+print "ok
+setcursor [1.5 0]
+setcursor [-1 0]
+setcursor [1.5 -1]
+setcursor [1]
+setcursor "hello
+setcursor [2147483648 0]
+make "n 0
+make "ERRACT [make "n :n + 1 output [0 0]]
+setcursor [1.5 -1]
+print :n
