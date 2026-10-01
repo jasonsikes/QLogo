@@ -1352,19 +1352,7 @@ Value *Compiler::genSettemploc(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *path = cs.child(0);
-    auto validator = [this](Value *candidate) {
-        Value *isa = generateGetDatumIsa(candidate);
-        Value *wordMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeWord), DBG_NAME("wordMask"));
-        Value *isWord = scaff_->builder_.CreateICmpNE(wordMask, CoInt32(0), DBG_NAME("isWord"));
-        Value *listMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeList), DBG_NAME("listMask"));
-        Value *isList = scaff_->builder_.CreateICmpNE(listMask, CoInt32(0), DBG_NAME("isList"));
-        Value *empty = generateCallExtern(isEmpty, PaAddr(candidate));
-        Value *isEmptyVal = scaff_->builder_.CreateICmpEQ(empty, CoBool(true), DBG_NAME("isEmpty"));
-        Value *isEmptyList = scaff_->builder_.CreateAnd(isList, isEmptyVal, DBG_NAME("isEmptyList"));
-        return scaff_->builder_.CreateOr(isWord, isEmptyList, DBG_NAME("isValidTempLoc"));
-    };
-    path = generateValidationDatum(node.astnodeValue(), path, validator);
+    Value *path = generateWordOrEmptyListFromDatum(node.astnodeValue(), cs.child(0));
 
     generateCallExtern(stdSettemploc, PaAddr(path));
     return cs.ret(generateVoidRetval(node));

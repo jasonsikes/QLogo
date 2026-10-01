@@ -316,19 +316,7 @@ Value *Compiler::genSetprefix(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *prefix = cs.child(0);
-    auto validator = [this](Value *candidate) {
-        Value *isa = generateGetDatumIsa(candidate);
-        Value *wordMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeWord), DBG_NAME("wordMask"));
-        Value *isWord = scaff_->builder_.CreateICmpNE(wordMask, CoInt32(0), DBG_NAME("isWord"));
-        Value *listMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeList), DBG_NAME("listMask"));
-        Value *isList = scaff_->builder_.CreateICmpNE(listMask, CoInt32(0), DBG_NAME("isList"));
-        Value *empty = generateCallExtern(isEmpty, PaAddr(candidate));
-        Value *isEmptyVal = scaff_->builder_.CreateICmpEQ(empty, CoBool(true), DBG_NAME("isEmpty"));
-        Value *isEmptyList = scaff_->builder_.CreateAnd(isList, isEmptyVal, DBG_NAME("isEmptyList"));
-        return scaff_->builder_.CreateOr(isWord, isEmptyList, DBG_NAME("isValidPrefix"));
-    };
-    prefix = generateValidationDatum(node.astnodeValue(), prefix, validator);
+    Value *prefix = generateWordOrEmptyListFromDatum(node.astnodeValue(), cs.child(0));
 
     generateCallExtern(stdSetPrefix, PaAddr(prefix));
     return cs.ret(generateVoidRetval(node));
@@ -429,23 +417,28 @@ Value *Compiler::genOpenupdate(const DatumPtr &node, TypeMask expected)
     return generateOpen(node, expected, static_cast<int32_t>(OpenMode::Update));
 }
 
+Value *Compiler::generateIsValidOpenSpec(Value *src)
+{
+    Value *isValid = generateCallExtern(isValidOpenSpec, PaAddr(src));
+    return scaff_->builder_.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isValidOpenSpec"));
+}
+
+Value *Compiler::generateOpenSpecFromDatum(ASTNode *parent, Value *src)
+{
+    return generateValidationDatum(parent, src, [this](Value *candidate) {
+        return generateIsValidOpenSpec(candidate);
+    });
+}
+
 Value *Compiler::generateOpen(const DatumPtr &node, TypeMask expected, int32_t mode)
 {
 
     CallSite cs(this, node, TypeDatum);
     Value *spec = cs.child(0);
     if (mode == static_cast<int32_t>(OpenMode::Write))
-    {
-        auto validator = [this](Value *candidate) {
-            Value *isValid = generateCallExtern(isValidOpenSpec, PaAddr(candidate));
-            return scaff_->builder_.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isValidOpenSpecCond"));
-        };
-        spec = generateValidationDatum(node.astnodeValue(), spec, validator);
-    }
+        spec = generateOpenSpecFromDatum(node.astnodeValue(), spec);
     else
-    {
         spec = generateFromDatum(Datum::typeWord, node.astnodeValue(), spec);
-    }
 
     Value *retval = generateCallExtern(
         stdOpen,
@@ -469,12 +462,7 @@ Value *Compiler::genClose(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *spec = cs.child(0);
-    auto validator = [this](Value *candidate) {
-        Value *isValid = generateCallExtern(isValidOpenSpec, PaAddr(candidate));
-        return scaff_->builder_.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isValidCloseSpecCond"));
-    };
-    spec = generateValidationDatum(node.astnodeValue(), spec, validator);
+    Value *spec = generateOpenSpecFromDatum(node.astnodeValue(), cs.child(0));
 
     Value *retval = generateCallExtern(
         stdClose,
@@ -581,19 +569,7 @@ Value *Compiler::genSetread(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *spec = cs.child(0);
-    auto validator = [this](Value *candidate) {
-        Value *isa = generateGetDatumIsa(candidate);
-        Value *wordMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeWord), DBG_NAME("wordMask"));
-        Value *isWord = scaff_->builder_.CreateICmpNE(wordMask, CoInt32(0), DBG_NAME("isWord"));
-        Value *listMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeList), DBG_NAME("listMask"));
-        Value *isList = scaff_->builder_.CreateICmpNE(listMask, CoInt32(0), DBG_NAME("isList"));
-        Value *empty = generateCallExtern(isEmpty, PaAddr(candidate));
-        Value *isEmptyVal = scaff_->builder_.CreateICmpEQ(empty, CoBool(true), DBG_NAME("isEmpty"));
-        Value *isEmptyList = scaff_->builder_.CreateAnd(isList, isEmptyVal, DBG_NAME("isEmptyList"));
-        return scaff_->builder_.CreateOr(isWord, isEmptyList, DBG_NAME("isValidSetRead"));
-    };
-    spec = generateValidationDatum(node.astnodeValue(), spec, validator);
+    Value *spec = generateWordOrEmptyListFromDatum(node.astnodeValue(), cs.child(0));
 
     Value *retval = generateCallExtern(
         stdSetRead,
@@ -639,15 +615,9 @@ Value *Compiler::genSetwrite(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeDatum);
     Value *spec = cs.child(0);
     auto validator = [this](Value *candidate) {
-        Value *isOpenSpec = generateCallExtern(isValidOpenSpec, PaAddr(candidate));
-        Value *openOk = scaff_->builder_.CreateICmpEQ(isOpenSpec, CoBool(true), DBG_NAME("isValidOpenSpecCond"));
-        Value *isa = generateGetDatumIsa(candidate);
-        Value *listMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeList), DBG_NAME("listMask"));
-        Value *isList = scaff_->builder_.CreateICmpNE(listMask, CoInt32(0), DBG_NAME("isList"));
-        Value *empty = generateCallExtern(isEmpty, PaAddr(candidate));
-        Value *isEmptyVal = scaff_->builder_.CreateICmpEQ(empty, CoBool(true), DBG_NAME("isEmpty"));
-        Value *isEmptyList = scaff_->builder_.CreateAnd(isList, isEmptyVal, DBG_NAME("isEmptyList"));
-        return scaff_->builder_.CreateOr(openOk, isEmptyList, DBG_NAME("isValidSetWrite"));
+        Value *openOk = generateIsValidOpenSpec(candidate);
+        Value *emptyList = generateIsEmptyList(candidate);
+        return scaff_->builder_.CreateOr(openOk, emptyList, DBG_NAME("isValidSetWrite"));
     };
     spec = generateValidationDatum(node.astnodeValue(), spec, validator);
 

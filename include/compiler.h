@@ -287,6 +287,18 @@ class Compiler
     // Common methodology for the generate*FromDatum() methods.
     llvm::Value *generateFromDatum(Datum::DatumType t, ASTNode *parent, llvm::Value *src);
 
+    // Emit i1: src is a Word.
+    llvm::Value *generateIsWord(llvm::Value *src);
+
+    // Emit i1: src is an empty List.
+    llvm::Value *generateIsEmptyList(llvm::Value *src);
+
+    // Emit i1: src is a Word or an empty List.
+    llvm::Value *generateIsWordOrEmptyList(llvm::Value *src);
+
+    // Word, or []. Run ERRACT if not; a usable datum from it replaces the input.
+    llvm::Value *generateWordOrEmptyListFromDatum(ASTNode *parent, llvm::Value *src);
+
     // Ensure that Datum is a Word or List, AND
     // it is not empty.
     llvm::Value *generateNotEmptyWordOrListFromDatum(ASTNode *parent, llvm::Value *src);
@@ -322,6 +334,12 @@ class Compiler
 
     // SIN / COS / RADSIN / RADCOS. `id` is sin or cos; `fromDegrees` converts the input.
     llvm::Value *generateTrig(const DatumPtr &node, TypeMask expected, llvm::Intrinsic::ID id, bool fromDegrees);
+
+    // Emit i1: src is a word, or a non-empty list whose head is a word.
+    llvm::Value *generateIsValidOpenSpec(llvm::Value *src);
+
+    // OPENWRITE / CLOSE argument. Run ERRACT if not; a usable datum replaces the input.
+    llvm::Value *generateOpenSpecFromDatum(ASTNode *parent, llvm::Value *src);
 
     // OPENREAD / OPENWRITE / OPENAPPEND / OPENUPDATE. `mode` is OpenMode as int32.
     llvm::Value *generateOpen(const DatumPtr &node, TypeMask expected, int32_t mode);

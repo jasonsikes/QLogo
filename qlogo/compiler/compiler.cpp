@@ -752,6 +752,37 @@ Value *Compiler::generateNothingFromDatum(ASTNode *parent, Value *src)
     return src;
 }
 
+Value *Compiler::generateIsWord(Value *src)
+{
+    Value *isa = generateGetDatumIsa(src);
+    Value *wordMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeWord), DBG_NAME("wordMask"));
+    return scaff_->builder_.CreateICmpNE(wordMask, CoInt32(0), DBG_NAME("isWord"));
+}
+
+Value *Compiler::generateIsEmptyList(Value *src)
+{
+    Value *isa = generateGetDatumIsa(src);
+    Value *listMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeList), DBG_NAME("listMask"));
+    Value *isList = scaff_->builder_.CreateICmpNE(listMask, CoInt32(0), DBG_NAME("isList"));
+    Value *empty = generateCallExtern(isEmpty, PaAddr(src));
+    Value *isEmptyVal = scaff_->builder_.CreateICmpEQ(empty, CoBool(true), DBG_NAME("isEmpty"));
+    return scaff_->builder_.CreateAnd(isList, isEmptyVal, DBG_NAME("isEmptyList"));
+}
+
+Value *Compiler::generateIsWordOrEmptyList(Value *src)
+{
+    Value *isWord = generateIsWord(src);
+    Value *isEmptyList = generateIsEmptyList(src);
+    return scaff_->builder_.CreateOr(isWord, isEmptyList, DBG_NAME("isWordOrEmptyList"));
+}
+
+Value *Compiler::generateWordOrEmptyListFromDatum(ASTNode *parent, Value *src)
+{
+    return generateValidationDatum(parent, src, [this](Value *candidate) {
+        return generateIsWordOrEmptyList(candidate);
+    });
+}
+
 Value *Compiler::generateWordFromDatum(ASTNode *parent, Value *src)
 {
     return generateFromDatum(Datum::typeWord, parent, src);
