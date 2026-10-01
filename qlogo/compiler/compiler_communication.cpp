@@ -41,7 +41,7 @@ COD***/
 // CMD PR 0 1 -1 n
 Value *Compiler::genPrint(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     AllocaInst *ary = cs.allocaAry(DBG_NAME("printAry"));
@@ -64,7 +64,7 @@ COD***/
 // CMD SHOW 0 1 -1 n
 Value *Compiler::genShow(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     AllocaInst *ary = cs.allocaAry(DBG_NAME("showAry"));
@@ -100,7 +100,7 @@ COD***/
 // CMD TYPE 0 1 -1 n
 Value *Compiler::genType(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     AllocaInst *ary = cs.allocaAry(DBG_NAME("typeAry"));
@@ -131,7 +131,7 @@ COD***/
 // CMD RL 0 0 0 d
 Value *Compiler::genReadlist(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
+    Q_ASSERT(expected & TypeDatum);
     CallSite cs(this, node, TypeNothing);
     Value *retval = generateCallExtern(stdReadList, PaAddr(scaff_->evaluator_));
     return cs.ret(generateNotFlowControl(retval));
@@ -157,7 +157,7 @@ COD***/
 // CMD RW 0 0 0 d
 Value *Compiler::genReadword(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
+    Q_ASSERT(expected & TypeDatum);
     CallSite cs(this, node, TypeNothing);
     Value *retval = generateCallExtern(stdReadWord, PaAddr(scaff_->evaluator_));
     return cs.ret(generateNotFlowControl(retval));
@@ -178,7 +178,7 @@ COD***/
 // CMD READRAWLINE 0 0 0 d
 Value *Compiler::genReadrawline(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
+    Q_ASSERT(expected & TypeDatum);
     CallSite cs(this, node, TypeNothing);
     Value *retval = generateCallExtern(stdReadRawline, PaAddr(scaff_->evaluator_));
     return cs.ret(generateNotFlowControl(retval));
@@ -217,7 +217,7 @@ COD***/
 // CMD RCS 1 1 1 d
 Value *Compiler::genReadchar(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
+    Q_ASSERT(expected & TypeDatum);
 
     CallSite cs(this, node, TypeReal);
     const std::vector<Value *> &children = cs.children();
@@ -241,7 +241,7 @@ COD***/
 // CMD FILEDIALOG 0 0 0 d
 Value *Compiler::genFiledialog(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
+    Q_ASSERT(expected & TypeDatum);
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeNothing);
     Value *retval = generateCallExtern(stdFileDialog, PaAddr(scaff_->evaluator_));
@@ -257,7 +257,7 @@ COD***/
 // CMD COPYRIGHT 0 0 0 n
 Value *Compiler::genCopyright(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
     CallSite cs(this, node, TypeNothing);
     Value *retval = generateCallExtern(
         stdCopyright, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())));
@@ -294,7 +294,7 @@ COD***/
 // CMD SHELL 1 1 2 d
 Value *Compiler::genShell(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
+    Q_ASSERT(expected & TypeDatum);
 
     CallSite cs(this, node, TypeDatum);
     const std::vector<Value *> &children = cs.children();
@@ -328,7 +328,7 @@ COD***/
 // CMD SETPREFIX 1 1 1 n
 Value *Compiler::genSetprefix(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *prefix = cs.child(0);
@@ -359,7 +359,7 @@ COD***/
 // CMD PREFIX 0 0 0 d
 Value *Compiler::genPrefix(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
+    Q_ASSERT(expected & TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdPrefix, PaAddr(scaff_->evaluator_)));
 }
@@ -447,7 +447,7 @@ Value *Compiler::genOpenupdate(const DatumPtr &node, TypeMask expected)
 
 Value *Compiler::generateOpen(const DatumPtr &node, TypeMask expected, int32_t mode)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *spec = cs.child(0);
@@ -484,7 +484,7 @@ COD***/
 // CMD CLOSE 1 1 1 n
 Value *Compiler::genClose(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *spec = cs.child(0);
@@ -512,7 +512,7 @@ COD***/
 // CMD ALLOPEN 0 0 0 d
 Value *Compiler::genAllopen(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
+    Q_ASSERT(expected & TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdAllOpen, PaAddr(scaff_->evaluator_)));
 }
@@ -529,7 +529,7 @@ COD***/
 // CMD ERF 1 1 1 n
 Value *Compiler::genErasefile(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *filename = cs.child(0);
@@ -557,7 +557,7 @@ COD***/
 // CMD DRIBBLE 1 1 1 n
 Value *Compiler::genDribble(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *filename = cs.child(0);
@@ -581,7 +581,7 @@ COD***/
 // CMD NODRIBBLE 0 0 0 n
 Value *Compiler::genNodribble(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
     CallSite cs(this, node, TypeNothing);
     generateCallExtern(stdNoDribble);
     return cs.ret(generateVoidRetval(node));
@@ -601,7 +601,7 @@ COD***/
 // CMD SETREAD 1 1 1 n
 Value *Compiler::genSetread(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *spec = cs.child(0);
@@ -636,7 +636,7 @@ COD***/
 // CMD READER 0 0 0 d
 Value *Compiler::genReader(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
+    Q_ASSERT(expected & TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdReader, PaAddr(scaff_->evaluator_)));
 }
@@ -659,7 +659,7 @@ COD***/
 // CMD SETWRITE 1 1 1 n
 Value *Compiler::genSetwrite(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     Value *spec = cs.child(0);
@@ -694,7 +694,7 @@ COD***/
 // CMD WRITER 0 0 0 d
 Value *Compiler::genWriter(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
+    Q_ASSERT(expected & TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdWriter, PaAddr(scaff_->evaluator_)));
 }
@@ -712,7 +712,7 @@ COD***/
 // CMD SETREADPOS 1 1 1 n
 Value *Compiler::genSetreadpos(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
     CallSite cs(this, node, TypeReal);
     Value *num = cs.child(0);
     Value *pos = generateNotNegativeInt32FromDouble(node.astnodeValue(), num);
@@ -729,7 +729,7 @@ COD***/
 // CMD READPOS 0 0 0 r
 Value *Compiler::genReadpos(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdReadPos));
 }
@@ -747,7 +747,7 @@ COD***/
 // CMD SETWRITEPOS 1 1 1 n
 Value *Compiler::genSetwritepos(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
     CallSite cs(this, node, TypeReal);
     Value *num = cs.child(0);
     Value *pos = generateNotNegativeInt32FromDouble(node.astnodeValue(), num);
@@ -764,7 +764,7 @@ COD***/
 // CMD WRITEPOS 0 0 0 r
 Value *Compiler::genWritepos(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdWritePos));
 }
@@ -781,7 +781,7 @@ COD***/
 // CMD EOF? 0 0 0 b
 Value *Compiler::genEofp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
+    Q_ASSERT(expected & TypeBool);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdEofp));
 }
@@ -805,7 +805,7 @@ COD***/
 // CMD KEY? 0 0 0 b
 Value *Compiler::genKeyp(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
+    Q_ASSERT(expected & TypeBool);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdKeyp));
 }
@@ -825,7 +825,7 @@ COD***/
 // CMD LINE? 0 0 0 b
 Value *Compiler::genLinep(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeBool);
+    Q_ASSERT(expected & TypeBool);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdLinep));
 }
@@ -841,7 +841,7 @@ COD***/
 // CMD CT 0 0 0 n
 Value *Compiler::genCleartext(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
     CallSite cs(this, node, TypeNothing);
     generateCallExtern(stdClearText);
     return cs.ret(generateVoidRetval(node));
@@ -867,7 +867,7 @@ COD***/
 // CMD SETCURSOR 1 1 1 n
 Value *Compiler::genSetcursor(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
     CallSite cs(this, node, TypeDatum);
     AllocaInst *posAry = generateNumberAryFromDatum(node.astnodeValue(), cs.child(0), 2);
     Value *colPtr = scaff_->builder_.CreateConstInBoundsGEP1_32(TyDouble, posAry, 0, DBG_NAME("colPtr"));
@@ -890,7 +890,7 @@ COD***/
 // CMD CURSOR 0 0 0 d
 Value *Compiler::genCursor(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
+    Q_ASSERT(expected & TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdCursor, PaAddr(scaff_->evaluator_)));
 }
@@ -906,7 +906,7 @@ COD***/
 // CMD SETMARGINS 1 1 1 n
 Value *Compiler::genSetmargins(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
     CallSite cs(this, node, TypeDatum);
     return cs.ret(generateVoidRetval(node));
 }
@@ -932,7 +932,7 @@ COD***/
 // CMD SETTC 1 2 2 n
 Value *Compiler::genSettextcolor(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
 
     CallSite cs(this, node, TypeDatum);
     const std::vector<Value *> &children = cs.children();
@@ -960,7 +960,7 @@ COD***/
 // CMD INCREASEFONT 0 0 0 n
 Value *Compiler::genIncreasefont(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
     CallSite cs(this, node, TypeNothing);
     Value *size = generateCallExtern(stdTextSize);
     size = scaff_->builder_.CreateFAdd(size, CoDouble(2.0), DBG_NAME("increasedSize"));
@@ -971,7 +971,7 @@ Value *Compiler::genIncreasefont(const DatumPtr &node, TypeMask expected)
 // CMD DECREASEFONT 0 0 0 n
 Value *Compiler::genDecreasefont(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
     CallSite cs(this, node, TypeNothing);
     Value *size = generateCallExtern(stdTextSize);
     size = scaff_->builder_.CreateFSub(size, CoDouble(2.0), DBG_NAME("decreasedSize"));
@@ -993,7 +993,7 @@ COD***/
 // CMD SETTEXTSIZE 1 1 1 n
 Value *Compiler::genSettextsize(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
     CallSite cs(this, node, TypeReal);
     Value *size = cs.child(0);
     size = generateValidationDouble(node.astnodeValue(), size, [this](Value *val) {
@@ -1014,7 +1014,7 @@ COD***/
 // CMD TEXTSIZE 0 0 0 r
 Value *Compiler::genTextsize(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeReal);
+    Q_ASSERT(expected & TypeReal);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdTextSize));
 }
@@ -1035,7 +1035,7 @@ COD***/
 // CMD SETTEXTFONT 1 1 1 n
 Value *Compiler::genSetfont(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
     CallSite cs(this, node, TypeDatum);
     Value *name = cs.child(0);
     name = generateWordFromDatum(node.astnodeValue(), name);
@@ -1055,7 +1055,7 @@ COD***/
 // CMD TEXTFONT 0 0 0 d
 Value *Compiler::genFont(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
+    Q_ASSERT(expected & TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdFont, PaAddr(scaff_->evaluator_)));
 }
@@ -1074,7 +1074,7 @@ COD***/
 // CMD ALLFONTS 0 0 0 d
 Value *Compiler::genAllfonts(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeDatum);
+    Q_ASSERT(expected & TypeDatum);
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(stdAllFonts, PaAddr(scaff_->evaluator_)));
 }
@@ -1091,7 +1091,7 @@ COD***/
 // CMD WAIT 1 1 1 n
 Value *Compiler::genWait(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
+    Q_ASSERT(expected & TypeNothing);
     CallSite cs(this, node, TypeReal);
     Value *time = cs.child(0);
     time = generateNotNegativeFromDouble(node.astnodeValue(), time);
