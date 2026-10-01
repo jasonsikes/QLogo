@@ -120,21 +120,21 @@ Value *Compiler::generateI32SRem(Value *num, Value *denom)
 Value *Compiler::generateNotZeroFromDouble(ASTNode *parent, Value *src)
 {
     return generateValidationDouble(parent, src, [this](Value *val) {
-        return scaff_->builder_.CreateFCmpONE(val, CoDouble(0.0), DBG_NAME("isZeroTest"));
+        return scaff_->builder_.CreateFCmpONE(val, CoDouble(0.0), DBG_NAME("notZero"));
     });
 }
 
 Value *Compiler::generateNotNegativeFromDouble(ASTNode *parent, Value *src)
 {
     return generateValidationDouble(parent, src, [this](Value *val) {
-        return scaff_->builder_.CreateFCmpOGE(val, CoDouble(0.0), DBG_NAME("isZeroTest"));
+        return scaff_->builder_.CreateFCmpOGE(val, CoDouble(0.0), DBG_NAME("notNegative"));
     });
 }
 
 Value *Compiler::generateGTZeroFromDouble(ASTNode *parent, Value *src)
 {
     return generateValidationDouble(parent, src, [this](Value *val) {
-        return scaff_->builder_.CreateFCmpOGT(val, CoDouble(0.0), DBG_NAME("isZeroTest"));
+        return scaff_->builder_.CreateFCmpOGT(val, CoDouble(0.0), DBG_NAME("gtZero"));
     });
 }
 
@@ -346,7 +346,7 @@ Value *Compiler::genPower(const DatumPtr &node, TypeMask expected)
     BasicBlock *isNegativeBB = scaff_->createBasicBlock(DBG_NAME("isNegative"));
     BasicBlock *notNegativeBB = scaff_->createBasicBlock(DBG_NAME("notNegative"));
 
-    Value *cond = scaff_->builder_.CreateFCmpOGE(num1, CoDouble(0.0), DBG_NAME("isNegativeTest"));
+    Value *cond = scaff_->builder_.CreateFCmpOGE(num1, CoDouble(0.0), DBG_NAME("baseGE0"));
     scaff_->builder_.CreateCondBr(cond, notNegativeBB, isNegativeBB);
 
     scaff_->builder_.SetInsertPoint(isNegativeBB);
@@ -724,7 +724,7 @@ Value *Compiler::genLessequalp(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [num1, num2] = cs.children();
 
-    return cs.ret(scaff_->builder_.CreateFCmpOLE(num1, num2, DBG_NAME("lessp")));
+    return cs.ret(scaff_->builder_.CreateFCmpOLE(num1, num2, DBG_NAME("lessequalp")));
 }
 
 /***DOC GREATEREQUALP GREATEREQUAL?
@@ -742,7 +742,7 @@ Value *Compiler::genGreaterequalp(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [num1, num2] = cs.children();
 
-    return cs.ret(scaff_->builder_.CreateFCmpOGE(num1, num2, DBG_NAME("greaterp")));
+    return cs.ret(scaff_->builder_.CreateFCmpOGE(num1, num2, DBG_NAME("greaterequalp")));
 }
 
 /***DOC NOT
