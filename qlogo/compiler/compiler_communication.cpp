@@ -48,8 +48,9 @@ Value *Compiler::genPrint(const DatumPtr &node, TypeMask expected)
     Value *useShow = CoBool(false);
     Value *addNewline = CoBool(true);
 
-    return cs.ret(generateCallExtern(
-        stdWriteDatumAry, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline)));
+    Value *retval = generateCallExtern(
+        stdWriteDatumAry, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
+    return cs.ret(generateNotFlowControl(retval));
 }
 
 /***DOC SHOW
@@ -71,8 +72,9 @@ Value *Compiler::genShow(const DatumPtr &node, TypeMask expected)
     Value *useShow = CoBool(true);
     Value *addNewline = CoBool(true);
 
-    return cs.ret(generateCallExtern(
-        stdWriteDatumAry, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline)));
+    Value *retval = generateCallExtern(
+        stdWriteDatumAry, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
+    return cs.ret(generateNotFlowControl(retval));
 }
 
 /***DOC TYPE
@@ -107,8 +109,9 @@ Value *Compiler::genType(const DatumPtr &node, TypeMask expected)
     Value *useShow = CoBool(false);
     Value *addNewline = CoBool(false);
 
-    return cs.ret(generateCallExtern(
-        stdWriteDatumAry, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline)));
+    Value *retval = generateCallExtern(
+        stdWriteDatumAry, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(ary), PaInt32(ary->getArraySize()), PaBool(useShow), PaBool(addNewline));
+    return cs.ret(generateNotFlowControl(retval));
 }
 
 /***DOC READLIST RL
