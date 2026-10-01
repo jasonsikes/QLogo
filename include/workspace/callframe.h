@@ -65,6 +65,11 @@ struct CallFrame
     /// evaluation stack.
     bool macroTailSplice_ = false;
 
+    /// @brief True when a STOP tail-call required this frame not to output.
+    /// @details Sticky across later OUTPUT/.MAYBEOUTPUT continuations on the same
+    /// frame. A value that would become the caller's output is "You don't say".
+    bool demandNothing_ = false;
+
     /// @brief The current argument being processed (currentParameterName_ and optional default value).
     DatumPtr currentArgument_;
 
@@ -110,7 +115,8 @@ struct CallFrame
     /// @brief End the current procedure by continuing with the given node and parameters.
     /// @param node The ASTNode of the new procedure to continue with.
     /// @param arguments The linked list of arguments to apply to the new node.
-    void applyContinuation(ASTNode *node, const DatumPtr &arguments);
+    /// @param demandNothing If true, OR demandNothing_ onto the frame (STOP TCO).
+    void applyContinuation(ASTNode *node, const DatumPtr &arguments, bool demandNothing);
 
     /// @brief return true if the evaluation stack is empty.
     /// @return True if the evaluation stack is empty, false otherwise.

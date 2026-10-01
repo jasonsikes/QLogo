@@ -69,7 +69,7 @@ CallFrame::~CallFrame()
 }
 
 // TODO: create a common initialization function for this and the constructor.
-void CallFrame::applyContinuation(ASTNode *node, const DatumPtr &arguments)
+void CallFrame::applyContinuation(ASTNode *node, const DatumPtr &arguments, bool demandNothing)
 {
     DatumPtr body = node->procedure_;
     sourceNode_ = DatumPtr(node);
@@ -80,6 +80,9 @@ void CallFrame::applyContinuation(ASTNode *node, const DatumPtr &arguments)
     arguments_ = arguments;
     isReadingArgs_ = true;
     // isMacroCall_ and the splice flags stay as they were for the original call.
+    // demandNothing_ only turns on: STOP TCO after OUTPUT TCO still forbids a value.
+    if (demandNothing)
+        demandNothing_ = true;
 }
 
 Evaluator *CallFrame::topEvaluator()

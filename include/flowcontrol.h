@@ -88,12 +88,19 @@ struct FCReturn : public FlowControl
 struct FCContinuation : public FlowControl
 {
 
-    FCContinuation(const DatumPtr &aSourceNode, const DatumPtr &aProcedure, const QList<DatumPtr> &aParams)
+    /// @brief True when this tail call is in command position (STOP).
+    /// @details The continued procedure may not output a value. OUTPUT and
+    /// .MAYBEOUTPUT leave this false so a value is the caller's output.
+    bool demandNothing_ = false;
+
+    FCContinuation(const DatumPtr &aSourceNode, const DatumPtr &aProcedure, const QList<DatumPtr> &aParams,
+                   bool demandNothing = false)
     {
         isa_ = Datum::typeContinuation;
         data_ = aProcedure;
         dataAry_ = aParams;
         sourceNode_ = aSourceNode;
+        demandNothing_ = demandNothing;
     }
 
     /// @brief The procedure to continue.

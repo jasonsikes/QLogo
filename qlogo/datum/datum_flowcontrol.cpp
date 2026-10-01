@@ -38,7 +38,8 @@ void FCError::commonInit()
         if (cf->sourceNode_.isASTNode())
         {
             procedure() = cf->sourceNode_.astnodeValue()->nodeName_;
-            line() = cf->topEvaluator()->list_;
+            if (!cf->isEvaluationStackViewEmpty())
+                line() = cf->topEvaluator()->list_;
         }
     }
     k->currentError_ = DatumPtr(this);
@@ -239,7 +240,9 @@ QString FCError::toString(ToStringFlags, int, int, VisitedSet *) const
     QString retval = message().toString();
     if (!procedure().isNothing())
     {
-        retval = QString("%1 in %2\n%3").arg(retval, procedure().toString(), line().toString(ToStringFlags_Show));
+        retval = QString("%1 in %2").arg(retval, procedure().toString());
+        if (!line().isNothing())
+            retval += QLatin1Char('\n') + line().toString(ToStringFlags_Show);
     }
     return retval;
 }

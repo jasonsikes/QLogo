@@ -136,8 +136,11 @@ EXPORTC addr_t getCtrlReturn(addr_t eAddr, addr_t astNodeAddr, addr_t retvalAddr
 /// @param astNodeAddr a pointer to the ASTNode which is the source node of the CONTINUATION.
 /// @param paramAryAddr a pointer to an array of pointers to Datum objects which are the parameters to the CONTINUATION.
 /// @param paramCount the number of parameters to the CONTINUATION.
+/// @param demandNothing true when the tail call is STOP (command position): the
+///        continued procedure must not output a value.
 /// @return a pointer to the CONTINUATION control object that was generated.
-EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t argAryAddr, uint32_t argCount)
+EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t argAryAddr, uint32_t argCount,
+                                   bool demandNothing)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astNodeAddr);
@@ -151,7 +154,8 @@ EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t argA
     }
     // Assign the Logo-style linked list to the first element of the parameters QList.
     QList<DatumPtr> args{arguments};
-    auto *control = new FCContinuation(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), nodePtr, args);
+    auto *control = new FCContinuation(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), nodePtr, args,
+                                       demandNothing);
     e->watch(control);
     return reinterpret_cast<addr_t>(control);
 }

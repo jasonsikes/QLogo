@@ -1,0 +1,7 @@
+to give5
+output 5
+end
+to fromstop
+give5 stop
+end
+fromstop

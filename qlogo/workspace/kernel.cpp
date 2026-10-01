@@ -1332,7 +1332,7 @@ void Kernel::ece_exitProcedure()
         auto *continuation = static_cast<FCContinuation *>(currentCallFrame()->retvalToParent_.flowControlValue());
         auto *procedure = continuation->procedure().astnodeValue();
         auto arguments = continuation->params().first();
-        currentCallFrame()->applyContinuation(procedure, arguments);
+        currentCallFrame()->applyContinuation(procedure, arguments, continuation->demandNothing_);
         nextOperation_ = &Kernel::ece_processParameters;
         break;
     }
@@ -1344,6 +1344,13 @@ void Kernel::ece_exitProcedure()
             ece_trace("ece_exitProcedure with macro return");
             ece_expandMacroReturn(retval);
             break;
+        }
+        // STOP TCO: a value from the continued procedure is command-position
+        // output, not this procedure's OUTPUT / .MAYBEOUTPUT.
+        if (currentCallFrame()->demandNothing_ &&
+            (retval.datumValue()->isa_ & Datum::typeDataMask) != 0)
+        {
+            retval = DatumPtr(FCError::dontSay(retval));
         }
         // The return value is passed through to the caller.
         ece_trace("ece_exitProcedure with return: popping call frame");

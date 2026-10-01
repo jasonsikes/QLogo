@@ -374,15 +374,20 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node,
         }
         // Else it's a procedure. Generate a tail call to it.
         // Nested AST: CallSite would evaluate the child instead of tail-calling.
+        // Arguments are always boxed Datum pointers (the alloca is TyAddr).
+        // STOP (no TypeDatum in childExpected) still TCO's so `walk :n-1 stop`
+        // does not grow the stack, but demandNothing forbids the callee's
+        // output from becoming this procedure's output (.MAYBEOUTPUT does not).
         Value *childAddr = CoAddr(child.astnodeValue());
 
-        // TODO: Instead of TypeDatum, should we use childExpected?
         AllocaInst *ary = generateChildrenAlloca(child.astnodeValue(), TypeDatum, DBG_NAME("childAry"));
+        Value *demandNothing = CoBool((childExpected & TypeDatum) == 0);
         Value *retObj = generateCallExtern(getCtrlContinuation,
                                            PaAddr(scaff_->evaluator_),
                                            PaAddr(childAddr),
                                            PaAddr(ary),
-                                           PaInt32(ary->getArraySize()));
+                                           PaInt32(ary->getArraySize()),
+                                           PaBool(demandNothing));
         return retObj;
     }
     // There is no child. Return nothing.
