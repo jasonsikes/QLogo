@@ -345,10 +345,8 @@ Value *Compiler::genPower(const DatumPtr &node, TypeMask expected)
     auto [num1, num2] = cs.children();
 
     BasicBlock *startBB = scaff_->builder_.GetInsertBlock();
-    Function *theFunction = startBB->getParent();
-
     BasicBlock *isNegativeBB = scaff_->createBasicBlock(DBG_NAME("isNegative"));
-    BasicBlock *notNegativeBB = BasicBlock::Create(*scaff_->theContext_, DBG_NAME("notNegative"));
+    BasicBlock *notNegativeBB = scaff_->createBasicBlock(DBG_NAME("notNegative"));
 
     Value *cond = scaff_->builder_.CreateFCmpOGE(num1, CoDouble(0.0), DBG_NAME("isNegativeTest"));
     scaff_->builder_.CreateCondBr(cond, notNegativeBB, isNegativeBB);
@@ -360,7 +358,6 @@ Value *Compiler::genPower(const DatumPtr &node, TypeMask expected)
     BasicBlock *postNegativeBB = scaff_->builder_.GetInsertBlock();
     scaff_->builder_.CreateBr(notNegativeBB);
 
-    theFunction->insert(theFunction->end(), notNegativeBB);
     scaff_->builder_.SetInsertPoint(notNegativeBB);
     PHINode *num2Phi = scaff_->builder_.CreatePHI(TyDouble, 2, DBG_NAME("num2Phi"));
     num2Phi->addIncoming(num2, startBB);
@@ -786,7 +783,7 @@ Value *Compiler::genNot(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeBool);
     Value *tf = cs.child(0);
 
-    return cs.ret(scaff_->builder_.CreateSub(CoBool(1), tf, DBG_NAME("not")));
+    return cs.ret(scaff_->builder_.CreateNot(tf, DBG_NAME("not")));
 }
 
 /***DOC RANDOM
@@ -955,58 +952,45 @@ Value *Compiler::genOr(const DatumPtr &node, TypeMask expected)
 
 Value *Compiler::generateAndOr(const DatumPtr &node, TypeMask expected, bool isAnd)
 {
-    Function *theFunction = scaff_->builder_.GetInsertBlock()->getParent();
-
     CallSite cs(this, node, TypeDB);
     const std::vector<Value *> &children = cs.children();
 
-    // If there are no children, simply return isAnd
     if (children.size() == 0)
         return cs.ret(CoBool(isAnd));
 
-    BasicBlock *continueBB; // Where to go if a test results in mayContinue
-    BasicBlock *exitNoContBB = BasicBlock::Create(*scaff_->theContext_, DBG_NAME("exitNoCont"));
-    BasicBlock *exitMayContBB = BasicBlock::Create(*scaff_->theContext_, DBG_NAME("exitMayCont"));
-    BasicBlock *exitBB = BasicBlock::Create(*scaff_->theContext_, DBG_NAME("exit"));
+    BasicBlock *exitNoContBB = scaff_->createBasicBlock(DBG_NAME("exitNoCont"));
+    BasicBlock *exitMayContBB = scaff_->createBasicBlock(DBG_NAME("exitMayCont"));
+    BasicBlock *exitBB = scaff_->createBasicBlock(DBG_NAME("exit"));
+
     for (auto &child : children)
     {
         Value *c = child;
 
-        // If input is a Datum type (can be word or list)
         if (c->getType()->isPointerTy())
         {
             c = generateListExecIfList(node.astnodeValue(), c);
             c = generateBoolFromDatum(node.astnodeValue(), c);
-            // bool continues.
         }
-        if (c->getType()->isIntegerTy(1))
+        if (!c->getType()->isIntegerTy(1))
         {
-            continueBB = BasicBlock::Create(*scaff_->theContext_, DBG_NAME("isPossCont"));
-            Value *cond = scaff_->builder_.CreateICmpEQ(c, CoBool(isAnd), DBG_NAME("isPossTest"));
-            scaff_->builder_.CreateCondBr(cond, continueBB, exitNoContBB);
+            generateImmediateReturn(generateErrorNoLike(node.astnodeValue(), c));
+            continue;
+        }
 
-            theFunction->insert(theFunction->end(), continueBB);
-            scaff_->builder_.SetInsertPoint(continueBB);
-        }
-        else
-        {
-            return generateImmediateReturn(generateErrorNoLike(node.astnodeValue(), c));
-        }
+        BasicBlock *continueBB = scaff_->createBasicBlock(DBG_NAME("isPossCont"));
+        Value *cond = scaff_->builder_.CreateICmpEQ(c, CoBool(isAnd), DBG_NAME("isPossTest"));
+        scaff_->builder_.CreateCondBr(cond, continueBB, exitNoContBB);
+        scaff_->builder_.SetInsertPoint(continueBB);
     }
-    // If we made it this far then all tests have resulted in isAnd
+
     scaff_->builder_.CreateBr(exitMayContBB);
 
-    theFunction->insert(theFunction->end(), exitMayContBB);
     scaff_->builder_.SetInsertPoint(exitMayContBB);
     scaff_->builder_.CreateBr(exitBB);
 
-    // If we get here then a test resulted in !isAnd
-    theFunction->insert(theFunction->end(), exitNoContBB);
     scaff_->builder_.SetInsertPoint(exitNoContBB);
     scaff_->builder_.CreateBr(exitBB);
 
-    // Return the T/F
-    theFunction->insert(theFunction->end(), exitBB);
     scaff_->builder_.SetInsertPoint(exitBB);
     PHINode *phiNode = scaff_->builder_.CreatePHI(TyBool, 2, DBG_NAME("retval"));
     phiNode->addIncoming(CoBool(!isAnd), exitNoContBB);
