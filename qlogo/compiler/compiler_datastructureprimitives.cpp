@@ -417,8 +417,8 @@ Value *Compiler::genFirst(const DatumPtr &node, TypeMask expected)
     Value *thing = cs.child(0);
 
     auto validator = [this](Value *thing) {
-        Value *isEmpty = generateCallExtern(isDatumEmpty, PaAddr(thing));
-        return scaff_->builder_.CreateICmpEQ(isEmpty, CoBool(false), DBG_NAME("isDatumEmptyCond"));
+        Value *isEmptyVal = generateCallExtern(isEmpty, PaAddr(thing));
+        return scaff_->builder_.CreateICmpEQ(isEmptyVal, CoBool(false), DBG_NAME("isEmptyCond"));
     };
     thing = generateValidationDatum(node.astnodeValue(), thing, validator);
 
