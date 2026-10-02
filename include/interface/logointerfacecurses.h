@@ -18,6 +18,7 @@
 #ifndef LOGOINTERFACECURSES_H
 #define LOGOINTERFACECURSES_H
 
+#include "interface/lineeditor.h"
 #include "interface/logointerface.h"
 #include <QColor>
 #include <QHash>
@@ -41,6 +42,7 @@ class LogoInterfaceCurses : public LogoInterface
     QHash<quint64, short> pairByFgBg_;
     bool standoutOn_ = false;
     QList<char32_t> unread_;
+    LineEditor lineEditor_;
 
     int colorNumber(const QColor &color) const;
     short ensurePair(int fg, int bg);

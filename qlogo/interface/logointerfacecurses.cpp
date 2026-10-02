@@ -252,13 +252,17 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
 
         printToConsole(prompt);
 
-        std::u32string u32;
+        int startY = 0;
+        int startX = 0;
+        getyx(stdscr, startY, startX);
+        lineEditor_.beginPrompt(startY, startX);
+
         while (!unread_.isEmpty())
         {
             const char32_t ch = unread_.takeFirst();
             if (ch == U'\n' || ch == U'\r')
-                return QString::fromStdU32String(u32);
-            u32.push_back(ch);
+                return lineEditor_.finish();
+            lineEditor_.insert(ch);
         }
 
         wint_t buffer[65536];
@@ -267,8 +271,8 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
         if (rc != ERR)
         {
             for (int i = 0; i < 65535 && buffer[i] != 0; ++i)
-                u32.push_back(static_cast<char32_t>(buffer[i]));
-            return QString::fromStdU32String(u32);
+                lineEditor_.insert(static_cast<char32_t>(buffer[i]));
+            return lineEditor_.finish();
         }
         if (errno == EINTR)
         {
