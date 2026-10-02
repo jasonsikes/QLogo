@@ -24,8 +24,6 @@
 #include "flowcontrol.h"
 #include "workspace/kernel.h"
 
-bool areDatumsEqual(VisitedMap &visited, Datum *d1, Datum *d2, Qt::CaseSensitivity cs);
-
 bool isDatumInContainer(VisitedSet &visited, Datum *value, Datum *container);
 
 /// @brief Recursively check if a datum is in an array by object identity.
@@ -160,6 +158,64 @@ EXPORTC bool cmpDatumToDouble(addr_t d, double n)
     if (!dW->numberIsValid)
         return false;
     return dN == n;
+}
+
+/// @brief Determine if the given Datums are equal, according to `EQUALP` help text.
+/// @param visited The set of visited nodes.
+/// @param d1 The first Datum to compare.
+/// @param d2 The second Datum to compare.
+/// @param cs The case sensitivity to use for the comparison.
+/// @returns true if the Datums are equal, false otherwise.
+static bool areDatumsEqual(VisitedMap &visited, Datum *d1, Datum *d2, Qt::CaseSensitivity cs)
+{
+    if (d1 == d2)
+        return true;
+    if (d1->isa_ != d2->isa_)
+        return false;
+
+    if (d1->isWord())
+    {
+        Word *w1 = d1->wordValue();
+        Word *w2 = d2->wordValue();
+        if (w1->isSourceNumber() || w2->isSourceNumber())
+            return w1->numberValue() == w2->numberValue();
+
+        return w1->toString().compare(w2->toString(), cs) == 0;
+    }
+    else if (d1->isList())
+    {
+        // If we have seen this list before,
+        if (visited.contains(d1))
+        {
+            // Then return true if the comparison is the same as the previous comparison.
+            return visited.get(d1) == d2;
+        }
+
+        List *l1 = d1->listValue();
+        List *l2 = d2->listValue();
+
+        while (l1 != EmptyList::instance() && l2 != EmptyList::instance())
+        {
+            if (!areDatumsEqual(visited, l1->head.datumValue(), l2->head.datumValue(), cs))
+                return false;
+            visited.add(l1, l2);
+            l1 = l1->tail.listValue();
+            l2 = l2->tail.listValue();
+        }
+
+        return l1 && l2 && l1->isEmpty() && l2->isEmpty();
+    }
+    else if (d1->isArray())
+    {
+        // Arrays are equal iff they are the same array, which would have
+        // passed the "datum1 == datum2" test at the beginning.
+        return false;
+    }
+    else
+    {
+        Q_ASSERT(false);
+    }
+    return false;
 }
 
 /// Compare a Datum with a Datum.

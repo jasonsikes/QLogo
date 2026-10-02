@@ -1,0 +1,3 @@
+show equalp "03 "3
+show equalp "1.00 "1
+show equalp [03 1.00] [3 1]
