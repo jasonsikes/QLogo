@@ -252,9 +252,9 @@ Value *Compiler::genFput(const DatumPtr &node, TypeMask expected)
 LPUT thing list
 
     outputs a list equal to its second input with one extra member,
-    the first input, at the end.  If the second input is a word,
-    then the first input must be a one-letter word, and LPUT is
-    equivalent to WORD with its inputs in the other order.
+    the first input, at the end. If the second input is a word,
+    then the first input must be a word, and LPUT is equivalent to
+    WORD with its inputs in the other order.
 
 COD***/
 // CMD LPUT 2 2 2 d
@@ -267,49 +267,23 @@ Value *Compiler::generateFputlput(const DatumPtr &node, TypeMask expected, bool 
 {
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [thing, list] = cs.children();
-    Value *listWordTest = nullptr;
+    ASTNode *parent = node.astnodeValue();
 
-    auto wordVector = isLput ? std::vector<Value *>{list, thing} : std::vector<Value *>{thing, list};
-
-    auto validator = [this, thing, &listWordTest](Value *list) {
-        BasicBlock *wordBB = scaff_->createBasicBlock(DBG_NAME("isWordBlock"));
-        BasicBlock *listBB = scaff_->createBasicBlock(DBG_NAME("isListBlock"));
-        BasicBlock *endBB = scaff_->createBasicBlock(DBG_NAME("endBlock"));
-
-        Value *listType = generateGetDatumIsa(list);
-        listWordTest = scaff_->builder_.CreateICmpEQ(listType, CoInt32(Datum::typeWord), DBG_NAME("listWordTest"));
-        scaff_->builder_.CreateCondBr(listWordTest, wordBB, listBB);
-
-        // Word block
-        scaff_->builder_.SetInsertPoint(wordBB);
-        Value *thingType = generateGetDatumIsa(thing);
-        Value *thingWordTest = scaff_->builder_.CreateICmpEQ(thingType, CoInt32(Datum::typeWord), DBG_NAME("thingWordTest"));
-        scaff_->builder_.CreateBr(endBB);
-
-        // List block
-        scaff_->builder_.SetInsertPoint(listBB);
-        Value *mask = scaff_->builder_.CreateAnd(listType, CoInt32(Datum::typeList), DBG_NAME("dataTypeMask"));
-        Value *listListTest = scaff_->builder_.CreateICmpNE(mask, CoInt32(0), DBG_NAME("dataTypeMaskTest"));
-        scaff_->builder_.CreateBr(endBB);
-
-        scaff_->builder_.SetInsertPoint(endBB);
-        PHINode *phi = scaff_->builder_.CreatePHI(listListTest->getType(), 2, DBG_NAME("putResult"));
-        phi->addIncoming(listListTest, listBB);
-        phi->addIncoming(thingWordTest, wordBB);
-        return phi;
-    };
-    list = generateValidationDatum(node.astnodeValue(), list, validator);
+    list = generateFromDatum(Datum::typeWordOrListMask, parent, list);
 
     BasicBlock *wordBB = scaff_->createBasicBlock(DBG_NAME("isWordBB"));
     BasicBlock *listBB = scaff_->createBasicBlock(DBG_NAME("isListBB"));
     BasicBlock *mergeBB = scaff_->createBasicBlock(DBG_NAME("mergeBB"));
 
-    scaff_->builder_.CreateCondBr(listWordTest, wordBB, listBB);
+    scaff_->builder_.CreateCondBr(generateIsWord(list), wordBB, listBB);
 
     scaff_->builder_.SetInsertPoint(wordBB);
+    Value *wordThing = generateWordFromDatum(parent, thing);
+    auto wordVector = isLput ? std::vector<Value *>{list, wordThing} : std::vector<Value *>{wordThing, list};
     AllocaInst *ary = generateAllocaAry(wordVector, DBG_NAME("wordAry"));
     Value *wordRetval =
         generateCallExtern(concatWord, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize()));
+    BasicBlock *wordDoneBB = scaff_->builder_.GetInsertBlock();
     scaff_->builder_.CreateBr(mergeBB);
 
     scaff_->builder_.SetInsertPoint(listBB);
@@ -320,7 +294,7 @@ Value *Compiler::generateFputlput(const DatumPtr &node, TypeMask expected, bool 
     scaff_->builder_.SetInsertPoint(mergeBB);
     PHINode *phi = scaff_->builder_.CreatePHI(list->getType(), 2, DBG_NAME("putRetval"));
     phi->addIncoming(listRetval, listBB);
-    phi->addIncoming(wordRetval, wordBB);
+    phi->addIncoming(wordRetval, wordDoneBB);
     return cs.ret(phi);
 }
 /***DOC ARRAY

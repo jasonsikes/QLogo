@@ -1,2 +1,4 @@
 make "a lput "h "ello
 print :a
+make "b lput "ab "cd
+print :b
