@@ -1,0 +1,3 @@
+word [a] "b
+word "a [b]
+(word {1})

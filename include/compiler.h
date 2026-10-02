@@ -449,6 +449,12 @@ class Compiler
                                        TypeMask expected,
                                        TypeMask childExpected);
 
+    // Shared REPEAT / FOREVER loop. count is the validated trip count, or
+    // nullptr for FOREVER. Shadows the process-global repcount. REPEAT
+    // returns void or the last iteration's datum; FOREVER only returns
+    // via generateImmediateReturn (flow control or "You don't say").
+    llvm::Value *generateRepeatLike(const DatumPtr &node, llvm::Value *list, llvm::Value *count);
+
     llvm::Value *genValueOf(const DatumPtr &node, TypeMask expected);
     llvm::Value *genLiteral(const DatumPtr &node, TypeMask expected);
 

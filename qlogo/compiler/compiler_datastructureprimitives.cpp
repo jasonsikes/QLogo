@@ -249,7 +249,11 @@ COD***/
 Value *Compiler::genWord(const DatumPtr &node, TypeMask expected)
 {
     CallSite cs(this, node, TypeDatum);
-    AllocaInst *ary = cs.allocaAry(DBG_NAME("wordAry"));
+    std::vector<Value *> words;
+    words.reserve(cs.count());
+    for (Value *child : cs.children())
+        words.push_back(generateWordFromDatum(node.astnodeValue(), child));
+    AllocaInst *ary = generateAllocaAry(words, DBG_NAME("wordAry"));
     return cs.ret(generateCallExtern(concatWord, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize())));
 }
 
@@ -589,19 +593,20 @@ Value *Compiler::genItem(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeReal, TypeDatum);
     auto [index, thing] = cs.children();
 
-    // Instead of iterating a list twice, we'll save the list item if we find it when counting.
-    Datum *listItem = nullptr;
-    Datum **listItemPtr = &listItem;
+    // Instead of iterating a list twice, save the member when counting.
+    // The slot lives in the compiled frame (not a genItem C++ local).
+    AllocaInst *listItemSlot = scaff_->createEntryBlockAlloca(TyAddr, nullptr, DBG_NAME("listItem"));
+    scaff_->builder_.CreateStore(CoAddr(0), listItemSlot);
 
-    auto validator = [this, listItemPtr, thing](Value *index) {
+    auto validator = [this, listItemSlot, thing](Value *index) {
         Value *isValid =
-            generateCallExtern(isDatumIndexValid, PaAddr(thing), PaDouble(index), PaAddr(CoAddr(listItemPtr)));
+            generateCallExtern(isDatumIndexValid, PaAddr(thing), PaDouble(index), PaAddr(listItemSlot));
         return scaff_->builder_.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isDatumIndexValidCond"));
     };
     index = generateValidationDouble(node.astnodeValue(), index, validator);
 
     return cs.ret(generateCallExtern(
-        itemOfDatum, PaAddr(scaff_->evaluator_), PaAddr(thing), PaDouble(index), PaAddr(CoAddr(listItemPtr))));
+        itemOfDatum, PaAddr(scaff_->evaluator_), PaAddr(thing), PaDouble(index), PaAddr(listItemSlot)));
 }
 /***DOC SETITEM
 SETITEM index array value
