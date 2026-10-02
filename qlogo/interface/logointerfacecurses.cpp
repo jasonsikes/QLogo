@@ -64,6 +64,45 @@ int rgbToXterm256(const QColor &color)
     const int bi = (b * 5 + 127) / 255;
     return 16 + 36 * ri + 6 * gi + bi;
 }
+
+/// keypad on and noecho for one prompt so the line editor can paint the
+/// buffer. Restores the idle settings from initialize() (echo, keypad off)
+/// on return, EOF, or an interrupt THROW.
+class DrawLineMode
+{
+    bool active_;
+    bool prevKeypad_;
+
+  public:
+    explicit DrawLineMode(bool cursesActive) : active_(cursesActive), prevKeypad_(false)
+    {
+        if (!active_)
+            return;
+        prevKeypad_ = is_keypad(stdscr);
+        keypad(stdscr, TRUE);
+        noecho();
+        nodelay(stdscr, FALSE);
+    }
+
+    ~DrawLineMode()
+    {
+        if (!active_)
+            return;
+        keypad(stdscr, prevKeypad_ ? TRUE : FALSE);
+        echo();
+    }
+
+    DrawLineMode(const DrawLineMode &) = delete;
+    DrawLineMode &operator=(const DrawLineMode &) = delete;
+};
+
+void paintWString(const QString &text)
+{
+    if (text.isEmpty())
+        return;
+    const std::wstring wide = text.toStdWString();
+    addwstr(wide.c_str());
+}
 } // namespace
 
 LogoInterfaceCurses::LogoInterfaceCurses(QObject *parent) : LogoInterface(parent)
@@ -245,42 +284,68 @@ bool LogoInterfaceCurses::lineQueueHasLine()
 
 QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
 {
+    DrawLineMode drawMode(cursesActive_);
+    if (atEnd())
+        return {};
+
+    printToConsole(prompt);
+
+    int startY = 0;
+    int startX = 0;
+    getyx(stdscr, startY, startX);
+    lineEditor_.beginPrompt(startY, startX);
+
+    while (!unread_.isEmpty())
+    {
+        const char32_t ch = unread_.takeFirst();
+        if (ch == U'\n' || ch == U'\r')
+            return lineEditor_.finish();
+        lineEditor_.insert(ch);
+    }
+
+    paintWString(lineEditor_.text());
+    refresh();
+
     for (;;)
     {
         if (atEnd())
             return {};
 
-        printToConsole(prompt);
-
-        int startY = 0;
-        int startX = 0;
-        getyx(stdscr, startY, startX);
-        lineEditor_.beginPrompt(startY, startX);
-
-        while (!unread_.isEmpty())
-        {
-            const char32_t ch = unread_.takeFirst();
-            if (ch == U'\n' || ch == U'\r')
-                return lineEditor_.finish();
-            lineEditor_.insert(ch);
-        }
-
-        wint_t buffer[65536];
+        wint_t ch = 0;
         errno = 0;
-        const int rc = getn_wstr(buffer, 65535);
-        if (rc != ERR)
+        const int rc = get_wch(&ch);
+        if (rc == ERR)
         {
-            for (int i = 0; i < 65535 && buffer[i] != 0; ++i)
-                lineEditor_.insert(static_cast<char32_t>(buffer[i]));
-            return lineEditor_.finish();
+            if (errno == EINTR)
+            {
+                retryAfterInterrupt();
+                continue;
+            }
+            inputAtEof_ = true;
+            return {};
         }
-        if (errno == EINTR)
+        if (rc == KEY_CODE_YES)
         {
-            retryAfterInterrupt();
+            if (ch == KEY_ENTER)
+            {
+                paintWString(QStringLiteral("\n"));
+                refresh();
+                return lineEditor_.finish();
+            }
             continue;
         }
-        inputAtEof_ = true;
-        return {};
+        if (ch == L'\n' || ch == L'\r')
+        {
+            paintWString(QStringLiteral("\n"));
+            refresh();
+            return lineEditor_.finish();
+        }
+        const char32_t ucs4 = static_cast<char32_t>(ch);
+        if (ucs4 < 32U || ucs4 == 127U)
+            continue;
+        lineEditor_.insert(ucs4);
+        paintWString(QString::fromUcs4(&ucs4, 1));
+        refresh();
     }
 }
 
