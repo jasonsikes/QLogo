@@ -43,6 +43,7 @@ class LogoInterfaceCurses : public LogoInterface
     bool standoutOn_ = false;
     QList<char32_t> unread_;
     LineEditor lineEditor_;
+    int editDrawEndY_ = 0;
 
     int colorNumber(const QColor &color) const;
     short ensurePair(int fg, int bg);
@@ -51,6 +52,7 @@ class LogoInterfaceCurses : public LogoInterface
     void applyStandoutAttr();
     void rebindPairsToBackground(int newBg);
     void recolorDefaultCells(int newBg);
+    void redrawEditLine();
 
   public:
     /// @brief Constructor for the LogoInterfaceCurses class.

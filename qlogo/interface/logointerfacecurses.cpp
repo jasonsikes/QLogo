@@ -19,6 +19,7 @@
 #include <clocale>
 #include <cstdio>
 #include <cstring>
+#include <cwchar>
 #include <string>
 
 #ifndef NCURSES_WIDECHAR
@@ -102,6 +103,47 @@ void paintWString(const QString &text)
         return;
     const std::wstring wide = text.toStdWString();
     addwstr(wide.c_str());
+}
+
+struct CellPos
+{
+    int y = 0;
+    int x = 0;
+};
+
+char32_t nextUcs4(const QString &text, int &i)
+{
+    const QChar c = text.at(i++);
+    if (c.isHighSurrogate() && i < text.size() && text.at(i).isLowSurrogate())
+        return QChar::surrogateToUcs4(c, text.at(i++));
+    return static_cast<char32_t>(c.unicode());
+}
+
+int displayWidth(char32_t cp)
+{
+    const int w = wcwidth(static_cast<wchar_t>(cp));
+    return w < 0 ? 1 : w;
+}
+
+void wrapIfNeeded(CellPos &p, int w, int maxx)
+{
+    if (w > 0 && p.x > 0 && p.x + w > maxx)
+    {
+        p.y++;
+        p.x = 0;
+    }
+}
+
+void consumeWidth(CellPos &p, int w, int maxx)
+{
+    if (w <= 0)
+        return;
+    p.x += w;
+    if (p.x >= maxx)
+    {
+        p.y++;
+        p.x = 0;
+    }
 }
 } // namespace
 
@@ -282,6 +324,103 @@ bool LogoInterfaceCurses::lineQueueHasLine()
     return false;
 }
 
+void LogoInterfaceCurses::redrawEditLine()
+{
+    if (!cursesActive_)
+        return;
+
+    int maxy = 0;
+    int maxx = 0;
+    getmaxyx(stdscr, maxy, maxx);
+    if (maxy < 1)
+        maxy = 1;
+    if (maxx < 1)
+        maxx = 1;
+
+    int originY = lineEditor_.originRow();
+    int originX = lineEditor_.originCol();
+    if (originY < 0)
+        originY = 0;
+    if (originX < 0)
+        originX = 0;
+    if (originY >= maxy)
+        originY = maxy - 1;
+    if (originX >= maxx)
+        originX = 0;
+    lineEditor_.setOrigin(originY, originX);
+
+    applyCurrentPair();
+    applyStandoutAttr();
+
+    const QString &text = lineEditor_.text();
+    const int cursor = lineEditor_.cursor();
+    CellPos p{originY, originX};
+    CellPos cursorPos{originY, originX};
+
+    auto scrollIfOffScreen = [&](int y) {
+        if (y < maxy)
+            return 0;
+        const int scrolled = y - (maxy - 1);
+        wscrl(stdscr, scrolled);
+        int newOrigin = lineEditor_.originRow() - scrolled;
+        if (newOrigin < 0)
+            newOrigin = 0;
+        lineEditor_.setOrigin(newOrigin, lineEditor_.originCol());
+        editDrawEndY_ -= scrolled;
+        return scrolled;
+    };
+
+    auto applyScroll = [&](int scrolled) {
+        if (scrolled <= 0)
+            return;
+        p.y -= scrolled;
+        if (p.y < 0)
+            p.y = 0;
+        cursorPos.y -= scrolled;
+        if (cursorPos.y < 0)
+            cursorPos.y = 0;
+    };
+
+    int i = 0;
+    while (i < text.size())
+    {
+        const char32_t cp = nextUcs4(text, i);
+        const int w = displayWidth(cp);
+        wrapIfNeeded(p, w, maxx);
+        applyScroll(scrollIfOffScreen(p.y));
+        wmove(stdscr, p.y, p.x);
+        const QString piece = QString::fromUcs4(&cp, 1);
+        paintWString(piece);
+        consumeWidth(p, w, maxx);
+        if (i <= cursor)
+            cursorPos = p;
+    }
+
+    applyScroll(scrollIfOffScreen(p.y));
+    wmove(stdscr, p.y, p.x);
+    clrtoeol();
+
+    const int lastY = editDrawEndY_;
+    for (int y = p.y + 1; y <= lastY && y < maxy; ++y)
+    {
+        wmove(stdscr, y, 0);
+        clrtoeol();
+    }
+    editDrawEndY_ = p.y;
+
+    applyScroll(scrollIfOffScreen(cursorPos.y));
+    if (cursorPos.y < 0)
+        cursorPos.y = 0;
+    if (cursorPos.y >= maxy)
+        cursorPos.y = maxy - 1;
+    if (cursorPos.x < 0)
+        cursorPos.x = 0;
+    if (cursorPos.x >= maxx)
+        cursorPos.x = maxx - 1;
+    wmove(stdscr, cursorPos.y, cursorPos.x);
+    refresh();
+}
+
 QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
 {
     DrawLineMode drawMode(cursesActive_);
@@ -294,6 +433,7 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
     int startX = 0;
     getyx(stdscr, startY, startX);
     lineEditor_.beginPrompt(startY, startX);
+    editDrawEndY_ = lineEditor_.originRow();
 
     while (!unread_.isEmpty())
     {
@@ -303,8 +443,15 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
         lineEditor_.insert(ch);
     }
 
-    paintWString(lineEditor_.text());
-    refresh();
+    redrawEditLine();
+
+    auto acceptLine = [this]() {
+        lineEditor_.setCursor(lineEditor_.text().size());
+        redrawEditLine();
+        paintWString(QStringLiteral("\n"));
+        refresh();
+        return lineEditor_.finish();
+    };
 
     for (;;)
     {
@@ -319,6 +466,7 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
             if (errno == EINTR)
             {
                 retryAfterInterrupt();
+                redrawEditLine();
                 continue;
             }
             inputAtEof_ = true;
@@ -327,25 +475,21 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
         if (rc == KEY_CODE_YES)
         {
             if (ch == KEY_ENTER)
+                return acceptLine();
+            if (ch == KEY_RESIZE)
             {
-                paintWString(QStringLiteral("\n"));
-                refresh();
-                return lineEditor_.finish();
+                redrawEditLine();
+                continue;
             }
             continue;
         }
         if (ch == L'\n' || ch == L'\r')
-        {
-            paintWString(QStringLiteral("\n"));
-            refresh();
-            return lineEditor_.finish();
-        }
+            return acceptLine();
         const char32_t ucs4 = static_cast<char32_t>(ch);
         if (ucs4 < 32U || ucs4 == 127U)
             continue;
         lineEditor_.insert(ucs4);
-        paintWString(QString::fromUcs4(&ucs4, 1));
-        refresh();
+        redrawEditLine();
     }
 }
 
