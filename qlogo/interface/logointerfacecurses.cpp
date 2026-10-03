@@ -19,6 +19,7 @@
 #include <clocale>
 #include <cstdio>
 #include <cstring>
+#include <cwchar>
 #include <string>
 
 #ifndef NCURSES_WIDECHAR
@@ -63,6 +64,152 @@ int rgbToXterm256(const QColor &color)
     const int gi = (g * 5 + 127) / 255;
     const int bi = (b * 5 + 127) / 255;
     return 16 + 36 * ri + 6 * gi + bi;
+}
+
+/// keypad on and noecho so get_wch reports KEY_* codes and does not echo.
+/// Restores the idle settings from initialize() (echo, keypad off, blocking).
+class NoechoKeypadMode
+{
+    bool active_;
+    bool prevKeypad_;
+    bool prevNodelay_;
+
+  public:
+    NoechoKeypadMode(bool cursesActive, bool nonBlocking)
+        : active_(cursesActive), prevKeypad_(false), prevNodelay_(false)
+    {
+        if (!active_)
+            return;
+        prevKeypad_ = is_keypad(stdscr);
+        prevNodelay_ = is_nodelay(stdscr);
+        keypad(stdscr, TRUE);
+        noecho();
+        nodelay(stdscr, nonBlocking ? TRUE : FALSE);
+    }
+
+    ~NoechoKeypadMode()
+    {
+        if (!active_)
+            return;
+        keypad(stdscr, prevKeypad_ ? TRUE : FALSE);
+        nodelay(stdscr, prevNodelay_ ? TRUE : FALSE);
+        echo();
+    }
+
+    NoechoKeypadMode(const NoechoKeypadMode &) = delete;
+    NoechoKeypadMode &operator=(const NoechoKeypadMode &) = delete;
+};
+
+/// True if get_wch produced a character for KEYP / LINEP / READCHAR.
+/// Motion, history, and resize keys are not characters. Backspace, Delete,
+/// and keypad Enter map to the bytes Logo programs already test for.
+bool mapGetWchToChar(int rc, wint_t ch, char32_t &out)
+{
+    if (rc == ERR)
+        return false;
+    if (rc == KEY_CODE_YES)
+    {
+        if (ch == KEY_BACKSPACE)
+        {
+            out = 8U;
+            return true;
+        }
+        if (ch == KEY_DC)
+        {
+            out = 127U;
+            return true;
+        }
+        if (ch == KEY_ENTER)
+        {
+            out = U'\n';
+            return true;
+        }
+        return false;
+    }
+    out = static_cast<char32_t>(ch);
+    return true;
+}
+
+/// Apply a typeahead character to the line editor. Returns true if it completes
+/// the line (CR/LF). Editing controls match the interactive prompt.
+bool applyCharToLineEditor(LineEditor &editor, char32_t ch)
+{
+    if (ch == U'\n' || ch == U'\r')
+        return true;
+    if (ch == 8U || ch == 127U)
+        editor.eraseLeft();
+    else if (ch == 1U)
+        editor.moveHome();
+    else if (ch == 5U)
+        editor.moveEnd();
+    else if (ch == 11U)
+        editor.killToEnd();
+    else if (ch == 21U)
+        editor.killLine();
+    else if (ch == 23U)
+        editor.killWord();
+    else if (ch >= 32U)
+        editor.insert(ch);
+    return false;
+}
+
+bool unreadHasLineBreak(const QList<char32_t> &unread)
+{
+    for (char32_t ch : unread)
+    {
+        if (ch == U'\n' || ch == U'\r')
+            return true;
+    }
+    return false;
+}
+
+void paintWString(const QString &text)
+{
+    if (text.isEmpty())
+        return;
+    const std::wstring wide = text.toStdWString();
+    addwstr(wide.c_str());
+}
+
+struct CellPos
+{
+    int y = 0;
+    int x = 0;
+};
+
+char32_t nextUcs4(const QString &text, int &i)
+{
+    const QChar c = text.at(i++);
+    if (c.isHighSurrogate() && i < text.size() && text.at(i).isLowSurrogate())
+        return QChar::surrogateToUcs4(c, text.at(i++));
+    return static_cast<char32_t>(c.unicode());
+}
+
+int displayWidth(char32_t cp)
+{
+    const int w = wcwidth(static_cast<wchar_t>(cp));
+    return w < 0 ? 1 : w;
+}
+
+void wrapIfNeeded(CellPos &p, int w, int maxx)
+{
+    if (w > 0 && p.x > 0 && p.x + w > maxx)
+    {
+        p.y++;
+        p.x = 0;
+    }
+}
+
+void consumeWidth(CellPos &p, int w, int maxx)
+{
+    if (w <= 0)
+        return;
+    p.x += w;
+    if (p.x >= maxx)
+    {
+        p.y++;
+        p.x = 0;
+    }
 }
 } // namespace
 
@@ -191,25 +338,18 @@ bool LogoInterfaceCurses::keyQueueHasChars()
     if (!cursesActive_ || atEnd())
         return false;
 
-    nodelay(stdscr, TRUE);
-    noecho();
+    NoechoKeypadMode mode(cursesActive_, true);
     for (;;)
     {
         wint_t ch = 0;
         const int rc = get_wch(&ch);
         if (rc == ERR)
-        {
-            echo();
-            nodelay(stdscr, FALSE);
             return false;
-        }
-        if (rc != KEY_CODE_YES)
-        {
-            unread_.append(static_cast<char32_t>(ch));
-            echo();
-            nodelay(stdscr, FALSE);
-            return true;
-        }
+        char32_t ucs4 = 0;
+        if (!mapGetWchToChar(rc, ch, ucs4))
+            continue;
+        unread_.append(ucs4);
+        return true;
     }
 }
 
@@ -217,66 +357,276 @@ bool LogoInterfaceCurses::lineQueueHasLine()
 {
     if (!cursesActive_ || atEnd())
         return false;
+    if (unreadHasLineBreak(unread_))
+        return true;
 
-    nodelay(stdscr, TRUE);
-    noecho();
+    NoechoKeypadMode mode(cursesActive_, true);
     for (;;)
     {
         wint_t ch = 0;
         const int rc = get_wch(&ch);
         if (rc == ERR)
             break;
-        if (rc == KEY_CODE_YES)
+        char32_t ucs4 = 0;
+        if (!mapGetWchToChar(rc, ch, ucs4))
             continue;
-        unread_.append(static_cast<char32_t>(ch));
-        if (ch == L'\n' || ch == L'\r')
+        unread_.append(ucs4);
+        if (ucs4 == U'\n' || ucs4 == U'\r')
             break;
     }
-    echo();
-    nodelay(stdscr, FALSE);
 
-    for (char32_t ch : unread_)
+    return unreadHasLineBreak(unread_);
+}
+
+void LogoInterfaceCurses::redrawEditLine()
+{
+    if (!cursesActive_)
+        return;
+
+    int maxy = 0;
+    int maxx = 0;
+    getmaxyx(stdscr, maxy, maxx);
+    if (maxy < 1)
+        maxy = 1;
+    if (maxx < 1)
+        maxx = 1;
+
+    int originY = lineEditor_.originRow();
+    int originX = lineEditor_.originCol();
+    if (originY < 0)
+        originY = 0;
+    if (originX < 0)
+        originX = 0;
+    if (originY >= maxy)
+        originY = maxy - 1;
+    if (originX >= maxx)
+        originX = 0;
+    lineEditor_.setOrigin(originY, originX);
+
+    applyCurrentPair();
+    applyStandoutAttr();
+
+    const QString &text = lineEditor_.text();
+    const int cursor = lineEditor_.cursor();
+    CellPos p{originY, originX};
+    CellPos cursorPos{originY, originX};
+
+    auto scrollIfOffScreen = [&](int y) {
+        if (y < maxy)
+            return 0;
+        const int scrolled = y - (maxy - 1);
+        wscrl(stdscr, scrolled);
+        int newOrigin = lineEditor_.originRow() - scrolled;
+        if (newOrigin < 0)
+            newOrigin = 0;
+        lineEditor_.setOrigin(newOrigin, lineEditor_.originCol());
+        editDrawEndY_ -= scrolled;
+        return scrolled;
+    };
+
+    auto applyScroll = [&](int scrolled) {
+        if (scrolled <= 0)
+            return;
+        p.y -= scrolled;
+        if (p.y < 0)
+            p.y = 0;
+        cursorPos.y -= scrolled;
+        if (cursorPos.y < 0)
+            cursorPos.y = 0;
+    };
+
+    int i = 0;
+    while (i < text.size())
     {
-        if (ch == U'\n' || ch == U'\r')
-            return true;
+        const char32_t cp = nextUcs4(text, i);
+        const int w = displayWidth(cp);
+        wrapIfNeeded(p, w, maxx);
+        applyScroll(scrollIfOffScreen(p.y));
+        wmove(stdscr, p.y, p.x);
+        const QString piece = QString::fromUcs4(&cp, 1);
+        paintWString(piece);
+        consumeWidth(p, w, maxx);
+        if (i <= cursor)
+            cursorPos = p;
     }
-    return false;
+
+    applyScroll(scrollIfOffScreen(p.y));
+    wmove(stdscr, p.y, p.x);
+    clrtoeol();
+
+    const int lastY = editDrawEndY_;
+    for (int y = p.y + 1; y <= lastY && y < maxy; ++y)
+    {
+        wmove(stdscr, y, 0);
+        clrtoeol();
+    }
+    editDrawEndY_ = p.y;
+
+    applyScroll(scrollIfOffScreen(cursorPos.y));
+    if (cursorPos.y < 0)
+        cursorPos.y = 0;
+    if (cursorPos.y >= maxy)
+        cursorPos.y = maxy - 1;
+    if (cursorPos.x < 0)
+        cursorPos.x = 0;
+    if (cursorPos.x >= maxx)
+        cursorPos.x = maxx - 1;
+    wmove(stdscr, cursorPos.y, cursorPos.x);
+    refresh();
 }
 
 QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
 {
+    NoechoKeypadMode drawMode(cursesActive_, false);
+    if (atEnd())
+        return {};
+
+    printToConsole(prompt);
+
+    int startY = 0;
+    int startX = 0;
+    getyx(stdscr, startY, startX);
+    lineEditor_.beginPrompt(startY, startX);
+    editDrawEndY_ = lineEditor_.originRow();
+
+    while (!unread_.isEmpty())
+    {
+        const char32_t ch = unread_.takeFirst();
+        if (applyCharToLineEditor(lineEditor_, ch))
+            return lineEditor_.finish();
+    }
+
+    redrawEditLine();
+
+    auto acceptLine = [this]() {
+        lineEditor_.setCursor(lineEditor_.text().size());
+        redrawEditLine();
+        paintWString(QStringLiteral("\n"));
+        refresh();
+        return lineEditor_.finish();
+    };
+
     for (;;)
     {
         if (atEnd())
             return {};
 
-        printToConsole(prompt);
-
-        std::u32string u32;
-        while (!unread_.isEmpty())
-        {
-            const char32_t ch = unread_.takeFirst();
-            if (ch == U'\n' || ch == U'\r')
-                return QString::fromStdU32String(u32);
-            u32.push_back(ch);
-        }
-
-        wint_t buffer[65536];
+        wint_t ch = 0;
         errno = 0;
-        const int rc = getn_wstr(buffer, 65535);
-        if (rc != ERR)
+        const int rc = get_wch(&ch);
+        if (rc == ERR)
         {
-            for (int i = 0; i < 65535 && buffer[i] != 0; ++i)
-                u32.push_back(static_cast<char32_t>(buffer[i]));
-            return QString::fromStdU32String(u32);
+            if (errno == EINTR)
+            {
+                retryAfterInterrupt();
+                redrawEditLine();
+                continue;
+            }
+            inputAtEof_ = true;
+            return {};
         }
-        if (errno == EINTR)
+        if (rc == KEY_CODE_YES)
         {
-            retryAfterInterrupt();
+            if (ch == KEY_ENTER)
+                return acceptLine();
+            if (ch == KEY_LEFT)
+            {
+                lineEditor_.moveLeft();
+                redrawEditLine();
+                continue;
+            }
+            if (ch == KEY_RIGHT)
+            {
+                lineEditor_.moveRight();
+                redrawEditLine();
+                continue;
+            }
+            if (ch == KEY_HOME)
+            {
+                lineEditor_.moveHome();
+                redrawEditLine();
+                continue;
+            }
+            if (ch == KEY_END)
+            {
+                lineEditor_.moveEnd();
+                redrawEditLine();
+                continue;
+            }
+            if (ch == KEY_UP)
+            {
+                if (lineEditor_.recallOlder())
+                    redrawEditLine();
+                continue;
+            }
+            if (ch == KEY_DOWN)
+            {
+                if (lineEditor_.recallNewer())
+                    redrawEditLine();
+                continue;
+            }
+            if (ch == KEY_BACKSPACE)
+            {
+                lineEditor_.eraseLeft();
+                redrawEditLine();
+                continue;
+            }
+            if (ch == KEY_DC)
+            {
+                lineEditor_.eraseAtCursor();
+                redrawEditLine();
+                continue;
+            }
+            if (ch == KEY_RESIZE)
+            {
+                redrawEditLine();
+                continue;
+            }
             continue;
         }
-        inputAtEof_ = true;
-        return {};
+        if (ch == L'\n' || ch == L'\r')
+            return acceptLine();
+        const char32_t ucs4 = static_cast<char32_t>(ch);
+        if (ucs4 == 8U || ucs4 == 127U)
+        {
+            lineEditor_.eraseLeft();
+            redrawEditLine();
+            continue;
+        }
+        if (ucs4 == 1U)
+        {
+            lineEditor_.moveHome();
+            redrawEditLine();
+            continue;
+        }
+        if (ucs4 == 5U)
+        {
+            lineEditor_.moveEnd();
+            redrawEditLine();
+            continue;
+        }
+        if (ucs4 == 11U)
+        {
+            lineEditor_.killToEnd();
+            redrawEditLine();
+            continue;
+        }
+        if (ucs4 == 21U)
+        {
+            lineEditor_.killLine();
+            redrawEditLine();
+            continue;
+        }
+        if (ucs4 == 23U)
+        {
+            lineEditor_.killWord();
+            redrawEditLine();
+            continue;
+        }
+        if (ucs4 < 32U)
+            continue;
+        lineEditor_.insert(ucs4);
+        redrawEditLine();
     }
 }
 
@@ -284,6 +634,7 @@ DatumPtr LogoInterfaceCurses::readchar()
 {
     if (!cursesActive_)
         return nothing();
+    NoechoKeypadMode mode(cursesActive_, false);
     for (;;)
     {
         if (atEnd())
@@ -296,25 +647,23 @@ DatumPtr LogoInterfaceCurses::readchar()
         }
 
         refresh();
-        noecho();
         wint_t ch = 0;
         errno = 0;
         const int rc = get_wch(&ch);
-        echo();
-        if (rc != ERR)
+        if (rc == ERR)
         {
-            if (rc == KEY_CODE_YES)
-                return nothing();
-            char32_t ucs4 = static_cast<char32_t>(ch);
-            return DatumPtr(QString::fromUcs4(&ucs4, 1));
+            if (errno == EINTR)
+            {
+                retryAfterInterrupt();
+                continue;
+            }
+            inputAtEof_ = true;
+            return nothing();
         }
-        if (errno == EINTR)
-        {
-            retryAfterInterrupt();
+        char32_t ucs4 = 0;
+        if (!mapGetWchToChar(rc, ch, ucs4))
             continue;
-        }
-        inputAtEof_ = true;
-        return nothing();
+        return DatumPtr(QString::fromUcs4(&ucs4, 1));
     }
 }
 
