@@ -1034,9 +1034,10 @@ Value *Compiler::genSavepict(const DatumPtr &node, TypeMask expected)
 {
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeDatum);
-    Value *filename = cs.child(0);
-    return cs.ret(generateCallExtern(
-        savePict, PaAddr(scaff_->evaluator_), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue()))));
+    Value *filename = generateWordFromDatum(node.astnodeValue(), cs.child(0));
+    Value *retval = generateCallExtern(
+        savePict, PaAddr(scaff_->evaluator_), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue())));
+    return cs.ret(generateNotFlowControl(retval));
 }
 /***DOC SVGPICT
 SVGPICT filename
@@ -1051,9 +1052,10 @@ Value *Compiler::genSvgpict(const DatumPtr &node, TypeMask expected)
 {
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeDatum);
-    Value *filename = cs.child(0);
-    return cs.ret(generateCallExtern(
-        saveSvgpict, PaAddr(scaff_->evaluator_), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue()))));
+    Value *filename = generateWordFromDatum(node.astnodeValue(), cs.child(0));
+    Value *retval = generateCallExtern(
+        saveSvgpict, PaAddr(scaff_->evaluator_), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue())));
+    return cs.ret(generateNotFlowControl(retval));
 }
 /***DOC LOADPICT
 LOADPICT filename
@@ -1071,9 +1073,10 @@ Value *Compiler::genLoadpict(const DatumPtr &node, TypeMask expected)
 {
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeDatum);
-    Value *filename = cs.child(0);
-    return cs.ret(generateCallExtern(
-        loadPict, PaAddr(scaff_->evaluator_), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue()))));
+    Value *filename = generateWordOrEmptyListFromDatum(node.astnodeValue(), cs.child(0));
+    Value *retval = generateCallExtern(
+        loadPict, PaAddr(scaff_->evaluator_), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue())));
+    return cs.ret(generateNotFlowControl(retval));
 }
 // MOUSE QUERIES
 

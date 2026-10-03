@@ -487,28 +487,20 @@ EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *dFilename = reinterpret_cast<Datum *>(filenameAddr);
     auto *retval = reinterpret_cast<Datum *>(nodeAddr);
-    if (dFilename->isa_ == Datum::typeWord)
+    if (dFilename->isWord())
     {
         QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
         QString filepath = StreamManager::get().filepathForFilename(DatumPtr(filename));
         QImage image = QImage(filepath);
         if (image.isNull())
-        {
             retval = FCError::fileSystem();
-        }
-        Config::get().mainInterface()->setCanvasBackgroundImage(image);
-        goto done;
+        else
+            Config::get().mainInterface()->setCanvasBackgroundImage(image);
     }
-    if (dFilename->isList())
+    else
     {
-        if (dFilename->listValue()->isEmpty())
-        {
-            Config::get().mainInterface()->setCanvasBackgroundImage(QImage());
-            goto done;
-        }
+        Config::get().mainInterface()->setCanvasBackgroundImage(QImage());
     }
-    retval = FCError::doesntLike(DatumPtr(reinterpret_cast<ASTNode *>(nodeAddr)->nodeName_), DatumPtr(dFilename));
-done:
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
 }
