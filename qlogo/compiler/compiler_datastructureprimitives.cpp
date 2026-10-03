@@ -132,7 +132,7 @@ Value *Compiler::genNotequalp(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [thing1, thing2] = cs.children();
     Value *eq = generateEqualpCompare(thing1, thing2);
-    return cs.ret(scaff_->builder_.CreateSub(CoBool(1), eq, "noteq"));
+    return cs.ret(scaff_->builder_.CreateNot(eq, DBG_NAME("noteq")));
 }
 
 // CONSTRUCTORS
