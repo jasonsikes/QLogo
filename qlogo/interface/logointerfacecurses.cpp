@@ -528,19 +528,22 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
     lineEditor_.beginPrompt(startY, startX);
     editDrawEndY_ = lineEditor_.originRow();
 
-    while (!unread_.isEmpty())
-    {
-        const char32_t ch = unread_.takeFirst();
-        if (applyCharToLineEditor(lineEditor_, ch))
-            return lineEditor_.finish();
-    }
-
-    redrawEditLine();
-
     auto acceptLine = [this]() {
         leaveEditLine();
         return lineEditor_.finish();
     };
+
+    // Typeahead queued by KEYP / LINEP. A line completed here is accepted the
+    // same way as one typed interactively, so it is painted and followed by a
+    // newline instead of leaving the cursor on the prompt row.
+    while (!unread_.isEmpty())
+    {
+        const char32_t ch = unread_.takeFirst();
+        if (applyCharToLineEditor(lineEditor_, ch))
+            return acceptLine();
+    }
+
+    redrawEditLine();
 
     for (;;)
     {
