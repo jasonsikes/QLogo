@@ -72,7 +72,7 @@ Value *Compiler::genBack(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeReal);
     Value *reverseDistance = cs.child(0);
     Value *distance = scaff_->builder_.CreateFNeg(reverseDistance, DBG_NAME("negativeDistance"));
-    return cs.ret(generateCallExtern(moveTurtleForward, PaDouble(distance), PaAddr(CoAddr(node.astnodeValue()))));
+    return cs.ret(generateCallExtern(moveTurtleForward, PaAddr(CoAddr(node.astnodeValue())), PaDouble(distance)));
 }
 /***DOC LEFT LT
 LEFT degrees
