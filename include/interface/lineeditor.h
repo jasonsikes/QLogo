@@ -87,6 +87,12 @@ class LineEditor
     /// @brief Move the cursor one Unicode character right, if possible.
     void moveRight();
 
+    /// @brief Delete the Unicode character to the left of the cursor (Backspace).
+    void eraseLeft();
+
+    /// @brief Delete the Unicode character at the cursor (Delete).
+    void eraseAtCursor();
+
     /// @brief Insert @p ch at the cursor and advance the cursor.
     /// @param ch A Unicode code point.
     void insert(char32_t ch);

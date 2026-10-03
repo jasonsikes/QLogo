@@ -89,6 +89,25 @@ void LineEditor::moveRight()
         ++cursor_;
 }
 
+void LineEditor::eraseLeft()
+{
+    const int end = cursor_;
+    moveLeft();
+    if (cursor_ < end)
+        buffer_.remove(cursor_, end - cursor_);
+}
+
+void LineEditor::eraseAtCursor()
+{
+    if (cursor_ >= buffer_.size())
+        return;
+    const int start = cursor_;
+    moveRight();
+    const int len = cursor_ - start;
+    cursor_ = start;
+    buffer_.remove(start, len);
+}
+
 void LineEditor::insert(char32_t ch)
 {
     insert(QString::fromUcs4(&ch, 1));

@@ -488,6 +488,18 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
                 redrawEditLine();
                 continue;
             }
+            if (ch == KEY_BACKSPACE)
+            {
+                lineEditor_.eraseLeft();
+                redrawEditLine();
+                continue;
+            }
+            if (ch == KEY_DC)
+            {
+                lineEditor_.eraseAtCursor();
+                redrawEditLine();
+                continue;
+            }
             if (ch == KEY_RESIZE)
             {
                 redrawEditLine();
@@ -498,7 +510,13 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
         if (ch == L'\n' || ch == L'\r')
             return acceptLine();
         const char32_t ucs4 = static_cast<char32_t>(ch);
-        if (ucs4 < 32U || ucs4 == 127U)
+        if (ucs4 == 8U || ucs4 == 127U)
+        {
+            lineEditor_.eraseLeft();
+            redrawEditLine();
+            continue;
+        }
+        if (ucs4 < 32U)
             continue;
         lineEditor_.insert(ucs4);
         redrawEditLine();
