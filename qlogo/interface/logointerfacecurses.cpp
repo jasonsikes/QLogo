@@ -66,36 +66,102 @@ int rgbToXterm256(const QColor &color)
     return 16 + 36 * ri + 6 * gi + bi;
 }
 
-/// keypad on and noecho for one prompt so the line editor can paint the
-/// buffer. Restores the idle settings from initialize() (echo, keypad off)
-/// on return, EOF, or an interrupt THROW.
-class DrawLineMode
+/// keypad on and noecho so get_wch reports KEY_* codes and does not echo.
+/// Restores the idle settings from initialize() (echo, keypad off, blocking).
+class NoechoKeypadMode
 {
     bool active_;
     bool prevKeypad_;
+    bool prevNodelay_;
 
   public:
-    explicit DrawLineMode(bool cursesActive) : active_(cursesActive), prevKeypad_(false)
+    NoechoKeypadMode(bool cursesActive, bool nonBlocking)
+        : active_(cursesActive), prevKeypad_(false), prevNodelay_(false)
     {
         if (!active_)
             return;
         prevKeypad_ = is_keypad(stdscr);
+        prevNodelay_ = is_nodelay(stdscr);
         keypad(stdscr, TRUE);
         noecho();
-        nodelay(stdscr, FALSE);
+        nodelay(stdscr, nonBlocking ? TRUE : FALSE);
     }
 
-    ~DrawLineMode()
+    ~NoechoKeypadMode()
     {
         if (!active_)
             return;
         keypad(stdscr, prevKeypad_ ? TRUE : FALSE);
+        nodelay(stdscr, prevNodelay_ ? TRUE : FALSE);
         echo();
     }
 
-    DrawLineMode(const DrawLineMode &) = delete;
-    DrawLineMode &operator=(const DrawLineMode &) = delete;
+    NoechoKeypadMode(const NoechoKeypadMode &) = delete;
+    NoechoKeypadMode &operator=(const NoechoKeypadMode &) = delete;
 };
+
+/// True if get_wch produced a character for KEYP / LINEP / READCHAR.
+/// Motion, history, and resize keys are not characters. Backspace, Delete,
+/// and keypad Enter map to the bytes Logo programs already test for.
+bool mapGetWchToChar(int rc, wint_t ch, char32_t &out)
+{
+    if (rc == ERR)
+        return false;
+    if (rc == KEY_CODE_YES)
+    {
+        if (ch == KEY_BACKSPACE)
+        {
+            out = 8U;
+            return true;
+        }
+        if (ch == KEY_DC)
+        {
+            out = 127U;
+            return true;
+        }
+        if (ch == KEY_ENTER)
+        {
+            out = U'\n';
+            return true;
+        }
+        return false;
+    }
+    out = static_cast<char32_t>(ch);
+    return true;
+}
+
+/// Apply a typeahead character to the line editor. Returns true if it completes
+/// the line (CR/LF). Editing controls match the interactive prompt.
+bool applyCharToLineEditor(LineEditor &editor, char32_t ch)
+{
+    if (ch == U'\n' || ch == U'\r')
+        return true;
+    if (ch == 8U || ch == 127U)
+        editor.eraseLeft();
+    else if (ch == 1U)
+        editor.moveHome();
+    else if (ch == 5U)
+        editor.moveEnd();
+    else if (ch == 11U)
+        editor.killToEnd();
+    else if (ch == 21U)
+        editor.killLine();
+    else if (ch == 23U)
+        editor.killWord();
+    else if (ch >= 32U)
+        editor.insert(ch);
+    return false;
+}
+
+bool unreadHasLineBreak(const QList<char32_t> &unread)
+{
+    for (char32_t ch : unread)
+    {
+        if (ch == U'\n' || ch == U'\r')
+            return true;
+    }
+    return false;
+}
 
 void paintWString(const QString &text)
 {
@@ -272,25 +338,18 @@ bool LogoInterfaceCurses::keyQueueHasChars()
     if (!cursesActive_ || atEnd())
         return false;
 
-    nodelay(stdscr, TRUE);
-    noecho();
+    NoechoKeypadMode mode(cursesActive_, true);
     for (;;)
     {
         wint_t ch = 0;
         const int rc = get_wch(&ch);
         if (rc == ERR)
-        {
-            echo();
-            nodelay(stdscr, FALSE);
             return false;
-        }
-        if (rc != KEY_CODE_YES)
-        {
-            unread_.append(static_cast<char32_t>(ch));
-            echo();
-            nodelay(stdscr, FALSE);
-            return true;
-        }
+        char32_t ucs4 = 0;
+        if (!mapGetWchToChar(rc, ch, ucs4))
+            continue;
+        unread_.append(ucs4);
+        return true;
     }
 }
 
@@ -298,30 +357,25 @@ bool LogoInterfaceCurses::lineQueueHasLine()
 {
     if (!cursesActive_ || atEnd())
         return false;
+    if (unreadHasLineBreak(unread_))
+        return true;
 
-    nodelay(stdscr, TRUE);
-    noecho();
+    NoechoKeypadMode mode(cursesActive_, true);
     for (;;)
     {
         wint_t ch = 0;
         const int rc = get_wch(&ch);
         if (rc == ERR)
             break;
-        if (rc == KEY_CODE_YES)
+        char32_t ucs4 = 0;
+        if (!mapGetWchToChar(rc, ch, ucs4))
             continue;
-        unread_.append(static_cast<char32_t>(ch));
-        if (ch == L'\n' || ch == L'\r')
+        unread_.append(ucs4);
+        if (ucs4 == U'\n' || ucs4 == U'\r')
             break;
     }
-    echo();
-    nodelay(stdscr, FALSE);
 
-    for (char32_t ch : unread_)
-    {
-        if (ch == U'\n' || ch == U'\r')
-            return true;
-    }
-    return false;
+    return unreadHasLineBreak(unread_);
 }
 
 void LogoInterfaceCurses::redrawEditLine()
@@ -423,7 +477,7 @@ void LogoInterfaceCurses::redrawEditLine()
 
 QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
 {
-    DrawLineMode drawMode(cursesActive_);
+    NoechoKeypadMode drawMode(cursesActive_, false);
     if (atEnd())
         return {};
 
@@ -438,9 +492,8 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
     while (!unread_.isEmpty())
     {
         const char32_t ch = unread_.takeFirst();
-        if (ch == U'\n' || ch == U'\r')
+        if (applyCharToLineEditor(lineEditor_, ch))
             return lineEditor_.finish();
-        lineEditor_.insert(ch);
     }
 
     redrawEditLine();
@@ -581,6 +634,7 @@ DatumPtr LogoInterfaceCurses::readchar()
 {
     if (!cursesActive_)
         return nothing();
+    NoechoKeypadMode mode(cursesActive_, false);
     for (;;)
     {
         if (atEnd())
@@ -593,25 +647,23 @@ DatumPtr LogoInterfaceCurses::readchar()
         }
 
         refresh();
-        noecho();
         wint_t ch = 0;
         errno = 0;
         const int rc = get_wch(&ch);
-        echo();
-        if (rc != ERR)
+        if (rc == ERR)
         {
-            if (rc == KEY_CODE_YES)
-                return nothing();
-            char32_t ucs4 = static_cast<char32_t>(ch);
-            return DatumPtr(QString::fromUcs4(&ucs4, 1));
+            if (errno == EINTR)
+            {
+                retryAfterInterrupt();
+                continue;
+            }
+            inputAtEof_ = true;
+            return nothing();
         }
-        if (errno == EINTR)
-        {
-            retryAfterInterrupt();
+        char32_t ucs4 = 0;
+        if (!mapGetWchToChar(rc, ch, ucs4))
             continue;
-        }
-        inputAtEof_ = true;
-        return nothing();
+        return DatumPtr(QString::fromUcs4(&ucs4, 1));
     }
 }
 
