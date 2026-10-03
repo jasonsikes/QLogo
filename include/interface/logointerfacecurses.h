@@ -23,6 +23,7 @@
 #include <QColor>
 #include <QHash>
 #include <QList>
+#include <cwchar>
 
 /// @brief The LogoInterfaceCurses class is a LogoInterface that talks to the
 /// terminal through ncursesw.
@@ -53,6 +54,20 @@ class LogoInterfaceCurses : public LogoInterface
     void rebindPairsToBackground(int newBg);
     void recolorDefaultCells(int newBg);
     void redrawEditLine();
+
+    /// @brief get_wch with errno cleared first, and with the stale ERR that
+    /// ncurses queues after an EINTR removed so the next read hits the terminal.
+    /// @param ch Receives the character or KEY_* code.
+    /// @return OK, KEY_CODE_YES, or ERR (errno is EINTR for an interrupt).
+    int readWideChar(wint_t &ch);
+
+    /// @brief Repaint the edit line with the cursor at its end and move to the
+    /// next screen line, leaving the text visible (Enter, or before an interrupt).
+    void leaveEditLine();
+
+    /// @brief Print @p prompt on a fresh line and point lineEditor_ at the cell
+    /// after it. Used to resume an interrupted prompt after PAUSE returns.
+    void printPromptAndSetOrigin(const QString &prompt);
 
   public:
     /// @brief Constructor for the LogoInterfaceCurses class.

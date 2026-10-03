@@ -66,38 +66,35 @@ int rgbToXterm256(const QColor &color)
     return 16 + 36 * ri + 6 * gi + bi;
 }
 
-/// keypad on and noecho so get_wch reports KEY_* codes and does not echo.
-/// Restores the idle settings from initialize() (echo, keypad off, blocking).
-class NoechoKeypadMode
+/// Non-blocking get_wch for the duration of a scope (KEYP / LINEP polling).
+/// initialize() leaves stdscr in noecho + keypad mode permanently, so the only
+/// per-read setting is nodelay.
+//
+//  The previous value is restored on exit, which
+/// keeps nested reads (PAUSE inside a prompt) in a consistent state.
+class ScopedNodelay
 {
     bool active_;
-    bool prevKeypad_;
     bool prevNodelay_;
 
   public:
-    NoechoKeypadMode(bool cursesActive, bool nonBlocking)
-        : active_(cursesActive), prevKeypad_(false), prevNodelay_(false)
+    explicit ScopedNodelay(bool cursesActive) : active_(cursesActive), prevNodelay_(false)
     {
         if (!active_)
             return;
-        prevKeypad_ = is_keypad(stdscr);
         prevNodelay_ = is_nodelay(stdscr);
-        keypad(stdscr, TRUE);
-        noecho();
-        nodelay(stdscr, nonBlocking ? TRUE : FALSE);
+        nodelay(stdscr, TRUE);
     }
 
-    ~NoechoKeypadMode()
+    ~ScopedNodelay()
     {
         if (!active_)
             return;
-        keypad(stdscr, prevKeypad_ ? TRUE : FALSE);
         nodelay(stdscr, prevNodelay_ ? TRUE : FALSE);
-        echo();
     }
 
-    NoechoKeypadMode(const NoechoKeypadMode &) = delete;
-    NoechoKeypadMode &operator=(const NoechoKeypadMode &) = delete;
+    ScopedNodelay(const ScopedNodelay &) = delete;
+    ScopedNodelay &operator=(const ScopedNodelay &) = delete;
 };
 
 /// True if get_wch produced a character for KEYP / LINEP / READCHAR.
@@ -245,8 +242,9 @@ void LogoInterfaceCurses::initialize()
 
     cursesActive_ = true;
     cbreak();
-    echo();
-    keypad(stdscr, FALSE);
+    noecho();
+    keypad(stdscr, TRUE);
+    nodelay(stdscr, FALSE);
     scrollok(stdscr, TRUE);
     idlok(stdscr, TRUE);
     if (has_colors())
@@ -331,6 +329,26 @@ void LogoInterfaceCurses::setTextCursorPos(int row, int col)
     refresh();
 }
 
+int LogoInterfaceCurses::readWideChar(wint_t &ch)
+{
+    errno = 0;
+    const int rc = get_wch(&ch);
+    if (rc != ERR || errno != EINTR)
+        return rc;
+
+    const int savedErrno = errno;
+    {
+        ScopedNodelay drain(cursesActive_);
+        wint_t stale = 0;
+        const int staleRc = get_wch(&stale);
+        char32_t ucs4 = 0;
+        if (staleRc != ERR && mapGetWchToChar(staleRc, stale, ucs4))
+            unread_.append(ucs4);
+    }
+    errno = savedErrno;
+    return rc;
+}
+
 bool LogoInterfaceCurses::keyQueueHasChars()
 {
     if (!unread_.isEmpty())
@@ -338,11 +356,11 @@ bool LogoInterfaceCurses::keyQueueHasChars()
     if (!cursesActive_ || atEnd())
         return false;
 
-    NoechoKeypadMode mode(cursesActive_, true);
+    ScopedNodelay poll(cursesActive_);
     for (;;)
     {
         wint_t ch = 0;
-        const int rc = get_wch(&ch);
+        const int rc = readWideChar(ch);
         if (rc == ERR)
             return false;
         char32_t ucs4 = 0;
@@ -360,11 +378,11 @@ bool LogoInterfaceCurses::lineQueueHasLine()
     if (unreadHasLineBreak(unread_))
         return true;
 
-    NoechoKeypadMode mode(cursesActive_, true);
+    ScopedNodelay poll(cursesActive_);
     for (;;)
     {
         wint_t ch = 0;
-        const int rc = get_wch(&ch);
+        const int rc = readWideChar(ch);
         if (rc == ERR)
             break;
         char32_t ucs4 = 0;
@@ -475,9 +493,30 @@ void LogoInterfaceCurses::redrawEditLine()
     refresh();
 }
 
+void LogoInterfaceCurses::leaveEditLine()
+{
+    lineEditor_.moveEnd();
+    redrawEditLine();
+    paintWString(QStringLiteral("\n"));
+    refresh();
+}
+
+void LogoInterfaceCurses::printPromptAndSetOrigin(const QString &prompt)
+{
+    int y = 0;
+    int x = 0;
+    getyx(stdscr, y, x);
+    if (x != 0)
+        paintWString(QStringLiteral("\n"));
+
+    printToConsole(prompt);
+    getyx(stdscr, y, x);
+    lineEditor_.setOrigin(y, x);
+    editDrawEndY_ = y;
+}
+
 QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
 {
-    NoechoKeypadMode drawMode(cursesActive_, false);
     if (atEnd())
         return {};
 
@@ -499,10 +538,7 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
     redrawEditLine();
 
     auto acceptLine = [this]() {
-        lineEditor_.setCursor(lineEditor_.text().size());
-        redrawEditLine();
-        paintWString(QStringLiteral("\n"));
-        refresh();
+        leaveEditLine();
         return lineEditor_.finish();
     };
 
@@ -512,13 +548,23 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
             return {};
 
         wint_t ch = 0;
-        errno = 0;
-        const int rc = get_wch(&ch);
+        const int rc = readWideChar(ch);
         if (rc == ERR)
         {
             if (errno == EINTR)
             {
+                // TOPLEVEL / SYSTEM throw out of retryAfterInterrupt(); PAUSE runs a
+                // nested REPL that reuses lineEditor_ and editDrawEndY_. Either way
+                // the kernel is about to print, so leave the partial line on screen,
+                // move below it, and keep a copy of the editor to come back to.
+                const LineEditor saved = lineEditor_;
+                leaveEditLine();
                 retryAfterInterrupt();
+
+                // Back from PAUSE (or no Logo signal was pending): re-prompt on a
+                // fresh line and redraw the saved text with its cursor position.
+                lineEditor_ = saved;
+                printPromptAndSetOrigin(prompt);
                 redrawEditLine();
                 continue;
             }
@@ -634,7 +680,6 @@ DatumPtr LogoInterfaceCurses::readchar()
 {
     if (!cursesActive_)
         return nothing();
-    NoechoKeypadMode mode(cursesActive_, false);
     for (;;)
     {
         if (atEnd())
@@ -648,8 +693,7 @@ DatumPtr LogoInterfaceCurses::readchar()
 
         refresh();
         wint_t ch = 0;
-        errno = 0;
-        const int rc = get_wch(&ch);
+        const int rc = readWideChar(ch);
         if (rc == ERR)
         {
             if (errno == EINTR)
