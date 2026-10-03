@@ -812,10 +812,15 @@ void LogoInterfaceCurses::recolorDefaultCells(int newBg)
     getmaxyx(stdscr, maxy, maxx);
     const short newPair = ensurePair(-1, newBg);
 
+    // Re-adding the bottom-right cell would otherwise scroll the whole screen.
+    scrollok(stdscr, FALSE);
+
     for (int y = 0; y < maxy; ++y)
     {
-        for (int x = 0; x < maxx; ++x)
+        int width = 1;
+        for (int x = 0; x < maxx; x += width)
         {
+            width = 1;
             cchar_t cc;
             std::memset(&cc, 0, sizeof(cc));
             if (mvwin_wch(stdscr, y, x, &cc) == ERR)
@@ -825,6 +830,19 @@ void LogoInterfaceCurses::recolorDefaultCells(int newBg)
             wchar_t wch[CCHARW_MAX + 1] = {};
             if (getcchar(&cc, wch, &attrs, &pair, nullptr) == ERR)
                 continue;
+            // An empty cell, or one whose first character is non-spacing, has
+            // nothing that can be re-added on its own.
+            if (wch[0] == 0)
+                continue;
+            const int glyphWidth = wcwidth(wch[0]);
+            if (glyphWidth == 0)
+                continue;
+            // A double-width glyph reads back identically from both of its
+            // cells. Re-add it once, from its first cell, and step over the
+            // continuation cell; adding it there again would shift it right
+            // and overwrite the character that follows.
+            if (glyphWidth > 1)
+                width = glyphWidth;
             if (pair != 0)
                 continue;
             if (setcchar(&cc, wch, attrs, newPair, nullptr) == ERR)
@@ -832,6 +850,8 @@ void LogoInterfaceCurses::recolorDefaultCells(int newBg)
             mvwadd_wch(stdscr, y, x, &cc);
         }
     }
+
+    scrollok(stdscr, TRUE);
     wmove(stdscr, y0, x0);
 }
 
