@@ -118,6 +118,54 @@ void LineEditor::eraseAtCursor()
     buffer_.remove(start, len);
 }
 
+void LineEditor::killToEnd()
+{
+    if (cursor_ < buffer_.size())
+        buffer_.truncate(cursor_);
+}
+
+void LineEditor::killLine()
+{
+    buffer_.clear();
+    cursor_ = 0;
+}
+
+void LineEditor::killWord()
+{
+    if (cursor_ <= 0)
+        return;
+    const int end = cursor_;
+    auto movedRangeIsSpace = [this](int from, int to) {
+        for (int i = from; i < to; ++i)
+        {
+            if (!buffer_[i].isSpace())
+                return false;
+        }
+        return from < to;
+    };
+    while (cursor_ > 0)
+    {
+        const int saved = cursor_;
+        moveLeft();
+        if (!movedRangeIsSpace(cursor_, saved))
+        {
+            cursor_ = saved;
+            break;
+        }
+    }
+    while (cursor_ > 0)
+    {
+        const int saved = cursor_;
+        moveLeft();
+        if (movedRangeIsSpace(cursor_, saved))
+        {
+            cursor_ = saved;
+            break;
+        }
+    }
+    buffer_.remove(cursor_, end - cursor_);
+}
+
 void LineEditor::insert(char32_t ch)
 {
     insert(QString::fromUcs4(&ch, 1));

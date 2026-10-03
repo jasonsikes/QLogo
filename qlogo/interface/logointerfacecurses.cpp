@@ -540,6 +540,24 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
             redrawEditLine();
             continue;
         }
+        if (ucs4 == 11U)
+        {
+            lineEditor_.killToEnd();
+            redrawEditLine();
+            continue;
+        }
+        if (ucs4 == 21U)
+        {
+            lineEditor_.killLine();
+            redrawEditLine();
+            continue;
+        }
+        if (ucs4 == 23U)
+        {
+            lineEditor_.killWord();
+            redrawEditLine();
+            continue;
+        }
         if (ucs4 < 32U)
             continue;
         lineEditor_.insert(ucs4);

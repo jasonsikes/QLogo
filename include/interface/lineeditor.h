@@ -99,6 +99,15 @@ class LineEditor
     /// @brief Delete the Unicode character at the cursor (Delete).
     void eraseAtCursor();
 
+    /// @brief Delete from the cursor to the end of the line (Ctrl-K).
+    void killToEnd();
+
+    /// @brief Delete the entire line and move the cursor home (Ctrl-U).
+    void killLine();
+
+    /// @brief Delete the word to the left of the cursor (Ctrl-W).
+    void killWord();
+
     /// @brief Insert @p ch at the cursor and advance the cursor.
     /// @param ch A Unicode code point.
     void insert(char32_t ch);
