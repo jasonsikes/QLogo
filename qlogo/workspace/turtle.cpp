@@ -426,15 +426,14 @@ double Turtle::getPenSize() const
     return penSize_;
 }
 
-void Turtle::beginFillWithColor(const QColor &fillColor)
+Datum* Turtle::beginFillWithColor(const QColor &fillColor)
 {
     if (isFilling_)
-    {
-        throw FCError::alreadyFilling();
-    }
+        return FCError::alreadyFilling();
     isFilling_ = true;
 
     Config::get().mainInterface()->beginPolygon(fillColor);
+    return nullptr;
 }
 
 void Turtle::endFill()

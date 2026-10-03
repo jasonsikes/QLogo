@@ -202,14 +202,13 @@ EXPORTC void setBounds(double x, double y)
     Config::get().mainInterface()->setBounds(x, y);
 }
 
-EXPORTC int32_t beginFilledWithColor(addr_t colorAddr)
+EXPORTC addr_t beginFilledWithColor(addr_t colorAddr)
 {
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
-    if (!Kernel::get().colorFromDatumPtr(color, DatumPtr(d)))
-        return 0;
-    Turtle::get().beginFillWithColor(color);
-    return 1;
+    Kernel::get().colorFromDatumPtr(color, DatumPtr(d));
+    auto *retval = Turtle::get().beginFillWithColor(color);
+    return reinterpret_cast<addr_t>(retval != nullptr ? retval : Datum::notADatum());
 }
 
 EXPORTC void endFilled(void)

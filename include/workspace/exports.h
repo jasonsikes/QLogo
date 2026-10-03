@@ -199,7 +199,7 @@ EXPORTC void clean(void);
 EXPORTC void setTurtleMode(uint32_t mode);
 EXPORTC addr_t getBounds(addr_t eAddr);
 EXPORTC void setBounds(double x, double y);
-EXPORTC int32_t beginFilledWithColor(addr_t colorAddr);
+EXPORTC addr_t beginFilledWithColor(addr_t colorAddr);
 EXPORTC void endFilled(void);
 EXPORTC void addLabel(addr_t textAddr);
 EXPORTC void setLabelHeight(double height);

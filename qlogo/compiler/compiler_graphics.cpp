@@ -467,10 +467,11 @@ Value *Compiler::genFilled(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [color, instructions] = cs.children();
     color = generateColorFromDatum(node.astnodeValue(), color);
-    generateCallExtern(beginFilledWithColor, PaAddr(color));
-    Value *result = generateCallList(instructions, TypeDatum);
+    instructions = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), instructions);
+    generateNotFlowControl(generateCallExtern(beginFilledWithColor, PaAddr(color)));
+    Value *result = generateCallList(instructions, TypeDN);
     generateCallExtern(endFilled);
-    return cs.ret(result);
+    return cs.ret(generateNotFlowControl(result));
 }
 
 // Returns false if the color is not valid.

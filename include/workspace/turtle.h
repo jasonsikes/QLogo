@@ -217,7 +217,8 @@ class Turtle
 
     /// @brief Begin filling with a given color.
     /// @param fillColor The color to fill with.
-    void beginFillWithColor(const QColor &fillColor);
+    /// @return nullptr if successful, otherwise an error (nested FILLED).
+    Datum* beginFillWithColor(const QColor &fillColor);
 
     /// @brief End filling.
     void endFill();
