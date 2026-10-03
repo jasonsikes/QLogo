@@ -298,13 +298,11 @@ class Compiler
     // Word, or []. Run ERRACT if not; a usable datum from it replaces the input.
     llvm::Value *generateWordOrEmptyListFromDatum(ASTNode *parent, llvm::Value *src);
 
-    // Ensure that Datum is a Word or List, AND
-    // it is not empty.
-    llvm::Value *generateNotEmptyWordOrListFromDatum(ASTNode *parent, llvm::Value *src);
+    // Ensure src is a non-empty datum whose isa matches typeMask (ERRACT if not).
+    llvm::Value *generateNotEmptyFromDatum(ASTNode *parent, llvm::Value *src, Datum::DatumType typeMask);
 
-    // Ensure that Datum is a List, AND
-    // it is not empty.
-    llvm::Value *generateNotEmptyListFromDatum(ASTNode *parent, llvm::Value *src);
+    // Ensure src is a one-character word (ERRACT if not).
+    llvm::Value *generateSingleCharWordFromDatum(ASTNode *parent, llvm::Value *src);
 
     // Ensure that the Datum is NOT nothing (NOT ASTNode).
     // If it is nothing, run ERRACT; a datum from it replaces the expression.
@@ -436,6 +434,10 @@ class Compiler
 
     // generate the common code for FPUT and LPUT.
     llvm::Value *generateFputlput(const DatumPtr &node, TypeMask expected, bool isLput);
+
+    // WORD / LIST / SENTENCE: allocate children and call concatWord / createList / createSentence.
+    llvm::Value *generateVariadicConstruct(const DatumPtr &node, addr_t (*ctor)(addr_t, addr_t, uint32_t),
+                                           const std::string &ctorName, const std::string &aryName, bool requireWords);
 
     // generate the common comparison for EQUALP and NOTEQUALP.
     llvm::Value *generateEqualpCompare(llvm::Value *thing1, llvm::Value *thing2);

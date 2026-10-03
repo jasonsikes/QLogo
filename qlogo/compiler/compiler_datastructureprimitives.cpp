@@ -26,64 +26,59 @@
 using namespace llvm;
 using namespace llvm::orc;
 
-Value *Compiler::generateNotEmptyWordOrListFromDatum(ASTNode *parent, Value *src)
+Value *Compiler::generateNotEmptyFromDatum(ASTNode *parent, Value *src, Datum::DatumType typeMask)
 {
-    auto validator = [this](Value *wordorlist) {
+    auto validator = [this, typeMask](Value *candidate) {
         BasicBlock *startBB = scaff_->builder_.GetInsertBlock();
-
-        BasicBlock *wordOrListBB = scaff_->createBasicBlock(DBG_NAME("wordOrListBlock"));
+        BasicBlock *okTypeBB = scaff_->createBasicBlock(DBG_NAME("okTypeBlock"));
         BasicBlock *endBB = scaff_->createBasicBlock(DBG_NAME("endBlock"));
 
-        Value *wordOrListType = generateGetDatumIsa(wordorlist);
-        Value *maskCalc =
-            scaff_->builder_.CreateAnd(wordOrListType, CoInt32(Datum::typeWord | Datum::typeList), DBG_NAME("maskCalc"));
-        Value *wordOrListCond = scaff_->builder_.CreateICmpNE(maskCalc, CoInt32(0), DBG_NAME("wordOrListCond"));
-        scaff_->builder_.CreateCondBr(wordOrListCond, wordOrListBB, endBB);
+        Value *isa = generateGetDatumIsa(candidate);
+        Value *maskCalc = scaff_->builder_.CreateAnd(isa, CoInt32(typeMask), DBG_NAME("maskCalc"));
+        Value *okType = scaff_->builder_.CreateICmpNE(maskCalc, CoInt32(0), DBG_NAME("okType"));
+        scaff_->builder_.CreateCondBr(okType, okTypeBB, endBB);
 
-        // Word or List block
-        scaff_->builder_.SetInsertPoint(wordOrListBB);
-        Value *isEmpty = generateCallExtern(isDatumEmpty, PaAddr(wordorlist));
-        Value *isEmptyCond = scaff_->builder_.CreateICmpEQ(isEmpty, CoBool(false), DBG_NAME("isDatumEmptyCond"));
+        scaff_->builder_.SetInsertPoint(okTypeBB);
+        Value *isEmpty = generateCallExtern(isDatumEmpty, PaAddr(candidate));
+        Value *notEmpty = scaff_->builder_.CreateICmpEQ(isEmpty, CoBool(false), DBG_NAME("isDatumEmptyCond"));
         scaff_->builder_.CreateBr(endBB);
 
-        // Merge block
         scaff_->builder_.SetInsertPoint(endBB);
-        PHINode *phi = scaff_->builder_.CreatePHI(wordOrListCond->getType(), 2, DBG_NAME("lastOfDatumResult"));
-        phi->addIncoming(isEmptyCond, wordOrListBB);
-        phi->addIncoming(wordOrListCond, startBB);
+        PHINode *phi = scaff_->builder_.CreatePHI(okType->getType(), 2, DBG_NAME("notEmptyResult"));
+        phi->addIncoming(notEmpty, okTypeBB);
+        phi->addIncoming(okType, startBB);
         return phi;
     };
     return generateValidationDatum(parent, src, validator);
 }
 
-// TODO: This is a near duplicate of generateNotEmptyWordOrListFromDatum. Refactor.
-Value *Compiler::generateNotEmptyListFromDatum(ASTNode *parent, Value *src)
+Value *Compiler::generateSingleCharWordFromDatum(ASTNode *parent, Value *src)
 {
-    auto validator = [this](Value *wordorlist) {
-        BasicBlock *startBB = scaff_->builder_.GetInsertBlock();
+    return generateValidationDatum(parent, src, [this](Value *candidate) {
+        Value *isGoodChar = generateCallExtern(isSingleCharWord, PaAddr(candidate));
+        return scaff_->builder_.CreateICmpEQ(isGoodChar, CoBool(true), DBG_NAME("isGoodCond"));
+    });
+}
 
-        BasicBlock *listBB = scaff_->createBasicBlock(DBG_NAME("listBlock"));
-        BasicBlock *endBB = scaff_->createBasicBlock(DBG_NAME("endBlock"));
-
-        Value *wordOrListType = generateGetDatumIsa(wordorlist);
-        Value *maskCalc = scaff_->builder_.CreateAnd(wordOrListType, CoInt32(Datum::typeList), DBG_NAME("maskCalc"));
-        Value *wordOrListCond = scaff_->builder_.CreateICmpNE(maskCalc, CoInt32(0), DBG_NAME("listCond"));
-        scaff_->builder_.CreateCondBr(wordOrListCond, listBB, endBB);
-
-        // Word or List block
-        scaff_->builder_.SetInsertPoint(listBB);
-        Value *isEmpty = generateCallExtern(isDatumEmpty, PaAddr(wordorlist));
-        Value *isEmptyCond = scaff_->builder_.CreateICmpEQ(isEmpty, CoBool(false), DBG_NAME("isDatumEmptyCond"));
-        scaff_->builder_.CreateBr(endBB);
-
-        // Merge block
-        scaff_->builder_.SetInsertPoint(endBB);
-        PHINode *phi = scaff_->builder_.CreatePHI(wordOrListCond->getType(), 2, DBG_NAME("lastOfDatumResult"));
-        phi->addIncoming(isEmptyCond, listBB);
-        phi->addIncoming(wordOrListCond, startBB);
-        return phi;
-    };
-    return generateValidationDatum(parent, src, validator);
+Value *Compiler::generateVariadicConstruct(const DatumPtr &node, addr_t (*ctor)(addr_t, addr_t, uint32_t),
+                                           const std::string &ctorName, const std::string &aryName, bool requireWords)
+{
+    CallSite cs(this, node, TypeDatum);
+    AllocaInst *ary;
+    if (requireWords)
+    {
+        std::vector<Value *> words;
+        words.reserve(cs.count());
+        for (Value *child : cs.children())
+            words.push_back(generateWordFromDatum(node.astnodeValue(), child));
+        ary = generateAllocaAry(words, aryName);
+    }
+    else
+    {
+        ary = cs.allocaAry(aryName);
+    }
+    return cs.ret(generateCallExternTyped(ctor, ctorName,
+                                          {PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize())}));
 }
 /***DOC EQUALP EQUAL?
 EQUALP thing1 thing2
@@ -152,13 +147,7 @@ COD***/
 // CMD WORD 0 2 -1 d
 Value *Compiler::genWord(const DatumPtr &node, TypeMask expected)
 {
-    CallSite cs(this, node, TypeDatum);
-    std::vector<Value *> words;
-    words.reserve(cs.count());
-    for (Value *child : cs.children())
-        words.push_back(generateWordFromDatum(node.astnodeValue(), child));
-    AllocaInst *ary = generateAllocaAry(words, DBG_NAME("wordAry"));
-    return cs.ret(generateCallExtern(concatWord, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize())));
+    return generateVariadicConstruct(node, concatWord, "concatWord", DBG_NAME("wordAry"), true);
 }
 
 /***DOC LIST
@@ -172,9 +161,7 @@ COD***/
 // CMD LIST 0 2 -1 d
 Value *Compiler::genList(const DatumPtr &node, TypeMask expected)
 {
-    CallSite cs(this, node, TypeDatum);
-    AllocaInst *ary = cs.allocaAry(DBG_NAME("listAry"));
-    return cs.ret(generateCallExtern(createList, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize())));
+    return generateVariadicConstruct(node, createList, "createList", DBG_NAME("listAry"), false);
 }
 
 /***DOC SENTENCE SE
@@ -191,9 +178,7 @@ COD***/
 // CMD SE 0 2 -1 d
 Value *Compiler::genSentence(const DatumPtr &node, TypeMask expected)
 {
-    CallSite cs(this, node, TypeDatum);
-    AllocaInst *ary = cs.allocaAry(DBG_NAME("sentenceAry"));
-    return cs.ret(generateCallExtern(createSentence, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize())));
+    return generateVariadicConstruct(node, createSentence, "createSentence", DBG_NAME("sentenceAry"), false);
 }
 /***DOC FPUT
 FPUT thing list
@@ -372,7 +357,7 @@ Value *Compiler::genLast(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeDatum);
     Value *wordorlist = cs.child(0);
 
-    wordorlist = generateNotEmptyWordOrListFromDatum(node.astnodeValue(), wordorlist);
+    wordorlist = generateNotEmptyFromDatum(node.astnodeValue(), wordorlist, Datum::typeWordOrListMask);
 
     return cs.ret(generateCallExtern(lastOfDatum, PaAddr(scaff_->evaluator_), PaAddr(wordorlist)));
 }
@@ -392,7 +377,7 @@ Value *Compiler::genButfirst(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeDatum);
     Value *wordorlist = cs.child(0);
 
-    wordorlist = generateNotEmptyWordOrListFromDatum(node.astnodeValue(), wordorlist);
+    wordorlist = generateNotEmptyFromDatum(node.astnodeValue(), wordorlist, Datum::typeWordOrListMask);
 
     return cs.ret(generateCallExtern(butFirstOfDatum, PaAddr(scaff_->evaluator_), PaAddr(wordorlist)));
 }
@@ -450,7 +435,7 @@ Value *Compiler::genButlast(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeDatum);
     Value *wordorlist = cs.child(0);
 
-    wordorlist = generateNotEmptyWordOrListFromDatum(node.astnodeValue(), wordorlist);
+    wordorlist = generateNotEmptyFromDatum(node.astnodeValue(), wordorlist, Datum::typeWordOrListMask);
 
     return cs.ret(generateCallExtern(butLastOfDatum, PaAddr(scaff_->evaluator_), PaAddr(wordorlist)));
 }
@@ -562,7 +547,7 @@ Value *Compiler::genDotSetfirst(const DatumPtr &node, TypeMask expected)
 {
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [list, value] = cs.children();
-    list = generateNotEmptyListFromDatum(node.astnodeValue(), list);
+    list = generateNotEmptyFromDatum(node.astnodeValue(), list, Datum::typeList);
     generateCallExtern(setFirstOfList, PaAddr(list), PaAddr(value));
     return cs.ret(generateVoidRetval(node));
 }
@@ -584,7 +569,7 @@ Value *Compiler::genDotSetbf(const DatumPtr &node, TypeMask expected)
 {
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [list, value] = cs.children();
-    list = generateNotEmptyListFromDatum(node.astnodeValue(), list);
+    list = generateNotEmptyFromDatum(node.astnodeValue(), list, Datum::typeList);
     value = generateListFromDatum(node.astnodeValue(), value);
     generateCallExtern(setButfirstOfList, PaAddr(list), PaAddr(value));
     return cs.ret(generateVoidRetval(node));
@@ -604,7 +589,7 @@ Value *Compiler::genWordp(const DatumPtr &node, TypeMask expected)
     Value *thing = cs.child(0);
     Value *thingType = generateGetDatumIsa(thing);
     Value *isType = scaff_->builder_.CreateICmpEQ(thingType, CoInt32(Datum::typeWord), DBG_NAME("isDatumTypeCond"));
-    return cs.ret(scaff_->builder_.CreateSelect(isType, CoBool(true), CoBool(false), DBG_NAME("isDatumTypeResult")));
+    return cs.ret(isType);
 }
 
 /***DOC ARRAYP ARRAY?
@@ -622,7 +607,7 @@ Value *Compiler::genArrayp(const DatumPtr &node, TypeMask expected)
     Value *thing = cs.child(0);
     Value *thingType = generateGetDatumIsa(thing);
     Value *isType = scaff_->builder_.CreateICmpEQ(thingType, CoInt32(Datum::typeArray), DBG_NAME("isDatumTypeCond"));
-    return cs.ret(scaff_->builder_.CreateSelect(isType, CoBool(true), CoBool(false), DBG_NAME("isDatumTypeResult")));
+    return cs.ret(isType);
 }
 
 /***DOC LISTP LIST?
@@ -641,7 +626,7 @@ Value *Compiler::genListp(const DatumPtr &node, TypeMask expected)
     Value *thingType = generateGetDatumIsa(thing);
     Value *mask = scaff_->builder_.CreateAnd(thingType, CoInt32(Datum::typeList), DBG_NAME("dataTypeMask"));
     Value *cond = scaff_->builder_.CreateICmpNE(mask, CoInt32(0), DBG_NAME("typeTest"));
-    return cs.ret(scaff_->builder_.CreateSelect(cond, CoBool(true), CoBool(false), DBG_NAME("isDatumTypeResult")));
+    return cs.ret(cond);
 }
 
 /***DOC EMPTYP EMPTY?
@@ -698,7 +683,7 @@ Value *Compiler::genDotEq(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [thing1, thing2] = cs.children();
     Value *isEqualCond = scaff_->builder_.CreateICmpEQ(thing1, thing2, DBG_NAME("isEqualCond"));
-    return cs.ret(scaff_->builder_.CreateSelect(isEqualCond, CoBool(true), CoBool(false), DBG_NAME("isEqualResult")));
+    return cs.ret(isEqualCond);
 }
 
 /***DOC MEMBERP MEMBER?
@@ -775,12 +760,7 @@ Value *Compiler::genVbarredp(const DatumPtr &node, TypeMask expected)
 {
     CallSite cs(this, node, TypeDatum);
     Value *c = cs.child(0);
-
-    auto validator = [this](Value *candidate) {
-        Value *isGoodChar = generateCallExtern(isSingleCharWord, PaAddr(candidate));
-        return scaff_->builder_.CreateICmpEQ(isGoodChar, CoBool(true), DBG_NAME("isGoodCond"));
-    };
-    c = generateValidationDatum(node.astnodeValue(), c, validator);
+    c = generateSingleCharWordFromDatum(node.astnodeValue(), c);
 
     return cs.ret(generateCallExtern(isVbarred, PaAddr(c)));
 }
@@ -819,12 +799,7 @@ Value *Compiler::genAscii(const DatumPtr &node, TypeMask expected)
 {
     CallSite cs(this, node, TypeDatum);
     Value *c = cs.child(0);
-
-    auto validator = [this](Value *candidate) {
-        Value *isGoodChar = generateCallExtern(isSingleCharWord, PaAddr(candidate));
-        return scaff_->builder_.CreateICmpEQ(isGoodChar, CoBool(true), DBG_NAME("isGoodCond"));
-    };
-    c = generateValidationDatum(node.astnodeValue(), c, validator);
+    c = generateSingleCharWordFromDatum(node.astnodeValue(), c);
 
     return cs.ret(generateCallExtern(ascii, PaAddr(c)));
 }
@@ -844,12 +819,7 @@ Value *Compiler::genRawascii(const DatumPtr &node, TypeMask expected)
 {
     CallSite cs(this, node, TypeDatum);
     Value *c = cs.child(0);
-
-    auto validator = [this](Value *candidate) {
-        Value *isGoodChar = generateCallExtern(isSingleCharWord, PaAddr(candidate));
-        return scaff_->builder_.CreateICmpEQ(isGoodChar, CoBool(true), DBG_NAME("isGoodCond"));
-    };
-    c = generateValidationDatum(node.astnodeValue(), c, validator);
+    c = generateSingleCharWordFromDatum(node.astnodeValue(), c);
 
     return cs.ret(generateCallExtern(rawascii, PaAddr(c)));
 }
