@@ -127,6 +127,7 @@ Value *Compiler::genRun(const DatumPtr &node, TypeMask expected)
 {
     CallSite cs(this, node, TypeDatum);
     Value *list = cs.child(0);
+    list = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), list);
     if (node.astnodeValue()->inSequenceTail_) {
         return cs.ret(generateNotFlowControl(generateCallListContinuation(list, expected)));
     }
@@ -147,7 +148,7 @@ Value *Compiler::genRuntime(const DatumPtr &node, TypeMask expected)
 {
     CallSite cs(this, node, TypeDatum);
     Value *list = cs.child(0);
-    list = generateFromDatum(Datum::typeList, node.astnodeValue(), list);
+    list = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), list);
     generateCallExtern(stdRuntimeStart);
     Value *result = generateCallList(list, expected);
     generateCallExtern(stdRuntimeEnd);
@@ -394,8 +395,9 @@ COD***/
 Value *Compiler::genCatch(const DatumPtr &node, TypeMask expected)
 {
     CallSite cs(this, node, TypeDatum, TypeDatum);
-    auto [tag, instructionlist] = cs.children();
+    auto [tag, list] = cs.children();
     tag = generateWordFromDatum(node.astnodeValue(), tag);
+    list = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), list);
     Value *errActStash = generateCallExtern(beginCatch);
 
     Value *result = generateCallList(instructionlist, expected);
