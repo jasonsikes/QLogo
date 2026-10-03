@@ -97,9 +97,18 @@ class ScopedNodelay
     ScopedNodelay &operator=(const ScopedNodelay &) = delete;
 };
 
-/// True if get_wch produced a character for KEYP / LINEP / READCHAR.
-/// Motion, history, and resize keys are not characters. Backspace, Delete,
-/// and keypad Enter map to the bytes Logo programs already test for.
+/// Marker for the Delete key (KEY_DC) in the typeahead queue. It lies outside
+/// Unicode, so it cannot collide with typed text. Raw 127 (DEL) is what most
+/// terminals send for the physical Backspace key and must stay distinct from
+/// this: the line editor erases forward for KEY_DC and backward for 127.
+///
+/// READCHAR reports both as 127 via readcharString().
+constexpr char32_t kDeleteKey = 0x110000;
+
+/// True if get_wch produced a key for KEYP / LINEP / READCHAR.
+/// Motion, history, and resize keys are not characters. Backspace and keypad
+/// Enter map to the bytes Logo programs already test for; Delete is queued as
+/// kDeleteKey so the line editor can tell it apart from a raw DEL byte.
 bool mapGetWchToChar(int rc, wint_t ch, char32_t &out)
 {
     if (rc == ERR)
@@ -113,7 +122,7 @@ bool mapGetWchToChar(int rc, wint_t ch, char32_t &out)
         }
         if (ch == KEY_DC)
         {
-            out = 127U;
+            out = kDeleteKey;
             return true;
         }
         if (ch == KEY_ENTER)
@@ -127,13 +136,23 @@ bool mapGetWchToChar(int rc, wint_t ch, char32_t &out)
     return true;
 }
 
-/// Apply a typeahead character to the line editor. Returns true if it completes
+/// The one-character string READCHAR returns for a queued key.
+QString readcharString(char32_t key)
+{
+    if (key == kDeleteKey)
+        key = 127U;
+    return QString::fromUcs4(&key, 1);
+}
+
+/// Apply a typeahead key to the line editor. Returns true if it completes
 /// the line (CR/LF). Editing controls match the interactive prompt.
 bool applyCharToLineEditor(LineEditor &editor, char32_t ch)
 {
     if (ch == U'\n' || ch == U'\r')
         return true;
-    if (ch == 8U || ch == 127U)
+    if (ch == kDeleteKey)
+        editor.eraseAtCursor();
+    else if (ch == 8U || ch == 127U)
         editor.eraseLeft();
     else if (ch == 1U)
         editor.moveHome();
@@ -690,8 +709,7 @@ DatumPtr LogoInterfaceCurses::readchar()
 
         if (!unread_.isEmpty())
         {
-            const char32_t ucs4 = unread_.takeFirst();
-            return DatumPtr(QString::fromUcs4(&ucs4, 1));
+            return DatumPtr(readcharString(unread_.takeFirst()));
         }
 
         refresh();
@@ -710,7 +728,7 @@ DatumPtr LogoInterfaceCurses::readchar()
         char32_t ucs4 = 0;
         if (!mapGetWchToChar(rc, ch, ucs4))
             continue;
-        return DatumPtr(QString::fromUcs4(&ucs4, 1));
+        return DatumPtr(readcharString(ucs4));
     }
 }
 
