@@ -41,7 +41,7 @@ void LineEditor::loadHistoryIndex(int newIndex)
 
 void LineEditor::beginPrompt(int startY, int startX)
 {
-    buffer_.clear();
+    buffer_.resize(0);
     cursor_ = 0;
     startY_ = startY;
     startX_ = startX;
@@ -126,7 +126,7 @@ void LineEditor::killToEnd()
 
 void LineEditor::killLine()
 {
-    buffer_.clear();
+    buffer_.resize(0);
     cursor_ = 0;
 }
 
