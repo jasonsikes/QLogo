@@ -108,47 +108,8 @@ COD***/
 // CMD EQUAL? 2 2 2 b
 Value *Compiler::generateEqualpCompare(Value *thing1, Value *thing2)
 {
-    Type *typeOfThing1 = thing1->getType();
-    Type *typeOfThing2 = thing2->getType();
-
-    // If one is bool and other is double, then they can't be equal.
-    if ((typeOfThing1->isIntegerTy(1) && typeOfThing2->isDoubleTy()) ||
-        (typeOfThing2->isIntegerTy(1) && typeOfThing1->isDoubleTy()))
-    {
-        return CoBool(false);
-    }
-
-    // Both double? Compare them
-    if (typeOfThing1->isDoubleTy() && typeOfThing2->isDoubleTy())
-    {
-        return scaff_->builder_.CreateFCmpUEQ(thing1, thing2, DBG_NAME("Fequalp"));
-    }
-
-    // Both bool? Compare them
-    if (typeOfThing1->isIntegerTy(1) && typeOfThing2->isIntegerTy(1))
-    {
-        return scaff_->builder_.CreateICmpEQ(thing1, thing2, DBG_NAME("Bequalp"));
-    }
-
-    // At this point we know at least one of the inputs is a Datum.
-    // For simplicity, make thing1 the Datum, and thing2 can be whatever the other type was.
-    if (!typeOfThing1->isPointerTy())
-    {
-        Value *t = thing1;
-        thing1 = thing2;
-        thing2 = t;
-        typeOfThing2 = thing2->getType();
-    }
-
-    if (typeOfThing2->isIntegerTy(1))
-    {
-        return generateCallExtern(cmpDatumToBool, PaAddr(scaff_->evaluator_), PaAddr(thing1), PaBool(thing2));
-    }
-    if (typeOfThing2->isDoubleTy())
-    {
-        return generateCallExtern(cmpDatumToDouble, PaAddr(scaff_->evaluator_), PaAddr(thing1), PaDouble(thing2));
-    }
-    Q_ASSERT(typeOfThing2->isPointerTy());
+    Q_ASSERT(thing1->getType()->isPointerTy());
+    Q_ASSERT(thing2->getType()->isPointerTy());
     return generateCallExtern(cmpDatumToDatum, PaAddr(scaff_->evaluator_), PaAddr(thing1), PaAddr(thing2));
 }
 

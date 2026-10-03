@@ -128,38 +128,6 @@ EXPORTC int32_t getNumberAryFromList(addr_t listAddr, addr_t destAddr)
     return 1;
 }
 
-/// Compare a Datum with a bool.
-/// @param d a Datum
-/// @param b a bool
-/// @returns true iff d is a bool that equals b
-EXPORTC bool cmpDatumToBool(addr_t d, bool b)
-{
-    auto *dD = reinterpret_cast<Datum *>(d);
-    if (dD->isa_ != Datum::typeWord)
-        return false;
-    auto *dW = reinterpret_cast<Word *>(dD);
-    bool dB = dW->boolValue();
-    if (!dW->boolIsValid)
-        return false;
-    return dB == b;
-}
-
-/// Compare a Datum with a double.
-/// @param d a Datum
-/// @param n a number
-/// @returns true iff d is a number that equals n
-EXPORTC bool cmpDatumToDouble(addr_t d, double n)
-{
-    auto *dD = reinterpret_cast<Datum *>(d);
-    if (dD->isa_ != Datum::typeWord)
-        return false;
-    auto *dW = reinterpret_cast<Word *>(dD);
-    double dN = dW->numberValue();
-    if (!dW->numberIsValid)
-        return false;
-    return dN == n;
-}
-
 /// @brief Determine if the given Datums are equal, according to `EQUALP` help text.
 /// @param visited The set of visited nodes.
 /// @param d1 The first Datum to compare.

@@ -136,8 +136,6 @@ EXPORTC void endApplyLambda(void);
 
 EXPORTC int32_t getCountOfList(addr_t listAddr);
 EXPORTC int32_t getNumberAryFromList(addr_t listAddr, addr_t destAddr);
-EXPORTC bool cmpDatumToBool(addr_t d, bool b);
-EXPORTC bool cmpDatumToDouble(addr_t d, double n);
 EXPORTC bool cmpDatumToDatum(addr_t eAddr, addr_t d1, addr_t d2);
 EXPORTC addr_t concatWord(addr_t eAddr, addr_t aryAddr, uint32_t count);
 EXPORTC bool isDatumEmpty(addr_t dAddr);
