@@ -352,10 +352,13 @@ int LogoInterfaceCurses::readWideChar(wint_t &ch)
 {
     errno = 0;
     const int rc = get_wch(&ch);
-    if (rc != ERR || errno != EINTR)
+    if (rc != ERR)
         return rc;
 
-    const int savedErrno = errno;
+    if (!LogoInterface::signalPending() && errno != EINTR)
+        return ERR;
+
+    // Pop the stale ERR that ncurses leaves queued after an EINTR'd read.
     {
         ScopedNodelay drain(cursesActive_);
         wint_t stale = 0;
@@ -364,8 +367,9 @@ int LogoInterfaceCurses::readWideChar(wint_t &ch)
         if (staleRc != ERR && mapGetWchToChar(staleRc, stale, ucs4))
             unread_.append(ucs4);
     }
-    errno = savedErrno;
-    return rc;
+
+    errno = EINTR; // callers test this; normalize whatever ncurses left behind
+    return ERR;
 }
 
 bool LogoInterfaceCurses::keyQueueHasChars()

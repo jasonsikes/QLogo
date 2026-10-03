@@ -55,10 +55,12 @@ class LogoInterfaceCurses : public LogoInterface
     void recolorDefaultCells(int newBg);
     void redrawEditLine();
 
-    /// @brief get_wch with errno cleared first, and with the stale ERR that
-    /// ncurses queues after an EINTR removed so the next read hits the terminal.
+    /// @brief get_wch that classifies ERR by a pending Logo signal rather than
+    /// trusting errno, and removes the stale ERR ncurses queues after an
+    /// interrupted read so the next call reads the terminal again.
     /// @param ch Receives the character or KEY_* code.
-    /// @return OK, KEY_CODE_YES, or ERR (errno is EINTR for an interrupt).
+    /// @return OK, KEY_CODE_YES, or ERR. On ERR, errno is EINTR exactly when
+    /// the read was interrupted; otherwise it was a nodelay timeout or EOF.
     int readWideChar(wint_t &ch);
 
     /// @brief Repaint the edit line with the cursor at its end and move to the

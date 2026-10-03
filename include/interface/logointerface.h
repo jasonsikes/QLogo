@@ -77,6 +77,14 @@ class LogoInterface : public QObject
     /// signals that are sent to the application.
     static SignalsEnum_t latestSignal();
 
+    /// @brief True if a signal has been recorded and not yet consumed by latestSignal().
+    /// @details Does not reset the signal. Lets a blocking reader tell an
+    /// interrupted read from end of input without trusting errno.
+    static bool signalPending()
+    {
+        return lastSignal_ != noSignal;
+    }
+
     /// @brief Record an interrupt from a Unix signal or a Psychi pipe message.
     /// @param incoming The signal to record.
     /// @details SYSTEM outranks TOPLEVEL, which outranks PAUSE. Safe to call
