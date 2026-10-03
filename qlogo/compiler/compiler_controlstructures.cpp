@@ -400,7 +400,7 @@ Value *Compiler::genCatch(const DatumPtr &node, TypeMask expected)
     list = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), list);
     Value *errActStash = generateCallExtern(beginCatch);
 
-    Value *result = generateCallList(instructionlist, expected);
+    Value *result = generateCallList(list, expected);
 
     Value *retval = generateCallExtern(endCatch,
                                        PaAddr(scaff_->evaluator_),
