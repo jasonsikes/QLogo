@@ -885,14 +885,14 @@ Value *Compiler::genSetpalette(const DatumPtr &node, TypeMask expected)
 SETPENSIZE size
 
     sets the thickness of the pen.  The input is a single positive
-    integer.
+    number.
 
 COD***/
 // CMD SETPENSIZE 1 1 1 n
 Value *Compiler::genSetpensize(const DatumPtr &node, TypeMask expected)
 {
     CHECK_GRAPHICS_MODE
-    CallSite cs(this, node, TypeDatum);
+    CallSite cs(this, node, TypeReal);
     Value *size = cs.child(0);
     size = generateGTZeroFromDouble(node.astnodeValue(), size);
     generateCallExtern(setPenSize, PaDouble(size));
