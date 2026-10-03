@@ -301,7 +301,7 @@ Value *Compiler::generateFputlput(const DatumPtr &node, TypeMask expected, bool 
 ARRAY size
 (ARRAY size origin)
 
-    outputs an array of "size" members (must be a positive integer),
+    outputs an array of "size" members (must be a non-negative integer),
     each of which initially is an empty list.  Array members can be
     selected with ITEM and changed with SETITEM.  The first member of
     the array is member number 1 unless an "origin" input (must be an
