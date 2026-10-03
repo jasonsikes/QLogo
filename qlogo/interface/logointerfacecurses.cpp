@@ -144,13 +144,27 @@ QString readcharString(char32_t key)
     return QString::fromUcs4(&key, 1);
 }
 
-/// Apply a typeahead key to the line editor. Returns true if it completes
-/// the line (CR/LF). Editing controls match the interactive prompt.
-bool applyCharToLineEditor(LineEditor &editor, char32_t ch)
+enum class TypeaheadResult
+{
+    Continue,
+    LineDone,
+    EndOfInput
+};
+
+/// Apply a typeahead key to the line editor. CR/LF completes the line; Ctrl-D
+/// on an empty line is end of input, otherwise it deletes forward. Editing
+/// controls match the interactive prompt.
+TypeaheadResult applyCharToLineEditor(LineEditor &editor, char32_t ch)
 {
     if (ch == U'\n' || ch == U'\r')
-        return true;
-    if (ch == kDeleteKey)
+        return TypeaheadResult::LineDone;
+    if (ch == 4U)
+    {
+        if (editor.text().isEmpty())
+            return TypeaheadResult::EndOfInput;
+        editor.eraseAtCursor();
+    }
+    else if (ch == kDeleteKey)
         editor.eraseAtCursor();
     else if (ch == 8U || ch == 127U)
         editor.eraseLeft();
@@ -166,7 +180,7 @@ bool applyCharToLineEditor(LineEditor &editor, char32_t ch)
         editor.killWord();
     else if (ch >= 32U)
         editor.insert(ch);
-    return false;
+    return TypeaheadResult::Continue;
 }
 
 bool unreadHasLineBreak(const QList<char32_t> &unread)
@@ -556,14 +570,29 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
         return lineEditor_.finish();
     };
 
+    // Ctrl-D on an empty line. Leave the prompt row and report end of input.
+    auto endInput = [this]() {
+        paintWString(QStringLiteral("\n"));
+        refresh();
+        inputAtEof_ = true;
+        return QString();
+    };
+
     // Typeahead queued by KEYP / LINEP. A line completed here is accepted the
     // same way as one typed interactively, so it is painted and followed by a
     // newline instead of leaving the cursor on the prompt row.
     while (!unread_.isEmpty())
     {
         const char32_t ch = unread_.takeFirst();
-        if (applyCharToLineEditor(lineEditor_, ch))
+        switch (applyCharToLineEditor(lineEditor_, ch))
+        {
+        case TypeaheadResult::LineDone:
             return acceptLine();
+        case TypeaheadResult::EndOfInput:
+            return endInput();
+        case TypeaheadResult::Continue:
+            break;
+        }
     }
 
     redrawEditLine();
@@ -659,6 +688,15 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
         if (ch == L'\n' || ch == L'\r')
             return acceptLine();
         const char32_t ucs4 = static_cast<char32_t>(ch);
+        if (ucs4 == 4U)
+        {
+            // Ctrl-D: end of input on an empty line, otherwise delete forward.
+            if (lineEditor_.text().isEmpty())
+                return endInput();
+            lineEditor_.eraseAtCursor();
+            redrawEditLine();
+            continue;
+        }
         if (ucs4 == 8U || ucs4 == 127U)
         {
             lineEditor_.eraseLeft();
