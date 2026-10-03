@@ -500,6 +500,18 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
                 redrawEditLine();
                 continue;
             }
+            if (ch == KEY_UP)
+            {
+                if (lineEditor_.recallOlder())
+                    redrawEditLine();
+                continue;
+            }
+            if (ch == KEY_DOWN)
+            {
+                if (lineEditor_.recallNewer())
+                    redrawEditLine();
+                continue;
+            }
             if (ch == KEY_BACKSPACE)
             {
                 lineEditor_.eraseLeft();
