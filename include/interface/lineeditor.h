@@ -81,6 +81,12 @@ class LineEditor
     /// @param index The desired character index.
     void setCursor(int index);
 
+    /// @brief Move the cursor one Unicode character left, if possible.
+    void moveLeft();
+
+    /// @brief Move the cursor one Unicode character right, if possible.
+    void moveRight();
+
     /// @brief Insert @p ch at the cursor and advance the cursor.
     /// @param ch A Unicode code point.
     void insert(char32_t ch);

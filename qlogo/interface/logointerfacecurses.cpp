@@ -476,6 +476,18 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
         {
             if (ch == KEY_ENTER)
                 return acceptLine();
+            if (ch == KEY_LEFT)
+            {
+                lineEditor_.moveLeft();
+                redrawEditLine();
+                continue;
+            }
+            if (ch == KEY_RIGHT)
+            {
+                lineEditor_.moveRight();
+                redrawEditLine();
+                continue;
+            }
             if (ch == KEY_RESIZE)
             {
                 redrawEditLine();

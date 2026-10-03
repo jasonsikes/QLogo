@@ -70,6 +70,25 @@ void LineEditor::setCursor(int index)
     clampCursor();
 }
 
+void LineEditor::moveLeft()
+{
+    if (cursor_ <= 0)
+        return;
+    --cursor_;
+    if (cursor_ > 0 && buffer_[cursor_].isLowSurrogate() && buffer_[cursor_ - 1].isHighSurrogate())
+        --cursor_;
+}
+
+void LineEditor::moveRight()
+{
+    if (cursor_ >= buffer_.size())
+        return;
+    if (cursor_ + 1 < buffer_.size() && buffer_[cursor_].isHighSurrogate() && buffer_[cursor_ + 1].isLowSurrogate())
+        cursor_ += 2;
+    else
+        ++cursor_;
+}
+
 void LineEditor::insert(char32_t ch)
 {
     insert(QString::fromUcs4(&ch, 1));
