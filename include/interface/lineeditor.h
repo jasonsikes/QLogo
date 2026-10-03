@@ -87,6 +87,12 @@ class LineEditor
     /// @brief Move the cursor one Unicode character right, if possible.
     void moveRight();
 
+    /// @brief Move the cursor to the start of the line.
+    void moveHome();
+
+    /// @brief Move the cursor to the end of the line.
+    void moveEnd();
+
     /// @brief Delete the Unicode character to the left of the cursor (Backspace).
     void eraseLeft();
 

@@ -89,6 +89,16 @@ void LineEditor::moveRight()
         ++cursor_;
 }
 
+void LineEditor::moveHome()
+{
+    cursor_ = 0;
+}
+
+void LineEditor::moveEnd()
+{
+    cursor_ = buffer_.size();
+}
+
 void LineEditor::eraseLeft()
 {
     const int end = cursor_;
