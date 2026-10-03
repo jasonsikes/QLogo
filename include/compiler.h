@@ -153,13 +153,17 @@ class Compiler
 
     // Generate explicit-slot APPLY. Insert point must be the form's entry block.
     // Pushes inputList, runs the template with generateCallList, then pops.
-    // Always uses generateCallList (not a continuation) so the slot list can be restored.
+    // Always uses generateCallList (not a continuation) so the slot list can be
+    // restored. Returns the list result, including flow control; genApply NFCs
+    // after the merge so TRACE end is success-only.
     llvm::Value *generateApplyExplicitSlot(const DatumPtr &node, TypeMask expected,
                                            llvm::Value *aTemplate, llvm::Value *inputList);
 
     // Generate lambda APPLY. Insert point must be the form's entry block.
     // Binds template names to inputList, runs the template tail, then restores.
-    // Always uses generateCallList (not a continuation) so bindings can be restored.
+    // Always uses generateCallList (not a continuation) so bindings can be
+    // restored. Returns the list result, including flow control; genApply NFCs
+    // after the merge so TRACE end is success-only.
     llvm::Value *generateApplyLambda(const DatumPtr &node, TypeMask expected,
                                      llvm::Value *aTemplate, llvm::Value *inputList);
 

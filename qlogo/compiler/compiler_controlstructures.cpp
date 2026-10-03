@@ -121,7 +121,7 @@ Value *Compiler::genIfelse(const DatumPtr &node, TypeMask expected)
     {
         retval = (this->*generateListFn)(retval, expected);
     }
-    return cs.ret(retval);
+    return cs.ret(generateNotFlowControl(retval));
 }
 
 /***DOC RUN
@@ -137,9 +137,9 @@ Value *Compiler::genRun(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeDatum);
     Value *list = cs.child(0);
     if (node.astnodeValue()->inSequenceTail_) {
-        return cs.ret(generateCallListContinuation(list, expected));
+        return cs.ret(generateNotFlowControl(generateCallListContinuation(list, expected)));
     }
-    return cs.ret(generateCallList(list, expected));
+    return cs.ret(generateNotFlowControl(generateCallList(list, expected)));
 }
 
 /***DOC RUNTIME
@@ -160,7 +160,7 @@ Value *Compiler::genRuntime(const DatumPtr &node, TypeMask expected)
     generateCallExtern(stdRuntimeStart);
     Value *result = generateCallList(list, expected);
     generateCallExtern(stdRuntimeEnd);
-    return cs.ret(result);
+    return cs.ret(generateNotFlowControl(result));
 }
 
 /***DOC REPEAT
@@ -179,7 +179,7 @@ Value *Compiler::genRepeat(const DatumPtr &node, TypeMask expected)
         return generateIsExactIntegerInRange(candidate, 0.0, 2147483647.0);
     });
     list = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), list);
-    return cs.ret(generateRepeatLike(node, list, count));
+    return cs.ret(generateNotFlowControl(generateRepeatLike(node, list, count)));
 }
 
 /***DOC REPCOUNT #
@@ -415,7 +415,7 @@ Value *Compiler::genCatch(const DatumPtr &node, TypeMask expected)
                                        PaAddr(errActStash),
                                        PaAddr(result),
                                        PaAddr(tag));
-    return cs.ret(retval);
+    return cs.ret(generateNotFlowControl(retval));
 }
 
 /***DOC THROW
@@ -552,7 +552,8 @@ Value *Compiler::genRunresult(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeDatum);
     Value *instructionlist = cs.child(0);
     Value *result = generateCallList(instructionlist, TypeDN);
-    return cs.ret(generateCallExtern(processRunresult, PaAddr(scaff_->evaluator_), PaAddr(result)));
+    result = generateCallExtern(processRunresult, PaAddr(scaff_->evaluator_), PaAddr(result));
+    return cs.ret(generateNotFlowControl(result));
 }
 
 /***DOC MARK
@@ -762,7 +763,7 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, TypeMask expected, bo
     PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 2, DBG_NAME("retval"));
     retval->addIncoming(listRetval, listRetvalBB);
     retval->addIncoming(noRetval, noRunListBB);
-    return cs.ret(retval);
+    return cs.ret(generateNotFlowControl(retval));
 }
 
 
@@ -834,7 +835,7 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
     retval->addIncoming(slotResult, explicitSlotDestBB);
     retval->addIncoming(lambdaResult, lambdaDestBB);
     retval->addIncoming(procedureTextResult, procedureTextDestBB);
-    return cs.ret(retval);
+    return cs.ret(generateNotFlowControl(retval));
 }
 
 Value *Compiler::generateApplyNamedProcedure(const DatumPtr &node, TypeMask expected,
@@ -857,7 +858,7 @@ Value *Compiler::generateApplyExplicitSlot(const DatumPtr &node, TypeMask expect
     generateCallExtern(pushExplicitSlotList, PaAddr(inputList));
     Value *result = generateCallList(aTemplate, expected);
     generateCallExtern(popExplicitSlotList);
-    return generateNotFlowControl(result);
+    return result;
 }
 
 Value *Compiler::generateApplyLambda(const DatumPtr &node, TypeMask expected,
@@ -871,7 +872,7 @@ Value *Compiler::generateApplyLambda(const DatumPtr &node, TypeMask expected,
     bodyOrErr = generateNotFlowControl(bodyOrErr);
     Value *result = generateCallList(bodyOrErr, expected);
     generateCallExtern(endApplyLambda);
-    return generateNotFlowControl(result);
+    return result;
 }
 
 Value *Compiler::generateApplyProcedureText(const DatumPtr &node, TypeMask expected,
