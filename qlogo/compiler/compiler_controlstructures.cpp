@@ -732,8 +732,7 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, TypeMask expected, bo
     CallSite cs(this, node, TypeDatum);
     Value *instructionlist = cs.child(0);
     Value *testResult = generateCallExtern(getTestResult);
-    SwitchInst *sw = scaff_->builder_.CreateSwitch(testResult, notTestedBB, 3);
-    sw->addCase(CoInt8(0), notTestedBB);
+    SwitchInst *sw = scaff_->builder_.CreateSwitch(testResult, notTestedBB, 2);
     sw->addCase(CoInt8(runCondition), runListBB);
     sw->addCase(CoInt8(noRunCondition), noRunListBB);
 
@@ -801,7 +800,8 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
     generateReturn(errVal);
 
     scaff_->builder_.SetInsertPoint(namedProcedureBB);
-    Value *namedProcedureResult = generateApplyNamedProcedure(node, expected, aTemplate, inputList);
+    Value *namedProcedureResult = generateApplyBuiltCall(node, expected, aTemplate, inputList,
+                                                        buildApplyNamedCall, "buildApplyNamedCall");
     BasicBlock *namedProcedureDestBB = scaff_->builder_.GetInsertBlock();
     scaff_->builder_.CreateBr(mergeBB);
 
@@ -816,7 +816,8 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
     scaff_->builder_.CreateBr(mergeBB);
 
     scaff_->builder_.SetInsertPoint(procedureTextBB);
-    Value *procedureTextResult = generateApplyProcedureText(node, expected, aTemplate, inputList);
+    Value *procedureTextResult = generateApplyBuiltCall(node, expected, aTemplate, inputList,
+                                                       buildApplyProcedureText, "buildApplyProcedureText");
     BasicBlock *procedureTextDestBB = scaff_->builder_.GetInsertBlock();
     scaff_->builder_.CreateBr(mergeBB);
 
@@ -829,14 +830,16 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
     return cs.ret(generateNotFlowControl(retval));
 }
 
-Value *Compiler::generateApplyNamedProcedure(const DatumPtr &node, TypeMask expected,
-                                             Value *aTemplate, Value *inputList)
+Value *Compiler::generateApplyBuiltCall(const DatumPtr &node, TypeMask expected,
+                                        Value *aTemplate, Value *inputList,
+                                        addr_t (*builder)(addr_t, addr_t, addr_t, addr_t),
+                                        const char *builderName)
 {
-    Value *callAST = generateCallExtern(buildApplyNamedCall,
-                                        PaAddr(scaff_->evaluator_),
-                                        PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
-                                        PaAddr(aTemplate),
-                                        PaAddr(inputList));
+    Value *callAST = generateCallExternTyped(builder, builderName,
+                                            {PaAddr(scaff_->evaluator_),
+                                             PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
+                                             PaAddr(aTemplate),
+                                             PaAddr(inputList)});
     callAST = generateNotFlowControl(callAST);
     auto generateListFn = node.astnodeValue()->inSequenceTail_ ? &Compiler::generateCallListContinuation
                                                               : &Compiler::generateCallList;
@@ -864,20 +867,6 @@ Value *Compiler::generateApplyLambda(const DatumPtr &node, TypeMask expected,
     Value *result = generateCallList(bodyOrErr, expected);
     generateCallExtern(endApplyLambda);
     return result;
-}
-
-Value *Compiler::generateApplyProcedureText(const DatumPtr &node, TypeMask expected,
-                                            Value *aTemplate, Value *inputList)
-{
-    Value *callAST = generateCallExtern(buildApplyProcedureText,
-                                        PaAddr(scaff_->evaluator_),
-                                        PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
-                                        PaAddr(aTemplate),
-                                        PaAddr(inputList));
-    callAST = generateNotFlowControl(callAST);
-    auto generateListFn = node.astnodeValue()->inSequenceTail_ ? &Compiler::generateCallListContinuation
-                                                              : &Compiler::generateCallList;
-    return (this->*generateListFn)(callAST, expected);
 }
 
 /***DOC ?

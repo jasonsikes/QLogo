@@ -145,11 +145,13 @@ class Compiler
     // Generate a call to execute a list continuation.
     llvm::Value *generateCallListContinuation(llvm::Value *list, TypeMask expected);
 
-    // Generate named-procedure APPLY. Insert point must be the form's entry block.
-    // On success, returns the call result and leaves the insert point on the producing block.
-    // Errors generateReturn and do not return to the caller.
-    llvm::Value *generateApplyNamedProcedure(const DatumPtr &node, TypeMask expected,
-                                             llvm::Value *aTemplate, llvm::Value *inputList);
+    // Named-procedure and procedure-text APPLY. builder is buildApplyNamedCall
+    // or buildApplyProcedureText. NFC the builder result, then generateCallList
+    // or Continuation from inSequenceTail_.
+    llvm::Value *generateApplyBuiltCall(const DatumPtr &node, TypeMask expected,
+                                        llvm::Value *aTemplate, llvm::Value *inputList,
+                                        addr_t (*builder)(addr_t, addr_t, addr_t, addr_t),
+                                        const char *builderName);
 
     // Generate explicit-slot APPLY. Insert point must be the form's entry block.
     // Pushes inputList, runs the template with generateCallList, then pops.
@@ -166,13 +168,6 @@ class Compiler
     // after the merge so TRACE end is success-only.
     llvm::Value *generateApplyLambda(const DatumPtr &node, TypeMask expected,
                                      llvm::Value *aTemplate, llvm::Value *inputList);
-
-    // Generate procedure-text APPLY. Insert point must be the form's entry block.
-    // Builds an anonymous Procedure from the template TEXT and invokes it.
-    // On success, returns the call result and leaves the insert point on the producing block.
-    // Errors generateReturn and do not return to the caller.
-    llvm::Value *generateApplyProcedureText(const DatumPtr &node, TypeMask expected,
-                                            llvm::Value *aTemplate, llvm::Value *inputList);
 
     // Generate a call to return a value immediately.
     llvm::Value *generateImmediateReturn(llvm::Value *retval);
