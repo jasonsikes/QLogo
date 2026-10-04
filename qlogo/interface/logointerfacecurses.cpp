@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cwchar>
+#include <optional>
 #include <string>
 
 #ifndef NCURSES_WIDECHAR
@@ -138,24 +139,25 @@ QString readcharString(char32_t key)
     return QString::fromUcs4(&key, 1);
 }
 
-enum class TypeaheadResult
+enum class KeyResult
 {
     Continue,
     LineDone,
     EndOfInput
 };
 
-/// Apply a typeahead key to the line editor. CR/LF completes the line; Ctrl-D
-/// on an empty line is end of input, otherwise it deletes forward. Editing
-/// controls match the interactive prompt.
-TypeaheadResult applyCharToLineEditor(LineEditor &editor, char32_t ch)
+/// Apply one key, in the encoding mapGetWchToChar() produces, to the line
+/// editor. Used for both typeahead and interactive input so the two cannot
+/// drift. CR/LF completes the line; Ctrl-D on an empty line is end of input,
+/// otherwise it deletes forward; other control characters are ignored.
+KeyResult applyKeyToLineEditor(LineEditor &editor, char32_t ch)
 {
     if (ch == U'\n' || ch == U'\r')
-        return TypeaheadResult::LineDone;
+        return KeyResult::LineDone;
     if (ch == 4U)
     {
         if (editor.text().isEmpty())
-            return TypeaheadResult::EndOfInput;
+            return KeyResult::EndOfInput;
         editor.eraseAtCursor();
     }
     else if (ch == kDeleteKey)
@@ -174,7 +176,39 @@ TypeaheadResult applyCharToLineEditor(LineEditor &editor, char32_t ch)
         editor.killWord();
     else if (ch >= 32U)
         editor.insert(ch);
-    return TypeaheadResult::Continue;
+    return KeyResult::Continue;
+}
+
+/// Keys that only exist interactively: cursor motion, history, and resize.
+/// They never enter the typeahead queue because mapGetWchToChar() drops them.
+/// Returns true if @p ch was one of these (the caller redraws).
+bool applyMotionKey(LineEditor &editor, wint_t ch)
+{
+    switch (ch)
+    {
+    case KEY_LEFT:
+        editor.moveLeft();
+        return true;
+    case KEY_RIGHT:
+        editor.moveRight();
+        return true;
+    case KEY_HOME:
+        editor.moveHome();
+        return true;
+    case KEY_END:
+        editor.moveEnd();
+        return true;
+    case KEY_UP:
+        editor.recallOlder();
+        return true;
+    case KEY_DOWN:
+        editor.recallNewer();
+        return true;
+    case KEY_RESIZE:
+        return true;
+    default:
+        return false;
+    }
 }
 
 bool unreadHasLineBreak(const QList<char32_t> &unread)
@@ -572,21 +606,28 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
         return QString();
     };
 
+    // Shared dispatch for typeahead and interactive keys. Returns the finished
+    // line (or the null EOF string) when the key ends the prompt.
+    auto applyKey = [&](char32_t key) -> std::optional<QString> {
+        switch (applyKeyToLineEditor(lineEditor_, key))
+        {
+        case KeyResult::LineDone:
+            return acceptLine();
+        case KeyResult::EndOfInput:
+            return endInput();
+        case KeyResult::Continue:
+            break;
+        }
+        return std::nullopt;
+    };
+
     // Typeahead queued by KEYP / LINEP. A line completed here is accepted the
     // same way as one typed interactively, so it is painted and followed by a
     // newline instead of leaving the cursor on the prompt row.
     while (!unread_.isEmpty())
     {
-        const char32_t ch = unread_.takeFirst();
-        switch (applyCharToLineEditor(lineEditor_, ch))
-        {
-        case TypeaheadResult::LineDone:
-            return acceptLine();
-        case TypeaheadResult::EndOfInput:
-            return endInput();
-        case TypeaheadResult::Continue:
-            break;
-        }
+        if (const auto done = applyKey(unread_.takeFirst()))
+            return *done;
     }
 
     redrawEditLine();
@@ -620,116 +661,20 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
             inputAtEof_ = true;
             return {};
         }
-        if (rc == KEY_CODE_YES)
+        if (rc == KEY_CODE_YES && applyMotionKey(lineEditor_, ch))
         {
-            if (ch == KEY_ENTER)
-                return acceptLine();
-            if (ch == KEY_LEFT)
-            {
-                lineEditor_.moveLeft();
-                redrawEditLine();
-                continue;
-            }
-            if (ch == KEY_RIGHT)
-            {
-                lineEditor_.moveRight();
-                redrawEditLine();
-                continue;
-            }
-            if (ch == KEY_HOME)
-            {
-                lineEditor_.moveHome();
-                redrawEditLine();
-                continue;
-            }
-            if (ch == KEY_END)
-            {
-                lineEditor_.moveEnd();
-                redrawEditLine();
-                continue;
-            }
-            if (ch == KEY_UP)
-            {
-                if (lineEditor_.recallOlder())
-                    redrawEditLine();
-                continue;
-            }
-            if (ch == KEY_DOWN)
-            {
-                if (lineEditor_.recallNewer())
-                    redrawEditLine();
-                continue;
-            }
-            if (ch == KEY_BACKSPACE)
-            {
-                lineEditor_.eraseLeft();
-                redrawEditLine();
-                continue;
-            }
-            if (ch == KEY_DC)
-            {
-                lineEditor_.eraseAtCursor();
-                redrawEditLine();
-                continue;
-            }
-            if (ch == KEY_RESIZE)
-            {
-                redrawEditLine();
-                continue;
-            }
-            continue;
-        }
-        if (ch == L'\n' || ch == L'\r')
-            return acceptLine();
-        const char32_t ucs4 = static_cast<char32_t>(ch);
-        if (ucs4 == 4U)
-        {
-            // Ctrl-D: end of input on an empty line, otherwise delete forward.
-            if (lineEditor_.text().isEmpty())
-                return endInput();
-            lineEditor_.eraseAtCursor();
             redrawEditLine();
             continue;
         }
-        if (ucs4 == 8U || ucs4 == 127U)
-        {
-            lineEditor_.eraseLeft();
-            redrawEditLine();
+
+        // Everything else is encoded exactly as it would be in the typeahead
+        // queue (Backspace, Delete, keypad Enter, plain characters) and goes
+        // through the same editor dispatch. Unmapped function keys are dropped.
+        char32_t key = 0;
+        if (!mapGetWchToChar(rc, ch, key))
             continue;
-        }
-        if (ucs4 == 1U)
-        {
-            lineEditor_.moveHome();
-            redrawEditLine();
-            continue;
-        }
-        if (ucs4 == 5U)
-        {
-            lineEditor_.moveEnd();
-            redrawEditLine();
-            continue;
-        }
-        if (ucs4 == 11U)
-        {
-            lineEditor_.killToEnd();
-            redrawEditLine();
-            continue;
-        }
-        if (ucs4 == 21U)
-        {
-            lineEditor_.killLine();
-            redrawEditLine();
-            continue;
-        }
-        if (ucs4 == 23U)
-        {
-            lineEditor_.killWord();
-            redrawEditLine();
-            continue;
-        }
-        if (ucs4 < 32U)
-            continue;
-        lineEditor_.insert(ucs4);
+        if (const auto done = applyKey(key))
+            return *done;
         redrawEditLine();
     }
 }
