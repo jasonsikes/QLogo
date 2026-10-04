@@ -243,6 +243,11 @@ char32_t nextUcs4(const QString &text, int &i)
     return static_cast<char32_t>(c.unicode());
 }
 
+// Code points are passed to wcwidth() and addwstr() as wchar_t, which only
+// holds every Unicode scalar when it is at least 32 bits (true on POSIX, not
+// on Windows). ncursesw is POSIX-only here, so just make the assumption plain.
+static_assert(sizeof(wchar_t) >= 4, "LogoInterfaceCurses needs a 32-bit wchar_t to pass char32_t to ncursesw");
+
 int displayWidth(char32_t cp)
 {
     const int w = wcwidth(static_cast<wchar_t>(cp));
@@ -424,10 +429,10 @@ int LogoInterfaceCurses::readWideChar(wint_t &ch)
 
 bool LogoInterfaceCurses::keyQueueHasChars()
 {
-    if (!unread_.isEmpty())
-        return true;
     if (!cursesActive_ || atEnd())
         return false;
+    if (!unread_.isEmpty())
+        return true;
 
     ScopedNodelay poll(cursesActive_);
     for (;;)
