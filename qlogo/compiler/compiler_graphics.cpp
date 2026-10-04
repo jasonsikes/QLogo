@@ -463,7 +463,7 @@ SETBOUNDS x y
     numbers, the X-maximum, and Y-maximum. The canvas will reshape itself
     to those proportions. The drawing area is a Cartesian coordinate system
     where the origin (position 0 0) will always be in the center. The
-    horizontal range will be [-x, x] while the horizontal range will be
+    vertical range will be [-x, x] while the horizontal range will be
     [-y, y].
 
 COD***/
@@ -503,7 +503,6 @@ Value *Compiler::genFilled(const DatumPtr &node, TypeMask expected)
     return cs.ret(generateNotFlowControl(result));
 }
 
-// Returns false if the color is not valid.
 /***DOC LABEL
 LABEL text
 
