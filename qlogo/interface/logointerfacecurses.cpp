@@ -15,6 +15,7 @@
 
 #include "interface/logointerfacecurses.h"
 #include "interface/pipeio.h"
+#include <algorithm>
 #include <cerrno>
 #include <clocale>
 #include <cstdio>
@@ -29,15 +30,8 @@
 
 namespace
 {
-quint64 packPairKey(int fg, int bg)
-{
-    return (static_cast<quint64>(static_cast<quint32>(fg)) << 32) | static_cast<quint32>(bg);
-}
-
-int unpackFg(quint64 key)
-{
-    return static_cast<int>(static_cast<qint32>(key >> 32));
-}
+/// Upper bound on pair numbers.
+constexpr int kPairNumberLimit = 256;
 
 int rgbToAnsi8(const QColor &color)
 {
@@ -783,30 +777,52 @@ int LogoInterfaceCurses::colorNumber(const QColor &color) const
     return rgbToAnsi8(color);
 }
 
-void LogoInterfaceCurses::initColorPair(short pair, int fg, int bg)
+int LogoInterfaceCurses::pairLimit() const
 {
-#if defined(NCURSES_EXT_COLORS) && NCURSES_EXT_COLORS
-    init_extended_pair(pair, fg, bg);
-#else
-    init_pair(pair, static_cast<short>(fg), static_cast<short>(bg));
-#endif
+    return qMin(static_cast<int>(COLOR_PAIRS), kPairNumberLimit);
 }
 
-short LogoInterfaceCurses::ensurePair(int fg, int bg)
+short LogoInterfaceCurses::ensurePair(int fg)
 {
-    const quint64 key = packPairKey(fg, bg);
-    const auto it = pairByFgBg_.constFind(key);
-    if (it != pairByFgBg_.cend())
+    const auto it = pairByFg_.constFind(fg);
+    if (it != pairByFg_.cend())
         return it.value();
 
-    if (nextPair_ >= COLOR_PAIRS)
+    const int limit = pairLimit();
+    const int usable = limit - 1; // pair 0 is reserved for the terminal default
+    if (usable < 1)
+        return 0;
+
+    if (pairByFg_.size() >= usable)
     {
-        nextPair_ = 1;
-        pairByFgBg_.clear();
+        // Every pair number is taken. Forget the mappings except the ones the
+        // screen is still drawing with, so the current text and the window
+        // background keep their colors. Cells painted earlier with any other
+        // pair will take on whatever that pair is redefined to next.
+        QHash<int, short> live;
+        for (auto p = pairByFg_.cbegin(); p != pairByFg_.cend(); ++p)
+        {
+            if (p.value() == currentPair_ || p.value() == bgPair_)
+                live.insert(p.key(), p.value());
+        }
+        pairByFg_ = live;
+        if (pairByFg_.size() >= usable)
+            return 0; // degenerate terminal: nothing free even after the purge
     }
-    const short pair = static_cast<short>(nextPair_++);
-    initColorPair(pair, fg, bg);
-    pairByFgBg_.insert(key, pair);
+
+    // Next number not held by a live mapping. Terminates because the table
+    // holds fewer than `usable` entries.
+    short pair = 0;
+    for (;;)
+    {
+        pair = static_cast<short>(nextPair_);
+        nextPair_ = nextPair_ + 1 < limit ? nextPair_ + 1 : 1;
+        if (std::find(pairByFg_.cbegin(), pairByFg_.cend(), pair) == pairByFg_.cend())
+            break;
+    }
+
+    init_pair(pair, static_cast<short>(fg), static_cast<short>(bgNum_));
+    pairByFg_.insert(fg, pair);
     return pair;
 }
 
@@ -829,16 +845,10 @@ void LogoInterfaceCurses::applyStandoutAttr()
 
 void LogoInterfaceCurses::rebindPairsToBackground(int newBg)
 {
-    QHash<quint64, short> rebound;
-    rebound.reserve(pairByFgBg_.size());
-    for (auto it = pairByFgBg_.cbegin(); it != pairByFgBg_.cend(); ++it)
-    {
-        const short pair = it.value();
-        const int fg = unpackFg(it.key());
-        initColorPair(pair, fg, newBg);
-        rebound.insert(packPairKey(fg, newBg), pair);
-    }
-    pairByFgBg_ = rebound;
+    // Pairs are keyed by foreground, so the table itself does not change;
+    // text already on screen picks up the new background through its pair.
+    for (auto it = pairByFg_.cbegin(); it != pairByFg_.cend(); ++it)
+        init_pair(it.value(), static_cast<short>(it.key()), static_cast<short>(newBg));
 }
 
 void LogoInterfaceCurses::recolorDefaultCells(int newBg)
@@ -852,7 +862,8 @@ void LogoInterfaceCurses::recolorDefaultCells(int newBg)
     int maxy = 0;
     int maxx = 0;
     getmaxyx(stdscr, maxy, maxx);
-    const short newPair = ensurePair(-1, newBg);
+    Q_ASSERT(newBg == bgNum_);
+    const short newPair = ensurePair(-1);
 
     // Re-adding the bottom-right cell would otherwise scroll the whole screen.
     scrollok(stdscr, FALSE);
@@ -912,14 +923,15 @@ void LogoInterfaceCurses::setTextColor(const QColor &foregroundColor, const QCol
         if (has_colors())
         {
             rebindPairsToBackground(bgNum_);
+            bgPair_ = ensurePair(-1);
             recolorDefaultCells(bgNum_);
-            bkgdset(COLOR_PAIR(ensurePair(-1, bgNum_)) | static_cast<chtype>(' '));
+            bkgdset(COLOR_PAIR(bgPair_) | static_cast<chtype>(' '));
         }
     }
 
     if (has_colors())
     {
-        currentPair_ = ensurePair(fgNum_, bgNum_);
+        currentPair_ = ensurePair(fgNum_);
         applyCurrentPair();
         applyStandoutAttr();
         refresh();

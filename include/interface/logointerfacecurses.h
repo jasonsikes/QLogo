@@ -38,19 +38,35 @@ class LogoInterfaceCurses : public LogoInterface
     QColor backgroundColor_;
     int fgNum_ = -1;
     int bgNum_ = -1;
+
+    /// Color pairs. Every pair shares the current background (bgNum_), so the
+    /// table is keyed by foreground only. currentPair_ paints text and
+    /// bgPair_ (foreground -1) is the window background.
     short currentPair_ = 0;
+    short bgPair_ = 0;
     int nextPair_ = 1;
-    QHash<quint64, short> pairByFgBg_;
+    QHash<int, short> pairByFg_;
+
     bool standoutOn_ = false;
     QList<char32_t> unread_;
     LineEditor lineEditor_;
     int editDrawEndY_ = 0;
 
     int colorNumber(const QColor &color) const;
-    short ensurePair(int fg, int bg);
-    void initColorPair(short pair, int fg, int bg);
+
+    /// @brief Pair numbers used by this class stay in [1, pairLimit()).
+    /// @return The smaller of COLOR_PAIRS and the range COLOR_PAIR() / short
+    /// interfaces can carry on every ncurses ABI.
+    int pairLimit() const;
+
+    /// @brief Pair for @p fg on the current background, defining it if needed.
+    /// @return The pair number, or 0 (terminal default) if none can be allocated.
+    short ensurePair(int fg);
+
     void applyCurrentPair();
     void applyStandoutAttr();
+
+    /// @brief Redefine every allocated pair with @p newBg as its background.
     void rebindPairsToBackground(int newBg);
     void recolorDefaultCells(int newBg);
     void redrawEditLine();
