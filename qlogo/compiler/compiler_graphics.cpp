@@ -452,6 +452,8 @@ Value *Compiler::genSetbounds(const DatumPtr &node, TypeMask expected)
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [x, y] = cs.children();
+    x = generateGTZeroFromDouble(node.astnodeValue(), x);
+    y = generateGTZeroFromDouble(node.astnodeValue(), y);
     generateCallExtern(setBounds, PaDouble(x), PaDouble(y));
     return cs.ret(generateVoidRetval(node));
 }
@@ -500,7 +502,7 @@ Value *Compiler::genLabel(const DatumPtr &node, TypeMask expected)
 /***DOC SETLABELHEIGHT
 SETLABELHEIGHT height
 
-    command. Takes a positive number argument and sets the label font size.
+    command. Takes a number greater than 1 and sets the label font size.
 
 COD***/
 // CMD SETLABELHEIGHT 1 1 1 n
@@ -509,6 +511,9 @@ Value *Compiler::genSetlabelheight(const DatumPtr &node, TypeMask expected)
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeReal);
     Value *height = cs.child(0);
+    height = generateValidationDouble(node.astnodeValue(), height, [this](Value *val) {
+        return scaff_->builder_.CreateFCmpOGT(val, CoDouble(1.0), DBG_NAME("heightGT1"));
+    });
     generateCallExtern(setLabelHeight, PaDouble(height));
     return cs.ret(generateVoidRetval(node));
 }
