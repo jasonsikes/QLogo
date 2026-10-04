@@ -1,4 +1,4 @@
-? untrace doesn't like [bar] as input
-? untrace doesn't like [b] as input
+? untrace doesn't like [[a] [[b]] []] as input
 ? untrace doesn't like {a} as input
-? untrace doesn't like {b} as input
+? untrace doesn't like [[a] {b} []] as input
+? untrace doesn't like [[a] [b] [c] extra] as input

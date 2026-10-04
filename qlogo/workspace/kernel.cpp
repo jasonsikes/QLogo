@@ -688,54 +688,74 @@ DatumPtr Kernel::allVariables(bool unburiedOnly) const
     return builder.finishedList();
 }
 
+namespace
+{
+
+/// Fill @p sublists[0..2] from a contents-list @p source, or only test the shape
+/// when @p sublists is null. A word is one procedure name. A list of words is
+/// procedure names. A nested list of words advances to the next of the three
+/// slots. A fourth slot, an array, or a nested non-word is false.
+bool walkContentsList(const DatumPtr &source, ListBuilder **sublists)
+{
+    auto take = [sublists](unsigned level, const DatumPtr &name) {
+        if (sublists != nullptr)
+            sublists[level]->append(name);
+    };
+
+    if (source.isWord())
+    {
+        take(0, source);
+        return true;
+    }
+    if (!source.isList())
+        return false;
+
+    unsigned parseLevel = 0;
+    ListIterator iter = source.listValue()->newIterator();
+    while (iter.elementExists())
+    {
+        if (parseLevel > 2)
+            return false;
+        DatumPtr member = iter.element();
+        if (member.isWord())
+        {
+            take(parseLevel, member);
+        }
+        else if (member.isList())
+        {
+            ListIterator inner = member.listValue()->newIterator();
+            while (inner.elementExists())
+            {
+                DatumPtr name = inner.element();
+                if (!name.isWord())
+                    return false;
+                take(parseLevel, name);
+            }
+            ++parseLevel;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+} // namespace
+
+bool Kernel::isContentsList(const DatumPtr &source) const
+{
+    return walkContentsList(source, nullptr);
+}
+
 DatumPtr Kernel::contentsListFromDatum(const DatumPtr &who, const DatumPtr &source) const
 {
     ListBuilder procedures;
     ListBuilder variables;
     ListBuilder properties;
     ListBuilder *sublists[3] = {&procedures, &variables, &properties};
-
-    auto reject = [&]() { throw FCError::doesntLike(who, source); };
-
-    if (source.isWord())
-    {
-        procedures.append(source);
-    }
-    else if (source.isList())
-    {
-        unsigned parseLevel = 0;
-        ListIterator iter = source.listValue()->newIterator();
-        while (iter.elementExists())
-        {
-            if (parseLevel > 2)
-                reject();
-            DatumPtr member = iter.element();
-            if (member.isWord())
-            {
-                sublists[parseLevel]->append(member);
-            }
-            else if (member.isList())
-            {
-                ListIterator inner = member.listValue()->newIterator();
-                while (inner.elementExists())
-                {
-                    DatumPtr name = inner.element();
-                    if (!name.isWord())
-                        reject();
-                    sublists[parseLevel]->append(name);
-                }
-                ++parseLevel;
-            }
-            else
-            {
-                reject();
-            }
-        }
-    }
-    else
-    {
-        reject();
-    }
+    if (!walkContentsList(source, sublists))
+        throw FCError::doesntLike(who, source);
 
     ListBuilder contents;
     contents.append(procedures.finishedList());

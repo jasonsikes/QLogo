@@ -434,6 +434,14 @@ EXPORTC bool stdPlistp(addr_t nameAddr)
     return Kernel::get().plists_.isPropertyList(name->toString(Datum::ToStringFlags_Key));
 }
 
+/// True if the datum is a contents list: a word, a list of words, or a list of
+/// up to three lists of words. The compiler uses this as one ERRACT trip.
+EXPORTC bool isContentsList(addr_t datumAddr)
+{
+    auto *d = reinterpret_cast<Datum *>(datumAddr);
+    return Kernel::get().isContentsList(DatumPtr(d));
+}
+
 namespace
 {
 
@@ -462,40 +470,21 @@ void markNames(Kernel::NameMark mark, Kernel::NameKind kind, Datum *names, const
     }
 }
 
-/// UCBLogo three_lists: a word, or a list whose first member is a word, names
-/// procedures. A list whose first member is a list is procedures, then variables,
-/// then property lists. A word in the variable or property-list position is one
-/// name. Members past the third are ignored. Names need not already exist.
+/// UCBLogo contents list, same grammar as Kernel::contentsListFromDatum.
+/// Apply @p mark to each name in the three sublists. Extra members past the
+/// third list are rejected before this runs. Names need not already exist.
 /// Names before a rejected member stay added or removed.
 /// @param clear When true, remove the names. When false, add them.
 void markContents(Kernel::NameMark mark, const DatumPtr &who, Datum *input, bool clear)
 {
-    if (!input->isList())
-    {
-        markNames(mark, Kernel::NameKind::Procedures, input, who, clear);
-        return;
-    }
-
-    List *contents = input->listValue();
-    if (contents->isEmpty())
-        return;
-
-    if (!contents->head.isList())
-    {
-        markNames(mark, Kernel::NameKind::Procedures, input, who, clear);
-        return;
-    }
-
+    DatumPtr three = Kernel::get().contentsListFromDatum(who, DatumPtr(input));
+    List *contents = three.listValue();
     markNames(mark, Kernel::NameKind::Procedures, contents->head.datumValue(), who, clear);
 
     const List *rest = contents->tail.listValue();
-    if (rest->isEmpty())
-        return;
     markNames(mark, Kernel::NameKind::Variables, rest->head.datumValue(), who, clear);
 
     rest = rest->tail.listValue();
-    if (rest->isEmpty())
-        return;
     markNames(mark, Kernel::NameKind::PropertyLists, rest->head.datumValue(), who, clear);
 }
 
@@ -544,10 +533,12 @@ bool queryFirstName(Kernel::NameMark mark, Kernel::NameKind kind, Datum *names, 
 }
 
 /// TRUE if the first procedure, variable, or property-list name in @p input
-/// carries @p mark. An input that names nothing is rejected. See markContents
-/// for which part of a contents list supplies that first name.
+/// carries @p mark. An input that names nothing is rejected. See
+/// Kernel::contentsListFromDatum for which part of a contents list supplies
+/// that first name. The compiler rejects a non-contents-list before this runs.
 bool queryContents(Kernel::NameMark mark, const DatumPtr &who, Datum *input)
 {
+    DatumPtr three = Kernel::get().contentsListFromDatum(who, DatumPtr(input));
     bool found = false;
     bool marked = false;
     auto consider = [&](Kernel::NameKind kind, Datum *names) {
@@ -555,33 +546,12 @@ bool queryContents(Kernel::NameMark mark, const DatumPtr &who, Datum *input)
             marked = queryFirstName(mark, kind, names, who, &found);
     };
 
-    if (!input->isList())
-    {
-        consider(Kernel::NameKind::Procedures, input);
-        return marked;
-    }
-
-    List *contents = input->listValue();
-    if (contents->isEmpty())
-        throw FCError::doesntLike(who, DatumPtr(input));
-
-    if (!contents->head.isList())
-    {
-        consider(Kernel::NameKind::Procedures, input);
-        if (!found)
-            throw FCError::doesntLike(who, DatumPtr(input));
-        return marked;
-    }
-
+    List *contents = three.listValue();
     consider(Kernel::NameKind::Procedures, contents->head.datumValue());
     const List *rest = contents->tail.listValue();
-    if (!found && !rest->isEmpty())
-    {
-        consider(Kernel::NameKind::Variables, rest->head.datumValue());
-        rest = rest->tail.listValue();
-        if (!found && !rest->isEmpty())
-            consider(Kernel::NameKind::PropertyLists, rest->head.datumValue());
-    }
+    consider(Kernel::NameKind::Variables, rest->head.datumValue());
+    rest = rest->tail.listValue();
+    consider(Kernel::NameKind::PropertyLists, rest->head.datumValue());
     if (!found)
         throw FCError::doesntLike(who, DatumPtr(input));
     return marked;
@@ -1013,6 +983,7 @@ namespace
 
 /// Parse a PRINTOUT/ERASE contents-list input, then run @p fn on the three lists.
 /// A rejected input becomes the Error return. Success returns the AST node.
+/// The compiler rejects a non-contents-list before this runs.
 template <typename Fn>
 addr_t withContentsList(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr, Fn &&fn)
 {
@@ -1204,7 +1175,7 @@ EXPORTC void stdEraseUnburied(bool procedures, bool variables, bool plists)
 
 /// EDIT / ED: write the named workspace items to a temp file, open the editor,
 /// then LOAD. No input means unburied procedures. A cancelled Psychi edit
-/// leaves the workspace unchanged.
+/// leaves the workspace unchanged. The compiler rejects a non-contents-list.
 EXPORTC addr_t stdEdit(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);

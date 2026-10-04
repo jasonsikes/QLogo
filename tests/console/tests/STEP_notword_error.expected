@@ -1,4 +1,4 @@
-? step doesn't like [bar] as input
-? step doesn't like [b] as input
+? step doesn't like [[a] [[b]] []] as input
 ? step doesn't like {a} as input
-? step doesn't like {b} as input
+? step doesn't like [[a] {b} []] as input
+? step doesn't like [[a] [b] [c] extra] as input

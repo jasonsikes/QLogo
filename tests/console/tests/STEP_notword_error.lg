@@ -1,4 +1,4 @@
-step [foo [bar]]
 step [[a] [[b]] []]
 step {a}
 step [[a] {b} []]
+step [[a] [b] [c] extra]

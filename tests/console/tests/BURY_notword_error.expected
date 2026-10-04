@@ -1,4 +1,4 @@
-? bury doesn't like [bar] as input
-? bury doesn't like [b] as input
+? bury doesn't like [[a] [[b]] []] as input
 ? bury doesn't like {a} as input
-? bury doesn't like {b} as input
+? bury doesn't like [[a] {b} []] as input
+? bury doesn't like [[a] [b] [c] extra] as input

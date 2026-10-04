@@ -783,6 +783,13 @@ Value *Compiler::generateWordOrEmptyListFromDatum(ASTNode *parent, Value *src)
     });
 }
 
+Value *Compiler::generateContentsListFromDatum(ASTNode *parent, Value *src)
+{
+    return generateValidationDatum(parent, src, [this](Value *candidate) {
+        return generateCallExtern(isContentsList, PaAddr(candidate));
+    });
+}
+
 Value *Compiler::generateWordFromDatum(ASTNode *parent, Value *src)
 {
     return generateFromDatum(Datum::typeWord, parent, src);

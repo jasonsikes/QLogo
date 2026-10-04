@@ -7,5 +7,4 @@ trace [[a1] [q] [1]]
 trace [[a1]]
 trace []
 trace [[] "q]
-trace [[a] [b] [c] extra]
 trace "foo

@@ -210,14 +210,20 @@ class Kernel
     /// @return A list of words.
     DatumPtr allVariables(bool unburiedOnly = false) const;
 
-    /// @brief Parse a PRINTOUT/ERASE-style contents-list input into three lists.
+    /// @brief True if @p source is a contents list.
+    /// @param source A word, a list of words, or a list of up to three lists of
+    /// words. A word at a given level is one name of that kind.
+    /// @return False for an array, a nested non-word, or a fourth sublist.
+    bool isContentsList(const DatumPtr &source) const;
+
+    /// @brief Parse a contents-list input into three lists.
     /// @param who The primitive that rejected the input, used in doesn't-like.
     /// @param source A word (one procedure name), a list of words (procedure
     /// names), or a list of up to three lists: procedures, then variables, then
     /// property lists. A word at a given level is one name of that kind.
     /// Members past the third list are rejected.
-    /// @return A list of three lists. Throws FCError::doesntLike if a member is
-    /// not a word or a list of words, or if the input is an array.
+    /// @return A list of three lists. Throws FCError::doesntLike if @p source
+    /// is not a contents list.
     DatumPtr contentsListFromDatum(const DatumPtr &who, const DatumPtr &source) const;
 
     /// @brief Logo source for the procedures, variables, and property lists named

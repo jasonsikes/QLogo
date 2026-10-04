@@ -7,6 +7,5 @@ unstep [[a1] [q] [1]]
 unstep [[a1]]
 unstep []
 unstep [[] "q]
-unstep [[a] [b] [c] extra]
 step "foo
 unstep "foo

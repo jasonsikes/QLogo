@@ -7,6 +7,5 @@ unbury [[a1] [q] [1]]
 unbury [[a1]]
 unbury []
 unbury [[] "q]
-unbury [[a] [b] [c] extra]
 bury "foo
 unbury "foo

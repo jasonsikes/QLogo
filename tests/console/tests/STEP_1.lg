@@ -7,5 +7,4 @@ step [[a1] [q] [1]]
 step [[a1]]
 step []
 step [[] "q]
-step [[a] [b] [c] extra]
 step "foo

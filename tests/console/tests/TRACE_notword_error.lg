@@ -1,4 +1,4 @@
-trace [foo [bar]]
 trace [[a] [[b]] []]
 trace {a}
 trace [[a] {b} []]
+trace [[a] [b] [c] extra]

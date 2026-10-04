@@ -1,4 +1,4 @@
-unstep [foo [bar]]
 unstep [[a] [[b]] []]
 unstep {a}
 unstep [[a] {b} []]
+unstep [[a] [b] [c] extra]

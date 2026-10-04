@@ -7,6 +7,5 @@ untrace [[a1] [q] [1]]
 untrace [[a1]]
 untrace []
 untrace [[] "q]
-untrace [[a] [b] [c] extra]
 trace "foo
 untrace "foo

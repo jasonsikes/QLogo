@@ -666,7 +666,7 @@ Value *Compiler::genBury(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *contents = cs.child(0);
+    Value *contents = generateContentsListFromDatum(node.astnodeValue(), cs.child(0));
     Value *retval = generateCallExtern(
         stdBury,
         PaAddr(scaff_->evaluator_),
@@ -692,7 +692,7 @@ Value *Compiler::genTrace(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *contents = cs.child(0);
+    Value *contents = generateContentsListFromDatum(node.astnodeValue(), cs.child(0));
     Value *retval = generateCallExtern(
         stdTrace,
         PaAddr(scaff_->evaluator_),
@@ -718,7 +718,7 @@ Value *Compiler::genStep(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *contents = cs.child(0);
+    Value *contents = generateContentsListFromDatum(node.astnodeValue(), cs.child(0));
     Value *retval = generateCallExtern(
         stdStep,
         PaAddr(scaff_->evaluator_),
@@ -740,7 +740,7 @@ Value *Compiler::genUnbury(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *contents = cs.child(0);
+    Value *contents = generateContentsListFromDatum(node.astnodeValue(), cs.child(0));
     Value *retval = generateCallExtern(
         stdUnbury,
         PaAddr(scaff_->evaluator_),
@@ -760,7 +760,7 @@ Value *Compiler::genUntrace(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *contents = cs.child(0);
+    Value *contents = generateContentsListFromDatum(node.astnodeValue(), cs.child(0));
     Value *retval = generateCallExtern(
         stdUntrace,
         PaAddr(scaff_->evaluator_),
@@ -780,7 +780,7 @@ Value *Compiler::genUnstep(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *contents = cs.child(0);
+    Value *contents = generateContentsListFromDatum(node.astnodeValue(), cs.child(0));
     Value *retval = generateCallExtern(
         stdUnstep,
         PaAddr(scaff_->evaluator_),
@@ -940,7 +940,7 @@ Value *Compiler::genPrintout(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *contents = cs.child(0);
+    Value *contents = generateContentsListFromDatum(node.astnodeValue(), cs.child(0));
     Value *retval = generateCallExtern(
         stdPrintout,
         PaAddr(scaff_->evaluator_),
@@ -963,7 +963,7 @@ Value *Compiler::genPot(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *contents = cs.child(0);
+    Value *contents = generateContentsListFromDatum(node.astnodeValue(), cs.child(0));
     Value *retval = generateCallExtern(
         stdPot,
         PaAddr(scaff_->evaluator_),
@@ -987,7 +987,7 @@ Value *Compiler::genErase(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *contents = cs.child(0);
+    Value *contents = generateContentsListFromDatum(node.astnodeValue(), cs.child(0));
     Value *retval = generateCallExtern(
         stdErase,
         PaAddr(scaff_->evaluator_),
@@ -1078,7 +1078,7 @@ Value *Compiler::genBuriedp(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *contents = cs.child(0);
+    Value *contents = generateContentsListFromDatum(node.astnodeValue(), cs.child(0));
     Value *retval = generateCallExtern(
         stdBuriedp,
         PaAddr(scaff_->evaluator_),
@@ -1105,7 +1105,7 @@ Value *Compiler::genTracedp(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *contents = cs.child(0);
+    Value *contents = generateContentsListFromDatum(node.astnodeValue(), cs.child(0));
     Value *retval = generateCallExtern(
         stdTracedp,
         PaAddr(scaff_->evaluator_),
@@ -1132,7 +1132,7 @@ Value *Compiler::genSteppedp(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *contents = cs.child(0);
+    Value *contents = generateContentsListFromDatum(node.astnodeValue(), cs.child(0));
     Value *retval = generateCallExtern(
         stdSteppedp,
         PaAddr(scaff_->evaluator_),
@@ -1270,7 +1270,7 @@ Value *Compiler::genEdit(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeDatum);
     Value *contentsAddr = CoAddr(0);
     if (cs.count() > 0)
-        contentsAddr = cs.child(0);
+        contentsAddr = generateContentsListFromDatum(node.astnodeValue(), cs.child(0));
     Value *retval = generateCallExtern(
         stdEdit, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(contentsAddr));
     return cs.ret(generateNotFlowControl(retval));

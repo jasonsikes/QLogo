@@ -1,4 +1,4 @@
-untrace [foo [bar]]
 untrace [[a] [[b]] []]
 untrace {a}
 untrace [[a] {b} []]
+untrace [[a] [b] [c] extra]

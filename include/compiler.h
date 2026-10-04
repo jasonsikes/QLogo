@@ -311,6 +311,10 @@ class Compiler
     // Word, or []. Run ERRACT if not; a usable datum from it replaces the input.
     llvm::Value *generateWordOrEmptyListFromDatum(ASTNode *parent, llvm::Value *src);
 
+    // Word, list of words, or list of up to three lists of words (a contents list).
+    // Run ERRACT if not; a usable contents list from it replaces the input.
+    llvm::Value *generateContentsListFromDatum(ASTNode *parent, llvm::Value *src);
+
     // Ensure src is a non-empty datum whose isa matches typeMask (ERRACT if not).
     llvm::Value *generateNotEmptyFromDatum(ASTNode *parent, llvm::Value *src, Datum::DatumType typeMask);
 
