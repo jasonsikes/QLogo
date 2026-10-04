@@ -1130,11 +1130,10 @@ EXPORTC addr_t stdSave(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr)
 /// HELP: print help text for a name, or list every documented name.
 /// With no input, prints a SHOW-style list of aliases. With one word, looks
 /// up that name. A missing name prints a sorry message rather than an error.
-/// A non-word is "doesn't like".
 /// @param eAddr a pointer to the Evaluator object
 /// @param astnodeAddr a pointer to the owning ASTNode object
-/// @param nameAddr the evaluated name, or 0 if HELP was given no input
-/// @return the owning ASTNode, or an Error if the input is rejected.
+/// @param nameAddr a word naming the topic, or 0 if HELP was given no input
+/// @return the owning ASTNode, or an Error if printing fails.
 EXPORTC addr_t stdHelp(addr_t eAddr, addr_t astnodeAddr, addr_t nameAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
@@ -1155,9 +1154,6 @@ EXPORTC addr_t stdHelp(addr_t eAddr, addr_t astnodeAddr, addr_t nameAddr)
         else
         {
             DatumPtr nameP(reinterpret_cast<Datum *>(nameAddr));
-            if (!nameP.isWord())
-                throw FCError::doesntLike(node->nodeName_, nameP);
-
             const QString key = nameP.toString(Datum::ToStringFlags_Key);
             const QString text = Help::get().helpText(key);
             if (text.isEmpty())

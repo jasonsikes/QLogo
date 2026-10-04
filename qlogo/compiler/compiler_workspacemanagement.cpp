@@ -1237,7 +1237,7 @@ Value *Compiler::genHelp(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeDatum);
     Value *nameAddr = CoAddr(0);
     if (cs.count() > 0)
-        nameAddr = cs.child(0);
+        nameAddr = generateWordFromDatum(node.astnodeValue(), cs.child(0));
     Value *retval = generateCallExtern(
         stdHelp, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(nameAddr));
     return cs.ret(generateNotFlowControl(retval));
