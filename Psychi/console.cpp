@@ -135,7 +135,11 @@ void Console::requestRawlineWithPrompt(const QString &prompt)
     printString(prompt);
     beginningOfRawline = textCursor().position();
     beginningOfRawlineInBlock = textCursor().positionInBlock();
-    lineInputHistory_.push_back("");
+    // Open a scratch slot for this prompt. commitRawline() never leaves a
+    // blank slot behind, so a trailing blank means the previous prompt was
+    // interrupted before Enter; reuse it rather than stacking another.
+    if (lineInputHistory_.isEmpty() || !lineInputHistory_.last().trimmed().isEmpty())
+        lineInputHistory_.push_back("");
     lineInputHistoryScrollingCurrentIndex_ = lineInputHistory_.size() - 1;
 
     insertNextLineFromQueue();
@@ -324,12 +328,31 @@ void Console::processLineModeKeyPressEvent(QKeyEvent *event)
         QString line = block.right(block.size() - beginningOfRawlineInBlock);
         moveCursor(QTextCursor::End);
         textCursor().insertBlock();
-        lineInputHistory_.last() = line;
-        emit sendRawlineSignal(line);
+        commitRawline(line);
         return;
     }
 
     // All else is ignored
+}
+
+void Console::commitRawline(const QString &line)
+{
+    // The last history entry is this prompt's scratch slot. Keep the line
+    // there unless it is blank or repeats the entry before it, in which case
+    // drop the slot so Up/Down do not step through noise. History is updated
+    // before the signal because the receiver may request the next line
+    // synchronously.
+    if (!lineInputHistory_.isEmpty())
+    {
+        const bool blank = line.trimmed().isEmpty();
+        const bool repeat =
+            lineInputHistory_.size() >= 2 && lineInputHistory_[lineInputHistory_.size() - 2] == line;
+        if (blank || repeat)
+            lineInputHistory_.removeLast();
+        else
+            lineInputHistory_.last() = line;
+    }
+    emit sendRawlineSignal(line);
 }
 
 void Console::replaceLineWithHistoryIndex(int newIndex)
@@ -373,7 +396,7 @@ void Console::insertNextLineFromQueue()
             QString line = block.right(block.size() - beginningOfRawlineInBlock);
             textCursor().insertBlock();
             keyQueue_ = keyQueue_.right(keyQueue_.size() - 1);
-            emit sendRawlineSignal(line);
+            commitRawline(line);
         }
     }
 }

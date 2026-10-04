@@ -77,6 +77,14 @@ class LogoInterface : public QObject
     /// signals that are sent to the application.
     static SignalsEnum_t latestSignal();
 
+    /// @brief True if a signal has been recorded and not yet consumed by latestSignal().
+    /// @details Does not reset the signal. Lets a blocking reader tell an
+    /// interrupted read from end of input without trusting errno.
+    static bool signalPending()
+    {
+        return lastSignal_ != noSignal;
+    }
+
     /// @brief Record an interrupt from a Unix signal or a Psychi pipe message.
     /// @param incoming The signal to record.
     /// @details SYSTEM outranks TOPLEVEL, which outranks PAUSE. Safe to call
@@ -84,10 +92,14 @@ class LogoInterface : public QObject
     static void noteSignal(SignalsEnum_t incoming);
 
     /// @brief Initializes the interface.
-    /// @note The base method does nothing. Subclasses can override this method to perform
-    /// initialization tasks.
-    virtual void initialize()
+    /// @return True if the interface is ready; false if it could not start, in
+    /// which case it has already reported the reason and the caller should exit
+    /// normally with a failure code.
+    /// @note The base method does nothing and succeeds. Subclasses can override
+    /// this method to perform initialization tasks.
+    virtual bool initialize()
     {
+        return true;
     }
 
     /// @brief Reads a line of input from the user, with a prompt.

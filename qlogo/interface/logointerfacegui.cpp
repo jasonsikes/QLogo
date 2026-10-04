@@ -49,12 +49,13 @@ void LogoInterfaceGUI::closeInterface()
 
 LogoInterfaceGUI::~LogoInterfaceGUI() = default;
 
-void LogoInterfaceGUI::initialize()
+bool LogoInterfaceGUI::initialize()
 {
     messageQueue_.startQueue();
 
     message(W_INITIALIZE);
     waitForMessage(W_INITIALIZE);
+    return true;
 }
 
 /* a message has three parts:

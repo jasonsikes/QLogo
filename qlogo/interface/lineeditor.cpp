@@ -180,7 +180,14 @@ void LineEditor::insert(const QString &text)
 QString LineEditor::finish()
 {
     if (promptActive_ && !history_.isEmpty())
-        history_.last() = buffer_;
+    {
+        const bool blank = buffer_.trimmed().isEmpty();
+        const bool repeat = history_.size() >= 2 && history_[history_.size() - 2] == buffer_;
+        if (blank || repeat)
+            history_.removeLast();
+        else
+            history_.last() = buffer_;
+    }
     promptActive_ = false;
     return buffer_;
 }

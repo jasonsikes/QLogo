@@ -25,6 +25,8 @@
 #include <QList>
 #include <cwchar>
 
+struct screen; // ncurses SCREEN, kept opaque so this header does not pull in ncurses.h
+
 /// @brief The LogoInterfaceCurses class is a LogoInterface that talks to the
 /// terminal through ncursesw.
 ///
@@ -34,31 +36,50 @@
 class LogoInterfaceCurses : public LogoInterface
 {
     bool cursesActive_ = false;
+    struct screen *screen_ = nullptr;
     QColor foregroundColor_;
     QColor backgroundColor_;
     int fgNum_ = -1;
     int bgNum_ = -1;
+
+    /// Color pairs. Every pair shares the current background (bgNum_), so the
+    /// table is keyed by foreground only. currentPair_ paints text and
+    /// bgPair_ (foreground -1) is the window background.
     short currentPair_ = 0;
+    short bgPair_ = 0;
     int nextPair_ = 1;
-    QHash<quint64, short> pairByFgBg_;
+    QHash<int, short> pairByFg_;
+
     bool standoutOn_ = false;
     QList<char32_t> unread_;
     LineEditor lineEditor_;
     int editDrawEndY_ = 0;
 
     int colorNumber(const QColor &color) const;
-    short ensurePair(int fg, int bg);
-    void initColorPair(short pair, int fg, int bg);
+
+    /// @brief Pair numbers used by this class stay in [1, pairLimit()).
+    /// @return The smaller of COLOR_PAIRS and the range COLOR_PAIR() / short
+    /// interfaces can carry on every ncurses ABI.
+    int pairLimit() const;
+
+    /// @brief Pair for @p fg on the current background, defining it if needed.
+    /// @return The pair number, or 0 (terminal default) if none can be allocated.
+    short ensurePair(int fg);
+
     void applyCurrentPair();
     void applyStandoutAttr();
+
+    /// @brief Redefine every allocated pair with @p newBg as its background.
     void rebindPairsToBackground(int newBg);
     void recolorDefaultCells(int newBg);
     void redrawEditLine();
 
-    /// @brief get_wch with errno cleared first, and with the stale ERR that
-    /// ncurses queues after an EINTR removed so the next read hits the terminal.
+    /// @brief get_wch that classifies ERR by a pending Logo signal rather than
+    /// trusting errno, and removes the stale ERR ncurses queues after an
+    /// interrupted read so the next call reads the terminal again.
     /// @param ch Receives the character or KEY_* code.
-    /// @return OK, KEY_CODE_YES, or ERR (errno is EINTR for an interrupt).
+    /// @return OK, KEY_CODE_YES, or ERR. On ERR, errno is EINTR exactly when
+    /// the read was interrupted; otherwise it was a nodelay timeout or EOF.
     int readWideChar(wint_t &ch);
 
     /// @brief Repaint the edit line with the cursor at its end and move to the
@@ -78,7 +99,10 @@ class LogoInterfaceCurses : public LogoInterface
     ~LogoInterfaceCurses() override;
 
     /// @brief Starts ncurses and color support.
-    void initialize() override;
+    /// @return False, after printing a message to stderr, if stdio is not a
+    /// terminal or the terminal type cannot be opened. Nothing is left running
+    /// in that case, so the caller can tear down normally.
+    bool initialize() override;
 
     /// @brief Tears down ncurses and restores the terminal.
     void closeInterface() override;

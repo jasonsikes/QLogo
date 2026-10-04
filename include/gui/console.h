@@ -57,6 +57,9 @@ class Console : public QTextEdit
 
     void replaceLineWithHistoryIndex(int newIndex);
 
+    // Record line in history and send it to the interpreter.
+    void commitRawline(const QString &line);
+
     void insertNextLineFromQueue();
     void insertNextCharFromQueue();
     void insertFromMimeData(const QMimeData *source) Q_DECL_OVERRIDE;

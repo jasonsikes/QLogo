@@ -15,11 +15,13 @@
 
 #include "interface/logointerfacecurses.h"
 #include "interface/pipeio.h"
+#include <algorithm>
 #include <cerrno>
 #include <clocale>
 #include <cstdio>
 #include <cstring>
 #include <cwchar>
+#include <optional>
 #include <string>
 
 #ifndef NCURSES_WIDECHAR
@@ -29,15 +31,8 @@
 
 namespace
 {
-quint64 packPairKey(int fg, int bg)
-{
-    return (static_cast<quint64>(static_cast<quint32>(fg)) << 32) | static_cast<quint32>(bg);
-}
-
-int unpackFg(quint64 key)
-{
-    return static_cast<int>(static_cast<qint32>(key >> 32));
-}
+/// Upper bound on pair numbers.
+constexpr int kPairNumberLimit = 256;
 
 int rgbToAnsi8(const QColor &color)
 {
@@ -97,9 +92,18 @@ class ScopedNodelay
     ScopedNodelay &operator=(const ScopedNodelay &) = delete;
 };
 
-/// True if get_wch produced a character for KEYP / LINEP / READCHAR.
-/// Motion, history, and resize keys are not characters. Backspace, Delete,
-/// and keypad Enter map to the bytes Logo programs already test for.
+/// Marker for the Delete key (KEY_DC) in the typeahead queue. It lies outside
+/// Unicode, so it cannot collide with typed text. Raw 127 (DEL) is what most
+/// terminals send for the physical Backspace key and must stay distinct from
+/// this: the line editor erases forward for KEY_DC and backward for 127.
+///
+/// READCHAR reports both as 127 via readcharString().
+constexpr char32_t kDeleteKey = 0x110000;
+
+/// True if get_wch produced a key for KEYP / LINEP / READCHAR.
+/// Motion, history, and resize keys are not characters. Backspace and keypad
+/// Enter map to the bytes Logo programs already test for; Delete is queued as
+/// kDeleteKey so the line editor can tell it apart from a raw DEL byte.
 bool mapGetWchToChar(int rc, wint_t ch, char32_t &out)
 {
     if (rc == ERR)
@@ -113,7 +117,7 @@ bool mapGetWchToChar(int rc, wint_t ch, char32_t &out)
         }
         if (ch == KEY_DC)
         {
-            out = 127U;
+            out = kDeleteKey;
             return true;
         }
         if (ch == KEY_ENTER)
@@ -127,13 +131,38 @@ bool mapGetWchToChar(int rc, wint_t ch, char32_t &out)
     return true;
 }
 
-/// Apply a typeahead character to the line editor. Returns true if it completes
-/// the line (CR/LF). Editing controls match the interactive prompt.
-bool applyCharToLineEditor(LineEditor &editor, char32_t ch)
+/// The one-character string READCHAR returns for a queued key.
+QString readcharString(char32_t key)
+{
+    if (key == kDeleteKey)
+        key = 127U;
+    return QString::fromUcs4(&key, 1);
+}
+
+enum class KeyResult
+{
+    Continue,
+    LineDone,
+    EndOfInput
+};
+
+/// Apply one key, in the encoding mapGetWchToChar() produces, to the line
+/// editor. Used for both typeahead and interactive input so the two cannot
+/// drift. CR/LF completes the line; Ctrl-D on an empty line is end of input,
+/// otherwise it deletes forward; other control characters are ignored.
+KeyResult applyKeyToLineEditor(LineEditor &editor, char32_t ch)
 {
     if (ch == U'\n' || ch == U'\r')
-        return true;
-    if (ch == 8U || ch == 127U)
+        return KeyResult::LineDone;
+    if (ch == 4U)
+    {
+        if (editor.text().isEmpty())
+            return KeyResult::EndOfInput;
+        editor.eraseAtCursor();
+    }
+    else if (ch == kDeleteKey)
+        editor.eraseAtCursor();
+    else if (ch == 8U || ch == 127U)
         editor.eraseLeft();
     else if (ch == 1U)
         editor.moveHome();
@@ -147,7 +176,39 @@ bool applyCharToLineEditor(LineEditor &editor, char32_t ch)
         editor.killWord();
     else if (ch >= 32U)
         editor.insert(ch);
-    return false;
+    return KeyResult::Continue;
+}
+
+/// Keys that only exist interactively: cursor motion, history, and resize.
+/// They never enter the typeahead queue because mapGetWchToChar() drops them.
+/// Returns true if @p ch was one of these (the caller redraws).
+bool applyMotionKey(LineEditor &editor, wint_t ch)
+{
+    switch (ch)
+    {
+    case KEY_LEFT:
+        editor.moveLeft();
+        return true;
+    case KEY_RIGHT:
+        editor.moveRight();
+        return true;
+    case KEY_HOME:
+        editor.moveHome();
+        return true;
+    case KEY_END:
+        editor.moveEnd();
+        return true;
+    case KEY_UP:
+        editor.recallOlder();
+        return true;
+    case KEY_DOWN:
+        editor.recallNewer();
+        return true;
+    case KEY_RESIZE:
+        return true;
+    default:
+        return false;
+    }
 }
 
 bool unreadHasLineBreak(const QList<char32_t> &unread)
@@ -181,6 +242,11 @@ char32_t nextUcs4(const QString &text, int &i)
         return QChar::surrogateToUcs4(c, text.at(i++));
     return static_cast<char32_t>(c.unicode());
 }
+
+// Code points are passed to wcwidth() and addwstr() as wchar_t, which only
+// holds every Unicode scalar when it is at least 32 bits (true on POSIX, not
+// on Windows). ncursesw is POSIX-only here, so just make the assumption plain.
+static_assert(sizeof(wchar_t) >= 4, "LogoInterfaceCurses needs a 32-bit wchar_t to pass char32_t to ncursesw");
 
 int displayWidth(char32_t cp)
 {
@@ -219,26 +285,31 @@ LogoInterfaceCurses::~LogoInterfaceCurses()
     closeInterface();
 }
 
-void LogoInterfaceCurses::initialize()
+bool LogoInterfaceCurses::initialize()
 {
     if (cursesActive_)
-        return;
+        return true;
 
+    // logo_main.cpp checks this before choosing the TUI; kept as a guard for
+    // any other caller, since curses on a pipe would misbehave badly.
     if (!stdioIsInteractive())
     {
         fprintf(stderr, "qlogo: --tui requires an interactive terminal\n");
-        Config::get().setMainLogoInterface(nullptr);
-        exit(1);
+        return false;
     }
 
     setlocale(LC_CTYPE, "");
 
-    if (initscr() == nullptr)
+    // initscr() exits the process itself when the terminal cannot be opened;
+    // newterm() reports failure instead, so the caller can unwind normally.
+    screen_ = newterm(nullptr, stdout, stdin);
+    if (screen_ == nullptr)
     {
-        fprintf(stderr, "qlogo: failed to initialize ncurses\n");
-        Config::get().setMainLogoInterface(nullptr);
-        exit(1);
+        const char *term = getenv("TERM");
+        fprintf(stderr, "qlogo: cannot start the text interface on terminal type \"%s\"\n", term ? term : "");
+        return false;
     }
+    def_prog_mode();
 
     cursesActive_ = true;
     cbreak();
@@ -253,6 +324,7 @@ void LogoInterfaceCurses::initialize()
         use_default_colors();
     }
     refresh();
+    return true;
 }
 
 void LogoInterfaceCurses::closeInterface()
@@ -260,6 +332,8 @@ void LogoInterfaceCurses::closeInterface()
     if (!cursesActive_)
         return;
     endwin();
+    delscreen(screen_);
+    screen_ = nullptr;
     cursesActive_ = false;
 }
 
@@ -333,10 +407,13 @@ int LogoInterfaceCurses::readWideChar(wint_t &ch)
 {
     errno = 0;
     const int rc = get_wch(&ch);
-    if (rc != ERR || errno != EINTR)
+    if (rc != ERR)
         return rc;
 
-    const int savedErrno = errno;
+    if (!LogoInterface::signalPending() && errno != EINTR)
+        return ERR;
+
+    // Pop the stale ERR that ncurses leaves queued after an EINTR'd read.
     {
         ScopedNodelay drain(cursesActive_);
         wint_t stale = 0;
@@ -345,16 +422,17 @@ int LogoInterfaceCurses::readWideChar(wint_t &ch)
         if (staleRc != ERR && mapGetWchToChar(staleRc, stale, ucs4))
             unread_.append(ucs4);
     }
-    errno = savedErrno;
-    return rc;
+
+    errno = EINTR; // callers test this; normalize whatever ncurses left behind
+    return ERR;
 }
 
 bool LogoInterfaceCurses::keyQueueHasChars()
 {
-    if (!unread_.isEmpty())
-        return true;
     if (!cursesActive_ || atEnd())
         return false;
+    if (!unread_.isEmpty())
+        return true;
 
     ScopedNodelay poll(cursesActive_);
     for (;;)
@@ -528,19 +606,44 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
     lineEditor_.beginPrompt(startY, startX);
     editDrawEndY_ = lineEditor_.originRow();
 
-    while (!unread_.isEmpty())
-    {
-        const char32_t ch = unread_.takeFirst();
-        if (applyCharToLineEditor(lineEditor_, ch))
-            return lineEditor_.finish();
-    }
-
-    redrawEditLine();
-
     auto acceptLine = [this]() {
         leaveEditLine();
         return lineEditor_.finish();
     };
+
+    // Ctrl-D on an empty line. Leave the prompt row and report end of input.
+    auto endInput = [this]() {
+        paintWString(QStringLiteral("\n"));
+        refresh();
+        inputAtEof_ = true;
+        return QString();
+    };
+
+    // Shared dispatch for typeahead and interactive keys. Returns the finished
+    // line (or the null EOF string) when the key ends the prompt.
+    auto applyKey = [&](char32_t key) -> std::optional<QString> {
+        switch (applyKeyToLineEditor(lineEditor_, key))
+        {
+        case KeyResult::LineDone:
+            return acceptLine();
+        case KeyResult::EndOfInput:
+            return endInput();
+        case KeyResult::Continue:
+            break;
+        }
+        return std::nullopt;
+    };
+
+    // Typeahead queued by KEYP / LINEP. A line completed here is accepted the
+    // same way as one typed interactively, so it is painted and followed by a
+    // newline instead of leaving the cursor on the prompt row.
+    while (!unread_.isEmpty())
+    {
+        if (const auto done = applyKey(unread_.takeFirst()))
+            return *done;
+    }
+
+    redrawEditLine();
 
     for (;;)
     {
@@ -571,107 +674,20 @@ QString LogoInterfaceCurses::inputRawlineWithPrompt(const QString &prompt)
             inputAtEof_ = true;
             return {};
         }
-        if (rc == KEY_CODE_YES)
+        if (rc == KEY_CODE_YES && applyMotionKey(lineEditor_, ch))
         {
-            if (ch == KEY_ENTER)
-                return acceptLine();
-            if (ch == KEY_LEFT)
-            {
-                lineEditor_.moveLeft();
-                redrawEditLine();
-                continue;
-            }
-            if (ch == KEY_RIGHT)
-            {
-                lineEditor_.moveRight();
-                redrawEditLine();
-                continue;
-            }
-            if (ch == KEY_HOME)
-            {
-                lineEditor_.moveHome();
-                redrawEditLine();
-                continue;
-            }
-            if (ch == KEY_END)
-            {
-                lineEditor_.moveEnd();
-                redrawEditLine();
-                continue;
-            }
-            if (ch == KEY_UP)
-            {
-                if (lineEditor_.recallOlder())
-                    redrawEditLine();
-                continue;
-            }
-            if (ch == KEY_DOWN)
-            {
-                if (lineEditor_.recallNewer())
-                    redrawEditLine();
-                continue;
-            }
-            if (ch == KEY_BACKSPACE)
-            {
-                lineEditor_.eraseLeft();
-                redrawEditLine();
-                continue;
-            }
-            if (ch == KEY_DC)
-            {
-                lineEditor_.eraseAtCursor();
-                redrawEditLine();
-                continue;
-            }
-            if (ch == KEY_RESIZE)
-            {
-                redrawEditLine();
-                continue;
-            }
-            continue;
-        }
-        if (ch == L'\n' || ch == L'\r')
-            return acceptLine();
-        const char32_t ucs4 = static_cast<char32_t>(ch);
-        if (ucs4 == 8U || ucs4 == 127U)
-        {
-            lineEditor_.eraseLeft();
             redrawEditLine();
             continue;
         }
-        if (ucs4 == 1U)
-        {
-            lineEditor_.moveHome();
-            redrawEditLine();
+
+        // Everything else is encoded exactly as it would be in the typeahead
+        // queue (Backspace, Delete, keypad Enter, plain characters) and goes
+        // through the same editor dispatch. Unmapped function keys are dropped.
+        char32_t key = 0;
+        if (!mapGetWchToChar(rc, ch, key))
             continue;
-        }
-        if (ucs4 == 5U)
-        {
-            lineEditor_.moveEnd();
-            redrawEditLine();
-            continue;
-        }
-        if (ucs4 == 11U)
-        {
-            lineEditor_.killToEnd();
-            redrawEditLine();
-            continue;
-        }
-        if (ucs4 == 21U)
-        {
-            lineEditor_.killLine();
-            redrawEditLine();
-            continue;
-        }
-        if (ucs4 == 23U)
-        {
-            lineEditor_.killWord();
-            redrawEditLine();
-            continue;
-        }
-        if (ucs4 < 32U)
-            continue;
-        lineEditor_.insert(ucs4);
+        if (const auto done = applyKey(key))
+            return *done;
         redrawEditLine();
     }
 }
@@ -687,8 +703,7 @@ DatumPtr LogoInterfaceCurses::readchar()
 
         if (!unread_.isEmpty())
         {
-            const char32_t ucs4 = unread_.takeFirst();
-            return DatumPtr(QString::fromUcs4(&ucs4, 1));
+            return DatumPtr(readcharString(unread_.takeFirst()));
         }
 
         refresh();
@@ -707,7 +722,7 @@ DatumPtr LogoInterfaceCurses::readchar()
         char32_t ucs4 = 0;
         if (!mapGetWchToChar(rc, ch, ucs4))
             continue;
-        return DatumPtr(QString::fromUcs4(&ucs4, 1));
+        return DatumPtr(readcharString(ucs4));
     }
 }
 
@@ -720,30 +735,52 @@ int LogoInterfaceCurses::colorNumber(const QColor &color) const
     return rgbToAnsi8(color);
 }
 
-void LogoInterfaceCurses::initColorPair(short pair, int fg, int bg)
+int LogoInterfaceCurses::pairLimit() const
 {
-#if defined(NCURSES_EXT_COLORS) && NCURSES_EXT_COLORS
-    init_extended_pair(pair, fg, bg);
-#else
-    init_pair(pair, static_cast<short>(fg), static_cast<short>(bg));
-#endif
+    return qMin(static_cast<int>(COLOR_PAIRS), kPairNumberLimit);
 }
 
-short LogoInterfaceCurses::ensurePair(int fg, int bg)
+short LogoInterfaceCurses::ensurePair(int fg)
 {
-    const quint64 key = packPairKey(fg, bg);
-    const auto it = pairByFgBg_.constFind(key);
-    if (it != pairByFgBg_.cend())
+    const auto it = pairByFg_.constFind(fg);
+    if (it != pairByFg_.cend())
         return it.value();
 
-    if (nextPair_ >= COLOR_PAIRS)
+    const int limit = pairLimit();
+    const int usable = limit - 1; // pair 0 is reserved for the terminal default
+    if (usable < 1)
+        return 0;
+
+    if (pairByFg_.size() >= usable)
     {
-        nextPair_ = 1;
-        pairByFgBg_.clear();
+        // Every pair number is taken. Forget the mappings except the ones the
+        // screen is still drawing with, so the current text and the window
+        // background keep their colors. Cells painted earlier with any other
+        // pair will take on whatever that pair is redefined to next.
+        QHash<int, short> live;
+        for (auto p = pairByFg_.cbegin(); p != pairByFg_.cend(); ++p)
+        {
+            if (p.value() == currentPair_ || p.value() == bgPair_)
+                live.insert(p.key(), p.value());
+        }
+        pairByFg_ = live;
+        if (pairByFg_.size() >= usable)
+            return 0; // degenerate terminal: nothing free even after the purge
     }
-    const short pair = static_cast<short>(nextPair_++);
-    initColorPair(pair, fg, bg);
-    pairByFgBg_.insert(key, pair);
+
+    // Next number not held by a live mapping. Terminates because the table
+    // holds fewer than `usable` entries.
+    short pair = 0;
+    for (;;)
+    {
+        pair = static_cast<short>(nextPair_);
+        nextPair_ = nextPair_ + 1 < limit ? nextPair_ + 1 : 1;
+        if (std::find(pairByFg_.cbegin(), pairByFg_.cend(), pair) == pairByFg_.cend())
+            break;
+    }
+
+    init_pair(pair, static_cast<short>(fg), static_cast<short>(bgNum_));
+    pairByFg_.insert(fg, pair);
     return pair;
 }
 
@@ -766,16 +803,10 @@ void LogoInterfaceCurses::applyStandoutAttr()
 
 void LogoInterfaceCurses::rebindPairsToBackground(int newBg)
 {
-    QHash<quint64, short> rebound;
-    rebound.reserve(pairByFgBg_.size());
-    for (auto it = pairByFgBg_.cbegin(); it != pairByFgBg_.cend(); ++it)
-    {
-        const short pair = it.value();
-        const int fg = unpackFg(it.key());
-        initColorPair(pair, fg, newBg);
-        rebound.insert(packPairKey(fg, newBg), pair);
-    }
-    pairByFgBg_ = rebound;
+    // Pairs are keyed by foreground, so the table itself does not change;
+    // text already on screen picks up the new background through its pair.
+    for (auto it = pairByFg_.cbegin(); it != pairByFg_.cend(); ++it)
+        init_pair(it.value(), static_cast<short>(it.key()), static_cast<short>(newBg));
 }
 
 void LogoInterfaceCurses::recolorDefaultCells(int newBg)
@@ -789,12 +820,18 @@ void LogoInterfaceCurses::recolorDefaultCells(int newBg)
     int maxy = 0;
     int maxx = 0;
     getmaxyx(stdscr, maxy, maxx);
-    const short newPair = ensurePair(-1, newBg);
+    Q_ASSERT(newBg == bgNum_);
+    const short newPair = ensurePair(-1);
+
+    // Re-adding the bottom-right cell would otherwise scroll the whole screen.
+    scrollok(stdscr, FALSE);
 
     for (int y = 0; y < maxy; ++y)
     {
-        for (int x = 0; x < maxx; ++x)
+        int width = 1;
+        for (int x = 0; x < maxx; x += width)
         {
+            width = 1;
             cchar_t cc;
             std::memset(&cc, 0, sizeof(cc));
             if (mvwin_wch(stdscr, y, x, &cc) == ERR)
@@ -804,6 +841,19 @@ void LogoInterfaceCurses::recolorDefaultCells(int newBg)
             wchar_t wch[CCHARW_MAX + 1] = {};
             if (getcchar(&cc, wch, &attrs, &pair, nullptr) == ERR)
                 continue;
+            // An empty cell, or one whose first character is non-spacing, has
+            // nothing that can be re-added on its own.
+            if (wch[0] == 0)
+                continue;
+            const int glyphWidth = wcwidth(wch[0]);
+            if (glyphWidth == 0)
+                continue;
+            // A double-width glyph reads back identically from both of its
+            // cells. Re-add it once, from its first cell, and step over the
+            // continuation cell; adding it there again would shift it right
+            // and overwrite the character that follows.
+            if (glyphWidth > 1)
+                width = glyphWidth;
             if (pair != 0)
                 continue;
             if (setcchar(&cc, wch, attrs, newPair, nullptr) == ERR)
@@ -811,6 +861,8 @@ void LogoInterfaceCurses::recolorDefaultCells(int newBg)
             mvwadd_wch(stdscr, y, x, &cc);
         }
     }
+
+    scrollok(stdscr, TRUE);
     wmove(stdscr, y0, x0);
 }
 
@@ -829,14 +881,15 @@ void LogoInterfaceCurses::setTextColor(const QColor &foregroundColor, const QCol
         if (has_colors())
         {
             rebindPairsToBackground(bgNum_);
+            bgPair_ = ensurePair(-1);
             recolorDefaultCells(bgNum_);
-            bkgdset(COLOR_PAIR(ensurePair(-1, bgNum_)) | static_cast<chtype>(' '));
+            bkgdset(COLOR_PAIR(bgPair_) | static_cast<chtype>(' '));
         }
     }
 
     if (has_colors())
     {
-        currentPair_ = ensurePair(fgNum_, bgNum_);
+        currentPair_ = ensurePair(fgNum_);
         applyCurrentPair();
         applyStandoutAttr();
         refresh();
