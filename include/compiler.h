@@ -283,6 +283,19 @@ class Compiler
     // Run ERRACT if not; a usable color from it replaces the input.
     llvm::Value *generateColorFromDatum(ASTNode *parent, llvm::Value *src);
 
+    // Palette index: exact integer at or above lowerLimit and below palette size (in C).
+    // src is a double. Run ERRACT if not; a usable index from it replaces the input.
+    llvm::Value *generateColorIndexFromDouble(ASTNode *parent, llvm::Value *src, double lowerLimit);
+
+    // PENPAINT / PENERASE / PENREVERSE: pen down, then setPenMode.
+    llvm::Value *generateSetPenMode(const DatumPtr &node, int32_t mode);
+
+    // WRAP / WINDOW / FENCE.
+    llvm::Value *generateSetTurtleMode(const DatumPtr &node, int32_t mode);
+
+    // TEXTSCREEN / FULLSCREEN / SPLITSCREEN.
+    llvm::Value *generateSetScreenMode(const DatumPtr &node, int32_t mode);
+
     // Common methodology for the generate*FromDatum() methods.
     llvm::Value *generateFromDatum(Datum::DatumType t, ASTNode *parent, llvm::Value *src);
 

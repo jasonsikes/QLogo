@@ -28,11 +28,41 @@ using namespace llvm::orc;
 
 Value *Compiler::generateColorFromDatum(ASTNode *parent, Value *src)
 {
-    auto validator = [this](Value *candidate) {
-        Value *isValid = generateCallExtern(isValidColor, PaAddr(candidate));
-        return scaff_->builder_.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isValidColor"));
-    };
-    return generateValidationDatum(parent, src, validator);
+    return generateValidationDatum(parent, src, [this](Value *candidate) {
+        return generateCallExtern(isValidColor, PaAddr(candidate));
+    });
+}
+
+Value *Compiler::generateColorIndexFromDouble(ASTNode *parent, Value *src, double lowerLimit)
+{
+    return generateValidationDouble(parent, src, [this, lowerLimit](Value *candidate) {
+        return generateCallExtern(isColorIndexGood, PaDouble(candidate), PaDouble(CoDouble(lowerLimit)));
+    });
+}
+
+Value *Compiler::generateSetPenMode(const DatumPtr &node, int32_t mode)
+{
+    CHECK_GRAPHICS_MODE
+    CallSite cs(this, node, TypeNothing);
+    generateCallExtern(setPenIsDown, PaBool(CoBool(true)));
+    generateCallExtern(setPenMode, PaInt32(CoInt32(mode)));
+    return cs.ret(generateVoidRetval(node));
+}
+
+Value *Compiler::generateSetTurtleMode(const DatumPtr &node, int32_t mode)
+{
+    CHECK_GRAPHICS_MODE
+    CallSite cs(this, node, TypeNothing);
+    generateCallExtern(setTurtleMode, PaInt32(CoInt32(mode)));
+    return cs.ret(generateVoidRetval(node));
+}
+
+Value *Compiler::generateSetScreenMode(const DatumPtr &node, int32_t mode)
+{
+    CHECK_GRAPHICS_MODE
+    CallSite cs(this, node, TypeNothing);
+    generateCallExtern(setScreenMode, PaInt32(CoInt32(mode)));
+    return cs.ret(generateVoidRetval(node));
 }
 
 // TURTLE MOTION
@@ -378,10 +408,7 @@ COD***/
 // CMD WRAP 0 0 0 n
 Value *Compiler::genWrap(const DatumPtr &node, TypeMask expected)
 {
-    CHECK_GRAPHICS_MODE
-    CallSite cs(this, node, TypeNothing);
-    generateCallExtern(setTurtleMode, PaInt32(CoInt32(turtleWrap)));
-    return cs.ret(generateVoidRetval(node));
+    return generateSetTurtleMode(node, turtleWrap);
 }
 /***DOC WINDOW
 WINDOW
@@ -397,10 +424,7 @@ COD***/
 // CMD WINDOW 0 0 0 n
 Value *Compiler::genWindow(const DatumPtr &node, TypeMask expected)
 {
-    CHECK_GRAPHICS_MODE
-    CallSite cs(this, node, TypeNothing);
-    generateCallExtern(setTurtleMode, PaInt32(CoInt32(turtleWindow)));
-    return cs.ret(generateVoidRetval(node));
+    return generateSetTurtleMode(node, turtleWindow);
 }
 
 /***DOC FENCE
@@ -415,10 +439,7 @@ COD***/
 // CMD FENCE 0 0 0 n
 Value *Compiler::genFence(const DatumPtr &node, TypeMask expected)
 {
-    CHECK_GRAPHICS_MODE
-    CallSite cs(this, node, TypeNothing);
-    generateCallExtern(setTurtleMode, PaInt32(CoInt32(turtleFence)));
-    return cs.ret(generateVoidRetval(node));
+    return generateSetTurtleMode(node, turtleFence);
 }
 
 /***DOC BOUNDS
@@ -549,10 +570,7 @@ COD***/
 // CMD TS 0 0 0 n
 Value *Compiler::genTextscreen(const DatumPtr &node, TypeMask expected)
 {
-    CHECK_GRAPHICS_MODE
-    CallSite cs(this, node, TypeNothing);
-    generateCallExtern(setScreenMode, PaInt32(CoInt32(textScreenMode)));
-    return cs.ret(generateVoidRetval(node));
+    return generateSetScreenMode(node, textScreenMode);
 }
 /***DOC FULLSCREEN FS
 FULLSCREEN
@@ -571,10 +589,7 @@ COD***/
 // CMD FS 0 0 0 n
 Value *Compiler::genFullscreen(const DatumPtr &node, TypeMask expected)
 {
-    CHECK_GRAPHICS_MODE
-    CallSite cs(this, node, TypeNothing);
-    generateCallExtern(setScreenMode, PaInt32(CoInt32(fullScreenMode)));
-    return cs.ret(generateVoidRetval(node));
+    return generateSetScreenMode(node, fullScreenMode);
 }
 
 /***DOC SPLITSCREEN SS
@@ -591,10 +606,7 @@ COD***/
 // CMD SS 0 0 0 n
 Value *Compiler::genSplitscreen(const DatumPtr &node, TypeMask expected)
 {
-    CHECK_GRAPHICS_MODE
-    CallSite cs(this, node, TypeNothing);
-    generateCallExtern(setScreenMode, PaInt32(CoInt32(splitScreenMode)));
-    return cs.ret(generateVoidRetval(node));
+    return generateSetScreenMode(node, splitScreenMode);
 }
 
 /***DOC SETSCRUNCH
@@ -768,11 +780,7 @@ COD***/
 // CMD PPT 0 0 0 n
 Value *Compiler::genPenpaint(const DatumPtr &node, TypeMask expected)
 {
-    CHECK_GRAPHICS_MODE
-    CallSite cs(this, node, TypeNothing);
-    generateCallExtern(setPenIsDown, PaBool(CoBool(true)));
-    generateCallExtern(setPenMode, PaInt32(CoInt32(static_cast<int32_t>(penModePaint))));
-    return cs.ret(generateVoidRetval(node));
+    return generateSetPenMode(node, penModePaint);
 }
 /***DOC PENERASE PE
 PENERASE
@@ -785,11 +793,7 @@ COD***/
 // CMD PE 0 0 0 n
 Value *Compiler::genPenerase(const DatumPtr &node, TypeMask expected)
 {
-    CHECK_GRAPHICS_MODE
-    CallSite cs(this, node, TypeNothing);
-    generateCallExtern(setPenIsDown, PaBool(CoBool(true)));
-    generateCallExtern(setPenMode, PaInt32(CoInt32(static_cast<int32_t>(penModeErase))));
-    return cs.ret(generateVoidRetval(node));
+    return generateSetPenMode(node, penModeErase);
 }
 
 /***DOC PENREVERSE PX
@@ -804,11 +808,7 @@ COD***/
 // CMD PX 0 0 0 n
 Value *Compiler::genPenreverse(const DatumPtr &node, TypeMask expected)
 {
-    CHECK_GRAPHICS_MODE
-    CallSite cs(this, node, TypeNothing);
-    generateCallExtern(setPenIsDown, PaBool(CoBool(true)));
-    generateCallExtern(setPenMode, PaInt32(CoInt32(static_cast<int32_t>(penModeReverse))));
-    return cs.ret(generateVoidRetval(node));
+    return generateSetPenMode(node, penModeReverse);
 }
 
 /***DOC SETPENCOLOR SETPC
@@ -883,14 +883,11 @@ COD***/
 Value *Compiler::genSetpalette(const DatumPtr &node, TypeMask expected)
 {
     CHECK_GRAPHICS_MODE
-    CallSite cs(this, node, TypeDatum, TypeDatum);
+    CallSite cs(this, node, TypeReal, TypeDatum);
     auto [colorIndex, color] = cs.children();
-    colorIndex = generateValidationDatum(node.astnodeValue(), colorIndex, [this](Value *candidate) {
-        Value *isGood = generateCallExtern(isColorIndexGood, PaAddr(candidate), PaDouble(CoDouble(8.0)));
-        return scaff_->builder_.CreateICmpEQ(isGood, CoBool(true), DBG_NAME("isColorIndexGood"));
-    });
+    colorIndex = generateColorIndexFromDouble(node.astnodeValue(), colorIndex, 8.0);
     color = generateColorFromDatum(node.astnodeValue(), color);
-    generateCallExtern(setPalette, PaAddr(colorIndex), PaAddr(color));
+    generateCallExtern(setPalette, PaDouble(colorIndex), PaAddr(color));
     return cs.ret(generateVoidRetval(node));
 }
 /***DOC SETPENSIZE
@@ -989,13 +986,10 @@ COD***/
 Value *Compiler::genPalette(const DatumPtr &node, TypeMask expected)
 {
     CHECK_GRAPHICS_MODE
-    CallSite cs(this, node, TypeDatum);
+    CallSite cs(this, node, TypeReal);
     Value *colorIndex = cs.child(0);
-    colorIndex = generateValidationDatum(node.astnodeValue(), colorIndex, [this](Value *candidate) {
-        Value *isGood = generateCallExtern(isColorIndexGood, PaAddr(candidate), PaDouble(CoDouble(0.0)));
-        return scaff_->builder_.CreateICmpEQ(isGood, CoBool(true), DBG_NAME("isColorIndexGood"));
-    });
-    return cs.ret(generateCallExtern(getPaletteColor, PaAddr(scaff_->evaluator_), PaAddr(colorIndex)));
+    colorIndex = generateColorIndexFromDouble(node.astnodeValue(), colorIndex, 0.0);
+    return cs.ret(generateCallExtern(getPaletteColor, PaAddr(scaff_->evaluator_), PaDouble(colorIndex)));
 }
 /***DOC PENSIZE
 PENSIZE

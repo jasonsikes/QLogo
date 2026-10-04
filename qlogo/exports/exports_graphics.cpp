@@ -25,6 +25,7 @@
 #include "compiler_types.h"
 #include "workspace/callframe.h"
 
+#include <cmath>
 #include <QFile>
 
 /// @brief Convert a QColor to a list of RGB values on a scale of 0 to 100.
@@ -345,26 +346,20 @@ EXPORTC addr_t getAllColors(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
-EXPORTC bool isColorIndexGood(addr_t colorIndexAddr, double lowerLimit)
+EXPORTC bool isColorIndexGood(double colorIndex, double lowerLimit)
 {
-    auto *d = reinterpret_cast<Datum *>(colorIndexAddr);
-    if (!d->isWord())
-        return false;
-    auto *w = static_cast<Word *>(d);
-    double colorIndex = w->numberValue();
-
-    return (w->numberIsValid) && (colorIndex == floor(colorIndex)) && (colorIndex >= lowerLimit) &&
+    return (colorIndex == std::floor(colorIndex)) && (colorIndex >= lowerLimit) &&
            (colorIndex < Kernel::get().palette_.size());
 }
 
-EXPORTC bool setPalette(addr_t colorIndexAddr, addr_t colorAddr)
+EXPORTC bool setPalette(double colorIndex, addr_t colorAddr)
 {
-    auto colorIndex = static_cast<int>((reinterpret_cast<Word *>(colorIndexAddr))->numberValue());
+    auto index = static_cast<int>(colorIndex);
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
     if (!Kernel::get().colorFromDatumPtr(color, DatumPtr(d)))
         return false;
-    Kernel::get().palette_[colorIndex] = color;
+    Kernel::get().palette_[index] = color;
     return true;
 }
 
@@ -419,11 +414,11 @@ EXPORTC addr_t getPenColor(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t getPaletteColor(addr_t eAddr, addr_t colorIndexAddr)
+EXPORTC addr_t getPaletteColor(addr_t eAddr, double colorIndex)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto colorIndex = static_cast<int>((reinterpret_cast<Word *>(colorIndexAddr))->numberValue());
-    const QColor &color = Kernel::get().palette_[colorIndex];
+    auto index = static_cast<int>(colorIndex);
+    const QColor &color = Kernel::get().palette_[index];
     List *retval = listFromColor(color);
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
