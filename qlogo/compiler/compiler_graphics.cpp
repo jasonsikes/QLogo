@@ -52,7 +52,8 @@ Value *Compiler::genForward(const DatumPtr &node, TypeMask expected)
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeReal);
     Value *distance = cs.child(0);
-    return cs.ret(generateCallExtern(moveTurtleForward, PaAddr(CoAddr(node.astnodeValue())), PaDouble(distance)));
+    return cs.ret(generateNotFlowControl(
+        generateCallExtern(moveTurtleForward, PaAddr(CoAddr(node.astnodeValue())), PaDouble(distance))));
 }
 
 /***DOC BACK BK
@@ -72,7 +73,8 @@ Value *Compiler::genBack(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeReal);
     Value *reverseDistance = cs.child(0);
     Value *distance = scaff_->builder_.CreateFNeg(reverseDistance, DBG_NAME("negativeDistance"));
-    return cs.ret(generateCallExtern(moveTurtleForward, PaAddr(CoAddr(node.astnodeValue())), PaDouble(distance)));
+    return cs.ret(generateNotFlowControl(
+        generateCallExtern(moveTurtleForward, PaAddr(CoAddr(node.astnodeValue())), PaDouble(distance))));
 }
 /***DOC LEFT LT
 LEFT degrees
@@ -125,7 +127,8 @@ Value *Compiler::genSetxy(const DatumPtr &node, TypeMask expected)
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeReal, TypeReal);
     auto [x, y] = cs.children();
-    return cs.ret(generateCallExtern(setTurtleXY, PaAddr(CoAddr(node.astnodeValue())), PaDouble(x), PaDouble(y)));
+    return cs.ret(generateNotFlowControl(
+        generateCallExtern(setTurtleXY, PaAddr(CoAddr(node.astnodeValue())), PaDouble(x), PaDouble(y))));
 }
 /***DOC SETX
 SETX xcor
@@ -141,7 +144,8 @@ Value *Compiler::genSetx(const DatumPtr &node, TypeMask expected)
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeReal);
     Value *x = cs.child(0);
-    return cs.ret(generateCallExtern(setTurtleX, PaAddr(CoAddr(node.astnodeValue())), PaDouble(x)));
+    return cs.ret(generateNotFlowControl(
+        generateCallExtern(setTurtleX, PaAddr(CoAddr(node.astnodeValue())), PaDouble(x))));
 }
 /***DOC SETY
 SETY ycor
@@ -157,7 +161,8 @@ Value *Compiler::genSety(const DatumPtr &node, TypeMask expected)
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeReal);
     Value *y = cs.child(0);
-    return cs.ret(generateCallExtern(setTurtleY, PaAddr(CoAddr(node.astnodeValue())), PaDouble(y)));
+    return cs.ret(generateNotFlowControl(
+        generateCallExtern(setTurtleY, PaAddr(CoAddr(node.astnodeValue())), PaDouble(y))));
 }
 /***DOC SETPOS
 SETPOS pos
@@ -172,7 +177,8 @@ Value *Compiler::genSetpos(const DatumPtr &node, TypeMask expected)
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeDatum);
     AllocaInst *posAry = generateNumberAryFromDatum(node.astnodeValue(), cs.child(0), 2);
-    return cs.ret(generateCallExtern(setTurtlePos, PaAddr(CoAddr(node.astnodeValue())), PaAddr(posAry)));
+    return cs.ret(generateNotFlowControl(
+        generateCallExtern(setTurtlePos, PaAddr(CoAddr(node.astnodeValue())), PaAddr(posAry))));
 }
 /***DOC SETHEADING SETH
 SETHEADING degrees
