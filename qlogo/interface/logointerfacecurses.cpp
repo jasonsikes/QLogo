@@ -280,26 +280,31 @@ LogoInterfaceCurses::~LogoInterfaceCurses()
     closeInterface();
 }
 
-void LogoInterfaceCurses::initialize()
+bool LogoInterfaceCurses::initialize()
 {
     if (cursesActive_)
-        return;
+        return true;
 
+    // logo_main.cpp checks this before choosing the TUI; kept as a guard for
+    // any other caller, since curses on a pipe would misbehave badly.
     if (!stdioIsInteractive())
     {
         fprintf(stderr, "qlogo: --tui requires an interactive terminal\n");
-        Config::get().setMainLogoInterface(nullptr);
-        exit(1);
+        return false;
     }
 
     setlocale(LC_CTYPE, "");
 
-    if (initscr() == nullptr)
+    // initscr() exits the process itself when the terminal cannot be opened;
+    // newterm() reports failure instead, so the caller can unwind normally.
+    screen_ = newterm(nullptr, stdout, stdin);
+    if (screen_ == nullptr)
     {
-        fprintf(stderr, "qlogo: failed to initialize ncurses\n");
-        Config::get().setMainLogoInterface(nullptr);
-        exit(1);
+        const char *term = getenv("TERM");
+        fprintf(stderr, "qlogo: cannot start the text interface on terminal type \"%s\"\n", term ? term : "");
+        return false;
     }
+    def_prog_mode();
 
     cursesActive_ = true;
     cbreak();
@@ -314,6 +319,7 @@ void LogoInterfaceCurses::initialize()
         use_default_colors();
     }
     refresh();
+    return true;
 }
 
 void LogoInterfaceCurses::closeInterface()
@@ -321,6 +327,8 @@ void LogoInterfaceCurses::closeInterface()
     if (!cursesActive_)
         return;
     endwin();
+    delscreen(screen_);
+    screen_ = nullptr;
     cursesActive_ = false;
 }
 

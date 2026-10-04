@@ -92,10 +92,14 @@ class LogoInterface : public QObject
     static void noteSignal(SignalsEnum_t incoming);
 
     /// @brief Initializes the interface.
-    /// @note The base method does nothing. Subclasses can override this method to perform
-    /// initialization tasks.
-    virtual void initialize()
+    /// @return True if the interface is ready; false if it could not start, in
+    /// which case it has already reported the reason and the caller should exit
+    /// normally with a failure code.
+    /// @note The base method does nothing and succeeds. Subclasses can override
+    /// this method to perform initialization tasks.
+    virtual bool initialize()
     {
+        return true;
     }
 
     /// @brief Reads a line of input from the user, with a prompt.

@@ -25,6 +25,8 @@
 #include <QList>
 #include <cwchar>
 
+struct screen; // ncurses SCREEN, kept opaque so this header does not pull in ncurses.h
+
 /// @brief The LogoInterfaceCurses class is a LogoInterface that talks to the
 /// terminal through ncursesw.
 ///
@@ -34,6 +36,7 @@
 class LogoInterfaceCurses : public LogoInterface
 {
     bool cursesActive_ = false;
+    struct screen *screen_ = nullptr;
     QColor foregroundColor_;
     QColor backgroundColor_;
     int fgNum_ = -1;
@@ -96,7 +99,10 @@ class LogoInterfaceCurses : public LogoInterface
     ~LogoInterfaceCurses() override;
 
     /// @brief Starts ncurses and color support.
-    void initialize() override;
+    /// @return False, after printing a message to stderr, if stdio is not a
+    /// terminal or the terminal type cannot be opened. Nothing is left running
+    /// in that case, so the caller can tear down normally.
+    bool initialize() override;
 
     /// @brief Tears down ncurses and restores the terminal.
     void closeInterface() override;

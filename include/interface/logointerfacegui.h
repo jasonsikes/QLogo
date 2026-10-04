@@ -91,7 +91,8 @@ class LogoInterfaceGUI : public LogoInterface
     void closeInterface() override;
 
     /// @brief Initializes the GUI interface.
-    void initialize() override;
+    /// @return Always true.
+    bool initialize() override;
 
     /// @brief Prints a string to the console.
     /// @param s The string to print.

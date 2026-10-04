@@ -1715,7 +1715,8 @@ bool Kernel::takeErractMessagePending()
 
 int Kernel::run()
 {
-    Config::get().mainInterface()->initialize();
+    if (!Config::get().mainInterface()->initialize())
+        return 1;
 
     if (!Config::get().hasGUI_)
         LogoInterface::initSignals();
