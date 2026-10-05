@@ -389,16 +389,7 @@ COD***/
 // CMD LOCAL 1 1 -1 n
 Value *Compiler::genLocal(const DatumPtr &node, TypeMask expected)
 {
-
-    CallSite cs(this, node, TypeDatum);
-    AllocaInst *ary = cs.allocaAry(DBG_NAME("localAry"));
-    Value *retval = generateCallExtern(
-        stdLocal,
-        PaAddr(scaff_->evaluator_),
-        PaAddr(CoAddr(node.astnodeValue())),
-        PaAddr(ary),
-        PaInt32(ary->getArraySize()));
-    return cs.ret(generateNotFlowControl(retval));
+    return generateLocalGlobal(node, expected, stdLocal, "stdLocal", DBG_NAME("localAry"));
 }
 
 /***DOC GLOBAL
@@ -419,15 +410,30 @@ COD***/
 // CMD GLOBAL 1 1 -1 n
 Value *Compiler::genGlobal(const DatumPtr &node, TypeMask expected)
 {
+    return generateLocalGlobal(node, expected, stdGlobal, "stdGlobal", DBG_NAME("globalAry"));
+}
 
+Value *Compiler::generateLocalGlobal(const DatumPtr &node, TypeMask expected,
+                                     addr_t (*fn)(addr_t, addr_t, addr_t, uint32_t),
+                                     const std::string &fnName, const std::string &aryName)
+{
     CallSite cs(this, node, TypeDatum);
-    AllocaInst *ary = cs.allocaAry(DBG_NAME("globalAry"));
-    Value *retval = generateCallExtern(
-        stdGlobal,
-        PaAddr(scaff_->evaluator_),
-        PaAddr(CoAddr(node.astnodeValue())),
-        PaAddr(ary),
-        PaInt32(ary->getArraySize()));
+    std::vector<Value *> names;
+    names.reserve(cs.count());
+    if (cs.count() == 1)
+        names.push_back(generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), cs.child(0)));
+    else
+        for (Value *child : cs.children())
+            names.push_back(generateWordFromDatum(node.astnodeValue(), child));
+
+    AllocaInst *ary = generateAllocaAry(names, aryName);
+    Value *retval = generateCallExternTyped(
+        fn,
+        fnName,
+        {PaAddr(scaff_->evaluator_),
+         PaAddr(CoAddr(node.astnodeValue())),
+         PaAddr(ary),
+         PaInt32(ary->getArraySize())});
     return cs.ret(generateNotFlowControl(retval));
 }
 

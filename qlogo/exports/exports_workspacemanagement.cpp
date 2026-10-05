@@ -221,6 +221,8 @@ namespace
 {
 
 /// Words, or one list of words. A list combined with other inputs is rejected.
+/// The compiler rejects a top-level array, and rejects a non-word when there is
+/// more than one input. A list of names may still contain a non-word member.
 /// @return Key-form names. Throws before returning if any input is not a word.
 QStringList varNamesFromInputs(const DatumPtr &who, Datum **inputs, uint32_t count)
 {
@@ -254,11 +256,12 @@ QStringList varNamesFromInputs(const DatumPtr &who, Datum **inputs, uint32_t cou
 
 /// GLOBAL: create each missing variable with no value.
 /// A variable that already exists is left unchanged. Scope comes from LOCAL.
+/// The compiler rejects a non-word, or (with one input) a non-word-or-list.
 /// @param eAddr a pointer to the Evaluator object
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param inputsAddr a pointer to an array of input Datums
 /// @param count the number of inputs
-/// @return the owning ASTNode, or an Error if an input is not a word or a list of words.
+/// @return the owning ASTNode, or an Error if a list of names has a non-word member.
 EXPORTC addr_t stdGlobal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, uint32_t count)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
@@ -282,11 +285,12 @@ EXPORTC addr_t stdGlobal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, ui
 }
 
 /// LOCAL: make each name local to the current procedure, with no value.
+/// The compiler rejects a non-word, or (with one input) a non-word-or-list.
 /// @param eAddr a pointer to the Evaluator object
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param inputsAddr a pointer to an array of input Datums
 /// @param count the number of inputs
-/// @return the owning ASTNode, or an Error if an input is not a word or a list of words.
+/// @return the owning ASTNode, or an Error if a list of names has a non-word member.
 EXPORTC addr_t stdLocal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, uint32_t count)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);

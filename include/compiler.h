@@ -449,6 +449,11 @@ class Compiler
     llvm::Value *generateEraseUnburied(const DatumPtr &node, TypeMask expected,
                                        bool procedures, bool variables, bool plists);
 
+    // generate the common code for LOCAL and GLOBAL.
+    llvm::Value *generateLocalGlobal(const DatumPtr &node, TypeMask expected,
+                                     addr_t (*fn)(addr_t, addr_t, addr_t, uint32_t),
+                                     const std::string &fnName, const std::string &aryName);
+
     // generate the common code for FPUT and LPUT.
     llvm::Value *generateFputlput(const DatumPtr &node, TypeMask expected, bool isLput);
 
