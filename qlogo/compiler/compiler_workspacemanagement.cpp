@@ -1082,19 +1082,14 @@ BURIED? contentslist
     BURIEDP [[] [] [PROPLIST]].
 
 COD***/
-// CMD BURIEDP 1 1 1 d
-// CMD BURIED? 1 1 1 d
+// CMD BURIEDP 1 1 1 b
+// CMD BURIED? 1 1 1 b
 Value *Compiler::genBuriedp(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *contents = generateContentsListFromDatum(node.astnodeValue(), cs.child(0));
-    Value *retval = generateCallExtern(
-        stdBuriedp,
-        PaAddr(scaff_->evaluator_),
-        PaAddr(CoAddr(node.astnodeValue())),
-        PaAddr(contents));
-    return cs.ret(generateNotFlowControl(retval));
+    Value *contents = generateNamedContentsListFromDatum(node.astnodeValue(), cs.child(0));
+    return cs.ret(generateCallExtern(stdBuriedp, PaAddr(contents)));
 }
 
 /***DOC TRACEDP TRACED?
@@ -1109,19 +1104,14 @@ TRACED? contentslist
     TRACEDP [[] [] [PROPLIST]].
 
 COD***/
-// CMD TRACEDP 1 1 1 d
-// CMD TRACED? 1 1 1 d
+// CMD TRACEDP 1 1 1 b
+// CMD TRACED? 1 1 1 b
 Value *Compiler::genTracedp(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *contents = generateContentsListFromDatum(node.astnodeValue(), cs.child(0));
-    Value *retval = generateCallExtern(
-        stdTracedp,
-        PaAddr(scaff_->evaluator_),
-        PaAddr(CoAddr(node.astnodeValue())),
-        PaAddr(contents));
-    return cs.ret(generateNotFlowControl(retval));
+    Value *contents = generateNamedContentsListFromDatum(node.astnodeValue(), cs.child(0));
+    return cs.ret(generateCallExtern(stdTracedp, PaAddr(contents)));
 }
 
 /***DOC STEPPEDP STEPPED?
@@ -1136,19 +1126,14 @@ STEPPED? contentslist
     STEPPEDP [[] [] [PROPLIST]].
 
 COD***/
-// CMD STEPPEDP 1 1 1 d
-// CMD STEPPED? 1 1 1 d
+// CMD STEPPEDP 1 1 1 b
+// CMD STEPPED? 1 1 1 b
 Value *Compiler::genSteppedp(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *contents = generateContentsListFromDatum(node.astnodeValue(), cs.child(0));
-    Value *retval = generateCallExtern(
-        stdSteppedp,
-        PaAddr(scaff_->evaluator_),
-        PaAddr(CoAddr(node.astnodeValue())),
-        PaAddr(contents));
-    return cs.ret(generateNotFlowControl(retval));
+    Value *contents = generateNamedContentsListFromDatum(node.astnodeValue(), cs.child(0));
+    return cs.ret(generateCallExtern(stdSteppedp, PaAddr(contents)));
 }
 
 /***DOC SAVE

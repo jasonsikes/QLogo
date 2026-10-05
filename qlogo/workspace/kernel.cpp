@@ -695,11 +695,14 @@ namespace
 /// when @p sublists is null. A word is one procedure name. A list of words is
 /// procedure names. A nested list of words advances to the next of the three
 /// slots. A fourth slot, an array, or a nested non-word is false.
-bool walkContentsList(const DatumPtr &source, ListBuilder **sublists)
+/// @p nameCount, when non-null, is incremented once per name.
+bool walkContentsList(const DatumPtr &source, ListBuilder **sublists, unsigned *nameCount = nullptr)
 {
-    auto take = [sublists](unsigned level, const DatumPtr &name) {
+    auto take = [sublists, nameCount](unsigned level, const DatumPtr &name) {
         if (sublists != nullptr)
             sublists[level]->append(name);
+        if (nameCount != nullptr)
+            ++*nameCount;
     };
 
     if (source.isWord())
@@ -746,6 +749,12 @@ bool walkContentsList(const DatumPtr &source, ListBuilder **sublists)
 bool Kernel::isContentsList(const DatumPtr &source) const
 {
     return walkContentsList(source, nullptr);
+}
+
+bool Kernel::isNamedContentsList(const DatumPtr &source) const
+{
+    unsigned names = 0;
+    return walkContentsList(source, nullptr, &names) && names > 0;
 }
 
 DatumPtr Kernel::contentsListFromDatum(const DatumPtr &who, const DatumPtr &source) const

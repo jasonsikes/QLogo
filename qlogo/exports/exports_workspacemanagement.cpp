@@ -448,6 +448,14 @@ EXPORTC bool isContentsList(addr_t datumAddr)
     return Kernel::get().isContentsList(DatumPtr(d));
 }
 
+/// True if the datum is a contents list that names at least one thing. Empty
+/// ~[]~ / ~[[][]]~ / ~[[][][]]~ are false. The compiler uses this as one ERRACT trip.
+EXPORTC bool isNamedContentsList(addr_t datumAddr)
+{
+    auto *d = reinterpret_cast<Datum *>(datumAddr);
+    return Kernel::get().isNamedContentsList(DatumPtr(d));
+}
+
 /// True if the datum is a DEFINE procedure name: a word that is not a number
 /// and does not start with '"' or ':'. The compiler uses this as one ERRACT trip.
 EXPORTC bool isDefinableProcName(addr_t nameAddr)
@@ -530,42 +538,44 @@ addr_t markWorkspace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr, Kern
 }
 
 /// The first word in @p names, and whether that name carries @p mark.
-/// An empty list sets @p found false. A list or array is rejected.
-/// Later names are not examined.
-bool queryFirstName(Kernel::NameMark mark, Kernel::NameKind kind, Datum *names, const DatumPtr &who, bool *found)
+/// An empty list sets @p found false. Later names are not examined.
+/// The compiler has already required a named contents list of words.
+bool queryFirstName(Kernel::NameMark mark, Kernel::NameKind kind, Datum *names, bool *found)
 {
     *found = false;
+    Q_ASSERT(names->isList());
     if (!names->isList())
-    {
-        if (!names->isWord())
-            throw FCError::doesntLike(who, DatumPtr(names));
-        *found = true;
-        return Kernel::get().containsName(mark, kind, names->toString(Datum::ToStringFlags_Key));
-    }
+        return false;
 
     ListIterator iter = names->listValue()->newIterator();
     if (!iter.elementExists())
         return false;
 
     DatumPtr member = iter.element();
+    Q_ASSERT(member.isWord());
     if (!member.isWord())
-        throw FCError::doesntLike(who, member);
+        return false;
     *found = true;
     return Kernel::get().containsName(mark, kind, member.wordValue()->toString(Datum::ToStringFlags_Key));
 }
 
 /// TRUE if the first procedure, variable, or property-list name in @p input
-/// carries @p mark. An input that names nothing is rejected. See
-/// Kernel::contentsListFromDatum for which part of a contents list supplies
-/// that first name. The compiler rejects a non-contents-list before this runs.
-bool queryContents(Kernel::NameMark mark, const DatumPtr &who, Datum *input)
+/// carries @p mark. The compiler rejects a non-contents-list and an input that
+/// names nothing before this runs.
+bool queryContents(Kernel::NameMark mark, Datum *input)
 {
-    DatumPtr three = Kernel::get().contentsListFromDatum(who, DatumPtr(input));
+    DatumPtr src(input);
+    if (!Kernel::get().isNamedContentsList(src))
+    {
+        Q_ASSERT(false);
+        return false;
+    }
+    DatumPtr three = Kernel::get().contentsListFromDatum(nothing(), src);
     bool found = false;
     bool marked = false;
     auto consider = [&](Kernel::NameKind kind, Datum *names) {
         if (!found)
-            marked = queryFirstName(mark, kind, names, who, &found);
+            marked = queryFirstName(mark, kind, names, &found);
     };
 
     List *contents = three.listValue();
@@ -574,8 +584,7 @@ bool queryContents(Kernel::NameMark mark, const DatumPtr &who, Datum *input)
     consider(Kernel::NameKind::Variables, rest->head.datumValue());
     rest = rest->tail.listValue();
     consider(Kernel::NameKind::PropertyLists, rest->head.datumValue());
-    if (!found)
-        throw FCError::doesntLike(who, DatumPtr(input));
+    Q_ASSERT(found);
     return marked;
 }
 
@@ -617,23 +626,10 @@ DatumPtr contentsOfMark(Kernel::NameMark mark)
     return contents.finishedList();
 }
 
-addr_t queryWorkspace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr, Kernel::NameMark mark)
+bool queryWorkspace(addr_t contentsAddr, Kernel::NameMark mark)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *contents = reinterpret_cast<Datum *>(contentsAddr);
-    try
-    {
-        bool marked = queryContents(mark, node->nodeName_, contents);
-        auto *word = new Word(marked ? QObject::tr("true") : QObject::tr("false"));
-        e->watch(word);
-        return reinterpret_cast<addr_t>(word);
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
+    return queryContents(mark, contents);
 }
 
 } // namespace
@@ -945,36 +941,30 @@ EXPORTC addr_t stdNodes(addr_t eAddr)
 }
 
 /// BURIEDP: TRUE if the first named procedure, variable, or property list is buried.
-/// Only that first name is tested. An input that names nothing is an error.
-/// @param eAddr a pointer to the Evaluator object
-/// @param astnodeAddr a pointer to the owning ASTNode object
-/// @param contentsAddr a word or a contents list
-/// @return the word TRUE or FALSE, or an Error if the input names nothing or a name is not a word.
-EXPORTC addr_t stdBuriedp(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+/// Only that first name is tested. The compiler rejects an input that names nothing.
+/// @param contentsAddr a word or a named contents list
+/// @return true if that first name is buried.
+EXPORTC bool stdBuriedp(addr_t contentsAddr)
 {
-    return queryWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Buried);
+    return queryWorkspace(contentsAddr, Kernel::NameMark::Buried);
 }
 
 /// TRACEDP: TRUE if the first named procedure, variable, or property list is traced.
-/// Only that first name is tested. An input that names nothing is an error.
-/// @param eAddr a pointer to the Evaluator object
-/// @param astnodeAddr a pointer to the owning ASTNode object
-/// @param contentsAddr a word or a contents list
-/// @return the word TRUE or FALSE, or an Error if the input names nothing or a name is not a word.
-EXPORTC addr_t stdTracedp(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+/// Only that first name is tested. The compiler rejects an input that names nothing.
+/// @param contentsAddr a word or a named contents list
+/// @return true if that first name is traced.
+EXPORTC bool stdTracedp(addr_t contentsAddr)
 {
-    return queryWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Traced);
+    return queryWorkspace(contentsAddr, Kernel::NameMark::Traced);
 }
 
 /// STEPPEDP: TRUE if the first named procedure, variable, or property list is stepped.
-/// Only that first name is tested. An input that names nothing is an error.
-/// @param eAddr a pointer to the Evaluator object
-/// @param astnodeAddr a pointer to the owning ASTNode object
-/// @param contentsAddr a word or a contents list
-/// @return the word TRUE or FALSE, or an Error if the input names nothing or a name is not a word.
-EXPORTC addr_t stdSteppedp(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+/// Only that first name is tested. The compiler rejects an input that names nothing.
+/// @param contentsAddr a word or a named contents list
+/// @return true if that first name is stepped.
+EXPORTC bool stdSteppedp(addr_t contentsAddr)
 {
-    return queryWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Stepped);
+    return queryWorkspace(contentsAddr, Kernel::NameMark::Stepped);
 }
 
 /// ARITY: output the minimum, default, and maximum input counts of a procedure.

@@ -216,6 +216,12 @@ class Kernel
     /// @return False for an array, a nested non-word, or a fourth sublist.
     bool isContentsList(const DatumPtr &source) const;
 
+    /// @brief True if @p source is a contents list that names at least one thing.
+    /// @param source Same grammar as isContentsList.
+    /// @return False if @p source is not a contents list, or if every slot is empty
+    /// (~[]~, ~[[][]]~, ~[[][][]]~).
+    bool isNamedContentsList(const DatumPtr &source) const;
+
     /// @brief Parse a contents-list input into three lists.
     /// @param who The primitive that rejected the input, used in doesn't-like.
     /// @param source A word (one procedure name), a list of words (procedure

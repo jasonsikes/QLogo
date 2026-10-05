@@ -315,6 +315,10 @@ class Compiler
     // Run ERRACT if not; a usable contents list from it replaces the input.
     llvm::Value *generateContentsListFromDatum(ASTNode *parent, llvm::Value *src);
 
+    // Contents list that names at least one procedure, variable, or property list.
+    // Run ERRACT if not; a usable named contents list from it replaces the input.
+    llvm::Value *generateNamedContentsListFromDatum(ASTNode *parent, llvm::Value *src);
+
     // Word that is not a number and does not start with '"' or ':'.
     // Run ERRACT if not; a usable name from it replaces the input.
     llvm::Value *generateDefinableProcNameFromDatum(ASTNode *parent, llvm::Value *src);

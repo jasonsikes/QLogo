@@ -790,6 +790,13 @@ Value *Compiler::generateContentsListFromDatum(ASTNode *parent, Value *src)
     });
 }
 
+Value *Compiler::generateNamedContentsListFromDatum(ASTNode *parent, Value *src)
+{
+    return generateValidationDatum(parent, src, [this](Value *candidate) {
+        return generateCallExtern(isNamedContentsList, PaAddr(candidate));
+    });
+}
+
 Value *Compiler::generateDefinableProcNameFromDatum(ASTNode *parent, Value *src)
 {
     return generateValidationDatum(parent, src, [this](Value *candidate) {
