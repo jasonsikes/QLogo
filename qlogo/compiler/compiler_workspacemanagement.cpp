@@ -320,6 +320,15 @@ Value *Compiler::genThing(const DatumPtr &node, TypeMask expected)
     return cs.ret(retval);
 }
 
+Value *Compiler::generateCopyIfLiteralArray(const DatumPtr &node, unsigned childIndex, Value *value)
+{
+    DatumPtr valueNode = node.astnodeValue()->childAtIndex(childIndex);
+    if (valueNode.isASTNode() && valueNode.astnodeValue()->genExpression_ == &Compiler::genLiteral
+        && valueNode.astnodeValue()->childAtIndex(0).isArray())
+        return generateCallExtern(copyArray, PaAddr(scaff_->evaluator_), PaAddr(value));
+    return value;
+}
+
 /***DOC MAKE
 MAKE varname value
 
@@ -336,13 +345,7 @@ Value *Compiler::genMake(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [varname, value] = cs.children();
     varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
-
-    DatumPtr valueNode = node.astnodeValue()->childAtIndex(1);
-    if (valueNode.isASTNode() && valueNode.astnodeValue()->genExpression_ == &Compiler::genLiteral
-        && valueNode.astnodeValue()->childAtIndex(0).isArray())
-    {
-        value = generateCallExtern(copyArray, PaAddr(scaff_->evaluator_), PaAddr(value));
-    }
+    value = generateCopyIfLiteralArray(node, 1, value);
 
     generateCallExtern(setDatumForWord, PaAddr(value), PaAddr(varname));
     return cs.ret(generateVoidRetval(node));
@@ -361,7 +364,7 @@ Value *Compiler::genSetfoo(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *value = cs.child(0);
+    Value *value = generateCopyIfLiteralArray(node, 0, cs.child(0));
     Value *retval = generateCallExtern(
         stdSetfoo,
         PaAddr(scaff_->evaluator_),
@@ -452,6 +455,7 @@ Value *Compiler::genPprop(const DatumPtr &node, TypeMask expected)
     auto [plistname, propname, value] = cs.children();
     plistname = generateFromDatum(Datum::typeWord, node.astnodeValue(), plistname);
     propname = generateFromDatum(Datum::typeWord, node.astnodeValue(), propname);
+    value = generateCopyIfLiteralArray(node, 2, value);
 
     generateCallExtern(stdPprop, PaAddr(plistname), PaAddr(propname), PaAddr(value));
     return cs.ret(generateVoidRetval(node));

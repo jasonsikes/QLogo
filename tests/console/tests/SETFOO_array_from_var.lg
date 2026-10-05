@@ -1,0 +1,4 @@
+make "ary {1 2 3}
+make "foo 0
+setfoo :ary
+show .eq :foo :ary

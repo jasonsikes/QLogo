@@ -1,0 +1,4 @@
+make "foo 0
+make "seen []
+repeat 2 [setfoo {1 2 3} make "seen lput :foo :seen]
+show .eq first :seen last :seen

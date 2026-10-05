@@ -462,6 +462,10 @@ class Compiler
                                      addr_t (*fn)(addr_t, addr_t, addr_t, uint32_t),
                                      const std::string &fnName, const std::string &aryName);
 
+    // If the child is a genLiteral array, copy it so SETITEM cannot mutate AST.
+    // Runtime arrays (ARRAY, variables) are left shared.
+    llvm::Value *generateCopyIfLiteralArray(const DatumPtr &node, unsigned childIndex, llvm::Value *value);
+
     // generate the common code for FPUT and LPUT.
     llvm::Value *generateFputlput(const DatumPtr &node, TypeMask expected, bool isLput);
 
