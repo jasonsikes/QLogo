@@ -1310,12 +1310,9 @@ Value *Compiler::genSeteditor(const DatumPtr &node, TypeMask expected)
 {
 
     CallSite cs(this, node, TypeDatum);
-    Value *command = cs.child(0);
-    auto validator = [this](Value *candidate) {
-        Value *isValid = generateCallExtern(isValidShellCommand, PaAddr(candidate));
-        return scaff_->builder_.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isValidEditorCond"));
-    };
-    command = generateValidationDatum(node.astnodeValue(), command, validator);
+    Value *command = generateValidationDatum(node.astnodeValue(), cs.child(0), [this](Value *candidate) {
+        return generateCallExtern(isValidShellCommand, PaAddr(candidate));
+    });
 
     generateCallExtern(stdSeteditor, PaAddr(command));
     return cs.ret(generateVoidRetval(node));
