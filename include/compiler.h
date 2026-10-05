@@ -315,6 +315,14 @@ class Compiler
     // Run ERRACT if not; a usable contents list from it replaces the input.
     llvm::Value *generateContentsListFromDatum(ASTNode *parent, llvm::Value *src);
 
+    // Word that is not a number and does not start with '"' or ':'.
+    // Run ERRACT if not; a usable name from it replaces the input.
+    llvm::Value *generateDefinableProcNameFromDatum(ASTNode *parent, llvm::Value *src);
+
+    // Non-empty list whose members are lists (DEFINE / .DEFMACRO text).
+    // Run ERRACT if not; a usable text from it replaces the input.
+    llvm::Value *generateDefineTextFromDatum(ASTNode *parent, llvm::Value *src);
+
     // Ensure src is a non-empty datum whose isa matches typeMask (ERRACT if not).
     llvm::Value *generateNotEmptyFromDatum(ASTNode *parent, llvm::Value *src, Datum::DatumType typeMask);
 

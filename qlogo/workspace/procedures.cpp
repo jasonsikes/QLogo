@@ -137,37 +137,19 @@ void Procedures::defineProcedure(const DatumPtr &cmd,
                                  const DatumPtr &textP,
                                  const QList<DatumPtr> &sourceText)
 {
-    procnameP.wordValue()->numberValue();
-    if (procnameP.wordValue()->numberIsValid)
+    if (!isDefinableProcName(procnameP))
         throw FCError::doesntLike(cmd, procnameP);
 
     QString procname = procnameP.toString(Datum::ToStringFlags_Key);
-
-    QChar firstChar = procname[0];
-    if ((firstChar == '"') || (firstChar == ':'))
-        throw FCError::doesntLike(cmd, procnameP);
 
     // User procedures may be replaced (DEFINE, LOAD, COPYDEF). Primitives may not.
     if (stringToCmd.contains(procname))
         throw FCError::isPrimitive(procnameP);
 
-    if ( ! textP.isList())
+    if (!isDefineText(textP))
         throw FCError::doesntLike(cmd, textP);
 
-    List *text = textP.listValue();
-    if (text->isEmpty())
-        throw FCError::doesntLike(cmd, textP);
-
-    // DEFINE and .DEFMACRO text is a list of lists: parameters, then one instruction
-    // line each. A word or array anywhere in that text is rejected as the whole input.
-    ListIterator memberIter = text->newIterator();
-    while (memberIter.elementExists())
-    {
-        if ( ! memberIter.element().isList())
-            throw FCError::doesntLike(cmd, textP);
-    }
-
-    DatumPtr parameterList = text->head;
+    DatumPtr parameterList = textP.listValue()->head;
 
     std::tuple<int, int, int> arity = validateParameters(cmd, parameterList);
     QString cmdString = cmd.toString(Datum::ToStringFlags_Key);
@@ -186,6 +168,36 @@ void Procedures::defineProcedure(const DatumPtr &cmd,
     procedures_[procname] = bodyP;
     if (Kernel::get().specialVarIsTrue(SpecialVars::Id::UnburyOnEdit))
         Kernel::get().removeName(Kernel::NameMark::Buried, Kernel::NameKind::Procedures, procname);
+}
+
+bool Procedures::isDefinableProcName(const DatumPtr &name) const
+{
+    if (!name.isWord())
+        return false;
+    name.wordValue()->numberValue();
+    if (name.wordValue()->numberIsValid)
+        return false;
+    const QString procname = name.toString(Datum::ToStringFlags_Key);
+    if (procname.isEmpty())
+        return true;
+    const QChar firstChar = procname[0];
+    return firstChar != '"' && firstChar != ':';
+}
+
+bool Procedures::isDefineText(const DatumPtr &text) const
+{
+    if (!text.isList())
+        return false;
+    List *list = text.listValue();
+    if (list->isEmpty())
+        return false;
+    ListIterator memberIter = list->newIterator();
+    while (memberIter.elementExists())
+    {
+        if (!memberIter.element().isList())
+            return false;
+    }
+    return true;
 }
 
 DatumPtr Procedures::cleanFormal(const DatumPtr &cmd, const DatumPtr &parameter)

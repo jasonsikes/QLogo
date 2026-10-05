@@ -262,6 +262,8 @@ EXPORTC bool stdDefinedp(addr_t nameAddr);
 EXPORTC bool stdNamep(addr_t nameAddr);
 EXPORTC bool stdPlistp(addr_t nameAddr);
 EXPORTC bool isContentsList(addr_t datumAddr);
+EXPORTC bool isDefinableProcName(addr_t nameAddr);
+EXPORTC bool isDefineText(addr_t textAddr);
 EXPORTC addr_t stdBury(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
 EXPORTC addr_t stdTrace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr);
 EXPORTC void stdTraceBegin(addr_t eAddr, addr_t astnodeAddr, addr_t argsAddr, uint32_t count);

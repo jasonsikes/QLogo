@@ -100,6 +100,15 @@ class Procedures
     /// @return A tuple representing the arity of the procedure. Throws an exception if the arguments list is invalid.
     std::tuple<int, int, int> validateParameters(const DatumPtr &cmd, const DatumPtr &parameterList) const;
 
+    /// @brief True if @p name is a word DEFINE will accept as a procedure name.
+    /// @details False if it is not a word, if it is a number, or if it starts with
+    /// '"' or ':'. A primitive of that name is a separate error.
+    bool isDefinableProcName(const DatumPtr &name) const;
+
+    /// @brief True if @p text is a non-empty list whose members are all lists.
+    /// Parameter-list grammar is not checked.
+    bool isDefineText(const DatumPtr &text) const;
+
     /// @brief Create a Procedure object and save it to the procedures hash table.
     /// @param cmd The command used to define the procedure (TO, .MACRO, DEFINE, or .DEFMACRO).
     /// @param procnameP The name of the procedure to define.

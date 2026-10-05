@@ -180,8 +180,8 @@ Value *Compiler::genDefine(const DatumPtr &node, TypeMask expected)
 
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [procname, text] = cs.children();
-    procname = generateFromDatum(Datum::typeWord, node.astnodeValue(), procname);
-    text = generateFromDatum(Datum::typeList, node.astnodeValue(), text);
+    procname = generateDefinableProcNameFromDatum(node.astnodeValue(), procname);
+    text = generateDefineTextFromDatum(node.astnodeValue(), text);
 
     Value *retval = generateCallExtern(
         stdDefine,

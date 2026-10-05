@@ -790,6 +790,20 @@ Value *Compiler::generateContentsListFromDatum(ASTNode *parent, Value *src)
     });
 }
 
+Value *Compiler::generateDefinableProcNameFromDatum(ASTNode *parent, Value *src)
+{
+    return generateValidationDatum(parent, src, [this](Value *candidate) {
+        return generateCallExtern(isDefinableProcName, PaAddr(candidate));
+    });
+}
+
+Value *Compiler::generateDefineTextFromDatum(ASTNode *parent, Value *src)
+{
+    return generateValidationDatum(parent, src, [this](Value *candidate) {
+        return generateCallExtern(isDefineText, PaAddr(candidate));
+    });
+}
+
 Value *Compiler::generateWordFromDatum(ASTNode *parent, Value *src)
 {
     return generateFromDatum(Datum::typeWord, parent, src);

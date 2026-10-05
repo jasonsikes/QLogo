@@ -60,11 +60,13 @@ EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
 /// DEFINE: install a procedure from a list of lists.
 /// The first sublist is the parameter list. The rest are instruction lines.
 /// There is no END line, and no source-text history is stored.
+/// The compiler rejects a bad name or a text that is not a non-empty list of lists.
 /// @param eAddr a pointer to the Evaluator object
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param nameAddr a word naming the procedure
-/// @param textAddr a list whose members are lists
-/// @return the owning ASTNode, or an Error if the name or text is rejected.
+/// @param textAddr a non-empty list whose members are lists
+/// @return the owning ASTNode, or an Error if the name is a primitive or the
+/// parameter list is rejected.
 EXPORTC addr_t stdDefine(addr_t eAddr, addr_t astnodeAddr, addr_t nameAddr, addr_t textAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
@@ -444,6 +446,22 @@ EXPORTC bool isContentsList(addr_t datumAddr)
 {
     auto *d = reinterpret_cast<Datum *>(datumAddr);
     return Kernel::get().isContentsList(DatumPtr(d));
+}
+
+/// True if the datum is a DEFINE procedure name: a word that is not a number
+/// and does not start with '"' or ':'. The compiler uses this as one ERRACT trip.
+EXPORTC bool isDefinableProcName(addr_t nameAddr)
+{
+    auto *d = reinterpret_cast<Datum *>(nameAddr);
+    return Procedures::get().isDefinableProcName(DatumPtr(d));
+}
+
+/// True if the datum is DEFINE text: a non-empty list of lists. Parameter-list
+/// grammar is not checked. The compiler uses this as one ERRACT trip.
+EXPORTC bool isDefineText(addr_t textAddr)
+{
+    auto *d = reinterpret_cast<Datum *>(textAddr);
+    return Procedures::get().isDefineText(DatumPtr(d));
 }
 
 namespace
