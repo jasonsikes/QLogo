@@ -470,6 +470,9 @@ class Compiler
     // Runtime arrays (ARRAY, variables) are left shared.
     llvm::Value *generateCopyIfLiteralArray(const DatumPtr &node, unsigned childIndex, llvm::Value *value);
 
+    // Look up a variable by name.
+    llvm::Value *generateLookupVarname(llvm::Value *nameAddr);
+
     // generate the common code for FPUT and LPUT.
     llvm::Value *generateFputlput(const DatumPtr &node, TypeMask expected, bool isLput);
 

@@ -861,24 +861,21 @@ Value *Compiler::generateVoidRetval(const DatumPtr &node)
     return CoAddr(node.astnodeValue());
 }
 
-Value *Compiler::genValueOf(const DatumPtr &node, TypeMask expected)
+Value *Compiler::generateLookupVarname(Value *nameAddr)
 {
-    BasicBlock *srcBB = scaff_->builder_.GetInsertBlock();
+    Value *lookedUp = generateCallExtern(getDatumForVarname, PaAddr(nameAddr));
+    BasicBlock *lookupBB = scaff_->builder_.GetInsertBlock();
     BasicBlock *noValueBB = scaff_->createBasicBlock(DBG_NAME("NoValue"));
     BasicBlock *hasValueBB = scaff_->createBasicBlock(DBG_NAME("hasValue"));
 
     scaff_->addColdPathBlocks(noValueBB);
-
-    Word *varName = node.astnodeValue()->childAtIndex(0).wordValue();
-    Value *nameAddr = CoAddr(varName);
-    Value *lookedUp = generateCallExtern(getDatumForVarname, PaAddr(nameAddr));
 
     Value *dType = generateGetDatumIsa(lookedUp);
     Value *mask = scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeDataMask), DBG_NAME("dataMask"));
     Value *cond = scaff_->builder_.CreateICmpEQ(mask, CoInt32(0), DBG_NAME("dataMaskTest"));
     scaff_->builder_.CreateCondBr(cond, noValueBB, hasValueBB);
 
-    // Unbound. Run ERRACT if it has a value; a datum from it stands in for :varname.
+    // Unbound. Run ERRACT if it has a value; a datum from it stands in for the lookup.
     scaff_->builder_.SetInsertPoint(noValueBB);
     Value *handlerResult = generateCallExtern(handleNoValue, PaAddr(scaff_->evaluator_), PaAddr(nameAddr));
     handlerResult = generateNotFlowControl(handlerResult);
@@ -886,10 +883,16 @@ Value *Compiler::genValueOf(const DatumPtr &node, TypeMask expected)
     scaff_->builder_.CreateBr(hasValueBB);
 
     scaff_->builder_.SetInsertPoint(hasValueBB);
-    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 2, DBG_NAME("valueOf"));
-    retval->addIncoming(lookedUp, srcBB);
+    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 2, DBG_NAME("lookup"));
+    retval->addIncoming(lookedUp, lookupBB);
     retval->addIncoming(handlerResult, recoveredBB);
     return retval;
+}
+
+Value *Compiler::genValueOf(const DatumPtr &node, TypeMask expected)
+{
+    Word *varName = node.astnodeValue()->childAtIndex(0).wordValue();
+    return generateLookupVarname(CoAddr(varName));
 }
 
 Value *Compiler::ensureCoroutineFrame()
