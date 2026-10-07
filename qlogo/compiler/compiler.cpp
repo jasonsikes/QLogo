@@ -17,6 +17,7 @@
 #include "compiler.h"
 #include "astnode.h"
 #include "compiler_internal.h"
+#include "llvm/Analysis/CGSCCPassManager.h"
 #include "llvm/ExecutionEngine/Orc/AbsoluteSymbols.h"
 #include "llvm/ExecutionEngine/Orc/JITTargetMachineBuilder.h"
 #include "llvm/ExecutionEngine/Orc/LLJIT.h"
@@ -24,6 +25,12 @@
 #include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
 #include "llvm/Support/Error.h"
 #include "llvm/Target/TargetMachine.h"
+#include "llvm/Transforms/Coroutines/ABI.h"
+#include "llvm/Transforms/Coroutines/CoroCleanup.h"
+#include "llvm/Transforms/Coroutines/CoroEarly.h"
+#include "llvm/Transforms/Coroutines/CoroElide.h"
+#include "llvm/Transforms/Coroutines/CoroSplit.h"
+#include "llvm/Transforms/Coroutines/MaterializationUtils.h"
 #include "flowcontrol.h"
 #include "datum_types.h"
 #include "workspace/exports.h"
@@ -174,13 +181,73 @@ void registerPassAnalyses(PassBuilder &pb, PassInstrumentationCallbacks &pic,
     pb.crossRegisterProxies(lam, fam, cgam, mam);
 }
 
+/// Clones are invoked through C function pointers (LLVMCoroFrameHeader).
+/// Match that ABI, and copy uwtable / nounwind from the host EXPORTC decls.
+void applyCAbiToCoroClone(Module &M, Function &F)
+{
+    F.setCallingConv(CallingConv::C);
+
+    bool sawExport = false;
+    bool allNoUnwind = true;
+    UWTableKind exportUW = UWTableKind::None;
+    for (Function &E : M)
+    {
+        if (!E.isDeclaration() || E.isIntrinsic())
+            continue;
+        sawExport = true;
+        if (E.hasUWTable())
+            exportUW = E.getUWTableKind();
+        if (!E.doesNotThrow())
+            allNoUnwind = false;
+    }
+    F.setUWTableKind(exportUW != UWTableKind::None ? exportUW : UWTableKind::Default);
+    if (sawExport && allNoUnwind)
+        F.setDoesNotThrow();
+
+    for (User *U : F.users())
+    {
+        auto *CB = dyn_cast<CallBase>(U);
+        if (CB && CB->getCalledFunction() == &F)
+            CB->setCallingConv(CallingConv::C);
+    }
+}
+
+/// coro-split emits switch clones as fastcc. Patch the official Clones list.
+struct CCallingConvSwitchABI : coro::SwitchABI
+{
+    using SwitchABI::SwitchABI;
+
+    void splitCoroutine(Function &F, coro::Shape &Shape, SmallVectorImpl<Function *> &Clones,
+                        TargetTransformInfo &TTI) override
+    {
+        SwitchABI::splitCoroutine(F, Shape, Clones, TTI);
+        for (Function *Clone : Clones)
+            applyCAbiToCoroClone(*F.getParent(), *Clone);
+    }
+};
+
 /// Run the coroutine lowering pipeline so that llvm.coro.* intrinsics are
 /// lowered before the module is sent to the backend.
-void runCoroutinePasses(Module &M, PassBuilder &pb, ModuleAnalysisManager &mam)
+void runCoroutinePasses(Module &M, ModuleAnalysisManager &mam)
 {
+    CoroSplitPass splitPass(/*OptimizeFrame=*/false);
+    splitPass.CreateAndInitABI = [](Function &F, coro::Shape &S) {
+        auto ABI = std::make_unique<CCallingConvSwitchABI>(F, S, coro::isTriviallyMaterializable);
+        ABI->init();
+        return ABI;
+    };
+
+    CGSCCPassManager cgscc;
+    cgscc.addPass(std::move(splitPass));
+
+    FunctionPassManager elideFPM;
+    elideFPM.addPass(CoroElidePass());
+
     ModulePassManager coroMPM;
-    checkJitError(pb.parsePassPipeline(coroMPM, "coro-early,cgscc(coro-split),function(coro-elide),coro-cleanup"),
-                  "parsePassPipeline");
+    coroMPM.addPass(CoroEarlyPass());
+    coroMPM.addPass(createModuleToPostOrderCGSCCPassAdaptor(std::move(cgscc)));
+    coroMPM.addPass(createModuleToFunctionPassAdaptor(std::move(elideFPM)));
+    coroMPM.addPass(CoroCleanupPass());
     coroMPM.run(M, mam);
 }
 
@@ -192,21 +259,6 @@ void verifyModuleOrThrow(Module &M)
     {
         std::cerr << "IR verification failed:\n" << str << "\n";
         throw FCError::fatalInternal();
-    }
-}
-
-/// coro-split emit resume/destroy/cleanup as fastcc;
-/// However, they are invoked through C function pointers 
-/// (LLVMCoroFrameHeader). Match that ABI here.
-void setCoroHelperCallingConv(Module &M)
-{
-    for (Function &F : M)
-    {
-        if (F.isDeclaration())
-            continue;
-        StringRef name = F.getName();
-        if (name.ends_with(".resume") || name.ends_with(".destroy") || name.ends_with(".cleanup"))
-            F.setCallingConv(CallingConv::C);
     }
 }
 } // namespace
@@ -549,8 +601,7 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     }
 
     // Lower coroutine intrinsics before backend.
-    runCoroutinePasses(*scaff_->theModule_, scaff_->thePB_, scaff_->theMAM_);
-    setCoroHelperCallingConv(*scaff_->theModule_);
+    runCoroutinePasses(*scaff_->theModule_, scaff_->theMAM_);
 
     if (Config::get().verifyIR_)
         verifyModuleOrThrow(*scaff_->theModule_);
@@ -561,7 +612,7 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
         fprintf(stderr, "\n");
     }
 
-    // Optimize the ramp and every coro-split clone (.resume / .destroy / .cleanup).
+    // Optimize the ramp and every coro-split clone.
     runFunctionPasses(*scaff_->theModule_, scaff_->theFPM_, scaff_->theFAM_);
 
     if (Config::get().verifyIR_)
