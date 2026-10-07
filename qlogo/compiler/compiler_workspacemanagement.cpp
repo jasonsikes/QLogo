@@ -1356,11 +1356,11 @@ Value *Compiler::genGc(const DatumPtr &node, TypeMask expected)
 }
 
 /***DOC .SETSEGMENTSIZE
-.SETSEGMENTSIZE num
+.SETSEGMENTSIZE anything
 
     command.  In UCBLogo this sets how many nodes are allocated from
-    the operating system at once.  QLogo does not use segment
-    allocation, so this does nothing.
+    the operating system at once.  QLogo allocates and frees as needed,
+    so this does nothing.
 
 COD***/
 // CMD .SETSEGMENTSIZE 1 1 1 n
