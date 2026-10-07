@@ -141,11 +141,15 @@ class Compiler
     // control flow that may take a path with no suspend so the handle is defined on all paths.
     llvm::Value *ensureCoroutineFrame();
 
+    // llvm.coro.suspend + switch (0 continue, 1 cleanup, default suspend).
+    // Leaves the builder in the continue block.
+    void generateCoroSuspend();
+
     // Generate a call to execute a list.
-    llvm::Value *generateCallList(llvm::Value *list, TypeMask expected);
+    llvm::Value *generateCallList(llvm::Value *list);
 
     // Generate a call to execute a list continuation.
-    llvm::Value *generateCallListContinuation(llvm::Value *list, TypeMask expected);
+    llvm::Value *generateCallListContinuation(llvm::Value *list);
 
     // Named-procedure and procedure-text APPLY. builder is buildApplyNamedCall
     // or buildApplyProcedureText. NFC the builder result, then generateCallList

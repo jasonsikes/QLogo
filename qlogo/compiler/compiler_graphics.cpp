@@ -498,7 +498,7 @@ Value *Compiler::genFilled(const DatumPtr &node, TypeMask expected)
     color = generateColorFromDatum(node.astnodeValue(), color);
     instructions = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), instructions);
     generateNotFlowControl(generateCallExtern(beginFilledWithColor, PaAddr(color)));
-    Value *result = generateCallList(instructions, TypeDN);
+    Value *result = generateCallList(instructions);
     generateCallExtern(endFilled);
     return cs.ret(generateNotFlowControl(result));
 }

@@ -88,7 +88,7 @@ Value *Compiler::genIfelse(const DatumPtr &node, TypeMask expected)
     if (hasElse)
     {
         Value *chosen = scaff_->builder_.CreateSelect(cond, ift, iff, DBG_NAME("chosen"));
-        retval = (this->*generateListFn)(chosen, expected);
+        retval = (this->*generateListFn)(chosen);
     }
     else
     {
@@ -99,7 +99,7 @@ Value *Compiler::genIfelse(const DatumPtr &node, TypeMask expected)
         scaff_->builder_.CreateCondBr(cond, thenBB, elseBB);
 
         scaff_->builder_.SetInsertPoint(thenBB);
-        ift = (this->*generateListFn)(ift, expected);
+        ift = (this->*generateListFn)(ift);
         thenBB = scaff_->builder_.GetInsertBlock();
         scaff_->builder_.CreateBr(mergeBB);
 
@@ -129,9 +129,9 @@ Value *Compiler::genRun(const DatumPtr &node, TypeMask expected)
     Value *list = cs.child(0);
     list = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), list);
     if (node.astnodeValue()->inSequenceTail_) {
-        return cs.ret(generateNotFlowControl(generateCallListContinuation(list, expected)));
+        return cs.ret(generateNotFlowControl(generateCallListContinuation(list)));
     }
-    return cs.ret(generateNotFlowControl(generateCallList(list, expected)));
+    return cs.ret(generateNotFlowControl(generateCallList(list)));
 }
 
 /***DOC RUNTIME
@@ -150,7 +150,7 @@ Value *Compiler::genRuntime(const DatumPtr &node, TypeMask expected)
     Value *list = cs.child(0);
     list = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), list);
     generateCallExtern(stdRuntimeStart);
-    Value *result = generateCallList(list, expected);
+    Value *result = generateCallList(list);
     generateCallExtern(stdRuntimeEnd);
     return cs.ret(generateNotFlowControl(result));
 }
@@ -400,7 +400,7 @@ Value *Compiler::genCatch(const DatumPtr &node, TypeMask expected)
     list = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), list);
     Value *errActStash = generateCallExtern(beginCatch);
 
-    Value *result = generateCallList(list, expected);
+    Value *result = generateCallList(list);
 
     Value *retval = generateCallExtern(endCatch,
                                        PaAddr(scaff_->evaluator_),
@@ -544,7 +544,7 @@ Value *Compiler::genRunresult(const DatumPtr &node, TypeMask expected)
 {
     CallSite cs(this, node, TypeDatum);
     Value *instructionlist = cs.child(0);
-    Value *result = generateCallList(instructionlist, TypeDN);
+    Value *result = generateCallList(instructionlist);
     result = generateCallExtern(processRunresult, PaAddr(scaff_->evaluator_), PaAddr(result));
     return cs.ret(generateNotFlowControl(result));
 }
@@ -617,7 +617,7 @@ Value *Compiler::generateRepeatLike(const DatumPtr &node, Value *list, Value *co
     }
 
     scaff_->builder_.SetInsertPoint(bodyBB);
-    Value *result = generateCallList(list, TypeDatum);
+    Value *result = generateCallList(list);
     BasicBlock *bodyDestBB = scaff_->builder_.GetInsertBlock();
     Value *resultType = generateGetDatumIsa(result);
     Value *flowMask =
@@ -743,7 +743,7 @@ Value *Compiler::generateIftruefalse(const DatumPtr &node, TypeMask expected, bo
     generateReturn(errVal);
 
     scaff_->builder_.SetInsertPoint(runListBB);
-    Value *listRetval = (this->*generateListFn)(instructionlist, expected);
+    Value *listRetval = (this->*generateListFn)(instructionlist);
     BasicBlock *listRetvalBB = scaff_->builder_.GetInsertBlock();
     scaff_->builder_.CreateBr(mergeBB);
 
@@ -845,14 +845,14 @@ Value *Compiler::generateApplyBuiltCall(const DatumPtr &node, TypeMask expected,
     callAST = generateNotFlowControl(callAST);
     auto generateListFn = node.astnodeValue()->inSequenceTail_ ? &Compiler::generateCallListContinuation
                                                               : &Compiler::generateCallList;
-    return (this->*generateListFn)(callAST, expected);
+    return (this->*generateListFn)(callAST);
 }
 
 Value *Compiler::generateApplyExplicitSlot(const DatumPtr &node, TypeMask expected,
                                            Value *aTemplate, Value *inputList)
 {
     generateCallExtern(pushExplicitSlotList, PaAddr(inputList));
-    Value *result = generateCallList(aTemplate, expected);
+    Value *result = generateCallList(aTemplate);
     generateCallExtern(popExplicitSlotList);
     return result;
 }
@@ -866,7 +866,7 @@ Value *Compiler::generateApplyLambda(const DatumPtr &node, TypeMask expected,
                                           PaAddr(aTemplate),
                                           PaAddr(inputList));
     bodyOrErr = generateNotFlowControl(bodyOrErr);
-    Value *result = generateCallList(bodyOrErr, expected);
+    Value *result = generateCallList(bodyOrErr);
     generateCallExtern(endApplyLambda);
     return result;
 }

@@ -984,7 +984,7 @@ Value *Compiler::generateListExecIfList(ASTNode *parent, Value *c)
 
     scaff_->builder_.SetInsertPoint(isListBB);
     // The list gets executed (push/suspend/resume/pop); on return we are in the resume block.
-    Value *listRunResult = generateCallList(c, TypeDatum);
+    Value *listRunResult = generateCallList(c);
     BasicBlock *listRunResultBB = scaff_->builder_.GetInsertBlock();
     Value *listRunResultType = generateGetDatumIsa(listRunResult);
     Value *listRunResultCond = scaff_->builder_.CreateICmpEQ(

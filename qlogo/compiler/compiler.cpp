@@ -1037,15 +1037,10 @@ Value *Compiler::ensureCoroutineFrame()
     return scaff_->coroutineHandle_;
 }
 
-// TODO: expected seems to be ignored.
-Value *Compiler::generateCallList(Value *list, TypeMask expected)
+void Compiler::generateCoroSuspend()
 {
-    // Explicit control: push list onto evaluation stack, suspend so driver can run it, then pop and return result.
-    generateCallExtern(pushListOntoEvaluationStack, PaAddr(scaff_->evaluator_), PaAddr(list));
-
     ensureCoroutineFrame();
 
-    // Suspend point: llvm.coro.suspend(token none, i1 false) -> i8 (0=resume, 1=destroy, default=suspend)
     Function *coroSuspendFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_suspend);
     Value *coroutineSuspend = scaff_->builder_.CreateCall(
         coroSuspendFn, {ConstantTokenNone::get(*scaff_->theContext_), CoBool(false)}, DBG_NAME("suspend"));
@@ -1056,13 +1051,17 @@ Value *Compiler::generateCallList(Value *list, TypeMask expected)
     sw->addCase(CoInt8(1), scaff_->cleanupBB_);
 
     scaff_->builder_.SetInsertPoint(continueBB);
+}
+
+Value *Compiler::generateCallList(Value *list)
+{
+    generateCallExtern(pushListOntoEvaluationStack, PaAddr(scaff_->evaluator_), PaAddr(list));
+    generateCoroSuspend();
     return generateCallExtern(getLastEvaluationResult, PaAddr(scaff_->evaluator_));
 }
 
-// TODO: expected seems to be ignored.
-Value *Compiler::generateCallListContinuation(Value *list, TypeMask expected)
+Value *Compiler::generateCallListContinuation(Value *list)
 {
-    // Tell evaluator to run this list after the current list has completed.
     return generateCallExtern(runListAfterCurrentList, PaAddr(scaff_->evaluator_), PaAddr(list));
 }
 
@@ -1083,19 +1082,7 @@ Value *Compiler::genExecProcedure(const DatumPtr &node, TypeMask expected)
     Value *vParamArySize = CoInt32(node.astnodeValue()->countOfChildren());
     generateCallExtern(beginProcedure, PaAddr(scaff_->evaluator_), PaAddr(vAstnodeValue), PaAddr(paramAry), PaInt32(vParamArySize));
 
-    ensureCoroutineFrame();
-
-    // Suspend point: llvm.coro.suspend(token none, i1 false) -> i8 (0=resume, 1=destroy, default=suspend)
-    Function *coroSuspendFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_suspend);
-    Value *coroutineSuspend = scaff_->builder_.CreateCall(
-        coroSuspendFn, {ConstantTokenNone::get(*scaff_->theContext_), CoBool(false)}, DBG_NAME("suspend"));
-
-    BasicBlock *continueBB = BasicBlock::Create(*scaff_->theContext_, DBG_NAME("continue"), scaff_->theFunction_);
-    SwitchInst *sw = scaff_->builder_.CreateSwitch(coroutineSuspend, scaff_->suspendBB_, 2);
-    sw->addCase(CoInt8(0), continueBB);
-    sw->addCase(CoInt8(1), scaff_->cleanupBB_);
-
-    scaff_->builder_.SetInsertPoint(continueBB);
+    generateCoroSuspend();
     return cs.ret(generateCallExtern(getLastEvaluationResult, PaAddr(scaff_->evaluator_)));
 }
 
