@@ -1024,7 +1024,6 @@ Value *Compiler::ensureCoroutineFrame()
 
     Value *coroutineAlloc = generateCallExtern(
         q_malloc, PaAddr(scaff_->evaluator_), PaInt32(coroutineSize), PaInt32(coroutineAlign));
-    
 
     Function *coroBeginFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_begin);
     auto *coroBeginCall = cast<CallInst>(

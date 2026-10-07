@@ -25,6 +25,10 @@
 
 #include <QObject>
 
+#include <algorithm>
+#include <cstdint>
+#include <cstdlib>
+
 /// Print an integer to the console.
 /// @param p the integer to print.
 /// @note For debugging.
@@ -462,13 +466,18 @@ EXPORTC addr_t handleDidntOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr)
 /// @return a pointer to the allocated memory
 EXPORTC addr_t q_malloc(addr_t eAddr, uint32_t size, uint32_t align)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     align = std::max(align, static_cast<uint32_t>(alignof(std::max_align_t)));
+    const uint64_t rounded = (static_cast<uint64_t>(size) + align - 1) / align * align;
+    if (rounded == 0 || rounded > UINT32_MAX)
+        FCError::fatalInternal();
+    size = static_cast<uint32_t>(rounded);
 #ifdef _WIN32
     void *ptr = _aligned_malloc(size, align);
 #else
     void *ptr = aligned_alloc(align, size);
 #endif
+    if (ptr == nullptr)
+        FCError::fatalInternal();
     return reinterpret_cast<addr_t>(ptr);
 }
 
@@ -477,7 +486,6 @@ EXPORTC addr_t q_malloc(addr_t eAddr, uint32_t size, uint32_t align)
 /// @param ptr a pointer to the memory to free
 EXPORTC void q_free(addr_t eAddr, addr_t ptr)
 {
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
 #ifdef _WIN32
     _aligned_free(ptr);
 #else
