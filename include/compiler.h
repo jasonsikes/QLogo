@@ -28,7 +28,9 @@
 #endif
 
 #include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Function.h"
 #include "llvm/IR/Instructions.h"
+#include "llvm/TargetParser/Triple.h"
 #include "llvm/Transforms/Scalar/GVN.h"
 #include "llvm/Transforms/Scalar/Reassociate.h"
 
@@ -508,7 +510,6 @@ class Compiler
     /// Implicit setter: SETFOO value is MAKE of FOO when ALLOWGETSET is TRUE.
     llvm::Value *genSetfoo(const DatumPtr &node, TypeMask expected);
 
-    // Typed wrapper: interned EXPORTC FunctionType is the source of truth.
     template <typename Ret, typename... Args>
     llvm::Value *generateCallExternTyped(Ret (*)(Args...),
                                         const std::string &name,
@@ -516,27 +517,49 @@ class Compiler
     {
         llvm::LLVMContext &ctx = *scaff_->theContext_;
         llvm::FunctionType *fType = hostExportFunctionType(ctx, name);
-        llvm::Type *retType = fType->getReturnType();
+        llvm::Type *cRetType = fType->getReturnType();
         std::vector<llvm::Value *> argsV;
         argsV.reserve(args.size());
 
-        Q_ASSERT(retType == CTypeToLLVM<Ret>::get(ctx));
+        Q_ASSERT(cRetType == CTypeToLLVM<Ret>::get(ctx));
         Q_ASSERT(static_cast<size_t>(args.size()) == sizeof...(Args));
         Q_ASSERT(static_cast<size_t>(args.size()) == fType->getNumParams());
+
+        std::array<bool, sizeof...(Args)> isBoolParam{CTypeABI<Args>::isBool...};
         for (size_t i = 0; i < args.size(); ++i)
         {
-            Q_ASSERT(args[i].first == fType->getParamType(i));
-            Q_ASSERT(args[i].second->getType() == fType->getParamType(i));
-            argsV.push_back(args[i].second);
+            llvm::Type *cTy = fType->getParamType(i);
+            llvm::Value *v = args[i].second;
+            if (isBoolParam[i])
+            {
+                Q_ASSERT(args[i].first->isIntegerTy(1));
+                Q_ASSERT(v->getType()->isIntegerTy(1));
+                Q_ASSERT(cTy->isIntegerTy(8));
+                v = scaff_->builder_.CreateZExt(v, cTy, name + "_zext");
+            }
+            else
+            {
+                Q_ASSERT(args[i].first == cTy);
+                Q_ASSERT(v->getType() == cTy);
+            }
+            argsV.push_back(v);
         }
 
         llvm::FunctionCallee calleeF = scaff_->theModule_->getOrInsertFunction(name, fType);
         Q_ASSERT(calleeF.getFunctionType() == fType);
 
-        if (retType->isVoidTy())
-            return scaff_->builder_.CreateCall(calleeF, argsV);
-        else
-            return scaff_->builder_.CreateCall(calleeF, argsV, name + "_result");
+        const bool extI32 = llvm::Triple(scaff_->theModule_->getTargetTriple()).isAArch64();
+        llvm::AttributeList attrs = hostExportAttributeList<Ret, Args...>(ctx, extI32);
+        if (auto *F = llvm::dyn_cast<llvm::Function>(calleeF.getCallee()))
+            F->setAttributes(attrs);
+
+        llvm::CallInst *CI = scaff_->builder_.CreateCall(
+            calleeF, argsV, cRetType->isVoidTy() ? "" : name + "_result");
+        CI->setAttributes(attrs);
+
+        if constexpr (CTypeABI<Ret>::isBool)
+            return scaff_->builder_.CreateTrunc(CI, llvm::Type::getInt1Ty(ctx), name + "_i1");
+        return CI;
     }
     
 }; // class Compiler
