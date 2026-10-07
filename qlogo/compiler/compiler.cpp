@@ -18,10 +18,12 @@
 #include "astnode.h"
 #include "compiler_internal.h"
 #include "llvm/ExecutionEngine/Orc/AbsoluteSymbols.h"
+#include "llvm/ExecutionEngine/Orc/JITTargetMachineBuilder.h"
 #include "llvm/ExecutionEngine/Orc/LLJIT.h"
 #include "llvm/ExecutionEngine/Orc/Mangling.h"
 #include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
 #include "llvm/Support/Error.h"
+#include "llvm/Target/TargetMachine.h"
 #include "flowcontrol.h"
 #include "datum_types.h"
 #include "workspace/exports.h"
@@ -105,9 +107,10 @@ Error defineHostExports(LLJIT &jit)
     return jit.getMainJITDylib().define(absoluteSymbols(std::move(symbols)));
 }
 
-std::unique_ptr<LLJIT> createLLJIT()
+std::unique_ptr<LLJIT> createLLJIT(JITTargetMachineBuilder jtmb)
 {
     auto jitOrErr = llvm::orc::LLJITBuilder()
+                        .setJITTargetMachineBuilder(std::move(jtmb))
                         .setNotifyCreatedCallback([](llvm::orc::LLJIT &J) -> llvm::Error {
                             if (!J.getTargetTriple().isOSBinFormatCOFF())
                                 return llvm::Error::success();
@@ -159,12 +162,12 @@ void runFunctionPasses(Module &M, FunctionPassManager &fpm, FunctionAnalysisMana
     }
 }
 
-void setupPassManager(PassInstrumentationCallbacks &pic, ModuleAnalysisManager &mam,
-                      FunctionAnalysisManager &fam, LoopAnalysisManager &lam,
-                      CGSCCAnalysisManager &cgam, StandardInstrumentations &si)
+void registerPassAnalyses(PassBuilder &pb, PassInstrumentationCallbacks &pic,
+                          ModuleAnalysisManager &mam, FunctionAnalysisManager &fam,
+                          LoopAnalysisManager &lam, CGSCCAnalysisManager &cgam,
+                          StandardInstrumentations &si)
 {
     si.registerCallbacks(pic, &mam);
-    PassBuilder pb;
     pb.registerModuleAnalyses(mam);
     pb.registerCGSCCAnalyses(cgam);
     pb.registerFunctionAnalyses(fam);
@@ -173,19 +176,23 @@ void setupPassManager(PassInstrumentationCallbacks &pic, ModuleAnalysisManager &
 
 /// Run the coroutine lowering pipeline so that llvm.coro.* intrinsics are
 /// lowered before the module is sent to the backend.
-void runCoroutinePasses(Module &M, ModuleAnalysisManager &mam,
-                        FunctionAnalysisManager &fam, LoopAnalysisManager &lam,
-                        CGSCCAnalysisManager &cgam)
+void runCoroutinePasses(Module &M, PassBuilder &pb, ModuleAnalysisManager &mam)
 {
-    PassBuilder pb;
-    pb.registerModuleAnalyses(mam);
-    pb.registerCGSCCAnalyses(cgam);
-    pb.registerFunctionAnalyses(fam);
-    pb.crossRegisterProxies(lam, fam, cgam, mam);
     ModulePassManager coroMPM;
     checkJitError(pb.parsePassPipeline(coroMPM, "coro-early,cgscc(coro-split),function(coro-elide),coro-cleanup"),
                   "parsePassPipeline");
     coroMPM.run(M, mam);
+}
+
+void verifyModuleOrThrow(Module &M)
+{
+    std::string str;
+    raw_string_ostream output(str);
+    if (verifyModule(M, &output))
+    {
+        std::cerr << "IR verification failed:\n" << str << "\n";
+        throw FCError::fatalInternal();
+    }
 }
 
 /// coro-split emit resume/destroy/cleanup as fastcc;
@@ -215,16 +222,21 @@ FunctionType *hostExportFunctionType(LLVMContext &ctx, StringRef name)
     throw FCError::fatalInternal();
 }
 
-Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
+Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm)
     : theContext_(std::make_unique<LLVMContext>()), theModule_(std::make_unique<Module>("QLogoJIT", *theContext_)),
       builder_(IRBuilder<>(*theContext_)), theFPM_(FunctionPassManager()), theLAM_(LoopAnalysisManager()),
       theFAM_(FunctionAnalysisManager()), theCGAM_(CGSCCAnalysisManager()), theMAM_(ModuleAnalysisManager()),
-      thePIC_(PassInstrumentationCallbacks()), theSI_(StandardInstrumentations(*theContext_,
-                                                                               /*DebugLogging*/ true))
+      thePIC_(PassInstrumentationCallbacks()),
+      theSI_(StandardInstrumentations(*theContext_,
+                                      Config::get().showIR_ || Config::get().showCFG_ ||
+                                          Config::get().showModuleIR_)),
+      thePB_(tm, PipelineTuningOptions(), std::nullopt, &thePIC_)
 {
     theModule_->setDataLayout(dataLayout);
+    if (tm)
+        theModule_->setTargetTriple(tm->getTargetTriple());
     addDefaultPasses(theFPM_);
-    setupPassManager(thePIC_, theMAM_, theFAM_, theLAM_, theCGAM_, theSI_);
+    registerPassAnalyses(thePB_, thePIC_, theMAM_, theFAM_, theLAM_, theCGAM_, theSI_);
 
     static uint64_t functionCount = 1;
     name_ = "function_" + std::to_string(functionCount++);
@@ -317,7 +329,9 @@ Compiler::Compiler()
     InitializeNativeTarget();
     InitializeNativeTargetAsmPrinter();
     InitializeNativeTargetAsmParser();
-    lljit_ = createLLJIT();
+    auto jtmb = unwrapOrThrow(JITTargetMachineBuilder::detectHost(), "detectHost");
+    targetMachine_ = unwrapOrThrow(jtmb.createTargetMachine(), "createTargetMachine");
+    lljit_ = createLLJIT(std::move(jtmb));
 }
 
 Compiler::~Compiler()
@@ -440,7 +454,7 @@ BasicBlock *Compiler::generateTOC(QList<BasicBlock *> blocks, Function *theFunct
 
 std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, List *aList)
 {
-    Scaffold compilerScaffolding(lljit_->getDataLayout());
+    Scaffold compilerScaffolding(lljit_->getDataLayout(), targetMachine_.get());
     scaff_ = &compilerScaffolding;
 
     auto compiledText = std::make_shared<CompiledText>();
@@ -518,18 +532,15 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
 
     scaff_->hoistAllocasToEntry();
 
-    if (Config::get().showIR_)
+    if (Config::get().showCFG_)
     {
-        // Print the whole module so we see all functions after coroutine lowering (ramp, resume, destroy).
-        scaff_->theFunction_->print(errs());
-        fprintf(stderr, "\n");
+        scaff_->theFunction_->viewCFG();
     }
 
     if (Config::get().verifyIR_)
     {
         std::string str;
-        llvm::raw_string_ostream output(str);
-        // Validate the generated code, checking for consistency.
+        raw_string_ostream output(str);
         if (verifyFunction(*(scaff_->theFunction_), &output))
         {
             std::cerr << "IR verification failed:\n" << str << "\n";
@@ -537,21 +548,27 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
         }
     }
 
-    if (Config::get().showCFG_)
-    {
-        scaff_->theFunction_->viewCFG();
-    }
-
     // Lower coroutine intrinsics before backend.
-    runCoroutinePasses(*scaff_->theModule_, scaff_->theMAM_, scaff_->theFAM_, scaff_->theLAM_, scaff_->theCGAM_);
+    runCoroutinePasses(*scaff_->theModule_, scaff_->thePB_, scaff_->theMAM_);
     setCoroHelperCallingConv(*scaff_->theModule_);
+
+    if (Config::get().verifyIR_)
+        verifyModuleOrThrow(*scaff_->theModule_);
+
+    if (Config::get().showIR_)
+    {
+        scaff_->theModule_->print(errs(), nullptr);
+        fprintf(stderr, "\n");
+    }
 
     // Optimize the ramp and every coro-split clone (.resume / .destroy / .cleanup).
     runFunctionPasses(*scaff_->theModule_, scaff_->theFPM_, scaff_->theFAM_);
 
+    if (Config::get().verifyIR_)
+        verifyModuleOrThrow(*scaff_->theModule_);
+
     if (Config::get().showModuleIR_)
     {
-        // Print the whole module so we see all functions after coroutine lowering (ramp, resume, destroy).
         scaff_->theModule_->print(errs(), nullptr);
         fprintf(stderr, "\n");
     }

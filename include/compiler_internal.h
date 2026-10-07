@@ -43,6 +43,7 @@ namespace llvm
 class FunctionType;
 class LLVMContext;
 class StringRef;
+class TargetMachine;
 } // namespace llvm
 
 /// LLVM FunctionType for an EXPORTC host function interned by name.
@@ -63,12 +64,13 @@ struct Scaffold
     llvm::ModuleAnalysisManager theMAM_;
     llvm::PassInstrumentationCallbacks thePIC_;
     llvm::StandardInstrumentations theSI_;
+    llvm::PassBuilder thePB_;
     llvm::Function *theFunction_;
 
     // A list of basic blocks that make up the "cold path" of execution.
     QList<llvm::BasicBlock *> coldPathBlocks_;
 
-    Scaffold(const llvm::DataLayout &dataLayout);
+    Scaffold(const llvm::DataLayout &dataLayout, llvm::TargetMachine *tm);
 
     // a pointer to the Evaluator object that supports execution of the compiled function.
     llvm::Value *evaluator_;

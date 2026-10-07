@@ -50,6 +50,7 @@ namespace llvm
 {
 class Value;
 class AllocaInst;
+class TargetMachine;
 namespace orc
 {
 class LLJIT;
@@ -71,6 +72,7 @@ class Compiler
     // Scaffold is a collection of objects needed to compile a function (JIT module).
     Scaffold *scaff_;
 
+    std::unique_ptr<llvm::TargetMachine> targetMachine_;
     std::unique_ptr<llvm::orc::LLJIT> lljit_;
 
     // Weak refs so shutdown can release ResourceTrackers while LLJIT is still alive.
