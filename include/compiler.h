@@ -508,31 +508,30 @@ class Compiler
     /// Implicit setter: SETFOO value is MAKE of FOO when ALLOWGETSET is TRUE.
     llvm::Value *genSetfoo(const DatumPtr &node, TypeMask expected);
 
-    // Typed wrapper: derives LLVM types from C function signature for single-source-of-truth verification.
+    // Typed wrapper: interned EXPORTC FunctionType is the source of truth.
     template <typename Ret, typename... Args>
     llvm::Value *generateCallExternTyped(Ret (*)(Args...),
                                         const std::string &name,
                                         const std::vector<std::pair<llvm::Type *, llvm::Value *>> &args)
     {
         llvm::LLVMContext &ctx = *scaff_->theContext_;
-        llvm::Type *retType = CTypeToLLVM<Ret>::get(ctx);
-        std::vector<llvm::Type *> paramTypes;
+        llvm::FunctionType *fType = hostExportFunctionType(ctx, name);
+        llvm::Type *retType = fType->getReturnType();
         std::vector<llvm::Value *> argsV;
-        paramTypes.reserve(sizeof...(Args));
         argsV.reserve(args.size());
 
+        Q_ASSERT(retType == CTypeToLLVM<Ret>::get(ctx));
         Q_ASSERT(static_cast<size_t>(args.size()) == sizeof...(Args));
+        Q_ASSERT(static_cast<size_t>(args.size()) == fType->getNumParams());
         for (size_t i = 0; i < args.size(); ++i)
         {
-            paramTypes.push_back(args[i].first);
+            Q_ASSERT(args[i].first == fType->getParamType(i));
+            Q_ASSERT(args[i].second->getType() == fType->getParamType(i));
             argsV.push_back(args[i].second);
-            Q_ASSERT(args[i].first == paramTypes[i]);
         }
 
-        llvm::FunctionType *fType = llvm::FunctionType::get(retType, paramTypes, false);
         llvm::FunctionCallee calleeF = scaff_->theModule_->getOrInsertFunction(name, fType);
-
-        Q_ASSERT(calleeF.getFunctionType()->getNumParams() == argsV.size());
+        Q_ASSERT(calleeF.getFunctionType() == fType);
 
         if (retType->isVoidTy())
             return scaff_->builder_.CreateCall(calleeF, argsV);

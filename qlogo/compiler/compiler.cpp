@@ -17,7 +17,9 @@
 #include "compiler.h"
 #include "astnode.h"
 #include "compiler_internal.h"
+#include "llvm/ExecutionEngine/Orc/AbsoluteSymbols.h"
 #include "llvm/ExecutionEngine/Orc/LLJIT.h"
+#include "llvm/ExecutionEngine/Orc/Mangling.h"
 #include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
 #include "llvm/Support/Error.h"
 #include "flowcontrol.h"
@@ -74,6 +76,35 @@ T unwrapOrThrow(Expected<T> value, const char *what)
     return std::move(*value);
 }
 
+template <typename Ret, typename... Args>
+FunctionType *hostExportType(Ret (*)(Args...), LLVMContext &ctx)
+{
+    return FunctionType::get(CTypeToLLVM<Ret>::get(ctx), {CTypeToLLVM<Args>::get(ctx)...}, false);
+}
+
+struct HostExport
+{
+    const char *name;
+    FunctionType *(*getType)(LLVMContext &);
+};
+
+const HostExport hostExports[] = {
+#define JIT_EXPORT(fn) {#fn, [](LLVMContext &c) { return hostExportType(fn, c); }},
+#include "workspace/jit_exports.inc"
+#undef JIT_EXPORT
+};
+
+Error defineHostExports(LLJIT &jit)
+{
+    MangleAndInterner mangle(jit.getExecutionSession(), jit.getDataLayout());
+    SymbolMap symbols;
+#define JIT_EXPORT(fn) \
+    symbols[mangle(#fn)] = ExecutorSymbolDef::fromPtr(fn, JITSymbolFlags::Exported);
+#include "workspace/jit_exports.inc"
+#undef JIT_EXPORT
+    return jit.getMainJITDylib().define(absoluteSymbols(std::move(symbols)));
+}
+
 std::unique_ptr<LLJIT> createLLJIT()
 {
     auto jitOrErr = llvm::orc::LLJITBuilder()
@@ -90,7 +121,9 @@ std::unique_ptr<LLJIT> createLLJIT()
                             return llvm::Error::success();
                         })
                         .create();
-    return unwrapOrThrow(std::move(jitOrErr), "LLJITBuilder::create");
+    auto jit = unwrapOrThrow(std::move(jitOrErr), "LLJITBuilder::create");
+    checkJitError(defineHostExports(*jit), "defineHostExports");
+    return jit;
 }
 
 /// Creates a resource tracker, adds the module to the JIT, and looks up the symbol.
@@ -160,6 +193,17 @@ void setCoroHelperCallingConv(Module &M)
     }
 }
 } // namespace
+
+FunctionType *hostExportFunctionType(LLVMContext &ctx, StringRef name)
+{
+    for (const auto &exp : hostExports)
+    {
+        if (name == exp.name)
+            return exp.getType(ctx);
+    }
+    std::cerr << "JIT error (host export): unknown function '" << name.str() << "'\n";
+    throw FCError::fatalInternal();
+}
 
 Scaffold::Scaffold(const llvm::DataLayout &dataLayout)
     : theContext_(std::make_unique<LLVMContext>()), theModule_(std::make_unique<Module>("QLogoJIT", *theContext_)),

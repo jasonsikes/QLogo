@@ -66,6 +66,7 @@ set(QLOGO_SOURCES
   ../include/workspace/evaluator.h
   ../include/workspace/exports.h
   ../include/workspace/exports_internal.h
+  ../include/workspace/jit_exports.inc
   ../include/workspace/library.h
   ../include/workspace/turtle.h
   ../include/treeifyer.h

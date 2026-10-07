@@ -107,8 +107,7 @@ EXPORTC void stdRuntimeStart(void);
 EXPORTC void stdRuntimeEnd(void);
 EXPORTC void beginProcedure(addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAddr, uint32_t paramCount);
 EXPORTC addr_t getCtrlReturn(addr_t eAddr, addr_t astNodeAddr, addr_t retvalAddr);
-EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t argAryAddr, uint32_t argCount,
-                                   bool demandNothing);
+EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t argAryAddr, uint32_t argCount, bool demandNothing);
 EXPORTC addr_t getCtrlGoto(addr_t eAddr, addr_t astNodeAddr, addr_t tagAddr);
 EXPORTC addr_t repcountAddr(void);
 EXPORTC addr_t beginCatch(void);

@@ -36,6 +36,16 @@
 #include <memory>
 #include <type_traits>
 
+namespace llvm
+{
+class FunctionType;
+class LLVMContext;
+class StringRef;
+} // namespace llvm
+
+/// LLVM FunctionType for an EXPORTC host function interned by name.
+llvm::FunctionType *hostExportFunctionType(llvm::LLVMContext &ctx, llvm::StringRef name);
+
 struct Scaffold
 {
     // The name of the function.
