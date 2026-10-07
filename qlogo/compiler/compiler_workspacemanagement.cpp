@@ -1,6 +1,6 @@
-//===-- qlogo/workspacemanagement.cpp - Workspace Management implementations -------*- C++ -*-===//
+//===-- compiler/compiler_workspacemanagement.cpp - Workspace Management implementations -------*- C++ -*-===//
 //
-// Copyright 2017-2024 Jason Sikes
+// Copyright 2017-2026 Jason Sikes
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted under the conditions specified in the
@@ -9,7 +9,7 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file contains the implementation of the workspacemanagements methods
+/// This file contains the implementation of the workspace management methods
 /// of the Compiler class.
 ///
 //===----------------------------------------------------------------------===//
