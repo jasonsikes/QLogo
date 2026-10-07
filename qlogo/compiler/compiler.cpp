@@ -149,6 +149,16 @@ void addDefaultPasses(FunctionPassManager &fpm)
     fpm.addPass(SimplifyCFGPass());
 }
 
+void runFunctionPasses(Module &M, FunctionPassManager &fpm, FunctionAnalysisManager &fam)
+{
+    for (Function &F : M)
+    {
+        if (F.isDeclaration())
+            continue;
+        fpm.run(F, fam);
+    }
+}
+
 void setupPassManager(PassInstrumentationCallbacks &pic, ModuleAnalysisManager &mam,
                       FunctionAnalysisManager &fam, LoopAnalysisManager &lam,
                       CGSCCAnalysisManager &cgam, StandardInstrumentations &si)
@@ -536,8 +546,8 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     runCoroutinePasses(*scaff_->theModule_, scaff_->theMAM_, scaff_->theFAM_, scaff_->theLAM_, scaff_->theCGAM_);
     setCoroHelperCallingConv(*scaff_->theModule_);
 
-    // Run the optimizer on the function.
-    scaff_->theFPM_.run(*(scaff_->theFunction_), scaff_->theFAM_);
+    // Optimize the ramp and every coro-split clone (.resume / .destroy / .cleanup).
+    runFunctionPasses(*scaff_->theModule_, scaff_->theFPM_, scaff_->theFAM_);
 
     if (Config::get().showModuleIR_)
     {
