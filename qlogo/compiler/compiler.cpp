@@ -53,6 +53,27 @@ using namespace llvm::orc;
 
 namespace
 {
+[[noreturn]] void throwFatalJitError(Error err, const char *what)
+{
+    std::string detail = toString(std::move(err));
+    std::cerr << "JIT error (" << what << "): " << detail << '\n';
+    throw FCError::fatalInternal();
+}
+
+void checkJitError(Error err, const char *what)
+{
+    if (err)
+        throwFatalJitError(std::move(err), what);
+}
+
+template <typename T>
+T unwrapOrThrow(Expected<T> value, const char *what)
+{
+    if (!value)
+        throwFatalJitError(value.takeError(), what);
+    return std::move(*value);
+}
+
 std::unique_ptr<LLJIT> createLLJIT()
 {
     auto jitOrErr = llvm::orc::LLJITBuilder()
@@ -69,7 +90,7 @@ std::unique_ptr<LLJIT> createLLJIT()
                             return llvm::Error::success();
                         })
                         .create();
-    return cantFail(std::move(jitOrErr));
+    return unwrapOrThrow(std::move(jitOrErr), "LLJITBuilder::create");
 }
 
 /// Creates a resource tracker, adds the module to the JIT, and looks up the symbol.
@@ -77,9 +98,14 @@ std::unique_ptr<LLJIT> createLLJIT()
 std::pair<uint64_t, ResourceTrackerSP> addModuleAndLookup(LLJIT &jit, ThreadSafeModule tsm, StringRef name)
 {
     auto rt = jit.getMainJITDylib().createResourceTracker();
-    cantFail(jit.addIRModule(rt, std::move(tsm)));
-    uint64_t addr = cantFail(jit.lookup(name)).getValue();
-    return {addr, std::move(rt)};
+    checkJitError(jit.addIRModule(rt, std::move(tsm)), "addIRModule");
+    auto symOrErr = jit.lookup(name);
+    if (!symOrErr)
+    {
+        consumeError(rt->remove());
+        throwFatalJitError(symOrErr.takeError(), "lookup");
+    }
+    return {symOrErr->getValue(), std::move(rt)};
 }
 
 void addDefaultPasses(FunctionPassManager &fpm)
@@ -114,7 +140,8 @@ void runCoroutinePasses(Module &M, ModuleAnalysisManager &mam,
     pb.registerFunctionAnalyses(fam);
     pb.crossRegisterProxies(lam, fam, cgam, mam);
     ModulePassManager coroMPM;
-    cantFail(pb.parsePassPipeline(coroMPM, "coro-early,cgscc(coro-split),function(coro-elide),coro-cleanup"));
+    checkJitError(pb.parsePassPipeline(coroMPM, "coro-early,cgscc(coro-split),function(coro-elide),coro-cleanup"),
+                  "parsePassPipeline");
     coroMPM.run(M, mam);
 }
 
@@ -227,7 +254,7 @@ CompiledText::~CompiledText()
     // (it may have been destroyed if CompiledText outlives the Compiler singleton)
     if (compiler_ != nullptr && rt_)
     {
-        cantFail(rt_->remove());
+        consumeError(rt_->remove());
     }
 }
 
@@ -277,7 +304,7 @@ void Compiler::releaseAllCompiledText()
         {
             if (compiledText->rt_)
             {
-                cantFail(compiledText->rt_->remove());
+                consumeError(compiledText->rt_->remove());
                 compiledText->rt_.reset();
             }
             compiledText->functionPtr_ = nullptr;
