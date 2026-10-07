@@ -143,9 +143,9 @@ std::pair<uint64_t, ResourceTrackerSP> addModuleAndLookup(LLJIT &jit, ThreadSafe
 
 void addDefaultPasses(FunctionPassManager &fpm)
 {
+    fpm.addPass(SROAPass(SROAOptions::ModifyCFG));
+    fpm.addPass(EarlyCSEPass());
     fpm.addPass(InstCombinePass());
-    fpm.addPass(ReassociatePass());
-    fpm.addPass(GVNPass());
     fpm.addPass(SimplifyCFGPass());
 }
 
