@@ -47,6 +47,7 @@
 #include "workspace/kernel.h"
 #include <QDateTime>
 #include "workspace/procedures.h"
+#include <algorithm>
 #include <string>
 #include <iostream>
 #include <vector>
@@ -495,20 +496,9 @@ void Compiler::noteCodeChange()
 
 void Compiler::trackCompiledText(const std::shared_ptr<CompiledText> &compiledText)
 {
-    // Drop expired weak refs occasionally so the vector does not grow without bound.
-    // TODO: What if the list stays too long?
-    if (liveCompiledTexts_.size() >= 64)
-    {
-        std::vector<std::weak_ptr<CompiledText>> live;
-        live.reserve(liveCompiledTexts_.size() + 1);
-        for (auto &w : liveCompiledTexts_)
-        {
-            if (!w.expired()) {
-                live.push_back(std::move(w));
-            }
-        }
-        liveCompiledTexts_ = std::move(live);
-    }
+    liveCompiledTexts_.erase(std::remove_if(liveCompiledTexts_.begin(), liveCompiledTexts_.end(),
+                                            [](const std::weak_ptr<CompiledText> &w) { return w.expired(); }),
+                             liveCompiledTexts_.end());
     liveCompiledTexts_.push_back(compiledText);
 }
 
