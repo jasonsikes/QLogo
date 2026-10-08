@@ -110,8 +110,8 @@ struct Scaffold
     llvm::StructType *datumHeaderTy_ = nullptr;
     llvm::MDNode *isaLoadTbaa_ = nullptr;
 
-    // create a new basic block with the given name.
-    // The new block is inserted after the last block of the function.
+    // Create a new basic block. Inserted before MainBailout when that block
+    // exists so the exit stays at the end of the function; otherwise appended.
     llvm::BasicBlock *createBasicBlock(const std::string &name);
 
     // Alloca in the current entry block so the allocation is static (not a

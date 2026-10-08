@@ -363,7 +363,7 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm)
 
 BasicBlock *Scaffold::createBasicBlock(const std::string &name)
 {
-    return BasicBlock::Create(*theContext_, name, theFunction_);
+    return BasicBlock::Create(*theContext_, name, theFunction_, mainBailoutBB_);
 }
 
 AllocaInst *Scaffold::createEntryBlockAlloca(Type *type, Value *arraySize, const std::string &name)
@@ -615,19 +615,16 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     int localBlockId = 0;
 
     // If the first block is a tag, save the tag names
-    if (isTag(parsedList.first().first()))
+    if (!parsedList.isEmpty() && !parsedList.first().isEmpty() && isTag(parsedList.first().first()))
     {
         setTagToBlockIdInProcedure(parsedList.first(), localBlockId);
         // Remove the first tag block from the list.
         parsedList.removeFirst();
     }
 
-    // At this point we know that the first block and last block are not tags.
-
     BasicBlock *currentBlock = BasicBlock::Create(*scaff_->theContext_, "FirstBlock", scaff_->theFunction_);
-
-    // TODO: move this to the end of the function.
-    scaff_->mainBailoutBB_ = BasicBlock::Create(*scaff_->theContext_, "MainBailout", scaff_->theFunction_);
+    // After FirstBlock so it is last until body blocks insert before it.
+    scaff_->mainBailoutBB_ = scaff_->createBasicBlock("MainBailout");
 
     QList<BasicBlock *> blocks = {currentBlock};
     scaff_->builder_.SetInsertPoint(currentBlock);
@@ -636,12 +633,13 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     TypeMask returnTypeRequest = TypeNothing;
     for (auto &srcBlock : parsedList)
     {
+        if (srcBlock.isEmpty())
+            continue;
         if (isTag(srcBlock.first()))
         {
             ++localBlockId;
-            BasicBlock *newBlock = BasicBlock::Create(*scaff_->theContext_, "Next Block", scaff_->theFunction_);
+            BasicBlock *newBlock = scaff_->createBasicBlock("Next Block");
             blocks.append(newBlock);
-            scaff_->builder_.SetInsertPoint(scaff_->builder_.GetInsertBlock());
             scaff_->builder_.CreateBr(newBlock);
             currentBlock = newBlock;
             scaff_->builder_.SetInsertPoint(newBlock);
@@ -653,7 +651,7 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
             {
                 // If this is the last node, accept any Datum return type.
                 // Otherwise, expect that nothing is returned.
-                if (node == parsedList.last().last()) {
+                if (!parsedList.last().isEmpty() && node == parsedList.last().last()) {
                     returnTypeRequest = TypeDN;
                     // Also, set the inSequenceTail_ flag so that the child will know it can generate a tail call.
                     node.astnodeValue()->inSequenceTail_ = true;
@@ -663,8 +661,9 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
         }
     }
 
-    // Finish off the function
-    Q_ASSERT(nodeResult != nullptr);
+    // Empty list, or only TAGs after the leading tag block was stripped.
+    if (nodeResult == nullptr)
+        nodeResult = CoAddr(Datum::notADatum());
     generateReturn(nodeResult);
     generateWrapup();
     scaff_->finalizeColdPaths();
@@ -745,8 +744,8 @@ QList<QList<DatumPtr>> Compiler::groupConsecutiveExpressions(const QList<DatumPt
             }
         }
     }
-    // Append the final block of expressions
-    retval.append(currentBlock);
+    if (!currentBlock.isEmpty())
+        retval.append(currentBlock);
 
     // If the last block is a tag, append a NOOP expression to ensure that there is an instruction to jump to.
     if (!currentBlock.isEmpty() && isTag(currentBlock.last()))
@@ -1177,7 +1176,7 @@ void Compiler::generateCoroSuspend()
     Value *coroutineSuspend = scaff_->builder_.CreateCall(
         coroSuspendFn, {ConstantTokenNone::get(*scaff_->theContext_), CoBool(false)}, DBG_NAME("suspend"));
 
-    BasicBlock *continueBB = BasicBlock::Create(*scaff_->theContext_, DBG_NAME("continue"), scaff_->theFunction_);
+    BasicBlock *continueBB = scaff_->createBasicBlock(DBG_NAME("continue"));
     SwitchInst *sw = scaff_->builder_.CreateSwitch(coroutineSuspend, scaff_->suspendBB_, 2);
     sw->addCase(CoInt8(0), continueBB);
     sw->addCase(CoInt8(1), scaff_->cleanupBB_);
