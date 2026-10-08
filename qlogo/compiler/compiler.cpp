@@ -905,12 +905,7 @@ Value *Compiler::generateIsWord(Value *src)
 
 Value *Compiler::generateIsEmptyList(Value *src)
 {
-    Value *isa = generateGetDatumIsa(src);
-    Value *listMask = scaff_->builder_.CreateAnd(isa, CoInt32(Datum::typeList), DBG_NAME("listMask"));
-    Value *isList = scaff_->builder_.CreateICmpNE(listMask, CoInt32(0), DBG_NAME("isList"));
-    Value *empty = generateCallExtern(isEmpty, PaAddr(src));
-    Value *isEmptyVal = scaff_->builder_.CreateICmpEQ(empty, CoBool(true), DBG_NAME("isEmpty"));
-    return scaff_->builder_.CreateAnd(isList, isEmptyVal, DBG_NAME("isEmptyList"));
+    return scaff_->builder_.CreateICmpEQ(src, CoAddr(EmptyList::instance()), DBG_NAME("isEmptyList"));
 }
 
 Value *Compiler::generateIsWordOrEmptyList(Value *src)
