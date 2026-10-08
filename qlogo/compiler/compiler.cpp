@@ -17,12 +17,16 @@
 #include "compiler.h"
 #include "astnode.h"
 #include "compiler_internal.h"
+#include "llvm/ADT/SmallPtrSet.h"
+#include "llvm/ADT/SmallVector.h"
 #include "llvm/Analysis/CGSCCPassManager.h"
 #include "llvm/ExecutionEngine/Orc/AbsoluteSymbols.h"
 #include "llvm/ExecutionEngine/Orc/JITTargetMachineBuilder.h"
 #include "llvm/ExecutionEngine/Orc/LLJIT.h"
 #include "llvm/ExecutionEngine/Orc/Mangling.h"
 #include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
+#include "llvm/IR/CFG.h"
+#include "llvm/IR/MDBuilder.h"
 #include "llvm/Support/Error.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Transforms/Coroutines/ABI.h"
@@ -365,6 +369,68 @@ void Scaffold::hoistAllocasToEntry()
     }
 }
 
+void Scaffold::finalizeColdPaths()
+{
+    SmallPtrSet<BasicBlock *, 16> cold;
+    for (BasicBlock *bb : coldPathBlocks_)
+        cold.insert(bb);
+
+    MDBuilder mdb(*theContext_);
+    SmallPtrSet<Instruction *, 16> seen;
+    constexpr uint32_t hotWeight = 1u << 20;
+    constexpr uint32_t coldWeight = 1u;
+
+    for (BasicBlock *coldBB : coldPathBlocks_)
+    {
+        for (BasicBlock *pred : predecessors(coldBB))
+        {
+            Instruction *term = pred->getTerminator();
+            if (!seen.insert(term).second)
+                continue;
+
+            if (auto *br = dyn_cast<BranchInst>(term))
+            {
+                if (!br->isConditional())
+                    continue;
+                const bool trueCold = cold.contains(br->getSuccessor(0));
+                const bool falseCold = cold.contains(br->getSuccessor(1));
+                if (trueCold == falseCold)
+                    continue;
+                br->setMetadata(LLVMContext::MD_prof,
+                                trueCold ? mdb.createUnlikelyBranchWeights()
+                                         : mdb.createLikelyBranchWeights());
+            }
+            else if (auto *sw = dyn_cast<SwitchInst>(term))
+            {
+                SmallVector<uint32_t, 8> weights;
+                weights.reserve(sw->getNumSuccessors());
+                bool anyCold = false;
+                bool anyHot = false;
+                for (unsigned i = 0, n = sw->getNumSuccessors(); i < n; ++i)
+                {
+                    const bool isCold = cold.contains(sw->getSuccessor(i));
+                    anyCold |= isCold;
+                    anyHot |= !isCold;
+                    weights.push_back(isCold ? coldWeight : hotWeight);
+                }
+                if (anyCold && anyHot)
+                    sw->setMetadata(LLVMContext::MD_prof,
+                                    mdb.createBranchWeights(weights, /*IsExpected=*/true));
+            }
+        }
+
+        for (Instruction &inst : *coldBB)
+        {
+            auto *cb = dyn_cast<CallBase>(&inst);
+            if (cb && cb->getIntrinsicID() == Intrinsic::not_intrinsic)
+                cb->addFnAttr(Attribute::Cold);
+        }
+    }
+
+    for (BasicBlock *block : coldPathBlocks_)
+        block->moveAfter(&theFunction_->back());
+}
+
 
 CompiledText::~CompiledText()
 {
@@ -571,11 +637,7 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     Q_ASSERT(nodeResult != nullptr);
     generateReturn(nodeResult);
     generateWrapup();
-
-    // Move the cold path blocks to the end of the function.
-    for (auto *block : scaff_->coldPathBlocks_) {
-        block->moveAfter(&scaff_->theFunction_->back());
-    }
+    scaff_->finalizeColdPaths();
 
     if (blocks.size() > 1)
     {
@@ -1205,6 +1267,7 @@ Value *Compiler::generateImmediateReturn(llvm::Value *retval)
 {
     BasicBlock *bailoutBB = scaff_->createBasicBlock(DBG_NAME("bailout"));
     BasicBlock *throwAwayBB = scaff_->createBasicBlock(DBG_NAME("throwAway"));
+    scaff_->addColdPathBlocks(bailoutBB);
 
     // Leave this path with the flow-control / error result. Remaining nodes on
     // the line are still generated into throwAwayBB which has no predecessor.

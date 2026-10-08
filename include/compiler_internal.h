@@ -119,6 +119,10 @@ struct Scaffold
     // so they stay static and dominate all uses (including after suspend).
     void hoistAllocasToEntry();
 
+    // MD_prof on edges into coldPathBlocks_ (cold successor unlikely), cold on
+    // non-intrinsic calls in those blocks, then move the blocks to the end.
+    void finalizeColdPaths();
+
     // add one or more basic blocks to the cold path.
     template <typename... Blocks>
     std::enable_if_t<(std::is_same_v<Blocks, llvm::BasicBlock> && ...)>
