@@ -695,18 +695,9 @@ Value *Compiler::generateCast(Value *src, ASTNode *parent, const DatumPtr &node,
     Q_ASSERT(!src->getType()->isVoidTy());
     TypeMask produces = node.astnodeValue()->produces_;
 
-    if (produces == expected)
-    {
-        // RUNRESULT, RUN, and user procedures are typed as Datum but can
-        // return THROW/OUTPUT/STOP. Those must still propagate when the
-        // declared type matches; otherwise they are passed as procedure
-        // inputs (e.g. foreach.done's :foreach.result) and surface as
-        // "X has no value".
-        if (src->getType()->isPointerTy())
-            src = generateNotFlowControl(src);
-        return src;
-    }
-
+    // produces_ is the native LLVM kind; expected is a mask of what the parent
+    // can consume. Keep the native kind when that bit is set. NFC every datum
+    // pointer the parent will treat as data (including TypeDB).
     if (src->getType()->isDoubleTy())
         return generateCastFromDouble(src, parent, expected);
     if (src->getType()->isIntegerTy(1))
@@ -726,7 +717,7 @@ Value *Compiler::generateCastFromDouble(Value *src, ASTNode *parent, TypeMask ex
         return src;
     Value *srcAsWord = generateWordFromDouble(src);
     if (expected & TypeDatum)
-        return srcAsWord;
+        return generateNotFlowControl(srcAsWord);
     if (expected & TypeBool)
         return generateBoolFromDatum(parent, srcAsWord);
     return generateImmediateReturn(generateErrorNoSay(srcAsWord));
@@ -738,7 +729,7 @@ Value *Compiler::generateCastFromBool(Value *src, ASTNode *parent, TypeMask expe
         return src;
     Value *srcAsWord = generateWordFromBool(src);
     if (expected & TypeDatum)
-        return srcAsWord;
+        return generateNotFlowControl(srcAsWord);
     if (expected & TypeReal)
         return generateDoubleFromDatum(parent, srcAsWord);
     return generateImmediateReturn(generateErrorNoSay(srcAsWord));
@@ -747,7 +738,7 @@ Value *Compiler::generateCastFromBool(Value *src, ASTNode *parent, TypeMask expe
 Value *Compiler::generateCastFromDatum(Value *src, ASTNode *parent, TypeMask expected)
 {
     if (expected & TypeDatum)
-        return src;
+        return generateNotFlowControl(src);
     if (expected & TypeBool)
         return generateBoolFromDatum(parent, src);
     if (expected & TypeReal)
@@ -758,14 +749,14 @@ Value *Compiler::generateCastFromDatum(Value *src, ASTNode *parent, TypeMask exp
 Value *Compiler::generateCastFromNothing(Value *src, ASTNode *parent, TypeMask expected)
 {
     if (expected & TypeNothing)
-        return src;
+        return src->getType()->isPointerTy() ? generateNotFlowControl(src) : src;
 
     Value *recovered = generateRecoverDidntOutput(src, parent);
     if (expected & TypeReal)
         return generateDoubleFromDatum(parent, recovered);
     if ((expected & TypeBool) && !(expected & TypeDatum))
         return generateBoolFromDatum(parent, recovered);
-    return recovered;
+    return generateNotFlowControl(recovered);
 }
 
 Value *Compiler::generateCastFromDN(Value *src, ASTNode *parent, TypeMask expected)
@@ -773,14 +764,13 @@ Value *Compiler::generateCastFromDN(Value *src, ASTNode *parent, TypeMask expect
     if (expected == TypeNothing)
         return generateNothingFromDatum(parent, src);
 
-    // IF's predicate is TypeDB. RUN / user procedures produce TypeDN. Keep a
-    // datum pointer when the parent accepts Datum; recover "did not output"
-    // only when Nothing is not allowed.
+    // Recover "did not output" only when Nothing is not allowed. Keep a datum
+    // pointer when the parent accepts Datum (IF's TypeDB, RUN / user procs).
     if (!(expected & TypeNothing))
         src = generateNotNothingFromDatum(parent, src);
 
     if (expected & TypeDatum)
-        return src;
+        return generateNotFlowControl(src);
     if (expected & TypeBool)
         return generateBoolFromDatum(parent, src);
     return generateDoubleFromDatum(parent, src);
@@ -985,13 +975,13 @@ Value *Compiler::genLiteral(const DatumPtr &node, TypeMask expected)
     if (literalPtr.isWord())
     {
         Word *wVal = literalPtr.wordValue();
-        if (expected == TypeReal)
+        if (expected & TypeReal)
         {
             double val = wVal->numberValue();
             if (wVal->numberIsValid)
                 return CoDouble(val);
         }
-        if (expected == TypeBool)
+        if (expected & TypeBool)
         {
             bool val = wVal->boolValue();
             if (wVal->boolIsValid)
