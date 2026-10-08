@@ -1333,14 +1333,12 @@ AllocaInst *Compiler::generateChildrenAlloca(ASTNode *node, TypeMask expected, c
 AllocaInst *Compiler::generateAllocaAry(const std::vector<llvm::Value *> &values, const std::string &name)
 {
     Value *childCount = CoInt32(values.size());
-    Value *offset = CoInt64(lljit_->getDataLayout().getPointerSize());
     AllocaInst *retval = scaff_->createEntryBlockAlloca(TyAddr, childCount, name);
-    Value *aryPtr = retval;
-    for (int i = 0; i < values.size(); ++i)
+    for (size_t i = 0; i < values.size(); ++i)
     {
-        scaff_->builder_.CreateStore(values[i], aryPtr);
-        if (i < values.size() - 1)
-            aryPtr = scaff_->builder_.CreatePtrAdd(aryPtr, offset, name + "Incr");
+        Value *ptr = scaff_->builder_.CreateConstInBoundsGEP1_32(
+            TyAddr, retval, static_cast<unsigned>(i), name);
+        scaff_->builder_.CreateStore(values[i], ptr);
     }
     return retval;
 }
