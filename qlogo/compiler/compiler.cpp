@@ -26,7 +26,9 @@
 #include "llvm/ExecutionEngine/Orc/Mangling.h"
 #include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
 #include "llvm/IR/CFG.h"
+#include "llvm/IR/DataLayout.h"
 #include "llvm/IR/MDBuilder.h"
+#include "llvm/IR/Metadata.h"
 #include "llvm/Support/Error.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Transforms/Coroutines/ABI.h"
@@ -65,6 +67,10 @@ const char *dbgName(const char *enclosing, const char *name)
 
 using namespace llvm;
 using namespace llvm::orc;
+
+static_assert(sizeof(Datum::DatumType) == 4);
+static_assert(sizeof(int) == 4);
+static_assert(sizeof(bool) == 1);
 
 namespace
 {
@@ -291,6 +297,30 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm)
     theModule_->setDataLayout(dataLayout);
     if (tm)
         theModule_->setTargetTriple(tm->getTargetTriple());
+
+    // Itanium layout of Datum: vptr, isa_ (u32), retainCount_ (int), alertOnDelete_ (bool).
+    datumHeaderTy_ = StructType::create(
+        *theContext_,
+        {PointerType::get(*theContext_, 0), Type::getInt32Ty(*theContext_), Type::getInt32Ty(*theContext_),
+         Type::getInt8Ty(*theContext_)},
+        "DatumHeader");
+    {
+        const StructLayout *sl = theModule_->getDataLayout().getStructLayout(datumHeaderTy_);
+        const Datum *probe = Datum::notADatum();
+        const char *base = reinterpret_cast<const char *>(probe);
+        Q_ASSERT(sl->getElementOffset(1) ==
+                 static_cast<uint64_t>(reinterpret_cast<const char *>(&probe->isa_) - base));
+        Q_ASSERT(sl->getElementOffset(2) ==
+                 static_cast<uint64_t>(reinterpret_cast<const char *>(&probe->retainCount_) - base));
+        Q_ASSERT(sl->getElementOffset(3) ==
+                 static_cast<uint64_t>(reinterpret_cast<const char *>(&probe->alertOnDelete_) - base));
+    }
+    MDBuilder tbaaMdb(*theContext_);
+    MDNode *tbaaRoot = tbaaMdb.createTBAARoot("qlogo");
+    MDNode *isaTbaaTy =
+        tbaaMdb.createTBAATypeNode(tbaaRoot, 4, MDString::get(*theContext_, "datum.isa"));
+    isaLoadTbaa_ = tbaaMdb.createTBAAAccessTag(isaTbaaTy, isaTbaaTy, 0, 4, /*IsImmutable=*/true);
+
     addDefaultPasses(theFPM_);
     registerPassAnalyses(thePB_, thePIC_, theMAM_, theFAM_, theLAM_, theCGAM_, theSI_);
 
@@ -1573,20 +1603,14 @@ void Compiler::generateWrapup()
     }
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Winvalid-offsetof"
-
-// Generate code to return a datum type (isa) of a given object.
 Value *Compiler::generateGetDatumIsa(Value *objAddr)
 {
-    const unsigned int isaOffset = offsetof(Datum, isa_);
-    Value *isaAddr = scaff_->builder_.CreatePtrAdd(objAddr, CoInt64(isaOffset), DBG_NAME("isaAddr"));
-
-    Value *dType = scaff_->builder_.CreateLoad(TyInt32, isaAddr, DBG_NAME("isaLoad"));
-    return dType;
+    Value *isaAddr = scaff_->builder_.CreateStructGEP(scaff_->datumHeaderTy_, objAddr, 1, DBG_NAME("isaAddr"));
+    LoadInst *load = scaff_->builder_.CreateAlignedLoad(TyInt32, isaAddr, Align(4), DBG_NAME("isaLoad"));
+    load->setMetadata(LLVMContext::MD_invariant_load, MDNode::get(*scaff_->theContext_, {}));
+    load->setMetadata(LLVMContext::MD_tbaa, scaff_->isaLoadTbaa_);
+    return load;
 }
-
-#pragma GCC diagnostic pop
 
 
 /***DOC ALLOWGETSET

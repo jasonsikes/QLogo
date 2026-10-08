@@ -106,6 +106,10 @@ struct Scaffold
     // if present). generateTOC redirects its branch to Toc when the table of contents is generated.
     llvm::BasicBlock *coroPrologueBB_ = nullptr;
 
+    // Itanium prefix of Datum: vptr, isa_, retainCount_, alertOnDelete_.
+    llvm::StructType *datumHeaderTy_ = nullptr;
+    llvm::MDNode *isaLoadTbaa_ = nullptr;
+
     // create a new basic block with the given name.
     // The new block is inserted after the last block of the function.
     llvm::BasicBlock *createBasicBlock(const std::string &name);
