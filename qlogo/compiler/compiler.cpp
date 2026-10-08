@@ -790,11 +790,13 @@ Value *Compiler::generateChild(ASTNode *parent, unsigned int index, TypeMask exp
 
 Value *Compiler::generateDoubleFromDatum(ASTNode *parent, Value *src)
 {
+    AllocaInst *out = scaff_->createEntryBlockAlloca(TyDouble, nullptr, DBG_NAME("doubleOut"));
     Value *retval = nullptr;
-    auto realTest = [this, &retval](Value *src) {
-        retval = generateCallExtern(getDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(src));
-        Value *dType = generateCallExtern(getValidityOfDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(src));
-        return scaff_->builder_.CreateICmpEQ(dType, CoBool(true), DBG_NAME("isValidTest"));
+    auto realTest = [this, &retval, out](Value *src) {
+        Value *ok = generateCallExtern(parseDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(src),
+                                       PaAddr(out));
+        retval = scaff_->builder_.CreateLoad(TyDouble, out, DBG_NAME("doubleVal"));
+        return ok;
     };
     generateValidationDatum(parent, src, realTest);
     return retval;
@@ -802,11 +804,14 @@ Value *Compiler::generateDoubleFromDatum(ASTNode *parent, Value *src)
 
 Value *Compiler::generateBoolFromDatum(ASTNode *parent, Value *src)
 {
+    AllocaInst *out = scaff_->createEntryBlockAlloca(TyInt8, nullptr, DBG_NAME("boolOut"));
     Value *retval = nullptr;
-    auto boolTest = [this, &retval](Value *src) {
-        retval = generateCallExtern(getBoolForDatum, PaAddr(scaff_->evaluator_), PaAddr(src));
-        Value *dType = generateCallExtern(getValidityOfBoolForDatum, PaAddr(scaff_->evaluator_), PaAddr(src));
-        return scaff_->builder_.CreateICmpEQ(dType, CoBool(true), DBG_NAME("isValidTest"));
+    auto boolTest = [this, &retval, out](Value *src) {
+        Value *ok = generateCallExtern(parseBoolForDatum, PaAddr(scaff_->evaluator_), PaAddr(src),
+                                       PaAddr(out));
+        retval = scaff_->builder_.CreateTrunc(scaff_->builder_.CreateLoad(TyInt8, out, DBG_NAME("boolI8")),
+                                              TyBool, DBG_NAME("boolVal"));
+        return ok;
     };
     generateValidationDatum(parent, src, boolTest);
     return retval;
@@ -1430,11 +1435,10 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
     Value *handlerResult = generateCallExtern(handleBadDouble, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(parent)), PaDouble(candidate));
     handlerResult = generateNotFlowControl(handlerResult);
 
-    // ERRACT returns a datum. getDoubleForDatum on a non-word is 0.0 with
-    // numberIsValid false. Retry the same predicate with that datum.
-    Value *dVal = generateCallExtern(getDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(handlerResult));
-    Value *numberIsValid =
-        generateCallExtern(getValidityOfDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(handlerResult));
+    AllocaInst *out = scaff_->createEntryBlockAlloca(TyDouble, nullptr, DBG_NAME("retryDoubleOut"));
+    Value *numberIsValid = generateCallExtern(parseDoubleForDatum, PaAddr(scaff_->evaluator_),
+                                              PaAddr(handlerResult), PaAddr(out));
+    Value *dVal = scaff_->builder_.CreateLoad(TyDouble, out, DBG_NAME("retryDouble"));
     dVal = scaff_->builder_.CreateSelect(numberIsValid, dVal, ConstantFP::getNaN(TyDouble),
                                          DBG_NAME("retryOrNaN"));
     candidate->addIncoming(dVal, scaff_->builder_.GetInsertBlock());

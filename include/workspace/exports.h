@@ -15,10 +15,8 @@
 //  -------------------------------------------------------------------
 
 EXPORTC void printInt(int32_t p);
-EXPORTC double getDoubleForDatum(addr_t eAddr, addr_t datumAddr);
-EXPORTC bool getValidityOfDoubleForDatum(addr_t eAddr, addr_t datumAddr);
-EXPORTC bool getBoolForDatum(addr_t eAddr, addr_t datumAddr);
-EXPORTC bool getValidityOfBoolForDatum(addr_t eAddr, addr_t datumAddr);
+EXPORTC bool parseDoubleForDatum(addr_t eAddr, addr_t datumAddr, double *out);
+EXPORTC bool parseBoolForDatum(addr_t eAddr, addr_t datumAddr, bool *out);
 EXPORTC addr_t getDatumForVarname(addr_t wordAddr);
 EXPORTC addr_t getWordForDouble(addr_t eAddr, double val);
 EXPORTC addr_t getWordForBool(addr_t eAddr, bool val);

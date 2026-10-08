@@ -7,10 +7,8 @@
 // Define JIT_EXPORT(fn) before including this file.
 
 JIT_EXPORT(printInt)
-JIT_EXPORT(getDoubleForDatum)
-JIT_EXPORT(getValidityOfDoubleForDatum)
-JIT_EXPORT(getBoolForDatum)
-JIT_EXPORT(getValidityOfBoolForDatum)
+JIT_EXPORT(parseDoubleForDatum)
+JIT_EXPORT(parseBoolForDatum)
 JIT_EXPORT(getDatumForVarname)
 JIT_EXPORT(getWordForDouble)
 JIT_EXPORT(getWordForBool)

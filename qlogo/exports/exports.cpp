@@ -143,63 +143,40 @@ addr_t handleBadValue(addr_t eAddr, addr_t parentAddr, DatumPtr value,
     });
 }
 
-/// Return the double value of a word object.
+/// Parse a datum as a double. Writes *out and returns whether it is a valid number.
 /// @param eAddr a pointer to the Evaluator object
 /// @param datumAddr a pointer to a Datum object
-/// @return the stored value as a double
-/// @note the caller should check getValidityOfDoubleForDatum() afterward.
-EXPORTC double getDoubleForDatum(addr_t eAddr, addr_t datumAddr)
+/// @param out destination for the parsed double (0.0 if not a number)
+/// @return true iff the datum is a word with a valid number
+EXPORTC bool parseDoubleForDatum(addr_t eAddr, addr_t datumAddr, double *out)
 {
+    Q_UNUSED(eAddr);
     auto *w = reinterpret_cast<Word *>(datumAddr);
-    if (w->isa_ == Datum::typeWord)
+    if (w->isa_ != Datum::typeWord)
     {
-        return w->numberValue();
+        *out = 0.0;
+        return false;
     }
-    return 0.0;
+    *out = w->numberValue();
+    return w->numberIsValid;
 }
 
-/// Query whether the recent number retrieved is valid.
+/// Parse a datum as a bool. Writes *out and returns whether it is a valid boolean word.
 /// @param eAddr a pointer to the Evaluator object
 /// @param datumAddr a pointer to a Datum object
-/// @return true iff the number retrieved is valid
-/// @note the caller should getDoubleForDatum before querying validity.
-EXPORTC bool getValidityOfDoubleForDatum(addr_t eAddr, addr_t datumAddr)
+/// @param out destination for the parsed bool (false if not a boolean word)
+/// @return true iff the datum is a word with a valid boolean
+EXPORTC bool parseBoolForDatum(addr_t eAddr, addr_t datumAddr, bool *out)
 {
+    Q_UNUSED(eAddr);
     auto *w = reinterpret_cast<Word *>(datumAddr);
-    if (w->isa_ == Datum::typeWord)
+    if (w->isa_ != Datum::typeWord)
     {
-        return w->numberIsValid;
+        *out = false;
+        return false;
     }
-    return false;
-}
-
-/// Lookup the var name and return the value as a bool
-/// @param eAddr a pointer to the Evaluator object
-/// @param datumAddr a pointer to a Datum object which contains the name of the variable
-/// @return the stored value as a bool
-EXPORTC bool getBoolForDatum(addr_t eAddr, addr_t datumAddr)
-{
-    auto *w = reinterpret_cast<Word *>(datumAddr);
-    if (w->isa_ == Datum::typeWord)
-    {
-        return w->boolValue();
-    }
-    return false;
-}
-
-/// Query whether the recent boolean value retrieved is valid.
-/// @param eAddr a pointer to the Evaluator object
-/// @param datumAddr a pointer to a Datum object
-/// @return true iff the number retrieved is valid
-/// @note the caller should getBoolForDatum before querying validity.
-EXPORTC bool getValidityOfBoolForDatum(addr_t eAddr, addr_t datumAddr)
-{
-    auto *w = reinterpret_cast<Word *>(datumAddr);
-    if (w->isa_ == Datum::typeWord)
-    {
-        return w->boolIsValid;
-    }
-    return false;
+    *out = w->boolValue();
+    return w->boolIsValid;
 }
 
 /// Lookup the var name and return the value as a QLogo object (Word, List, etc)
