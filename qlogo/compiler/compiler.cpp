@@ -1440,8 +1440,13 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
     Value *handlerResult = generateCallExtern(handleBadDouble, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(parent)), PaDouble(candidate));
     handlerResult = generateNotFlowControl(handlerResult);
 
-    // A Word was returned. Convert it to a double and try validating it again.
+    // ERRACT returns a datum. getDoubleForDatum on a non-word is 0.0 with
+    // numberIsValid false. Retry the same predicate with that datum.
     Value *dVal = generateCallExtern(getDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(handlerResult));
+    Value *numberIsValid =
+        generateCallExtern(getValidityOfDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(handlerResult));
+    dVal = scaff_->builder_.CreateSelect(numberIsValid, dVal, ConstantFP::getNaN(TyDouble),
+                                         DBG_NAME("retryOrNaN"));
     candidate->addIncoming(dVal, scaff_->builder_.GetInsertBlock());
     scaff_->builder_.CreateBr(validateBB);
 
