@@ -17,7 +17,7 @@
 #include "astnode.h"
 #include "compiler.h"
 #include "compiler_internal.h"
-#include "workspace/exports.h"
+#include "workspace/exports.inc"
 #include "workspace/procedures.h"
 #include "sharedconstants.h"
 using namespace llvm;

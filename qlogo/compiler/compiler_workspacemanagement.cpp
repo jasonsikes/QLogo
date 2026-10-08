@@ -18,7 +18,7 @@
 #include "compiler.h"
 #include "compiler_internal.h"
 #include "datum_types.h"
-#include "workspace/exports.h"
+#include "workspace/exports.inc"
 #include "flowcontrol.h"
 #include "workspace/kernel.h"
 #include "sharedconstants.h"

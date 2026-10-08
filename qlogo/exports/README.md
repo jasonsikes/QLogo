@@ -2,7 +2,7 @@
 
 This directory contains the exported C functions that provide the interface between compiled QLogo code and the runtime system. Compiled Logo calls these functions across the C ABI to reach Qt and the rest of the QLogo runtime.
 
-The files here are split along the same UCBLogo primitive categories as the compiler sources in `qlogo/compiler/`. The corresponding declarations are in `include/workspace/exports.h`. That header is generated from `EXPORTC` lines in this directory by `util/update_exports_header.py`.
+The files here are split along the same UCBLogo primitive categories as the compiler sources in `qlogo/compiler/`. `include/workspace/exports.inc` is generated from `EXPORTC` definitions in this directory by `util/update_exports_header.py`. It is a signature X-macro: a plain include declares the functions; defining `JIT_EXPORT(ret, name, params)` before including it expands the ORC/`FunctionType` list.
 
 ## Files
 

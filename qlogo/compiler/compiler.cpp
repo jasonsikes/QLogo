@@ -33,7 +33,7 @@
 #include "llvm/Transforms/Coroutines/MaterializationUtils.h"
 #include "flowcontrol.h"
 #include "datum_types.h"
-#include "workspace/exports.h"
+#include "workspace/exports.inc"
 #include "op_strings.h"
 #include "sharedconstants.h"
 #include "treeifyer.h"
@@ -98,8 +98,8 @@ struct HostExport
 };
 
 const HostExport hostExports[] = {
-#define JIT_EXPORT(fn) {#fn, [](LLVMContext &c) { return hostExportType(fn, c); }},
-#include "workspace/jit_exports.inc"
+#define JIT_EXPORT(ret, name, params) {#name, [](LLVMContext &c) { return hostExportType(name, c); }},
+#include "workspace/exports.inc"
 #undef JIT_EXPORT
 };
 
@@ -107,9 +107,9 @@ Error defineHostExports(LLJIT &jit)
 {
     MangleAndInterner mangle(jit.getExecutionSession(), jit.getDataLayout());
     SymbolMap symbols;
-#define JIT_EXPORT(fn) \
-    symbols[mangle(#fn)] = ExecutorSymbolDef::fromPtr(fn, JITSymbolFlags::Exported);
-#include "workspace/jit_exports.inc"
+#define JIT_EXPORT(ret, name, params) \
+    symbols[mangle(#name)] = ExecutorSymbolDef::fromPtr(name, JITSymbolFlags::Exported);
+#include "workspace/exports.inc"
 #undef JIT_EXPORT
     return jit.getMainJITDylib().define(absoluteSymbols(std::move(symbols)));
 }

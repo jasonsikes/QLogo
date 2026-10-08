@@ -19,7 +19,7 @@
 #include "compiler_internal.h"
 #include "interface/streammanager.h"
 #include "sharedconstants.h"
-#include "workspace/exports.h"
+#include "workspace/exports.inc"
 
 using namespace llvm;
 using namespace llvm::orc;
