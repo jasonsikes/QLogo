@@ -454,8 +454,8 @@ class Compiler
 
     // The generators for the different ASTNodes. Since this list changes often during development
     // and it needs to be consistent across several files, we keep the master list in the compiler
-    // implementation files. Here, primitives.h is one of the generated files.
-#include <primitives.h>
+    // implementation files. Here, primitives.inc is one of the generated files.
+#include "primitives.inc"
 
     // Generate a noop expression.
     llvm::Value *genNoop(const DatumPtr &node, TypeMask expected);

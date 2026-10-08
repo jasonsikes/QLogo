@@ -62,7 +62,7 @@ set(QLOGO_SOURCES
   ../include/astnode.h
   ../include/flowcontrol.h
   ../include/workspace/kernel.h
-  ../include/primitives.h
+  ../include/primitives.inc
   ../include/workspace/evaluator.h
   ../include/workspace/exports.inc
   ../include/workspace/exports_internal.h
@@ -73,7 +73,7 @@ set(QLOGO_SOURCES
   ../include/op_strings.h
   ../include/workspace/visited.h
   ../include/workspace/callframe.h
-  ../include/workspace/primitivetable.h
+  ../include/workspace/primitivetable.inc
   ../include/workspace/procedures.h
   ../include/workspace/propertylists.h
   ../include/workspace/specialvars.h
