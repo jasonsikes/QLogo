@@ -1206,22 +1206,13 @@ Value *Compiler::generateImmediateReturn(llvm::Value *retval)
     BasicBlock *bailoutBB = scaff_->createBasicBlock(DBG_NAME("bailout"));
     BasicBlock *throwAwayBB = scaff_->createBasicBlock(DBG_NAME("throwAway"));
 
-    // We are going to return something at this point.
-    // However, there may be code after this point that we have to compile and then ignore.
-    // So we need to:
-    // 1. Allow the code before this point to execute.
-    // 2. Return the control operation.
-    // 3. Ignore any code after the return operation.
-    // To do this we allow the compiler to finish generating the code after the return operation,
-    // and insert it after a test that will always fail, so the code will never be executed.
-    Value *cond = scaff_->builder_.CreateICmpEQ(CoBool(1), CoBool(0), DBG_NAME("fakeTest"));
-    scaff_->builder_.CreateCondBr(cond, throwAwayBB, bailoutBB);
+    // Leave this path with the flow-control / error result. Remaining nodes on
+    // the line are still generated into throwAwayBB which has no predecessor.
+    scaff_->builder_.CreateBr(bailoutBB);
 
     scaff_->builder_.SetInsertPoint(bailoutBB);
     generateReturn(retval);
 
-    // Any code that the compiler has remaining to generate after the return operation will
-    // be placed here, and then ignored.
     scaff_->builder_.SetInsertPoint(throwAwayBB);
     return retval;
 }
