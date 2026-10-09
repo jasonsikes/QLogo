@@ -36,6 +36,7 @@
 #include "llvm/Transforms/Scalar/SROA.h"
 
 #include <memory>
+#include <string>
 #include <type_traits>
 
 namespace llvm
@@ -165,8 +166,8 @@ struct Scaffold
 #define PaAddr(VAL)   {TyAddr, (VAL)}
 #define PaBool(VAL)   {TyBool, (VAL)}
 
-// Debug name mangler: prefix with enclosing C++ function name (e.g. "tocCond" -> "generateTOC tocCond")
-const char *dbgName(const char *enclosing, const char *name);
+// Debug name mangler: prefix with enclosing C++ function name (e.g. "tocCond" -> "generateTOC_tocCond")
+std::string dbgName(const char *enclosing, const char *name);
 #define DBG_NAME(name) (::dbgName(__func__, (name)))
 
 // Some operations only work in the GUI mode. For the CLI mode, we return an error.

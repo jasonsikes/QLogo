@@ -54,15 +54,10 @@
 
 std::vector<std::weak_ptr<CompiledText>> Compiler::liveCompiledTexts_;
 
-const char *dbgName(const char *enclosing, const char *name)
+std::string dbgName(const char *enclosing, const char *name)
 {
-    static bool shouldMangle = Config::get().showIR_ || Config::get().showCFG_ || Config::get().showModuleIR_;
-    if (shouldMangle)
-    {
-        static std::string storage;
-        storage = std::string(enclosing) + "_" + name;
-        return storage.c_str();
-    }
+    if (Config::get().showIR_ || Config::get().showCFG_ || Config::get().showModuleIR_)
+        return std::string(enclosing) + "_" + name;
     return name;
 }
 
