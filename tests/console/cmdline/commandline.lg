@@ -1,3 +1,4 @@
-print count :commandline
-print substringp "qlogo first :commandline
-print substringp "commandline.lg last :commandline
+print emptyp :commandline
+print count :argv
+print substringp "qlogo first :argv
+print substringp "commandline.lg last :argv

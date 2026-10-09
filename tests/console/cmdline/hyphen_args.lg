@@ -1,0 +1,5 @@
+print count :commandline
+print first :commandline
+print last :commandline
+print memberp "- :commandline
+print memberp "leftover :argv

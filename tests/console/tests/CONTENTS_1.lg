@@ -4,6 +4,7 @@ show count item 2 contents
 show count last contents
 show memberp "PRINT first contents
 show memberp "ALLOWGETSET item 2 contents
+show memberp "ARGV item 2 contents
 show memberp "COMMANDLINE item 2 contents
 show memberp "LOGOPLATFORM item 2 contents
 show memberp "LOGOVERSION item 2 contents

@@ -2,4 +2,5 @@ show namep "logoplatform
 show name? "LOGOVERSION
 show namep "allowgetset
 show name? "commandline
+show namep "argv
 show namep "notavar

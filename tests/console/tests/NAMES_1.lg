@@ -2,6 +2,7 @@ show emptyp first names
 show count names
 show count last names
 show memberp "ALLOWGETSET last names
+show memberp "ARGV last names
 show memberp "COMMANDLINE last names
 show memberp "LOGOPLATFORM last names
 show memberp "LOGOVERSION last names

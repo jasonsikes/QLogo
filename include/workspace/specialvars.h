@@ -24,6 +24,7 @@
 #define QLOGO_SPECIAL_VARS(X)                 \
     X(AllowGetSet,       "ALLOWGETSET")       \
     X(CaseIgnoredP,      "CASEIGNOREDP")      \
+    X(Argv,              "ARGV")              \
     X(CommandLine,       "COMMANDLINE")       \
     X(ErrAct,            "ERRACT")            \
     X(LogoPlatform,      "LOGOPLATFORM")      \

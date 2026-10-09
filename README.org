@@ -196,8 +196,6 @@ This enables multiple colors and fonts on the same console.
 
 ~qlogo file.lg~ runs that file as Logo instructions and then presents the prompt.
 
-*** ~COMMANDLINE~ contains **ALL** of the parameters used to start qlogo instead of just the ones that appear after a hyphen.
-
 *** If ~ERRACT~ is set and its size is greater than zero, then any errors execute ~PAUSE~.
   
 *** Garbage collection is on-the-fly.
@@ -347,6 +345,10 @@ Outputs the current ~SETEDITOR~ command: a word, or a list of words. See ~SETEDI
 **** ~TEMPLOC~:
 
 Outputs the directory ~EDIT~ uses for its temporary file. See ~SETTEMPLOC~.
+
+**** ~ARGV~:
+
+A list of every word on the command line used to start qlogo, including the program name. This is similar to ~COMMANDLINE~ which is the list of words on the command line after a hyphen.
 
 *** The following commands are slightly different:
 

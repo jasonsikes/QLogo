@@ -621,18 +621,33 @@ void Kernel::initPalette()
 
 void Kernel::initVariables()
 {
-    ListBuilder builder;
-    for (auto &arg : Config::get().ARGV_)
+    ListBuilder argvBuilder;
+    ListBuilder commandLineBuilder;
+    bool afterHyphen = false;
+    bool isProgramName = true;
+    for (const QString &arg : Config::get().ARGV_)
     {
-        builder.append(DatumPtr(arg));
+        argvBuilder.append(DatumPtr(arg));
+        if (isProgramName)
+        {
+            isProgramName = false;
+            continue;
+        }
+        if (!afterHyphen)
+        {
+            if (arg == QStringLiteral("-"))
+                afterHyphen = true;
+            continue;
+        }
+        commandLineBuilder.append(DatumPtr(arg));
     }
 
     DatumPtr platform(LOGOPLATFORM);
     DatumPtr version(LOGOVERSION);
     DatumPtr trueDatumPtr(QObject::tr("true"));
-    DatumPtr commandLine = builder.finishedList();
 
-    setDatumForName(commandLine, SpecialVars::name(SpecialVars::Id::CommandLine));
+    setDatumForName(argvBuilder.finishedList(), SpecialVars::name(SpecialVars::Id::Argv));
+    setDatumForName(commandLineBuilder.finishedList(), SpecialVars::name(SpecialVars::Id::CommandLine));
     setDatumForName(platform, SpecialVars::name(SpecialVars::Id::LogoPlatform));
     setDatumForName(version, SpecialVars::name(SpecialVars::Id::LogoVersion));
     setDatumForName(trueDatumPtr, SpecialVars::name(SpecialVars::Id::AllowGetSet));
@@ -640,6 +655,7 @@ void Kernel::initVariables()
     setDatumForName(trueDatumPtr, caseIgnoredP);
     addName(NameMark::Buried, NameKind::Variables, caseIgnoredP);
     // TODO: Bury these variables:
+    // "ARGV"
     // "LOGOPLATFORM"
     // "LOGOVERSION"
     // "ALLOWGETSET"

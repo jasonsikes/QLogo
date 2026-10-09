@@ -203,8 +203,9 @@ const bool debugBuild_ = false;
     QStringList ARGV_;
 
     /// @brief Logo file to run before the interactive prompt, if any.
-    /// @details Empty when no positional script argument was given. Further
-    /// positional arguments are not additional scripts; they remain only in ARGV_.
+    /// @details Empty when no positional script was given before a lone hyphen.
+    /// A hyphen and the words after it are COMMANDLINE, not scripts. Further
+    /// positional arguments before the hyphen are not additional scripts.
     QString startupScriptPath_;
 
     /// @brief The path to the library database file.

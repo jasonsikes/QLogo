@@ -1,2 +1,2 @@
-print count :commandline
-print last :commandline
+print emptyp :commandline
+print last :argv
