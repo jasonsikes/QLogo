@@ -196,8 +196,6 @@ This enables multiple colors and fonts on the same console.
 
 ~qlogo file.lg~ runs that file as Logo instructions and then presents the prompt.
 
-*** If ~ERRACT~ is set and its size is greater than zero, then any errors execute ~PAUSE~.
-  
 *** Garbage collection is on-the-fly.
 
 Memory is freed the moment a word/list/array is no longer needed. ~GC~ and ~.SETSEGMENTSIZE~ are provided for compatibility, but are no-ops.
