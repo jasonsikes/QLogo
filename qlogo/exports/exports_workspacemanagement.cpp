@@ -316,14 +316,22 @@ EXPORTC addr_t stdLocal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, uin
 namespace
 {
 
-QString propertyKey(Datum *word)
+QString propertyListKey(Datum *word)
 {
     return word->toString(Datum::ToStringFlags_Key);
 }
 
+QString propertyNameKey(Datum *word)
+{
+    if (Kernel::get().specialVarIsTrue(SpecialVars::Id::CaseIgnoredP))
+        return word->toString(Datum::ToStringFlags_Key);
+    return word->toString();
+}
+
 } // namespace
 
-/// PPROP: add or replace one property. Names are case-insensitive.
+/// PPROP: add or replace one property. Property-list names are always
+/// case-insensitive. Property names follow CASEIGNOREDP.
 /// @param plistnameAddr a word naming the property list
 /// @param propnameAddr a word naming the property
 /// @param valueAddr the value to store
@@ -332,7 +340,7 @@ EXPORTC void stdPprop(addr_t plistnameAddr, addr_t propnameAddr, addr_t valueAdd
     auto *plistname = reinterpret_cast<Datum *>(plistnameAddr);
     auto *propname = reinterpret_cast<Datum *>(propnameAddr);
     auto *value = reinterpret_cast<Datum *>(valueAddr);
-    Kernel::get().plists_.addProperty(propertyKey(plistname), propertyKey(propname), DatumPtr(value));
+    Kernel::get().plists_.addProperty(propertyListKey(plistname), propertyNameKey(propname), DatumPtr(value));
 }
 
 /// GPROP: output a property value, or the empty list if it is absent.
@@ -345,7 +353,7 @@ EXPORTC addr_t stdGprop(addr_t eAddr, addr_t plistnameAddr, addr_t propnameAddr)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *plistname = reinterpret_cast<Datum *>(plistnameAddr);
     auto *propname = reinterpret_cast<Datum *>(propnameAddr);
-    DatumPtr value = Kernel::get().plists_.getProperty(propertyKey(plistname), propertyKey(propname));
+    DatumPtr value = Kernel::get().plists_.getProperty(propertyListKey(plistname), propertyNameKey(propname));
     e->watch(value);
     return reinterpret_cast<addr_t>(value.datumValue());
 }
@@ -358,7 +366,7 @@ EXPORTC void stdRemprop(addr_t plistnameAddr, addr_t propnameAddr)
 {
     auto *plistname = reinterpret_cast<Datum *>(plistnameAddr);
     auto *propname = reinterpret_cast<Datum *>(propnameAddr);
-    Kernel::get().plists_.removeProperty(propertyKey(plistname), propertyKey(propname));
+    Kernel::get().plists_.removeProperty(propertyListKey(plistname), propertyNameKey(propname));
 }
 
 /// PLIST: output a copy of the property list as alternating names and values.
@@ -370,7 +378,7 @@ EXPORTC addr_t stdPlist(addr_t eAddr, addr_t plistnameAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *plistname = reinterpret_cast<Datum *>(plistnameAddr);
-    DatumPtr plist = Kernel::get().plists_.getPropertyList(propertyKey(plistname));
+    DatumPtr plist = Kernel::get().plists_.getPropertyList(propertyListKey(plistname));
     e->watch(plist);
     return reinterpret_cast<addr_t>(plist.datumValue());
 }

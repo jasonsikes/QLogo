@@ -22,9 +22,15 @@
 #include "workspace/exports_internal.h"
 #include "datum_types.h"
 #include "flowcontrol.h"
+#include "workspace/evaluator.h"
 #include "workspace/kernel.h"
 
 bool isDatumInContainer(VisitedSet &visited, Datum *value, Datum *container);
+
+static Qt::CaseSensitivity equalpCaseSensitivity(Evaluator *e)
+{
+    return e->varCASEIGNOREDP() ? Qt::CaseInsensitive : Qt::CaseSensitive;
+}
 
 /// @brief Recursively check if a datum is in an array by object identity.
 /// @param visited The set of visited nodes.
@@ -196,7 +202,7 @@ EXPORTC bool cmpDatumToDatum(addr_t eAddr, addr_t d1, addr_t d2)
     auto *dD1 = reinterpret_cast<Datum *>(d1);
     auto *dD2 = reinterpret_cast<Datum *>(d2);
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Qt::CaseSensitivity cs = e->varCASEIGNOREDP() ? Qt::CaseInsensitive : Qt::CaseSensitive;
+    Qt::CaseSensitivity cs = equalpCaseSensitivity(e);
     VisitedMap visited;
     return areDatumsEqual(visited, dD1, dD2, cs);
 }
@@ -658,7 +664,7 @@ EXPORTC bool isBefore(addr_t eAddr, addr_t word1Addr, addr_t word2Addr)
     auto *word1 = reinterpret_cast<Word *>(word1Addr);
     auto *word2 = reinterpret_cast<Word *>(word2Addr);
 
-    Qt::CaseSensitivity cs = e->varCASEIGNOREDP() ? Qt::CaseInsensitive : Qt::CaseSensitive;
+    Qt::CaseSensitivity cs = equalpCaseSensitivity(e);
 
     QString value1 = word1->toString();
     QString value2 = word2->toString();
@@ -667,22 +673,23 @@ EXPORTC bool isBefore(addr_t eAddr, addr_t word1Addr, addr_t word2Addr)
 
 EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
 {
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     auto *container = reinterpret_cast<Datum *>(containerAddr);
 
     if (container->isWord())
     {
         Word *word = container->wordValue();
-        QString containerString = word->toString(Datum::ToStringFlags_Key);
+        QString containerString = word->toString();
         if (thing->isWord())
         {
             Word *word2 = thing->wordValue();
-            QString thingString = word2->toString(Datum::ToStringFlags_Key);
+            QString thingString = word2->toString();
             if (thingString.length() != 1)
             {
                 return false;
             }
-            return containerString.contains(thingString);
+            return containerString.contains(thingString, equalpCaseSensitivity(e));
         }
         return false;
     }
@@ -710,8 +717,9 @@ EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
     });
 }
 
-EXPORTC bool isSubstring(addr_t thing1Addr, addr_t thing2Addr)
+EXPORTC bool isSubstring(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
 {
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing1 = reinterpret_cast<Datum *>(thing1Addr);
     auto *thing2 = reinterpret_cast<Datum *>(thing2Addr);
 
@@ -719,9 +727,9 @@ EXPORTC bool isSubstring(addr_t thing1Addr, addr_t thing2Addr)
     {
         auto *word1 = reinterpret_cast<Word *>(thing1);
         auto *word2 = reinterpret_cast<Word *>(thing2);
-        QString string1 = word1->toString(Datum::ToStringFlags_Key);
-        QString string2 = word2->toString(Datum::ToStringFlags_Key);
-        return string2.contains(string1);
+        QString string1 = word1->toString();
+        QString string2 = word2->toString();
+        return string2.contains(string1, equalpCaseSensitivity(e));
     }
     return false;
 }
@@ -811,11 +819,11 @@ EXPORTC addr_t member(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
         QString retval = "";
         if (thing1->isWord())
         {
-            QString thing2Str = word2->toString(Datum::ToStringFlags_Raw);
-            QString thing1Str = word1->toString(Datum::ToStringFlags_Raw);
+            QString thing2Str = word2->toString();
+            QString thing1Str = word1->toString();
             if (!thing1Str.isEmpty())
             {
-                int index = thing2Str.indexOf(thing1Str);
+                int index = thing2Str.indexOf(thing1Str, 0, equalpCaseSensitivity(e));
                 if (index != -1)
                 {
                     retval = thing2Str.sliced(index);

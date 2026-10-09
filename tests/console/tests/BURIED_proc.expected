@@ -1,2 +1,2 @@
 ? > foo defined
-? ? [[FOO] [] []]
+? ? [[FOO] [CASEIGNOREDP] []]

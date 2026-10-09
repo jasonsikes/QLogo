@@ -636,6 +636,9 @@ void Kernel::initVariables()
     setDatumForName(platform, SpecialVars::name(SpecialVars::Id::LogoPlatform));
     setDatumForName(version, SpecialVars::name(SpecialVars::Id::LogoVersion));
     setDatumForName(trueDatumPtr, SpecialVars::name(SpecialVars::Id::AllowGetSet));
+    const QString &caseIgnoredP = SpecialVars::name(SpecialVars::Id::CaseIgnoredP);
+    setDatumForName(trueDatumPtr, caseIgnoredP);
+    addName(NameMark::Buried, NameKind::Variables, caseIgnoredP);
     // TODO: Bury these variables:
     // "LOGOPLATFORM"
     // "LOGOVERSION"

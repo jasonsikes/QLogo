@@ -1,0 +1,7 @@
+show equalp "Hello "hello
+show memberp "E "hello
+show substringp "HI "this
+show member "E "hello
+show beforep "abc "ABD
+show memberp "CASEIGNOREDP item 2 buried
+show memberp "CASEIGNOREDP last names

@@ -1,0 +1,6 @@
+make "caseignoredp "false
+show equalp "Hello "hello
+show memberp "E "hello
+show substringp "HI "this
+show emptyp member "E "hello
+show beforep "abc "ABD

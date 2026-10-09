@@ -1,0 +1,7 @@
+pprop "City "Name "Berkeley
+show gprop "city "name
+make "caseignoredp "false
+pprop "town "Name "Oakland
+show gprop "town "name
+show gprop "town "Name
+show gprop "TOWN "Name

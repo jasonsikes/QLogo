@@ -3,4 +3,10 @@ end
 make "bar 1
 pprop "baz "a 1
 bury [[foo] [bar] [baz]]
-show buried
+show memberp "FOO first buried
+show memberp "BAR item 2 buried
+show memberp "CASEIGNOREDP item 2 buried
+show memberp "BAZ last buried
+show count first buried
+show count item 2 buried
+show count last buried

@@ -719,7 +719,7 @@ Value *Compiler::genSubstringp(const DatumPtr &node, TypeMask expected)
 {
     CallSite cs(this, node, TypeDatum, TypeDatum);
     auto [thing1, thing2] = cs.children();
-    return cs.ret(generateCallExtern(isSubstring, PaAddr(thing1), PaAddr(thing2)));
+    return cs.ret(generateCallExtern(isSubstring, PaAddr(scaff_->evaluator_), PaAddr(thing1), PaAddr(thing2)));
 }
 /***DOC NUMBERP NUMBER?
 NUMBERP thing
