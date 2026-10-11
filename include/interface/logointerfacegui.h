@@ -27,6 +27,7 @@
 #include <QDataStream>
 #include <QFile>
 #include <QFont>
+#include <QQueue>
 
 class QTransform;
 
@@ -62,6 +63,9 @@ class LogoInterfaceGUI : public LogoInterface
     QVector2D clickPos_ = QVector2D(0, 0);
     int lastButtonpressID_ = 0;
     bool isMouseButtonDown_ = false;
+
+    /// @brief Unsolicited keys. KEYACT prepends so READCHAR inside KEYACT sees that character first.
+    QQueue<QString> typeahead_;
 
     QColor currentBackgroundColor_ = Config::get().initialCanvasBackgroundColor_;
     QColor currentForegroundColor_ = Config::get().initialCanvasForegroundColor_;
@@ -106,6 +110,9 @@ class LogoInterfaceGUI : public LogoInterface
     /// @brief LINEP: do not peek the Psychi pipe. Same as KEYP until a line
     /// message can be inspected without consuming it.
     bool lineQueueHasLine() override;
+
+    /// @brief KEYP: true if typeahead has a character.
+    bool keyQueueHasChars() override;
 
     /// @brief Reads a character from the input queue.
     /// @return The character read from the input queue.

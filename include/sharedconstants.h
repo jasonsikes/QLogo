@@ -87,6 +87,7 @@ enum messageCategory : message_t
     C_CANVAS_MOUSE_MOVED,           // Mouse moved over the canvas
     C_CANVAS_MOUSE_BUTTON_UP,       // A mouse button was released
     C_CANVAS_SET_PENMODE,           // Set canvas pen mode
+    C_CONSOLE_KEY_EVENT,            // Character key while Logo is not reading a line or char
 };
 
 /// @brief The configuration for the qlgog/Psychi programs.

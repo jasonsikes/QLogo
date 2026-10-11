@@ -120,6 +120,9 @@ class LogoInterfaceCurses : public LogoInterface
     /// @return The character that was read, or nothing on EOF.
     DatumPtr readchar() override;
 
+    /// @brief Drain pending terminal keys without blocking (KEYACT / typeahead).
+    void processInputMessageQueue() override;
+
     /// @brief True if a character is waiting on the terminal (KEYP / KEY?).
     bool keyQueueHasChars() override;
 

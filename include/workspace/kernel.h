@@ -101,6 +101,18 @@ class Kernel
     /// @brief How many times PAUSE has been entered. Used to notice user input during ERRACT.
     uint32_t pauseCount_ = 0;
 
+    /// @brief Nested runECE() depth. Zero at the ? prompt while waiting for a line.
+    int eceDepth_ = 0;
+
+    /// @brief Shared BUTTONACT/KEYACT splice slot (UCBLogo eval_buttonact).
+    DatumPtr pendingAct_;
+
+    /// @brief Nonempty runparsed instruction list for @p id, or nothing if unbound/empty.
+    DatumPtr specialVarInstructionList(SpecialVars::Id id) const;
+
+    /// @brief Push pendingAct_ on the current frame so ECE runs it before the interrupted list.
+    void splicePendingActIfAny();
+
     void initPalette();
 
     /// @brief Run the explicit control evaluator.
@@ -627,6 +639,18 @@ class Kernel
     /// @note Call this only from the interpreter thread. The signal handler
     /// never calls it.
     bool consumePendingSignal(DatumPtr *resultOut);
+
+    /// @brief Arm BUTTONACT or KEYACT if that variable holds a nonempty instruction list.
+    /// @param id ButtonAct or KeyAct. KEYACT is ignored while eceDepth_ is 0 (the ? prompt).
+    /// @return True if a list was stored in the pending splice slot.
+    bool armPendingAct(SpecialVars::Id id);
+
+    /// @brief True if BUTTONACT or KEYACT is waiting to be spliced or run at the prompt.
+    bool hasPendingAct() const;
+
+    /// @brief Run a pending BUTTONACT at the ? prompt (eceDepth_ == 0).
+    /// @details Errors print and the prompt wait continues. THROW "SYSTEM unwinds the wait.
+    void runPendingActAtPrompt();
 
     /// @brief Runs the main loop of the QLogo interpreter.
     /// @return The exit code of the application.

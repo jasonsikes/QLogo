@@ -20,6 +20,7 @@
 #include "interface/logointerfacegui.h"
 #include "interface/pipeio.h"
 #include "workspace/kernel.h"
+#include "workspace/specialvars.h"
 #include <QCoreApplication>
 #include <QByteArray>
 #include <QDataStream>
@@ -101,6 +102,13 @@ message_t LogoInterfaceGUI::getMessage()
     case C_CONSOLE_CHAR_READ:
         bufferStream >> rawChar_;
         break;
+    case C_CONSOLE_KEY_EVENT:
+        bufferStream >> rawChar_;
+        if (Kernel::get().armPendingAct(SpecialVars::Id::KeyAct))
+            typeahead_.prepend(QString(rawChar_));
+        else
+            typeahead_.enqueue(QString(rawChar_));
+        break;
     case W_FILE_DIALOG_GET_PATH:
         bufferStream >> filePath_;
         break;
@@ -119,6 +127,7 @@ message_t LogoInterfaceGUI::getMessage()
     case C_CANVAS_MOUSE_BUTTON_DOWN:
         bufferStream >> clickPos_ >> lastButtonpressID_;
         isMouseButtonDown_ = true;
+        Kernel::get().armPendingAct(SpecialVars::Id::ButtonAct);
         break;
     case C_CANVAS_MOUSE_BUTTON_UP:
         isMouseButtonDown_ = false;
@@ -148,6 +157,11 @@ void LogoInterfaceGUI::waitForMessage(message_t expectedType)
     do
     {
         type = getMessage();
+        Kernel::get().runPendingActAtPrompt();
+        // WAIT returns early so ECE can splice BUTTONACT/KEYACT. The stale
+        // W_TIMER_END is ignored later.
+        if (Kernel::get().hasPendingAct() && expectedType == W_TIMER_END)
+            return;
         if (LogoInterface::lastSignal_ == noSignal)
             continue;
         // Nested pause() would wait for a prompt and could swallow Psychi's
@@ -246,13 +260,22 @@ bool LogoInterfaceGUI::lineQueueHasLine()
     return keyQueueHasChars();
 }
 
+bool LogoInterfaceGUI::keyQueueHasChars()
+{
+    processInputMessageQueue();
+    return !typeahead_.isEmpty();
+}
+
 DatumPtr LogoInterfaceGUI::readchar()
 {
+    if (!typeahead_.isEmpty())
+        return DatumPtr(typeahead_.dequeue());
+
     message(C_CONSOLE_REQUEST_CHAR);
 
     waitForMessage(C_CONSOLE_CHAR_READ);
 
-    return DatumPtr(rawChar_);
+    return DatumPtr(QString(rawChar_));
 }
 
 QString LogoInterfaceGUI::fileDialogModal()

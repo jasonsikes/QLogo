@@ -17,12 +17,12 @@ from typing import Any, Dict, List, Optional, Tuple
 
 try:
     from PyQt6.QtCore import QByteArray, QDataStream, QIODevice, QPointF
-    from PyQt6.QtGui import QColor, QImage, QTransform
+    from PyQt6.QtGui import QColor, QImage, QTransform, QVector2D
     PYQT_VERSION = 6
 except ImportError:
     try:
         from PySide6.QtCore import QByteArray, QDataStream, QIODevice, QPointF
-        from PySide6.QtGui import QColor, QImage, QTransform
+        from PySide6.QtGui import QColor, QImage, QTransform, QVector2D
         PYQT_VERSION = 6
     except ImportError:
         print("Error: PyQt6 or PySide6 is required for this test program.")
@@ -81,6 +81,7 @@ C_CANVAS_MOUSE_BUTTON_DOWN = 43
 C_CANVAS_MOUSE_MOVED = 44
 C_CANVAS_MOUSE_BUTTON_UP = 45
 C_CANVAS_SET_PENMODE = 46
+C_CONSOLE_KEY_EVENT = 47
 
 # Screen mode constants
 INIT_SCREEN_MODE = 0
@@ -142,6 +143,7 @@ MESSAGE_NAMES = {
     'C_CANVAS_MOUSE_MOVED': C_CANVAS_MOUSE_MOVED,
     'C_CANVAS_MOUSE_BUTTON_UP': C_CANVAS_MOUSE_BUTTON_UP,
     'C_CANVAS_SET_PENMODE': C_CANVAS_SET_PENMODE,
+    'C_CONSOLE_KEY_EVENT': C_CONSOLE_KEY_EVENT,
 }
 
 
@@ -162,7 +164,10 @@ class PipeProtocol:
         # Serialize arguments based on type
         for arg in args:
             if isinstance(arg, str):
-                stream.writeQString(arg)
+                if message_type in (C_CONSOLE_CHAR_READ, C_CONSOLE_KEY_EVENT):
+                    stream.writeUInt16(ord(arg[0]))
+                else:
+                    stream.writeQString(arg)
             elif isinstance(arg, int):
                 stream.writeInt32(arg)
             elif isinstance(arg, float):
@@ -174,10 +179,13 @@ class PipeProtocol:
                 if 'r' in arg and 'g' in arg and 'b' in arg:
                     color = QColor(arg.get('r', 0), arg.get('g', 0), arg.get('b', 0), arg.get('a', 255))
                     stream << color
-                # Handle QPointF
+                # Handle QPointF / QVector2D (qlogo reads mouse as QVector2D)
                 elif 'x' in arg and 'y' in arg:
-                    point = QPointF(arg['x'], arg['y'])
-                    stream << point
+                    if message_type in (C_CANVAS_MOUSE_BUTTON_DOWN, C_CANVAS_MOUSE_MOVED):
+                        stream << QVector2D(arg['x'], arg['y'])
+                    else:
+                        point = QPointF(arg['x'], arg['y'])
+                        stream << point
                 else:
                     raise ValueError(f"Unknown dict type: {arg}")
             elif isinstance(arg, list):

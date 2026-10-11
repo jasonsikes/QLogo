@@ -15,6 +15,8 @@
 
 #include "interface/logointerfacecurses.h"
 #include "interface/pipeio.h"
+#include "workspace/kernel.h"
+#include "workspace/specialvars.h"
 #include <algorithm>
 #include <cerrno>
 #include <clocale>
@@ -427,6 +429,27 @@ int LogoInterfaceCurses::readWideChar(wint_t &ch)
     return ERR;
 }
 
+void LogoInterfaceCurses::processInputMessageQueue()
+{
+    if (!cursesActive_ || atEnd())
+        return;
+    ScopedNodelay poll(cursesActive_);
+    for (;;)
+    {
+        wint_t ch = 0;
+        const int rc = readWideChar(ch);
+        if (rc == ERR)
+            return;
+        char32_t ucs4 = 0;
+        if (!mapGetWchToChar(rc, ch, ucs4))
+            continue;
+        if (Kernel::get().armPendingAct(SpecialVars::Id::KeyAct))
+            unread_.prepend(ucs4);
+        else
+            unread_.append(ucs4);
+    }
+}
+
 bool LogoInterfaceCurses::keyQueueHasChars()
 {
     if (!cursesActive_ || atEnd())
@@ -444,7 +467,10 @@ bool LogoInterfaceCurses::keyQueueHasChars()
         char32_t ucs4 = 0;
         if (!mapGetWchToChar(rc, ch, ucs4))
             continue;
-        unread_.append(ucs4);
+        if (Kernel::get().armPendingAct(SpecialVars::Id::KeyAct))
+            unread_.prepend(ucs4);
+        else
+            unread_.append(ucs4);
         return true;
     }
 }
@@ -900,5 +926,16 @@ void LogoInterfaceCurses::mwait(unsigned long msecs)
 {
     if (cursesActive_)
         refresh();
-    LogoInterface::mwait(msecs);
+    if (msecs == 0)
+        return;
+    unsigned long remaining = msecs;
+    while (remaining > 0)
+    {
+        processInputMessageQueue();
+        if (Kernel::get().hasPendingAct())
+            return;
+        const unsigned long sliceMs = remaining < 50UL ? remaining : 50UL;
+        LogoInterface::mwait(sliceMs);
+        remaining -= sliceMs;
+    }
 }

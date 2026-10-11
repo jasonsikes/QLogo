@@ -188,6 +188,8 @@ Kernel::TopLevelResult Kernel::executeTopLevelList(const QString &prompt, bool i
         // ERRACT loop detector here so a bad value typed at PAUSE can be tried again.
         if (StreamManager::get().programReaderIsTerminal())
             clearErractLoop();
+        if (eceDepth_ == 0)
+            pendingAct_ = nothing();
 
         DatumPtr line = StreamManager::get().readProgramList(prompt, true);
 
@@ -1193,8 +1195,95 @@ bool Kernel::consumePendingSignal(DatumPtr *resultOut)
     return false;
 }
 
+namespace
+{
+struct EceDepthGuard
+{
+    int &depth;
+    explicit EceDepthGuard(int &d) : depth(d)
+    {
+        ++depth;
+    }
+    ~EceDepthGuard()
+    {
+        --depth;
+    }
+};
+} // namespace
+
+DatumPtr Kernel::specialVarInstructionList(SpecialVars::Id id) const
+{
+    DatumPtr val = datumForName(SpecialVars::name(id));
+    if (val.isNothing())
+        return nothing();
+    try
+    {
+        if (val.isWord() || val.isList())
+            val = runparse(val);
+    }
+    catch (FCError *)
+    {
+        return nothing();
+    }
+    if (!val.isList() || val.listValue()->isEmpty())
+        return nothing();
+    return val;
+}
+
+bool Kernel::armPendingAct(SpecialVars::Id id)
+{
+    if (id == SpecialVars::Id::KeyAct && eceDepth_ == 0)
+        return false;
+    DatumPtr act = specialVarInstructionList(id);
+    if (act.isNothing())
+        return false;
+    pendingAct_ = act;
+    return true;
+}
+
+bool Kernel::hasPendingAct() const
+{
+    return !pendingAct_.isNothing();
+}
+
+void Kernel::splicePendingActIfAny()
+{
+    if (pendingAct_.isNothing() || !pendingAct_.isList())
+        return;
+    if (currentCallFrame()->evaluationStackSize() == 0)
+        return;
+    currentCallFrame()->pushEvaluator(pendingAct_);
+    pendingAct_ = nothing();
+}
+
+void Kernel::runPendingActAtPrompt()
+{
+    if (eceDepth_ != 0 || pendingAct_.isNothing())
+        return;
+    DatumPtr act = pendingAct_;
+    pendingAct_ = nothing();
+    if (!act.isList() || act.listValue()->isEmpty())
+        return;
+
+    currentCallFrame()->pushEvaluator(act);
+    DatumPtr result;
+    try
+    {
+        result = runECE();
+    }
+    catch (FCError *e)
+    {
+        result = DatumPtr(e);
+    }
+
+    const TopLevelResult action = finishTopLevelResult(result, false, nullptr);
+    if (action == TopLevelResult::ExitProcess && result.isErr())
+        throw result.errValue();
+}
+
 DatumPtr Kernel::runECE()
 {
+    EceDepthGuard depthGuard(eceDepth_);
     const auto savedOp = nextOperation_;
     nextOperation_ = &Kernel::ece_evaluateStack;
     currentCallFrame()->retvalToParent_ = nothing();
@@ -1230,6 +1319,8 @@ void Kernel::ece_evaluateStack()
         }
         // PAUSE returned a normal value: continue the interrupted instruction.
     }
+
+    splicePendingActIfAny();
 
     ece_trace("ece_evaluateStack: executing " + currentEvaluator()->list_.toString());
     // GOTO stores the destination block on the CallFrame; consume it here so the

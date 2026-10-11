@@ -163,6 +163,8 @@ static QString getMessageTypeName(message_t type)
         return "C_CANVAS_MOUSE_BUTTON_UP";
     case C_CANVAS_SET_PENMODE:
         return "C_CANVAS_SET_PENMODE";
+    case C_CONSOLE_KEY_EVENT:
+        return "C_CONSOLE_KEY_EVENT";
     default:
         return QString("UNKNOWN(%1)").arg(type);
     }
@@ -348,6 +350,7 @@ static QString serializeMessageData(message_t type, const QByteArray &dataBuffer
         break;
     }
     case C_CONSOLE_CHAR_READ:
+    case C_CONSOLE_KEY_EVENT:
     {
         QChar c;
         readStream >> c;
@@ -730,6 +733,24 @@ bool MainWindow::maybeSendInterrupt(QKeyEvent *keyEvent)
     return true;
 }
 
+bool MainWindow::maybeSendKeyEvent(QKeyEvent *keyEvent)
+{
+    if (windowMode_ != windowMode_noWait)
+        return false;
+    if (logoProcess == nullptr || logoProcess->processId() <= 0)
+        return false;
+    const QString text = keyEvent->text();
+    if (text.isEmpty())
+        return false;
+    for (QChar c : text)
+    {
+        if (c.isNull())
+            continue;
+        message(C_CONSOLE_KEY_EVENT) << c;
+    }
+    return true;
+}
+
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
     Q_UNUSED(watched);
@@ -738,21 +759,26 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 
     auto *keyEvent = static_cast<QKeyEvent *>(event);
     const bool copyHasSelection = ui_->mainConsole->textCursor().hasSelection();
-    if (interruptKindForKey(keyEvent, copyHasSelection) == W_ZERO)
-        return QMainWindow::eventFilter(watched, event);
-
-    if (event->type() == QEvent::ShortcutOverride)
+    if (interruptKindForKey(keyEvent, copyHasSelection) != W_ZERO)
     {
-        event->accept();
-        // Cmd-Q is an application shortcut; send here in case no KeyPress follows.
-        if (keyEvent->matches(QKeySequence::Quit))
+        if (event->type() == QEvent::ShortcutOverride)
+        {
+            event->accept();
+            // Cmd-Q is an application shortcut; send here in case no KeyPress follows.
+            if (keyEvent->matches(QKeySequence::Quit))
+                maybeSendInterrupt(keyEvent);
+            return true;
+        }
+
+        if (!keyEvent->matches(QKeySequence::Quit))
             maybeSendInterrupt(keyEvent);
         return true;
     }
 
-    if (!keyEvent->matches(QKeySequence::Quit))
-        maybeSendInterrupt(keyEvent);
-    return true;
+    if (event->type() == QEvent::KeyPress && maybeSendKeyEvent(keyEvent))
+        return true;
+
+    return QMainWindow::eventFilter(watched, event);
 }
 
 void MainWindow::initialize()
@@ -783,15 +809,15 @@ void MainWindow::fileDialogModal()
 
 void MainWindow::startWaitTimer(qint32 msecs)
 {
-    // Do not allow multiple simultaneous timers.
-    static bool timerRunning = false;
-    if (timerRunning)
+    if (waitTimer_ == nullptr)
     {
-        message(W_TIMER_END);
-        return;
+        waitTimer_ = new QTimer(this);
+        waitTimer_->setSingleShot(true);
+        connect(waitTimer_, &QTimer::timeout, this, [this]() { message(W_TIMER_END); });
     }
-    timerRunning = true;
-    QTimer::singleShot(msecs, this, [this]() { message(W_TIMER_END); timerRunning = false;});
+    // Restarting cancels a timer left running after WAIT returned early for
+    // BUTTONACT/KEYACT.
+    waitTimer_->start(msecs);
 }
 
 void MainWindow::openEditorWindow(const QString &title, const QString &startingText)

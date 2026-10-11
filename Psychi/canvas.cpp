@@ -30,6 +30,7 @@ Arc::Arc(QPointF center, qreal a, qreal span, qreal radius)
 
 Canvas::Canvas(QWidget *parent) : QWidget(parent)
 {
+    setFocusPolicy(Qt::StrongFocus);
     boundsX_ = Config::get().initialBoundX_;
     boundsY_ = Config::get().initialBoundY_;
     backgroundColor_ = Config::get().initialCanvasBackgroundColor_;
@@ -506,6 +507,7 @@ void Canvas::resizeEvent(QResizeEvent *event)
 
 void Canvas::mousePressEvent(QMouseEvent *event)
 {
+    setFocus();
     int buttonID = 0;
     Qt::MouseButton button = event->button();
     if (button & Qt::MiddleButton)

@@ -22,6 +22,7 @@
 #include <QEvent>
 #include <QMainWindow>
 #include <QProcess>
+#include <QTimer>
 
 class Canvas;
 class Console;
@@ -62,6 +63,7 @@ class MainWindow : public QMainWindow
     windowMode_t windowMode_;
     bool hasShownCanvas_ = false;
     EditorWindow *editWindow_ = nullptr;
+    QTimer *waitTimer_ = nullptr;
 
     int startLogo();
     void beginReadRawlineWithPrompt(const QString &prompt);
@@ -93,6 +95,10 @@ class MainWindow : public QMainWindow
     /// @brief If @p key is a Logo interrupt shortcut, send the matching pipe message.
     /// @return True if the key was consumed.
     bool maybeSendInterrupt(QKeyEvent *keyEvent);
+
+    /// @brief Forward a character key to qlogo while Logo is not reading a line or char.
+    /// @return True if the key was sent as C_CONSOLE_KEY_EVENT.
+    bool maybeSendKeyEvent(QKeyEvent *keyEvent);
 
   public:
     /// @brief Constructor.

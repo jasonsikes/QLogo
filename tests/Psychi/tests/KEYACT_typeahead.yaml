@@ -1,0 +1,48 @@
+name: KEYACT off typeahead
+description: With KEYACT empty, an unsolicited key is typeahead for KEYP and READCHAR
+
+messages:
+  - expect:
+      message: C_CONSOLE_REQUEST_LINE
+      data:
+        prompt: "? "
+
+  - send:
+      message: C_CONSOLE_RAWLINE_READ
+      data: 'make "keyact [] wait 6000 print keyp print rc'
+
+  - expect:
+      message: W_TIMER_START
+
+  - send:
+      message: C_CONSOLE_KEY_EVENT
+      data: "z"
+
+  - send:
+      message: W_TIMER_END
+
+  - expect:
+      message: C_CONSOLE_PRINT_STRING
+      data: "true"
+      timeout: 2.0
+
+  - expect:
+      message: C_CONSOLE_PRINT_STRING
+      data: "z"
+
+  - expect:
+      message: C_CONSOLE_REQUEST_LINE
+      data:
+        prompt: "? "
+
+  - send:
+      message: C_CONSOLE_RAWLINE_READ
+      data: "BYE"
+
+  - expect:
+      message: C_CONSOLE_PRINT_STRING
+
+  - expect:
+      message: W_CLOSE_PIPE
+
+  - close_write_pipe: {}
