@@ -697,6 +697,18 @@ bool Kernel::specialVarIsTrue(SpecialVars::Id id) const
     return val.toString(Datum::ToStringFlags_Key) == QObject::tr("TRUE");
 }
 
+int Kernel::printLimitFromSpecialVar(SpecialVars::Id id) const
+{
+    DatumPtr val = datumForName(SpecialVars::name(id));
+    if (!val.isWord())
+        return -1;
+    Word *w = val.wordValue();
+    w->numberValue();
+    if (!w->numberIsValid)
+        return -1;
+    return static_cast<int>(w->numberValue());
+}
+
 DatumPtr Kernel::allVariables(bool unburiedOnly) const
 {
     ListBuilder builder;

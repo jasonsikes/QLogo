@@ -667,18 +667,6 @@ EXPORTC addr_t stdTrace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 namespace
 {
 
-int printLimitFromSpecialVar(SpecialVars::Id id)
-{
-    DatumPtr val = Kernel::get().datumForName(SpecialVars::name(id));
-    if (!val.isWord())
-        return -1;
-    Word *w = val.wordValue();
-    w->numberValue();
-    if (!w->numberIsValid)
-        return -1;
-    return static_cast<int>(w->numberValue());
-}
-
 QString traceArgToString(Datum *d, int printDepthLimit, int printWidthLimit)
 {
     if (d->isWord())
@@ -718,8 +706,8 @@ EXPORTC void stdTraceBegin(addr_t eAddr, addr_t astnodeAddr, addr_t argsAddr, ui
     Q_UNUSED(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto **args = reinterpret_cast<Datum **>(argsAddr);
-    const int printDepthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintDepthLimit);
-    const int printWidthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintWidthLimit);
+    const int printDepthLimit = Kernel::get().printLimitFromSpecialVar(SpecialVars::Id::PrintDepthLimit);
+    const int printWidthLimit = Kernel::get().printLimitFromSpecialVar(SpecialVars::Id::PrintWidthLimit);
 
     QString output(Kernel::get().traceDepth(), QLatin1Char(' '));
     output = output % QLatin1String("( ") % node->nodeName_.toString();
@@ -751,8 +739,8 @@ EXPORTC void stdTraceEnd(addr_t eAddr, addr_t astnodeAddr, addr_t resultAddr)
     Q_ASSERT(Kernel::get().traceDepth() > 0);
     Kernel::get().decrementTraceDepth();
 
-    const int printDepthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintDepthLimit);
-    const int printWidthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintWidthLimit);
+    const int printDepthLimit = Kernel::get().printLimitFromSpecialVar(SpecialVars::Id::PrintDepthLimit);
+    const int printWidthLimit = Kernel::get().printLimitFromSpecialVar(SpecialVars::Id::PrintWidthLimit);
 
     QString output(Kernel::get().traceDepth(), QLatin1Char(' '));
     output = output % node->nodeName_.toString();

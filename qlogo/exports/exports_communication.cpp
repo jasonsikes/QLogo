@@ -43,6 +43,12 @@ Datum::ToStringFlags writeToStringFlags(bool useShow)
     return flags;
 }
 
+void currentPrintLimits(int &printDepthLimit, int &printWidthLimit)
+{
+    printDepthLimit = Kernel::get().printLimitFromSpecialVar(SpecialVars::Id::PrintDepthLimit);
+    printWidthLimit = Kernel::get().printLimitFromSpecialVar(SpecialVars::Id::PrintWidthLimit);
+}
+
 } // namespace
 
 /// Write a Datum object to the standard output device.
@@ -57,7 +63,10 @@ EXPORTC addr_t stdWriteDatum(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr,
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     Datum::ToStringFlags writeFlags = writeToStringFlags(useShow);
     auto *d = reinterpret_cast<Datum *>(datumAddr);
-    QString output = d->toString(writeFlags) + "\n";
+    int printDepthLimit = -1;
+    int printWidthLimit = -1;
+    currentPrintLimits(printDepthLimit, printWidthLimit);
+    QString output = d->toString(writeFlags, printDepthLimit, printWidthLimit) + "\n";
     try {
         StreamManager::get().print(output);
     } catch (FCError *err) {
@@ -80,13 +89,16 @@ EXPORTC addr_t stdWriteDatumAry(addr_t eAddr, addr_t astnodeAddr, addr_t datumAd
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     Datum::ToStringFlags writeFlags = writeToStringFlags(useShow);
     auto **datumAry = reinterpret_cast<Datum **>(datumAddr);
+    int printDepthLimit = -1;
+    int printWidthLimit = -1;
+    currentPrintLimits(printDepthLimit, printWidthLimit);
     QString output;
     for (uint32_t i = 0; i < count; ++i)
     {
         Datum *d = datumAry[i];
         if ((i != 0) && addWhitespace)
             output = output % " ";
-        output = output % d->toString(writeFlags);
+        output = output % d->toString(writeFlags, printDepthLimit, printWidthLimit);
     }
     if (addWhitespace)
         output = output % "\n";

@@ -1,0 +1,6 @@
+make "printdepthlimit 0
+print "hello
+print [this is a test]
+make "printdepthlimit 1
+print [this is a test]
+print [[this is a test]]

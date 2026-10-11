@@ -212,6 +212,12 @@ class Kernel
     /// A missing name, a non-word, or any other word is false.
     bool specialVarIsTrue(SpecialVars::Id id) const;
 
+    /// @brief Integer value of a print-limit special variable, or -1 if unlimited.
+    /// @param id PRINTDEPTHLIMIT or PRINTWIDTHLIMIT.
+    /// @return The integer value when the variable is a number; -1 if it is
+    /// missing, a non-word, or not a number.
+    int printLimitFromSpecialVar(SpecialVars::Id id) const;
+
     /// @brief Erase name and its value from the variables hash.
     /// @param name The name of the variable to erase.
     void eraseVar(const QString &name);

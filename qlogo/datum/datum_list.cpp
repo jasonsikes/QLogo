@@ -48,7 +48,7 @@ QString List::toString(ToStringFlags flags, int printDepthLimit, int printWidthL
     bool shouldShowBrackets = (flags & ToStringFlags_Show) != 0;
     QString retval = shouldShowBrackets ? "[" : "";
     std::unique_ptr<VisitedSet> localVisited;
-    int printWidth = printWidthLimit - 1;
+    int printWidth = printWidthLimit;
     const List *l = this;
 
     if (this == EmptyList::instance())
@@ -89,7 +89,8 @@ QString List::toString(ToStringFlags flags, int printDepthLimit, int printWidthL
     }
 
 exit:
-    visited->remove(this);
+    if (visited != nullptr)
+        visited->remove(this);
     if (shouldShowBrackets)
     {
         retval.append(']');
