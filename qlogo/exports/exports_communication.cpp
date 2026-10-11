@@ -22,6 +22,7 @@
 #include "astnode.h"
 #include "datum_types.h"
 #include "workspace/kernel.h"
+#include "workspace/specialvars.h"
 #include "flowcontrol.h"
 #include "sharedconstants.h"
 
@@ -30,6 +31,19 @@
 #include <QProcess>
 #include <QStringBuilder>
 #include <QTextStream>
+
+namespace
+{
+
+Datum::ToStringFlags writeToStringFlags(bool useShow)
+{
+    Datum::ToStringFlags flags = useShow ? Datum::ToStringFlags_Show : Datum::ToStringFlags_None;
+    if (Kernel::get().specialVarIsTrue(SpecialVars::Id::FullPrintP))
+        flags = static_cast<Datum::ToStringFlags>(flags | Datum::ToStringFlags_FullPrint);
+    return flags;
+}
+
+} // namespace
 
 /// Write a Datum object to the standard output device.
 /// @param eAddr a pointer to the Evaluator object
@@ -41,7 +55,7 @@ EXPORTC addr_t stdWriteDatum(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr,
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
-    Datum::ToStringFlags writeFlags = useShow ? Datum::ToStringFlags_Show : Datum::ToStringFlags_None;
+    Datum::ToStringFlags writeFlags = writeToStringFlags(useShow);
     auto *d = reinterpret_cast<Datum *>(datumAddr);
     QString output = d->toString(writeFlags) + "\n";
     try {
@@ -64,7 +78,7 @@ EXPORTC addr_t stdWriteDatumAry(addr_t eAddr, addr_t astnodeAddr, addr_t datumAd
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
-    Datum::ToStringFlags writeFlags = useShow ? Datum::ToStringFlags_Show : Datum::ToStringFlags_None;
+    Datum::ToStringFlags writeFlags = writeToStringFlags(useShow);
     auto **datumAry = reinterpret_cast<Datum **>(datumAddr);
     QString output;
     for (uint32_t i = 0; i < count; ++i)

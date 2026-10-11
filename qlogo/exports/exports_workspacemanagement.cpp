@@ -695,7 +695,10 @@ QString traceArgToString(Datum *d, int printDepthLimit, int printWidthLimit)
             flags = static_cast<Datum::ToStringFlags>(flags | Datum::ToStringFlags_FullPrint);
         return w->toString(flags, printDepthLimit, printWidthLimit);
     }
-    return d->toString(Datum::ToStringFlags_Show, printDepthLimit, printWidthLimit);
+    Datum::ToStringFlags flags = Datum::ToStringFlags_Show;
+    if (Kernel::get().specialVarIsTrue(SpecialVars::Id::FullPrintP))
+        flags = static_cast<Datum::ToStringFlags>(flags | Datum::ToStringFlags_FullPrint);
+    return d->toString(flags, printDepthLimit, printWidthLimit);
 }
 
 bool isTracedOutputValue(Datum *d)

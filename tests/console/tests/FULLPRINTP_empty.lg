@@ -1,0 +1,6 @@
+make "fullprintp "true
+print bf "x
+show bf "x
+make "fullprintp "false
+print bf "x
+show bf "x
