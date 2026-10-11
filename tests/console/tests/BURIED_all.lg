@@ -6,6 +6,7 @@ bury [[foo] [bar] [baz]]
 show memberp "FOO first buried
 show memberp "BAR item 2 buried
 show memberp "CASEIGNOREDP item 2 buried
+show memberp "UNBURYONEDIT item 2 buried
 show memberp "BAZ last buried
 show count first buried
 show count item 2 buried

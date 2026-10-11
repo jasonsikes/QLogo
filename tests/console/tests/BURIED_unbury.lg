@@ -2,4 +2,8 @@ to foo
 end
 bury "foo
 unbury "foo
-show buried
+show memberp "FOO first buried
+show memberp "CASEIGNOREDP item 2 buried
+show memberp "UNBURYONEDIT item 2 buried
+show count first buried
+show count item 2 buried

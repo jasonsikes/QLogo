@@ -1,0 +1,7 @@
+to foo
+print 1
+end
+bury "foo
+load "UNBURYONEDIT_load.txt
+show buriedp "foo
+foo

@@ -2,4 +2,6 @@ pprop "city "name "Berkeley
 bury [[] [] [city]]
 remprop "city "name
 show plists
-show buried
+show memberp "CASEIGNOREDP item 2 buried
+show memberp "UNBURYONEDIT item 2 buried
+show emptyp last buried

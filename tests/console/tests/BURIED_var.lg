@@ -2,4 +2,5 @@ make "bar 1
 bury [[] [bar] []]
 show memberp "BAR item 2 buried
 show memberp "CASEIGNOREDP item 2 buried
+show memberp "UNBURYONEDIT item 2 buried
 show count item 2 buried

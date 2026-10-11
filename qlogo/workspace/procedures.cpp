@@ -166,8 +166,6 @@ void Procedures::defineProcedure(const DatumPtr &cmd,
     Compiler::get().noteCodeChange();
 
     procedures_[procname] = bodyP;
-    if (Kernel::get().specialVarIsTrue(SpecialVars::Id::UnburyOnEdit))
-        Kernel::get().removeName(Kernel::NameMark::Buried, Kernel::NameKind::Procedures, procname);
 }
 
 bool Procedures::isDefinableProcName(const DatumPtr &name) const

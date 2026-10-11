@@ -1,5 +1,9 @@
 bury "later
-show buried
+show memberp "LATER first buried
+show memberp "CASEIGNOREDP item 2 buried
+show memberp "UNBURYONEDIT item 2 buried
 to later
 end
-show buried
+show memberp "LATER first buried
+show memberp "CASEIGNOREDP item 2 buried
+show memberp "UNBURYONEDIT item 2 buried

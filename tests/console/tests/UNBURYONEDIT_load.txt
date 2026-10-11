@@ -1,0 +1,3 @@
+to foo
+print 2
+end

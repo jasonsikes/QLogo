@@ -1,3 +1,7 @@
-? ? [[] [CASEIGNOREDP] []]
+? ? false
+? true
+? true
 ? > later defined
-? [[LATER] [CASEIGNOREDP] []]
+? true
+? true
+? true

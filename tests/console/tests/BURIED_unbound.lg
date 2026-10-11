@@ -1,4 +1,6 @@
 global "ghost
 bury [[] [ghost] []]
-show buried
+show memberp "GHOST item 2 buried
+show memberp "CASEIGNOREDP item 2 buried
+show memberp "UNBURYONEDIT item 2 buried
 show buriedp [[] [ghost] []]

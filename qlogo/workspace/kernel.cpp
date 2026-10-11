@@ -582,6 +582,12 @@ Datum *Kernel::inputProcedure(ASTNode *node)
 
         Procedures::get().defineProcedure(command, procnameP, textP, sourceText);
 
+        if (!StreamManager::get().programReaderIsTerminal()
+            && specialVarIsTrue(SpecialVars::Id::UnburyOnEdit))
+        {
+            removeName(NameMark::Buried, NameKind::Procedures, procname);
+        }
+
         if (StreamManager::get().programReaderIsTerminal() || specialVarIsTrue(SpecialVars::Id::LoadNoisily))
         {
             QString message = QObject::tr("%1 defined\n");
@@ -656,6 +662,9 @@ void Kernel::initVariables()
     const QString &caseIgnoredP = SpecialVars::name(SpecialVars::Id::CaseIgnoredP);
     setDatumForName(trueDatumPtr, caseIgnoredP);
     addName(NameMark::Buried, NameKind::Variables, caseIgnoredP);
+    const QString &unburyOnEdit = SpecialVars::name(SpecialVars::Id::UnburyOnEdit);
+    setDatumForName(trueDatumPtr, unburyOnEdit);
+    addName(NameMark::Buried, NameKind::Variables, unburyOnEdit);
     // TODO: Bury these variables:
     // "ARGV"
     // "LOGOPLATFORM"

@@ -1,3 +1,7 @@
 pprop "baz "a 1
 bury [[] [] [baz]]
-show buried
+show memberp "BAZ last buried
+show memberp "CASEIGNOREDP item 2 buried
+show memberp "UNBURYONEDIT item 2 buried
+show emptyp first buried
+show count last buried

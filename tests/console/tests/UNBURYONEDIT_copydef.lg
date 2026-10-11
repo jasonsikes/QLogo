@@ -1,0 +1,10 @@
+to foo
+print 1
+end
+to bar
+print 0
+end
+bury "bar
+copydef "bar "foo
+show buriedp "bar
+bar

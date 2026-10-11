@@ -571,6 +571,8 @@ class Kernel
     /// @brief Input the body of a procedure.
     /// @param node the ASTNode that holds the command, the procedure name and parameters.
     /// @return the given node on success or Error on error.
+    /// @note TO / .MACRO from a file unburies the name when UNBURYONEDIT is TRUE.
+    /// Interactive TO, DEFINE, and COPYDEF do not.
     Datum *inputProcedure(ASTNode *node);
 
     /// @brief Convert a Datum to a QColor.
