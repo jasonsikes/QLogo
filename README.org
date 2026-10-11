@@ -78,103 +78,7 @@ and the graphical user interface with the turtle can be found at:
 
 QLogo aims to imitate, as much as I find reasonable, the UCBLogo programming language and user interface. 
 
-Development of QLogo is still ongoing. Following is my chart of commands. The commands that are not yet completed are marked *"TODO"*.
-
-|--------------------+----------------+---------------+------------------------+---------------------------+----------------------|
-| CONTROL STRUCTURES | GRAPHICS       | ARITHMETIC    | COMMUNICATION          | DATA STRUCTURE PRIMITIVES | WORKSPACE MANAGEMENT |
-| /COMPLETE-ISH/     | /COMPLETE/     | /COMPLETE/    |                        | /COMPLETE/                |                      |
-|--------------------+----------------+---------------+------------------------+---------------------------+----------------------|
-| RUN                | FORWARD        | SUM           | PRINT                  | WORD                      | TO                   |
-| RUNTIME            | FD             | DIFFERENCE    | PR                     | LIST                      | .MACRO               |
-| MARK               | BACK           | MINUS         | TYPE                   | SENTENCE                  | DEFINE               |
-| RUNRESULT          | BK             | -             | SHOW                   | SE                        | .DEFMACRO            |
-| BYE                | LEFT           | PRODUCT       | READLIST               | FPUT                      | TEXT                 |
-| REPEAT             | LT             | QUOTIENT      | RL                     | LPUT                      | FULLTEXT             |
-| FOREVER            | RIGHT          | REMAINDER     | READWORD               | ARRAY                     | COPYDEF              |
-| REPCOUNT           | RT             | MODULO        | RW                     | LISTTOARRAY               | MAKE                 |
-| IF                 | SETPOS         | INT           | READRAWLINE            | ARRAYTOLIST               | LOCAL                |
-| IFELSE             | SETXY          | ROUND         | READCHAR               | FIRST                     | THING                |
-| TEST               | SETX           | SQRT          | RC                     | *LIBRARY* FIRSTS          | GLOBAL               |
-| IFTRUE             | SETY           | POWER         | READCHARS              | LAST                      | PPROP                |
-| IFT                | SETHEADING     | EXP           | RCS                    | BUTFIRST                  | GPROP                |
-| IFFALSE            | SETH           | LOG10         | FILEDIALOG             | BF                        | REMPROP              |
-| IFF                | HOME           | LN            | COPYRIGHT              | *LIBRARY* BUTFIRSTS       | PLIST                |
-| STOP               | ARC            | SIN           | SHELL                  | *LIBRARY* BFS             | PROCEDUREP           |
-| OUTPUT             | POS            | RADSIN        | SETPREFIX              | BUTLAST                   | PROCEDURE?           |
-| OP                 | HEADING        | COS           | PREFIX                 | BL                        | MACROP               |
-| .MAYBEOUTPUT       | TOWARDS        | RADCOS        | OPENREAD               | ITEM                      | MACRO?               |
-| CATCH              | SCRUNCH        | ARCTAN        | OPENWRITE              | SETITEM                   | PRIMITIVEP           |
-| THROW              | SHOWTURTLE     | RADARCTAN     | OPENAPPEND             | .SETFIRST                 | PRIMITIVE?           |
-| ERROR              | ST             | LESSP         | OPENUPDATE             | .SETBF                    | DEFINEDP             |
-| PAUSE              | HIDETURTLE     | LESS?         | CLOSE                  | .SETITEM                  | DEFINED?             |
-| CONTINUE           | HT             | GREATERP      | ALLOPEN                | WORDP                     | NAMEP                |
-| CO                 | CLEAN          | GREATER?      | *LIBRARY* CLOSEALL     | WORD?                     | NAME?                |
-| TAG                | CLEARSCREEN    | LESSEQUALP    | ERASEFILE              | LISTP                     | PLISTP               |
-| GOTO               | CS             | LESSEQUAL?    | ERF                    | LIST?                     | PLIST?               |
-| APPLY              | WRAP           | GREATEREQUALP | DRIBBLE                | ARRAYP                    | CONTENTS             |
-| ?                  | WINDOW         | GREATEREQUAL? | NODRIBBLE              | ARRAY?                    | BURIED               |
-|                    | FENCE          | RANDOM        | SETREAD                | EMPTYP                    | TRACED               |
-|                    | BOUNDS         | RERANDOM      | SETWRITE               | EMPTY?                    | STEPPED              |
-|                    | SETBOUNDS      | FORM          | READER                 | EQUALP                    | PROCEDURES           |
-|                    | FILLED         | BITAND        | WRITER                 | EQUAL?                    | PRIMITIVES           |
-|                    | LABEL          | BITOR         | SETREADPOS             | NOTEQUALP                 | NAMES                |
-|                    | SETLABELHEIGHT | BITXOR        | SETWRITEPOS            | NOTEQUAL?                 | PLISTS               |
-|                    | SETLABELFONT   | BITNOT        | READPOS                | BEFOREP                   | ARITY                |
-|                    | TEXTSCREEN     | ASHIFT        | WRITEPOS               | BEFORE?                   | NODES                |
-|                    | TS             | LSHIFT        | EOFP                   | .EQ                       | PRINTOUT             |
-|                    | FULLSCREEN     | AND           | EOF?                   | MEMBERP                   | PO                   |
-|                    | FS             | OR            | KEYP                   | MEMBER?                   | POT                  |
-|                    | SPLITSCREEN    | NOT           | KEY?                   | SUBSTRINGP                | ERASE                |
-|                    | SS             | +             | LINEP                  | SUBSTRING?                | ER                   |
-|                    | SETSCRUNCH     | *             | LINE?                  | NUMBERP                   | ERALL                |
-|                    | REFRESH        | /             | CLEARTEXT              | NUMBER?                   | ERPS                 |
-|                    | NOREFRESH      | <             | CT                     | VBARREDP                  | ERNS                 |
-|                    | SHOWNP         | >             | SETCURSOR              | VBARRED?                  | ERPLS                |
-|                    | SHOWN?         | =             | CURSOR                 | COUNT                     | BURY                 |
-|                    | SCREENMODE     | <=            | SETMARGINS             | ASCII                     | UNBURY               |
-|                    | TURTLEMODE     | >=            | SETTEXTCOLOR           | RAWASCII                  | BURIEDP              |
-|                    | LABELSIZE      | <>            | SETTC                  | CHAR                      | BURIED?              |
-|                    | LABELFONT      |               | INCREASEFONT           | MEMBER                    | TRACE                |
-|                    | *NO* MATRIX    |               | DECREASEFONT           | LOWERCASE                 | UNTRACE              |
-|                    | PENDOWN        |               | SETTEXTSIZE            | UPPERCASE                 | TRACEDP              |
-|                    | PD             |               | TEXTSIZE               | STANDOUT                  | TRACED?              |
-|                    | PENUP          |               | SETFONT                | PARSE                     | STEP                 |
-|                    | PU             |               | FONT                   | RUNPARSE                  | UNSTEP               |
-|                    | PENPAINT       |               | ALLFONTS               |                           | STEPPEDP             |
-|                    | PPT            |               | WAIT                   |                           | STEPPED?             |
-|                    | PENERASE       |               |                        |                           | EDIT                 |
-|                    | PE             |               |                        |                           | ED                   |
-|                    | PENREVERSE     |               |                        |                           | EDITFILE             |
-|                    | PX             |               |                        |                           | SETEDITOR            |
-|                    | SETPENCOLOR    |               |                        |                           | EDITOR               |
-|                    | SETPC          |               |                        |                           | SETTEMPLOC           |
-|                    | ALLCOLORS      |               |                        |                           | TEMPLOC              |
-|                    | SETPALETTE     |               |                        |                           | SAVE                 |
-|                    | SETPENSIZE     |               |                        |                           | LOAD                 |
-|                    | SETBACKGROUND  |               |                        |                           | HELP                 |
-|                    | SETBG          |               |                        |                           | FOO                  |
-|                    | PENDOWNP       |               |                        |                           | SETFOO               |
-|                    | PENDOWN?       |               |                        |                           | GC                   |
-|                    | PENMODE        |               |                        |                           | .SETSEGMENTSIZE      |
-|                    | PENCOLOR       |               |                        |                           |                      |
-|                    | PC             |               |                        |                           |                      |
-|                    | PALETTE        |               |                        |                           |                      |
-|                    | PENSIZE        |               |                        |                           |                      |
-|                    | BACKGROUND     |               |                        |                           |                      |
-|                    | BG             |               |                        |                           |                      |
-|                    | SAVEPICT       |               |                        |                           |                      |
-|                    | LOADPICT       |               |                        |                           |                      |
-|                    | SVGPICT        |               |                        |                           |                      |
-|                    | MOUSEPOS       |               |                        |                           |                      |
-|                    | CLICKPOS       |               |                        |                           |                      |
-|                    | BUTTONP        |               |                        |                           |                      |
-|                    | BUTTON?        |               |                        |                           |                      |
-|                    | BUTTON         |               |                        |                           |                      |
-
-
-The differences between QLogo and UCBLogo are described in the *nuances* section below.
-
-** Here are the nuances:
+** Here are the nuances; they are small (I hope):
 
 *** Colors can be specified in one of five ways (instead of two):
 
@@ -220,7 +124,7 @@ All the strings used in QLogo source code can be translated, but no translations
 
 *** QLogo supports Unicode characters.
 
-The ~CHAR~ command can take a Unicode character as a parameter. Similarly, the ~ASCII~ command and ~RAWASCII~ command can report the Unicode value of a character.
+The ~CHAR~ command takes a Unicode character as a parameter. Similarly, the ~ASCII~ command and ~RAWASCII~ command report the Unicode value of a character.
 
 Unicode values are stored as 16-bit integers. Thus, the maximum value that ~CHAR~ can take is 65535.
 
@@ -236,9 +140,7 @@ The original purpose of the command was to enable text to be visible on projecto
 
 One of the user interface principles for QLogo is that the canvas should be device resolution-independent. When the QLogo window is resized or the separator between the text and the graphics is moved then the graphics will be redrawn with the new dimensions.
 
-The Flood Fill algorithm depends on specific pixels which means that what is filled can change dramatically depending on the size of the canvas.
-
-The other reason is that the Flood Fill algorithm can slow down window resizing. ~FILL~ is still available.
+The Flood Fill algorithm depends on specific pixels which means that what is filled can change dramatically depending on the size of the canvas. ~FILLED~ is still available.
 
 **** ~EPSPICT~:
 
