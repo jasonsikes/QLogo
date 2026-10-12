@@ -31,14 +31,14 @@
 /// @brief Convert a QColor to a list of RGB values on a scale of 0 to 100.
 /// @param c the QColor to convert.
 /// @return a list of RGB values on a scale of 0 to 100.
-List *listFromColor(const QColor &c)
+DatumPtr listFromColor(const QColor &c)
 {
     ListBuilder retvalBuilder;
     // Each of the RGB values are on a scale of 0 to 100.
     retvalBuilder.append(DatumPtr(c.redF() * 100.0));
     retvalBuilder.append(DatumPtr(c.greenF() * 100.0));
     retvalBuilder.append(DatumPtr(c.blueF() * 100.0));
-    return retvalBuilder.finishedList().listValue();
+    return retvalBuilder.finishedList();
 }
 
 EXPORTC addr_t moveTurtleForward(ASTNode *node, double distance)
@@ -409,9 +409,9 @@ EXPORTC addr_t getPenColor(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     const QColor &color = Turtle::get().getPenColor();
-    List *retval = listFromColor(color);
+    DatumPtr retval = listFromColor(color);
     e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
+    return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
 EXPORTC addr_t getPaletteColor(addr_t eAddr, double colorIndex)
@@ -419,9 +419,9 @@ EXPORTC addr_t getPaletteColor(addr_t eAddr, double colorIndex)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto index = static_cast<int>(colorIndex);
     const QColor &color = Kernel::get().palette_[index];
-    List *retval = listFromColor(color);
+    DatumPtr retval = listFromColor(color);
     e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
+    return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
 EXPORTC double getPenSize(void)
@@ -433,9 +433,9 @@ EXPORTC addr_t getBackground(addr_t eAddr)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     const QColor &color = Config::get().mainInterface()->getCanvasBackgroundColor();
-    List *retval = listFromColor(color);
+    DatumPtr retval = listFromColor(color);
     e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
+    return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
 EXPORTC addr_t savePict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)

@@ -864,7 +864,6 @@ COD***/
 // CMD ALLCOLORS 0 0 0 d
 Value *Compiler::genAllcolors(const DatumPtr &node, TypeMask expected)
 {
-    CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(getAllColors, PaAddr(scaff_->evaluator_)));
 }
@@ -881,7 +880,6 @@ COD***/
 // CMD SETPALETTE 2 2 2 n
 Value *Compiler::genSetpalette(const DatumPtr &node, TypeMask expected)
 {
-    CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeReal, TypeDatum);
     auto [colorIndex, color] = cs.children();
     colorIndex = generateColorIndexFromDouble(node.astnodeValue(), colorIndex, 8.0);
@@ -984,7 +982,6 @@ COD***/
 // CMD PALETTE 1 1 1 d
 Value *Compiler::genPalette(const DatumPtr &node, TypeMask expected)
 {
-    CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeReal);
     Value *colorIndex = cs.child(0);
     colorIndex = generateColorIndexFromDouble(node.astnodeValue(), colorIndex, 0.0);
