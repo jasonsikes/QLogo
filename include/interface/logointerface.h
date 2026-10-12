@@ -137,6 +137,18 @@ class LogoInterface : public QObject
     /// @brief Stops communication and initiates cleanup tasks.
     virtual void closeInterface();
 
+    /// @brief Give the terminal to an external editor (EDIT / EDITFILE).
+    /// @note The base method does nothing. The TUI override suspends ncurses so
+    /// the editor can use stdin, stdout, and stderr.
+    virtual void suspendForExternalEditor()
+    {
+    }
+
+    /// @brief Restore the interface after an external editor exits.
+    virtual void resumeAfterExternalEditor()
+    {
+    }
+
     /// @brief Displays a file dialog modal.
     /// @return The path of the selected file.
     /// @note The base method triggers an error message. Subclasses can override this method to

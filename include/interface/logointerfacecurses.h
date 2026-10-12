@@ -107,6 +107,12 @@ class LogoInterfaceCurses : public LogoInterface
     /// @brief Tears down ncurses and restores the terminal.
     void closeInterface() override;
 
+    /// @brief Suspend ncurses so SETEDITOR can use the terminal.
+    void suspendForExternalEditor() override;
+
+    /// @brief Restore ncurses after SETEDITOR exits.
+    void resumeAfterExternalEditor() override;
+
     /// @brief Prints a string to the ncurses screen.
     /// @param text The text to print.
     void printToConsole(const QString &text) override;

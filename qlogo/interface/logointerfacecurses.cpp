@@ -339,6 +339,21 @@ void LogoInterfaceCurses::closeInterface()
     cursesActive_ = false;
 }
 
+void LogoInterfaceCurses::suspendForExternalEditor()
+{
+    if (!cursesActive_)
+        return;
+    refresh();
+    endwin();
+}
+
+void LogoInterfaceCurses::resumeAfterExternalEditor()
+{
+    if (!cursesActive_)
+        return;
+    refresh();
+}
+
 void LogoInterfaceCurses::printToConsole(const QString &text)
 {
     if (!cursesActive_)

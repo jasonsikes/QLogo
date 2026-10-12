@@ -313,6 +313,24 @@ QString readTextFile(const QString &path, const DatumPtr &spec)
     return QString::fromUtf8(file.readAll());
 }
 
+/// Leave the TUI (if any) for the duration of an external editor, then restore it.
+class ExternalEditorScope
+{
+    LogoInterface *const iface_;
+
+  public:
+    explicit ExternalEditorScope(LogoInterface *iface) : iface_(iface)
+    {
+        iface_->suspendForExternalEditor();
+    }
+    ~ExternalEditorScope()
+    {
+        iface_->resumeAfterExternalEditor();
+    }
+    ExternalEditorScope(const ExternalEditorScope &) = delete;
+    ExternalEditorScope &operator=(const ExternalEditorScope &) = delete;
+};
+
 } // namespace
 
 void Kernel::setEditor(const DatumPtr &command)
@@ -379,7 +397,10 @@ bool Kernel::runEditorOnFile(const QString &path, const QString &startText, cons
         return true;
     }
 
+    ExternalEditorScope editorScope(Config::get().mainInterface());
     QProcess proc;
+    proc.setProcessChannelMode(QProcess::ForwardedChannels);
+    proc.setInputChannelMode(QProcess::ForwardedInputChannel);
     if (editorCommand_.isWord())
     {
         const QString cmd = editorCommand_.wordValue()->toString();
