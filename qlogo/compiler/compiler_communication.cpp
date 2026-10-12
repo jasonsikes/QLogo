@@ -836,9 +836,8 @@ Value *Compiler::genCursor(const DatumPtr &node, TypeMask expected)
 /***DOC SETMARGINS
 SETMARGINS vector
 
-    command. In UCBLogo this clears the screen and shifts later
-    printing down and to the right.  QLogo accepts the command for
-    compatibility and does nothing.
+    command. In UCBLogo this changes the margins of the text window.  QLogo
+    accepts the command for compatibility and does nothing.
 
 COD***/
 // CMD SETMARGINS 1 1 1 n

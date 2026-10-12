@@ -1309,9 +1309,10 @@ Value *Compiler::genEditor(const DatumPtr &node, TypeMask expected)
 /***DOC SETTEMPLOC
 SETTEMPLOC path
 
-    command.  Sets the directory where EDIT writes its temporary file.
-    The input must be a word, unless it is the empty list, to use the
-    system temporary directory.
+        command.  Tells Logo to write editor temporary files in the specified
+        directory rather than in the default directory.  You must have write
+        permission for this directory.  The format of a path depends on your
+        operating system.
 
 COD***/
 // CMD SETTEMPLOC 1 1 1 n

@@ -144,7 +144,7 @@ The Flood Fill algorithm depends on specific pixels which means that what is fil
 
 **** ~EPSPICT~:
 
-This is replaced by ~SVGPICT~. See below.
+This is replaced by ~SVGPICT~. See ~SVGPICT~ for more information.
 
 **** ~CSLSLOAD~:
 
@@ -156,7 +156,11 @@ Not implemented yet.
 
 **** ~SETEDITOR~:
 
-When QLogo is talking to Psychi, EDIT uses Psychi's built-in editor. From a terminal, EDIT runs the command given to ~SETEDITOR~ (default: the ~EDITOR~ environment variable, or ~nano~). The file path is appended as a last argument. The ~EDITOR~ command outputs the current ~SETEDITOR~ value.
+When QLogo is using the Psychi GUI, EDIT uses Psychi's built-in editor. From a terminal, EDIT runs the command given to ~SETEDITOR~ (default: the ~EDITOR~ environment variable, or ~nano~). The file path is appended as a last argument. The ~EDITOR~ command outputs the current ~SETEDITOR~ value.
+
+**** ~EDITOR~:
+
+Outputs the current ~SETEDITOR~ command: a word, or a list of words. See ~SETEDITOR~.
 
 **** ~SETLIBLOC~:
 
@@ -200,10 +204,6 @@ Qt has strong support for internationalization, but in QLogo it is only partiall
 
 In Psychi it returns a list of all the fonts available on your system. On the command-line interface it outputs the empty list.
 
-**** ~SETLABELFONT~ and ~LABELFONT~:
-
-These set and report the font family used by ~LABEL~ on the turtle canvas. They are GUI-only; the command-line interpreter reports that graphics are not available.
-
 **** ~ALLCOLORS~:
 
 Returns a list of all the named colors that QLogo knows about.
@@ -232,15 +232,11 @@ The coordinate system of the drawing canvas is Cartesian: the Origin ~[0,0]~ is 
 
 **** ~BOUNDS~:
 
-Outputs a list of two numbers giving the maximum bounds (x,y) of the canvas.
+Outputs a list of two numbers giving the maximum bounds (x,y) of the canvas. See ~SETBOUNDS~ above for more information.
 
 **** ~FILEDIALOG~:
 
 GUI only. Presents a modal file dialog so the user can select a file. Outputs the chosen path as a word, or the empty list if the user cancels.
-
-**** ~EDITOR~:
-
-Outputs the current ~SETEDITOR~ command: a word, or a list of words. See ~SETEDITOR~.
 
 **** ~TEMPLOC~:
 
@@ -268,9 +264,9 @@ On the command-line interface QLogo flushes stdout and sleeps in-process. In Psy
 
 On the command-line interface this is a no-op. A parenthesized call with one input changes only the foreground color. Colors use the same five forms as ~SETPENCOLOR~.
 
-**** ~SETTEXTSIZE~, ~TEXTSIZE~, ~INCREASEFONT~, ~DECREASEFONT~, ~SETFONT~, and ~FONT~:
+**** ~SETTEXTSIZE~, ~TEXTSIZE~, ~INCREASEFONT~, ~DECREASEFONT~, ~SETFONT~, ~SETTEXTFONT~, ~TEXTFONT~ and ~FONT~:
 
-On the command-line interface ~SETTEXTSIZE~, ~INCREASEFONT~, ~DECREASEFONT~, and ~SETFONT~ are no-ops; ~TEXTSIZE~ outputs ~12~ and ~FONT~ outputs the empty word. ~INCREASEFONT~ and ~DECREASEFONT~ change the point size by 2; ~DECREASEFONT~ will not go below 2. ~SETFONT~ and ~FONT~ apply to the text and edit windows, not the turtle canvas. Use ~SETLABELFONT~ and ~LABELFONT~ for the font family of ~LABEL~ on the canvas.
+On the command-line interface ~SETTEXTSIZE~, ~INCREASEFONT~, ~DECREASEFONT~, and ~SETFONT~ are no-ops; ~TEXTSIZE~ outputs ~12~ and ~FONT~ outputs the empty word. ~INCREASEFONT~ and ~DECREASEFONT~ change the point size by 2; ~DECREASEFONT~ will not go below 2. ~SETFONT~ and ~FONT~ apply to the text and edit windows, not the turtle canvas. ~SETTEXTFONT~ and ~TEXTFONT~ are synonyms for ~SETFONT~ and ~FONT~, respectively.
 
 **** ~OPENWRITE~ character buffers:
 
