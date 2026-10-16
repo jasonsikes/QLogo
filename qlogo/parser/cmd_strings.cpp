@@ -396,6 +396,24 @@ const QString &StringConstants::cmdStrCOPYRIGHT()
     return str;
 }
 
+const QString &StringConstants::cmdStrSHOWIR()
+{
+    static const QString str = QObject::tr("SHOWIR");
+    return str;
+}
+
+const QString &StringConstants::cmdStrSHOWCFG()
+{
+    static const QString str = QObject::tr("SHOWCFG");
+    return str;
+}
+
+const QString &StringConstants::cmdStrSHOWMODULEIR()
+{
+    static const QString str = QObject::tr("SHOWMODULEIR");
+    return str;
+}
+
 const QString &StringConstants::cmdStrSHELL()
 {
     static const QString str = QObject::tr("SHELL");

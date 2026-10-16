@@ -20,7 +20,10 @@
 #include "workspace/exports_internal.h"
 #include <limits>
 #include "astnode.h"
+#include "compiler.h"
 #include "datum_types.h"
+#include "runparser.h"
+#include "workspace/evaluator.h"
 #include "workspace/kernel.h"
 #include "workspace/specialvars.h"
 #include "flowcontrol.h"
@@ -259,6 +262,66 @@ EXPORTC addr_t stdCopyright(addr_t eAddr, addr_t astnodeAddr)
         return reinterpret_cast<addr_t>(err);
     }
     return reinterpret_cast<addr_t>(node);
+}
+
+/// Compile an instruction list under a dump request. Does not execute the list.
+/// A word is runparsed first, matching RUN. An empty list prints nothing.
+static addr_t dumpInstructionList(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr, Compiler::DumpRequest dump)
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *input = reinterpret_cast<Datum *>(datumAddr);
+    try
+    {
+        if (input->isWord())
+        {
+            DatumPtr parsed = runparse(DatumPtr(input));
+            input = parsed.datumValue();
+            e->watch(input);
+        }
+        if (!input->isList())
+        {
+            FCError *err = FCError::doesntLike(node->nodeName_, DatumPtr(input));
+            e->watch(err);
+            return reinterpret_cast<addr_t>(err);
+        }
+        List *list = input->listValue();
+        if (list->isEmpty())
+            return reinterpret_cast<addr_t>(node);
+
+        Compiler::DumpScope scope(dump);
+        Compiler::get().compiledTextFromList(list);
+        return reinterpret_cast<addr_t>(node);
+    }
+    catch (FCError *err)
+    {
+        e->watch(err);
+        return reinterpret_cast<addr_t>(err);
+    }
+}
+
+/// SHOWIR: compile the instruction list and print its IR. Does not run it.
+EXPORTC addr_t stdShowIR(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr)
+{
+    Compiler::DumpRequest dump;
+    dump.showIR = true;
+    return dumpInstructionList(eAddr, astnodeAddr, datumAddr, dump);
+}
+
+/// SHOWCFG: compile the instruction list and print its CFG as DOT. Does not run it.
+EXPORTC addr_t stdShowCFG(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr)
+{
+    Compiler::DumpRequest dump;
+    dump.showCFG = true;
+    return dumpInstructionList(eAddr, astnodeAddr, datumAddr, dump);
+}
+
+/// SHOWMODULEIR: compile the instruction list and print the module IR. Does not run it.
+EXPORTC addr_t stdShowModuleIR(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr)
+{
+    Compiler::DumpRequest dump;
+    dump.showModuleIR = true;
+    return dumpInstructionList(eAddr, astnodeAddr, datumAddr, dump);
 }
 
 /// Return true if the datum is a valid SHELL command: a word, or a non-empty list of words.

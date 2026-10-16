@@ -251,6 +251,59 @@ Value *Compiler::genCopyright(const DatumPtr &node, TypeMask expected)
     return cs.ret(generateNotFlowControl(retval));
 }
 
+/***DOC SHOWIR
+SHOWIR instructionlist
+
+    command.  Compiles the instruction list and prints the LLVM module
+    IR after coroutine lowering and before function passes. Does not
+    run the list.
+
+COD***/
+// CMD SHOWIR 1 1 1 n
+Value *Compiler::genShowIR(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdShowIR, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(list));
+    return generateNotFlowControl(retval);
+}
+
+/***DOC SHOWCFG
+SHOWCFG instructionlist
+
+    command.  Compiles the instruction list and prints its LLVM control
+    flow graph as DOT. Does not run the list.
+
+COD***/
+// CMD SHOWCFG 1 1 1 n
+Value *Compiler::genShowCFG(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdShowCFG, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(list));
+    return generateNotFlowControl(retval);
+}
+
+/***DOC SHOWMODULEIR
+SHOWMODULEIR instructionlist
+
+    command.  Compiles the instruction list and prints the full LLVM
+    module IR after coroutine lowering and function passes. Does not
+    run the list.
+
+COD***/
+// CMD SHOWMODULEIR 1 1 1 n
+Value *Compiler::genShowModuleIR(const DatumPtr &node, TypeMask expected)
+{
+    Q_ASSERT(expected && TypeNothing);
+    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExtern(
+        stdShowModuleIR, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(list));
+    return generateNotFlowControl(retval);
+}
+
 /***DOC SHELL
 SHELL command
 (SHELL command wordflag)

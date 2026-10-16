@@ -30,6 +30,8 @@
 #include "llvm/IR/MDBuilder.h"
 #include "llvm/IR/Metadata.h"
 #include "llvm/Support/Error.h"
+#include "llvm/Support/GraphWriter.h"
+#include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Transforms/Coroutines/ABI.h"
 #include "llvm/Transforms/Coroutines/CoroCleanup.h"
@@ -39,6 +41,7 @@
 #include "llvm/Transforms/Coroutines/MaterializationUtils.h"
 #include "flowcontrol.h"
 #include "datum_types.h"
+#include "interface/streammanager.h"
 #include "workspace/exports.inc"
 #include "op_strings.h"
 #include "sharedconstants.h"
@@ -256,6 +259,17 @@ void runCoroutinePasses(Module &M, ModuleAnalysisManager &mam)
     coroMPM.addPass(createModuleToFunctionPassAdaptor(std::move(elideFPM)));
     coroMPM.addPass(CoroCleanupPass());
     coroMPM.run(M, mam);
+}
+
+/// Print LLVM dump text to the current Logo write stream (PRINT / SHOW).
+void emitDumpText(const std::string &text)
+{
+    if (text.empty())
+        return;
+    QString output = QString::fromStdString(text);
+    if (!output.endsWith(QLatin1Char('\n')))
+        output.append(QLatin1Char('\n'));
+    StreamManager::get().print(output);
 }
 
 void verifyModuleOrThrow(Module &M)
@@ -670,7 +684,11 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
 
     if (dump.showCFG)
     {
-        scaff_->theFunction_->viewCFG();
+        std::string str;
+        llvm::raw_string_ostream os(str);
+        llvm::WriteGraph(os, scaff_->theFunction_, /*ShortNames=*/false, scaff_->name_);
+        os.flush();
+        emitDumpText(str);
     }
 
     if (Config::get().verifyIR_)
@@ -692,8 +710,11 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
 
     if (dump.showIR)
     {
-        scaff_->theModule_->print(errs(), nullptr);
-        fprintf(stderr, "\n");
+        std::string str;
+        llvm::raw_string_ostream os(str);
+        scaff_->theModule_->print(os, nullptr);
+        os.flush();
+        emitDumpText(str);
     }
 
     // Optimize the ramp and every coro-split clone.
@@ -704,8 +725,11 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
 
     if (dump.showModuleIR)
     {
-        scaff_->theModule_->print(errs(), nullptr);
-        fprintf(stderr, "\n");
+        std::string str;
+        llvm::raw_string_ostream os(str);
+        scaff_->theModule_->print(os, nullptr);
+        os.flush();
+        emitDumpText(str);
     }
 
     auto tsm = ThreadSafeModule(std::move(scaff_->theModule_), std::move(scaff_->theContext_));
@@ -762,7 +786,12 @@ std::shared_ptr<CompiledText> Compiler::compiledTextFromList(List *aList)
     if (aList->compileTimeStamp <= lastCodeChangeTimestamp_ || !aList->compiledText_ ||
         !aList->compiledText_->functionPtr_)
     {
-        QList<DatumPtr> astFlatList = Treeifier::astFromList(aList);
+        QList<DatumPtr> astFlatList;
+        {
+            // Library autoload during treeify must not inherit this dump request.
+            DumpScope nestedWithoutDump({});
+            astFlatList = Treeifier::astFromList(aList);
+        }
         QList<QList<DatumPtr>> parsedList = groupConsecutiveExpressions(astFlatList);
         return generateFunctionPtrFromASTList(parsedList, aList);
     }
