@@ -295,12 +295,12 @@ FunctionType *hostExportFunctionType(LLVMContext &ctx, StringRef name)
     throw FCError::fatalInternal();
 }
 
-Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm)
+Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm, bool debugLogging)
     : theContext_(std::make_unique<LLVMContext>()), theModule_(std::make_unique<Module>("QLogoJIT", *theContext_)),
       builder_(IRBuilder<>(*theContext_)), theFPM_(FunctionPassManager()), theLAM_(LoopAnalysisManager()),
       theFAM_(FunctionAnalysisManager()), theCGAM_(CGSCCAnalysisManager()), theMAM_(ModuleAnalysisManager()),
       thePIC_(PassInstrumentationCallbacks()),
-      theSI_(StandardInstrumentations(*theContext_, Compiler::get().dumpRequest().any())),
+      theSI_(StandardInstrumentations(*theContext_, debugLogging)),
       thePB_(tm, PipelineTuningOptions(), std::nullopt, &thePIC_)
 {
     theModule_->setDataLayout(dataLayout);
@@ -601,7 +601,7 @@ BasicBlock *Compiler::generateTOC(QList<BasicBlock *> blocks, Function *theFunct
 std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, List *aList)
 {
     const DumpRequest dump = dumpRequest_;
-    Scaffold compilerScaffolding(lljit_->getDataLayout(), targetMachine_.get());
+    Scaffold compilerScaffolding(lljit_->getDataLayout(), targetMachine_.get(), dump.any());
     compilerScaffolding.mangleNames_ = dump.any();
 
     struct RestoreScaff

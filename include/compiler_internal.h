@@ -71,7 +71,7 @@ struct Scaffold
     // A list of basic blocks that make up the "cold path" of execution.
     QList<llvm::BasicBlock *> coldPathBlocks_;
 
-    Scaffold(const llvm::DataLayout &dataLayout, llvm::TargetMachine *tm);
+    Scaffold(const llvm::DataLayout &dataLayout, llvm::TargetMachine *tm, bool debugLogging);
 
     /// @brief True when IR value names should be prefixed with the generator function.
     bool mangleNames_ = false;

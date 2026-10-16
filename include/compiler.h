@@ -104,9 +104,9 @@ class Compiler
     qint64 lastCodeChangeTimestamp_ = 0;
 
     /// @brief Which dumps to emit for the current compile (IR, CFG, module IR).
-    /// @details CLI flags set this for the process. Nested compiles (library
-    /// autoload during treeify, RUN inside a dump command) must save and restore
-    /// via DumpScope so they do not inherit the outer request.
+    /// @details Nested compiles (library autoload during treeify, RUN inside a
+    /// dump command) must save and restore via DumpScope so they do not inherit
+    /// the outer request.
     DumpRequest dumpRequest_;
 
     // Child node generation.
@@ -468,12 +468,6 @@ class Compiler
 
     /// @brief Clear the TAG registration line location after compiling.
     void clearTagLineLocation() { tagLineLocation_ = nothing(); }
-
-    /// @brief The dump request used by the in-progress compile.
-    DumpRequest dumpRequest() const { return dumpRequest_; }
-
-    /// @brief Replace the dump request. Used by CLI flags; dump commands will use DumpScope.
-    void setDumpRequest(const DumpRequest &request) { dumpRequest_ = request; }
 
     /// @brief Replace the dump request for this object's lifetime, then restore the previous value.
     class DumpScope
