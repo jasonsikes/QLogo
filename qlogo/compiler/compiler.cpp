@@ -29,6 +29,7 @@
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/MDBuilder.h"
 #include "llvm/IR/Metadata.h"
+#include "llvm/Passes/OptimizationLevel.h"
 #include "llvm/Support/Error.h"
 #include "llvm/Support/GraphWriter.h"
 #include "llvm/Support/raw_ostream.h"
@@ -161,24 +162,6 @@ std::pair<uint64_t, ResourceTrackerSP> addModuleAndLookup(LLJIT &jit, ThreadSafe
     return {symOrErr->getValue(), std::move(rt)};
 }
 
-void addDefaultPasses(FunctionPassManager &fpm)
-{
-    fpm.addPass(SROAPass(SROAOptions::ModifyCFG));
-    fpm.addPass(EarlyCSEPass());
-    fpm.addPass(InstCombinePass());
-    fpm.addPass(SimplifyCFGPass());
-}
-
-void runFunctionPasses(Module &M, FunctionPassManager &fpm, FunctionAnalysisManager &fam)
-{
-    for (Function &F : M)
-    {
-        if (F.isDeclaration())
-            continue;
-        fpm.run(F, fam);
-    }
-}
-
 void registerPassAnalyses(PassBuilder &pb, PassInstrumentationCallbacks &pic,
                           ModuleAnalysisManager &mam, FunctionAnalysisManager &fam,
                           LoopAnalysisManager &lam, CGSCCAnalysisManager &cgam,
@@ -188,7 +171,17 @@ void registerPassAnalyses(PassBuilder &pb, PassInstrumentationCallbacks &pic,
     pb.registerModuleAnalyses(mam);
     pb.registerCGSCCAnalyses(cgam);
     pb.registerFunctionAnalyses(fam);
+    pb.registerLoopAnalyses(lam);
     pb.crossRegisterProxies(lam, fam, cgam, mam);
+}
+
+/// O2 matches TargetMachine's default codegen level. Coro clones are called
+/// through function pointers, so the inliner will not merge them into the ramp.
+/// Host EXPORTC decls have no bodies to inline.
+void runOptimizationPipeline(Module &M, PassBuilder &pb, ModuleAnalysisManager &mam)
+{
+    ModulePassManager mpm = pb.buildPerModuleDefaultPipeline(OptimizationLevel::O2);
+    mpm.run(M, mam);
 }
 
 /// Clones are invoked through C function pointers (LLVMCoroFrameHeader).
@@ -297,7 +290,7 @@ FunctionType *hostExportFunctionType(LLVMContext &ctx, StringRef name)
 
 Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm, bool debugLogging)
     : theContext_(std::make_unique<LLVMContext>()), theModule_(std::make_unique<Module>("QLogoJIT", *theContext_)),
-      builder_(IRBuilder<>(*theContext_)), theFPM_(FunctionPassManager()), theLAM_(LoopAnalysisManager()),
+      builder_(IRBuilder<>(*theContext_)), theLAM_(LoopAnalysisManager()),
       theFAM_(FunctionAnalysisManager()), theCGAM_(CGSCCAnalysisManager()), theMAM_(ModuleAnalysisManager()),
       thePIC_(PassInstrumentationCallbacks()),
       theSI_(StandardInstrumentations(*theContext_, debugLogging)),
@@ -330,7 +323,6 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm, bool d
         tbaaMdb.createTBAATypeNode(tbaaRoot, 4, MDString::get(*theContext_, "datum.isa"));
     isaLoadTbaa_ = tbaaMdb.createTBAAAccessTag(isaTbaaTy, isaTbaaTy, 0, 4, /*IsImmutable=*/true);
 
-    addDefaultPasses(theFPM_);
     registerPassAnalyses(thePB_, thePIC_, theMAM_, theFAM_, theLAM_, theCGAM_, theSI_);
 
     static uint64_t functionCount = 1;
@@ -718,7 +710,7 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     }
 
     // Optimize the ramp and every coro-split clone.
-    runFunctionPasses(*scaff_->theModule_, scaff_->theFPM_, scaff_->theFAM_);
+    runOptimizationPipeline(*scaff_->theModule_, scaff_->thePB_, scaff_->theMAM_);
 
     if (Config::get().verifyIR_)
         verifyModuleOrThrow(*scaff_->theModule_);

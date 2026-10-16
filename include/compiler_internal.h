@@ -30,10 +30,6 @@
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/StandardInstrumentations.h"
 #include "llvm/Support/TargetSelect.h"
-#include "llvm/Transforms/InstCombine/InstCombine.h"
-#include "llvm/Transforms/Scalar/EarlyCSE.h"
-#include "llvm/Transforms/Scalar/SimplifyCFG.h"
-#include "llvm/Transforms/Scalar/SROA.h"
 
 #include <memory>
 #include <string>
@@ -58,7 +54,6 @@ struct Scaffold
     std::unique_ptr<llvm::LLVMContext> theContext_;
     std::unique_ptr<llvm::Module> theModule_;
     llvm::IRBuilder<> builder_;
-    llvm::FunctionPassManager theFPM_;
     llvm::LoopAnalysisManager theLAM_;
     llvm::FunctionAnalysisManager theFAM_;
     llvm::CGSCCAnalysisManager theCGAM_;
