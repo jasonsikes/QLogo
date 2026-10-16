@@ -9,14 +9,14 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// Host tool that packs logolib source files into qlogo_library.db.
+/// Host tool that packs Logo library procedures into qlogo_library.db.
 ///
-/// Usage: mklogolib <logolib-dir> <output-db>
+/// Usage: mklogolib <compiler-dir> <output-db>
 ///
-/// Each file in the directory becomes one LIBRARY row. COMMAND is the
-/// filename with UCBLogo's filesystem encoding reversed (capital Q stands
-/// for '?') and then converted to the Logo key form (uppercase). CODE is
-/// the file contents.
+/// Library procedures are taken from /***LIB ... BIL***/ blocks in
+/// compiler*.cpp. The name after /***LIB is the LIBRARY.COMMAND key
+/// (uppercased to match Word::genKeyString()). The following lines until
+/// BIL***/ are LIBRARY.CODE.
 ///
 //===----------------------------------------------------------------------===//
 
@@ -40,41 +40,89 @@ QTextStream &err()
     return stream;
 }
 
-/// Map a logolib filename to the LIBRARY.COMMAND key.
-///
-/// '?' is problematic in a filename, so capital Q is used instead.
-/// Replace those Qs, then uppercase so the key matches Word::genKeyString().
-QString commandFromFileName(QString name)
+bool processCompilerFile(const QFileInfo &info, QSqlQuery &query, int &entryCount)
 {
-    if (name.endsWith(QLatin1String(".lg"), Qt::CaseInsensitive))
-        name.chop(3);
-    name.replace(QLatin1Char('Q'), QLatin1Char('?'));
-    return name.toUpper();
-}
-
-bool insertLibraryFile(QSqlQuery &query, const QFileInfo &info)
-{
-    const QString command = commandFromFileName(info.fileName());
-    if (command.isEmpty())
-    {
-        err() << "Skipping empty command name from '" << info.fileName() << "'\n";
-        return true;
-    }
-
     QFile file(info.absoluteFilePath());
-    if (!file.open(QIODevice::ReadOnly))
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         err() << "Cannot read '" << info.absoluteFilePath() << "': " << file.errorString() << '\n';
         return false;
     }
 
-    const QString code = QString::fromUtf8(file.readAll());
+    QTextStream in(&file);
 
-    query.addBindValue(command);
-    query.addBindValue(code);
-    if (!query.exec())
+    while (!in.atEnd())
     {
-        err() << "INSERT failed for '" << command << "': " << query.lastError().text() << '\n';
+        const QString line = in.readLine().trimmed();
+        if (!line.startsWith(QLatin1String("/***LIB")))
+            continue;
+
+        const QString command = line.mid(QStringLiteral("/***LIB").size()).trimmed().toUpper();
+        if (command.isEmpty())
+        {
+            err() << "Malformed /***LIB header in '" << info.fileName() << "'\n";
+            return false;
+        }
+
+        QString code;
+        bool foundEnd = false;
+        while (!in.atEnd())
+        {
+            const QString textLine = in.readLine();
+            if (textLine.trimmed().startsWith(QLatin1String("BIL***/")))
+            {
+                foundEnd = true;
+                break;
+            }
+            code += textLine;
+            code += QLatin1Char('\n');
+        }
+        if (!foundEnd)
+        {
+            err() << "Unterminated /***LIB block in '" << info.fileName() << "'\n";
+            return false;
+        }
+
+        query.bindValue(0, command);
+        query.bindValue(1, code);
+        if (!query.exec())
+        {
+            err() << "INSERT failed for '" << command << "': " << query.lastError().text() << '\n';
+            return false;
+        }
+        ++entryCount;
+    }
+
+    return true;
+}
+
+bool processCompilerDir(const QString &sourceDirPath, QSqlQuery &query)
+{
+    QDir sourceDir(sourceDirPath);
+    if (!sourceDir.exists())
+    {
+        err() << "Compiler directory does not exist: " << sourceDirPath << '\n';
+        return false;
+    }
+
+    const QFileInfoList files =
+        sourceDir.entryInfoList(QStringList{QStringLiteral("compiler*.cpp")},
+                                QDir::Files | QDir::Readable | QDir::NoDotAndDotDot, QDir::Name);
+    if (files.isEmpty())
+    {
+        err() << "No compiler*.cpp files found in " << sourceDirPath << '\n';
+        return false;
+    }
+
+    int entryCount = 0;
+    for (const QFileInfo &info : files)
+    {
+        if (!processCompilerFile(info, query, entryCount))
+            return false;
+    }
+    if (entryCount == 0)
+    {
+        err() << "No /***LIB blocks found in " << sourceDirPath << '\n';
         return false;
     }
     return true;
@@ -88,27 +136,12 @@ int main(int argc, char *argv[])
 
     if (argc != 3)
     {
-        err() << "Usage: mklogolib <logolib-dir> <output-db>\n";
+        err() << "Usage: mklogolib <compiler-dir> <output-db>\n";
         return 1;
     }
 
-    const QString sourceDirPath = QString::fromLocal8Bit(argv[1]);
+    const QString compilerDirPath = QString::fromLocal8Bit(argv[1]);
     const QString destPath = QString::fromLocal8Bit(argv[2]);
-
-    QDir sourceDir(sourceDirPath);
-    if (!sourceDir.exists())
-    {
-        err() << "Logolib directory does not exist: " << sourceDirPath << '\n';
-        return 1;
-    }
-
-    const QFileInfoList files =
-        sourceDir.entryInfoList(QDir::Files | QDir::Readable | QDir::NoDotAndDotDot, QDir::Name);
-    if (files.isEmpty())
-    {
-        err() << "No files found in " << sourceDirPath << '\n';
-        return 1;
-    }
 
     QFile::remove(destPath);
 
@@ -147,13 +180,10 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    for (const QFileInfo &info : files)
+    if (!processCompilerDir(compilerDirPath, query))
     {
-        if (!insertLibraryFile(query, info))
-        {
-            db.rollback();
-            return 1;
-        }
+        db.rollback();
+        return 1;
     }
 
     if (!db.commit())

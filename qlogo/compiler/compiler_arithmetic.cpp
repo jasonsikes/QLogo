@@ -1031,3 +1031,31 @@ RSEQ from to count					(library procedure)
 
 
 COD***/
+
+/***LIB ISEQ
+;;; -*- logo -*-
+
+to iseq :a :b
+if not (:a > :b) [output iseq1 :a :b]
+output map [[x] -1 * :x] iseq1 (-1 * :a) (-1 * :b)
+end
+
+to iseq1 :a :b
+if :a > :b [output []]
+output fput :a iseq1 :a + 1 :b
+end
+
+bury [iseq iseq1]
+
+BIL***/
+
+/***LIB RSEQ
+;;; -*- logo -*-
+
+to rseq :a :b :n
+output map [[x] :a + :x * (:b - :a) / (:n - 1)] iseq 0 :n - 1
+end
+
+bury "rseq
+
+BIL***/

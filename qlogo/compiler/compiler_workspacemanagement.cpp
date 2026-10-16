@@ -1568,3 +1568,310 @@ SAVEL contentslist filename				(library procedure)
 	"filename".
 
 COD***/
+
+/***LIB BURYALL
+;;; -*- logo -*-
+
+to buryall
+bury contents
+end
+
+bury "buryall
+
+BIL***/
+
+/***LIB BURYNAME
+;;; -*- logo -*-
+
+to buryname :names
+bury namelist :names
+end
+
+bury "buryname
+
+BIL***/
+
+/***LIB EDALL
+;;; -*- logo -*-
+
+to edall
+edit contents
+end
+
+bury "edall
+
+BIL***/
+
+/***LIB EDN
+;;; -*- logo -*-
+
+to edn :names
+edit namelist :names
+end
+
+bury "edn
+
+BIL***/
+
+/***LIB EDNS
+;;; -*- logo -*-
+
+to edns
+edit names
+end
+
+bury "edns
+
+BIL***/
+
+/***LIB EDPL
+;;; -*- logo -*-
+
+to edpl :names
+edit pllist :names
+end
+
+bury "edpl
+
+BIL***/
+
+/***LIB EDPLS
+;;; -*- logo -*-
+
+to edpls
+edit plists
+end
+
+bury "edpls
+
+BIL***/
+
+/***LIB EDPS
+;;; -*- logo -*-
+
+to edps
+edit procedures
+end
+
+bury "edps
+
+BIL***/
+
+/***LIB ERN
+;;; -*- logo -*-
+
+to ern :names
+erase namelist :names
+end
+
+bury "ern
+
+BIL***/
+
+/***LIB ERPL
+;;; -*- logo -*-
+
+to erpl :names
+erase pllist :names
+end
+
+bury "erpl
+
+BIL***/
+
+/***LIB LOCALMAKE
+;;; -*- logo -*-
+
+.macro localmake :name :value
+output (list "local (word "" :name) "apply ""make (list :name :value))
+end
+
+bury "localmake
+
+BIL***/
+
+/***LIB MACROEXPAND
+;;; -*- logo -*-
+
+to macroexpand :expr
+local [name inputlist macro.result]
+make "name first :expr
+make "inputlist bf :expr
+if not macrop :name [(throw "error (se :name [is not a macro.]))]
+define "%%%$%macro.procedure text :name
+make "macro.result run fput "%%%$%macro.procedure :inputlist
+erase "%%%$%macro.procedure
+op :macro.result
+end
+
+bury "macroexpand
+
+BIL***/
+
+/***LIB NAME
+;;; -*- logo -*-
+
+to name :name.value.input :name.variable.input
+make :name.variable.input :name.value.input
+end
+
+bury "name
+
+BIL***/
+
+/***LIB NAMELIST
+;;; -*- logo -*-
+
+to namelist :names
+if wordp :names [output list [] (list :names)]
+output list [] :names
+end
+
+bury "namelist
+
+BIL***/
+
+/***LIB PLLIST
+;;; -*- logo -*-
+
+to pllist :names
+if wordp :names [output (list [] [] (list :names))]
+output (list [] [] :names)
+end
+
+bury "pllist
+
+BIL***/
+
+/***LIB POALL
+;;; -*- logo -*-
+
+to poall
+po contents
+end
+
+bury "poall
+
+BIL***/
+
+/***LIB PON
+;;; -*- logo -*-
+
+to pon :names
+ignore error
+catch "error [po namelist :names]
+local "err
+make "err error
+if not emptyp :err [(throw "error first bf :err)]
+end
+
+bury "pon
+
+BIL***/
+
+/***LIB PONS
+;;; -*- logo -*-
+
+to pons
+po names
+end
+
+bury "pons
+
+BIL***/
+
+/***LIB POPL
+;;; -*- logo -*-
+
+to popl :names
+ignore error
+catch "error [po pllist :names]
+local "err
+make "err error
+if not emptyp :err [(throw "error first bf :err)]
+end
+
+bury "popl
+
+BIL***/
+
+/***LIB POPLS
+;;; -*- logo -*-
+
+to popls
+po plists
+end
+
+bury "popls
+
+BIL***/
+
+/***LIB POPS
+;;; -*- logo -*-
+
+to pops
+po procedures
+end
+
+bury "pops
+
+BIL***/
+
+/***LIB POTS
+;;; -*- logo -*-
+
+to pots
+pot procedures
+end
+
+bury "pots
+
+BIL***/
+
+/***LIB REDUCE
+;;; -*- logo -*-
+
+to reduce :reduce.function :reduce.list
+if emptyp bf :reduce.list [op first :reduce.list]
+op apply :reduce.function (list (first :reduce.list) ~
+                                (reduce :reduce.function bf :reduce.list))
+end
+
+bury "reduce
+
+BIL***/
+
+/***LIB SAVEL
+;;; -*- logo -*-
+
+to savel :cont :file [:oldwr writer]
+openwrite :file
+setwrite :file
+po :cont
+setwrite :oldwr
+close :file
+end
+
+bury "savel
+
+BIL***/
+
+/***LIB UNBURYALL
+;;; -*- logo -*-
+
+to unburyall
+unbury buried
+end
+
+BIL***/
+
+/***LIB UNBURYNAME
+;;; -*- logo -*-
+
+to unburyname :names
+unbury namelist :names
+end
+
+bury "unburyname
+
+BIL***/

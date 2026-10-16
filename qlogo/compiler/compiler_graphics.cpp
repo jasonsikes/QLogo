@@ -1181,3 +1181,56 @@ PEN							(library procedure)
 	hardware-specific characteristics, for use by SETPEN.
 
 COD***/
+
+/***LIB PEN
+;;; -*- logo -*-
+
+to pen
+op (list (ifelse pendownp ["pendown] ["penup]) ~
+         penmode pensize pencolor penpattern)
+end
+
+bury [pen]
+
+BIL***/
+
+/***LIB SETPEN
+;;; -*- logo -*-
+
+to setpen :pen_data
+ifelse equalp first bf :pen_data "reverse ~
+       [penreverse] ~
+       [ifelse equalp first bf :pen_data "erase ~
+               [penerase] ~
+               [penpaint]]
+ifelse equalp first :pen_data "penup [penup] [pendown]
+setpensize first bf bf :pen_data
+setpencolor first bf bf bf :pen_data
+setpenpattern first bf bf bf bf :pen_data
+end
+
+bury [setpen]
+
+BIL***/
+
+/***LIB XCOR
+;;; -*- logo -*-
+
+to xcor
+output first pos
+end
+
+bury "xcor
+
+BIL***/
+
+/***LIB YCOR
+;;; -*- logo -*-
+
+to ycor
+output last pos
+end
+
+bury "ycor
+
+BIL***/

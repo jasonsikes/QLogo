@@ -44,18 +44,11 @@ target_link_libraries(mklogolib PRIVATE Qt6::Core Qt6::Sql)
 target_link_libraries(mklogohelp PRIVATE Qt6::Core Qt6::Sql)
 set_target_properties(mklogolib mklogohelp PROPERTIES WIN32_EXECUTABLE FALSE)
 
-file(GLOB LOGOLIB_SOURCES CONFIGURE_DEPENDS LIST_DIRECTORIES false
-    "${CMAKE_SOURCE_DIR}/logolib/*"
-)
-if(NOT LOGOLIB_SOURCES)
-    message(FATAL_ERROR "No files found in logolib/")
-endif()
-
 file(GLOB QLOGO_COMPILER_SOURCES CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/qlogo/compiler/*.cpp"
+    "${CMAKE_SOURCE_DIR}/qlogo/compiler/compiler*.cpp"
 )
 if(NOT QLOGO_COMPILER_SOURCES)
-    message(FATAL_ERROR "No compiler .cpp files found")
+    message(FATAL_ERROR "No compiler*.cpp files found")
 endif()
 
 set(_qt_host_env_args)
@@ -69,10 +62,10 @@ add_custom_command(
     OUTPUT "${QLOGO_LIB_DB}"
     COMMAND "${CMAKE_COMMAND}" -E env ${_qt_host_env_args}
             "$<TARGET_FILE:mklogolib>"
-            "${CMAKE_SOURCE_DIR}/logolib"
+            "${CMAKE_SOURCE_DIR}/qlogo/compiler"
             "${QLOGO_LIB_DB}"
-    DEPENDS mklogolib ${LOGOLIB_SOURCES}
-    COMMENT "Generating ${QLOGO_LIB} from logolib"
+    DEPENDS mklogolib ${QLOGO_COMPILER_SOURCES}
+    COMMENT "Generating ${QLOGO_LIB} from compiler sources"
     VERBATIM
 )
 add_custom_target(qlogo_library_db ALL DEPENDS "${QLOGO_LIB_DB}")

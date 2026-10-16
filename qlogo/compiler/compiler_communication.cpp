@@ -1044,3 +1044,40 @@ FILE? filename						(library procedure)
 
 
 COD***/
+
+/***LIB CLOSEALL
+;;; -*- logo -*-
+
+to closeall
+foreach allopen [close ?]
+end
+
+bury "closeall
+
+BIL***/
+
+/***LIB FILEP
+;;; -*- logo -*-
+
+to filep :filename
+ignore error
+catch "error [openread :filename close :filename]
+output emptyp error
+end
+
+bury "filep
+
+BIL***/
+
+/***LIB FILE?
+;;; -*- logo -*-
+
+to file? :filename
+ignore error
+catch "error [openread :filename close :filename]
+output emptyp error
+end
+
+bury "file?
+
+BIL***/
