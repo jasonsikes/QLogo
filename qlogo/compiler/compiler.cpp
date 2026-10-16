@@ -56,7 +56,8 @@ std::vector<std::weak_ptr<CompiledText>> Compiler::liveCompiledTexts_;
 
 std::string dbgName(const char *enclosing, const char *name)
 {
-    if (Compiler::get().dumpRequest().any())
+    const Scaffold *scaff = Compiler::get().scaff_;
+    if (scaff != nullptr && scaff->mangleNames_)
         return std::string(enclosing) + "_" + name;
     return name;
 }
@@ -585,7 +586,16 @@ BasicBlock *Compiler::generateTOC(QList<BasicBlock *> blocks, Function *theFunct
 
 std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, List *aList)
 {
+    const DumpRequest dump = dumpRequest_;
     Scaffold compilerScaffolding(lljit_->getDataLayout(), targetMachine_.get());
+    compilerScaffolding.mangleNames_ = dump.any();
+
+    struct RestoreScaff
+    {
+        Compiler &compiler;
+        Scaffold *saved;
+        ~RestoreScaff() { compiler.scaff_ = saved; }
+    } restore{*this, scaff_};
     scaff_ = &compilerScaffolding;
 
     auto compiledText = std::make_shared<CompiledText>();
@@ -657,8 +667,6 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     }
 
     scaff_->hoistAllocasToEntry();
-
-    const DumpRequest dump = dumpRequest_;
 
     if (dump.showCFG)
     {

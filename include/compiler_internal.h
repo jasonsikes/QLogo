@@ -73,6 +73,9 @@ struct Scaffold
 
     Scaffold(const llvm::DataLayout &dataLayout, llvm::TargetMachine *tm);
 
+    /// @brief True when IR value names should be prefixed with the generator function.
+    bool mangleNames_ = false;
+
     // a pointer to the Evaluator object that supports execution of the compiled function.
     llvm::Value *evaluator_;
 

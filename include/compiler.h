@@ -82,7 +82,10 @@ class Compiler
     friend class CallSite;
 
     // Scaffold is a collection of objects needed to compile a function (JIT module).
-    Scaffold *scaff_;
+    // Null when no compile is in progress. Nested compiles save and restore this.
+    Scaffold *scaff_ = nullptr;
+
+    friend std::string dbgName(const char *enclosing, const char *name);
 
     std::unique_ptr<llvm::TargetMachine> targetMachine_;
     std::unique_ptr<llvm::orc::LLJIT> lljit_;
