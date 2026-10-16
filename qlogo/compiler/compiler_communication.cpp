@@ -98,9 +98,10 @@ Value *Compiler::generateWrite(const DatumPtr &node, TypeMask expected, bool use
         PaAddr(scaff_->evaluator_),
         PaAddr(CoAddr(node.astnodeValue())),
         PaAddr(ary),
-        PaInt32(ary->getArraySize()),
+        PaInt32(allocaN(ary)),
         PaBool(CoBool(useShow)),
         PaBool(CoBool(addWhitespace)));
+    endAllocaLifetime(ary);
     return cs.ret(generateNotFlowControl(retval));
 }
 
@@ -862,12 +863,13 @@ Value *Compiler::genSetcursor(const DatumPtr &node, TypeMask expected)
     AllocaInst *posAry = generateNumberAryFromDatum(node.astnodeValue(), cs.child(0), 2, [this](Value *n) {
         return generateIsExactIntegerInRange(n, 0.0, 2147483647.0);
     });
-    Value *colPtr = scaff_->builder_.CreateConstInBoundsGEP1_32(TyDouble, posAry, 0, DBG_NAME("colPtr"));
-    Value *rowPtr = scaff_->builder_.CreateConstInBoundsGEP1_32(TyDouble, posAry, 1, DBG_NAME("rowPtr"));
+    Value *colPtr = gepAllocaElem(posAry, 0, DBG_NAME("colPtr"));
+    Value *rowPtr = gepAllocaElem(posAry, 1, DBG_NAME("rowPtr"));
     Value *colD = scaff_->builder_.CreateLoad(TyDouble, colPtr, DBG_NAME("col"));
     Value *rowD = scaff_->builder_.CreateLoad(TyDouble, rowPtr, DBG_NAME("row"));
     Value *col = scaff_->builder_.CreateFPToSI(colD, TyInt32, DBG_NAME("colI"));
     Value *row = scaff_->builder_.CreateFPToSI(rowD, TyInt32, DBG_NAME("rowI"));
+    endAllocaLifetime(posAry);
     generateCallExtern(stdSetCursor, PaInt32(row), PaInt32(col));
     return cs.ret(generateVoidRetval(node));
 }

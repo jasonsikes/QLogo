@@ -207,8 +207,9 @@ Value *Compiler::genSetpos(const DatumPtr &node, TypeMask expected)
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeDatum);
     AllocaInst *posAry = generateNumberAryFromDatum(node.astnodeValue(), cs.child(0), 2);
-    return cs.ret(generateNotFlowControl(
-        generateCallExtern(setTurtlePos, PaAddr(CoAddr(node.astnodeValue())), PaAddr(posAry))));
+    Value *moved = generateCallExtern(setTurtlePos, PaAddr(CoAddr(node.astnodeValue())), PaAddr(posAry));
+    endAllocaLifetime(posAry);
+    return cs.ret(generateNotFlowControl(moved));
 }
 /***DOC SETHEADING SETH
 SETHEADING degrees
@@ -304,7 +305,9 @@ Value *Compiler::genTowards(const DatumPtr &node, TypeMask expected)
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeDatum);
     AllocaInst *posAry = generateNumberAryFromDatum(node.astnodeValue(), cs.child(0), 2);
-    return cs.ret(generateCallExtern(getTurtleTowards, PaAddr(posAry)));
+    Value *heading = generateCallExtern(getTurtleTowards, PaAddr(posAry));
+    endAllocaLifetime(posAry);
+    return cs.ret(heading);
 }
 /***DOC SCRUNCH
 SCRUNCH

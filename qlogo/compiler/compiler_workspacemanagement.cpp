@@ -419,13 +419,15 @@ Value *Compiler::generateLocalGlobal(const DatumPtr &node, const std::vector<Val
                                      const std::string &fnName, const std::string &aryName)
 {
     AllocaInst *ary = generateAllocaAry(names, aryName);
-    return generateCallExternTyped(
+    Value *retval = generateCallExternTyped(
         fn,
         fnName,
         {PaAddr(scaff_->evaluator_),
          PaAddr(CoAddr(node.astnodeValue())),
          PaAddr(ary),
-         PaInt32(ary->getArraySize())});
+         PaInt32(allocaN(ary))});
+    endAllocaLifetime(ary);
+    return retval;
 }
 
 Value *Compiler::generateLocalGlobal(const DatumPtr &node, TypeMask expected,

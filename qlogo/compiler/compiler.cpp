@@ -37,6 +37,8 @@
 #include "llvm/Support/GraphWriter.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetMachine.h"
+#include "llvm/Transforms/InstCombine/InstCombine.h"
+#include "llvm/Transforms/Scalar/SROA.h"
 #include "llvm/Transforms/Coroutines/ABI.h"
 #include "llvm/Transforms/Coroutines/CoroCleanup.h"
 #include "llvm/Transforms/Coroutines/CoroEarly.h"
@@ -248,11 +250,26 @@ struct CCallingConvSwitchABI : coro::SwitchABI
     }
 };
 
+/// SROA / InstCombine before split so allocas that do not escape can die
+/// before the frame is built.
+void runPreCoroPasses(Module &M, FunctionAnalysisManager &fam)
+{
+    FunctionPassManager fpm;
+    fpm.addPass(SROAPass(SROAOptions::ModifyCFG));
+    fpm.addPass(InstCombinePass());
+    for (Function &F : M)
+    {
+        if (F.isDeclaration())
+            continue;
+        fpm.run(F, fam);
+    }
+}
+
 /// Run the coroutine lowering pipeline so that llvm.coro.* intrinsics are
 /// lowered before the module is sent to the backend.
 void runCoroutinePasses(Module &M, ModuleAnalysisManager &mam)
 {
-    CoroSplitPass splitPass(/*OptimizeFrame=*/false);
+    CoroSplitPass splitPass(/*OptimizeFrame=*/true);
     splitPass.CreateAndInitABI = [](Function &F, coro::Shape &S) {
         auto ABI = std::make_unique<CCallingConvSwitchABI>(F, S, coro::isTriviallyMaterializable);
         ABI->init();
@@ -446,11 +463,16 @@ BasicBlock *Scaffold::createBasicBlock(const std::string &name)
     return BasicBlock::Create(*theContext_, name, theFunction_, mainBailoutBB_);
 }
 
-AllocaInst *Scaffold::createEntryBlockAlloca(Type *type, Value *arraySize, const std::string &name)
+AllocaInst *Scaffold::createEntryBlockAlloca(Type *type, const std::string &name)
 {
     BasicBlock &entry = theFunction_->getEntryBlock();
     IRBuilder<> tmp(&entry, entry.begin());
-    return tmp.CreateAlloca(type, arraySize, name);
+    return tmp.CreateAlloca(type, nullptr, name);
+}
+
+AllocaInst *Scaffold::createEntryBlockArrayAlloca(Type *elemTy, uint64_t count, const std::string &name)
+{
+    return createEntryBlockAlloca(ArrayType::get(elemTy, count), name);
 }
 
 void Scaffold::hoistAllocasToEntry()
@@ -752,6 +774,7 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     }
 
     scaff_->hoistAllocasToEntry();
+    runPreCoroPasses(*scaff_->theModule_, scaff_->theFAM_);
 
     if (dump.showCFG)
     {
@@ -983,7 +1006,8 @@ Value *Compiler::generateChild(ASTNode *parent, unsigned int index, TypeMask exp
 
 Value *Compiler::generateDoubleFromDatum(ASTNode *parent, Value *src)
 {
-    AllocaInst *out = scaff_->createEntryBlockAlloca(TyDouble, nullptr, DBG_NAME("doubleOut"));
+    AllocaInst *out = scaff_->createEntryBlockAlloca(TyDouble, DBG_NAME("doubleOut"));
+    beginAllocaLifetime(out);
     Value *retval = nullptr;
     auto realTest = [this, &retval, out](Value *src) {
         Value *ok = generateCallExtern(parseDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(src),
@@ -992,12 +1016,14 @@ Value *Compiler::generateDoubleFromDatum(ASTNode *parent, Value *src)
         return ok;
     };
     generateValidationDatum(parent, src, realTest);
+    endAllocaLifetime(out);
     return retval;
 }
 
 Value *Compiler::generateBoolFromDatum(ASTNode *parent, Value *src)
 {
-    AllocaInst *out = scaff_->createEntryBlockAlloca(TyInt8, nullptr, DBG_NAME("boolOut"));
+    AllocaInst *out = scaff_->createEntryBlockAlloca(TyInt8, DBG_NAME("boolOut"));
+    beginAllocaLifetime(out);
     Value *retval = nullptr;
     auto boolTest = [this, &retval, out](Value *src) {
         Value *ok = generateCallExtern(parseBoolForDatum, PaAddr(scaff_->evaluator_), PaAddr(src),
@@ -1007,6 +1033,7 @@ Value *Compiler::generateBoolFromDatum(ASTNode *parent, Value *src)
         return ok;
     };
     generateValidationDatum(parent, src, boolTest);
+    endAllocaLifetime(out);
     return retval;
 }
 
@@ -1314,6 +1341,7 @@ Value *Compiler::genExecProcedure(const DatumPtr &node, TypeMask expected)
     Value *vAstnodeValue = CoAddr(node.astnodeValue());
     Value *vParamArySize = CoInt32(node.astnodeValue()->countOfChildren());
     generateCallExtern(beginProcedure, PaAddr(scaff_->evaluator_), PaAddr(vAstnodeValue), PaAddr(paramAry), PaInt32(vParamArySize));
+    endAllocaLifetime(paramAry);
 
     generateCoroSuspend();
     return cs.ret(generateCallExtern(getLastEvaluationResult, PaAddr(scaff_->evaluator_)));
@@ -1431,14 +1459,52 @@ AllocaInst *Compiler::generateChildrenAlloca(ASTNode *node, TypeMask expected, c
     return generateAllocaAry(children, name);
 }
 
+Value *Compiler::allocaN(AllocaInst *ai)
+{
+    Type *ty = ai->getAllocatedType();
+    if (auto *arr = dyn_cast<ArrayType>(ty))
+        return CoInt32(static_cast<int32_t>(arr->getNumElements()));
+    if (auto *n = dyn_cast<ConstantInt>(ai->getArraySize()))
+        return n;
+    return CoInt32(1);
+}
+
+Value *Compiler::gepAllocaElem(AllocaInst *ai, unsigned i, const std::string &name)
+{
+    Type *ty = ai->getAllocatedType();
+    if (ty->isArrayTy())
+        return scaff_->builder_.CreateConstInBoundsGEP2_32(ty, ai, 0, i, name);
+    return scaff_->builder_.CreateConstInBoundsGEP1_32(ty, ai, i, name);
+}
+
+void Compiler::beginAllocaLifetime(AllocaInst *ai)
+{
+    if (auto *arr = dyn_cast<ArrayType>(ai->getAllocatedType()))
+    {
+        if (arr->getNumElements() == 0)
+            return;
+    }
+    scaff_->builder_.CreateLifetimeStart(ai);
+}
+
+void Compiler::endAllocaLifetime(AllocaInst *ai)
+{
+    if (auto *arr = dyn_cast<ArrayType>(ai->getAllocatedType()))
+    {
+        if (arr->getNumElements() == 0)
+            return;
+    }
+    scaff_->builder_.CreateLifetimeEnd(ai);
+}
+
 AllocaInst *Compiler::generateAllocaAry(const std::vector<llvm::Value *> &values, const std::string &name)
 {
-    Value *childCount = CoInt32(values.size());
-    AllocaInst *retval = scaff_->createEntryBlockAlloca(TyAddr, childCount, name);
+    AllocaInst *retval =
+        scaff_->createEntryBlockArrayAlloca(TyAddr, values.size(), name);
+    beginAllocaLifetime(retval);
     for (size_t i = 0; i < values.size(); ++i)
     {
-        Value *ptr = scaff_->builder_.CreateConstInBoundsGEP1_32(
-            TyAddr, retval, static_cast<unsigned>(i), name);
+        Value *ptr = gepAllocaElem(retval, static_cast<unsigned>(i), name);
         scaff_->builder_.CreateStore(values[i], ptr);
     }
     return retval;
@@ -1472,6 +1538,8 @@ void Compiler::generateTraceBegin(ASTNode *node, const std::vector<Value *> &chi
                                      PaAddr(CoAddr(node)),
                                      PaAddr(ary),
                                      PaInt32(CoInt32(static_cast<int32_t>(boxed.size()))));
+    if (auto *traceAry = dyn_cast<AllocaInst>(ary))
+        endAllocaLifetime(traceAry);
     generateNotFlowControl(begin);
 }
 
@@ -1508,7 +1576,8 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, Value *src, in
                                                  const validatorFunction &elementOk)
 {
     Value *vSize = CoInt32(size);
-    AllocaInst *ary = scaff_->createEntryBlockAlloca(TyDouble, vSize, DBG_NAME("ary"));
+    AllocaInst *ary = scaff_->createEntryBlockArrayAlloca(TyDouble, static_cast<uint64_t>(size), DBG_NAME("ary"));
+    beginAllocaLifetime(ary);
 
     auto isNumberList = [this, vSize, ary, size, &elementOk](Value *candidate) {
         BasicBlock *notListBB = scaff_->createBasicBlock(DBG_NAME("notList"));
@@ -1551,8 +1620,7 @@ AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, Value *src, in
             elementsOk = CoBool(true);
             for (int32_t i = 0; i < size; ++i)
             {
-                Value *ptr = scaff_->builder_.CreateConstInBoundsGEP1_32(
-                    TyDouble, ary, static_cast<unsigned>(i), DBG_NAME("elemPtr"));
+                Value *ptr = gepAllocaElem(ary, static_cast<unsigned>(i), DBG_NAME("elemPtr"));
                 Value *elem = scaff_->builder_.CreateLoad(TyDouble, ptr, DBG_NAME("elem"));
                 elementsOk = scaff_->builder_.CreateAnd(elementsOk, elementOk(elem), DBG_NAME("elemOk"));
             }
@@ -1615,10 +1683,12 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
     Value *handlerResult = generateCallExtern(handleBadDouble, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(parent)), PaDouble(candidate));
     handlerResult = generateNotFlowControl(handlerResult);
 
-    AllocaInst *out = scaff_->createEntryBlockAlloca(TyDouble, nullptr, DBG_NAME("retryDoubleOut"));
+    AllocaInst *out = scaff_->createEntryBlockAlloca(TyDouble, DBG_NAME("retryDoubleOut"));
+    beginAllocaLifetime(out);
     Value *numberIsValid = generateCallExtern(parseDoubleForDatum, PaAddr(scaff_->evaluator_),
                                               PaAddr(handlerResult), PaAddr(out));
     Value *dVal = scaff_->builder_.CreateLoad(TyDouble, out, DBG_NAME("retryDouble"));
+    endAllocaLifetime(out);
     dVal = scaff_->builder_.CreateSelect(numberIsValid, dVal, ConstantFP::getNaN(TyDouble),
                                          DBG_NAME("retryOrNaN"));
     candidate->addIncoming(dVal, scaff_->builder_.GetInsertBlock());

@@ -316,8 +316,9 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node,
                                            PaAddr(scaff_->evaluator_),
                                            PaAddr(childAddr),
                                            PaAddr(ary),
-                                           PaInt32(ary->getArraySize()),
+                                           PaInt32(allocaN(ary)),
                                            PaBool(demandNothing));
+        endAllocaLifetime(ary);
         return retObj;
     }
     // There is no child. Return nothing.

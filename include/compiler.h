@@ -120,8 +120,19 @@ class Compiler
     // Generate code for all children of the given node and cast them to the expected type.
     llvm::AllocaInst *generateChildrenAlloca(ASTNode *node, TypeMask expected, const std::string &name = "");
 
-    // Generate code to save a vector of values to an alloca array.
+    // Store values in an entry-block [N x ptr] alloca and start its lifetime.
+    // Caller must endAllocaLifetime after the last use (before any coro suspend).
     llvm::AllocaInst *generateAllocaAry(const std::vector<llvm::Value *> &values, const std::string &name = "");
+
+    // Element count of an array alloca as i32 (not AllocaInst::getArraySize()).
+    llvm::Value *allocaN(llvm::AllocaInst *ai);
+
+    // GEP to element i of an array alloca.
+    llvm::Value *gepAllocaElem(llvm::AllocaInst *ai, unsigned i, const std::string &name);
+
+    // llvm.lifetime.start / end at the current insert point. No-op for [0 x T].
+    void beginAllocaLifetime(llvm::AllocaInst *ai);
+    void endAllocaLifetime(llvm::AllocaInst *ai);
 
     // Box an LLVM double/bool/datum as a Datum pointer for TRACE messages.
     llvm::Value *generateDatumForTrace(llvm::Value *value);
@@ -415,6 +426,8 @@ class Compiler
     // `elementOk`, if set, is applied to each stored double and ANDed into the
     // list predicate, so those constraints share the list's ERRACT trip.
     // A failure blames the list, not the extracted number.
+    // Allocates [size x double] and starts lifetime; caller must endAllocaLifetime
+    // after the last use.
     llvm::AllocaInst *generateNumberAryFromDatum(ASTNode *parent, llvm::Value *src, int32_t size,
                                                  const validatorFunction &elementOk = {});
 

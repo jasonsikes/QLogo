@@ -77,8 +77,10 @@ Value *Compiler::generateVariadicConstruct(const DatumPtr &node, addr_t (*ctor)(
     {
         ary = cs.allocaAry(aryName);
     }
-    return cs.ret(generateCallExternTyped(ctor, ctorName,
-                                          {PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize())}));
+    Value *retval = generateCallExternTyped(ctor, ctorName,
+                                            {PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(allocaN(ary))});
+    endAllocaLifetime(ary);
+    return cs.ret(retval);
 }
 
 Value *Compiler::generateEqualpCompare(Value *thing1, Value *thing2)
@@ -229,7 +231,8 @@ Value *Compiler::generateFputlput(const DatumPtr &node, TypeMask expected, bool 
     auto wordVector = isLput ? std::vector<Value *>{list, wordThing} : std::vector<Value *>{wordThing, list};
     AllocaInst *ary = generateAllocaAry(wordVector, DBG_NAME("wordAry"));
     Value *wordRetval =
-        generateCallExtern(concatWord, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize()));
+        generateCallExtern(concatWord, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(allocaN(ary)));
+    endAllocaLifetime(ary);
     BasicBlock *wordDoneBB = scaff_->builder_.GetInsertBlock();
     scaff_->builder_.CreateBr(mergeBB);
 
@@ -459,7 +462,8 @@ Value *Compiler::genItem(const DatumPtr &node, TypeMask expected)
 
     // Instead of iterating a list twice, save the member when counting.
     // The slot lives in the compiled frame (not a genItem C++ local).
-    AllocaInst *listItemSlot = scaff_->createEntryBlockAlloca(TyAddr, nullptr, DBG_NAME("listItem"));
+    AllocaInst *listItemSlot = scaff_->createEntryBlockAlloca(TyAddr, DBG_NAME("listItem"));
+    beginAllocaLifetime(listItemSlot);
     scaff_->builder_.CreateStore(CoAddr(0), listItemSlot);
 
     auto validator = [this, listItemSlot, thing](Value *index) {
@@ -469,8 +473,10 @@ Value *Compiler::genItem(const DatumPtr &node, TypeMask expected)
     };
     index = generateValidationDouble(node.astnodeValue(), index, validator);
 
-    return cs.ret(generateCallExtern(
-        itemOfDatum, PaAddr(scaff_->evaluator_), PaAddr(thing), PaDouble(index), PaAddr(listItemSlot)));
+    Value *item = generateCallExtern(
+        itemOfDatum, PaAddr(scaff_->evaluator_), PaAddr(thing), PaDouble(index), PaAddr(listItemSlot));
+    endAllocaLifetime(listItemSlot);
+    return cs.ret(item);
 }
 /***DOC SETITEM
 SETITEM index array value

@@ -125,8 +125,11 @@ struct Scaffold
 
     // Alloca in the current entry block so the allocation is static (not a
     // dynamic stack bump each time the emitting block runs).
-    llvm::AllocaInst *createEntryBlockAlloca(llvm::Type *type, llvm::Value *arraySize,
-                                             const std::string &name = "");
+    llvm::AllocaInst *createEntryBlockAlloca(llvm::Type *type, const std::string &name = "");
+
+    // Alloca of [count x elemTy] in the entry block (SROA-friendly vs alloca elem, N).
+    llvm::AllocaInst *createEntryBlockArrayAlloca(llvm::Type *elemTy, uint64_t count,
+                                                  const std::string &name = "");
 
     // After TOC / coro prologue prepend a new entry, move every alloca there
     // so they stay static and dominate all uses (including after suspend).
