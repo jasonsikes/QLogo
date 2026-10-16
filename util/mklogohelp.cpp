@@ -15,7 +15,8 @@
 ///
 /// Help is taken from /***DOC ... COD***/ blocks in the compiler .cpp files.
 /// The first name after /***DOC is the HELPTEXT key; every name on that line
-/// (including the first) is an ALIASES entry.
+/// (including the first) is an ALIASES entry. ALIASES.CATEGORY is the topic
+/// of the source file.
 ///
 //===----------------------------------------------------------------------===//
 
@@ -40,7 +41,45 @@ QTextStream &err()
     return stream;
 }
 
-bool insertEntry(QSqlQuery &aliasQuery, QSqlQuery &textQuery, const QStringList &names, const QString &description)
+/// Topic stored in ALIASES.CATEGORY for help text taken from \a fileName.
+QString categoryForCompilerFile(const QString &fileName)
+{
+    if (fileName == QLatin1String("compiler_arithmetic.cpp"))
+    {
+        return QStringLiteral("Arithmetic");
+    }
+    if (fileName == QLatin1String("compiler_communication.cpp"))
+    {
+        return QStringLiteral("Communication");
+    }
+    if (fileName == QLatin1String("compiler_controlstructures.cpp"))
+    {
+        return QStringLiteral("Control Structures");
+    }
+    if (fileName == QLatin1String("compiler_datastructureprimitives.cpp"))
+    {
+        return QStringLiteral("Data Structure Primitives");
+    }
+    if (fileName == QLatin1String("compiler_graphics.cpp"))
+    {
+        return QStringLiteral("Graphics");
+    }
+    if (fileName == QLatin1String("compiler_workspacemanagement.cpp"))
+    {
+        return QStringLiteral("Workspace Management");
+    }
+    if (fileName == QLatin1String("compiler.cpp"))
+    {
+        return QStringLiteral("Special Variables");
+    }
+    return {};
+}
+
+bool insertEntry(QSqlQuery &aliasQuery,
+                 QSqlQuery &textQuery,
+                 const QStringList &names,
+                 const QString &description,
+                 const QString &category)
 {
     if (names.isEmpty())
     {
@@ -53,6 +92,7 @@ bool insertEntry(QSqlQuery &aliasQuery, QSqlQuery &textQuery, const QStringList 
     {
         aliasQuery.bindValue(0, alias);
         aliasQuery.bindValue(1, command);
+        aliasQuery.bindValue(2, category);
         if (!aliasQuery.exec())
         {
             err() << "INSERT ALIASES failed for '" << alias << "': " << aliasQuery.lastError().text() << '\n';
@@ -72,6 +112,8 @@ bool insertEntry(QSqlQuery &aliasQuery, QSqlQuery &textQuery, const QStringList 
 
 bool processCompilerFile(const QFileInfo &info, QSqlQuery &aliasQuery, QSqlQuery &textQuery)
 {
+    const QString category = categoryForCompilerFile(info.fileName());
+
     QFile file(info.absoluteFilePath());
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -94,6 +136,11 @@ bool processCompilerFile(const QFileInfo &info, QSqlQuery &aliasQuery, QSqlQuery
             return false;
         }
         const QStringList names = words.mid(1);
+        if (category.isEmpty())
+        {
+            err() << "No help category for '" << info.fileName() << "'\n";
+            return false;
+        }
 
         QString description;
         bool foundEnd = false;
@@ -114,7 +161,7 @@ bool processCompilerFile(const QFileInfo &info, QSqlQuery &aliasQuery, QSqlQuery
             return false;
         }
 
-        if (!insertEntry(aliasQuery, textQuery, names, description))
+        if (!insertEntry(aliasQuery, textQuery, names, description, category))
             return false;
     }
 
@@ -181,7 +228,8 @@ int main(int argc, char *argv[])
     QSqlQuery query(db);
     if (!query.exec(QStringLiteral("CREATE TABLE ALIASES "
                                    "(ALIAS TEXT PRIMARY KEY NOT NULL, "
-                                   "COMMAND TEXT NOT NULL)")) ||
+                                   "COMMAND TEXT NOT NULL, "
+                                   "CATEGORY TEXT NOT NULL)")) ||
         !query.exec(QStringLiteral("CREATE TABLE HELPTEXT "
                                    "(COMMAND TEXT PRIMARY KEY NOT NULL, "
                                    "DESCRIPTION TEXT)")))
@@ -192,7 +240,8 @@ int main(int argc, char *argv[])
 
     QSqlQuery aliasQuery(db);
     QSqlQuery textQuery(db);
-    if (!aliasQuery.prepare(QStringLiteral("INSERT INTO ALIASES (ALIAS, COMMAND) VALUES (?, ?)")) ||
+    if (!aliasQuery.prepare(
+            QStringLiteral("INSERT INTO ALIASES (ALIAS, COMMAND, CATEGORY) VALUES (?, ?, ?)")) ||
         !textQuery.prepare(QStringLiteral("INSERT INTO HELPTEXT (COMMAND, DESCRIPTION) VALUES (?, ?)")))
     {
         err() << "Failed to prepare INSERT: " << db.lastError().text() << '\n';
