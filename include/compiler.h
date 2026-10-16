@@ -448,7 +448,7 @@ class Compiler
     /// @brief Destructor.
     ~Compiler();
 
-    /// Get the compiled text for a list (compiling if stale or missing).
+    /// Get the compiled text for a list (compiling if stale, missing, or a dump was requested).
     std::shared_ptr<CompiledText> compiledTextFromList(List *aList);
 
     /// @brief Timestamp of the last procedure or TRACE change.

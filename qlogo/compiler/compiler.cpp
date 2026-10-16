@@ -756,6 +756,9 @@ QList<QList<DatumPtr>> Compiler::groupConsecutiveExpressions(const QList<DatumPt
 
 std::shared_ptr<CompiledText> Compiler::compiledTextFromList(List *aList)
 {
+    if (dumpRequest_.any())
+        aList->compiledText_.reset();
+
     if (aList->compileTimeStamp <= lastCodeChangeTimestamp_ || !aList->compiledText_ ||
         !aList->compiledText_->functionPtr_)
     {
