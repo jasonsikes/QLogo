@@ -251,6 +251,18 @@ Value *Compiler::genCopyright(const DatumPtr &node, TypeMask expected)
     return cs.ret(generateNotFlowControl(retval));
 }
 
+Value *Compiler::generateDumpInstructionList(const DatumPtr &node, TypeMask expected,
+                                            addr_t (*dumpFn)(addr_t, addr_t, addr_t),
+                                            const char *dumpFnName)
+{
+    Q_ASSERT(expected && TypeNothing);
+    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
+    Value *retval = generateCallExternTyped(
+        dumpFn, dumpFnName,
+        {PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(list)});
+    return generateNotFlowControl(retval);
+}
+
 /***DOC SHOWIR
 SHOWIR instructionlist
 
@@ -262,11 +274,7 @@ COD***/
 // CMD SHOWIR 1 1 1 n
 Value *Compiler::genShowIR(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
-    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
-    Value *retval = generateCallExtern(
-        stdShowIR, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(list));
-    return generateNotFlowControl(retval);
+    return generateDumpInstructionList(node, expected, stdShowIR, "stdShowIR");
 }
 
 /***DOC SHOWCFG
@@ -279,11 +287,7 @@ COD***/
 // CMD SHOWCFG 1 1 1 n
 Value *Compiler::genShowCFG(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
-    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
-    Value *retval = generateCallExtern(
-        stdShowCFG, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(list));
-    return generateNotFlowControl(retval);
+    return generateDumpInstructionList(node, expected, stdShowCFG, "stdShowCFG");
 }
 
 /***DOC SHOWMODULEIR
@@ -297,11 +301,7 @@ COD***/
 // CMD SHOWMODULEIR 1 1 1 n
 Value *Compiler::genShowModuleIR(const DatumPtr &node, TypeMask expected)
 {
-    Q_ASSERT(expected && TypeNothing);
-    Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
-    Value *retval = generateCallExtern(
-        stdShowModuleIR, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(list));
-    return generateNotFlowControl(retval);
+    return generateDumpInstructionList(node, expected, stdShowModuleIR, "stdShowModuleIR");
 }
 
 /***DOC SHELL

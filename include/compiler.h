@@ -400,6 +400,11 @@ class Compiler
     // PRINT / SHOW / TYPE. `useShow` brackets lists; `addWhitespace` adds spaces and a newline.
     llvm::Value *generateWrite(const DatumPtr &node, TypeMask expected, bool useShow, bool addWhitespace);
 
+    // SHOWIR / SHOWCFG / SHOWMODULEIR. `dumpFn` is the host export that compiles and prints.
+    llvm::Value *generateDumpInstructionList(const DatumPtr &node, TypeMask expected,
+                                             addr_t (*dumpFn)(addr_t, addr_t, addr_t),
+                                             const char *dumpFnName);
+
     // Group consecutive expressions of the same type (tag or non-tag) together.
     QList<QList<DatumPtr>> groupConsecutiveExpressions(const QList<DatumPtr> &expressions);
 
