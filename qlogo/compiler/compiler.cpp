@@ -780,16 +780,22 @@ QList<QList<DatumPtr>> Compiler::groupConsecutiveExpressions(const QList<DatumPt
 
 std::shared_ptr<CompiledText> Compiler::compiledTextFromList(List *aList)
 {
-    if (dumpRequest_.any())
+    const bool dumpThisCompile = dumpRequest_.any();
+    if (dumpThisCompile)
         aList->compiledText_.reset();
 
     if (aList->compileTimeStamp <= lastCodeChangeTimestamp_ || !aList->compiledText_ ||
         !aList->compiledText_->functionPtr_)
     {
         QList<DatumPtr> astFlatList;
+        if (dumpThisCompile)
         {
             // Library autoload during treeify must not inherit this dump request.
             DumpScope nestedWithoutDump({});
+            astFlatList = Treeifier::astFromList(aList);
+        }
+        else
+        {
             astFlatList = Treeifier::astFromList(aList);
         }
         QList<QList<DatumPtr>> parsedList = groupConsecutiveExpressions(astFlatList);
