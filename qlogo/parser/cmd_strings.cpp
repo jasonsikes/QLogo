@@ -1734,6 +1734,12 @@ const QString &StringConstants::cmdStrMAKE()
     return str;
 }
 
+const QString &StringConstants::cmdStrLOCALMAKE()
+{
+    static const QString str = QObject::tr("LOCALMAKE");
+    return str;
+}
+
 const QString &StringConstants::cmdStrLOCAL()
 {
     static const QString str = QObject::tr("LOCAL");

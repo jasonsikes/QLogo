@@ -296,6 +296,7 @@ const QString &cmdStrFULLTEXT();
 const QString &cmdStrCOPYDEF();
 const QString &cmdStrTHING();
 const QString &cmdStrMAKE();
+const QString &cmdStrLOCALMAKE();
 const QString &cmdStrLOCAL();
 const QString &cmdStrGLOBAL();
 const QString &cmdStrPPROP();

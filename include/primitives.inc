@@ -221,6 +221,7 @@ llvm::Value *genFulltext(const DatumPtr &node, TypeMask expected);
 llvm::Value *genCopydef(const DatumPtr &node, TypeMask expected);
 llvm::Value *genThing(const DatumPtr &node, TypeMask expected);
 llvm::Value *genMake(const DatumPtr &node, TypeMask expected);
+llvm::Value *genLocalmake(const DatumPtr &node, TypeMask expected);
 llvm::Value *genLocal(const DatumPtr &node, TypeMask expected);
 llvm::Value *genGlobal(const DatumPtr &node, TypeMask expected);
 llvm::Value *genPprop(const DatumPtr &node, TypeMask expected);

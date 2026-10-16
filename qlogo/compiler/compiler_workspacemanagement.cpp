@@ -326,6 +326,29 @@ Value *Compiler::genMake(const DatumPtr &node, TypeMask expected)
     return cs.ret(generateVoidRetval(node));
 }
 
+/***DOC LOCALMAKE
+LOCALMAKE varname value
+
+	command.  Makes the named variable local, like LOCAL, and
+	assigns it the given value, like MAKE.
+
+COD***/
+// CMD LOCALMAKE 2 2 2 n
+Value *Compiler::genLocalmake(const DatumPtr &node, TypeMask expected)
+{
+
+    CallSite cs(this, node, TypeDatum, TypeDatum);
+    auto [varname, value] = cs.children();
+    varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
+    value = generateCopyIfLiteralArray(node, 1, value);
+
+    Value *localized = generateLocalGlobal(node, std::vector<Value *>{varname},
+                                           stdLocal, "stdLocal", DBG_NAME("localAry"));
+    localized = generateNotFlowControl(localized);
+    generateCallExtern(setDatumForWord, PaAddr(value), PaAddr(varname));
+    return cs.ret(localized);
+}
+
 Value *Compiler::genFoo(const DatumPtr &node, TypeMask expected)
 {
 
@@ -391,6 +414,20 @@ Value *Compiler::genGlobal(const DatumPtr &node, TypeMask expected)
     return generateLocalGlobal(node, expected, stdGlobal, "stdGlobal", DBG_NAME("globalAry"));
 }
 
+Value *Compiler::generateLocalGlobal(const DatumPtr &node, const std::vector<Value *> &names,
+                                     addr_t (*fn)(addr_t, addr_t, addr_t, uint32_t),
+                                     const std::string &fnName, const std::string &aryName)
+{
+    AllocaInst *ary = generateAllocaAry(names, aryName);
+    return generateCallExternTyped(
+        fn,
+        fnName,
+        {PaAddr(scaff_->evaluator_),
+         PaAddr(CoAddr(node.astnodeValue())),
+         PaAddr(ary),
+         PaInt32(ary->getArraySize())});
+}
+
 Value *Compiler::generateLocalGlobal(const DatumPtr &node, TypeMask expected,
                                      addr_t (*fn)(addr_t, addr_t, addr_t, uint32_t),
                                      const std::string &fnName, const std::string &aryName)
@@ -404,15 +441,7 @@ Value *Compiler::generateLocalGlobal(const DatumPtr &node, TypeMask expected,
         for (Value *child : cs.children())
             names.push_back(generateWordFromDatum(node.astnodeValue(), child));
 
-    AllocaInst *ary = generateAllocaAry(names, aryName);
-    Value *retval = generateCallExternTyped(
-        fn,
-        fnName,
-        {PaAddr(scaff_->evaluator_),
-         PaAddr(CoAddr(node.astnodeValue())),
-         PaAddr(ary),
-         PaInt32(ary->getArraySize())});
-    return cs.ret(generateNotFlowControl(retval));
+    return cs.ret(generateNotFlowControl(generateLocalGlobal(node, names, fn, fnName, aryName)));
 }
 
 /***DOC PPROP
@@ -1387,25 +1416,6 @@ make :name.variable.input :name.value.input
 end
 
 bury "name
-
-BIL***/
-
-/***DOC LOCALMAKE
-LOCALMAKE varname value				(library procedure)
-
-	command.  Makes the named variable local, like LOCAL, and
-	assigns it the given value, like MAKE.
-
-COD***/
-
-/***LIB LOCALMAKE
-;;; -*- logo -*-
-
-.macro localmake :name :value
-output (list "local (word "" :name) "apply ""make (list :name :value))
-end
-
-bury "localmake
 
 BIL***/
 

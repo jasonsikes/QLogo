@@ -1,0 +1,8 @@
+? ? > > > f defined
+? local
+? global
+? ? > > > g defined
+? 4
+? 3
+? ? [a b]
+? localmake doesn't like [nope] as input

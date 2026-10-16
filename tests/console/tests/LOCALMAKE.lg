@@ -1,0 +1,17 @@
+make "p1 "global
+to f
+localmake "p1 "local
+print :p1
+end
+f
+print :p1
+make "n 3
+to g
+localmake "n :n + 1
+print :n
+end
+g
+print :n
+localmake "box [a b]
+show :box
+localmake [nope] 1

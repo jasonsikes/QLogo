@@ -472,6 +472,11 @@ class Compiler
                                      addr_t (*fn)(addr_t, addr_t, addr_t, uint32_t),
                                      const std::string &fnName, const std::string &aryName);
 
+    // stdLocal/stdGlobal for names that are already evaluated. May return an Error.
+    llvm::Value *generateLocalGlobal(const DatumPtr &node, const std::vector<llvm::Value *> &names,
+                                     addr_t (*fn)(addr_t, addr_t, addr_t, uint32_t),
+                                     const std::string &fnName, const std::string &aryName);
+
     // If the child is a genLiteral array, copy it so SETITEM cannot mutate AST.
     // Runtime arrays (ARRAY, variables) are left shared.
     llvm::Value *generateCopyIfLiteralArray(const DatumPtr &node, unsigned childIndex, llvm::Value *value);
