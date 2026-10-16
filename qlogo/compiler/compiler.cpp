@@ -56,7 +56,7 @@ std::vector<std::weak_ptr<CompiledText>> Compiler::liveCompiledTexts_;
 
 std::string dbgName(const char *enclosing, const char *name)
 {
-    if (Config::get().showIR_ || Config::get().showCFG_ || Config::get().showModuleIR_)
+    if (Compiler::get().dumpRequest().any())
         return std::string(enclosing) + "_" + name;
     return name;
 }
@@ -285,9 +285,7 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm)
       builder_(IRBuilder<>(*theContext_)), theFPM_(FunctionPassManager()), theLAM_(LoopAnalysisManager()),
       theFAM_(FunctionAnalysisManager()), theCGAM_(CGSCCAnalysisManager()), theMAM_(ModuleAnalysisManager()),
       thePIC_(PassInstrumentationCallbacks()),
-      theSI_(StandardInstrumentations(*theContext_,
-                                      Config::get().showIR_ || Config::get().showCFG_ ||
-                                          Config::get().showModuleIR_)),
+      theSI_(StandardInstrumentations(*theContext_, Compiler::get().dumpRequest().any())),
       thePB_(tm, PipelineTuningOptions(), std::nullopt, &thePIC_)
 {
     theModule_->setDataLayout(dataLayout);
@@ -660,7 +658,9 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
 
     scaff_->hoistAllocasToEntry();
 
-    if (Config::get().showCFG_)
+    const DumpRequest dump = dumpRequest_;
+
+    if (dump.showCFG)
     {
         scaff_->theFunction_->viewCFG();
     }
@@ -682,7 +682,7 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     if (Config::get().verifyIR_)
         verifyModuleOrThrow(*scaff_->theModule_);
 
-    if (Config::get().showIR_)
+    if (dump.showIR)
     {
         scaff_->theModule_->print(errs(), nullptr);
         fprintf(stderr, "\n");
@@ -694,7 +694,7 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     if (Config::get().verifyIR_)
         verifyModuleOrThrow(*scaff_->theModule_);
 
-    if (Config::get().showModuleIR_)
+    if (dump.showModuleIR)
     {
         scaff_->theModule_->print(errs(), nullptr);
         fprintf(stderr, "\n");

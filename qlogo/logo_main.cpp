@@ -22,6 +22,7 @@
 #include "interface/logointerfacecurses.h"
 #include "interface/pipeio.h"
 #endif
+#include "compiler.h"
 #include "sharedconstants.h"
 #include "workspace/kernel.h"
 #include "workspace/library.h"
@@ -150,24 +151,19 @@ void processOptions(QCoreApplication *a)
         Config::get().paramHelpDatabaseFilepath_ = commandlineParser.value(optsethelploc);
     }
 
-    if (commandlineParser.isSet(optshowIR))
+    if (commandlineParser.isSet(optshowIR) || commandlineParser.isSet(optshowCFG) ||
+        commandlineParser.isSet(optshowModuleIR))
     {
-        Config::get().showIR_ = true;
+        Compiler::DumpRequest dump;
+        dump.showIR = commandlineParser.isSet(optshowIR);
+        dump.showCFG = commandlineParser.isSet(optshowCFG);
+        dump.showModuleIR = commandlineParser.isSet(optshowModuleIR);
+        Compiler::get().setDumpRequest(dump);
     }
 
     if (commandlineParser.isSet(optverifyIR))
     {
         Config::get().verifyIR_ = true;
-    }
-
-    if (commandlineParser.isSet(optshowCFG))
-    {
-        Config::get().showCFG_ = true;
-    }
-
-    if (commandlineParser.isSet(optshowModuleIR))
-    {
-        Config::get().showModuleIR_ = true;
     }
 
     if (commandlineParser.isSet(optshowCON))

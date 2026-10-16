@@ -179,15 +179,6 @@ const bool debugBuild_ = false;
     // Set to true iff the user forbade the ncurses text user interface.
     bool noTUI_ = false;
 
-    // Set to true iff compiler should show IR code.
-    bool showIR_ = false;
-
-    // Set to true iff compiler should show the CFG view.
-    bool showCFG_ = false;
-
-    // Set to true iff compiler should show the full module IR (after coroutine lowering).
-    bool showModuleIR_ = false;
-
     // Set to true if evaluator should trace its execution (for debugging).
     bool traceEvaluator_ = false;
 
