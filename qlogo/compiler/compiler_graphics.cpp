@@ -1158,12 +1158,34 @@ XCOR							(library procedure)
 
 COD***/
 
+/***LIB XCOR
+;;; -*- logo -*-
+
+to xcor
+output first pos
+end
+
+bury "xcor
+
+BIL***/
+
 /***DOC YCOR
 YCOR							(library procedure)
 
 	outputs a number, the turtle's Y coordinate.
 
 COD***/
+
+/***LIB YCOR
+;;; -*- logo -*-
+
+to ycor
+output last pos
+end
+
+bury "ycor
+
+BIL***/
 
 /***DOC SETPEN
 SETPEN list						(library procedure)
@@ -1173,26 +1195,6 @@ SETPEN list						(library procedure)
 	should be taken from an earlier invocation of PEN.
 
 COD***/
-
-/***DOC PEN
-PEN							(library procedure)
-
-	outputs a list containing the pen's position, mode, thickness, and
-	hardware-specific characteristics, for use by SETPEN.
-
-COD***/
-
-/***LIB PEN
-;;; -*- logo -*-
-
-to pen
-op (list (ifelse pendownp ["pendown] ["penup]) ~
-         penmode pensize pencolor penpattern)
-end
-
-bury [pen]
-
-BIL***/
 
 /***LIB SETPEN
 ;;; -*- logo -*-
@@ -1213,24 +1215,22 @@ bury [setpen]
 
 BIL***/
 
-/***LIB XCOR
+/***DOC PEN
+PEN							(library procedure)
+
+	outputs a list containing the pen's position, mode, thickness, and
+	hardware-specific characteristics, for use by SETPEN.
+
+COD***/
+
+/***LIB PEN
 ;;; -*- logo -*-
 
-to xcor
-output first pos
+to pen
+op (list (ifelse pendownp ["pendown] ["penup]) ~
+         penmode pensize pencolor penpattern)
 end
 
-bury "xcor
-
-BIL***/
-
-/***LIB YCOR
-;;; -*- logo -*-
-
-to ycor
-output last pos
-end
-
-bury "ycor
+bury [pen]
 
 BIL***/

@@ -1018,20 +1018,6 @@ ISEQ from to						(library procedure)
 
 COD***/
 
-/***DOC RSEQ
-RSEQ from to count					(library procedure)
-
-    outputs a list of COUNT equally spaced rational numbers
-    between FROM and TO, inclusive.
-
-        ? show rseq 3 5 9
-        [3 3.25 3.5 3.75 4 4.25 4.5 4.75 5]
-        ? show rseq 3 5 5
-        [3 3.5 4 4.5 5]
-
-
-COD***/
-
 /***LIB ISEQ
 ;;; -*- logo -*-
 
@@ -1048,6 +1034,20 @@ end
 bury [iseq iseq1]
 
 BIL***/
+
+/***DOC RSEQ
+RSEQ from to count					(library procedure)
+
+    outputs a list of COUNT equally spaced rational numbers
+    between FROM and TO, inclusive.
+
+        ? show rseq 3 5 9
+        [3 3.25 3.5 3.75 4 4.25 4.5 4.75 5]
+        ? show rseq 3 5 5
+        [3 3.5 4 4.5 5]
+
+
+COD***/
 
 /***LIB RSEQ
 ;;; -*- logo -*-

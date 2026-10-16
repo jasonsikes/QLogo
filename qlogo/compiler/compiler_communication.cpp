@@ -1035,16 +1035,6 @@ CLOSEALL						(library procedure)
 
 COD***/
 
-/***DOC FILEP FILE?
-FILEP filename
-FILE? filename						(library procedure)
-
-	predicate, outputs TRUE if a file of the specified name exists
-	and can be read, FALSE otherwise.
-
-
-COD***/
-
 /***LIB CLOSEALL
 ;;; -*- logo -*-
 
@@ -1055,6 +1045,16 @@ end
 bury "closeall
 
 BIL***/
+
+/***DOC FILEP FILE?
+FILEP filename
+FILE? filename						(library procedure)
+
+	predicate, outputs TRUE if a file of the specified name exists
+	and can be read, FALSE otherwise.
+
+
+COD***/
 
 /***LIB FILEP
 ;;; -*- logo -*-

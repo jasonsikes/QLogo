@@ -958,6 +958,22 @@ MDARRAY sizelist					(library procedure)
 
 COD***/
 
+/***LIB MDARRAY
+;;; -*- logo -*-
+
+to mdarray :sizes [:origin 1]
+local "array
+make "array (array first :sizes :origin)
+if not emptyp bf :sizes ~
+   [for [i :origin [:origin + (first :sizes) - 1]] ~
+        [setitem :i :array (mdarray bf :sizes :origin)]]
+output :array
+end
+
+bury "mdarray
+
+BIL***/
+
 /***DOC COMBINE
 COMBINE thing1 thing2					(library procedure)
 
@@ -966,6 +982,18 @@ COMBINE thing1 thing2					(library procedure)
 
 COD***/
 
+/***LIB COMBINE
+;;; -*- logo -*-
+
+to combine :this :those
+if wordp :those [output word :this :those]
+output fput :this :those
+end
+
+bury "combine
+
+BIL***/
+
 /***DOC REVERSE
 REVERSE list						(library procedure)
 
@@ -973,6 +1001,18 @@ REVERSE list						(library procedure)
 	reverse order.
 
 COD***/
+
+/***LIB REVERSE
+;;; -*- logo -*-
+
+to reverse :in [:out ifelse listp :in [[]] ["]]
+if emptyp :in [output :out]
+output (reverse bf :in combine first :in :out)
+end
+
+bury "reverse
+
+BIL***/
 
 /***DOC GENSYM
 GENSYM							(library procedure)
@@ -983,6 +1023,19 @@ GENSYM							(library procedure)
 
 COD***/
 
+/***LIB GENSYM
+;;; -*- logo -*-
+
+to gensym
+if not namep "gensym.number [make "gensym.number 0]
+make "gensym.number :gensym.number + 1
+output word "g :gensym.number
+end
+
+bury [[gensym] [gensym.number]]
+
+BIL***/
+
 /***DOC MDITEM
 MDITEM indexlist array					(library procedure)
 
@@ -991,6 +1044,18 @@ MDITEM indexlist array					(library procedure)
 
 COD***/
 
+/***LIB MDITEM
+;;; -*- logo -*-
+
+to mditem :index :array
+if emptyp :index [op :array]
+op mditem bf :index item first :index :array
+end
+
+bury "mditem
+
+BIL***/
+
 /***DOC PICK
 PICK list						(library procedure)
 
@@ -998,12 +1063,34 @@ PICK list						(library procedure)
 
 COD***/
 
+/***LIB PICK
+;;; -*- logo -*-
+
+to pick :list
+output item (1+random count :list) :list
+end
+
+bury "pick
+
+BIL***/
+
 /***DOC REMOVE
 REMOVE thing list					(library procedure)
 
 	outputs a copy of "list" with every member equal to "thing" removed.
 
 COD***/
+
+/***LIB REMOVE
+;;; -*- logo -*-
+
+to remove :thing :list
+output filter [not equalp ? :thing] :list
+end
+
+bury "remove
+
+BIL***/
 
 /***DOC REMDUP
 REMDUP list						(library procedure)
@@ -1014,6 +1101,17 @@ REMDUP list						(library procedure)
 
 COD***/
 
+/***LIB REMDUP
+;;; -*- logo -*-
+
+to remdup :list
+output filter [not memberp ? ?rest] :list
+end
+
+bury "remdup
+
+BIL***/
+
 /***DOC QUOTED
 QUOTED thing						(library procedure)
 
@@ -1023,6 +1121,18 @@ QUOTED thing						(library procedure)
 
 COD***/
 
+/***LIB QUOTED
+;;; -*- logo -*-
+
+to quoted :stuff
+if wordp :stuff [op word "" :stuff]
+op :stuff
+end
+
+bury "quoted
+
+BIL***/
+
 /***DOC MDSETITEM
 MDSETITEM indexlist array value				(library procedure)
 
@@ -1030,6 +1140,17 @@ MDSETITEM indexlist array value				(library procedure)
 	with the new "value".
 
 COD***/
+
+/***LIB MDSETITEM
+;;; -*- logo -*-
+
+to mdsetitem :index :array :val
+setitem last :index (mditem bl :index :array) :val
+end
+
+bury "mdsetitem
+
+BIL***/
 
 /***DOC PUSH
 PUSH stackname thing					(library procedure)
@@ -1041,6 +1162,17 @@ PUSH stackname thing					(library procedure)
 
 COD***/
 
+/***LIB PUSH
+;;; -*- logo -*-
+
+to push :the.stack.name :the.item.value
+make :the.stack.name fput :the.item.value thing :the.stack.name
+end
+
+bury "push
+
+BIL***/
+
 /***DOC POP
 POP stackname						(library procedure)
 
@@ -1049,6 +1181,20 @@ POP stackname						(library procedure)
 	member from the stack.
 
 COD***/
+
+/***LIB POP
+;;; -*- logo -*-
+
+to pop :the.stack.name
+local "result
+make "result first thing :the.stack.name
+make :the.stack.name butfirst thing :the.stack.name
+output :result
+end
+
+bury "pop
+
+BIL***/
 
 /***DOC QUEUE
 QUEUE queuename thing					(library procedure)
@@ -1060,6 +1206,17 @@ QUEUE queuename thing					(library procedure)
 
 COD***/
 
+/***LIB QUEUE
+;;; -*- logo -*-
+
+to queue :the.queue.name :the.item.value
+make :the.queue.name lput :the.item.value thing :the.queue.name
+end
+
+bury "queue
+
+BIL***/
+
 /***DOC DEQUEUE
 DEQUEUE queuename					(library procedure)
 
@@ -1068,6 +1225,20 @@ DEQUEUE queuename					(library procedure)
 	member from the queue.
 
 COD***/
+
+/***LIB DEQUEUE
+;;; -*- logo -*-
+
+to dequeue :the.queue.name
+local "result
+make "result first thing :the.queue.name
+make :the.queue.name butfirst thing :the.queue.name
+output :result
+end
+
+bury "dequeue
+
+BIL***/
 
 /***LIB BACKSLASHEDP
 ;;; -*- logo -*-
@@ -1091,120 +1262,6 @@ bury "backslashed?
 
 BIL***/
 
-/***LIB COMBINE
-;;; -*- logo -*-
-
-to combine :this :those
-if wordp :those [output word :this :those]
-output fput :this :those
-end
-
-bury "combine
-
-BIL***/
-
-/***LIB DEQUEUE
-;;; -*- logo -*-
-
-to dequeue :the.queue.name
-local "result
-make "result first thing :the.queue.name
-make :the.queue.name butfirst thing :the.queue.name
-output :result
-end
-
-bury "dequeue
-
-BIL***/
-
-/***LIB GENSYM
-;;; -*- logo -*-
-
-to gensym
-if not namep "gensym.number [make "gensym.number 0]
-make "gensym.number :gensym.number + 1
-output word "g :gensym.number
-end
-
-bury [[gensym] [gensym.number]]
-
-BIL***/
-
-/***LIB MDARRAY
-;;; -*- logo -*-
-
-to mdarray :sizes [:origin 1]
-local "array
-make "array (array first :sizes :origin)
-if not emptyp bf :sizes ~
-   [for [i :origin [:origin + (first :sizes) - 1]] ~
-        [setitem :i :array (mdarray bf :sizes :origin)]]
-output :array
-end
-
-bury "mdarray
-
-BIL***/
-
-/***LIB MDITEM
-;;; -*- logo -*-
-
-to mditem :index :array
-if emptyp :index [op :array]
-op mditem bf :index item first :index :array
-end
-
-bury "mditem
-
-BIL***/
-
-/***LIB MDSETITEM
-;;; -*- logo -*-
-
-to mdsetitem :index :array :val
-setitem last :index (mditem bl :index :array) :val
-end
-
-bury "mdsetitem
-
-BIL***/
-
-/***LIB PICK
-;;; -*- logo -*-
-
-to pick :list
-output item (1+random count :list) :list
-end
-
-bury "pick
-
-BIL***/
-
-/***LIB POP
-;;; -*- logo -*-
-
-to pop :the.stack.name
-local "result
-make "result first thing :the.stack.name
-make :the.stack.name butfirst thing :the.stack.name
-output :result
-end
-
-bury "pop
-
-BIL***/
-
-/***LIB PUSH
-;;; -*- logo -*-
-
-to push :the.stack.name :the.item.value
-make :the.stack.name fput :the.item.value thing :the.stack.name
-end
-
-bury "push
-
-BIL***/
-
 /***LIB ?REST
 ;;; -*- logo -*-
 
@@ -1213,62 +1270,5 @@ output bf item :which :template.lists
 end
 
 bury "?rest
-
-BIL***/
-
-/***LIB QUEUE
-;;; -*- logo -*-
-
-to queue :the.queue.name :the.item.value
-make :the.queue.name lput :the.item.value thing :the.queue.name
-end
-
-bury "queue
-
-BIL***/
-
-/***LIB QUOTED
-;;; -*- logo -*-
-
-to quoted :stuff
-if wordp :stuff [op word "" :stuff]
-op :stuff
-end
-
-bury "quoted
-
-BIL***/
-
-/***LIB REMDUP
-;;; -*- logo -*-
-
-to remdup :list
-output filter [not memberp ? ?rest] :list
-end
-
-bury "remdup
-
-BIL***/
-
-/***LIB REMOVE
-;;; -*- logo -*-
-
-to remove :thing :list
-output filter [not equalp ? :thing] :list
-end
-
-bury "remove
-
-BIL***/
-
-/***LIB REVERSE
-;;; -*- logo -*-
-
-to reverse :in [:out ifelse listp :in [[]] ["]]
-if emptyp :in [output :out]
-output (reverse bf :in combine first :in :out)
-end
-
-bury "reverse
 
 BIL***/

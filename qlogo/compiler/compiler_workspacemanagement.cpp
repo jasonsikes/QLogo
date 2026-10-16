@@ -1379,6 +1379,17 @@ NAME value varname					(library procedure)
 
 COD***/
 
+/***LIB NAME
+;;; -*- logo -*-
+
+to name :name.value.input :name.variable.input
+make :name.variable.input :name.value.input
+end
+
+bury "name
+
+BIL***/
+
 /***DOC LOCALMAKE
 LOCALMAKE varname value				(library procedure)
 
@@ -1386,298 +1397,6 @@ LOCALMAKE varname value				(library procedure)
 	assigns it the given value, like MAKE.
 
 COD***/
-
-/***DOC NAMELIST
-NAMELIST varname					(library procedure)
-NAMELIST varnamelist
-
-	outputs a contents list consisting of an empty list followed by
-	a list of the name or names given as input.  This is useful in
-	conjunction with workspace control procedures that require a contents
-	list as input.
-
-COD***/
-
-/***DOC PLLIST
-PLLIST plname						(library procedure)
-PLLIST plnamelist
-
-	outputs a contents list consisting of two empty lists followed by
-	a list of the name or names given as input.  This is useful in
-	conjunction with workspace control procedures that require a contents
-	list as input.
-
-COD***/
-
-/***DOC POALL
-POALL							(library procedure)
-
-	command.  Prints all unburied definitions in the workspace.
-	Abbreviates PO CONTENTS.
-
-COD***/
-
-/***DOC POPS
-POPS							(library procedure)
-
-	command.  Prints the definitions of all unburied procedures in
-	the workspace.  Abbreviates PO PROCEDURES.
-
-COD***/
-
-/***DOC PONS
-PONS							(library procedure)
-
-	command.  Prints the definitions of all unburied variables in
-	the workspace.  Abbreviates PO NAMES.
-
-COD***/
-
-/***DOC POPLS
-POPLS							(library procedure)
-
-	command.  Prints the contents of all unburied nonempty property
-	lists in the workspace.  Abbreviates PO PLISTS.
-
-COD***/
-
-/***DOC PON
-PON varname						(library procedure)
-PON varnamelist
-
-	command.  Prints the definitions of the named variable(s).
-	Abbreviates PO NAMELIST varname(list).
-
-COD***/
-
-/***DOC POPL
-POPL plname						(library procedure)
-POPL plnamelist
-
-	command.  Prints the definitions of the named property list(s).
-	Abbreviates PO PLLIST plname(list).
-
-COD***/
-
-/***DOC POTS
-POTS							(library procedure)
-
-	command.  Prints the title lines of all unburied procedures
-	in the workspace.  Abbreviates POT PROCEDURES.
-
-
-COD***/
-
-/***DOC ERN
-ERN varname						(library procedure)
-ERN varnamelist
-
-	command.  Erases from the workspace the variable(s) named in the
-	input.  Abbreviates ERASE NAMELIST varname(list).
-
-COD***/
-
-/***DOC ERPL
-ERPL plname						(library procedure)
-ERPL plnamelist
-
-	command.  Erases from the workspace the property list(s) named in the
-	input.  Abbreviates ERASE PLLIST plname(list).
-
-COD***/
-
-/***DOC BURYALL
-BURYALL							(library procedure)
-
-	command.  Abbreviates BURY CONTENTS.
-
-COD***/
-
-/***DOC BURYNAME
-BURYNAME varname					(library procedure)
-BURYNAME varnamelist
-
-	command.  Abbreviates BURY NAMELIST varname(list).
-
-COD***/
-
-/***DOC UNBURYALL
-UNBURYALL						(library procedure)
-
-	command.  Abbreviates UNBURY BURIED.
-
-COD***/
-
-/***DOC UNBURYNAME
-UNBURYNAME varname					(library procedure)
-UNBURYNAME varnamelist
-
-	command.  Abbreviates UNBURY NAMELIST varname(list).
-
-COD***/
-
-/***DOC EDALL
-EDALL							(library procedure)
-
-	command.  Abbreviates EDIT CONTENTS.
-
-COD***/
-
-/***DOC EDPS
-EDPS							(library procedure)
-
-	command.  Abbreviates EDIT PROCEDURES.
-
-COD***/
-
-/***DOC EDNS
-EDNS							(library procedure)
-
-	command.  Abbreviates EDIT NAMES.
-
-COD***/
-
-/***DOC EDPLS
-EDPLS							(library procedure)
-
-	command.  Abbreviates EDIT PLISTS.
-
-COD***/
-
-/***DOC EDN
-EDN varname						(library procedure)
-EDN varnamelist
-
-	command.  Abbreviates EDIT NAMELIST varname(list).
-
-COD***/
-
-/***DOC EDPL
-EDPL plname						(library procedure)
-EDPL plnamelist
-
-	command.  Abbreviates EDIT PLLIST plname(list).
-
-COD***/
-
-/***DOC SAVEL
-SAVEL contentslist filename				(library procedure)
-
-	command.  Saves the definitions of the procedures, variables, and
-	property lists specified by "contentslist" to the file named
-	"filename".
-
-COD***/
-
-/***LIB BURYALL
-;;; -*- logo -*-
-
-to buryall
-bury contents
-end
-
-bury "buryall
-
-BIL***/
-
-/***LIB BURYNAME
-;;; -*- logo -*-
-
-to buryname :names
-bury namelist :names
-end
-
-bury "buryname
-
-BIL***/
-
-/***LIB EDALL
-;;; -*- logo -*-
-
-to edall
-edit contents
-end
-
-bury "edall
-
-BIL***/
-
-/***LIB EDN
-;;; -*- logo -*-
-
-to edn :names
-edit namelist :names
-end
-
-bury "edn
-
-BIL***/
-
-/***LIB EDNS
-;;; -*- logo -*-
-
-to edns
-edit names
-end
-
-bury "edns
-
-BIL***/
-
-/***LIB EDPL
-;;; -*- logo -*-
-
-to edpl :names
-edit pllist :names
-end
-
-bury "edpl
-
-BIL***/
-
-/***LIB EDPLS
-;;; -*- logo -*-
-
-to edpls
-edit plists
-end
-
-bury "edpls
-
-BIL***/
-
-/***LIB EDPS
-;;; -*- logo -*-
-
-to edps
-edit procedures
-end
-
-bury "edps
-
-BIL***/
-
-/***LIB ERN
-;;; -*- logo -*-
-
-to ern :names
-erase namelist :names
-end
-
-bury "ern
-
-BIL***/
-
-/***LIB ERPL
-;;; -*- logo -*-
-
-to erpl :names
-erase pllist :names
-end
-
-bury "erpl
-
-BIL***/
 
 /***LIB LOCALMAKE
 ;;; -*- logo -*-
@@ -1690,34 +1409,16 @@ bury "localmake
 
 BIL***/
 
-/***LIB MACROEXPAND
-;;; -*- logo -*-
+/***DOC NAMELIST
+NAMELIST varname					(library procedure)
+NAMELIST varnamelist
 
-to macroexpand :expr
-local [name inputlist macro.result]
-make "name first :expr
-make "inputlist bf :expr
-if not macrop :name [(throw "error (se :name [is not a macro.]))]
-define "%%%$%macro.procedure text :name
-make "macro.result run fput "%%%$%macro.procedure :inputlist
-erase "%%%$%macro.procedure
-op :macro.result
-end
+	outputs a contents list consisting of an empty list followed by
+	a list of the name or names given as input.  This is useful in
+	conjunction with workspace control procedures that require a contents
+	list as input.
 
-bury "macroexpand
-
-BIL***/
-
-/***LIB NAME
-;;; -*- logo -*-
-
-to name :name.value.input :name.variable.input
-make :name.variable.input :name.value.input
-end
-
-bury "name
-
-BIL***/
+COD***/
 
 /***LIB NAMELIST
 ;;; -*- logo -*-
@@ -1731,6 +1432,17 @@ bury "namelist
 
 BIL***/
 
+/***DOC PLLIST
+PLLIST plname						(library procedure)
+PLLIST plnamelist
+
+	outputs a contents list consisting of two empty lists followed by
+	a list of the name or names given as input.  This is useful in
+	conjunction with workspace control procedures that require a contents
+	list as input.
+
+COD***/
+
 /***LIB PLLIST
 ;;; -*- logo -*-
 
@@ -1743,6 +1455,14 @@ bury "pllist
 
 BIL***/
 
+/***DOC POALL
+POALL							(library procedure)
+
+	command.  Prints all unburied definitions in the workspace.
+	Abbreviates PO CONTENTS.
+
+COD***/
+
 /***LIB POALL
 ;;; -*- logo -*-
 
@@ -1753,6 +1473,72 @@ end
 bury "poall
 
 BIL***/
+
+/***DOC POPS
+POPS							(library procedure)
+
+	command.  Prints the definitions of all unburied procedures in
+	the workspace.  Abbreviates PO PROCEDURES.
+
+COD***/
+
+/***LIB POPS
+;;; -*- logo -*-
+
+to pops
+po procedures
+end
+
+bury "pops
+
+BIL***/
+
+/***DOC PONS
+PONS							(library procedure)
+
+	command.  Prints the definitions of all unburied variables in
+	the workspace.  Abbreviates PO NAMES.
+
+COD***/
+
+/***LIB PONS
+;;; -*- logo -*-
+
+to pons
+po names
+end
+
+bury "pons
+
+BIL***/
+
+/***DOC POPLS
+POPLS							(library procedure)
+
+	command.  Prints the contents of all unburied nonempty property
+	lists in the workspace.  Abbreviates PO PLISTS.
+
+COD***/
+
+/***LIB POPLS
+;;; -*- logo -*-
+
+to popls
+po plists
+end
+
+bury "popls
+
+BIL***/
+
+/***DOC PON
+PON varname						(library procedure)
+PON varnamelist
+
+	command.  Prints the definitions of the named variable(s).
+	Abbreviates PO NAMELIST varname(list).
+
+COD***/
 
 /***LIB PON
 ;;; -*- logo -*-
@@ -1769,16 +1555,14 @@ bury "pon
 
 BIL***/
 
-/***LIB PONS
-;;; -*- logo -*-
+/***DOC POPL
+POPL plname						(library procedure)
+POPL plnamelist
 
-to pons
-po names
-end
+	command.  Prints the definitions of the named property list(s).
+	Abbreviates PO PLLIST plname(list).
 
-bury "pons
-
-BIL***/
+COD***/
 
 /***LIB POPL
 ;;; -*- logo -*-
@@ -1795,27 +1579,14 @@ bury "popl
 
 BIL***/
 
-/***LIB POPLS
-;;; -*- logo -*-
+/***DOC POTS
+POTS							(library procedure)
 
-to popls
-po plists
-end
+	command.  Prints the title lines of all unburied procedures
+	in the workspace.  Abbreviates POT PROCEDURES.
 
-bury "popls
 
-BIL***/
-
-/***LIB POPS
-;;; -*- logo -*-
-
-to pops
-po procedures
-end
-
-bury "pops
-
-BIL***/
+COD***/
 
 /***LIB POTS
 ;;; -*- logo -*-
@@ -1828,18 +1599,236 @@ bury "pots
 
 BIL***/
 
-/***LIB REDUCE
+/***DOC ERN
+ERN varname						(library procedure)
+ERN varnamelist
+
+	command.  Erases from the workspace the variable(s) named in the
+	input.  Abbreviates ERASE NAMELIST varname(list).
+
+COD***/
+
+/***LIB ERN
 ;;; -*- logo -*-
 
-to reduce :reduce.function :reduce.list
-if emptyp bf :reduce.list [op first :reduce.list]
-op apply :reduce.function (list (first :reduce.list) ~
-                                (reduce :reduce.function bf :reduce.list))
+to ern :names
+erase namelist :names
 end
 
-bury "reduce
+bury "ern
 
 BIL***/
+
+/***DOC ERPL
+ERPL plname						(library procedure)
+ERPL plnamelist
+
+	command.  Erases from the workspace the property list(s) named in the
+	input.  Abbreviates ERASE PLLIST plname(list).
+
+COD***/
+
+/***LIB ERPL
+;;; -*- logo -*-
+
+to erpl :names
+erase pllist :names
+end
+
+bury "erpl
+
+BIL***/
+
+/***DOC BURYALL
+BURYALL							(library procedure)
+
+	command.  Abbreviates BURY CONTENTS.
+
+COD***/
+
+/***LIB BURYALL
+;;; -*- logo -*-
+
+to buryall
+bury contents
+end
+
+bury "buryall
+
+BIL***/
+
+/***DOC BURYNAME
+BURYNAME varname					(library procedure)
+BURYNAME varnamelist
+
+	command.  Abbreviates BURY NAMELIST varname(list).
+
+COD***/
+
+/***LIB BURYNAME
+;;; -*- logo -*-
+
+to buryname :names
+bury namelist :names
+end
+
+bury "buryname
+
+BIL***/
+
+/***DOC UNBURYALL
+UNBURYALL						(library procedure)
+
+	command.  Abbreviates UNBURY BURIED.
+
+COD***/
+
+/***LIB UNBURYALL
+;;; -*- logo -*-
+
+to unburyall
+unbury buried
+end
+
+BIL***/
+
+/***DOC UNBURYNAME
+UNBURYNAME varname					(library procedure)
+UNBURYNAME varnamelist
+
+	command.  Abbreviates UNBURY NAMELIST varname(list).
+
+COD***/
+
+/***LIB UNBURYNAME
+;;; -*- logo -*-
+
+to unburyname :names
+unbury namelist :names
+end
+
+bury "unburyname
+
+BIL***/
+
+/***DOC EDALL
+EDALL							(library procedure)
+
+	command.  Abbreviates EDIT CONTENTS.
+
+COD***/
+
+/***LIB EDALL
+;;; -*- logo -*-
+
+to edall
+edit contents
+end
+
+bury "edall
+
+BIL***/
+
+/***DOC EDPS
+EDPS							(library procedure)
+
+	command.  Abbreviates EDIT PROCEDURES.
+
+COD***/
+
+/***LIB EDPS
+;;; -*- logo -*-
+
+to edps
+edit procedures
+end
+
+bury "edps
+
+BIL***/
+
+/***DOC EDNS
+EDNS							(library procedure)
+
+	command.  Abbreviates EDIT NAMES.
+
+COD***/
+
+/***LIB EDNS
+;;; -*- logo -*-
+
+to edns
+edit names
+end
+
+bury "edns
+
+BIL***/
+
+/***DOC EDPLS
+EDPLS							(library procedure)
+
+	command.  Abbreviates EDIT PLISTS.
+
+COD***/
+
+/***LIB EDPLS
+;;; -*- logo -*-
+
+to edpls
+edit plists
+end
+
+bury "edpls
+
+BIL***/
+
+/***DOC EDN
+EDN varname						(library procedure)
+EDN varnamelist
+
+	command.  Abbreviates EDIT NAMELIST varname(list).
+
+COD***/
+
+/***LIB EDN
+;;; -*- logo -*-
+
+to edn :names
+edit namelist :names
+end
+
+bury "edn
+
+BIL***/
+
+/***DOC EDPL
+EDPL plname						(library procedure)
+EDPL plnamelist
+
+	command.  Abbreviates EDIT PLLIST plname(list).
+
+COD***/
+
+/***LIB EDPL
+;;; -*- logo -*-
+
+to edpl :names
+edit pllist :names
+end
+
+bury "edpl
+
+BIL***/
+
+/***DOC SAVEL
+SAVEL contentslist filename				(library procedure)
+
+	command.  Saves the definitions of the procedures, variables, and
+	property lists specified by "contentslist" to the file named
+	"filename".
+
+COD***/
 
 /***LIB SAVEL
 ;;; -*- logo -*-
@@ -1856,22 +1845,38 @@ bury "savel
 
 BIL***/
 
-/***LIB UNBURYALL
+/***DOC MACROEXPAND
+MACROEXPAND expr					(library procedure)
+
+	takes as its input a Logo expression that invokes a macro (that is,
+	one that begins with the name of a macro) and outputs the the Logo
+	expression into which the macro would translate the input expression.
+
+
+		.macro localmake :name :value
+		op `[local ,[word "" :name] apply "make [,[:name] ,[:value]]]
+		end
+
+		? show macroexpand [localmake "pi 3.14159]
+		[local "pi apply "make [pi 3.14159]]
+
+
+COD***/
+
+/***LIB MACROEXPAND
 ;;; -*- logo -*-
 
-to unburyall
-unbury buried
+to macroexpand :expr
+local [name inputlist macro.result]
+make "name first :expr
+make "inputlist bf :expr
+if not macrop :name [(throw "error (se :name [is not a macro.]))]
+define "%%%$%macro.procedure text :name
+make "macro.result run fput "%%%$%macro.procedure :inputlist
+erase "%%%$%macro.procedure
+op :macro.result
 end
 
-BIL***/
-
-/***LIB UNBURYNAME
-;;; -*- logo -*-
-
-to unburyname :names
-unbury namelist :names
-end
-
-bury "unburyname
+bury "macroexpand
 
 BIL***/
