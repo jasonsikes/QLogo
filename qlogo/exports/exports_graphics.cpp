@@ -41,36 +41,36 @@ DatumPtr listFromColor(const QColor &c)
     return retvalBuilder.finishedList();
 }
 
-EXPORTC addr_t moveTurtleForward(ASTNode *node, double distance)
+EXPORTC addr_t moveTurtleForward(ASTNode *node, double distance) noexcept
 {
     auto retval = Turtle::get().forward(distance);
     return reinterpret_cast<addr_t>(retval != nullptr ? retval : Datum::notADatum());
 }
 
-EXPORTC void moveTurtleRotate(double angle)
+EXPORTC void moveTurtleRotate(double angle) noexcept
 {
     Turtle::get().rotate(angle);
 }
 
-EXPORTC addr_t setTurtleXY(ASTNode *node, double x, double y)
+EXPORTC addr_t setTurtleXY(ASTNode *node, double x, double y) noexcept
 {
     auto retval = Turtle::get().setxy(x, y);
     return reinterpret_cast<addr_t>(retval != nullptr ? retval : Datum::notADatum());
 }
 
-EXPORTC addr_t setTurtleX(ASTNode *node, double x)
+EXPORTC addr_t setTurtleX(ASTNode *node, double x) noexcept
 {
     auto retval = Turtle::get().setx(x);
     return reinterpret_cast<addr_t>(retval != nullptr ? retval : Datum::notADatum());
 }
 
-EXPORTC addr_t setTurtleY(ASTNode *node, double y)
+EXPORTC addr_t setTurtleY(ASTNode *node, double y) noexcept
 {
     auto retval = Turtle::get().sety(y);
     return reinterpret_cast<addr_t>(retval != nullptr ? retval : Datum::notADatum());
 }
 
-EXPORTC addr_t setTurtlePos(ASTNode *node, addr_t posAddr)
+EXPORTC addr_t setTurtlePos(ASTNode *node, addr_t posAddr) noexcept
 {
     const auto *pos = reinterpret_cast<const double *>(posAddr);
     double x = pos[0];
@@ -79,7 +79,7 @@ EXPORTC addr_t setTurtlePos(ASTNode *node, addr_t posAddr)
     return reinterpret_cast<addr_t>(retval != nullptr ? retval : Datum::notADatum());
 }
 
-EXPORTC void setTurtleHeading(double newHeading)
+EXPORTC void setTurtleHeading(double newHeading) noexcept
 {
     double oldHeading = Turtle::get().getHeading();
 
@@ -90,12 +90,12 @@ EXPORTC void setTurtleHeading(double newHeading)
     Turtle::get().rotate(adjustment);
 }
 
-EXPORTC void setTurtleMoveToHome(void)
+EXPORTC void setTurtleMoveToHome(void) noexcept
 {
     Turtle::get().moveToHome();
 }
 
-EXPORTC void drawTurtleArc(double angle, double radius)
+EXPORTC void drawTurtleArc(double angle, double radius) noexcept
 {
     // Logo heading is positive in the clockwise direction, opposite conventional linear algebra (right-hand rule).
     angle = 0 - angle;
@@ -107,7 +107,7 @@ EXPORTC void drawTurtleArc(double angle, double radius)
         Turtle::get().drawArc(angle, radius);
 }
 
-EXPORTC addr_t getTurtlePos(addr_t eAddr)
+EXPORTC addr_t getTurtlePos(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto xy = Turtle::get().getxy();
@@ -119,7 +119,7 @@ EXPORTC addr_t getTurtlePos(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC double getTurtleHeading(void)
+EXPORTC double getTurtleHeading(void) noexcept
 {
     double retval = Turtle::get().getHeading();
 
@@ -133,7 +133,7 @@ EXPORTC double getTurtleHeading(void)
     return retval;
 }
 
-EXPORTC double getTurtleTowards(addr_t posAddr)
+EXPORTC double getTurtleTowards(addr_t posAddr) noexcept
 {
     auto xy = Turtle::get().getxy();
     const auto *pos = reinterpret_cast<const double *>(posAddr);
@@ -152,7 +152,7 @@ EXPORTC double getTurtleTowards(addr_t posAddr)
     return retval;
 }
 
-EXPORTC addr_t getScrunch(addr_t eAddr)
+EXPORTC addr_t getScrunch(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     ListBuilder retvalBuilder;
@@ -163,17 +163,17 @@ EXPORTC addr_t getScrunch(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC void setTurtleVisible(uint32_t visible)
+EXPORTC void setTurtleVisible(uint32_t visible) noexcept
 {
     Turtle::get().setIsTurtleVisible(visible);
 }
 
-EXPORTC void clean(void)
+EXPORTC void clean(void) noexcept
 {
     Config::get().mainInterface()->clearCanvas();
 }
 
-EXPORTC void setTurtleMode(uint32_t mode)
+EXPORTC void setTurtleMode(uint32_t mode) noexcept
 {
     auto newMode = static_cast<TurtleModeEnum>(mode);
     if (Turtle::get().getMode() != newMode)
@@ -184,7 +184,7 @@ EXPORTC void setTurtleMode(uint32_t mode)
     }
 }
 
-EXPORTC addr_t getBounds(addr_t eAddr)
+EXPORTC addr_t getBounds(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     double x = Config::get().mainInterface()->boundX();
@@ -198,12 +198,12 @@ EXPORTC addr_t getBounds(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC void setBounds(double x, double y)
+EXPORTC void setBounds(double x, double y) noexcept
 {
     Config::get().mainInterface()->setBounds(x, y);
 }
 
-EXPORTC addr_t beginFilledWithColor(addr_t colorAddr)
+EXPORTC addr_t beginFilledWithColor(addr_t colorAddr) noexcept
 {
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
@@ -212,39 +212,39 @@ EXPORTC addr_t beginFilledWithColor(addr_t colorAddr)
     return reinterpret_cast<addr_t>(retval != nullptr ? retval : Datum::notADatum());
 }
 
-EXPORTC void endFilled(void)
+EXPORTC void endFilled(void) noexcept
 {
     Turtle::get().endFill();
 }
 
-EXPORTC void addLabel(addr_t textAddr)
+EXPORTC void addLabel(addr_t textAddr) noexcept
 {
     auto *d = reinterpret_cast<Datum *>(textAddr);
     Config::get().mainInterface()->drawLabel(d->toString());
 }
 
-EXPORTC void setLabelHeight(double height)
+EXPORTC void setLabelHeight(double height) noexcept
 {
     Config::get().mainInterface()->setLabelFontSize(height);
 }
 
-EXPORTC void setLabelFontName(addr_t nameAddr)
+EXPORTC void setLabelFontName(addr_t nameAddr) noexcept
 {
     auto *w = reinterpret_cast<Word *>(nameAddr);
     Config::get().mainInterface()->setLabelFontName(w->toString());
 }
 
-EXPORTC void setScreenMode(uint32_t mode)
+EXPORTC void setScreenMode(uint32_t mode) noexcept
 {
     Config::get().mainInterface()->setScreenMode(static_cast<ScreenModeEnum>(mode));
 }
 
-EXPORTC bool isTurtleVisible(void)
+EXPORTC bool isTurtleVisible(void) noexcept
 {
     return Turtle::get().isTurtleVisible();
 }
 
-EXPORTC addr_t getScreenMode(addr_t eAddr)
+EXPORTC addr_t getScreenMode(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     ScreenModeEnum mode = Config::get().mainInterface()->getScreenMode();
@@ -267,7 +267,7 @@ EXPORTC addr_t getScreenMode(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t getTurtleMode(addr_t eAddr)
+EXPORTC addr_t getTurtleMode(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     TurtleModeEnum mode = Turtle::get().getMode();
@@ -289,7 +289,7 @@ EXPORTC addr_t getTurtleMode(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t getLabelSize(addr_t eAddr)
+EXPORTC addr_t getLabelSize(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     double height = Config::get().mainInterface()->getLabelFontSize();
@@ -301,7 +301,7 @@ EXPORTC addr_t getLabelSize(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t getLabelFontName(addr_t eAddr)
+EXPORTC addr_t getLabelFontName(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString name = Config::get().mainInterface()->getLabelFontName();
@@ -312,17 +312,17 @@ EXPORTC addr_t getLabelFontName(addr_t eAddr)
     return reinterpret_cast<addr_t>(word);
 }
 
-EXPORTC void setPenIsDown(bool isDown)
+EXPORTC void setPenIsDown(bool isDown) noexcept
 {
     Turtle::get().setPenIsDown(isDown);
 }
 
-EXPORTC void setPenMode(int32_t mode)
+EXPORTC void setPenMode(int32_t mode) noexcept
 {
     Turtle::get().setPenMode(static_cast<PenModeEnum>(mode));
 }
 
-EXPORTC bool setPenColor(addr_t colorAddr)
+EXPORTC bool setPenColor(addr_t colorAddr) noexcept
 {
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
@@ -332,7 +332,7 @@ EXPORTC bool setPenColor(addr_t colorAddr)
     return true;
 }
 
-EXPORTC addr_t getAllColors(addr_t eAddr)
+EXPORTC addr_t getAllColors(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     ListBuilder lb;
@@ -346,13 +346,13 @@ EXPORTC addr_t getAllColors(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
-EXPORTC bool isColorIndexGood(double colorIndex, double lowerLimit)
+EXPORTC bool isColorIndexGood(double colorIndex, double lowerLimit) noexcept
 {
     return (colorIndex == std::floor(colorIndex)) && (colorIndex >= lowerLimit) &&
            (colorIndex < Kernel::get().palette_.size());
 }
 
-EXPORTC bool setPalette(double colorIndex, addr_t colorAddr)
+EXPORTC bool setPalette(double colorIndex, addr_t colorAddr) noexcept
 {
     auto index = static_cast<int>(colorIndex);
     auto *d = reinterpret_cast<Datum *>(colorAddr);
@@ -363,12 +363,12 @@ EXPORTC bool setPalette(double colorIndex, addr_t colorAddr)
     return true;
 }
 
-EXPORTC void setPenSize(double size)
+EXPORTC void setPenSize(double size) noexcept
 {
     Turtle::get().setPenSize(size);
 }
 
-EXPORTC bool setBackground(addr_t colorAddr)
+EXPORTC bool setBackground(addr_t colorAddr) noexcept
 {
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
@@ -378,12 +378,12 @@ EXPORTC bool setBackground(addr_t colorAddr)
     return true;
 }
 
-EXPORTC bool isPenDown(void)
+EXPORTC bool isPenDown(void) noexcept
 {
     return Turtle::get().isPenDown();
 }
 
-EXPORTC addr_t getPenMode(addr_t eAddr)
+EXPORTC addr_t getPenMode(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     PenModeEnum pm = Turtle::get().getPenMode();
@@ -405,7 +405,7 @@ EXPORTC addr_t getPenMode(addr_t eAddr)
     return reinterpret_cast<addr_t>(w);
 }
 
-EXPORTC addr_t getPenColor(addr_t eAddr)
+EXPORTC addr_t getPenColor(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     const QColor &color = Turtle::get().getPenColor();
@@ -414,7 +414,7 @@ EXPORTC addr_t getPenColor(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
-EXPORTC addr_t getPaletteColor(addr_t eAddr, double colorIndex)
+EXPORTC addr_t getPaletteColor(addr_t eAddr, double colorIndex) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto index = static_cast<int>(colorIndex);
@@ -424,12 +424,12 @@ EXPORTC addr_t getPaletteColor(addr_t eAddr, double colorIndex)
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
-EXPORTC double getPenSize(void)
+EXPORTC double getPenSize(void) noexcept
 {
     return Turtle::get().getPenSize();
 }
 
-EXPORTC addr_t getBackground(addr_t eAddr)
+EXPORTC addr_t getBackground(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     const QColor &color = Config::get().mainInterface()->getCanvasBackgroundColor();
@@ -438,7 +438,7 @@ EXPORTC addr_t getBackground(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
-EXPORTC addr_t savePict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
+EXPORTC addr_t savePict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
@@ -454,7 +454,7 @@ EXPORTC addr_t savePict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t saveSvgpict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
+EXPORTC addr_t saveSvgpict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString filename = reinterpret_cast<Word *>(filenameAddr)->toString();
@@ -477,7 +477,7 @@ EXPORTC addr_t saveSvgpict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
+EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *dFilename = reinterpret_cast<Datum *>(filenameAddr);
@@ -500,7 +500,7 @@ EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t getMousePos(addr_t eAddr)
+EXPORTC addr_t getMousePos(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QVector2D position = Config::get().mainInterface()->mousePosition();
@@ -512,7 +512,7 @@ EXPORTC addr_t getMousePos(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t getClickPos(addr_t eAddr)
+EXPORTC addr_t getClickPos(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QVector2D position = Config::get().mainInterface()->lastMouseclickPosition();
@@ -524,12 +524,12 @@ EXPORTC addr_t getClickPos(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC bool isMouseButtonDown(void)
+EXPORTC bool isMouseButtonDown(void) noexcept
 {
     return Config::get().mainInterface()->getIsMouseButtonDown();
 }
 
-EXPORTC double getMouseButton(void)
+EXPORTC double getMouseButton(void) noexcept
 {
     return static_cast<double>(Config::get().mainInterface()->getAndResetButtonID());
 }

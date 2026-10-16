@@ -415,7 +415,7 @@ Value *Compiler::genGlobal(const DatumPtr &node, TypeMask expected)
 }
 
 Value *Compiler::generateLocalGlobal(const DatumPtr &node, const std::vector<Value *> &names,
-                                     addr_t (*fn)(addr_t, addr_t, addr_t, uint32_t),
+                                     addr_t (*fn)(addr_t, addr_t, addr_t, uint32_t) noexcept,
                                      const std::string &fnName, const std::string &aryName)
 {
     AllocaInst *ary = generateAllocaAry(names, aryName);
@@ -429,7 +429,7 @@ Value *Compiler::generateLocalGlobal(const DatumPtr &node, const std::vector<Val
 }
 
 Value *Compiler::generateLocalGlobal(const DatumPtr &node, TypeMask expected,
-                                     addr_t (*fn)(addr_t, addr_t, addr_t, uint32_t),
+                                     addr_t (*fn)(addr_t, addr_t, addr_t, uint32_t) noexcept,
                                      const std::string &fnName, const std::string &aryName)
 {
     CallSite cs(this, node, TypeDatum);

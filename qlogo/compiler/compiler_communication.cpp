@@ -252,7 +252,7 @@ Value *Compiler::genCopyright(const DatumPtr &node, TypeMask expected)
 }
 
 Value *Compiler::generateDumpInstructionList(const DatumPtr &node, TypeMask expected,
-                                            addr_t (*dumpFn)(addr_t, addr_t, addr_t),
+                                            addr_t (*dumpFn)(addr_t, addr_t, addr_t) noexcept,
                                             const char *dumpFnName)
 {
     Q_ASSERT(expected && TypeNothing);

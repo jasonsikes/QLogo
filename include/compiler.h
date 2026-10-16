@@ -177,7 +177,7 @@ class Compiler
     // or Continuation from inSequenceTail_.
     llvm::Value *generateApplyBuiltCall(const DatumPtr &node, TypeMask expected,
                                         llvm::Value *aTemplate, llvm::Value *inputList,
-                                        addr_t (*builder)(addr_t, addr_t, addr_t, addr_t),
+                                        addr_t (*builder)(addr_t, addr_t, addr_t, addr_t) noexcept,
                                         const char *builderName);
 
     // Generate explicit-slot APPLY. Insert point must be the form's entry block.
@@ -402,7 +402,7 @@ class Compiler
 
     // SHOWIR / SHOWCFG / SHOWMODULEIR. `dumpFn` is the host export that compiles and prints.
     llvm::Value *generateDumpInstructionList(const DatumPtr &node, TypeMask expected,
-                                             addr_t (*dumpFn)(addr_t, addr_t, addr_t),
+                                             addr_t (*dumpFn)(addr_t, addr_t, addr_t) noexcept,
                                              const char *dumpFnName);
 
     // Group consecutive expressions of the same type (tag or non-tag) together.
@@ -511,12 +511,12 @@ class Compiler
 
     // generate the common code for LOCAL and GLOBAL.
     llvm::Value *generateLocalGlobal(const DatumPtr &node, TypeMask expected,
-                                     addr_t (*fn)(addr_t, addr_t, addr_t, uint32_t),
+                                     addr_t (*fn)(addr_t, addr_t, addr_t, uint32_t) noexcept,
                                      const std::string &fnName, const std::string &aryName);
 
     // stdLocal/stdGlobal for names that are already evaluated. May return an Error.
     llvm::Value *generateLocalGlobal(const DatumPtr &node, const std::vector<llvm::Value *> &names,
-                                     addr_t (*fn)(addr_t, addr_t, addr_t, uint32_t),
+                                     addr_t (*fn)(addr_t, addr_t, addr_t, uint32_t) noexcept,
                                      const std::string &fnName, const std::string &aryName);
 
     // If the child is a genLiteral array, copy it so SETITEM cannot mutate AST.
@@ -530,7 +530,7 @@ class Compiler
     llvm::Value *generateFputlput(const DatumPtr &node, TypeMask expected, bool isLput);
 
     // WORD / LIST / SENTENCE: allocate children and call concatWord / createList / createSentence.
-    llvm::Value *generateVariadicConstruct(const DatumPtr &node, addr_t (*ctor)(addr_t, addr_t, uint32_t),
+    llvm::Value *generateVariadicConstruct(const DatumPtr &node, addr_t (*ctor)(addr_t, addr_t, uint32_t) noexcept,
                                            const std::string &ctorName, const std::string &aryName, bool requireWords);
 
     // generate the common comparison for EQUALP and NOTEQUALP.
@@ -562,7 +562,7 @@ class Compiler
     llvm::Value *genSetfoo(const DatumPtr &node, TypeMask expected);
 
     template <typename Ret, typename... Args>
-    llvm::Value *generateCallExternTyped(Ret (*)(Args...),
+    llvm::Value *generateCallExternTyped(Ret (*)(Args...) noexcept,
                                         const std::string &name,
                                         const std::vector<std::pair<llvm::Type *, llvm::Value *>> &args)
     {
@@ -601,12 +601,11 @@ class Compiler
 
         const bool extI32 = llvm::Triple(scaff_->theModule_->getTargetTriple()).isAArch64();
         llvm::AttributeList attrs = hostExportAttributeList<Ret, Args...>(ctx, extI32);
-        if (auto *F = llvm::dyn_cast<llvm::Function>(calleeF.getCallee()))
-            F->setAttributes(attrs);
 
         llvm::CallInst *CI = scaff_->builder_.CreateCall(
             calleeF, argsV, cRetType->isVoidTy() ? "" : name + "_result");
-        CI->setAttributes(attrs);
+        applyHostExportAttrs(llvm::dyn_cast<llvm::Function>(calleeF.getCallee()), CI, attrs, name,
+                             scaff_->evaluator_, argsV);
 
         if constexpr (CTypeABI<Ret>::isBool)
             return scaff_->builder_.CreateTrunc(CI, llvm::Type::getInt1Ty(ctx), name + "_i1");

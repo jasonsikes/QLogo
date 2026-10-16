@@ -19,18 +19,21 @@
 #include "compiler_internal.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallVector.h"
+#include "llvm/ADT/StringSwitch.h"
 #include "llvm/Analysis/CGSCCPassManager.h"
 #include "llvm/ExecutionEngine/Orc/AbsoluteSymbols.h"
 #include "llvm/ExecutionEngine/Orc/JITTargetMachineBuilder.h"
 #include "llvm/ExecutionEngine/Orc/LLJIT.h"
 #include "llvm/ExecutionEngine/Orc/Mangling.h"
 #include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
+#include "llvm/IR/Argument.h"
 #include "llvm/IR/CFG.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/MDBuilder.h"
 #include "llvm/IR/Metadata.h"
 #include "llvm/Passes/OptimizationLevel.h"
 #include "llvm/Support/Error.h"
+#include "llvm/Support/ModRef.h"
 #include "llvm/Support/GraphWriter.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetMachine.h"
@@ -52,8 +55,9 @@
 #include <QDateTime>
 #include "workspace/procedures.h"
 #include <algorithm>
-#include <string>
 #include <iostream>
+#include <optional>
+#include <string>
 #include <vector>
 
 std::vector<std::weak_ptr<CompiledText>> Compiler::liveCompiledTexts_;
@@ -184,28 +188,43 @@ void runOptimizationPipeline(Module &M, PassBuilder &pb, ModuleAnalysisManager &
     mpm.run(M, mam);
 }
 
+/// Conservative memory effects for host exports. Unlisted names stay unknown.
+/// Do not mark I/O, RNG, or allocating constructors; wrong effects miscompile.
+std::optional<MemoryEffects> memoryEffectsForHostExport(StringRef name)
+{
+    using ME = MemoryEffects;
+    return StringSwitch<std::optional<ME>>(name)
+        .Case("repcountAddr", ME::none())
+        .Cases({"getCountOfList", "isEmpty", "isNumber", "isSingleCharWord", "isVbarred",
+                "isValidOpenSpec", "isValidShellCommand", "getTemplateForm"},
+               ME::argMemOnly(ModRefInfo::Ref))
+        .Cases({"parseDoubleForDatum", "parseBoolForDatum", "getNumberAryFromList",
+                "isDatumIndexValid"},
+               ME::argMemOnly(ModRefInfo::ModRef))
+        .Cases({"cmpDatumToDatum", "isBefore", "isMember", "isSubstring", "isDatumEmpty",
+                "getTestResult", "isValidColor", "isColorIndexGood", "isContentsList",
+                "isNamedContentsList", "isDefinableProcName", "isDefineText", "stdProcedurep",
+                "stdMacrop", "stdPrimitivep", "stdDefinedp", "stdNamep", "stdPlistp",
+                "stdBuriedp", "stdTracedp", "stdSteppedp", "isTurtleVisible", "isPenDown",
+                "getTurtleHeading"},
+               ME::readOnly())
+        .Default(std::nullopt);
+}
+
 /// Clones are invoked through C function pointers (LLVMCoroFrameHeader).
-/// Match that ABI, and copy uwtable / nounwind from the host EXPORTC decls.
-void applyCAbiToCoroClone(Module &M, Function &F)
+/// EXPORTC is noexcept, so clones do not unwind.
+void applyCAbiToCoroClone(Function &F)
 {
     F.setCallingConv(CallingConv::C);
+    F.setUWTableKind(UWTableKind::Default);
+    F.setDoesNotThrow();
 
-    bool sawExport = false;
-    bool allNoUnwind = true;
-    UWTableKind exportUW = UWTableKind::None;
-    for (Function &E : M)
+    if (F.arg_size() >= 1 && F.getArg(0)->getType()->isPointerTy())
     {
-        if (!E.isDeclaration() || E.isIntrinsic())
-            continue;
-        sawExport = true;
-        if (E.hasUWTable())
-            exportUW = E.getUWTableKind();
-        if (!E.doesNotThrow())
-            allNoUnwind = false;
+        Argument *frame = F.getArg(0);
+        frame->addAttr(Attribute::NonNull);
+        frame->addAttr(Attribute::NoUndef);
     }
-    F.setUWTableKind(exportUW != UWTableKind::None ? exportUW : UWTableKind::Default);
-    if (sawExport && allNoUnwind)
-        F.setDoesNotThrow();
 
     for (User *U : F.users())
     {
@@ -225,7 +244,7 @@ struct CCallingConvSwitchABI : coro::SwitchABI
     {
         SwitchABI::splitCoroutine(F, Shape, Clones, TTI);
         for (Function *Clone : Clones)
-            applyCAbiToCoroClone(*F.getParent(), *Clone);
+            applyCAbiToCoroClone(*Clone);
     }
 };
 
@@ -276,6 +295,40 @@ void verifyModuleOrThrow(Module &M)
     }
 }
 } // namespace
+
+void applyHostExportAttrs(Function *F, CallInst *CI, const AttributeList &abiAttrs, StringRef name,
+                          Value *evaluator, const std::vector<Value *> &args)
+{
+    LLVMContext &ctx = CI->getContext();
+    AttributeList al = abiAttrs;
+    AttrBuilder fn(ctx);
+    fn.addUWTableAttr(UWTableKind::Default);
+    fn.addAttribute(Attribute::NoUnwind);
+    if (CI->getModule()->getTargetTriple().isOSBinFormatELF())
+        fn.addAttribute(Attribute::NonLazyBind);
+    if (std::optional<MemoryEffects> me = memoryEffectsForHostExport(name))
+        fn.addMemoryAttr(*me);
+    al = al.addFnAttributes(ctx, fn);
+
+    for (size_t i = 0; i < args.size(); ++i)
+    {
+        if (args[i] != evaluator)
+            continue;
+        AttrBuilder pb(ctx);
+        pb.addAttribute(Attribute::NonNull);
+        pb.addDereferenceableAttr(sizeof(Evaluator));
+        pb.addAlignmentAttr(Align(alignof(Evaluator)));
+        al = al.addParamAttributes(ctx, static_cast<unsigned>(i), pb);
+        break;
+    }
+
+    if (F)
+    {
+        F->setAttributes(al);
+        F->setDSOLocal(true);
+    }
+    CI->setAttributes(al);
+}
 
 FunctionType *hostExportFunctionType(LLVMContext &ctx, StringRef name)
 {
@@ -342,23 +395,49 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm, bool d
     FunctionType *ft = FunctionType::get(addr_type, paramAry, false);
     theFunction_ = Function::Create(ft, Function::ExternalLinkage, name_, *theModule_);
     theFunction_->setPresplitCoroutine();
+    // nounwind matches the EXPORTC noexcept ABI; uwtable remains for unwinders/debuggers.
+    theFunction_->setUWTableKind(UWTableKind::Default);
+    theFunction_->setDoesNotThrow();
+
+    const DataLayout &dl = theModule_->getDataLayout();
 
     // The first argument is the evaluator pointer.
     evaluator_ = theFunction_->getArg(0);
     evaluator_->setName("evaluator");
+    {
+        AttrBuilder b(*theContext_);
+        b.addAttribute(Attribute::NonNull);
+        b.addAttribute(Attribute::NoAlias);
+        b.addAttribute(Attribute::NoUndef);
+        b.addDereferenceableAttr(sizeof(Evaluator));
+        b.addAlignmentAttr(Align(alignof(Evaluator)));
+        theFunction_->getArg(0)->addAttrs(b);
+    }
 
     // The second argument is the address of the return value.
     returnValueAddress_ = theFunction_->getArg(1);
     returnValueAddress_->setName("returnValueAddress");
+    {
+        AttrBuilder b(*theContext_);
+        b.addAttribute(Attribute::NonNull);
+        b.addAttribute(Attribute::NoAlias);
+        b.addAttribute(Attribute::NoUndef);
+        b.addAttribute(Attribute::WriteOnly);
+        b.addDereferenceableAttr(dl.getPointerSize(0));
+        b.addAlignmentAttr(dl.getPointerABIAlignment(0));
+        theFunction_->getArg(1)->addAttrs(b);
+    }
 
     // The third argument is the block ID for the block to begin execution at.
     // Needed when we build the Table of Contents for this function.
     blockId_ = theFunction_->getArg(2);
     blockId_->setName("blockId");
+    theFunction_->getArg(2)->addAttr(Attribute::NoUndef);
 
     // The fourth argument is the resume handle (null = start, non-null = resume).
     resumeHandle_ = theFunction_->getArg(3);
     resumeHandle_->setName("resumeHandle");
+    theFunction_->getArg(3)->addAttr(Attribute::NoUndef);
 
 }
 
@@ -1388,11 +1467,12 @@ void Compiler::generateTraceBegin(ASTNode *node, const std::vector<Value *> &chi
 
     Value *ary = boxed.empty() ? static_cast<Value *>(CoAddr(0))
                                : static_cast<Value *>(generateAllocaAry(boxed, DBG_NAME("traceAry")));
-    generateCallExtern(stdTraceBegin,
-                       PaAddr(scaff_->evaluator_),
-                       PaAddr(CoAddr(node)),
-                       PaAddr(ary),
-                       PaInt32(CoInt32(static_cast<int32_t>(boxed.size()))));
+    Value *begin = generateCallExtern(stdTraceBegin,
+                                     PaAddr(scaff_->evaluator_),
+                                     PaAddr(CoAddr(node)),
+                                     PaAddr(ary),
+                                     PaInt32(CoInt32(static_cast<int32_t>(boxed.size()))));
+    generateNotFlowControl(begin);
 }
 
 void Compiler::generateTraceEnd(ASTNode *node, Value *result)
@@ -1401,10 +1481,11 @@ void Compiler::generateTraceEnd(ASTNode *node, Value *result)
     if (!Kernel::get().containsName(Kernel::NameMark::Traced, Kernel::NameKind::Procedures, key))
         return;
 
-    generateCallExtern(stdTraceEnd,
-                       PaAddr(scaff_->evaluator_),
-                       PaAddr(CoAddr(node)),
-                       PaAddr(generateDatumForTrace(result)));
+    Value *end = generateCallExtern(stdTraceEnd,
+                                   PaAddr(scaff_->evaluator_),
+                                   PaAddr(CoAddr(node)),
+                                   PaAddr(generateDatumForTrace(result)));
+    generateNotFlowControl(end);
 }
 
 std::vector<Value *> Compiler::generateChildren(ASTNode *node, std::vector<TypeMask> expectedAry)

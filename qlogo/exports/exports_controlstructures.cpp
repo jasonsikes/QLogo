@@ -34,7 +34,7 @@
 /// If the list is invalid (e.g. not a list, or word that runparses to error), sets lastSubExecResult and does not push.
 /// @param eAddr a pointer to the Evaluator object context.
 /// @param listAddr a pointer to the list (or word to runparse) to execute.
-EXPORTC void pushListOntoEvaluationStack(addr_t eAddr, addr_t listAddr)
+EXPORTC void pushListOntoEvaluationStack(addr_t eAddr, addr_t listAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *aList = reinterpret_cast<Datum *>(listAddr);
@@ -45,7 +45,7 @@ EXPORTC void pushListOntoEvaluationStack(addr_t eAddr, addr_t listAddr)
 /// @param eAddr a pointer to the Evaluator object context.
 /// @param listAddr a pointer to the list (or word to runparse) to execute.
 /// @return Result for this evaluation (error, nothing, or nothing when a continuation was scheduled).
-EXPORTC addr_t runListAfterCurrentList(addr_t eAddr, addr_t listAddr)
+EXPORTC addr_t runListAfterCurrentList(addr_t eAddr, addr_t listAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *aList = reinterpret_cast<Datum *>(listAddr);
@@ -55,7 +55,7 @@ EXPORTC addr_t runListAfterCurrentList(addr_t eAddr, addr_t listAddr)
 /// After a suspend that pushed a list or called a procedure, return that result.
 /// @param eAddr a pointer to the Evaluator object context.
 /// @return the result of the list/procedure execution.
-EXPORTC addr_t getLastEvaluationResult(addr_t eAddr)
+EXPORTC addr_t getLastEvaluationResult(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Datum *result = e->retvalFromChild_.datumValue();
@@ -87,7 +87,7 @@ QString secondsFromNsecs(qint64 nsecs)
 
 /// RUNTIME: start a timer before the instruction list runs.
 /// Nested RUNTIME calls push another timer so each reports its own elapsed time.
-EXPORTC void stdRuntimeStart(void)
+EXPORTC void stdRuntimeStart(void) noexcept
 {
     QElapsedTimer timer;
     timer.start();
@@ -97,11 +97,14 @@ EXPORTC void stdRuntimeStart(void)
 /// RUNTIME: print elapsed seconds after the instruction list finishes.
 /// Always paired with stdRuntimeStart in genRuntime, including when the list
 /// returns flow control.
-EXPORTC void stdRuntimeEnd(void)
+EXPORTC addr_t stdRuntimeEnd(addr_t eAddr, addr_t astnodeAddr) noexcept
 {
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     Q_ASSERT(!runtimeTimers.isEmpty());
     const qint64 nsecs = runtimeTimers.pop().nsecsElapsed();
-    StreamManager::get().print(secondsFromNsecs(nsecs) + QObject::tr(" seconds\n"));
+    return printOrError(e, reinterpret_cast<addr_t>(node),
+                        secondsFromNsecs(nsecs) + QObject::tr(" seconds\n"));
 }
 
 /// @brief Execute a procedure.
@@ -109,7 +112,7 @@ EXPORTC void stdRuntimeEnd(void)
 /// @param astnodeAddr a pointer to the ASTNode object which is the procedure to execute.
 /// @param paramAryAddr a pointer to an array of pointers to Datum objects which are the parameters to the procedure.
 /// @param paramCount the number of parameters to the procedure.
-EXPORTC void beginProcedure(addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAddr, uint32_t paramCount)
+EXPORTC void beginProcedure(addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAddr, uint32_t paramCount) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
@@ -122,7 +125,7 @@ EXPORTC void beginProcedure(addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAdd
 /// @param astNodeAddr a pointer to the ASTNode which is the source node of the RETURN.
 /// @param retvalAddr a pointer to the Datum object which is the value to return.
 /// @return a pointer to the RETURN control object that was generated.
-EXPORTC addr_t getCtrlReturn(addr_t eAddr, addr_t astNodeAddr, addr_t retvalAddr)
+EXPORTC addr_t getCtrlReturn(addr_t eAddr, addr_t astNodeAddr, addr_t retvalAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto retval = DatumPtr(reinterpret_cast<Datum *>(retvalAddr));
@@ -140,7 +143,7 @@ EXPORTC addr_t getCtrlReturn(addr_t eAddr, addr_t astNodeAddr, addr_t retvalAddr
 ///        continued procedure must not output a value.
 /// @return a pointer to the CONTINUATION control object that was generated.
 EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t argAryAddr, uint32_t argCount,
-                                   bool demandNothing)
+                                   bool demandNothing) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astNodeAddr);
@@ -165,7 +168,7 @@ EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t argA
 /// @param astNodeAddr a pointer to the ASTNode which is the source node of the GOTO.
 /// @param tagAddr a pointer to the Datum object which is the tag of the GOTO.
 /// @return a pointer to the GOTO control object that was generated, or error if the tag is not found.
-EXPORTC addr_t getCtrlGoto(addr_t eAddr, addr_t astNodeAddr, addr_t tagAddr)
+EXPORTC addr_t getCtrlGoto(addr_t eAddr, addr_t astNodeAddr, addr_t tagAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto tag = DatumPtr(reinterpret_cast<Datum *>(tagAddr));
@@ -204,14 +207,13 @@ EXPORTC addr_t getCtrlGoto(addr_t eAddr, addr_t astNodeAddr, addr_t tagAddr)
     while (!runningList.listValue()->isEmpty())
     {
         Compiler::get().setTagLineLocation(runningList);
-        try
-        {
+        addr_t compiled = catchError(e, static_cast<addr_t>(0), [&] {
             Compiler::get().compiledTextFromList(runningList.listValue()->head.listValue());
-        }
-        catch (FCError *e)
+        });
+        if (compiled != 0)
         {
             Compiler::get().clearTagLineLocation();
-            return reinterpret_cast<addr_t>(e);
+            return compiled;
         }
         Compiler::get().clearTagLineLocation();
 
@@ -228,13 +230,13 @@ EXPORTC addr_t getCtrlGoto(addr_t eAddr, addr_t astNodeAddr, addr_t tagAddr)
 }
 
 /// @brief return the address of the repcount variable.
-EXPORTC addr_t repcountAddr(void)
+EXPORTC addr_t repcountAddr(void) noexcept
 {
     void *retval = &Kernel::get().repcount_;
     return (addr_t)retval;
 }
 
-EXPORTC addr_t beginCatch(void)
+EXPORTC addr_t beginCatch(void) noexcept
 {
     const QString &erractName = SpecialVars::name(SpecialVars::Id::ErrAct);
     Datum *erractValue = Kernel::get().datumForName(erractName).datumValue();
@@ -248,7 +250,7 @@ EXPORTC addr_t beginCatch(void)
     return reinterpret_cast<addr_t>(erractValue);
 }
 
-EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t resultAddr, addr_t tagAddr)
+EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t resultAddr, addr_t tagAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     const QString &erractName = SpecialVars::name(SpecialVars::Id::ErrAct);
@@ -290,7 +292,7 @@ EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t
     return reinterpret_cast<addr_t>(result);
 }
 
-EXPORTC addr_t getCurrentError(addr_t eAddr)
+EXPORTC addr_t getCurrentError(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr errPtr = Kernel::get().currentError_;
@@ -309,15 +311,17 @@ EXPORTC addr_t getCurrentError(addr_t eAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t callPause(addr_t eAddr)
+EXPORTC addr_t callPause(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    Datum *retval = Kernel::get().pause().datumValue();
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
+    return catchError(e, [&]() -> addr_t {
+        Datum *retval = Kernel::get().pause().datumValue();
+        e->watch(retval);
+        return reinterpret_cast<addr_t>(retval);
+    });
 }
 
-EXPORTC addr_t generateContinue(addr_t eAddr, addr_t outputAddr)
+EXPORTC addr_t generateContinue(addr_t eAddr, addr_t outputAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *output = reinterpret_cast<Datum *>(outputAddr);
@@ -331,14 +335,14 @@ EXPORTC addr_t generateContinue(addr_t eAddr, addr_t outputAddr)
 /// Prints MARK immediately, then DELE when the last DatumPtr drops.
 /// @param thingAddr a pointer to the Datum to mark
 /// @return the same Datum
-EXPORTC addr_t stdMark(addr_t thingAddr)
+EXPORTC addr_t stdMark(addr_t thingAddr) noexcept
 {
     DatumPtr thing(reinterpret_cast<Datum *>(thingAddr));
     thing.alertOnDelete();
     return thingAddr;
 }
 
-EXPORTC addr_t processRunresult(addr_t eAddr, addr_t resultAddr)
+EXPORTC addr_t processRunresult(addr_t eAddr, addr_t resultAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *result = reinterpret_cast<Datum *>(resultAddr);
@@ -361,12 +365,12 @@ EXPORTC addr_t processRunresult(addr_t eAddr, addr_t resultAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC void saveTestResult(bool tf)
+EXPORTC void saveTestResult(bool tf) noexcept
 {
     Kernel::get().setTest(tf);
 }
 
-EXPORTC int8_t getTestResult(void)
+EXPORTC int8_t getTestResult(void) noexcept
 {
     return Kernel::get().testedState();
 }
@@ -375,7 +379,7 @@ EXPORTC int8_t getTestResult(void)
 /// @param eAddr the address of the Evaluator object
 /// @param templateAddr a pointer to the template
 /// @return the template form (as an integer)
-EXPORTC int8_t getTemplateForm(addr_t eAddr, addr_t templateAddr)
+EXPORTC int8_t getTemplateForm(addr_t eAddr, addr_t templateAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *aTemplate = reinterpret_cast<Datum *>(templateAddr);
@@ -415,7 +419,7 @@ EXPORTC int8_t getTemplateForm(addr_t eAddr, addr_t templateAddr)
 /// @param templateAddr a pointer to the procedure name (a Word)
 /// @param inputlistAddr a pointer to the already-evaluated input list
 /// @return a one-node List whose head is the call AST, or an error
-EXPORTC addr_t buildApplyNamedCall(addr_t eAddr, addr_t astNodeAddr, addr_t templateAddr, addr_t inputlistAddr)
+EXPORTC addr_t buildApplyNamedCall(addr_t eAddr, addr_t astNodeAddr, addr_t templateAddr, addr_t inputlistAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *astNode = reinterpret_cast<Datum *>(astNodeAddr);
@@ -433,29 +437,23 @@ EXPORTC addr_t buildApplyNamedCall(addr_t eAddr, addr_t astNodeAddr, addr_t temp
         return reinterpret_cast<addr_t>(err);
     }
 
-    try
-    {
+    return catchError(e, [&]() -> addr_t {
         DatumPtr node = Procedures::get().astnodeWithLiterals(DatumPtr(aTemplate), DatumPtr(inputlist));
         auto *callList = new List(node, EmptyList::instance());
         e->watch(callList);
         return reinterpret_cast<addr_t>(callList);
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
+    });
 }
 
 // TODO: We should consider including the exports header, because this is kinda out of place.
-EXPORTC addr_t handleBadDatum(addr_t eAddr, addr_t parentAddr, addr_t valueAddr);
+EXPORTC addr_t handleBadDatum(addr_t eAddr, addr_t parentAddr, addr_t valueAddr) noexcept;
 
 /// @brief Return the explicit-slot value for `?` / `(? n)`.
 /// @param eAddr the address of the Evaluator object
 /// @param parentAddr a pointer to the `?` ASTNode (for errors)
 /// @param indexAddr a 1-based slot index, or notADatum if `?` was given no input
 /// @return the slot datum, or an error
-EXPORTC addr_t getExplicitSlot(addr_t eAddr, addr_t parentAddr, addr_t indexAddr)
+EXPORTC addr_t getExplicitSlot(addr_t eAddr, addr_t parentAddr, addr_t indexAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *parent = reinterpret_cast<ASTNode *>(parentAddr);
@@ -514,14 +512,14 @@ bailout:
 }
 
 /// @brief Push an explicit-slot list for `?`.
-EXPORTC void pushExplicitSlotList(addr_t listAddr)
+EXPORTC void pushExplicitSlotList(addr_t listAddr) noexcept
 {
     auto *list = reinterpret_cast<Datum *>(listAddr);
     Kernel::get().explicitSlotListStack_.push(DatumPtr(list));
 }
 
 /// @brief Pop the current explicit-slot list.
-EXPORTC void popExplicitSlotList(void)
+EXPORTC void popExplicitSlotList(void) noexcept
 {
     Q_ASSERT(!Kernel::get().explicitSlotListStack_.isEmpty());
     Kernel::get().explicitSlotListStack_.pop();
@@ -533,7 +531,7 @@ EXPORTC void popExplicitSlotList(void)
 /// @param templateAddr a pointer to the lambda template list
 /// @param inputlistAddr a pointer to the already-evaluated input list
 /// @return the template tail (instruction list) on success, or an error
-EXPORTC addr_t beginApplyLambda(addr_t eAddr, addr_t astNodeAddr, addr_t templateAddr, addr_t inputlistAddr)
+EXPORTC addr_t beginApplyLambda(addr_t eAddr, addr_t astNodeAddr, addr_t templateAddr, addr_t inputlistAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *who = reinterpret_cast<Datum *>(astNodeAddr);
@@ -605,7 +603,7 @@ EXPORTC addr_t beginApplyLambda(addr_t eAddr, addr_t astNodeAddr, addr_t templat
 /// @param templateAddr a pointer to the procedure-text template list
 /// @param inputlistAddr a pointer to the already-evaluated input list
 /// @return a one-node List whose head is the call AST, or an error
-EXPORTC addr_t buildApplyProcedureText(addr_t eAddr, addr_t astNodeAddr, addr_t templateAddr, addr_t inputlistAddr)
+EXPORTC addr_t buildApplyProcedureText(addr_t eAddr, addr_t astNodeAddr, addr_t templateAddr, addr_t inputlistAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *who = reinterpret_cast<Datum *>(astNodeAddr);
@@ -620,8 +618,7 @@ EXPORTC addr_t buildApplyProcedureText(addr_t eAddr, addr_t astNodeAddr, addr_t 
     List *tmpl = aTemplate->listValue();
     Q_ASSERT(!tmpl->isEmpty() && tmpl->head.isList());
 
-    try
-    {
+    return catchError(e, [&]() -> addr_t {
         for (List *lineList = tmpl->tail.listValue(); !lineList->isEmpty();
              lineList = lineList->tail.listValue())
         {
@@ -664,16 +661,11 @@ EXPORTC addr_t buildApplyProcedureText(addr_t eAddr, addr_t astNodeAddr, addr_t 
         auto *callList = new List(node, EmptyList::instance());
         e->watch(callList);
         return reinterpret_cast<addr_t>(callList);
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
+    });
 }
 
 /// @brief Restore variable bindings from the most recent beginApplyLambda.
-EXPORTC void endApplyLambda(void)
+EXPORTC void endApplyLambda(void) noexcept
 {
     Kernel &k = Kernel::get();
     Q_ASSERT(!k.applyLambdaBindingStack_.isEmpty());

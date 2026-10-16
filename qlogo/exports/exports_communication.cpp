@@ -60,7 +60,7 @@ void currentPrintLimits(int &printDepthLimit, int &printWidthLimit)
 /// @param datumAddr a pointer to a Datum object to print.
 /// @param useShow set to true to generate output for SHOW, false for PRINT
 /// @return a pointer to the owning ASTNode object or a pointer to the Error object if an error occurs.
-EXPORTC addr_t stdWriteDatum(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr, bool useShow)
+EXPORTC addr_t stdWriteDatum(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr, bool useShow) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
@@ -70,13 +70,7 @@ EXPORTC addr_t stdWriteDatum(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr,
     int printWidthLimit = -1;
     currentPrintLimits(printDepthLimit, printWidthLimit);
     QString output = d->toString(writeFlags, printDepthLimit, printWidthLimit) + "\n";
-    try {
-        StreamManager::get().print(output);
-    } catch (FCError *err) {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(astnodeAddr);
+    return printOrError(e, reinterpret_cast<addr_t>(node), output);
 }
 
 /// Write an array of Datum objects to the standard output device.
@@ -86,7 +80,7 @@ EXPORTC addr_t stdWriteDatum(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr,
 /// @param count the number of Datum objects in the array
 /// @param useShow set to true to generate output for SHOW, false for PRINT
 /// @param addWhitespace set to true to add a newline to the end of the output and spaces between datums.
-EXPORTC addr_t stdWriteDatumAry(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr, uint32_t count, bool useShow, bool addWhitespace)
+EXPORTC addr_t stdWriteDatumAry(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr, uint32_t count, bool useShow, bool addWhitespace) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
@@ -105,23 +99,16 @@ EXPORTC addr_t stdWriteDatumAry(addr_t eAddr, addr_t astnodeAddr, addr_t datumAd
     }
     if (addWhitespace)
         output = output % "\n";
-        try {
-            StreamManager::get().print(output);
-        } catch (FCError *err) {
-            e->watch(err);
-            return reinterpret_cast<addr_t>(err);
-        }
-        return reinterpret_cast<addr_t>(astnodeAddr);
-    }
+    return printOrError(e, reinterpret_cast<addr_t>(node), output);
+}
 
 /// Read a list from the current reader (READLIST / RL).
 /// @param eAddr a pointer to the Evaluator object
 /// @return a list, the empty word at end of input, or an Error on I/O failure.
-EXPORTC addr_t stdReadList(addr_t eAddr)
+EXPORTC addr_t stdReadList(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    try
-    {
+    return catchError(e, [&]() -> addr_t {
         DatumPtr retval = StreamManager::get().readList(QString(), false);
         if (retval.isNothing())
         {
@@ -131,22 +118,16 @@ EXPORTC addr_t stdReadList(addr_t eAddr)
         }
         e->watch(retval);
         return reinterpret_cast<addr_t>(retval.datumValue());
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
+    });
 }
 
 /// Read a word from the current reader (READWORD / RW).
 /// @param eAddr a pointer to the Evaluator object
 /// @return a word, the empty list at end of input, or an Error on I/O failure.
-EXPORTC addr_t stdReadWord(addr_t eAddr)
+EXPORTC addr_t stdReadWord(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    try
-    {
+    return catchError(e, [&]() -> addr_t {
         DatumPtr retval = StreamManager::get().readWord(QString());
         if (retval.isNothing())
         {
@@ -156,22 +137,16 @@ EXPORTC addr_t stdReadWord(addr_t eAddr)
         }
         e->watch(retval);
         return reinterpret_cast<addr_t>(retval.datumValue());
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
+    });
 }
 
 /// Read a raw line from the current reader (READRAWLINE).
 /// @param eAddr a pointer to the Evaluator object
 /// @return a word, the empty list at end of input, or an Error on I/O failure.
-EXPORTC addr_t stdReadRawline(addr_t eAddr)
+EXPORTC addr_t stdReadRawline(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    try
-    {
+    return catchError(e, [&]() -> addr_t {
         DatumPtr retval = StreamManager::get().readRawline(QString());
         if (retval.isNothing())
         {
@@ -181,23 +156,17 @@ EXPORTC addr_t stdReadRawline(addr_t eAddr)
         }
         e->watch(retval);
         return reinterpret_cast<addr_t>(retval.datumValue());
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
+    });
 }
 
 /// Read characters from the current reader (READCHAR / RC / READCHARS / RCS).
 /// @param eAddr a pointer to the Evaluator object
 /// @param count the number of characters to read
 /// @return a word of the characters read, the empty list at end of input, or an Error on I/O failure.
-EXPORTC addr_t stdReadChars(addr_t eAddr, int32_t count)
+EXPORTC addr_t stdReadChars(addr_t eAddr, int32_t count) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    try
-    {
+    return catchError(e, [&]() -> addr_t {
         DatumPtr retval = StreamManager::get().readChars(count);
         if (retval.isNothing())
         {
@@ -207,22 +176,16 @@ EXPORTC addr_t stdReadChars(addr_t eAddr, int32_t count)
         }
         e->watch(retval);
         return reinterpret_cast<addr_t>(retval.datumValue());
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
+    });
 }
 
 /// Present a modal file dialog (FILEDIALOG). GUI only.
 /// @param eAddr a pointer to the Evaluator object
 /// @return a word containing the selected path, the empty list if cancelled, or an Error.
-EXPORTC addr_t stdFileDialog(addr_t eAddr)
+EXPORTC addr_t stdFileDialog(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    try
-    {
+    return catchError(e, [&]() -> addr_t {
         QString path = Config::get().mainInterface()->fileDialogModal();
         if (path.isEmpty())
         {
@@ -233,35 +196,21 @@ EXPORTC addr_t stdFileDialog(addr_t eAddr)
         auto *word = new Word(path);
         e->watch(word);
         return reinterpret_cast<addr_t>(word);
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
+    });
 }
 
 /// Print the QLogo copyright message to the current writer (COPYRIGHT).
 /// @param eAddr a pointer to the Evaluator object
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @return the owning ASTNode, or an Error on I/O failure.
-EXPORTC addr_t stdCopyright(addr_t eAddr, addr_t astnodeAddr)
+EXPORTC addr_t stdCopyright(addr_t eAddr, addr_t astnodeAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     QString printString = QStringLiteral(
         "QLogo and Psychi source Copyright 2017-2026 Jason Sikes\n"
         "Help and library texts Copyright (C) 1993 by the Regents of the University of California\n");
-    try
-    {
-        StreamManager::get().print(printString);
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    return printOrError(e, reinterpret_cast<addr_t>(node), printString);
 }
 
 /// Compile an instruction list under a dump request. Does not execute the list.
@@ -271,8 +220,7 @@ static addr_t dumpInstructionList(addr_t eAddr, addr_t astnodeAddr, addr_t datum
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *input = reinterpret_cast<Datum *>(datumAddr);
-    try
-    {
+    return catchError(e, [&]() -> addr_t {
         if (input->isWord())
         {
             DatumPtr parsed = runparse(DatumPtr(input));
@@ -292,16 +240,11 @@ static addr_t dumpInstructionList(addr_t eAddr, addr_t astnodeAddr, addr_t datum
         Compiler::DumpScope scope(dump);
         Compiler::get().compiledTextFromList(list);
         return reinterpret_cast<addr_t>(node);
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
+    });
 }
 
 /// SHOWIR: compile the instruction list and print its IR. Does not run it.
-EXPORTC addr_t stdShowIR(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr)
+EXPORTC addr_t stdShowIR(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr) noexcept
 {
     Compiler::DumpRequest dump;
     dump.showIR = true;
@@ -309,7 +252,7 @@ EXPORTC addr_t stdShowIR(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr)
 }
 
 /// SHOWCFG: compile the instruction list and print its CFG as DOT. Does not run it.
-EXPORTC addr_t stdShowCFG(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr)
+EXPORTC addr_t stdShowCFG(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr) noexcept
 {
     Compiler::DumpRequest dump;
     dump.showCFG = true;
@@ -317,7 +260,7 @@ EXPORTC addr_t stdShowCFG(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr)
 }
 
 /// SHOWMODULEIR: compile the instruction list and print the module IR. Does not run it.
-EXPORTC addr_t stdShowModuleIR(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr)
+EXPORTC addr_t stdShowModuleIR(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr) noexcept
 {
     Compiler::DumpRequest dump;
     dump.showModuleIR = true;
@@ -325,7 +268,7 @@ EXPORTC addr_t stdShowModuleIR(addr_t eAddr, addr_t astnodeAddr, addr_t datumAdd
 }
 
 /// Return true if the datum is a valid SHELL command: a word, or a non-empty list of words.
-EXPORTC bool isValidShellCommand(addr_t commandAddr)
+EXPORTC bool isValidShellCommand(addr_t commandAddr) noexcept
 {
     auto *d = reinterpret_cast<Datum *>(commandAddr);
     if (d->isWord())
@@ -365,12 +308,11 @@ static QString shellCommandString(Datum *command)
 /// @param commandAddr a word or a list of words naming the command
 /// @param wordflag if true, each output line is a word; otherwise each line is parsed as a list
 /// @return a list of lines, or an Error
-EXPORTC addr_t stdShell(addr_t eAddr, addr_t commandAddr, bool wordflag)
+EXPORTC addr_t stdShell(addr_t eAddr, addr_t commandAddr, bool wordflag) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *command = reinterpret_cast<Datum *>(commandAddr);
-    try
-    {
+    return catchError(e, [&]() -> addr_t {
         const QString commandString = shellCommandString(command);
 
         QProcess proc;
@@ -422,23 +364,18 @@ EXPORTC addr_t stdShell(addr_t eAddr, addr_t commandAddr, bool wordflag)
         DatumPtr retval = builder.finishedList();
         e->watch(retval);
         return reinterpret_cast<addr_t>(retval.datumValue());
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
+    });
 }
 
 /// SETPREFIX: store the filename prefix (a word, or the empty list for none).
-EXPORTC void stdSetPrefix(addr_t prefixAddr)
+EXPORTC void stdSetPrefix(addr_t prefixAddr) noexcept
 {
     auto *d = reinterpret_cast<Datum *>(prefixAddr);
     StreamManager::get().setPrefix(DatumPtr(d));
 }
 
 /// PREFIX: return the current filename prefix, or the empty list if none.
-EXPORTC addr_t stdPrefix(addr_t eAddr)
+EXPORTC addr_t stdPrefix(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr retval = StreamManager::get().prefix();
@@ -450,7 +387,7 @@ EXPORTC addr_t stdPrefix(addr_t eAddr)
 /// a word filename, or a non-empty list whose first element is a word (the
 /// character buffer's variable name). OPENREAD, OPENAPPEND, and OPENUPDATE
 /// accept only a word.
-EXPORTC bool isValidOpenSpec(addr_t specAddr)
+EXPORTC bool isValidOpenSpec(addr_t specAddr) noexcept
 {
     auto *d = reinterpret_cast<Datum *>(specAddr);
     if (d->isWord())
@@ -471,14 +408,13 @@ EXPORTC bool isValidOpenSpec(addr_t specAddr)
 /// @param mode OpenMode as int32 (Read=0, Write=1, Append=2, Update=3)
 /// @return the owning ASTNode, or an Error if the stream is already open or
 ///         the open fails.
-EXPORTC addr_t stdOpen(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr, int32_t mode)
+EXPORTC addr_t stdOpen(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr, int32_t mode) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *spec = reinterpret_cast<Datum *>(specAddr);
     auto openMode = static_cast<OpenMode>(mode);
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         if (spec->isWord())
         {
             StreamManager::get().open(spec->wordValue()->toString(), openMode, DatumPtr(spec));
@@ -493,13 +429,7 @@ EXPORTC addr_t stdOpen(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr, int32_
         {
             throw FCError::doesntLike(node->nodeName_, DatumPtr(spec));
         }
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
 }
 
 static QString streamNameFromSpec(Datum *spec)
@@ -515,30 +445,23 @@ static QString streamNameFromSpec(Datum *spec)
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param specAddr a word filename, or a list whose first element is a variable name
 /// @return the owning ASTNode, or an Error if the name is not open.
-EXPORTC addr_t stdClose(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr)
+EXPORTC addr_t stdClose(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *spec = reinterpret_cast<Datum *>(specAddr);
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         const QString name = streamNameFromSpec(spec);
         DatumPtr bufferContents = StreamManager::get().close(name, DatumPtr(spec));
         if (!bufferContents.isNothing())
             Kernel::get().setDatumForName(bufferContents, name);
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
 }
 
 /// ALLOPEN: names of all currently open streams, not including dribble.
 /// @param eAddr a pointer to the Evaluator object
 /// @return a list of names, or the empty list if none are open.
-EXPORTC addr_t stdAllOpen(addr_t eAddr)
+EXPORTC addr_t stdAllOpen(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr retval = StreamManager::get().allOpen();
@@ -551,21 +474,14 @@ EXPORTC addr_t stdAllOpen(addr_t eAddr)
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param filenameAddr a word naming the file
 /// @return the owning ASTNode, or an Error if the file is open or cannot be removed.
-EXPORTC addr_t stdEraseFile(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr)
+EXPORTC addr_t stdEraseFile(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *filename = reinterpret_cast<Datum *>(filenameAddr);
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         StreamManager::get().eraseFile(filename->wordValue()->toString());
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
 }
 
 /// DRIBBLE: begin copying terminal I/O to the named file.
@@ -574,25 +490,18 @@ EXPORTC addr_t stdEraseFile(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAdd
 /// @param filenameAddr a word naming the dribble file
 /// @return the owning ASTNode, or an Error if already dribbling or the file
 ///         cannot be opened.
-EXPORTC addr_t stdDribble(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr)
+EXPORTC addr_t stdDribble(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *filename = reinterpret_cast<Datum *>(filenameAddr);
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         StreamManager::get().dribble(DatumPtr(filename));
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
 }
 
 /// NODRIBBLE: stop dribbling and close the dribble file.
-EXPORTC void stdNoDribble(void)
+EXPORTC void stdNoDribble(void) noexcept
 {
     StreamManager::get().noDribble();
 }
@@ -615,13 +524,12 @@ static QString openStreamNameFromWord(Datum *spec)
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param specAddr a word filename, or the empty list for the terminal
 /// @return the owning ASTNode, or an Error if the name is not open for reading.
-EXPORTC addr_t stdSetRead(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr)
+EXPORTC addr_t stdSetRead(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *spec = reinterpret_cast<Datum *>(specAddr);
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         if (spec->isList() && spec->listValue()->isEmpty())
         {
             StreamManager::get().setReader(QString());
@@ -630,18 +538,12 @@ EXPORTC addr_t stdSetRead(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr)
         {
             StreamManager::get().setReader(openStreamNameFromWord(spec), DatumPtr(spec));
         }
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
 }
 
 /// READER: name of the current reader, or the empty list if it is the terminal.
 /// @param eAddr a pointer to the Evaluator object
-EXPORTC addr_t stdReader(addr_t eAddr)
+EXPORTC addr_t stdReader(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString name = StreamManager::get().reader();
@@ -662,13 +564,12 @@ EXPORTC addr_t stdReader(addr_t eAddr)
 /// @param specAddr a word filename, a list whose first element is a buffer
 ///        variable name, or the empty list for the terminal
 /// @return the owning ASTNode, or an Error if the name is not open for writing.
-EXPORTC addr_t stdSetWrite(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr)
+EXPORTC addr_t stdSetWrite(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *spec = reinterpret_cast<Datum *>(specAddr);
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         if (spec->isList() && spec->listValue()->isEmpty())
         {
             StreamManager::get().setWriter(QString());
@@ -678,19 +579,13 @@ EXPORTC addr_t stdSetWrite(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr)
             const QString name = spec->isWord() ? openStreamNameFromWord(spec) : streamNameFromSpec(spec);
             StreamManager::get().setWriter(name, DatumPtr(spec));
         }
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
 }
 
 /// WRITER: name of the current writer, or the empty list if it is the terminal
 /// (including while a REPL overlay is hiding a file writer).
 /// @param eAddr a pointer to the Evaluator object
-EXPORTC addr_t stdWriter(addr_t eAddr)
+EXPORTC addr_t stdWriter(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString name = StreamManager::get().writer();
@@ -706,63 +601,63 @@ EXPORTC addr_t stdWriter(addr_t eAddr)
 }
 
 /// SETREADPOS: seek the current reader. No-op if the reader is the terminal.
-EXPORTC void stdSetReadPos(int32_t pos)
+EXPORTC void stdSetReadPos(int32_t pos) noexcept
 {
     StreamManager::get().setReadPos(pos);
 }
 
 /// READPOS: current position of the reader, or 0 if the reader is the terminal.
-EXPORTC double stdReadPos(void)
+EXPORTC double stdReadPos(void) noexcept
 {
     return static_cast<double>(StreamManager::get().readPos());
 }
 
 /// SETWRITEPOS: seek the current writer. No-op if the writer is the terminal.
-EXPORTC void stdSetWritePos(int32_t pos)
+EXPORTC void stdSetWritePos(int32_t pos) noexcept
 {
     StreamManager::get().setWritePos(pos);
 }
 
 /// WRITEPOS: current position of the writer, or 0 if the writer is the terminal.
-EXPORTC double stdWritePos(void)
+EXPORTC double stdWritePos(void) noexcept
 {
     return static_cast<double>(StreamManager::get().writePos());
 }
 
 /// EOFP / EOF?: true if the current reader has no more characters.
-EXPORTC bool stdEofp(void)
+EXPORTC bool stdEofp(void) noexcept
 {
     return StreamManager::get().readerAtEnd();
 }
 
 /// KEYP / KEY?: true if a character is waiting on the current reader.
-EXPORTC bool stdKeyp(void)
+EXPORTC bool stdKeyp(void) noexcept
 {
     return StreamManager::get().keyAvailable();
 }
 
 /// LINEP / LINE?: true if a line is waiting on the current reader.
 /// A file is the same as not EOFP. The terminal stays in line mode.
-EXPORTC bool stdLinep(void)
+EXPORTC bool stdLinep(void) noexcept
 {
     return StreamManager::get().lineAvailable();
 }
 
 /// CLEARTEXT / CT: clear the text console. No-op on the command-line interface.
-EXPORTC void stdClearText(void)
+EXPORTC void stdClearText(void) noexcept
 {
     StreamManager::get().clearText();
 }
 
 /// SETCURSOR: move the text console cursor. Logo order is [column row];
 /// the interface uses row, then column.
-EXPORTC void stdSetCursor(int32_t row, int32_t col)
+EXPORTC void stdSetCursor(int32_t row, int32_t col) noexcept
 {
     StreamManager::get().setTextCursor(row, col);
 }
 
 /// CURSOR: current text console cursor as a two-number list [column row].
-EXPORTC addr_t stdCursor(addr_t eAddr)
+EXPORTC addr_t stdCursor(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     int row = 0;
@@ -777,7 +672,7 @@ EXPORTC addr_t stdCursor(addr_t eAddr)
 }
 
 /// Return true if the datum names a color (palette index, RGB/RGBA list, name, or hex).
-EXPORTC bool isValidColor(addr_t colorAddr)
+EXPORTC bool isValidColor(addr_t colorAddr) noexcept
 {
     auto *d = reinterpret_cast<Datum *>(colorAddr);
     QColor color;
@@ -787,7 +682,7 @@ EXPORTC bool isValidColor(addr_t colorAddr)
 /// SETTEXTCOLOR / SETTC: set the text console colors.
 /// @param foregroundAddr a color datum
 /// @param backgroundAddr a color datum, or null to leave the background unchanged
-EXPORTC void stdSetTextColor(addr_t foregroundAddr, addr_t backgroundAddr)
+EXPORTC void stdSetTextColor(addr_t foregroundAddr, addr_t backgroundAddr) noexcept
 {
     auto *foreground = reinterpret_cast<Datum *>(foregroundAddr);
     QColor fg;
@@ -802,26 +697,26 @@ EXPORTC void stdSetTextColor(addr_t foregroundAddr, addr_t backgroundAddr)
 }
 
 /// SETTEXTSIZE: set the text console font point size. No-op on the command-line interface.
-EXPORTC void stdSetTextSize(double size)
+EXPORTC void stdSetTextSize(double size) noexcept
 {
     StreamManager::get().setTextFontSize(size);
 }
 
 /// TEXTSIZE: current text console font point size. 12 on the command-line interface.
-EXPORTC double stdTextSize(void)
+EXPORTC double stdTextSize(void) noexcept
 {
     return StreamManager::get().textFontSize();
 }
 
 /// SETFONT: set the text console font family. No-op on the command-line interface.
-EXPORTC void stdSetFont(addr_t nameAddr)
+EXPORTC void stdSetFont(addr_t nameAddr) noexcept
 {
     auto *w = reinterpret_cast<Word *>(nameAddr);
     StreamManager::get().setTextFontName(w->toString());
 }
 
 /// FONT: current text console font family. Empty word on the command-line interface.
-EXPORTC addr_t stdFont(addr_t eAddr)
+EXPORTC addr_t stdFont(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString name = StreamManager::get().textFontName();
@@ -833,7 +728,7 @@ EXPORTC addr_t stdFont(addr_t eAddr)
 }
 
 /// ALLFONTS: names of fonts available on the system, as a Logo list of words.
-EXPORTC addr_t stdAllFonts(addr_t eAddr)
+EXPORTC addr_t stdAllFonts(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     ListBuilder builder;
@@ -852,12 +747,11 @@ EXPORTC addr_t stdAllFonts(addr_t eAddr)
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param sixtieths delay in 60ths of a second, already validated as >= 0
 /// @return the owning ASTNode, or an Error if the GUI wait is interrupted.
-EXPORTC addr_t stdWait(addr_t eAddr, addr_t astnodeAddr, double sixtieths)
+EXPORTC addr_t stdWait(addr_t eAddr, addr_t astnodeAddr, double sixtieths) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
-    try
-    {
+    return catchError(e, [&]() -> addr_t {
         double msecs = (1000.0 / 60.0) * sixtieths;
         unsigned long waitMs = 0;
         if (msecs > 0)
@@ -874,12 +768,7 @@ EXPORTC addr_t stdWait(addr_t eAddr, addr_t astnodeAddr, double sixtieths)
             e->watch(signalResult.datumValue());
             return reinterpret_cast<addr_t>(signalResult.datumValue());
         }
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+        return reinterpret_cast<addr_t>(node);
+    });
 }
 

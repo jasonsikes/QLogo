@@ -100,7 +100,7 @@ bool isDatumInContainer(VisitedSet &visited, Datum *value, Datum *container)
 /// @brief Get the number of elements in a list.
 /// @param listAddr a pointer to the List object.
 /// @return the number of elements in the list.
-EXPORTC int32_t getCountOfList(addr_t listAddr)
+EXPORTC int32_t getCountOfList(addr_t listAddr) noexcept
 {
     auto *list = reinterpret_cast<List *>(listAddr);
     return list->count();
@@ -111,7 +111,7 @@ EXPORTC int32_t getCountOfList(addr_t listAddr)
 /// @param listAddr a pointer to the List object source
 /// @param destAddr a pointer to the double array to store the values.
 /// @return 0 if the list is not a list of doubles, 1 if it is.
-EXPORTC int32_t getNumberAryFromList(addr_t listAddr, addr_t destAddr)
+EXPORTC int32_t getNumberAryFromList(addr_t listAddr, addr_t destAddr) noexcept
 {
     auto list = DatumPtr(reinterpret_cast<Datum *>(listAddr));
     auto *dest = reinterpret_cast<double *>(destAddr);
@@ -197,7 +197,7 @@ static bool areDatumsEqual(VisitedMap &visited, Datum *d1, Datum *d2, Qt::CaseSe
 /// @param d1 a Datum
 /// @param d2 a Datum
 /// @returns true iff d1 is equal to d2 according to the help text of EQUALP
-EXPORTC bool cmpDatumToDatum(addr_t eAddr, addr_t d1, addr_t d2)
+EXPORTC bool cmpDatumToDatum(addr_t eAddr, addr_t d1, addr_t d2) noexcept
 {
     auto *dD1 = reinterpret_cast<Datum *>(d1);
     auto *dD2 = reinterpret_cast<Datum *>(d2);
@@ -207,7 +207,7 @@ EXPORTC bool cmpDatumToDatum(addr_t eAddr, addr_t d1, addr_t d2)
     return areDatumsEqual(visited, dD1, dD2, cs);
 }
 
-EXPORTC addr_t concatWord(addr_t eAddr, addr_t aryAddr, uint32_t count)
+EXPORTC addr_t concatWord(addr_t eAddr, addr_t aryAddr, uint32_t count) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto **wordAry = reinterpret_cast<Word **>(aryAddr);
@@ -220,7 +220,7 @@ EXPORTC addr_t concatWord(addr_t eAddr, addr_t aryAddr, uint32_t count)
     return reinterpret_cast<addr_t>(e->watch(new Word(retval)));
 }
 
-EXPORTC bool isDatumEmpty(addr_t dAddr)
+EXPORTC bool isDatumEmpty(addr_t dAddr) noexcept
 {
     auto *d = reinterpret_cast<Datum *>(dAddr);
     if (d->isWord())
@@ -236,7 +236,7 @@ EXPORTC bool isDatumEmpty(addr_t dAddr)
     return d->arrayValue()->array.isEmpty();
 }
 
-EXPORTC addr_t createList(addr_t eAddr, addr_t aryAddr, uint32_t count)
+EXPORTC addr_t createList(addr_t eAddr, addr_t aryAddr, uint32_t count) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto **ary = reinterpret_cast<Datum **>(aryAddr);
@@ -251,7 +251,7 @@ EXPORTC addr_t createList(addr_t eAddr, addr_t aryAddr, uint32_t count)
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
-EXPORTC addr_t createSentence(addr_t eAddr, addr_t aryAddr, uint32_t count)
+EXPORTC addr_t createSentence(addr_t eAddr, addr_t aryAddr, uint32_t count) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto **ary = reinterpret_cast<Datum **>(aryAddr);
@@ -277,7 +277,7 @@ EXPORTC addr_t createSentence(addr_t eAddr, addr_t aryAddr, uint32_t count)
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
-EXPORTC addr_t fputList(addr_t eAddr, addr_t thingAddr, addr_t listAddr)
+EXPORTC addr_t fputList(addr_t eAddr, addr_t thingAddr, addr_t listAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
@@ -288,7 +288,7 @@ EXPORTC addr_t fputList(addr_t eAddr, addr_t thingAddr, addr_t listAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t lputList(addr_t eAddr, addr_t thingAddr, addr_t listAddr)
+EXPORTC addr_t lputList(addr_t eAddr, addr_t thingAddr, addr_t listAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
@@ -308,7 +308,7 @@ EXPORTC addr_t lputList(addr_t eAddr, addr_t thingAddr, addr_t listAddr)
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
-EXPORTC addr_t createArray(addr_t eAddr, int32_t size, int32_t origin)
+EXPORTC addr_t createArray(addr_t eAddr, int32_t size, int32_t origin) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *retval = new Array(origin, size);
@@ -320,7 +320,7 @@ EXPORTC addr_t createArray(addr_t eAddr, int32_t size, int32_t origin)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t copyArray(addr_t eAddr, addr_t arrayAddr)
+EXPORTC addr_t copyArray(addr_t eAddr, addr_t arrayAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *src = reinterpret_cast<Array *>(arrayAddr);
@@ -333,7 +333,7 @@ EXPORTC addr_t copyArray(addr_t eAddr, addr_t arrayAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t listToArray(addr_t eAddr, addr_t listAddr, int32_t origin)
+EXPORTC addr_t listToArray(addr_t eAddr, addr_t listAddr, int32_t origin) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *list = reinterpret_cast<List *>(listAddr);
@@ -347,7 +347,7 @@ EXPORTC addr_t listToArray(addr_t eAddr, addr_t listAddr, int32_t origin)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t arrayToList(addr_t eAddr, addr_t arrayAddr)
+EXPORTC addr_t arrayToList(addr_t eAddr, addr_t arrayAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     const auto *array = reinterpret_cast<const Array *>(arrayAddr);
@@ -361,7 +361,7 @@ EXPORTC addr_t arrayToList(addr_t eAddr, addr_t arrayAddr)
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
-EXPORTC addr_t firstOfDatum(addr_t eAddr, addr_t thingAddr)
+EXPORTC addr_t firstOfDatum(addr_t eAddr, addr_t thingAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
@@ -386,7 +386,7 @@ EXPORTC addr_t firstOfDatum(addr_t eAddr, addr_t thingAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t lastOfDatum(addr_t eAddr, addr_t thingAddr)
+EXPORTC addr_t lastOfDatum(addr_t eAddr, addr_t thingAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
@@ -417,7 +417,7 @@ EXPORTC addr_t lastOfDatum(addr_t eAddr, addr_t thingAddr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t butFirstOfDatum(addr_t eAddr, addr_t thingAddr)
+EXPORTC addr_t butFirstOfDatum(addr_t eAddr, addr_t thingAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
@@ -473,17 +473,17 @@ static addr_t mapFirstOrButfirstOverList(addr_t eAddr, addr_t parentNameAddr, ad
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
-EXPORTC addr_t firstsOfList(addr_t eAddr, addr_t parentNameAddr, addr_t listAddr)
+EXPORTC addr_t firstsOfList(addr_t eAddr, addr_t parentNameAddr, addr_t listAddr) noexcept
 {
     return mapFirstOrButfirstOverList(eAddr, parentNameAddr, listAddr, false);
 }
 
-EXPORTC addr_t butfirstsOfList(addr_t eAddr, addr_t parentNameAddr, addr_t listAddr)
+EXPORTC addr_t butfirstsOfList(addr_t eAddr, addr_t parentNameAddr, addr_t listAddr) noexcept
 {
     return mapFirstOrButfirstOverList(eAddr, parentNameAddr, listAddr, true);
 }
 
-EXPORTC addr_t butLastOfDatum(addr_t eAddr, addr_t thingAddr)
+EXPORTC addr_t butLastOfDatum(addr_t eAddr, addr_t thingAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
@@ -514,7 +514,7 @@ EXPORTC addr_t butLastOfDatum(addr_t eAddr, addr_t thingAddr)
     return reinterpret_cast<addr_t>(retval.datumValue());
 }
 
-EXPORTC bool isDatumIndexValid(addr_t thingAddr, double dIndex, addr_t listItemPtrAddr)
+EXPORTC bool isDatumIndexValid(addr_t thingAddr, double dIndex, addr_t listItemPtrAddr) noexcept
 {
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     auto **listItemPtr = reinterpret_cast<Datum **>(listItemPtrAddr);
@@ -551,7 +551,7 @@ EXPORTC bool isDatumIndexValid(addr_t thingAddr, double dIndex, addr_t listItemP
     return (index >= 0) && (index < size);
 }
 
-EXPORTC addr_t itemOfDatum(addr_t eAddr, addr_t thingAddr, double dIndex, addr_t listItemPtrAddr)
+EXPORTC addr_t itemOfDatum(addr_t eAddr, addr_t thingAddr, double dIndex, addr_t listItemPtrAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
@@ -580,7 +580,7 @@ EXPORTC addr_t itemOfDatum(addr_t eAddr, addr_t thingAddr, double dIndex, addr_t
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC bool isDatumContainerOrInContainer(addr_t eAddr, addr_t valueAddr, addr_t containerAddr)
+EXPORTC bool isDatumContainerOrInContainer(addr_t eAddr, addr_t valueAddr, addr_t containerAddr) noexcept
 {
     Q_UNUSED(eAddr);
     auto *value = reinterpret_cast<Datum *>(valueAddr);
@@ -599,7 +599,7 @@ EXPORTC bool isDatumContainerOrInContainer(addr_t eAddr, addr_t valueAddr, addr_
     return isDatumInContainer(visited, value, container);
 }
 
-EXPORTC void setDatumAtIndexOfContainer(addr_t valueAddr, double dIndex, addr_t containerAddr)
+EXPORTC void setDatumAtIndexOfContainer(addr_t valueAddr, double dIndex, addr_t containerAddr) noexcept
 {
     auto *container = reinterpret_cast<Datum *>(containerAddr);
     DatumPtr value(reinterpret_cast<Datum *>(valueAddr));
@@ -620,7 +620,7 @@ EXPORTC void setDatumAtIndexOfContainer(addr_t valueAddr, double dIndex, addr_t 
     a->array[index - a->origin] = value;
 }
 
-EXPORTC void setFirstOfList(addr_t listAddr, addr_t valueAddr)
+EXPORTC void setFirstOfList(addr_t listAddr, addr_t valueAddr) noexcept
 {
     auto *l = reinterpret_cast<List *>(listAddr);
     l->head = DatumPtr(reinterpret_cast<Datum *>(valueAddr));
@@ -631,7 +631,7 @@ EXPORTC void setFirstOfList(addr_t listAddr, addr_t valueAddr)
     }
 }
 
-EXPORTC void setButfirstOfList(addr_t listAddr, addr_t valueAddr)
+EXPORTC void setButfirstOfList(addr_t listAddr, addr_t valueAddr) noexcept
 {
     auto *l = reinterpret_cast<List *>(listAddr);
     l->tail = DatumPtr(reinterpret_cast<Datum *>(valueAddr));
@@ -642,7 +642,7 @@ EXPORTC void setButfirstOfList(addr_t listAddr, addr_t valueAddr)
     }
 }
 
-EXPORTC bool isEmpty(addr_t thingAddr)
+EXPORTC bool isEmpty(addr_t thingAddr) noexcept
 {
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     if (thing->isWord())
@@ -658,7 +658,7 @@ EXPORTC bool isEmpty(addr_t thingAddr)
     return false;
 }
 
-EXPORTC bool isBefore(addr_t eAddr, addr_t word1Addr, addr_t word2Addr)
+EXPORTC bool isBefore(addr_t eAddr, addr_t word1Addr, addr_t word2Addr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *word1 = reinterpret_cast<Word *>(word1Addr);
@@ -671,7 +671,7 @@ EXPORTC bool isBefore(addr_t eAddr, addr_t word1Addr, addr_t word2Addr)
     return value1.compare(value2, cs) < 0;
 }
 
-EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
+EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
@@ -717,7 +717,7 @@ EXPORTC bool isMember(addr_t eAddr, addr_t thingAddr, addr_t containerAddr)
     });
 }
 
-EXPORTC bool isSubstring(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
+EXPORTC bool isSubstring(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing1 = reinterpret_cast<Datum *>(thing1Addr);
@@ -734,7 +734,7 @@ EXPORTC bool isSubstring(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
     return false;
 }
 
-EXPORTC bool isNumber(addr_t thingAddr)
+EXPORTC bool isNumber(addr_t thingAddr) noexcept
 {
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     if (thing->isa_ != Datum::typeWord)
@@ -746,7 +746,7 @@ EXPORTC bool isNumber(addr_t thingAddr)
     return word->numberIsValid;
 }
 
-EXPORTC bool isSingleCharWord(addr_t candidateAddr)
+EXPORTC bool isSingleCharWord(addr_t candidateAddr) noexcept
 {
     auto *candidate = reinterpret_cast<Datum *>(candidateAddr);
     if (candidate->isa_ != Datum::typeWord)
@@ -757,7 +757,7 @@ EXPORTC bool isSingleCharWord(addr_t candidateAddr)
     return word->toString(Datum::ToStringFlags_Key).length() == 1;
 }
 
-EXPORTC bool isVbarred(addr_t cAddr)
+EXPORTC bool isVbarred(addr_t cAddr) noexcept
 {
     auto *word = reinterpret_cast<Word *>(cAddr);
 
@@ -767,7 +767,7 @@ EXPORTC bool isVbarred(addr_t cAddr)
     return rawC != c;
 }
 
-EXPORTC double datumCount(addr_t thingAddr)
+EXPORTC double datumCount(addr_t thingAddr) noexcept
 {
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
     if (thing->isWord())
@@ -786,19 +786,19 @@ EXPORTC double datumCount(addr_t thingAddr)
     return array->array.size();
 }
 
-EXPORTC double ascii(addr_t cAddr)
+EXPORTC double ascii(addr_t cAddr) noexcept
 {
     auto *word = reinterpret_cast<Word *>(cAddr);
     return word->toString().front().unicode();
 }
 
-EXPORTC double rawascii(addr_t cAddr)
+EXPORTC double rawascii(addr_t cAddr) noexcept
 {
     auto *word = reinterpret_cast<Word *>(cAddr);
     return word->toString(Datum::ToStringFlags_Raw).front().unicode();
 }
 
-EXPORTC addr_t chr(addr_t eAddr, uint32_t c)
+EXPORTC addr_t chr(addr_t eAddr, uint32_t c) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto qstr = QString(QChar(static_cast<uint16_t>(c)));
@@ -807,7 +807,7 @@ EXPORTC addr_t chr(addr_t eAddr, uint32_t c)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t member(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
+EXPORTC addr_t member(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing1 = reinterpret_cast<Datum *>(thing1Addr);
@@ -853,7 +853,7 @@ EXPORTC addr_t member(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr)
     return reinterpret_cast<addr_t>(retval);
 }
 
-EXPORTC addr_t lowercase(addr_t eAddr, addr_t wordAddr)
+EXPORTC addr_t lowercase(addr_t eAddr, addr_t wordAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *word = reinterpret_cast<Word *>(wordAddr);
@@ -863,7 +863,7 @@ EXPORTC addr_t lowercase(addr_t eAddr, addr_t wordAddr)
     return reinterpret_cast<addr_t>(retvalWord);
 }
 
-EXPORTC addr_t uppercase(addr_t eAddr, addr_t wordAddr)
+EXPORTC addr_t uppercase(addr_t eAddr, addr_t wordAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *word = reinterpret_cast<Word *>(wordAddr);
@@ -873,7 +873,7 @@ EXPORTC addr_t uppercase(addr_t eAddr, addr_t wordAddr)
     return reinterpret_cast<addr_t>(retvalWord);
 }
 
-EXPORTC addr_t standout(addr_t eAddr, addr_t thingAddr)
+EXPORTC addr_t standout(addr_t eAddr, addr_t thingAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
@@ -884,20 +884,22 @@ EXPORTC addr_t standout(addr_t eAddr, addr_t thingAddr)
     return reinterpret_cast<addr_t>(retvalWord);
 }
 
-EXPORTC addr_t parse(addr_t eAddr, addr_t wordAddr)
+EXPORTC addr_t parse(addr_t eAddr, addr_t wordAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *word = reinterpret_cast<Word *>(wordAddr);
-    QString phrase = word->toString(Datum::ToStringFlags_Raw);
-    QTextStream stream(&phrase, QIODevice::ReadOnly);
-    TextStream ts(&stream);
-    DatumPtr retvalPtr = ts.readListWithPrompt(QString(), false);
-    List *retval = retvalPtr.listValue();
-    e->watch(retval);
-    return reinterpret_cast<addr_t>(retval);
+    return catchError(e, [&]() -> addr_t {
+        QString phrase = word->toString(Datum::ToStringFlags_Raw);
+        QTextStream stream(&phrase, QIODevice::ReadOnly);
+        TextStream ts(&stream);
+        DatumPtr retvalPtr = ts.readListWithPrompt(QString(), false);
+        List *retval = retvalPtr.listValue();
+        e->watch(retval);
+        return reinterpret_cast<addr_t>(retval);
+    });
 }
 
-EXPORTC addr_t runparseDatum(addr_t eAddr, addr_t wordorlistAddr)
+EXPORTC addr_t runparseDatum(addr_t eAddr, addr_t wordorlistAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto wordorlist = DatumPtr(reinterpret_cast<Datum *>(wordorlistAddr));

@@ -24,6 +24,7 @@
 #undef emit
 #endif
 
+#include "llvm/IR/Attributes.h"
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Verifier.h"
@@ -34,17 +35,26 @@
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 namespace llvm
 {
+class CallInst;
+class Function;
 class FunctionType;
 class LLVMContext;
 class StringRef;
 class TargetMachine;
+class Value;
 } // namespace llvm
 
 /// LLVM FunctionType for an EXPORTC host function interned by name.
 llvm::FunctionType *hostExportFunctionType(llvm::LLVMContext &ctx, llvm::StringRef name);
+
+/// uwtable, dso_local, ELF nonlazybind, memory effects, and nonnull on evaluator.
+void applyHostExportAttrs(llvm::Function *F, llvm::CallInst *CI, const llvm::AttributeList &abiAttrs,
+                          llvm::StringRef name, llvm::Value *evaluator,
+                          const std::vector<llvm::Value *> &args);
 
 struct Scaffold
 {

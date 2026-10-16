@@ -10,7 +10,7 @@
 #ifndef JIT_EXPORT
 #include "compiler_types.h"
 #include "workspace/exports_internal.h"
-#define JIT_EXPORT(ret, name, params) EXPORTC ret name params;
+#define JIT_EXPORT(ret, name, params) EXPORTC ret name params noexcept;
 #define QLOGO_JIT_EXPORT_DEFAULT
 #endif
 
@@ -110,7 +110,7 @@ JIT_EXPORT(void, pushListOntoEvaluationStack, (addr_t eAddr, addr_t listAddr))
 JIT_EXPORT(addr_t, runListAfterCurrentList, (addr_t eAddr, addr_t listAddr))
 JIT_EXPORT(addr_t, getLastEvaluationResult, (addr_t eAddr))
 JIT_EXPORT(void, stdRuntimeStart, (void))
-JIT_EXPORT(void, stdRuntimeEnd, (void))
+JIT_EXPORT(addr_t, stdRuntimeEnd, (addr_t eAddr, addr_t astnodeAddr))
 JIT_EXPORT(void, beginProcedure, (addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAddr, uint32_t paramCount))
 JIT_EXPORT(addr_t, getCtrlReturn, (addr_t eAddr, addr_t astNodeAddr, addr_t retvalAddr))
 JIT_EXPORT(addr_t, getCtrlContinuation, (addr_t eAddr, addr_t astNodeAddr, addr_t argAryAddr, uint32_t argCount, bool demandNothing))
@@ -271,8 +271,8 @@ JIT_EXPORT(bool, isDefinableProcName, (addr_t nameAddr))
 JIT_EXPORT(bool, isDefineText, (addr_t textAddr))
 JIT_EXPORT(addr_t, stdBury, (addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr))
 JIT_EXPORT(addr_t, stdTrace, (addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr))
-JIT_EXPORT(void, stdTraceBegin, (addr_t eAddr, addr_t astnodeAddr, addr_t argsAddr, uint32_t count))
-JIT_EXPORT(void, stdTraceEnd, (addr_t eAddr, addr_t astnodeAddr, addr_t resultAddr))
+JIT_EXPORT(addr_t, stdTraceBegin, (addr_t eAddr, addr_t astnodeAddr, addr_t argsAddr, uint32_t count))
+JIT_EXPORT(addr_t, stdTraceEnd, (addr_t eAddr, addr_t astnodeAddr, addr_t resultAddr))
 JIT_EXPORT(addr_t, stdStep, (addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr))
 JIT_EXPORT(addr_t, stdUnbury, (addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr))
 JIT_EXPORT(addr_t, stdUntrace, (addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr))

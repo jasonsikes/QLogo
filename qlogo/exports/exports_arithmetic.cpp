@@ -30,7 +30,7 @@ static QRandomGenerator &randomGenerator()
 /// Generate a random nonnegative integer less than num given
 /// @param num an upper bound (exclusive) to the random number.
 /// @return the random number generated.
-EXPORTC double random1(int32_t num)
+EXPORTC double random1(int32_t num) noexcept
 {
     int result = randomGenerator().bounded(num);
     return (double)result;
@@ -40,7 +40,7 @@ EXPORTC double random1(int32_t num)
 /// @param start a lower bound (inclusive) to the random number.
 /// @param end an upper bound (inclusive) to the random number.
 /// @return the random number generated.
-EXPORTC double random2(int32_t start, int32_t end)
+EXPORTC double random2(int32_t start, int32_t end) noexcept
 {
     int result = randomGenerator().bounded(start, end + 1);
     return (double)result;
@@ -49,7 +49,7 @@ EXPORTC double random2(int32_t start, int32_t end)
 /// Set the seed for the random number generator
 /// @param seed the seed.
 /// @return nothing.
-EXPORTC addr_t setRandomWithSeed(int32_t seed)
+EXPORTC addr_t setRandomWithSeed(int32_t seed) noexcept
 {
     randomGenerator().seed(seed);
     return nullptr;
@@ -57,7 +57,7 @@ EXPORTC addr_t setRandomWithSeed(int32_t seed)
 
 /// Set the seed for the random number generator using the system seed
 /// @return nothing.
-EXPORTC addr_t setRandom()
+EXPORTC addr_t setRandom() noexcept
 {
     QRandomGenerator *s = QRandomGenerator::system();
     quint32 seed = s->generate();
@@ -72,7 +72,7 @@ EXPORTC addr_t setRandom()
 /// @param width the minimum number of characters to use. Spaces may be added.
 /// @param precision the number of digits to add after the decimal point.
 /// @return A Word(string) with formatting applied.
-EXPORTC addr_t getFormForNumber(addr_t eAddr, double num, int32_t width, int32_t precision)
+EXPORTC addr_t getFormForNumber(addr_t eAddr, double num, int32_t width, int32_t precision) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     QString retval = QString("%1").arg(num, width, 'f', precision);

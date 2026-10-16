@@ -36,7 +36,7 @@
 /// @param eAddr a pointer to the Evaluator object
 /// @param nodeAddr a pointer to the node calling this procedure.
 /// @return ASTNode on success, else Err.
-EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
+EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(nodeAddr);
@@ -67,22 +67,15 @@ EXPORTC addr_t inputProcedure(addr_t eAddr, addr_t nodeAddr)
 /// @param textAddr a non-empty list whose members are lists
 /// @return the owning ASTNode, or an Error if the name is a primitive or the
 /// parameter list is rejected.
-EXPORTC addr_t stdDefine(addr_t eAddr, addr_t astnodeAddr, addr_t nameAddr, addr_t textAddr)
+EXPORTC addr_t stdDefine(addr_t eAddr, addr_t astnodeAddr, addr_t nameAddr, addr_t textAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *name = reinterpret_cast<Datum *>(nameAddr);
     auto *text = reinterpret_cast<Datum *>(textAddr);
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         Procedures::get().defineProcedure(node->nodeName_, DatumPtr(name), DatumPtr(text), QList<DatumPtr>());
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
 }
 
 /// TEXT: output the DEFINE-form text of a user procedure.
@@ -91,21 +84,15 @@ EXPORTC addr_t stdDefine(addr_t eAddr, addr_t astnodeAddr, addr_t nameAddr, addr
 /// @param eAddr a pointer to the Evaluator object
 /// @param nameAddr a word naming the procedure
 /// @return the procedure text as a list of lists, or an Error if the name is a primitive or undefined.
-EXPORTC addr_t stdText(addr_t eAddr, addr_t nameAddr)
+EXPORTC addr_t stdText(addr_t eAddr, addr_t nameAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *name = reinterpret_cast<Datum *>(nameAddr);
-    try
-    {
+    return catchError(e, [&]() -> addr_t {
         DatumPtr text = Procedures::get().procedureText(DatumPtr(name));
         e->watch(text);
         return reinterpret_cast<addr_t>(text.datumValue());
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
+    });
 }
 
 /// FULLTEXT: output the source form of a user procedure.
@@ -115,21 +102,15 @@ EXPORTC addr_t stdText(addr_t eAddr, addr_t nameAddr)
 /// @param eAddr a pointer to the Evaluator object
 /// @param nameAddr a word naming the procedure
 /// @return the procedure's full text, or an Error if the name is a primitive or undefined.
-EXPORTC addr_t stdFulltext(addr_t eAddr, addr_t nameAddr)
+EXPORTC addr_t stdFulltext(addr_t eAddr, addr_t nameAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *name = reinterpret_cast<Datum *>(nameAddr);
-    try
-    {
+    return catchError(e, [&]() -> addr_t {
         DatumPtr text = Procedures::get().procedureFulltext(DatumPtr(name));
         e->watch(text);
         return reinterpret_cast<addr_t>(text.datumValue());
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
+    });
 }
 
 /// COPYDEF: make newname a procedure identical to oldname.
@@ -140,22 +121,15 @@ EXPORTC addr_t stdFulltext(addr_t eAddr, addr_t nameAddr)
 /// @param newnameAddr a word naming the procedure to create
 /// @param oldnameAddr a word naming the procedure to copy
 /// @return the owning ASTNode, or an Error if either name is rejected.
-EXPORTC addr_t stdCopydef(addr_t eAddr, addr_t astnodeAddr, addr_t newnameAddr, addr_t oldnameAddr)
+EXPORTC addr_t stdCopydef(addr_t eAddr, addr_t astnodeAddr, addr_t newnameAddr, addr_t oldnameAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *newname = reinterpret_cast<Datum *>(newnameAddr);
     auto *oldname = reinterpret_cast<Datum *>(oldnameAddr);
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         Procedures::get().copyProcedure(node->nodeName_, DatumPtr(newname), DatumPtr(oldname));
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
 }
 
 /// THING: output the value of the variable named by the input word.
@@ -163,7 +137,7 @@ EXPORTC addr_t stdCopydef(addr_t eAddr, addr_t astnodeAddr, addr_t newnameAddr, 
 /// @param eAddr a pointer to the Evaluator object
 /// @param nameAddr a word naming the variable
 /// @return the variable's value, or an Error if it has no value.
-EXPORTC addr_t stdThing(addr_t eAddr, addr_t nameAddr)
+EXPORTC addr_t stdThing(addr_t eAddr, addr_t nameAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *name = reinterpret_cast<Datum *>(nameAddr);
@@ -182,7 +156,7 @@ EXPORTC addr_t stdThing(addr_t eAddr, addr_t nameAddr)
 /// @param eAddr a pointer to the Evaluator object
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @return the variable's value, or an Error if it has no value.
-EXPORTC addr_t stdFoo(addr_t eAddr, addr_t astnodeAddr)
+EXPORTC addr_t stdFoo(addr_t eAddr, addr_t astnodeAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
@@ -202,7 +176,7 @@ EXPORTC addr_t stdFoo(addr_t eAddr, addr_t astnodeAddr)
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param valueAddr the value to store
 /// @return the owning ASTNode, or an Error if the variable does not exist.
-EXPORTC addr_t stdSetfoo(addr_t eAddr, addr_t astnodeAddr, addr_t valueAddr)
+EXPORTC addr_t stdSetfoo(addr_t eAddr, addr_t astnodeAddr, addr_t valueAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
@@ -264,26 +238,19 @@ QStringList varNamesFromInputs(const DatumPtr &who, Datum **inputs, uint32_t cou
 /// @param inputsAddr a pointer to an array of input Datums
 /// @param count the number of inputs
 /// @return the owning ASTNode, or an Error if a list of names has a non-word member.
-EXPORTC addr_t stdGlobal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, uint32_t count)
+EXPORTC addr_t stdGlobal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, uint32_t count) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto **inputs = reinterpret_cast<Datum **>(inputsAddr);
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         QStringList names = varNamesFromInputs(node->nodeName_, inputs, count);
         for (const QString &name : names)
         {
             if (!Kernel::get().doesExist(name))
                 Kernel::get().setDatumForName(nothing(), name);
         }
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
 }
 
 /// LOCAL: make each name local to the current procedure, with no value.
@@ -293,24 +260,17 @@ EXPORTC addr_t stdGlobal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, ui
 /// @param inputsAddr a pointer to an array of input Datums
 /// @param count the number of inputs
 /// @return the owning ASTNode, or an Error if a list of names has a non-word member.
-EXPORTC addr_t stdLocal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, uint32_t count)
+EXPORTC addr_t stdLocal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, uint32_t count) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto **inputs = reinterpret_cast<Datum **>(inputsAddr);
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         QStringList names = varNamesFromInputs(node->nodeName_, inputs, count);
         CallFrame *currentFrame = Kernel::get().currentCallFrame();
         for (const QString &name : names)
             currentFrame->setVarAsLocal(name);
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
 }
 
 namespace
@@ -335,7 +295,7 @@ QString propertyNameKey(Datum *word)
 /// @param plistnameAddr a word naming the property list
 /// @param propnameAddr a word naming the property
 /// @param valueAddr the value to store
-EXPORTC void stdPprop(addr_t plistnameAddr, addr_t propnameAddr, addr_t valueAddr)
+EXPORTC void stdPprop(addr_t plistnameAddr, addr_t propnameAddr, addr_t valueAddr) noexcept
 {
     auto *plistname = reinterpret_cast<Datum *>(plistnameAddr);
     auto *propname = reinterpret_cast<Datum *>(propnameAddr);
@@ -348,7 +308,7 @@ EXPORTC void stdPprop(addr_t plistnameAddr, addr_t propnameAddr, addr_t valueAdd
 /// @param plistnameAddr a word naming the property list
 /// @param propnameAddr a word naming the property
 /// @return the stored value, or an empty list.
-EXPORTC addr_t stdGprop(addr_t eAddr, addr_t plistnameAddr, addr_t propnameAddr)
+EXPORTC addr_t stdGprop(addr_t eAddr, addr_t plistnameAddr, addr_t propnameAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *plistname = reinterpret_cast<Datum *>(plistnameAddr);
@@ -362,7 +322,7 @@ EXPORTC addr_t stdGprop(addr_t eAddr, addr_t plistnameAddr, addr_t propnameAddr)
 /// Removing the last property erases the property list.
 /// @param plistnameAddr a word naming the property list
 /// @param propnameAddr a word naming the property
-EXPORTC void stdRemprop(addr_t plistnameAddr, addr_t propnameAddr)
+EXPORTC void stdRemprop(addr_t plistnameAddr, addr_t propnameAddr) noexcept
 {
     auto *plistname = reinterpret_cast<Datum *>(plistnameAddr);
     auto *propname = reinterpret_cast<Datum *>(propnameAddr);
@@ -374,7 +334,7 @@ EXPORTC void stdRemprop(addr_t plistnameAddr, addr_t propnameAddr)
 /// @param eAddr a pointer to the Evaluator object
 /// @param plistnameAddr a word naming the property list
 /// @return a list of alternating property names and values.
-EXPORTC addr_t stdPlist(addr_t eAddr, addr_t plistnameAddr)
+EXPORTC addr_t stdPlist(addr_t eAddr, addr_t plistnameAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *plistname = reinterpret_cast<Datum *>(plistnameAddr);
@@ -387,7 +347,7 @@ EXPORTC addr_t stdPlist(addr_t eAddr, addr_t plistnameAddr)
 /// An unknown name is FALSE. The compiler rejects a non-word before this runs.
 /// @param nameAddr a word naming the candidate
 /// @return true if the name is a procedure.
-EXPORTC bool stdProcedurep(addr_t nameAddr)
+EXPORTC bool stdProcedurep(addr_t nameAddr) noexcept
 {
     auto *name = reinterpret_cast<Datum *>(nameAddr);
     return Procedures::get().isProcedure(name->toString(Datum::ToStringFlags_Key));
@@ -397,7 +357,7 @@ EXPORTC bool stdProcedurep(addr_t nameAddr)
 /// Primitives, ordinary procedures, and unknown names are FALSE.
 /// @param nameAddr a word naming the candidate
 /// @return true if the name is a macro.
-EXPORTC bool stdMacrop(addr_t nameAddr)
+EXPORTC bool stdMacrop(addr_t nameAddr) noexcept
 {
     auto *name = reinterpret_cast<Datum *>(nameAddr);
     return Procedures::get().isMacro(name->toString(Datum::ToStringFlags_Key));
@@ -408,7 +368,7 @@ EXPORTC bool stdMacrop(addr_t nameAddr)
 /// User procedures, macros, and unknown names are FALSE.
 /// @param nameAddr a word naming the candidate
 /// @return true if the name is a primitive.
-EXPORTC bool stdPrimitivep(addr_t nameAddr)
+EXPORTC bool stdPrimitivep(addr_t nameAddr) noexcept
 {
     auto *name = reinterpret_cast<Datum *>(nameAddr);
     return Procedures::get().isPrimitive(name->toString(Datum::ToStringFlags_Key));
@@ -419,7 +379,7 @@ EXPORTC bool stdPrimitivep(addr_t nameAddr)
 /// Primitives, names created by COPYDEF from a primitive, and unknown names are FALSE.
 /// @param nameAddr a word naming the candidate
 /// @return true if the name is a user-defined procedure.
-EXPORTC bool stdDefinedp(addr_t nameAddr)
+EXPORTC bool stdDefinedp(addr_t nameAddr) noexcept
 {
     auto *name = reinterpret_cast<Datum *>(nameAddr);
     return Procedures::get().isDefined(name->toString(Datum::ToStringFlags_Key));
@@ -430,7 +390,7 @@ EXPORTC bool stdDefinedp(addr_t nameAddr)
 /// An unknown name is FALSE. The compiler rejects a non-word before this runs.
 /// @param nameAddr a word naming the candidate
 /// @return true if the name has a value.
-EXPORTC bool stdNamep(addr_t nameAddr)
+EXPORTC bool stdNamep(addr_t nameAddr) noexcept
 {
     auto *name = reinterpret_cast<Datum *>(nameAddr);
     DatumPtr val = Kernel::get().datumForName(name->toString(Datum::ToStringFlags_Key));
@@ -442,7 +402,7 @@ EXPORTC bool stdNamep(addr_t nameAddr)
 /// The compiler rejects a non-word before this runs.
 /// @param nameAddr a word naming the candidate
 /// @return true if the name has at least one property.
-EXPORTC bool stdPlistp(addr_t nameAddr)
+EXPORTC bool stdPlistp(addr_t nameAddr) noexcept
 {
     auto *name = reinterpret_cast<Datum *>(nameAddr);
     return Kernel::get().plists_.isPropertyList(name->toString(Datum::ToStringFlags_Key));
@@ -450,7 +410,7 @@ EXPORTC bool stdPlistp(addr_t nameAddr)
 
 /// True if the datum is a contents list: a word, a list of words, or a list of
 /// up to three lists of words. The compiler uses this as one ERRACT trip.
-EXPORTC bool isContentsList(addr_t datumAddr)
+EXPORTC bool isContentsList(addr_t datumAddr) noexcept
 {
     auto *d = reinterpret_cast<Datum *>(datumAddr);
     return Kernel::get().isContentsList(DatumPtr(d));
@@ -458,7 +418,7 @@ EXPORTC bool isContentsList(addr_t datumAddr)
 
 /// True if the datum is a contents list that names at least one thing. Empty
 /// ~[]~ / ~[[][]]~ / ~[[][][]]~ are false. The compiler uses this as one ERRACT trip.
-EXPORTC bool isNamedContentsList(addr_t datumAddr)
+EXPORTC bool isNamedContentsList(addr_t datumAddr) noexcept
 {
     auto *d = reinterpret_cast<Datum *>(datumAddr);
     return Kernel::get().isNamedContentsList(DatumPtr(d));
@@ -466,7 +426,7 @@ EXPORTC bool isNamedContentsList(addr_t datumAddr)
 
 /// True if the datum is a DEFINE procedure name: a word that is not a number
 /// and does not start with '"' or ':'. The compiler uses this as one ERRACT trip.
-EXPORTC bool isDefinableProcName(addr_t nameAddr)
+EXPORTC bool isDefinableProcName(addr_t nameAddr) noexcept
 {
     auto *d = reinterpret_cast<Datum *>(nameAddr);
     return Procedures::get().isDefinableProcName(DatumPtr(d));
@@ -474,7 +434,7 @@ EXPORTC bool isDefinableProcName(addr_t nameAddr)
 
 /// True if the datum is DEFINE text: a non-empty list of lists. Parameter-list
 /// grammar is not checked. The compiler uses this as one ERRACT trip.
-EXPORTC bool isDefineText(addr_t textAddr)
+EXPORTC bool isDefineText(addr_t textAddr) noexcept
 {
     auto *d = reinterpret_cast<Datum *>(textAddr);
     return Procedures::get().isDefineText(DatumPtr(d));
@@ -531,18 +491,11 @@ addr_t markWorkspace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr, Kern
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *contents = reinterpret_cast<Datum *>(contentsAddr);
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         markContents(mark, node->nodeName_, contents, clear);
         if (mark == Kernel::NameMark::Traced)
             Compiler::get().noteCodeChange();
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
 }
 
 /// The first word in @p names, and whether that name carries @p mark.
@@ -648,7 +601,7 @@ bool queryWorkspace(addr_t contentsAddr, Kernel::NameMark mark)
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param contentsAddr a word or a contents list
 /// @return the owning ASTNode, or an Error if a name is not a word.
-EXPORTC addr_t stdBury(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+EXPORTC addr_t stdBury(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr) noexcept
 {
     return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Buried, false);
 }
@@ -659,7 +612,7 @@ EXPORTC addr_t stdBury(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param contentsAddr a word or a contents list
 /// @return the owning ASTNode, or an Error if a name is not a word.
-EXPORTC addr_t stdTrace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+EXPORTC addr_t stdTrace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr) noexcept
 {
     return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Traced, false);
 }
@@ -701,9 +654,9 @@ bool isTracedOutputValue(Datum *d)
 /// @param astnodeAddr a pointer to the traced call's ASTNode (provides the name)
 /// @param argsAddr an array of Datum pointers, the evaluated inputs
 /// @param count the number of inputs
-EXPORTC void stdTraceBegin(addr_t eAddr, addr_t astnodeAddr, addr_t argsAddr, uint32_t count)
+EXPORTC addr_t stdTraceBegin(addr_t eAddr, addr_t astnodeAddr, addr_t argsAddr, uint32_t count) noexcept
 {
-    Q_UNUSED(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto **args = reinterpret_cast<Datum **>(argsAddr);
     const int printDepthLimit = Kernel::get().printLimitFromSpecialVar(SpecialVars::Id::PrintDepthLimit);
@@ -715,25 +668,19 @@ EXPORTC void stdTraceBegin(addr_t eAddr, addr_t astnodeAddr, addr_t argsAddr, ui
         output = output % QLatin1Char(' ') % traceArgToString(args[i], printDepthLimit, printWidthLimit);
     output = output % QLatin1String(" )\n");
 
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         StreamManager::get().print(output);
         Kernel::get().incrementTraceDepth();
-    }
-    catch (FCError *err)
-    {
-        DatumPtr owned(err);
-        qWarning() << owned.toString();
-    }
+    });
 }
 
 /// Print a TRACE exit line: indent, then `name outputs value` or `name stops`.
 /// @param eAddr a pointer to the Evaluator object
 /// @param astnodeAddr a pointer to the traced call's ASTNode (provides the name)
 /// @param resultAddr the output Datum, or null / non-data if the call stopped
-EXPORTC void stdTraceEnd(addr_t eAddr, addr_t astnodeAddr, addr_t resultAddr)
+EXPORTC addr_t stdTraceEnd(addr_t eAddr, addr_t astnodeAddr, addr_t resultAddr) noexcept
 {
-    Q_UNUSED(eAddr);
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *result = reinterpret_cast<Datum *>(resultAddr);
     Q_ASSERT(Kernel::get().traceDepth() > 0);
@@ -750,15 +697,7 @@ EXPORTC void stdTraceEnd(addr_t eAddr, addr_t astnodeAddr, addr_t resultAddr)
         output = output % QObject::tr(" stops");
     output = output % QLatin1Char('\n');
 
-    try
-    {
-        StreamManager::get().print(output);
-    }
-    catch (FCError *err)
-    {
-        DatumPtr owned(err);
-        qWarning() << owned.toString();
-    }
+    return printOrError(e, reinterpret_cast<addr_t>(node), output);
 }
 
 /// STEP: mark the named procedures, variables, and property lists as stepped.
@@ -767,7 +706,7 @@ EXPORTC void stdTraceEnd(addr_t eAddr, addr_t astnodeAddr, addr_t resultAddr)
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param contentsAddr a word or a contents list
 /// @return the owning ASTNode, or an Error if a name is not a word.
-EXPORTC addr_t stdStep(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+EXPORTC addr_t stdStep(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr) noexcept
 {
     return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Stepped, false);
 }
@@ -778,7 +717,7 @@ EXPORTC addr_t stdStep(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param contentsAddr a word or a contents list
 /// @return the owning ASTNode, or an Error if a name is not a word.
-EXPORTC addr_t stdUnbury(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+EXPORTC addr_t stdUnbury(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr) noexcept
 {
     return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Buried, true);
 }
@@ -789,7 +728,7 @@ EXPORTC addr_t stdUnbury(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param contentsAddr a word or a contents list
 /// @return the owning ASTNode, or an Error if a name is not a word.
-EXPORTC addr_t stdUntrace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+EXPORTC addr_t stdUntrace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr) noexcept
 {
     return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Traced, true);
 }
@@ -800,7 +739,7 @@ EXPORTC addr_t stdUntrace(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param contentsAddr a word or a contents list
 /// @return the owning ASTNode, or an Error if a name is not a word.
-EXPORTC addr_t stdUnstep(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+EXPORTC addr_t stdUnstep(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr) noexcept
 {
     return markWorkspace(eAddr, astnodeAddr, contentsAddr, Kernel::NameMark::Stepped, true);
 }
@@ -810,7 +749,7 @@ EXPORTC addr_t stdUnstep(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 /// with a value, or a nonempty property list.
 /// @param eAddr a pointer to the Evaluator object
 /// @return a list of three lists, procedures then variables then property lists.
-EXPORTC addr_t stdBuried(addr_t eAddr)
+EXPORTC addr_t stdBuried(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr contents = contentsOfMark(Kernel::NameMark::Buried);
@@ -823,7 +762,7 @@ EXPORTC addr_t stdBuried(addr_t eAddr)
 /// with a value, or a nonempty property list.
 /// @param eAddr a pointer to the Evaluator object
 /// @return a list of three lists, procedures then variables then property lists.
-EXPORTC addr_t stdTraced(addr_t eAddr)
+EXPORTC addr_t stdTraced(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr contents = contentsOfMark(Kernel::NameMark::Traced);
@@ -836,7 +775,7 @@ EXPORTC addr_t stdTraced(addr_t eAddr)
 /// with a value, or a nonempty property list.
 /// @param eAddr a pointer to the Evaluator object
 /// @return a list of three lists, procedures then variables then property lists.
-EXPORTC addr_t stdStepped(addr_t eAddr)
+EXPORTC addr_t stdStepped(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr contents = contentsOfMark(Kernel::NameMark::Stepped);
@@ -849,7 +788,7 @@ EXPORTC addr_t stdStepped(addr_t eAddr)
 /// Buried procedures are omitted. Traced and stepped procedures stay.
 /// @param eAddr a pointer to the Evaluator object
 /// @return a list of procedure names.
-EXPORTC addr_t stdProcedures(addr_t eAddr)
+EXPORTC addr_t stdProcedures(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr names = Procedures::get().allProcedureNames(true);
@@ -863,7 +802,7 @@ EXPORTC addr_t stdProcedures(addr_t eAddr)
 /// is included. Burying a primitive does not remove it.
 /// @param eAddr a pointer to the Evaluator object
 /// @return a list of primitive names.
-EXPORTC addr_t stdPrimitives(addr_t eAddr)
+EXPORTC addr_t stdPrimitives(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr names = Procedures::get().allPrimitiveProcedureNames();
@@ -877,7 +816,7 @@ EXPORTC addr_t stdPrimitives(addr_t eAddr)
 /// A buried variable is omitted until UNBURY. Traced and stepped variables stay.
 /// @param eAddr a pointer to the Evaluator object
 /// @return a list of two lists.
-EXPORTC addr_t stdNames(addr_t eAddr)
+EXPORTC addr_t stdNames(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     ListBuilder contents;
@@ -895,7 +834,7 @@ EXPORTC addr_t stdNames(addr_t eAddr)
 /// stepped property lists stay.
 /// @param eAddr a pointer to the Evaluator object
 /// @return a list of three lists.
-EXPORTC addr_t stdPlists(addr_t eAddr)
+EXPORTC addr_t stdPlists(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr names = Kernel::get().unburiedContents(false, false, true);
@@ -910,7 +849,7 @@ EXPORTC addr_t stdPlists(addr_t eAddr)
 /// value is included. A property list is included only while it has a property.
 /// @param eAddr a pointer to the Evaluator object
 /// @return a list of three lists.
-EXPORTC addr_t stdContents(addr_t eAddr)
+EXPORTC addr_t stdContents(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr names = Kernel::get().unburiedContents(true, true, true);
@@ -925,7 +864,7 @@ EXPORTC addr_t stdContents(addr_t eAddr)
 /// first number. The result list is not included in the snapshot.
 /// @param eAddr a pointer to the Evaluator object
 /// @return a list of two integers.
-EXPORTC addr_t stdNodes(addr_t eAddr)
+EXPORTC addr_t stdNodes(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     const int current = Datum::countOfNodes();
@@ -943,7 +882,7 @@ EXPORTC addr_t stdNodes(addr_t eAddr)
 /// Only that first name is tested. The compiler rejects an input that names nothing.
 /// @param contentsAddr a word or a named contents list
 /// @return true if that first name is buried.
-EXPORTC bool stdBuriedp(addr_t contentsAddr)
+EXPORTC bool stdBuriedp(addr_t contentsAddr) noexcept
 {
     return queryWorkspace(contentsAddr, Kernel::NameMark::Buried);
 }
@@ -952,7 +891,7 @@ EXPORTC bool stdBuriedp(addr_t contentsAddr)
 /// Only that first name is tested. The compiler rejects an input that names nothing.
 /// @param contentsAddr a word or a named contents list
 /// @return true if that first name is traced.
-EXPORTC bool stdTracedp(addr_t contentsAddr)
+EXPORTC bool stdTracedp(addr_t contentsAddr) noexcept
 {
     return queryWorkspace(contentsAddr, Kernel::NameMark::Traced);
 }
@@ -961,7 +900,7 @@ EXPORTC bool stdTracedp(addr_t contentsAddr)
 /// Only that first name is tested. The compiler rejects an input that names nothing.
 /// @param contentsAddr a word or a named contents list
 /// @return true if that first name is stepped.
-EXPORTC bool stdSteppedp(addr_t contentsAddr)
+EXPORTC bool stdSteppedp(addr_t contentsAddr) noexcept
 {
     return queryWorkspace(contentsAddr, Kernel::NameMark::Stepped);
 }
@@ -972,21 +911,15 @@ EXPORTC bool stdSteppedp(addr_t contentsAddr)
 /// @param eAddr a pointer to the Evaluator object
 /// @param nameAddr a word naming the procedure
 /// @return a list of three integers, or an Error if the name is not a procedure.
-EXPORTC addr_t stdArity(addr_t eAddr, addr_t nameAddr)
+EXPORTC addr_t stdArity(addr_t eAddr, addr_t nameAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *name = reinterpret_cast<Datum *>(nameAddr);
-    try
-    {
+    return catchError(e, [&]() -> addr_t {
         DatumPtr arity = Procedures::get().arity(DatumPtr(name));
         e->watch(arity);
         return reinterpret_cast<addr_t>(arity.datumValue());
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
+    });
 }
 
 namespace
@@ -1001,16 +934,9 @@ addr_t withContentsList(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr, F
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *contents = reinterpret_cast<Datum *>(contentsAddr);
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         fn(Kernel::get().contentsListFromDatum(node->nodeName_, DatumPtr(contents)));
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
 }
 
 } // namespace
@@ -1024,7 +950,7 @@ addr_t withContentsList(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr, F
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param contentsAddr a word or a contents list
 /// @return the owning ASTNode, or an Error if the input is rejected.
-EXPORTC addr_t stdPrintout(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+EXPORTC addr_t stdPrintout(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr) noexcept
 {
     return withContentsList(eAddr, astnodeAddr, contentsAddr, [](const DatumPtr &contentslist) {
         StreamManager::get().print(Kernel::get().printoutFromContentsList(contentslist));
@@ -1040,7 +966,7 @@ EXPORTC addr_t stdPrintout(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param contentsAddr a word or a contents list
 /// @return the owning ASTNode, or an Error if the input is rejected.
-EXPORTC addr_t stdPot(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+EXPORTC addr_t stdPot(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr) noexcept
 {
     return withContentsList(eAddr, astnodeAddr, contentsAddr, [](const DatumPtr &contentslist) {
         StreamManager::get().print(Kernel::get().titlesFromContentsList(contentslist));
@@ -1055,23 +981,16 @@ EXPORTC addr_t stdPot(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param filenameAddr a word naming the file
 /// @return the owning ASTNode, or an Error if the file cannot be opened.
-EXPORTC addr_t stdLoad(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr)
+EXPORTC addr_t stdLoad(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *filename = reinterpret_cast<Datum *>(filenameAddr);
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         DatumPtr file(filename);
         Kernel::get().loadFile(file);
         Kernel::get().rememberWorkspaceFile(file);
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
 }
 
 /// SAVE: write unburied procedures, variables, and nonempty property lists to
@@ -1082,12 +1001,11 @@ EXPORTC addr_t stdLoad(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr)
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param filenameAddr a word naming the file, or 0 to reuse the last LOAD/SAVE name
 /// @return the owning ASTNode, or an Error if the file cannot be written.
-EXPORTC addr_t stdSave(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr)
+EXPORTC addr_t stdSave(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         DatumPtr filename;
         if (filenameAddr == 0)
         {
@@ -1100,13 +1018,7 @@ EXPORTC addr_t stdSave(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr)
             filename = DatumPtr(reinterpret_cast<Datum *>(filenameAddr));
         }
         Kernel::get().saveWorkspace(filename);
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
 }
 
 /// HELP: print help text for a name, or list every documented name.
@@ -1116,12 +1028,11 @@ EXPORTC addr_t stdSave(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr)
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param nameAddr a word naming the topic, or 0 if HELP was given no input
 /// @return the owning ASTNode, or an Error if printing fails.
-EXPORTC addr_t stdHelp(addr_t eAddr, addr_t astnodeAddr, addr_t nameAddr)
+EXPORTC addr_t stdHelp(addr_t eAddr, addr_t astnodeAddr, addr_t nameAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         QString output;
         if (nameAddr == 0)
         {
@@ -1154,13 +1065,7 @@ EXPORTC addr_t stdHelp(addr_t eAddr, addr_t astnodeAddr, addr_t nameAddr)
             }
         }
         StreamManager::get().print(output);
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
 }
 
 /// ERASE / ER: erase the procedures, variables, and property lists named in a
@@ -1171,7 +1076,7 @@ EXPORTC addr_t stdHelp(addr_t eAddr, addr_t astnodeAddr, addr_t nameAddr)
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param contentsAddr a word or a contents list
 /// @return the owning ASTNode, or an Error if the input is rejected.
-EXPORTC addr_t stdErase(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+EXPORTC addr_t stdErase(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr) noexcept
 {
     return withContentsList(eAddr, astnodeAddr, contentsAddr, [](const DatumPtr &contentslist) {
         Kernel::get().eraseFromContentsList(contentslist);
@@ -1182,7 +1087,7 @@ EXPORTC addr_t stdErase(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
 /// property lists. Buried names stay. The three flags select which kinds
 /// CONTENTS would report. Special variables that CONTENTS still lists are
 /// erased when variables are selected.
-EXPORTC void stdEraseUnburied(bool procedures, bool variables, bool plists)
+EXPORTC void stdEraseUnburied(bool procedures, bool variables, bool plists) noexcept
 {
     Kernel::get().eraseUnburied(procedures, variables, plists);
 }
@@ -1190,12 +1095,11 @@ EXPORTC void stdEraseUnburied(bool procedures, bool variables, bool plists)
 /// EDIT / ED: write the named workspace items to a temp file, open the editor,
 /// then LOAD. No input means unburied procedures. A cancelled Psychi edit
 /// leaves the workspace unchanged. The compiler rejects a non-contents-list.
-EXPORTC addr_t stdEdit(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
+EXPORTC addr_t stdEdit(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         DatumPtr contentslist = nothing();
         if (contentsAddr != 0)
         {
@@ -1203,44 +1107,31 @@ EXPORTC addr_t stdEdit(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr)
                 node->nodeName_, DatumPtr(reinterpret_cast<Datum *>(contentsAddr)));
         }
         Kernel::get().editContents(contentslist);
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
 }
 
 /// EDITFILE: open the named file in the editor, then LOAD it. A missing file
 /// is created empty. The file is not deleted. A cancelled Psychi edit leaves
 /// the file and workspace unchanged.
-EXPORTC addr_t stdEditfile(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr)
+EXPORTC addr_t stdEditfile(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *filename = reinterpret_cast<Datum *>(filenameAddr);
-    try
-    {
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
         Kernel::get().editFile(DatumPtr(filename));
-    }
-    catch (FCError *err)
-    {
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    });
 }
 
 /// SETEDITOR: store the editor command (a word, or a list of words).
-EXPORTC void stdSeteditor(addr_t commandAddr)
+EXPORTC void stdSeteditor(addr_t commandAddr) noexcept
 {
     auto *d = reinterpret_cast<Datum *>(commandAddr);
     Kernel::get().setEditor(DatumPtr(d));
 }
 
 /// EDITOR: return the current SETEDITOR command.
-EXPORTC addr_t stdEditor(addr_t eAddr)
+EXPORTC addr_t stdEditor(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr retval = Kernel::get().editor();
@@ -1250,14 +1141,14 @@ EXPORTC addr_t stdEditor(addr_t eAddr)
 
 /// SETTEMPLOC: store the EDIT temp directory (a word, or the empty list for
 /// the system temp directory).
-EXPORTC void stdSettemploc(addr_t pathAddr)
+EXPORTC void stdSettemploc(addr_t pathAddr) noexcept
 {
     auto *d = reinterpret_cast<Datum *>(pathAddr);
     Kernel::get().setTempLoc(DatumPtr(d));
 }
 
 /// TEMPLOC: return the directory EDIT uses for its temporary file.
-EXPORTC addr_t stdTemploc(addr_t eAddr)
+EXPORTC addr_t stdTemploc(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     DatumPtr retval = Kernel::get().tempLoc();

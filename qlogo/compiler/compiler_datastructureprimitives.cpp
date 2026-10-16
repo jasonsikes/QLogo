@@ -60,7 +60,7 @@ Value *Compiler::generateSingleCharWordFromDatum(ASTNode *parent, Value *src)
     });
 }
 
-Value *Compiler::generateVariadicConstruct(const DatumPtr &node, addr_t (*ctor)(addr_t, addr_t, uint32_t),
+Value *Compiler::generateVariadicConstruct(const DatumPtr &node, addr_t (*ctor)(addr_t, addr_t, uint32_t) noexcept,
                                            const std::string &ctorName, const std::string &aryName, bool requireWords)
 {
     CallSite cs(this, node, TypeDatum);

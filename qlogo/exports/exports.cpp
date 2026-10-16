@@ -33,7 +33,7 @@
 /// @param p the integer to print.
 /// @note For debugging.
 // cppcheck-suppress unusedFunction
-EXPORTC void printInt(int32_t p)
+EXPORTC void printInt(int32_t p) noexcept
 {
     qWarning() << "int = " << p;
 }
@@ -64,10 +64,10 @@ addr_t recoverWithErract(addr_t eAddr, DatumPtr err, DatumPtr rejected,
     if (kernel.isErractReturnRetry(rejected))
     {
         kernel.clearErractLoop();
-        StreamManager::get().printToTerminal(QObject::tr("Erract loop") + "\n");
         DatumPtr toplevel = {FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")))};
         e->watch(toplevel.datumValue());
-        return reinterpret_cast<addr_t>(toplevel.datumValue());
+        return printToTerminalOrError(e, reinterpret_cast<addr_t>(toplevel.datumValue()),
+                                      QObject::tr("Erract loop") + "\n");
     }
     kernel.clearErractReturnGuard();
 
@@ -76,10 +76,10 @@ addr_t recoverWithErract(addr_t eAddr, DatumPtr err, DatumPtr rejected,
         if (kernel.isErractLoop(static_cast<int>(err.errValue()->code_)))
         {
             kernel.clearErractLoop();
-            StreamManager::get().printToTerminal(QObject::tr("Erract loop") + "\n");
             DatumPtr toplevel = {FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")))};
             e->watch(toplevel.datumValue());
-            return reinterpret_cast<addr_t>(toplevel.datumValue());
+            return printToTerminalOrError(e, reinterpret_cast<addr_t>(toplevel.datumValue()),
+                                          QObject::tr("Erract loop") + "\n");
         }
 
         kernel.armErractLoop(static_cast<int>(err.errValue()->code_));
@@ -148,7 +148,7 @@ addr_t handleBadValue(addr_t eAddr, addr_t parentAddr, DatumPtr value,
 /// @param datumAddr a pointer to a Datum object
 /// @param out destination for the parsed double (0.0 if not a number)
 /// @return true iff the datum is a word with a valid number
-EXPORTC bool parseDoubleForDatum(addr_t eAddr, addr_t datumAddr, double *out)
+EXPORTC bool parseDoubleForDatum(addr_t eAddr, addr_t datumAddr, double *out) noexcept
 {
     Q_UNUSED(eAddr);
     auto *w = reinterpret_cast<Word *>(datumAddr);
@@ -166,7 +166,7 @@ EXPORTC bool parseDoubleForDatum(addr_t eAddr, addr_t datumAddr, double *out)
 /// @param datumAddr a pointer to a Datum object
 /// @param out destination for the parsed bool (false if not a boolean word)
 /// @return true iff the datum is a word with a valid boolean
-EXPORTC bool parseBoolForDatum(addr_t eAddr, addr_t datumAddr, bool *out)
+EXPORTC bool parseBoolForDatum(addr_t eAddr, addr_t datumAddr, bool *out) noexcept
 {
     Q_UNUSED(eAddr);
     auto *w = reinterpret_cast<Word *>(datumAddr);
@@ -182,7 +182,7 @@ EXPORTC bool parseBoolForDatum(addr_t eAddr, addr_t datumAddr, bool *out)
 /// Lookup the var name and return the value as a QLogo object (Word, List, etc)
 /// @param wordAddr a pointer to a Word object which contains the name of the variable
 /// @return the stored value as a QLogo object
-EXPORTC addr_t getDatumForVarname(addr_t wordAddr)
+EXPORTC addr_t getDatumForVarname(addr_t wordAddr) noexcept
 {
     auto name = reinterpret_cast<Word *>(wordAddr)->toString(Datum::ToStringFlags_Key);
     Datum *val = Kernel::get().datumForName(name).datumValue();
@@ -194,7 +194,7 @@ EXPORTC addr_t getDatumForVarname(addr_t wordAddr)
 /// @param eAddr a pointer to the Evaluator object
 /// @param val a value stored as a double
 /// @return the given value as a QLogo object
-EXPORTC addr_t getWordForDouble(addr_t eAddr, double val)
+EXPORTC addr_t getWordForDouble(addr_t eAddr, double val) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *w = new Word(val);
@@ -207,7 +207,7 @@ EXPORTC addr_t getWordForDouble(addr_t eAddr, double val)
 /// @param eAddr a pointer to the Evaluator object
 /// @param val a value stored as a bool
 /// @return the given value as a QLogo object
-EXPORTC addr_t getWordForBool(addr_t eAddr, bool val)
+EXPORTC addr_t getWordForBool(addr_t eAddr, bool val) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *w = new Word(val ? QObject::tr("true") : QObject::tr("false"));
@@ -219,7 +219,7 @@ EXPORTC addr_t getWordForBool(addr_t eAddr, bool val)
 /// Store the given datum using the given word as a variable name.
 /// @param datumAddr a pointer to a QLogo object which is the value to be stored
 /// @param wordAddr a pointer to a Word object which contains the name of the variable
-EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr)
+EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr) noexcept
 {
     auto d = DatumPtr(reinterpret_cast<Datum *>(datumAddr));
     auto *w = reinterpret_cast<Word *>(wordAddr);
@@ -229,7 +229,7 @@ EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr)
 /// Create and return Error: "SYSTEM"
 /// @param eAddr a pointer to the Evaluator object context.
 /// @return a pointer to the Error object that was generated.
-EXPORTC addr_t getErrorSystem(addr_t eAddr)
+EXPORTC addr_t getErrorSystem(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     FCError *err = FCError::custom(DatumPtr(QObject::tr("SYSTEM")));
@@ -240,7 +240,7 @@ EXPORTC addr_t getErrorSystem(addr_t eAddr)
 /// Create and return Error: "TOPLEVEL"
 /// @param eAddr a pointer to the Evaluator object context.
 /// @return a pointer to the Error object that was generated.
-EXPORTC addr_t getErrorToplevel(addr_t eAddr)
+EXPORTC addr_t getErrorToplevel(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     FCError *err = FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")));
@@ -253,7 +253,7 @@ EXPORTC addr_t getErrorToplevel(addr_t eAddr)
 /// @param whoAddr a pointer to the Datum object which rejected the input.
 /// @param whatAddr a pointer to the Datum object that was rejected.
 /// @return a pointer to the Error object that was generated.
-EXPORTC addr_t getErrorNoLike(addr_t eAddr, addr_t whoAddr, addr_t whatAddr)
+EXPORTC addr_t getErrorNoLike(addr_t eAddr, addr_t whoAddr, addr_t whatAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *who = reinterpret_cast<Datum *>(whoAddr);
@@ -267,7 +267,7 @@ EXPORTC addr_t getErrorNoLike(addr_t eAddr, addr_t whoAddr, addr_t whatAddr)
 /// @param eAddr a pointer to the Evaluator object context.
 /// @param whatAddr a pointer to the Datum object that was orphaned.
 /// @return a pointer to the Error object that was generated.
-EXPORTC addr_t getErrorNoSay(addr_t eAddr, addr_t whatAddr)
+EXPORTC addr_t getErrorNoSay(addr_t eAddr, addr_t whatAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *what = reinterpret_cast<Datum *>(whatAddr);
@@ -280,7 +280,7 @@ EXPORTC addr_t getErrorNoSay(addr_t eAddr, addr_t whatAddr)
 /// @param eAddr a pointer to the Evaluator object context.
 /// @param xAddr a pointer to the Datum object that was called without a TEST.
 /// @return a pointer to the Error object that was generated.
-EXPORTC addr_t getErrorNoTest(addr_t eAddr, addr_t whoAddr)
+EXPORTC addr_t getErrorNoTest(addr_t eAddr, addr_t whoAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *who = reinterpret_cast<Datum *>(whoAddr);
@@ -294,7 +294,7 @@ EXPORTC addr_t getErrorNoTest(addr_t eAddr, addr_t whoAddr)
 /// @param xAddr a pointer to the Datum object which didn't output.
 /// @param yAddr a pointer to the Datum object that expected input.
 /// @return a pointer to the Error object that was generated.
-EXPORTC addr_t getErrorNoOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr)
+EXPORTC addr_t getErrorNoOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *x = reinterpret_cast<Datum *>(xAddr);
@@ -314,7 +314,7 @@ EXPORTC addr_t getErrorNoOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr)
 /// @param eAddr a pointer to the Evaluator object context.
 /// @param xAddr a pointer to the Datum object that is deprived of inputs.
 /// @return a pointer to the Error object that was generated.
-EXPORTC addr_t getErrorNotEnoughInputs(addr_t eAddr, addr_t xAddr)
+EXPORTC addr_t getErrorNotEnoughInputs(addr_t eAddr, addr_t xAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *x = reinterpret_cast<Datum *>(xAddr);
@@ -327,7 +327,7 @@ EXPORTC addr_t getErrorNotEnoughInputs(addr_t eAddr, addr_t xAddr)
 /// @param eAddr a pointer to the Evaluator object context.
 /// @param whatAddr a pointer to the Word that was looked up.
 /// @return a pointer to the Error object that was generated.
-EXPORTC addr_t getErrorNoValue(addr_t eAddr, addr_t whatAddr)
+EXPORTC addr_t getErrorNoValue(addr_t eAddr, addr_t whatAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *what = reinterpret_cast<Datum *>(whatAddr);
@@ -339,7 +339,7 @@ EXPORTC addr_t getErrorNoValue(addr_t eAddr, addr_t whatAddr)
 /// Create and return Error: "Graphics not initialized"
 /// @param eAddr a pointer to the Evaluator object context.
 /// @return a pointer to the Error object that was generated.
-EXPORTC addr_t getErrorNoGraphics(addr_t eAddr)
+EXPORTC addr_t getErrorNoGraphics(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     FCError *err = FCError::noGraphics();
@@ -352,7 +352,7 @@ EXPORTC addr_t getErrorNoGraphics(addr_t eAddr)
 /// @param tagAddr a pointer to the Datum object which is the tag of the error.
 /// @param outputAddr a pointer to the Datum object which is the output of the error.
 /// @return a pointer to the Error object that was generated.
-EXPORTC addr_t getErrorCustom(addr_t eAddr, addr_t tagAddr, addr_t outputAddr)
+EXPORTC addr_t getErrorCustom(addr_t eAddr, addr_t tagAddr, addr_t outputAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *tag = reinterpret_cast<Datum *>(tagAddr);
@@ -369,7 +369,7 @@ EXPORTC addr_t getErrorCustom(addr_t eAddr, addr_t tagAddr, addr_t outputAddr)
 /// @param parentAddr a pointer to the parent node
 /// @param value the value to handle
 /// @return a pointer to the result
-EXPORTC addr_t handleBadDouble(addr_t eAddr, addr_t parentAddr, double value)
+EXPORTC addr_t handleBadDouble(addr_t eAddr, addr_t parentAddr, double value) noexcept
 {
     return handleBadValue(eAddr, parentAddr, DatumPtr(value), [](DatumPtr p) {
         if (p.isWord())
@@ -388,7 +388,7 @@ EXPORTC addr_t handleBadDouble(addr_t eAddr, addr_t parentAddr, double value)
 /// @param parentAddr a pointer to the parent node
 /// @param valueAddr a pointer to a Datum object
 /// @return a pointer to the result
-EXPORTC addr_t handleBadDatum(addr_t eAddr, addr_t parentAddr, addr_t valueAddr)
+EXPORTC addr_t handleBadDatum(addr_t eAddr, addr_t parentAddr, addr_t valueAddr) noexcept
 {
     auto value = reinterpret_cast<Datum *>(valueAddr);
     return handleBadValue(eAddr, parentAddr, DatumPtr(value), [](DatumPtr p) {
@@ -400,7 +400,7 @@ EXPORTC addr_t handleBadDatum(addr_t eAddr, addr_t parentAddr, addr_t valueAddr)
 /// @param eAddr a pointer to the Evaluator object
 /// @param whatAddr a pointer to the Word that was looked up
 /// @return the replacement datum, or an error
-EXPORTC addr_t handleNoValue(addr_t eAddr, addr_t whatAddr)
+EXPORTC addr_t handleNoValue(addr_t eAddr, addr_t whatAddr) noexcept
 {
     auto *what = reinterpret_cast<Datum *>(whatAddr);
     DatumPtr name(what->toString(Datum::ToStringFlags_Show));
@@ -419,7 +419,7 @@ EXPORTC addr_t handleNoValue(addr_t eAddr, addr_t whatAddr)
 /// @param xAddr a pointer to the Datum that did not output
 /// @param yAddr a pointer to the Datum that expected an input
 /// @return the replacement datum, or an error
-EXPORTC addr_t handleDidntOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr)
+EXPORTC addr_t handleDidntOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr) noexcept
 {
     auto *x = reinterpret_cast<Datum *>(xAddr);
     auto *y = reinterpret_cast<Datum *>(yAddr);
@@ -441,7 +441,7 @@ EXPORTC addr_t handleDidntOutput(addr_t eAddr, addr_t xAddr, addr_t yAddr)
 /// @param size the size of the memory to allocate
 /// @param align the alignment of the memory to allocate
 /// @return a pointer to the allocated memory
-EXPORTC addr_t q_malloc(addr_t eAddr, uint32_t size, uint32_t align)
+EXPORTC addr_t q_malloc(addr_t eAddr, uint32_t size, uint32_t align) noexcept
 {
     align = std::max(align, static_cast<uint32_t>(alignof(std::max_align_t)));
     const uint64_t rounded = (static_cast<uint64_t>(size) + align - 1) / align * align;
@@ -461,7 +461,7 @@ EXPORTC addr_t q_malloc(addr_t eAddr, uint32_t size, uint32_t align)
 /// @brief Free memory allocated with q_malloc.
 /// @param eAddr a pointer to the Evaluator object
 /// @param ptr a pointer to the memory to free
-EXPORTC void q_free(addr_t eAddr, addr_t ptr)
+EXPORTC void q_free(addr_t eAddr, addr_t ptr) noexcept
 {
 #ifdef _WIN32
     _aligned_free(ptr);

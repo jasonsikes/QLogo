@@ -151,7 +151,9 @@ Value *Compiler::genRuntime(const DatumPtr &node, TypeMask expected)
     list = generateFromDatum(Datum::typeWordOrListMask, node.astnodeValue(), list);
     generateCallExtern(stdRuntimeStart);
     Value *result = generateCallList(list);
-    generateCallExtern(stdRuntimeEnd);
+    Value *printed = generateCallExtern(stdRuntimeEnd, PaAddr(scaff_->evaluator_),
+                                        PaAddr(CoAddr(node.astnodeValue())));
+    generateNotFlowControl(printed);
     return cs.ret(generateNotFlowControl(result));
 }
 
@@ -834,7 +836,7 @@ Value *Compiler::genApply(const DatumPtr &node, TypeMask expected)
 
 Value *Compiler::generateApplyBuiltCall(const DatumPtr &node, TypeMask expected,
                                         Value *aTemplate, Value *inputList,
-                                        addr_t (*builder)(addr_t, addr_t, addr_t, addr_t),
+                                        addr_t (*builder)(addr_t, addr_t, addr_t, addr_t) noexcept,
                                         const char *builderName)
 {
     Value *callAST = generateCallExternTyped(builder, builderName,
