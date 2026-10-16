@@ -199,14 +199,33 @@ bool Help::validateSchema(const QStringList &tables) const
     return tables.contains("ALIASES", Qt::CaseSensitive) && tables.contains("HELPTEXT", Qt::CaseSensitive);
 }
 
-QStringList Help::allCommands()
+QStringList Help::commandsForCategory(const QString &category)
 {
     getConnection();
     QStringList retval;
     if (connectionIsValid_)
     {
         QSqlDatabase db = QSqlDatabase::database(connectionName_);
-        QSqlQuery query("SELECT ALIAS FROM ALIASES", db);
+        QSqlQuery query(db);
+        query.prepare("SELECT ALIAS FROM ALIASES WHERE CATEGORY = ? ORDER BY ALIAS");
+        query.addBindValue(category);
+        query.exec();
+        while (query.next())
+        {
+            retval.append(query.value(0).toString());
+        }
+    }
+    return retval;
+}
+
+QStringList Help::allCategories()
+{
+    getConnection();
+    QStringList retval;
+    if (connectionIsValid_)
+    {
+        QSqlDatabase db = QSqlDatabase::database(connectionName_);
+        QSqlQuery query("SELECT DISTINCT CATEGORY FROM ALIASES ORDER BY CATEGORY", db);
         while (query.next())
         {
             retval.append(query.value(0).toString());

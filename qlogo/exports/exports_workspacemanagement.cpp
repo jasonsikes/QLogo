@@ -1125,13 +1125,16 @@ EXPORTC addr_t stdHelp(addr_t eAddr, addr_t astnodeAddr, addr_t nameAddr)
         QString output;
         if (nameAddr == 0)
         {
-            QStringList names = Help::get().allCommands();
-            names.sort();
-            ListBuilder list;
-            for (const QString &name : names)
-                list.append(DatumPtr(name));
-            output = list.finishedList().toString(Datum::ToStringFlags_Show);
-            output += QLatin1Char('\n');
+            QStringList names = Help::get().allCategories();
+            output = QObject::tr("Help is available on the following:");
+            for (const QString &category : names)
+            {
+                QStringList commands = Help::get().commandsForCategory(category);
+                output += QObject::tr("\n\n%1:\n").arg(category);
+                for (const QString &command : commands)
+                    output += QObject::tr("  %1").arg(command);
+            }
+            output += QObject::tr("\n");
         }
         else
         {

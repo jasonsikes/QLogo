@@ -123,9 +123,14 @@ class Help : public DatabaseConnection
     /// @brief Destructor for the Help class.
     ~Help() override = default;
 
-    /// @brief Return a list of all command names that have a help text entry.
-    /// @return A list of all command names that have a help text entry.
-    QStringList allCommands();
+    /// @brief Return a list of command names for the given category.
+    /// @param category The help category to list commands for.
+    /// @return A list of command names in the given category.
+    QStringList commandsForCategory(const QString &category);
+
+    /// @brief Return a list of all help categories.
+    /// @return A list of all help categories.
+    QStringList allCategories();
 
     /// @brief Return the help text for a command.
     /// @param cmdName The name of the command to return the help text for.
