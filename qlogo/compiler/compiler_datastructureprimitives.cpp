@@ -80,6 +80,14 @@ Value *Compiler::generateVariadicConstruct(const DatumPtr &node, addr_t (*ctor)(
     return cs.ret(generateCallExternTyped(ctor, ctorName,
                                           {PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(ary->getArraySize())}));
 }
+
+Value *Compiler::generateEqualpCompare(Value *thing1, Value *thing2)
+{
+    Q_ASSERT(thing1->getType()->isPointerTy());
+    Q_ASSERT(thing2->getType()->isPointerTy());
+    return generateCallExtern(cmpDatumToDatum, PaAddr(scaff_->evaluator_), PaAddr(thing1), PaAddr(thing2));
+}
+
 /***DOC EQUALP EQUAL?
 EQUALP thing1 thing2
 EQUAL? thing1 thing2
@@ -101,13 +109,6 @@ thing1 = thing2
 COD***/
 // CMD EQUALP 2 2 2 b
 // CMD EQUAL? 2 2 2 b
-Value *Compiler::generateEqualpCompare(Value *thing1, Value *thing2)
-{
-    Q_ASSERT(thing1->getType()->isPointerTy());
-    Q_ASSERT(thing2->getType()->isPointerTy());
-    return generateCallExtern(cmpDatumToDatum, PaAddr(scaff_->evaluator_), PaAddr(thing1), PaAddr(thing2));
-}
-
 Value *Compiler::genEqualp(const DatumPtr &node, TypeMask expected)
 {
 
