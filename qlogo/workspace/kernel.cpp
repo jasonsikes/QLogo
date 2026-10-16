@@ -1392,6 +1392,43 @@ void Kernel::ece_chainList()
     nextOperation_ = &Kernel::ece_evaluateStack;
 }
 
+namespace {
+
+int printLimitFromSpecialVar(SpecialVars::Id id)
+{
+    DatumPtr val = Kernel::get().datumForName(SpecialVars::name(id));
+    if (!val.isWord())
+        return -1;
+    Word *w = val.wordValue();
+    w->numberValue();
+    if (!w->numberIsValid)
+        return -1;
+    return static_cast<int>(w->numberValue());
+}
+
+} // namespace
+
+void Kernel::stepProcedureLine(const DatumPtr &line)
+{
+    CallFrame *cf = currentCallFrame();
+    if (!cf->sourceNode_.isASTNode())
+        return;
+
+    ASTNode *node = cf->sourceNode_.astnodeValue();
+    const QString key = node->nodeName_.toString(Datum::ToStringFlags_Key);
+    if (!containsName(NameMark::Stepped, NameKind::Procedures, key))
+        return;
+    if (!Procedures::get().isDefined(key))
+        return;
+
+    const int printDepthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintDepthLimit);
+    const int printWidthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintWidthLimit);
+    QString output(traceDepth(), QLatin1Char(' '));
+    output += line.toString(Datum::ToStringFlags_Show, printDepthLimit, printWidthLimit);
+    StreamManager::get().printToTerminal(output);
+    StreamManager::get().readTerminalRawline(QObject::tr(" >>> "));
+}
+
 void Kernel::ece_decideEmptyEvaluationStack()
 {
     ece_trace("ece_decideEmptyEvaluationStack");
@@ -1446,6 +1483,7 @@ void Kernel::ece_decideEmptyEvaluationStack()
     // Get the next line of the procedure and push it onto the evaluation stack.
     DatumPtr line = currentCallFrame()->runningSourceList_.listValue()->head;
     ece_trace("ece_decideEmptyEvaluationStack: pushing line " + line.toString() + " onto the evaluation stack");
+    stepProcedureLine(line);
     currentCallFrame()->pushEvaluator(line);
     nextOperation_ = &Kernel::ece_evaluateStack;
 }

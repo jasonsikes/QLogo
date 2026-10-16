@@ -1,0 +1,10 @@
+to inner
+print "hi
+end
+to outer
+inner
+end
+trace "outer
+step "inner
+outer
+

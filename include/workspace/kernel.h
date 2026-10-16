@@ -456,6 +456,11 @@ class Kernel
     QSet<QString> &namesFor(NameMark mark, NameKind kind);
     const QSet<QString> &namesFor(NameMark mark, NameKind kind) const;
 
+    /// @brief If the current user procedure is stepped, print @p line and wait at ` >>> `.
+    /// @details Indent matches TRACE (`traceDepth()` spaces). The typed line is
+    /// discarded. Primitives and names that are not user procedures are skipped.
+    void stepProcedureLine(const DatumPtr &line);
+
     /// @brief SETEDITOR command: a word, or a list of words.
     DatumPtr editorCommand_;
 

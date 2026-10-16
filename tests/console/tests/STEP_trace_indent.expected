@@ -1,0 +1,5 @@
+? > > inner defined
+? > > outer defined
+? ? ? ( outer )
+ [print "hi] >>> hi
+outer stops

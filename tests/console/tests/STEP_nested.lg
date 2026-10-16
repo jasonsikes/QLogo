@@ -1,0 +1,12 @@
+to inner
+print 2
+end
+to outer
+print 1
+inner
+end
+step [outer inner]
+outer
+
+
+
