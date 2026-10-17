@@ -178,6 +178,25 @@ void Canvas::setPensize(qreal aSize)
     setLastWriteInfo();
 }
 
+void Canvas::setPenPattern(Qt::PenStyle style, Qt::PenCapStyle cap, Qt::PenJoinStyle join,
+                           const QList<qreal> &dashPattern)
+{
+    const QPen &pen = currentWriteInfo_.pen_;
+    if (pen.style() == style && pen.capStyle() == cap && pen.joinStyle() == join &&
+        (style != Qt::CustomDashLine || pen.dashPattern() == dashPattern))
+        return;
+
+    pushLineGroup();
+
+    currentWriteInfo_.pen_.setStyle(style);
+    currentWriteInfo_.pen_.setCapStyle(cap);
+    currentWriteInfo_.pen_.setJoinStyle(join);
+    if (style == Qt::CustomDashLine)
+        currentWriteInfo_.pen_.setDashPattern(dashPattern);
+
+    setLastWriteInfo();
+}
+
 const QColor &Canvas::colorForCurrentPenmode()
 {
     if (penMode_ == penModePaint)
@@ -430,7 +449,7 @@ void Canvas::elementListDrawTurtle()
     }
 }
 
-// The pen controls composition mode, color and size
+// The pen controls composition mode, color, size, style, cap, and join.
 void Canvas::elementListSetWriteInfo(const TurtleWriteInfo &info)
 {
     painter->setPen(info.pen_);

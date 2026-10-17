@@ -58,7 +58,7 @@ struct TurtleWriteInfo
     QPainter::CompositionMode composingMode_;
     /// @brief The pen to use for drawing.
     ///
-    /// The only relevant fields are color and width.
+    /// Color, width, style, cap, join, and, perhaps, dash pattern.
     QPen pen_;
 };
 
@@ -256,6 +256,15 @@ class Canvas : public QWidget
     ///
     /// @param aSize The new pen size.
     void setPensize(qreal aSize);
+
+    /// @brief Set the style, cap, join, and optional dash pattern of future lines.
+    ///
+    /// @param style The Qt pen style.
+    /// @param cap The Qt pen cap style.
+    /// @param join The Qt pen join style.
+    /// @param dashPattern Dash lengths used only when style is Qt::CustomDashLine.
+    void setPenPattern(Qt::PenStyle style, Qt::PenCapStyle cap, Qt::PenJoinStyle join,
+                       const QList<qreal> &dashPattern);
 
     /// @brief Set the background color.
     ///

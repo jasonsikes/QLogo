@@ -165,6 +165,8 @@ static QString getMessageTypeName(message_t type)
         return "C_CANVAS_SET_PENMODE";
     case C_CONSOLE_KEY_EVENT:
         return "C_CONSOLE_KEY_EVENT";
+    case C_CANVAS_SET_PENPATTERN:
+        return "C_CANVAS_SET_PENPATTERN";
     default:
         return QString("UNKNOWN(%1)").arg(type);
     }
@@ -470,6 +472,28 @@ static QString serializeMessageData(message_t type, const QByteArray &dataBuffer
         PenModeEnum mode;
         readStream >> mode;
         yaml << " " << (int)mode << "\n";
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_SET_PENPATTERN:
+    {
+        Qt::PenStyle style;
+        Qt::PenCapStyle cap;
+        Qt::PenJoinStyle join;
+        QList<qreal> dashPattern;
+        readStream >> style >> cap >> join >> dashPattern;
+        yaml << "\n";
+        yaml << "        style: " << int(style) << "\n";
+        yaml << "        cap: " << int(cap) << "\n";
+        yaml << "        join: " << int(join) << "\n";
+        if (dashPattern.isEmpty())
+            yaml << "        dash: []\n";
+        else
+        {
+            yaml << "        dash:\n";
+            for (qreal dash : dashPattern)
+                yaml << "          - " << dash << "\n";
+        }
         hasData = true;
         break;
     }
@@ -1159,6 +1183,16 @@ void MainWindow::processReadBuffer()
         bool penIsDown;
         dataStream >> penIsDown;
         ui_->mainCanvas->setPenIsDown(penIsDown);
+        break;
+    }
+    case C_CANVAS_SET_PENPATTERN:
+    {
+        Qt::PenStyle style;
+        Qt::PenCapStyle cap;
+        Qt::PenJoinStyle join;
+        QList<qreal> dashPattern;
+        dataStream >> style >> cap >> join >> dashPattern;
+        ui_->mainCanvas->setPenPattern(style, cap, join, dashPattern);
         break;
     }
     case C_CANVAS_GET_IMAGE:

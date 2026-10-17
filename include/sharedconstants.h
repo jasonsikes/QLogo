@@ -88,6 +88,7 @@ enum messageCategory : message_t
     C_CANVAS_MOUSE_BUTTON_UP,       // A mouse button was released
     C_CANVAS_SET_PENMODE,           // Set canvas pen mode
     C_CONSOLE_KEY_EVENT,            // Character key while Logo is not reading a line or char
+    C_CANVAS_SET_PENPATTERN,        // Set pen style, cap, join, and optional dash pattern
 };
 
 /// @brief The configuration for the qlgog/Psychi programs.
