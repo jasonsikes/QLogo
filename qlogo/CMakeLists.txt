@@ -126,9 +126,9 @@ endif()
 # LLVM shared libraries (libLLVM) are not supported with the Microsoft
 # toolchain; USE_SHARED would try to link LLVM.lib, which is not built.
 if(MSVC)
-  llvm_config("${QLOGO_BIN}" support core orcjit native irreader)
+  llvm_config("${QLOGO_BIN}" support core orcjit orcdebugging native irreader)
 else()
-  llvm_config("${QLOGO_BIN}" USE_SHARED support core orcjit native irreader)
+  llvm_config("${QLOGO_BIN}" USE_SHARED support core orcjit orcdebugging native irreader)
 endif()
 
 if(APPLE)

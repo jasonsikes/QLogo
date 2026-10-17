@@ -25,6 +25,7 @@
 #endif
 
 #include "llvm/IR/Attributes.h"
+#include "llvm/IR/DIBuilder.h"
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Verifier.h"
@@ -76,7 +77,8 @@ struct Scaffold
     // A list of basic blocks that make up the "cold path" of execution.
     QList<llvm::BasicBlock *> coldPathBlocks_;
 
-    Scaffold(const llvm::DataLayout &dataLayout, llvm::TargetMachine *tm, bool debugLogging);
+    Scaffold(const llvm::DataLayout &dataLayout, llvm::TargetMachine *tm, bool debugLogging,
+             std::string irStem, std::string displayName, std::string debugSource);
 
     /// @brief True when IR value names should be prefixed with the generator function.
     bool mangleNames_ = false;
@@ -118,6 +120,18 @@ struct Scaffold
     // Itanium prefix of Datum: vptr, isa_, retainCount_, alertOnDelete_.
     llvm::StructType *datumHeaderTy_ = nullptr;
     llvm::MDNode *isaLoadTbaa_ = nullptr;
+
+    // DWARF for this JIT module. Line is TAG/block id + 1; column is the AST node index.
+    std::unique_ptr<llvm::DIBuilder> dbg_;
+    llvm::DICompileUnit *cu_ = nullptr;
+    llvm::DIFile *file_ = nullptr;
+    llvm::DISubprogram *sp_ = nullptr;
+    unsigned dbgLine_ = 1;
+    unsigned dbgColumn_ = 1;
+
+    void setDebugLoc(unsigned line, unsigned column);
+    void emitTagLabel(llvm::StringRef name);
+    void finalizeDebugInfo();
 
     // Create a new basic block. Inserted before MainBailout when that block
     // exists so the exit stays at the end of the function; otherwise appended.

@@ -437,6 +437,12 @@ class Compiler
     // Process the tags in a block of ASTNodes.
     void setTagToBlockIdInProcedure(const QList<DatumPtr> &tagList, int32_t blockId);
 
+    // Logo procedure name when compiling a body line, otherwise "list".
+    QString jitDisplayName(List *aList) const;
+
+    // DWARF line = blockId+1; dbg.label for each TAG in the block.
+    void emitDebugForTagBlock(const QList<DatumPtr> &tagList, int32_t blockId);
+
     // Generate the TagId-to-Block Table of Contents.
     llvm::BasicBlock *generateTOC(QList<llvm::BasicBlock *> blocks, llvm::Function *theFunction);
 

@@ -26,9 +26,12 @@
 #include "llvm/ExecutionEngine/Orc/LLJIT.h"
 #include "llvm/ExecutionEngine/Orc/Mangling.h"
 #include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
+#include "llvm/BinaryFormat/Dwarf.h"
+#include "llvm/ExecutionEngine/Orc/Debugging/DebuggerSupport.h"
 #include "llvm/IR/Argument.h"
 #include "llvm/IR/CFG.h"
 #include "llvm/IR/DataLayout.h"
+#include "llvm/IR/DebugInfoMetadata.h"
 #include "llvm/IR/MDBuilder.h"
 #include "llvm/IR/Metadata.h"
 #include "llvm/Passes/OptimizationLevel.h"
@@ -149,6 +152,8 @@ std::unique_ptr<LLJIT> createLLJIT(JITTargetMachineBuilder jtmb)
                         })
                         .create();
     auto jit = unwrapOrThrow(std::move(jitOrErr), "LLJITBuilder::create");
+    if (Error err = enableDebuggerSupport(*jit))
+        consumeError(std::move(err));
     checkJitError(defineHostExports(*jit), "defineHostExports");
     return jit;
 }
@@ -220,6 +225,7 @@ void applyCAbiToCoroClone(Function &F)
     F.setCallingConv(CallingConv::C);
     F.setUWTableKind(UWTableKind::Default);
     F.setDoesNotThrow();
+    F.addFnAttr("frame-pointer", "all");
 
     if (F.arg_size() >= 1 && F.getArg(0)->getType()->isPointerTy())
     {
@@ -358,7 +364,26 @@ FunctionType *hostExportFunctionType(LLVMContext &ctx, StringRef name)
     throw FCError::fatalInternal();
 }
 
-Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm, bool debugLogging)
+static std::string sanitizeIrStem(const std::string &utf8)
+{
+    std::string out;
+    out.reserve(utf8.size());
+    for (unsigned char c : utf8)
+    {
+        if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_' || c == '.')
+            out.push_back(static_cast<char>(c));
+        else
+            out.push_back('_');
+    }
+    if (out.empty() ||
+        !((out.front() >= 'A' && out.front() <= 'Z') || (out.front() >= 'a' && out.front() <= 'z') ||
+          out.front() == '_'))
+        out.insert(out.begin(), '_');
+    return out;
+}
+
+Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm, bool debugLogging,
+                   std::string irStem, std::string displayName, std::string debugSource)
     : theContext_(std::make_unique<LLVMContext>()), theModule_(std::make_unique<Module>("QLogoJIT", *theContext_)),
       builder_(IRBuilder<>(*theContext_)), theLAM_(LoopAnalysisManager()),
       theFAM_(FunctionAnalysisManager()), theCGAM_(CGSCCAnalysisManager()), theMAM_(ModuleAnalysisManager()),
@@ -396,7 +421,7 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm, bool d
     registerPassAnalyses(thePB_, thePIC_, theMAM_, theFAM_, theLAM_, theCGAM_, theSI_);
 
     static uint64_t functionCount = 1;
-    name_ = "function_" + std::to_string(functionCount++);
+    name_ = "logo_" + sanitizeIrStem(irStem) + "_" + std::to_string(functionCount++);
 
     auto addr_type = PointerType::get(*theContext_, 0);
     auto int32_type = Type::getInt32Ty(*theContext_);
@@ -415,6 +440,7 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm, bool d
     // nounwind matches the EXPORTC noexcept ABI; uwtable remains for unwinders/debuggers.
     theFunction_->setUWTableKind(UWTableKind::Default);
     theFunction_->setDoesNotThrow();
+    theFunction_->addFnAttr("frame-pointer", "all");
 
     const DataLayout &dl = theModule_->getDataLayout();
 
@@ -456,6 +482,48 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm, bool d
     resumeHandle_->setName("resumeHandle");
     theFunction_->getArg(3)->addAttr(Attribute::NoUndef);
 
+    if (displayName.empty())
+        displayName = "list";
+    std::string fileName = sanitizeIrStem(displayName) + ".lg";
+    theModule_->setSourceFileName(fileName);
+    theModule_->addModuleFlag(Module::Warning, "Debug Info Version", DEBUG_METADATA_VERSION);
+    theModule_->addModuleFlag(Module::Warning, "Dwarf Version", 4);
+
+    dbg_ = std::make_unique<DIBuilder>(*theModule_);
+    std::optional<StringRef> source;
+    if (!debugSource.empty())
+        source = debugSource;
+    file_ = dbg_->createFile(fileName, "<qlogo>", std::nullopt, source);
+    cu_ = dbg_->createCompileUnit(dwarf::DW_LANG_C, file_, "QLogo", true, "", 0);
+    DISubroutineType *fnTyDI =
+        dbg_->createSubroutineType(dbg_->getOrCreateTypeArray({}));
+    sp_ = dbg_->createFunction(
+        file_, displayName, name_, file_, 1, fnTyDI, 1, DINode::FlagPrototyped,
+        DISubprogram::SPFlagDefinition | DISubprogram::SPFlagOptimized);
+    theFunction_->setSubprogram(sp_);
+}
+
+void Scaffold::setDebugLoc(unsigned line, unsigned column)
+{
+    if (!sp_)
+        return;
+    dbgLine_ = line;
+    dbgColumn_ = column;
+    builder_.SetCurrentDebugLocation(DILocation::get(*theContext_, line, column, sp_));
+}
+
+void Scaffold::emitTagLabel(StringRef name)
+{
+    if (!dbg_ || !sp_ || name.empty())
+        return;
+    DILabel *lab = dbg_->createLabel(sp_, name, file_, dbgLine_, dbgColumn_, false, std::nullopt, true);
+    dbg_->insertLabel(lab, builder_.getCurrentDebugLocation(), builder_.GetInsertPoint());
+}
+
+void Scaffold::finalizeDebugInfo()
+{
+    if (dbg_)
+        dbg_->finalize();
 }
 
 BasicBlock *Scaffold::createBasicBlock(const std::string &name)
@@ -467,6 +535,7 @@ AllocaInst *Scaffold::createEntryBlockAlloca(Type *type, const std::string &name
 {
     BasicBlock &entry = theFunction_->getEntryBlock();
     IRBuilder<> tmp(&entry, entry.begin());
+    tmp.SetCurrentDebugLocation(builder_.getCurrentDebugLocation());
     return tmp.CreateAlloca(type, nullptr, name);
 }
 
@@ -666,6 +735,36 @@ void Compiler::setTagToBlockIdInProcedure(const QList<DatumPtr> &tagList, int32_
     }
 }
 
+QString Compiler::jitDisplayName(List *aList) const
+{
+    if (!tagLineLocation_.isNothing() && tagLineLocation_.isList() &&
+        !tagLineLocation_.listValue()->isEmpty() &&
+        tagLineLocation_.listValue()->head.datumValue() == aList)
+    {
+        CallFrame *cf = Kernel::get().currentCallFrame();
+        if (cf && cf->sourceNode_.isASTNode())
+        {
+            QString n = cf->sourceNode_.astnodeValue()->nodeName_.toString();
+            if (!n.isEmpty())
+                return n;
+        }
+    }
+    return QStringLiteral("list");
+}
+
+void Compiler::emitDebugForTagBlock(const QList<DatumPtr> &tagList, int32_t blockId)
+{
+    scaff_->setDebugLoc(static_cast<unsigned>(blockId) + 1, 1);
+    for (const auto &node : tagList)
+    {
+        QString tagName = getTagNameFromNode(node);
+        if (tagName.isEmpty())
+            continue;
+        const QByteArray utf8 = tagName.toUtf8();
+        scaff_->emitTagLabel(StringRef(utf8.constData(), static_cast<size_t>(utf8.size())));
+    }
+}
+
 BasicBlock *Compiler::generateTOC(QList<BasicBlock *> blocks, Function *theFunction)
 {
     Q_ASSERT(blocks.size() > 1);
@@ -694,7 +793,10 @@ BasicBlock *Compiler::generateTOC(QList<BasicBlock *> blocks, Function *theFunct
 std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, List *aList)
 {
     const DumpRequest dump = dumpRequest_;
-    Scaffold compilerScaffolding(lljit_->getDataLayout(), targetMachine_.get(), dump.any());
+    const QString display = jitDisplayName(aList);
+    Scaffold compilerScaffolding(lljit_->getDataLayout(), targetMachine_.get(), dump.any(),
+                                 display.toUtf8().toStdString(), display.toUtf8().toStdString(),
+                                 aList->toString(Datum::ToStringFlags_Source, 4, 80).toUtf8().toStdString());
     compilerScaffolding.mangleNames_ = dump.any();
 
     struct RestoreScaff
@@ -714,20 +816,25 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     // The first block is number zero.
     int localBlockId = 0;
 
+    QList<DatumPtr> leadingTags;
     // If the first block is a tag, save the tag names
     if (!parsedList.isEmpty() && !parsedList.first().isEmpty() && isTag(parsedList.first().first()))
     {
-        setTagToBlockIdInProcedure(parsedList.first(), localBlockId);
+        leadingTags = parsedList.first();
+        setTagToBlockIdInProcedure(leadingTags, localBlockId);
         // Remove the first tag block from the list.
         parsedList.removeFirst();
     }
 
-    BasicBlock *currentBlock = BasicBlock::Create(*scaff_->theContext_, "FirstBlock", scaff_->theFunction_);
+    BasicBlock *currentBlock = BasicBlock::Create(*scaff_->theContext_, "b0", scaff_->theFunction_);
     // After FirstBlock so it is last until body blocks insert before it.
     scaff_->mainBailoutBB_ = scaff_->createBasicBlock("MainBailout");
 
     QList<BasicBlock *> blocks = {currentBlock};
     scaff_->builder_.SetInsertPoint(currentBlock);
+    scaff_->setDebugLoc(1, 1);
+    if (!leadingTags.isEmpty())
+        emitDebugForTagBlock(leadingTags, 0);
 
     Value *nodeResult = nullptr;
     TypeMask returnTypeRequest = TypeNothing;
@@ -738,12 +845,13 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
         if (isTag(srcBlock.first()))
         {
             ++localBlockId;
-            BasicBlock *newBlock = scaff_->createBasicBlock("Next Block");
+            BasicBlock *newBlock = scaff_->createBasicBlock("b" + std::to_string(localBlockId));
             blocks.append(newBlock);
             scaff_->builder_.CreateBr(newBlock);
             currentBlock = newBlock;
             scaff_->builder_.SetInsertPoint(newBlock);
             setTagToBlockIdInProcedure(srcBlock, localBlockId);
+            emitDebugForTagBlock(srcBlock, localBlockId);
         }
         else
         {
@@ -774,6 +882,7 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     }
 
     scaff_->hoistAllocasToEntry();
+    scaff_->finalizeDebugInfo();
     runPreCoroPasses(*scaff_->theModule_, scaff_->theFAM_);
 
     if (dump.showCFG)
@@ -901,6 +1010,8 @@ std::shared_ptr<CompiledText> Compiler::compiledTextFromList(List *aList)
 
 Value *Compiler::generateChildOfNode(ASTNode *parent, const DatumPtr &node, TypeMask expected)
 {
+    if (scaff_->sp_)
+        scaff_->setDebugLoc(scaff_->dbgLine_, scaff_->dbgColumn_++);
     Generator method = node.astnodeValue()->genExpression_;
     Value *retval = ((this->*method)(node, expected));
     return retval;
