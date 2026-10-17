@@ -120,6 +120,8 @@ struct Scaffold
     // Itanium prefix of Datum: vptr, isa_, retainCount_, alertOnDelete_.
     llvm::StructType *datumHeaderTy_ = nullptr;
     llvm::MDNode *isaLoadTbaa_ = nullptr;
+    // !range of every Datum::DatumType value that can appear in isa_.
+    llvm::MDNode *isaLoadRange_ = nullptr;
 
     // DWARF for this JIT module. Line is TAG/block id + 1; column is the AST node index.
     std::unique_ptr<llvm::DIBuilder> dbg_;

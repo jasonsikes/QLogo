@@ -417,6 +417,38 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm, bool d
     MDNode *isaTbaaTy =
         tbaaMdb.createTBAATypeNode(tbaaRoot, 4, MDString::get(*theContext_, "datum.isa"));
     isaLoadTbaa_ = tbaaMdb.createTBAAAccessTag(isaTbaaTy, isaTbaaTy, 0, 4, /*IsImmutable=*/true);
+    {
+        // Sorted isa_ values. Adjacent [v, v+1) pairs must be merged.
+        static constexpr uint32_t isaVals[] = {
+            Datum::typeWord,         Datum::typeList,       Datum::typeArray,
+            Datum::typeError,        Datum::typeGoto,       Datum::typeContinuation,
+            Datum::typeReturn,       Datum::typeNothing,    Datum::typeASTNode,
+            Datum::typeProcedure,    Datum::typeEmptyList,  Datum::typeNothingPersistent,
+        };
+        IntegerType *i32 = Type::getInt32Ty(*theContext_);
+        SmallVector<Metadata *, 24> rangeOps;
+        auto addInterval = [&](uint32_t lo, uint32_t hi) {
+            rangeOps.push_back(ConstantAsMetadata::get(ConstantInt::get(i32, lo)));
+            rangeOps.push_back(ConstantAsMetadata::get(ConstantInt::get(i32, hi)));
+        };
+        uint32_t lo = isaVals[0];
+        uint32_t hi = isaVals[0] + 1;
+        for (uint32_t v : isaVals)
+        {
+            if (v == lo)
+                continue;
+            if (v == hi)
+                hi = v + 1;
+            else
+            {
+                addInterval(lo, hi);
+                lo = v;
+                hi = v + 1;
+            }
+        }
+        addInterval(lo, hi);
+        isaLoadRange_ = MDNode::get(*theContext_, rangeOps);
+    }
 
     registerPassAnalyses(thePB_, thePIC_, theMAM_, theFAM_, theLAM_, theCGAM_, theSI_);
 
@@ -1887,9 +1919,17 @@ void Compiler::generateWrapup()
 
 Value *Compiler::generateGetDatumIsa(Value *objAddr)
 {
+    Q_ASSERT(objAddr->getType()->isPointerTy());
+
+    OperandBundleDef nonnull("nonnull", ArrayRef<Value *>{objAddr});
+    scaff_->builder_.CreateAssumption(ConstantInt::getTrue(*scaff_->theContext_), nonnull);
+
     Value *isaAddr = scaff_->builder_.CreateStructGEP(scaff_->datumHeaderTy_, objAddr, 1, DBG_NAME("isaAddr"));
     LoadInst *load = scaff_->builder_.CreateAlignedLoad(TyInt32, isaAddr, Align(4), DBG_NAME("isaLoad"));
-    load->setMetadata(LLVMContext::MD_invariant_load, MDNode::get(*scaff_->theContext_, {}));
+    MDNode *empty = MDNode::get(*scaff_->theContext_, {});
+    load->setMetadata(LLVMContext::MD_invariant_load, empty);
+    load->setMetadata(LLVMContext::MD_noundef, empty);
+    load->setMetadata(LLVMContext::MD_range, scaff_->isaLoadRange_);
     load->setMetadata(LLVMContext::MD_tbaa, scaff_->isaLoadTbaa_);
     return load;
 }
