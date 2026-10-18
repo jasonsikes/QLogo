@@ -1584,6 +1584,12 @@ const QString &StringConstants::cmdStrSETPENSIZE()
     return str;
 }
 
+const QString &StringConstants::cmdStrSETPENPATTERN()
+{
+    static const QString str = QObject::tr("SETPENPATTERN");
+    return str;
+}
+
 const QString &StringConstants::cmdStrSETBACKGROUND()
 {
     static const QString str = QObject::tr("SETBACKGROUND");
@@ -1635,6 +1641,12 @@ const QString &StringConstants::cmdStrPALETTE()
 const QString &StringConstants::cmdStrPENSIZE()
 {
     static const QString str = QObject::tr("PENSIZE");
+    return str;
+}
+
+const QString &StringConstants::cmdStrPENPATTERN()
+{
+    static const QString str = QObject::tr("PENPATTERN");
     return str;
 }
 

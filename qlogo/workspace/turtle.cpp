@@ -416,6 +416,20 @@ void Turtle::setPenSize(double aPenSize)
     Config::get().mainInterface()->setPensize(penSize_);
 }
 
+void Turtle::setPenPattern(Qt::PenStyle style, Qt::PenCapStyle cap, Qt::PenJoinStyle join,
+                           const QList<qreal> &dashPattern)
+{
+    const QList<qreal> normalizedDash = (style == Qt::CustomDashLine) ? dashPattern : QList<qreal>{};
+    if (penStyle_ == style && penCapStyle_ == cap && penJoinStyle_ == join && penDashPattern_ == normalizedDash)
+        return;
+
+    penStyle_ = style;
+    penCapStyle_ = cap;
+    penJoinStyle_ = join;
+    penDashPattern_ = normalizedDash;
+    Config::get().mainInterface()->setPenPattern(penStyle_, penCapStyle_, penJoinStyle_, penDashPattern_);
+}
+
 bool Turtle::isPenSizeValid(double aPenSize) const
 {
     return Config::get().mainInterface()->isPenSizeValid(aPenSize);

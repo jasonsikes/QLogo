@@ -212,7 +212,7 @@ std::optional<MemoryEffects> memoryEffectsForHostExport(StringRef name)
                 "isDatumIndexValid"},
                ME::argMemOnly(ModRefInfo::ModRef))
         .Cases({"cmpDatumToDatum", "isBefore", "isMember", "isSubstring", "isDatumEmpty",
-                "getTestResult", "isValidColor", "isColorIndexGood", "isContentsList",
+                "getTestResult", "isValidColor", "isValidPenPattern", "isColorIndexGood", "isContentsList",
                 "isNamedContentsList", "isDefinableProcName", "isDefineText", "stdProcedurep",
                 "stdMacrop", "stdPrimitivep", "stdDefinedp", "stdNamep", "stdPlistp",
                 "stdBuriedp", "stdTracedp", "stdSteppedp", "isTurtleVisible", "isPenDown",

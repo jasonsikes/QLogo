@@ -36,8 +36,8 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent)
     backgroundColor_ = Config::get().initialCanvasBackgroundColor_;
     foregroundColor_ = Config::get().initialCanvasForegroundColor_;
     currentWriteInfo_.pen_ = QPen(foregroundColor_);
-    currentWriteInfo_.pen_.setCapStyle(Qt::RoundCap);
-    currentWriteInfo_.pen_.setJoinStyle(Qt::RoundJoin);
+    currentWriteInfo_.pen_.setCapStyle(Qt::SquareCap);
+    currentWriteInfo_.pen_.setJoinStyle(Qt::BevelJoin);
     currentWriteInfo_.composingMode_ = QPainter::CompositionMode_SourceOver;
     turtleMatrix_ = QTransform();
     turtleIsVisible_ = true;
@@ -174,6 +174,34 @@ void Canvas::setPensize(qreal aSize)
     pushLineGroup();
 
     currentWriteInfo_.pen_.setWidthF(aSize);
+
+    setLastWriteInfo();
+}
+
+void Canvas::setPenPattern(Qt::PenStyle style,
+                           Qt::PenCapStyle cap,
+                           Qt::PenJoinStyle join,
+                           const QList<qreal> &dashPattern)
+{
+    QList<qreal> pattern = dashPattern;
+    // QPen requires an even-length pattern. For an odd list, append the first
+    // length so the last dash is followed by a gap of that size when the
+    // pattern repeats.
+    if (style == Qt::CustomDashLine && pattern.size() % 2 == 1)
+        pattern.append(pattern.first());
+
+    const QPen &pen = currentWriteInfo_.pen_;
+    if (pen.style() == style && pen.capStyle() == cap && pen.joinStyle() == join &&
+        (style != Qt::CustomDashLine || pen.dashPattern() == pattern))
+        return;
+
+    pushLineGroup();
+
+    currentWriteInfo_.pen_.setStyle(style);
+    currentWriteInfo_.pen_.setCapStyle(cap);
+    currentWriteInfo_.pen_.setJoinStyle(join);
+    if (style == Qt::CustomDashLine)
+        currentWriteInfo_.pen_.setDashPattern(pattern);
 
     setLastWriteInfo();
 }
@@ -430,7 +458,7 @@ void Canvas::elementListDrawTurtle()
     }
 }
 
-// The pen controls composition mode, color and size
+// The pen controls composition mode, color, size, style, cap, and join.
 void Canvas::elementListSetWriteInfo(const TurtleWriteInfo &info)
 {
     painter->setPen(info.pen_);
@@ -518,7 +546,7 @@ void Canvas::mousePressEvent(QMouseEvent *event)
         buttonID = 1;
     QPointF mousePos = inverseDrawingMatrix_.map(event->position());
     if (!canvasIsBounded_ || ((mousePos.x() <= boundsX_) && (mousePos.y() <= boundsY_) && (mousePos.x() >= -boundsX_) &&
-                             (mousePos.y() >= -boundsY_)))
+                              (mousePos.y() >= -boundsY_)))
     {
         mouseButtonPressed_ = true;
         emit sendMouseclickedSignal(mousePos, buttonID);

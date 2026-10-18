@@ -82,6 +82,7 @@ C_CANVAS_MOUSE_MOVED = 44
 C_CANVAS_MOUSE_BUTTON_UP = 45
 C_CANVAS_SET_PENMODE = 46
 C_CONSOLE_KEY_EVENT = 47
+C_CANVAS_SET_PENPATTERN = 48
 
 # Screen mode constants
 INIT_SCREEN_MODE = 0
@@ -144,6 +145,7 @@ MESSAGE_NAMES = {
     'C_CANVAS_MOUSE_BUTTON_UP': C_CANVAS_MOUSE_BUTTON_UP,
     'C_CANVAS_SET_PENMODE': C_CANVAS_SET_PENMODE,
     'C_CONSOLE_KEY_EVENT': C_CONSOLE_KEY_EVENT,
+    'C_CANVAS_SET_PENPATTERN': C_CANVAS_SET_PENPATTERN,
 }
 
 
@@ -410,6 +412,22 @@ class TestRunner:
                     return (False, f"Timer mismatch: expected {expected}, got {msecs}")
                 if isinstance(expected, dict) and expected.get('msecs') is not None and expected.get('msecs') != msecs:
                     return (False, f"Timer mismatch: expected {expected.get('msecs')}, got {msecs}")
+
+            elif message_type == C_CANVAS_SET_PENPATTERN:
+                style = stream.readUInt32()
+                cap = stream.readUInt32()
+                join = stream.readUInt32()
+                dash_count = stream.readUInt32()
+                dash = [stream.readDouble() for _ in range(dash_count)]
+                if isinstance(expected, dict):
+                    if expected.get('style') is not None and expected.get('style') != style:
+                        return (False, f"Style mismatch: expected {expected.get('style')}, got {style}")
+                    if expected.get('cap') is not None and expected.get('cap') != cap:
+                        return (False, f"Cap mismatch: expected {expected.get('cap')}, got {cap}")
+                    if expected.get('join') is not None and expected.get('join') != join:
+                        return (False, f"Join mismatch: expected {expected.get('join')}, got {join}")
+                    if expected.get('dash') is not None and expected.get('dash') != dash:
+                        return (False, f"Dash mismatch: expected {expected.get('dash')}, got {dash}")
             
             # Add more message type handlers as needed
             
