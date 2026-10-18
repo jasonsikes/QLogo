@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(QLogo VERSION 0.961 LANGUAGES CXX C)
+project(QLogo VERSION 0.98 LANGUAGES CXX C)
 
 include(GNUInstallDirs)
 
