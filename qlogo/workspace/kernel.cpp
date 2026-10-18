@@ -254,6 +254,32 @@ Kernel::TopLevelResult Kernel::loadFile(const DatumPtr &filename)
     return runLoadedProgram(startupBefore);
 }
 
+Kernel::TopLevelResult Kernel::cslsLoad(const DatumPtr &filename)
+{
+    QString name = filename.wordValue()->toString().toLower();
+    name.replace(QLatin1Char('?'), QLatin1Char('Q'));
+    if (name == QLatin1String(".") || name.startsWith(QLatin1String("..")))
+        return TopLevelResult::EndOfInput;
+
+    struct PrefixGuard
+    {
+        DatumPtr saved_ = StreamManager::get().prefix();
+        PrefixGuard()
+        {
+            StreamManager::get().setPrefix(emptyList());
+        }
+        ~PrefixGuard()
+        {
+            StreamManager::get().setPrefix(saved_);
+        }
+    } prefixGuard;
+
+    const QString dir = Config::get().cslsDirectory_;
+    const QString path = dir.isEmpty() ? name : dir + QLatin1Char('/') + name;
+
+    return loadFile(DatumPtr(path));
+}
+
 void Kernel::rememberWorkspaceFile(const DatumPtr &filename)
 {
     lastWorkspaceFile_ = DatumPtr(filename.wordValue()->toString());

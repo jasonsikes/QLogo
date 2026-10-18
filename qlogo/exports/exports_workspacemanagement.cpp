@@ -995,6 +995,21 @@ EXPORTC addr_t stdLoad(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr) no
     });
 }
 
+/// CSLSLOAD: LOAD a file from the CSLS directory. PREFIX is ignored.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
+/// @param filenameAddr a word naming the file in the CSLS directory
+/// @return the owning ASTNode, or an Error if the file cannot be opened.
+EXPORTC addr_t stdCslsload(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr) noexcept
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
+    auto *filename = reinterpret_cast<Datum *>(filenameAddr);
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
+        Kernel::get().cslsLoad(DatumPtr(filename));
+    });
+}
+
 /// SAVE: write unburied procedures, variables, and nonempty property lists to
 /// a file, as PRINTOUT of CONTENTS. Does not change WRITER. PREFIX applies.
 /// A name already in ALLOPEN is already-open. No input uses the most recent

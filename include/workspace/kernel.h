@@ -512,6 +512,12 @@ class Kernel
     /// StopThenPrompt.
     TopLevelResult loadFile(const DatumPtr &filename);
 
+    /// @brief CSLSLOAD: LOAD @p filename from the CSLS directory.
+    /// @param filename A word naming a file in Config::cslsDirectory_.
+    /// @details PREFIX is ignored for the duration of the load, including nested
+    /// LOAD and STARTUP. The name is lowercased.
+    TopLevelResult cslsLoad(const DatumPtr &filename);
+
     /// @brief SAVE: write unburied procedures, variables, and property lists
     /// to @p filename.
     /// @param filename A word naming the file. PREFIX applies to relative names.
@@ -521,8 +527,8 @@ class Kernel
     void saveWorkspace(const DatumPtr &filename);
 
     /// @brief Remember @p filename as the most recent LOAD or SAVE name.
-    /// @details SAVE with no input uses this. EDIT / EDITFILE / library
-    /// autoload / Kernel::runFile do not update it.
+    /// @details SAVE with no input uses this. EDIT / EDITFILE / CSLSLOAD /
+    /// library autoload / Kernel::runFile do not update it.
     void rememberWorkspaceFile(const DatumPtr &filename);
 
     /// @brief The filename of the most recent LOAD or SAVE, or nothing().

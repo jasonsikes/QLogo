@@ -2076,6 +2076,12 @@ const QString &StringConstants::cmdStrLOAD()
     return str;
 }
 
+const QString &StringConstants::cmdStrCSLSLOAD()
+{
+    static const QString str = QObject::tr("CSLSLOAD");
+    return str;
+}
+
 const QString &StringConstants::cmdStrHELP()
 {
     static const QString str = QObject::tr("HELP");

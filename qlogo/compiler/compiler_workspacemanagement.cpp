@@ -1213,6 +1213,30 @@ Value *Compiler::genLoad(const DatumPtr &node, TypeMask expected)
     return cs.ret(generateNotFlowControl(retval));
 }
 
+/***DOC CSLSLOAD
+CSLSLOAD name
+
+    command.  Loads the named file, like LOAD, but from the directory
+    containing the Computer Science Logo Style programs instead of the
+    current user's directory.
+
+COD***/
+// CMD CSLSLOAD 1 1 1 n
+Value *Compiler::genCslsload(const DatumPtr &node, TypeMask expected)
+{
+
+    CallSite cs(this, node, TypeDatum);
+    Value *filename = cs.child(0);
+    filename = generateFromDatum(Datum::typeWord, node.astnodeValue(), filename);
+
+    Value *retval = generateCallExtern(
+        stdCslsload,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(filename));
+    return cs.ret(generateNotFlowControl(retval));
+}
+
 /***DOC HELP
 HELP name
 (HELP)

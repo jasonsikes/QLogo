@@ -140,28 +140,11 @@ The original purpose of the command was to enable text to be visible on projecto
 
 One of the user interface principles for QLogo is that the canvas should be device resolution-independent. When the QLogo window is resized or the separator between the text and the graphics is moved then the graphics will be redrawn with the new dimensions.
 
-The Flood Fill algorithm depends on specific pixels which means that what is filled can change dramatically depending on the size of the canvas. ~FILLED~ is still available.
+The Flood Fill algorithm depends on specific pixels which means that what is filled can change significantly depending on the size of the canvas. ~FILLED~ is still available.
 
 **** ~EPSPICT~:
 
 This is replaced by ~SVGPICT~. See ~SVGPICT~ for more information.
-
-**** ~CSLSLOAD~:
-
-Not implemented yet.
-
-**** ~SETCSLSLOC~:
-
-Not implemented yet.
-
-**** ~SETEDITOR~:
-
-When QLogo is using the Psychi GUI, EDIT uses Psychi's built-in editor. From a terminal, EDIT runs the command given to ~SETEDITOR~ (default: the ~EDITOR~ environment variable, or ~nano~). The file path is appended as a last argument. The ~EDITOR~ command outputs the current ~SETEDITOR~ value.
-
-**** ~EDITOR~:
-
-Outputs the current ~SETEDITOR~ command: a word, or a list of words. See ~SETEDITOR~.
-
 **** ~SETLIBLOC~:
 
 Not implemented. QLogo uses a SQLite database to store its standard library. You can use the ~setlibloc~ command line parameter to tell qlogo where to find the SQLite database if it is in a different location than where qlogo expects it.
@@ -169,10 +152,6 @@ Not implemented. QLogo uses a SQLite database to store its standard library. You
 **** ~SETHELPLOC~:
 
 Not implemented. QLogo uses a SQLite database to store its help text. You can use the ~sethelploc~ command line parameter to tell qlogo where to find the SQLite database if it is in a different location than where qlogo expects it.
-
-**** ~SETTEMPLOC~:
-
-Sets the directory where ~EDIT~ writes its temporary file. The empty list selects the system temporary directory. ~THROW "SYSTEM~ leaves that file on disk; a normal finish deletes it. ~TEMPLOC~ outputs that directory.
 
 **** ~NOREFRESH~ and ~REFRESH~:
 

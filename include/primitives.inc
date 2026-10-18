@@ -267,6 +267,7 @@ llvm::Value *genTracedp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSteppedp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSave(const DatumPtr &node, TypeMask expected);
 llvm::Value *genLoad(const DatumPtr &node, TypeMask expected);
+llvm::Value *genCslsload(const DatumPtr &node, TypeMask expected);
 llvm::Value *genHelp(const DatumPtr &node, TypeMask expected);
 llvm::Value *genEdit(const DatumPtr &node, TypeMask expected);
 llvm::Value *genEditfile(const DatumPtr &node, TypeMask expected);

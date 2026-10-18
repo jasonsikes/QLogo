@@ -348,6 +348,7 @@ stringToCmd.insert(StringConstants::cmdStrSTEPPEDP(), Cmd_t{&Compiler::genSteppe
 stringToCmd.insert(StringConstants::cmdStrSTEPPED_Q(), Cmd_t{&Compiler::genSteppedp, 1, 1, 1, TypeB});
 stringToCmd.insert(StringConstants::cmdStrSAVE(), Cmd_t{&Compiler::genSave, 0, -1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrLOAD(), Cmd_t{&Compiler::genLoad, 1, 1, 1, TypeN});
+stringToCmd.insert(StringConstants::cmdStrCSLSLOAD(), Cmd_t{&Compiler::genCslsload, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrHELP(), Cmd_t{&Compiler::genHelp, 0, -1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrEDIT(), Cmd_t{&Compiler::genEdit, 0, -1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrED(), Cmd_t{&Compiler::genEdit, 0, -1, 1, TypeN});
