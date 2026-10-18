@@ -29,6 +29,7 @@
     X(ErrAct,            "ERRACT")            \
     X(LogoPlatform,      "LOGOPLATFORM")      \
     X(LogoVersion,       "LOGOVERSION")       \
+    X(QlogoVersion,      "QLOGOVERSION")      \
     X(ButtonAct,         "BUTTONACT")         \
     X(FullPrintP,        "FULLPRINTP")        \
     X(KeyAct,            "KEYACT")            \

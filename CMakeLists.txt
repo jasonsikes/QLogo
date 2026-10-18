@@ -38,6 +38,18 @@ set(QLOGO_LIB_DB "${QLOGO_DATA_DIR}/${QLOGO_LIB}")
 
 file(MAKE_DIRECTORY "${QLOGO_DATA_DIR}")
 
+execute_process(
+    COMMAND git describe --tags
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE QLOGO_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+)
+if(NOT QLOGO_VERSION)
+    set(QLOGO_VERSION "unknown")
+endif()
+
+
 qt_add_executable(mklogolib util/mklogolib.cpp)
 qt_add_executable(mklogohelp util/mklogohelp.cpp)
 target_link_libraries(mklogolib PRIVATE Qt6::Core Qt6::Sql)

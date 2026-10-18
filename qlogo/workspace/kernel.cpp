@@ -673,12 +673,14 @@ void Kernel::initVariables()
 
     DatumPtr platform(LOGOPLATFORM);
     DatumPtr version(LOGOVERSION);
+    DatumPtr qlogoVersion(QLOGOVERSION);
     DatumPtr trueDatumPtr(QObject::tr("true"));
 
     setDatumForName(argvBuilder.finishedList(), SpecialVars::name(SpecialVars::Id::Argv));
     setDatumForName(commandLineBuilder.finishedList(), SpecialVars::name(SpecialVars::Id::CommandLine));
     setDatumForName(platform, SpecialVars::name(SpecialVars::Id::LogoPlatform));
     setDatumForName(version, SpecialVars::name(SpecialVars::Id::LogoVersion));
+    setDatumForName(qlogoVersion, SpecialVars::name(SpecialVars::Id::QlogoVersion));
     setDatumForName(trueDatumPtr, SpecialVars::name(SpecialVars::Id::AllowGetSet));
     const QString &caseIgnoredP = SpecialVars::name(SpecialVars::Id::CaseIgnoredP);
     setDatumForName(trueDatumPtr, caseIgnoredP);
@@ -690,6 +692,7 @@ void Kernel::initVariables()
     // "ARGV"
     // "LOGOPLATFORM"
     // "LOGOVERSION"
+    // "QLOGOVERSION"
     // "ALLOWGETSET"
     // "COMMANDLINE"
 }

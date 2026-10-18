@@ -2058,6 +2058,16 @@ LOGOVERSION						(variable)
 
 COD***/
 
+/***DOC QLOGOVERSION
+QLOGOVERSION						(variable)
+
+	a string indicating the QLogo version in three parts, separated by
+	hyphens. The first part is the latest git tag. The second part is the number
+	number of commits since the latest tag. The third part is the commit
+	hash.
+
+COD***/
+
 /***DOC PRINTDEPTHLIMIT
 PRINTDEPTHLIMIT						(variable)
 

@@ -178,9 +178,6 @@ Sets the directory where ~EDIT~ writes its temporary file. The empty list select
 
 QLogo is designed from the ground up to have a very responsive user interface. The canvas will always redraw itself whenever the window is resized. ~REFRESH~ and ~NOREFRESH~ are accepted for compatibility and do nothing.
 
-**** ~SETPENPATTERN~ and ~PENPATTERN~:
-
-This isn't implemented yet because I haven't yet decided what kinds of patterns are wanted or useful.
 
 
 *** The following variables have no special meaning:
@@ -241,6 +238,10 @@ GUI only. Presents a modal file dialog so the user can select a file. Outputs th
 **** ~TEMPLOC~:
 
 Outputs the directory ~EDIT~ uses for its temporary file. See ~SETTEMPLOC~.
+
+**** ~QLOGOVERSION~
+
+Outputs a string that is composed of the most recent git tag, number of commits since that tag, and the most recent git commit hash.
 
 **** ~ARGV~:
 

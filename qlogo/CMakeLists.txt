@@ -110,6 +110,7 @@ target_include_directories("${QLOGO_BIN}" PUBLIC
 target_compile_definitions("${QLOGO_BIN}" PRIVATE
   ${LLVM_DEFINITIONS_CLEANED}
   "LOGOVERSION=\"${PROJECT_VERSION}\""
+  "QLOGOVERSION=\"${QLOGO_VERSION}\""
 )
 
 target_compile_definitions("${QLOGO_BIN}" PRIVATE QT_FORCE_ASSERTS)
