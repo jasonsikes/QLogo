@@ -1518,6 +1518,9 @@ void Kernel::ece_popEvaluator()
             !cf->runningSourceList_.listValue()->isEmpty() &&
             cf->runningSourceList_.listValue()->head.datumValue() == startingList.datumValue())
         {
+            // startingList_ is the procedure source line (list_ may have been
+            // replaced by ece_chainList). Remember it in case there is a macro error later.
+            cf->lastBodyLine_ = startingList;
             cf->runningSourceList_ = cf->runningSourceList_.listValue()->tail;
         }
         nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
@@ -1561,6 +1564,10 @@ void Kernel::ece_exitProcedure()
         if (currentCallFrame()->isMacroCall_)
         {
             ece_trace("ece_exitProcedure with macro return");
+            // STOP and other commands return their AST node as "no value".
+            // That is not a list for the caller to run.
+            if ((retval.isa() & Datum::typeUnboundMask) != 0)
+                retval = nothing();
             ece_expandMacroReturn(retval);
             break;
         }
@@ -1622,14 +1629,22 @@ void Kernel::ece_expandMacroReturn(const DatumPtr &value)
     DatumPtr expansion = value;
     bool expectsSingle = currentCallFrame()->macroExpectsSingleExpression_;
     bool tailSplice = currentCallFrame()->macroTailSplice_;
+    DatumPtr sourceLine = currentCallFrame()->lastBodyLine_;
+    if (!sourceLine.isList())
+        sourceLine = emptyList();
 
-    ece_trace("ece_expandMacroReturn: popping macro frame");
-    callFrameStack_.pop_back();
-    Q_ASSERT(currentCallFrame()->evaluationStackSize() > 0);
+    // Create the error before popping so commonInit names this procedure.
+    auto macroError = [&](FCError *err) {
+        if (err->line().isNothing())
+            err->line() = sourceLine;
+        ece_trace("ece_expandMacroReturn: popping macro frame");
+        callFrameStack_.pop_back();
+        ece_resumeCaller(DatumPtr(err));
+    };
 
     if (!expansion.isList())
     {
-        ece_resumeCaller(DatumPtr(FCError::macroReturnedNotList(expansion)));
+        macroError(FCError::macroReturnedNotList(expansion));
         return;
     }
 
@@ -1642,17 +1657,21 @@ void Kernel::ece_expandMacroReturn(const DatumPtr &value)
         }
         catch (FCError *err)
         {
-            ece_resumeCaller(DatumPtr(err));
+            macroError(err);
             return;
         }
         if (expressions.size() != 1)
         {
             FCError *err = expressions.isEmpty() ? FCError::macroReturnedNotList(expansion)
                                                  : FCError::multipleExpressions(expansion);
-            ece_resumeCaller(DatumPtr(err));
+            macroError(err);
             return;
         }
     }
+
+    ece_trace("ece_expandMacroReturn: popping macro frame");
+    callFrameStack_.pop_back();
+    Q_ASSERT(currentCallFrame()->evaluationStackSize() > 0);
 
     if (tailSplice)
     {

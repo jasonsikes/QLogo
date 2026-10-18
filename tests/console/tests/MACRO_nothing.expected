@@ -1,2 +1,6 @@
 ? > err1 defined
-? Macro returned nothing instead of a list
+? Macro returned nothing instead of a list in err1
+[]
+? > > err2 defined
+? Macro returned nothing instead of a list in err2
+[stop]

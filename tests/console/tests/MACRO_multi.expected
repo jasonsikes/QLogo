@@ -1,2 +1,3 @@
 ? > > two defined
-? Runlist [print "a print "b] has more than one expression
+? Runlist [print "a print "b] has more than one expression in two
+[output [print "a print "b]]

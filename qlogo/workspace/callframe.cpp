@@ -79,6 +79,8 @@ void CallFrame::applyContinuation(ASTNode *node, const DatumPtr &arguments, bool
     parameters_ = body.procedureValue()->instructionList_.listValue()->head;
     arguments_ = arguments;
     isReadingArgs_ = true;
+    // The continued procedure has not run a body line yet.
+    lastBodyLine_ = nothing();
     // isMacroCall_ and the splice flags stay as they were for the original call.
     // demandNothing_ only turns on: STOP TCO after OUTPUT TCO still forbids a value.
     if (demandNothing)

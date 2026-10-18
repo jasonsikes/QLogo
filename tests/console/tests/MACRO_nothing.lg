@@ -1,3 +1,7 @@
 .macro err1
 end
 err1
+.macro err2
+stop
+end
+err2

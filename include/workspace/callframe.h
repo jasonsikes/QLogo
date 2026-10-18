@@ -81,6 +81,10 @@ struct CallFrame
     /// tail when that line completes.
     DatumPtr runningSourceList_;
 
+    /// @brief Procedure body line that most recently finished in this frame.
+    /// @details Nothing until a body line completes. May be the source of an error, if one occurs.
+    DatumPtr lastBodyLine_;
+
     /// @brief Set this value to set a jump location within a line.
     int32_t jumpLocation_ = 0;
 
