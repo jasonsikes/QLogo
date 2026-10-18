@@ -977,6 +977,7 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     if (dump.showModuleIR)
         emitModuleIR(*scaff_->theModule_);
 
+    scaff_->builder_.SetCurrentDebugLocation(DebugLoc());
     auto tsm = ThreadSafeModule(std::move(scaff_->theModule_), std::move(scaff_->theContext_));
     auto [addr, rt] = addModuleAndLookup(*lljit_, std::move(tsm), scaff_->name_);
     compiledText->rt_ = std::move(rt);
