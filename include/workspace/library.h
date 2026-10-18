@@ -138,4 +138,10 @@ class Help : public DatabaseConnection
     QString helpText(const QString &cmdName);
 };
 
+/// @brief Set Config::cslsDirectory_ from the command line, CSLS, or defaults.
+/// @details Uses --setcslsloc if given, else the CSLS environment variable, else
+/// the CSLS directory next to the library and help databases (Linux
+/// share/qlogo/csls, macOS Resources/csls, Windows next to the binary).
+void initCslsDirectory();
+
 #endif // LIBRARY_H

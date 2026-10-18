@@ -207,6 +207,15 @@ const bool debugBuild_ = false;
     /// @brief The path to the help database file.
     QString paramHelpDatabaseFilepath_;
 
+    /// @brief Override for the CSLS directory from --setcslsloc.
+    /// @details Empty means search the CSLS environment variable, then the
+    /// default data locations used by the library and help databases.
+    QString paramCslsDirectory_;
+
+    /// @brief The resolved CSLS directory path.
+    /// @details Empty if no override was given and no default directory was found.
+    QString cslsDirectory_;
+
     // TODO: These should be set in the CMake file
 
     /// @brief The default library database filename.
@@ -214,6 +223,9 @@ const bool debugBuild_ = false;
 
     /// @brief The default help database filename.
     const char *defaultHelpDbFilename_ = "qlogo_help.db";
+
+    /// @brief The default CSLS directory name relative to the data location.
+    const char *defaultCslsDirName_ = "csls";
 };
 
 enum PenModeEnum

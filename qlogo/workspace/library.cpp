@@ -27,25 +27,21 @@
 #include <QSqlQuery>
 #include <QStringList>
 
-/// @brief Find the path to the database file.
-/// @param defaultDBName The default name of the database file.
-/// @returns The path to the database file, or an empty string if the file is not found.
-/// @note this functions checks for the database file in the following locations:
+/// @brief Find a data file or directory next to the library and help databases.
+/// @param name The file or directory name to search for.
+/// @returns The path if found, or an empty string.
+/// @note Candidates, in order:
 /// - The share directory relative to wherever the app binary is. (Linux)
 /// - The Resources directory relative to wherever the app binary is. (macOS)
 /// - The same directory as the app binary. (Windows)
-QString findDBPath(const QString &defaultDBName)
+QString findDataPath(const QString &name)
 {
-    // Build a list of candidate locations to try.
     QStringList candidates;
     QString appDir = QCoreApplication::applicationDirPath();
 
-    // The share directory relative to wherever the app binary is. (Linux)
-    candidates << QDir::cleanPath(appDir + "/../share/qlogo/" + defaultDBName);
-    // The Resources directory relative to wherever the app binary is. (macOS)
-    candidates << QDir::cleanPath(appDir + "/../Resources/" + defaultDBName);
-    // The same directory as the app binary. (Windows)
-    candidates << QDir::cleanPath(appDir + "/" + defaultDBName);
+    candidates << QDir::cleanPath(appDir + "/../share/qlogo/" + name);
+    candidates << QDir::cleanPath(appDir + "/../Resources/" + name);
+    candidates << QDir::cleanPath(appDir + "/" + name);
 
     for (auto &c : candidates)
     {
@@ -54,6 +50,33 @@ QString findDBPath(const QString &defaultDBName)
     }
 
     return {};
+}
+
+/// @brief Find the path to the database file.
+/// @param defaultDBName The default name of the database file.
+/// @returns The path to the database file, or an empty string if the file is not found.
+QString findDBPath(const QString &defaultDBName)
+{
+    return findDataPath(defaultDBName);
+}
+
+void initCslsDirectory()
+{
+    Config &cfg = Config::get();
+    if (!cfg.paramCslsDirectory_.isEmpty())
+    {
+        cfg.cslsDirectory_ = QDir::cleanPath(cfg.paramCslsDirectory_);
+        return;
+    }
+
+    const QString env = qEnvironmentVariable("CSLS");
+    if (!env.isEmpty())
+    {
+        cfg.cslsDirectory_ = QDir::cleanPath(env);
+        return;
+    }
+
+    cfg.cslsDirectory_ = findDataPath(QString::fromLatin1(cfg.defaultCslsDirName_));
 }
 
 /// @brief Initialize a database connection.
