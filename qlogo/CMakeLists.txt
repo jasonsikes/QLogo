@@ -194,7 +194,10 @@ if(WIN32)
       "$<IF:$<CONFIG:Debug>,--debug,--release>"
       --no-translations
       "$<TARGET_FILE:${QLOGO_BIN}>"
-    COMMENT "Deploying Qt runtime for ${QLOGO_BIN}"
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+      "${QLOGO_CSLS_SRC}"
+      "$<TARGET_FILE_DIR:${QLOGO_BIN}>/csls"
+    COMMENT "Deploying Qt runtime and CSLS files for ${QLOGO_BIN}"
     VERBATIM
   )
 endif()

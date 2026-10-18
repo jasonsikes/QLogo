@@ -35,8 +35,15 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets Sql Svg)
 set(QLOGO_DATA_DIR "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_DATADIR}/${QLOGO_BIN}")
 set(QLOGO_HELP_DB "${QLOGO_DATA_DIR}/${QLOGO_HELP}")
 set(QLOGO_LIB_DB "${QLOGO_DATA_DIR}/${QLOGO_LIB}")
+set(QLOGO_CSLS_SRC "${CMAKE_SOURCE_DIR}/csls")
+set(QLOGO_CSLS_DIR "${QLOGO_DATA_DIR}/csls")
 
 file(MAKE_DIRECTORY "${QLOGO_DATA_DIR}")
+
+file(GLOB QLOGO_CSLS_FILES CONFIGURE_DEPENDS "${QLOGO_CSLS_SRC}/*")
+if(NOT QLOGO_CSLS_FILES)
+    message(FATAL_ERROR "No CSLS files found in ${QLOGO_CSLS_SRC}")
+endif()
 
 execute_process(
     COMMAND git describe --tags
@@ -94,12 +101,24 @@ add_custom_command(
 )
 add_custom_target(qlogo_help_db ALL DEPENDS "${QLOGO_HELP_DB}")
 
+add_custom_command(
+    OUTPUT "${CMAKE_BINARY_DIR}/csls.stamp"
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+            "${QLOGO_CSLS_SRC}"
+            "${QLOGO_CSLS_DIR}"
+    COMMAND "${CMAKE_COMMAND}" -E touch "${CMAKE_BINARY_DIR}/csls.stamp"
+    DEPENDS ${QLOGO_CSLS_FILES}
+    COMMENT "Copying CSLS files to ${QLOGO_CSLS_DIR}"
+    VERBATIM
+)
+add_custom_target(qlogo_csls ALL DEPENDS "${CMAKE_BINARY_DIR}/csls.stamp")
+
 add_subdirectory("${QLOGO_BIN}")
 
 add_subdirectory("${QLOGO_GUI}")
 
-add_dependencies("${QLOGO_BIN}" qlogo_library_db qlogo_help_db)
-add_dependencies("${QLOGO_GUI}" qlogo_library_db qlogo_help_db)
+add_dependencies("${QLOGO_BIN}" qlogo_library_db qlogo_help_db qlogo_csls)
+add_dependencies("${QLOGO_GUI}" qlogo_library_db qlogo_help_db qlogo_csls)
 
 file(COPY "${CMAKE_SOURCE_DIR}/tests"
     DESTINATION "${CMAKE_BINARY_DIR}"
@@ -114,6 +133,9 @@ install(TARGETS "${QLOGO_GUI}" "${QLOGO_BIN}"
 if(WIN32)
     install(FILES "${QLOGO_HELP_DB}" "${QLOGO_LIB_DB}"
         DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    )
+    install(DIRECTORY "${QLOGO_CSLS_SRC}/"
+        DESTINATION "${CMAKE_INSTALL_BINDIR}/csls"
     )
 elseif(UNIX AND NOT APPLE)
     # On Linux, findDBPath uses ../share/qlogo relative to the binary.

@@ -6,6 +6,8 @@ set(RESOURCE_FILES
   "${QLOGO_LIB_DB}"
 )
 set_source_files_properties("${QLOGO_HELP_DB}" "${QLOGO_LIB_DB}" PROPERTIES GENERATED TRUE)
+set_source_files_properties(${QLOGO_CSLS_FILES} PROPERTIES
+    MACOSX_PACKAGE_LOCATION "Resources/csls")
 set(GUI_SOURCES
   canvas.cpp
   console.cpp
@@ -40,6 +42,7 @@ elseif(APPLE)
       ${GUI_SOURCES}
       ${app_icon_macos}
       ${RESOURCE_FILES}
+      ${QLOGO_CSLS_FILES}
     )
 else()
     qt_add_executable("${QLOGO_GUI}"
@@ -87,7 +90,10 @@ if(WIN32)
       "$<IF:$<CONFIG:Debug>,--debug,--release>"
       --no-translations
       "$<TARGET_FILE:${QLOGO_GUI}>"
-    COMMENT "Deploying Qt runtime for ${QLOGO_GUI}"
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+      "${QLOGO_CSLS_SRC}"
+      "$<TARGET_FILE_DIR:${QLOGO_GUI}>/csls"
+    COMMENT "Deploying Qt runtime and CSLS files for ${QLOGO_GUI}"
     VERBATIM
   )
 endif()
