@@ -272,7 +272,7 @@ class Kernel
     /// contents list from contentsListFromDatum.
     /// @param contentslist A list of three lists of names.
     /// @details A missing name is ignored. A primitive procedure is an error
-    /// (REDEFP is not consulted). Names before a rejected primitive stay erased.
+    /// Names before a rejected primitive stay erased.
     /// Buried, traced, and stepped marks on a name are left in place.
     void eraseFromContentsList(const DatumPtr &contentslist);
 

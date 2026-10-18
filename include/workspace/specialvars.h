@@ -36,7 +36,6 @@
     X(LoadNoisily,       "LOADNOISILY")       \
     X(PrintDepthLimit,   "PRINTDEPTHLIMIT")   \
     X(PrintWidthLimit,   "PRINTWIDTHLIMIT")   \
-    X(RedefP,            "REDEFP")            \
     X(Startup,           "STARTUP")           \
     X(UnburyOnEdit,      "UNBURYONEDIT")      \
 

@@ -2084,13 +2084,6 @@ PRINTWIDTHLIMIT						(variable)
 
 COD***/
 
-/***DOC REDEFP
-REDEFP							(variable)
-
-	if TRUE, allows primitives to be erased (ERASE) or redefined (COPYDEF).
-
-COD***/
-
 /***DOC STARTUP
 STARTUP							(variable)
 

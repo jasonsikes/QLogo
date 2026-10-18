@@ -186,6 +186,10 @@ QLogo is designed from the ground up to have a very responsive user interface. T
 
 Qt has strong support for internationalization, but in QLogo it is only partially implemented. Internationalization will be supported soon.
 
+**** ~USEALTERNATENAMES~:
+
+Qt has strong support for internationalization, but in QLogo it is only partially implemented. Internationalization will be supported soon.
+
 
 *** The following commands are NEW:
 
