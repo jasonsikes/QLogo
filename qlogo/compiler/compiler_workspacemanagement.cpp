@@ -16,7 +16,6 @@
 
 #include "astnode.h"
 #include "compiler.h"
-#include "compiler_internal.h"
 #include "datum_types.h"
 #include "workspace/exports.inc"
 #include "flowcontrol.h"

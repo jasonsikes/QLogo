@@ -16,7 +16,6 @@
 
 #include "compiler.h"
 #include "astnode.h"
-#include "compiler_internal.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringSwitch.h"
@@ -29,15 +28,19 @@
 #include "llvm/BinaryFormat/Dwarf.h"
 #include "llvm/ExecutionEngine/Orc/Debugging/DebuggerSupport.h"
 #include "llvm/IR/Argument.h"
+#include "llvm/IR/Attributes.h"
 #include "llvm/IR/CFG.h"
+#include "llvm/IR/DIBuilder.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/DebugInfoMetadata.h"
 #include "llvm/IR/MDBuilder.h"
 #include "llvm/IR/Metadata.h"
+#include "llvm/IR/Verifier.h"
 #include "llvm/Passes/OptimizationLevel.h"
 #include "llvm/Support/Error.h"
 #include "llvm/Support/ModRef.h"
 #include "llvm/Support/GraphWriter.h"
+#include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Transforms/InstCombine/InstCombine.h"
@@ -307,15 +310,41 @@ void emitDumpText(const std::string &text)
     StreamManager::get().print(output);
 }
 
+void verifyIROrThrow(bool broken, const std::string &str)
+{
+    if (!broken)
+        return;
+    std::cerr << "IR verification failed:\n" << str << "\n";
+    throw FCError::fatalInternal();
+}
+
+void verifyFunctionOrThrow(Function &F)
+{
+    std::string str;
+    raw_string_ostream output(str);
+    verifyIROrThrow(verifyFunction(F, &output), str);
+}
+
 void verifyModuleOrThrow(Module &M)
 {
     std::string str;
     raw_string_ostream output(str);
-    if (verifyModule(M, &output))
-    {
-        std::cerr << "IR verification failed:\n" << str << "\n";
-        throw FCError::fatalInternal();
-    }
+    verifyIROrThrow(verifyModule(M, &output), str);
+}
+
+void emitModuleIR(Module &M)
+{
+    std::string str;
+    raw_string_ostream os(str);
+    M.print(os, nullptr);
+    os.flush();
+    emitDumpText(str);
+}
+
+bool skipAllocaLifetime(AllocaInst *ai)
+{
+    auto *arr = dyn_cast<ArrayType>(ai->getAllocatedType());
+    return arr && arr->getNumElements() == 0;
 }
 } // namespace
 
@@ -382,13 +411,13 @@ static std::string sanitizeIrStem(const std::string &utf8)
     return out;
 }
 
-Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm, bool debugLogging,
-                   std::string irStem, std::string displayName, std::string debugSource)
+Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm,
+                   std::string displayName, std::string debugSource)
     : theContext_(std::make_unique<LLVMContext>()), theModule_(std::make_unique<Module>("QLogoJIT", *theContext_)),
       builder_(IRBuilder<>(*theContext_)), theLAM_(LoopAnalysisManager()),
       theFAM_(FunctionAnalysisManager()), theCGAM_(CGSCCAnalysisManager()), theMAM_(ModuleAnalysisManager()),
       thePIC_(PassInstrumentationCallbacks()),
-      theSI_(StandardInstrumentations(*theContext_, debugLogging)),
+      theSI_(StandardInstrumentations(*theContext_, /*DebugLogging=*/false)),
       thePB_(tm, PipelineTuningOptions(), std::nullopt, &thePIC_)
 {
     theModule_->setDataLayout(dataLayout);
@@ -452,8 +481,10 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm, bool d
 
     registerPassAnalyses(thePB_, thePIC_, theMAM_, theFAM_, theLAM_, theCGAM_, theSI_);
 
+    if (displayName.empty())
+        displayName = "list";
     static uint64_t functionCount = 1;
-    name_ = "logo_" + sanitizeIrStem(irStem) + "_" + std::to_string(functionCount++);
+    name_ = "logo_" + sanitizeIrStem(displayName) + "_" + std::to_string(functionCount++);
 
     auto addr_type = PointerType::get(*theContext_, 0);
     auto int32_type = Type::getInt32Ty(*theContext_);
@@ -514,8 +545,6 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm, bool d
     resumeHandle_->setName("resumeHandle");
     theFunction_->getArg(3)->addAttr(Attribute::NoUndef);
 
-    if (displayName.empty())
-        displayName = "list";
     std::string fileName = sanitizeIrStem(displayName) + ".lg";
     theModule_->setSourceFileName(fileName);
     theModule_->addModuleFlag(Module::Warning, "Debug Info Version", DEBUG_METADATA_VERSION);
@@ -526,7 +555,7 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm, bool d
     if (!debugSource.empty())
         source = debugSource;
     file_ = dbg_->createFile(fileName, "<qlogo>", std::nullopt, source);
-    cu_ = dbg_->createCompileUnit(dwarf::DW_LANG_C, file_, "QLogo", true, "", 0);
+    dbg_->createCompileUnit(dwarf::DW_LANG_C, file_, "QLogo", true, "", 0);
     DISubroutineType *fnTyDI =
         dbg_->createSubroutineType(dbg_->getOrCreateTypeArray({}));
     sp_ = dbg_->createFunction(
@@ -534,6 +563,8 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm, bool d
         DISubprogram::SPFlagDefinition | DISubprogram::SPFlagOptimized);
     theFunction_->setSubprogram(sp_);
 }
+
+Scaffold::~Scaffold() = default;
 
 void Scaffold::setDebugLoc(unsigned line, unsigned column)
 {
@@ -825,9 +856,8 @@ BasicBlock *Compiler::generateTOC(QList<BasicBlock *> blocks, Function *theFunct
 std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, List *aList)
 {
     const DumpRequest dump = dumpRequest_;
-    const QString display = jitDisplayName(aList);
-    Scaffold compilerScaffolding(lljit_->getDataLayout(), targetMachine_.get(), dump.any(),
-                                 display.toUtf8().toStdString(), display.toUtf8().toStdString(),
+    const std::string display = jitDisplayName(aList).toUtf8().toStdString();
+    Scaffold compilerScaffolding(lljit_->getDataLayout(), targetMachine_.get(), display,
                                  aList->toString(Datum::ToStringFlags_Source, 4, 80).toUtf8().toStdString());
     compilerScaffolding.mangleNames_ = dump.any();
 
@@ -859,7 +889,7 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     }
 
     BasicBlock *currentBlock = BasicBlock::Create(*scaff_->theContext_, "b0", scaff_->theFunction_);
-    // After FirstBlock so it is last until body blocks insert before it.
+    // After b0 so it is last until body blocks insert before it.
     scaff_->mainBailoutBB_ = scaff_->createBasicBlock("MainBailout");
 
     QList<BasicBlock *> blocks = {currentBlock};
@@ -927,15 +957,7 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     }
 
     if (Config::get().verifyIR_)
-    {
-        std::string str;
-        raw_string_ostream output(str);
-        if (verifyFunction(*(scaff_->theFunction_), &output))
-        {
-            std::cerr << "IR verification failed:\n" << str << "\n";
-            throw FCError::fatalInternal();
-        }
-    }
+        verifyFunctionOrThrow(*scaff_->theFunction_);
 
     // Lower coroutine intrinsics before backend.
     runCoroutinePasses(*scaff_->theModule_, scaff_->theMAM_);
@@ -944,13 +966,7 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
         verifyModuleOrThrow(*scaff_->theModule_);
 
     if (dump.showIR)
-    {
-        std::string str;
-        llvm::raw_string_ostream os(str);
-        scaff_->theModule_->print(os, nullptr);
-        os.flush();
-        emitDumpText(str);
-    }
+        emitModuleIR(*scaff_->theModule_);
 
     // Optimize the ramp and every coro-split clone.
     runOptimizationPipeline(*scaff_->theModule_, scaff_->thePB_, scaff_->theMAM_);
@@ -959,13 +975,7 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
         verifyModuleOrThrow(*scaff_->theModule_);
 
     if (dump.showModuleIR)
-    {
-        std::string str;
-        llvm::raw_string_ostream os(str);
-        scaff_->theModule_->print(os, nullptr);
-        os.flush();
-        emitDumpText(str);
-    }
+        emitModuleIR(*scaff_->theModule_);
 
     auto tsm = ThreadSafeModule(std::move(scaff_->theModule_), std::move(scaff_->theContext_));
     auto [addr, rt] = addModuleAndLookup(*lljit_, std::move(tsm), scaff_->name_);
@@ -1604,40 +1614,26 @@ AllocaInst *Compiler::generateChildrenAlloca(ASTNode *node, TypeMask expected, c
 
 Value *Compiler::allocaN(AllocaInst *ai)
 {
-    Type *ty = ai->getAllocatedType();
-    if (auto *arr = dyn_cast<ArrayType>(ty))
-        return CoInt32(static_cast<int32_t>(arr->getNumElements()));
-    if (auto *n = dyn_cast<ConstantInt>(ai->getArraySize()))
-        return n;
-    return CoInt32(1);
+    return CoInt32(static_cast<int32_t>(cast<ArrayType>(ai->getAllocatedType())->getNumElements()));
 }
 
 Value *Compiler::gepAllocaElem(AllocaInst *ai, unsigned i, const std::string &name)
 {
     Type *ty = ai->getAllocatedType();
-    if (ty->isArrayTy())
-        return scaff_->builder_.CreateConstInBoundsGEP2_32(ty, ai, 0, i, name);
-    return scaff_->builder_.CreateConstInBoundsGEP1_32(ty, ai, i, name);
+    Q_ASSERT(ty->isArrayTy());
+    return scaff_->builder_.CreateConstInBoundsGEP2_32(ty, ai, 0, i, name);
 }
 
 void Compiler::beginAllocaLifetime(AllocaInst *ai)
 {
-    if (auto *arr = dyn_cast<ArrayType>(ai->getAllocatedType()))
-    {
-        if (arr->getNumElements() == 0)
-            return;
-    }
-    scaff_->builder_.CreateLifetimeStart(ai);
+    if (!skipAllocaLifetime(ai))
+        scaff_->builder_.CreateLifetimeStart(ai);
 }
 
 void Compiler::endAllocaLifetime(AllocaInst *ai)
 {
-    if (auto *arr = dyn_cast<ArrayType>(ai->getAllocatedType()))
-    {
-        if (arr->getNumElements() == 0)
-            return;
-    }
-    scaff_->builder_.CreateLifetimeEnd(ai);
+    if (!skipAllocaLifetime(ai))
+        scaff_->builder_.CreateLifetimeEnd(ai);
 }
 
 AllocaInst *Compiler::generateAllocaAry(const std::vector<llvm::Value *> &values, const std::string &name)

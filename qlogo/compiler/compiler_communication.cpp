@@ -16,7 +16,6 @@
 
 #include "astnode.h"
 #include "compiler.h"
-#include "compiler_internal.h"
 #include "interface/streammanager.h"
 #include "sharedconstants.h"
 #include "workspace/exports.inc"
