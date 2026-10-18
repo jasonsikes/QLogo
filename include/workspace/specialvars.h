@@ -39,7 +39,7 @@
     X(RedefP,            "REDEFP")            \
     X(Startup,           "STARTUP")           \
     X(UnburyOnEdit,      "UNBURYONEDIT")      \
-    X(UseAlternateNames, "USEALTERNATENAMES") \
+
 
 /// @brief Names of variables owned by the interpreter.
 namespace SpecialVars

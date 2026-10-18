@@ -2107,12 +2107,3 @@ UNBURYONEDIT						(variable)
 	want to define and bury procedures must do it in that order.
 
 COD***/
-
-/***DOC USEALTERNATENAMES
-USEALTERNATENAMES					(variable)
-
-	if TRUE, causes Logo to generate non-English words (from the
-	Messages file) instead of TRUE, FALSE, END, etc.
-
-
-COD***/
