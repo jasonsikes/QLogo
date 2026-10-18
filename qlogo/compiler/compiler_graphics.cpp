@@ -916,24 +916,34 @@ SETPENPATTERN pattern
     the list are changed.
 
     Line style words:
-        SOLIDLINE  DASHLINE  DOTLINE  DASHDOTLINE  DASHDOTDOTLINE
+        SOLIDLINE: a plain line.
+        DASHLINE: dashes separated by a few pixels
+        DOTLINE: dots separated by a few pixels
+        DASHDOTLINE: alternate dots and dashes
+        DASHDOTDOTLINE: one dash, two dots, one dash, two dots.
+        [n1 n2 n3 ...]: a custom dash pattern (on/off lengths,
+          in units of the pen width).
+
+          Note: A sublist can contain an odd number of numbers, in which
+          case the last element will be extended by the length of the first
+          element when the pattern repeats.
 
     Cap style words:
-        FLATCAP  SQUARECAP  ROUNDCAP
+        FLATCAP: a square line end that does not cover the end point of the line.
+        SQUARECAP: a square line end that covers the end point and extends beyond
+          it by half the line width.
+        ROUNDCAP: a rounded line end.
 
     Join style words:
-        MITERJOIN  BEVELJOIN  ROUNDJOIN
+        MITERJOIN: the outer edges of the lines are extended to meet at an angle,
+          and this area is filled.
+        BEVELJOIN: the triangular notch between the two lines is filled.
+        ROUNDJOIN: a circular arc between the two lines is filled.
 
-    A sublist of positive numbers is a custom dash pattern (on/off lengths,
-    in units of the pen width). For example:
 
         SETPENPATTERN [ROUNDCAP]
         SETPENPATTERN [DASHLINE BEVELJOIN]
         SETPENPATTERN [[4 2 1 2] ROUNDCAP]
-
-    A sublist can contain an odd number of numbers, in which case the last
-    element will be extended by the length of the first element when the
-    pattern repeats.
 
     A dash sublist sets a custom dash and may not be combined with a line
     style word.
