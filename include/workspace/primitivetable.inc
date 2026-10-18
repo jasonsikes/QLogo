@@ -356,6 +356,7 @@ stringToCmd.insert(StringConstants::cmdStrSETEDITOR(), Cmd_t{&Compiler::genSeted
 stringToCmd.insert(StringConstants::cmdStrEDITOR(), Cmd_t{&Compiler::genEditor, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrSETTEMPLOC(), Cmd_t{&Compiler::genSettemploc, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrTEMPLOC(), Cmd_t{&Compiler::genTemploc, 0, 0, 0, TypeD});
+stringToCmd.insert(StringConstants::cmdStrSETCSLSLOC(), Cmd_t{&Compiler::genSetcslsloc, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrGC(), Cmd_t{&Compiler::genGc, 0, 0, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStr_dot_SETSEGMENTSIZE(), Cmd_t{&Compiler::genDotSetsegmentsize, 1, 1, 1, TypeN});
 

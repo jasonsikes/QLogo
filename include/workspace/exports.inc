@@ -306,6 +306,7 @@ JIT_EXPORT(void, stdSeteditor, (addr_t commandAddr))
 JIT_EXPORT(addr_t, stdEditor, (addr_t eAddr))
 JIT_EXPORT(void, stdSettemploc, (addr_t pathAddr))
 JIT_EXPORT(addr_t, stdTemploc, (addr_t eAddr))
+JIT_EXPORT(void, stdSetcslsloc, (addr_t pathAddr))
 
 #ifdef QLOGO_JIT_EXPORT_DEFAULT
 #undef JIT_EXPORT

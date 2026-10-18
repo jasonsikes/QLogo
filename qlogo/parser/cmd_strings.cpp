@@ -2124,6 +2124,12 @@ const QString &StringConstants::cmdStrTEMPLOC()
     return str;
 }
 
+const QString &StringConstants::cmdStrSETCSLSLOC()
+{
+    static const QString str = QObject::tr("SETCSLSLOC");
+    return str;
+}
+
 const QString &StringConstants::cmdStrGC()
 {
     static const QString str = QObject::tr("GC");

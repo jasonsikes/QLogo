@@ -1370,6 +1370,25 @@ Value *Compiler::genTemploc(const DatumPtr &node, TypeMask expected)
     return cs.ret(generateCallExtern(stdTemploc, PaAddr(scaff_->evaluator_)));
 }
 
+/***DOC SETCSLSLOC
+SETCSLSLOC path
+
+    command.  Tells Logo to use the specified directory for the
+    CSLSLOAD command, instead of the default directory.  The format
+    of a path depends on your operating system.  See CSLSLOAD.
+
+COD***/
+// CMD SETCSLSLOC 1 1 1 n
+Value *Compiler::genSetcslsloc(const DatumPtr &node, TypeMask expected)
+{
+
+    CallSite cs(this, node, TypeDatum);
+    Value *path = generateFromDatum(Datum::typeWord, node.astnodeValue(), cs.child(0));
+
+    generateCallExtern(stdSetcslsloc, PaAddr(path));
+    return cs.ret(generateVoidRetval(node));
+}
+
 /***DOC GC
 GC
 (GC anything)

@@ -26,8 +26,10 @@
 #include "compiler_types.h"
 #include "workspace/callframe.h"
 #include "interface/streammanager.h"
+#include "sharedconstants.h"
 
 #include <QDebug>
+#include <QDir>
 #include <QObject>
 #include <QStringBuilder>
 #include <QStringList>
@@ -1154,5 +1156,12 @@ EXPORTC addr_t stdTemploc(addr_t eAddr) noexcept
     DatumPtr retval = Kernel::get().tempLoc();
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval.datumValue());
+}
+
+/// SETCSLSLOC: store the CSLS directory used by CSLSLOAD.
+EXPORTC void stdSetcslsloc(addr_t pathAddr) noexcept
+{
+    auto *d = reinterpret_cast<Datum *>(pathAddr);
+    Config::get().cslsDirectory_ = QDir::cleanPath(d->wordValue()->toString());
 }
 

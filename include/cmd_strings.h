@@ -361,6 +361,7 @@ const QString &cmdStrSETEDITOR();
 const QString &cmdStrEDITOR();
 const QString &cmdStrSETTEMPLOC();
 const QString &cmdStrTEMPLOC();
+const QString &cmdStrSETCSLSLOC();
 const QString &cmdStrGC();
 const QString &cmdStr_dot_SETSEGMENTSIZE();
 } // namespace StringConstants

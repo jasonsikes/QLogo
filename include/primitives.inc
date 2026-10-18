@@ -274,6 +274,7 @@ llvm::Value *genSeteditor(const DatumPtr &node, TypeMask expected);
 llvm::Value *genEditor(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSettemploc(const DatumPtr &node, TypeMask expected);
 llvm::Value *genTemploc(const DatumPtr &node, TypeMask expected);
+llvm::Value *genSetcslsloc(const DatumPtr &node, TypeMask expected);
 llvm::Value *genGc(const DatumPtr &node, TypeMask expected);
 llvm::Value *genDotSetsegmentsize(const DatumPtr &node, TypeMask expected);
 #endif // PRIMITIVE_HEADER_H
