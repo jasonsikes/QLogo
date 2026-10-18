@@ -18,19 +18,18 @@
 #include "compiler.h"
 #include "compiler_internal.h"
 #include "datum_types.h"
+#include "sharedconstants.h"
+#include "workspace/callframe.h"
 #include "workspace/exports.inc"
 #include "workspace/kernel.h"
-#include "sharedconstants.h"
 #include "workspace/turtle.h"
-#include "workspace/callframe.h"
 using namespace llvm;
 using namespace llvm::orc;
 
 Value *Compiler::generateColorFromDatum(ASTNode *parent, Value *src)
 {
-    return generateValidationDatum(parent, src, [this](Value *candidate) {
-        return generateCallExtern(isValidColor, PaAddr(candidate));
-    });
+    return generateValidationDatum(
+        parent, src, [this](Value *candidate) { return generateCallExtern(isValidColor, PaAddr(candidate)); });
 }
 
 Value *Compiler::generateColorIndexFromDouble(ASTNode *parent, Value *src, double lowerLimit)
@@ -174,8 +173,8 @@ Value *Compiler::genSetx(const DatumPtr &node, TypeMask expected)
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeReal);
     Value *x = cs.child(0);
-    return cs.ret(generateNotFlowControl(
-        generateCallExtern(setTurtleX, PaAddr(CoAddr(node.astnodeValue())), PaDouble(x))));
+    return cs.ret(
+        generateNotFlowControl(generateCallExtern(setTurtleX, PaAddr(CoAddr(node.astnodeValue())), PaDouble(x))));
 }
 /***DOC SETY
 SETY ycor
@@ -191,8 +190,8 @@ Value *Compiler::genSety(const DatumPtr &node, TypeMask expected)
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeReal);
     Value *y = cs.child(0);
-    return cs.ret(generateNotFlowControl(
-        generateCallExtern(setTurtleY, PaAddr(CoAddr(node.astnodeValue())), PaDouble(y))));
+    return cs.ret(
+        generateNotFlowControl(generateCallExtern(setTurtleY, PaAddr(CoAddr(node.astnodeValue())), PaDouble(y))));
 }
 /***DOC SETPOS
 SETPOS pos
@@ -907,6 +906,54 @@ Value *Compiler::genSetpensize(const DatumPtr &node, TypeMask expected)
     generateCallExtern(setPenSize, PaDouble(size));
     return cs.ret(generateVoidRetval(node));
 }
+/***DOC SETPENPATTERN
+SETPENPATTERN pattern
+
+    sets the pen's line style, cap style, and/or join style.
+
+    The input is a list. Each member is either a word naming one pen
+    attribute, or a sublist of numbers specifying a custom dash pattern.
+    The members may appear in any order. Only the attributes present in
+    the list are changed.
+
+    Line style words:
+        SOLIDLINE  DASHLINE  DOTLINE  DASHDOTLINE  DASHDOTDOTLINE
+
+    Cap style words:
+        FLATCAP  SQUARECAP  ROUNDCAP
+
+    Join style words:
+        MITERJOIN  BEVELJOIN  ROUNDJOIN
+
+    A sublist of positive numbers is a custom dash pattern (on/off lengths,
+    in units of the pen width). For example:
+
+        SETPENPATTERN [ROUNDCAP]
+        SETPENPATTERN [DASHLINE BEVELJOIN]
+        SETPENPATTERN [[4 2 1 2] ROUNDCAP]
+
+    A sublist can contain an odd number of numbers, in which case the last
+    element will be extended by the length of the first element when the
+    pattern repeats.
+
+    A dash sublist sets a custom dash and may not be combined with a line
+    style word.
+
+    At most one cap style, one join style, and one dash style (or
+    sublist) may be given. 
+
+COD***/
+// CMD SETPENPATTERN 1 1 1 n
+Value *Compiler::genSetpenpattern(const DatumPtr &node, TypeMask expected)
+{
+    CHECK_GRAPHICS_MODE
+    CallSite cs(this, node, TypeDatum);
+    Value *pattern = generateValidationDatum(node.astnodeValue(), cs.child(0), [this](Value *candidate) {
+        return generateCallExtern(isValidPenPattern, PaAddr(candidate));
+    });
+    generateCallExtern(setPenPattern, PaAddr(pattern));
+    return cs.ret(generateVoidRetval(node));
+}
 /***DOC SETBACKGROUND SETBG
 SETBACKGROUND color
 SETBG color
@@ -1004,6 +1051,24 @@ Value *Compiler::genPensize(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(getPenSize));
 }
+/***DOC PENPATTERN
+PENPATTERN
+
+    outputs a list describing the pen's line style, cap style, and join
+    style, for use by SETPENPATTERN.
+
+    The list has three members. The first is a line style word, or a
+    sublist of numbers if the pen uses a custom dash pattern. The second
+    is a cap style word. The third is a join style word.
+
+COD***/
+// CMD PENPATTERN 0 0 0 d
+Value *Compiler::genPenpattern(const DatumPtr &node, TypeMask expected)
+{
+    CHECK_GRAPHICS_MODE
+    CallSite cs(this, node, TypeNothing);
+    return cs.ret(generateCallExtern(getPenPattern, PaAddr(scaff_->evaluator_)));
+}
 /***DOC BACKGROUND BG
 BACKGROUND
 BG
@@ -1039,8 +1104,8 @@ Value *Compiler::genSavepict(const DatumPtr &node, TypeMask expected)
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeDatum);
     Value *filename = generateWordFromDatum(node.astnodeValue(), cs.child(0));
-    Value *retval = generateCallExtern(
-        savePict, PaAddr(scaff_->evaluator_), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue())));
+    Value *retval =
+        generateCallExtern(savePict, PaAddr(scaff_->evaluator_), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue())));
     return cs.ret(generateNotFlowControl(retval));
 }
 /***DOC SVGPICT
@@ -1078,8 +1143,8 @@ Value *Compiler::genLoadpict(const DatumPtr &node, TypeMask expected)
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeDatum);
     Value *filename = generateWordOrEmptyListFromDatum(node.astnodeValue(), cs.child(0));
-    Value *retval = generateCallExtern(
-        loadPict, PaAddr(scaff_->evaluator_), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue())));
+    Value *retval =
+        generateCallExtern(loadPict, PaAddr(scaff_->evaluator_), PaAddr(filename), PaAddr(CoAddr(node.astnodeValue())));
     return cs.ret(generateNotFlowControl(retval));
 }
 // MOUSE QUERIES
@@ -1157,7 +1222,7 @@ Value *Compiler::genButton(const DatumPtr &node, TypeMask expected)
 /***DOC XCOR
 XCOR							(library procedure)
 
-	outputs a number, the turtle's X coordinate.
+    outputs a number, the turtle's X coordinate.
 
 COD***/
 
@@ -1175,7 +1240,7 @@ BIL***/
 /***DOC YCOR
 YCOR							(library procedure)
 
-	outputs a number, the turtle's Y coordinate.
+    outputs a number, the turtle's Y coordinate.
 
 COD***/
 
@@ -1193,9 +1258,9 @@ BIL***/
 /***DOC SETPEN
 SETPEN list						(library procedure)
 
-	sets the pen's position, mode, thickness, and hardware-dependent
-	characteristics according to the information in the input list, which
-	should be taken from an earlier invocation of PEN.
+    sets the pen's position, mode, thickness, and hardware-dependent
+    characteristics according to the information in the input list, which
+    should be taken from an earlier invocation of PEN.
 
 COD***/
 
@@ -1221,8 +1286,8 @@ BIL***/
 /***DOC PEN
 PEN							(library procedure)
 
-	outputs a list containing the pen's position, mode, thickness, and
-	hardware-specific characteristics, for use by SETPEN.
+    outputs a list containing the pen's position, mode, thickness, and
+    hardware-specific characteristics, for use by SETPEN.
 
 COD***/
 

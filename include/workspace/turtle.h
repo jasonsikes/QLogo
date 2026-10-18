@@ -25,6 +25,8 @@
 #include "interface/logointerface.h"
 #include "sharedconstants.h"
 #include <QColor>
+#include <QList>
+#include <QPen>
 #include <QPointF>
 #include <QSizeF>
 #include <QTransform>
@@ -42,6 +44,11 @@ class Turtle
 
     double penSize_ = Config::get().initialPensize_;
 
+    Qt::PenStyle penStyle_ = Qt::SolidLine;
+    Qt::PenCapStyle penCapStyle_ = Qt::SquareCap;
+    Qt::PenJoinStyle penJoinStyle_ = Qt::BevelJoin;
+    QList<qreal> penDashPattern_;
+
     double scaleX_ = 1.0;
     double scaleY_ = 1.0;
 
@@ -50,17 +57,17 @@ class Turtle
     bool isFilling_ = false;
 
     double wrapTurtle(double lineStartU,
-                    double lineStartV,
-                    double lineEndU,
-                    double lineEndV,
-                    double boundU,
-                    double boundV,
-                    bool isXBoundary,
-                    double mult);
+                      double lineStartV,
+                      double lineEndU,
+                      double lineEndV,
+                      double boundU,
+                      double boundV,
+                      bool isXBoundary,
+                      double mult);
 
-    Datum* moveTurtle(const QTransform &newTransform);
+    Datum *moveTurtle(const QTransform &newTransform);
     void moveTurtleWrap(const QTransform &newTransform);
-    Datum* moveTurtleFence(const QTransform &newTransform);
+    Datum *moveTurtleFence(const QTransform &newTransform);
     void moveTurtleWindow(const QTransform &newTransform);
 
     /// @brief Private constructor for singleton pattern.
@@ -133,7 +140,7 @@ class Turtle
     /// @brief Move the turtle forward by a given number of steps.
     /// @param steps The number of steps to move the turtle forward.
     /// @return nullptr if successful, otherwise an error.
-    Datum* forward(double steps);
+    Datum *forward(double steps);
 
     /// @brief Set the turtle mode.
     /// @param newMode The new turtle mode.
@@ -155,17 +162,17 @@ class Turtle
     /// @param x The new x coordinate of the turtle.
     /// @param y The new y coordinate of the turtle.
     /// @return nullptr if successful, otherwise an error.
-    Datum* setxy(double x, double y);
+    Datum *setxy(double x, double y);
 
     /// @brief Set the x coordinate of the turtle.
     /// @param x The new x coordinate of the turtle.
     /// @return nullptr if successful, otherwise an error.
-    Datum* setx(double x);
+    Datum *setx(double x);
 
     /// @brief Set the y coordinate of the turtle.
     /// @param y The new y coordinate of the turtle.
     /// @return nullptr if successful, otherwise an error.
-    Datum* sety(double y);
+    Datum *sety(double y);
 
     /// @brief Set the pen color.
     /// @param c The new pen color.
@@ -174,6 +181,37 @@ class Turtle
     /// @brief Set the pen size.
     /// @param aPenSize The new pen size.
     void setPenSize(double aPenSize);
+
+    /// @brief Set the pen's line style, cap, join, and optional custom dash pattern.
+    /// @param style The Qt pen style.
+    /// @param cap The Qt pen cap style.
+    /// @param join The Qt pen join style.
+    /// @param dashPattern Dash lengths used only when style is Qt::CustomDashLine.
+    void setPenPattern(Qt::PenStyle style, Qt::PenCapStyle cap, Qt::PenJoinStyle join, const QList<qreal> &dashPattern);
+
+    /// @brief Get the pen's line style.
+    Qt::PenStyle penStyle() const
+    {
+        return penStyle_;
+    }
+
+    /// @brief Get the pen's cap style.
+    Qt::PenCapStyle penCapStyle() const
+    {
+        return penCapStyle_;
+    }
+
+    /// @brief Get the pen's join style.
+    Qt::PenJoinStyle penJoinStyle() const
+    {
+        return penJoinStyle_;
+    }
+
+    /// @brief Get the custom dash pattern. Empty unless the style is CustomDashLine.
+    const QList<qreal> &penDashPattern() const
+    {
+        return penDashPattern_;
+    }
 
     /// @brief Check if the pen size is valid.
     /// @param aPenSize The pen size to check.
@@ -218,7 +256,7 @@ class Turtle
     /// @brief Begin filling with a given color.
     /// @param fillColor The color to fill with.
     /// @return nullptr if successful, otherwise an error (nested FILLED).
-    Datum* beginFillWithColor(const QColor &fillColor);
+    Datum *beginFillWithColor(const QColor &fillColor);
 
     /// @brief End filling.
     void endFill();

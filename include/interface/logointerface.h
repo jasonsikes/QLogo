@@ -25,7 +25,9 @@
 #include <QColor>
 #include <QFont>
 #include <QImage>
+#include <QList>
 #include <QObject>
+#include <QPen>
 #include <QTextStream>
 #include <QThread>
 #include <QVector2D>
@@ -561,6 +563,18 @@ class LogoInterface : public QObject
     /// @note The base method triggers an error message. Subclasses can override this method to
     /// perform the necessary tasks to set the pen size.
     virtual void setPensize(double size)
+    {
+        exit(1);
+    }
+
+    /// @brief Sets the pen's line style, cap, join, and optional custom dash pattern.
+    /// @param style The Qt pen style.
+    /// @param cap The Qt pen cap style.
+    /// @param join The Qt pen join style.
+    /// @param dashPattern Dash lengths used only when style is Qt::CustomDashLine.
+    /// @note The base method triggers an error message. Subclasses can override this method to
+    /// perform the necessary tasks to set the pen pattern.
+    virtual void setPenPattern(Qt::PenStyle, Qt::PenCapStyle, Qt::PenJoinStyle, const QList<qreal> &)
     {
         exit(1);
     }

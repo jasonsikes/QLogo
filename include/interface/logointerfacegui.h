@@ -54,6 +54,10 @@ class LogoInterfaceGUI : public LogoInterface
     bool editorAccepted_ = false;
 
     double penSize_;
+    Qt::PenStyle penStyle_ = Qt::SolidLine;
+    Qt::PenCapStyle penCapStyle_ = Qt::SquareCap;
+    Qt::PenJoinStyle penJoinStyle_ = Qt::BevelJoin;
+    QList<qreal> penDashPattern_;
 
     double xbound_ = Config::get().initialBoundX_;
     double ybound_ = Config::get().initialBoundY_;
@@ -319,6 +323,12 @@ class LogoInterfaceGUI : public LogoInterface
     /// @brief Sets the pen size.
     /// @param aSize The new pen size.
     void setPensize(qreal) override;
+
+    /// @brief Sets the pen's line style, cap, join, and optional custom dash pattern.
+    void setPenPattern(Qt::PenStyle style,
+                       Qt::PenCapStyle cap,
+                       Qt::PenJoinStyle join,
+                       const QList<qreal> &dashPattern) override;
 
     /// @brief Clears all of the text from the GUI console.
     void clearScreenText() override;

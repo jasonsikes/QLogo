@@ -21,8 +21,8 @@
 #include "interface/pipeio.h"
 #include "workspace/kernel.h"
 #include "workspace/specialvars.h"
-#include <QCoreApplication>
 #include <QByteArray>
+#include <QCoreApplication>
 #include <QDataStream>
 #include <QMatrix4x4>
 #include <QTransform>
@@ -38,7 +38,7 @@ qint64 StdoutMessageWriter::write(const QByteArray &buffer)
 LogoInterfaceGUI::LogoInterfaceGUI(QObject *parent) : LogoInterface(parent)
 {
     // That dreaded \r\n <-> \n problem (no-op on Unix)
-setStdioBinaryMode();
+    setStdioBinaryMode();
 }
 
 void LogoInterfaceGUI::closeInterface()
@@ -471,6 +471,20 @@ void LogoInterfaceGUI::setPensize(qreal aSize)
         return;
     message(C_CANVAS_SET_PENSIZE) << (qreal)aSize;
     penSize_ = aSize;
+}
+
+void LogoInterfaceGUI::setPenPattern(Qt::PenStyle style,
+                                     Qt::PenCapStyle cap,
+                                     Qt::PenJoinStyle join,
+                                     const QList<qreal> &dashPattern)
+{
+    if (style == penStyle_ && cap == penCapStyle_ && join == penJoinStyle_ && dashPattern == penDashPattern_)
+        return;
+    message(C_CANVAS_SET_PENPATTERN) << style << cap << join << dashPattern;
+    penStyle_ = style;
+    penCapStyle_ = cap;
+    penJoinStyle_ = join;
+    penDashPattern_ = dashPattern;
 }
 
 void LogoInterfaceGUI::mwait(unsigned long msecs)

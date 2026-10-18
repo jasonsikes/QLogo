@@ -263,6 +263,8 @@ class Canvas : public QWidget
     /// @param cap The Qt pen cap style.
     /// @param join The Qt pen join style.
     /// @param dashPattern Dash lengths used only when style is Qt::CustomDashLine.
+    ///        An odd-length list is accepted; the first length is reused as the
+    ///        missing gap when the pattern repeats.
     void setPenPattern(Qt::PenStyle style, Qt::PenCapStyle cap, Qt::PenJoinStyle join,
                        const QList<qreal> &dashPattern);
 

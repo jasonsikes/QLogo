@@ -14,19 +14,21 @@
 ///
 //===----------------------------------------------------------------------===//
 
+#include "astnode.h"
+#include "compiler_types.h"
+#include "datum_types.h"
+#include "flowcontrol.h"
 #include "interface/streammanager.h"
 #include "sharedconstants.h"
-#include "workspace/turtle.h"
-#include "workspace/exports_internal.h"
-#include "datum_types.h"
-#include "workspace/kernel.h"
-#include "astnode.h"
-#include "flowcontrol.h"
-#include "compiler_types.h"
 #include "workspace/callframe.h"
+#include "workspace/exports_internal.h"
+#include "workspace/kernel.h"
+#include "workspace/turtle.h"
 
-#include <cmath>
 #include <QFile>
+#include <QHash>
+#include <QPen>
+#include <cmath>
 
 /// @brief Convert a QColor to a list of RGB values on a scale of 0 to 100.
 /// @param c the QColor to convert.
@@ -368,6 +370,242 @@ EXPORTC void setPenSize(double size) noexcept
     Turtle::get().setPenSize(size);
 }
 
+namespace
+{
+
+enum class PenAttrKind
+{
+    Style,
+    Cap,
+    Join
+};
+
+struct PenAttr
+{
+    PenAttrKind kind;
+    int value;
+};
+
+const QHash<QString, PenAttr> &penWordDict()
+{
+    static const QHash<QString, PenAttr> dict = {
+        {QStringLiteral("SOLIDLINE"), {PenAttrKind::Style, Qt::SolidLine}},
+        {QStringLiteral("DASHLINE"), {PenAttrKind::Style, Qt::DashLine}},
+        {QStringLiteral("DOTLINE"), {PenAttrKind::Style, Qt::DotLine}},
+        {QStringLiteral("DASHDOTLINE"), {PenAttrKind::Style, Qt::DashDotLine}},
+        {QStringLiteral("DASHDOTDOTLINE"), {PenAttrKind::Style, Qt::DashDotDotLine}},
+        {QStringLiteral("FLATCAP"), {PenAttrKind::Cap, Qt::FlatCap}},
+        {QStringLiteral("SQUARECAP"), {PenAttrKind::Cap, Qt::SquareCap}},
+        {QStringLiteral("ROUNDCAP"), {PenAttrKind::Cap, Qt::RoundCap}},
+        {QStringLiteral("MITERJOIN"), {PenAttrKind::Join, Qt::MiterJoin}},
+        {QStringLiteral("BEVELJOIN"), {PenAttrKind::Join, Qt::BevelJoin}},
+        {QStringLiteral("ROUNDJOIN"), {PenAttrKind::Join, Qt::RoundJoin}},
+    };
+    return dict;
+}
+
+struct ParsedPenPattern
+{
+    bool hasStyle = false;
+    bool hasCap = false;
+    bool hasJoin = false;
+    bool hasDash = false;
+    Qt::PenStyle style = Qt::SolidLine;
+    Qt::PenCapStyle cap = Qt::SquareCap;
+    Qt::PenJoinStyle join = Qt::BevelJoin;
+    QList<qreal> dash;
+};
+
+bool parseDashPattern(List *list, QList<qreal> &out)
+{
+    const int n = list->count();
+    if (n < 1)
+        return false;
+
+    QList<qreal> dashes;
+    dashes.reserve(n);
+    ListIterator it = list->newIterator();
+    while (it.elementExists())
+    {
+        DatumPtr item = it.element();
+        if (!item.isWord())
+            return false;
+        const double v = item.wordValue()->numberValue();
+        if (!item.wordValue()->numberIsValid || !std::isfinite(v) || v <= 0)
+            return false;
+        dashes.append(v);
+    }
+    out = dashes;
+    return true;
+}
+
+bool parsePenPatternList(Datum *d, ParsedPenPattern &out)
+{
+    if (!d->isList())
+        return false;
+
+    ParsedPenPattern parsed;
+    ListIterator it = d->listValue()->newIterator();
+    while (it.elementExists())
+    {
+        DatumPtr item = it.element();
+        if (item.isWord())
+        {
+            const QString key = item.wordValue()->toString(Datum::ToStringFlags_Key);
+            const auto found = penWordDict().constFind(key);
+            if (found == penWordDict().cend())
+                return false;
+            switch (found->kind)
+            {
+            case PenAttrKind::Style:
+                if (parsed.hasStyle || parsed.hasDash)
+                    return false;
+                parsed.hasStyle = true;
+                parsed.style = static_cast<Qt::PenStyle>(found->value);
+                break;
+            case PenAttrKind::Cap:
+                if (parsed.hasCap)
+                    return false;
+                parsed.hasCap = true;
+                parsed.cap = static_cast<Qt::PenCapStyle>(found->value);
+                break;
+            case PenAttrKind::Join:
+                if (parsed.hasJoin)
+                    return false;
+                parsed.hasJoin = true;
+                parsed.join = static_cast<Qt::PenJoinStyle>(found->value);
+                break;
+            }
+        }
+        else if (item.isList())
+        {
+            if (parsed.hasDash || parsed.hasStyle)
+                return false;
+            if (!parseDashPattern(item.listValue(), parsed.dash))
+                return false;
+            parsed.hasDash = true;
+            parsed.hasStyle = true;
+            parsed.style = Qt::CustomDashLine;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    out = parsed;
+    return true;
+}
+
+const char *styleWord(Qt::PenStyle style)
+{
+    switch (style)
+    {
+    case Qt::DashLine:
+        return "dashline";
+    case Qt::DotLine:
+        return "dotline";
+    case Qt::DashDotLine:
+        return "dashdotline";
+    case Qt::DashDotDotLine:
+        return "dashdotdotline";
+    case Qt::CustomDashLine:
+        return nullptr;
+    case Qt::SolidLine:
+    default:
+        return "solidline";
+    }
+}
+
+const char *capWord(Qt::PenCapStyle cap)
+{
+    switch (cap)
+    {
+    case Qt::FlatCap:
+        return "flatcap";
+    case Qt::RoundCap:
+        return "roundcap";
+    case Qt::SquareCap:
+    default:
+        return "squarecap";
+    }
+}
+
+const char *joinWord(Qt::PenJoinStyle join)
+{
+    switch (join)
+    {
+    case Qt::MiterJoin:
+        return "miterjoin";
+    case Qt::RoundJoin:
+        return "roundjoin";
+    case Qt::BevelJoin:
+    default:
+        return "beveljoin";
+    }
+}
+
+} // namespace
+
+EXPORTC bool isValidPenPattern(addr_t patternAddr) noexcept
+{
+    auto *d = reinterpret_cast<Datum *>(patternAddr);
+    ParsedPenPattern parsed;
+    return parsePenPatternList(d, parsed);
+}
+
+EXPORTC void setPenPattern(addr_t patternAddr) noexcept
+{
+    auto *d = reinterpret_cast<Datum *>(patternAddr);
+    ParsedPenPattern parsed;
+    if (!parsePenPatternList(d, parsed))
+        return;
+
+    Turtle &turtle = Turtle::get();
+    Qt::PenStyle style = turtle.penStyle();
+    Qt::PenCapStyle cap = turtle.penCapStyle();
+    Qt::PenJoinStyle join = turtle.penJoinStyle();
+    QList<qreal> dash = turtle.penDashPattern();
+
+    if (parsed.hasStyle)
+        style = parsed.style;
+    if (parsed.hasCap)
+        cap = parsed.cap;
+    if (parsed.hasJoin)
+        join = parsed.join;
+    if (parsed.hasDash)
+        dash = parsed.dash;
+    else if (parsed.hasStyle)
+        dash.clear();
+
+    turtle.setPenPattern(style, cap, join, dash);
+}
+
+EXPORTC addr_t getPenPattern(addr_t eAddr) noexcept
+{
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    const Turtle &turtle = Turtle::get();
+
+    ListBuilder retvalBuilder;
+    if (turtle.penStyle() == Qt::CustomDashLine)
+    {
+        ListBuilder dashBuilder;
+        for (qreal dash : turtle.penDashPattern())
+            dashBuilder.append(DatumPtr(static_cast<double>(dash)));
+        retvalBuilder.append(dashBuilder.finishedList());
+    }
+    else
+    {
+        retvalBuilder.append(DatumPtr(styleWord(turtle.penStyle())));
+    }
+    retvalBuilder.append(DatumPtr(capWord(turtle.penCapStyle())));
+    retvalBuilder.append(DatumPtr(joinWord(turtle.penJoinStyle())));
+
+    DatumPtr retval = retvalBuilder.finishedList();
+    e->watch(retval);
+    return reinterpret_cast<addr_t>(retval.datumValue());
+}
+
 EXPORTC bool setBackground(addr_t colorAddr) noexcept
 {
     auto *d = reinterpret_cast<Datum *>(colorAddr);
@@ -533,4 +771,3 @@ EXPORTC double getMouseButton(void) noexcept
 {
     return static_cast<double>(Config::get().mainInterface()->getAndResetButtonID());
 }
-
