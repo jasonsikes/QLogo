@@ -162,11 +162,12 @@ void LogoInterfaceGUI::waitForMessage(message_t expectedType)
         // W_TIMER_END is ignored later.
         if (Kernel::get().hasPendingAct() && expectedType == W_TIMER_END)
             return;
-        if (LogoInterface::lastSignal_ == noSignal)
+        if (!LogoInterface::signalPending())
             continue;
         // Nested pause() would wait for a prompt and could swallow Psychi's
         // timer reply, hanging WAIT. Return and let stdWait pause instead.
-        if (LogoInterface::lastSignal_ == pauseSignal && expectedType == W_TIMER_END)
+        if (LogoInterface::lastSignal_.load(std::memory_order_relaxed) == pauseSignal &&
+            expectedType == W_TIMER_END)
             return;
         DatumPtr result;
         if (Kernel::get().consumePendingSignal(&result) && result.isErr())

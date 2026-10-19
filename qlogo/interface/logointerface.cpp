@@ -33,21 +33,28 @@
 #include <unistd.h>
 #endif
 
-volatile sig_atomic_t LogoInterface::lastSignal_ = noSignal;
+std::atomic<sig_atomic_t> LogoInterface::lastSignal_{noSignal};
+
+static_assert(std::atomic<sig_atomic_t>::is_always_lock_free,
+              "lastSignal_ must be lock-free so noteSignal can run in a signal handler");
 
 void LogoInterface::noteSignal(SignalsEnum_t incoming)
 {
     if (incoming == noSignal)
         return;
-    const sig_atomic_t current = lastSignal_;
-    if (current == noSignal || incoming < current)
-        lastSignal_ = incoming;
+    sig_atomic_t current = lastSignal_.load(std::memory_order_relaxed);
+    while (current == noSignal || incoming < current)
+    {
+        if (lastSignal_.compare_exchange_weak(current, static_cast<sig_atomic_t>(incoming),
+                                              std::memory_order_relaxed))
+            return;
+    }
 }
 
 /// @brief Handles a signal.
 /// @param sig The signal to handle.
 /// Stores lastSignal_. SYSTEM outranks TOPLEVEL, which outranks PAUSE. The
-/// handler only writes a sig_atomic_t; it must not allocate, print, or throw.
+/// handler only does lock-free atomic RMW; it must not allocate, print, or throw.
 static void handle_signal(int sig)
 {
     switch (sig)
@@ -316,26 +323,6 @@ DatumPtr LogoInterface::readchar()
         return nothing();
     }
 }
-
-SignalsEnum_t LogoInterface::latestSignal()
-{
-#ifndef _WIN32
-    sigset_t block;
-    sigset_t old;
-    sigemptyset(&block);
-    sigaddset(&block, SIGINT);
-    sigaddset(&block, SIGQUIT);
-    sigaddset(&block, SIGTSTP);
-    sigprocmask(SIG_BLOCK, &block, &old);
-#endif
-    const SignalsEnum_t retval = static_cast<SignalsEnum_t>(lastSignal_);
-    lastSignal_ = noSignal;
-#ifndef _WIN32
-    sigprocmask(SIG_SETMASK, &old, nullptr);
-#endif
-    return retval;
-}
-
 
 void LogoInterface::closeInterface()
 {

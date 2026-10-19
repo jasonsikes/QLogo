@@ -31,6 +31,7 @@
 #include <QTextStream>
 #include <QThread>
 #include <QVector2D>
+#include <atomic>
 #include <csignal>
 
 class QTransform;
@@ -76,21 +77,28 @@ class LogoInterface : public QObject
     /// @brief Returns the most recent interrupt signal that was received, if any. Resets the signal.
     /// @return The most recent interrupt signal that was received, if any.
     /// @note This method is meant to be called by the main loop to check for
-    /// signals that are sent to the application.
-    static SignalsEnum_t latestSignal();
+    /// signals that are sent to the application. The common no-signal path is a
+    /// relaxed load; consume uses an atomic exchange so a handler cannot lose a
+    /// signal between the read and the clear.
+    static SignalsEnum_t latestSignal()
+    {
+        if (lastSignal_.load(std::memory_order_relaxed) == noSignal)
+            return noSignal;
+        return static_cast<SignalsEnum_t>(lastSignal_.exchange(noSignal, std::memory_order_relaxed));
+    }
 
     /// @brief True if a signal has been recorded and not yet consumed by latestSignal().
     /// @details Does not reset the signal. Lets a blocking reader tell an
     /// interrupted read from end of input without trusting errno.
     static bool signalPending()
     {
-        return lastSignal_ != noSignal;
+        return lastSignal_.load(std::memory_order_relaxed) != noSignal;
     }
 
     /// @brief Record an interrupt from a Unix signal or a Psychi pipe message.
     /// @param incoming The signal to record.
     /// @details SYSTEM outranks TOPLEVEL, which outranks PAUSE. Safe to call
-    /// from a signal handler: it only stores a sig_atomic_t.
+    /// from a signal handler: it only does lock-free atomic RMW on lastSignal_.
     static void noteSignal(SignalsEnum_t incoming);
 
     /// @brief Initializes the interface.
@@ -133,8 +141,9 @@ class LogoInterface : public QObject
     /// The value of this variable is set by the handle_signal function. When the latestSignal
     /// method is called, the value is reset to noSignal. A stronger signal (SYSTEM, then
     /// TOPLEVEL, then PAUSE) is kept if a second signal arrives before the first is consumed.
-    /// @note This is a static member to allow access from the signal handler.
-    static volatile sig_atomic_t lastSignal_;
+    /// @note Lock-free so the signal handler and the evaluator can RMW without
+    /// masking. static_assert in the .cpp requires is_always_lock_free.
+    static std::atomic<sig_atomic_t> lastSignal_;
 
     /// @brief Stops communication and initiates cleanup tasks.
     virtual void closeInterface();
