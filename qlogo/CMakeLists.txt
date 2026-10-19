@@ -86,8 +86,10 @@ if(MSVC)
   fix_llvm_windows_dia_sdk()
 endif()
 
-message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+if(LLVM_PACKAGE_VERSION VERSION_LESS 22)
+  message(FATAL_ERROR
+    "LLVM 22 or newer is required (found ${LLVM_PACKAGE_VERSION} at ${LLVM_DIR})")
+endif()
 
 set(LLVM_DEFINITIONS_CLEANED)
 foreach(def ${LLVM_DEFINITIONS})
