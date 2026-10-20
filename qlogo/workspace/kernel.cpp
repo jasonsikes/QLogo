@@ -728,9 +728,26 @@ void Kernel::eraseVar(const QString &name)
     variables_.remove(name);
 }
 
-void Kernel::setDatumForName(const DatumPtr &aDatum, const QString &name)
+DatumPtr Kernel::setDatumForName(const DatumPtr &aDatum, const QString &name)
 {
+    auto it = variables_.find(name);
+    if (it != variables_.end())
+    {
+        DatumPtr previous = *it;
+        *it = aDatum;
+        return previous;
+    }
     variables_.insert(name, aDatum);
+    return nothing();
+}
+
+bool Kernel::setExistingDatumForName(const QString &name, const DatumPtr &aDatum)
+{
+    auto it = variables_.find(name);
+    if (it == variables_.end())
+        return false;
+    *it = aDatum;
+    return true;
 }
 
 DatumPtr Kernel::datumForName(const QString &name) const
@@ -1486,10 +1503,9 @@ void Kernel::ece_decideEmptyEvaluationStack()
                 nextOperation_ = &Kernel::ece_exitProcedure;
             }
 
-            currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
             ece_trace("ece_decideEmptyEvaluationStack: setting variable " + currentCallFrame()->currentParameterName_ +
                       " to " + defaultValue.toString());
-            setDatumForName(defaultValue, currentCallFrame()->currentParameterName_);
+            currentCallFrame()->bindLocal(currentCallFrame()->currentParameterName_, defaultValue);
             currentCallFrame()->currentParameterName_.clear();
             nextOperation_ = &Kernel::ece_processParameters;
             return;
@@ -1740,10 +1756,9 @@ void Kernel::ece_processParameters()
             DatumPtr argument = currentCallFrame()->arguments_.listValue()->head;
             DatumPtr tail = currentCallFrame()->arguments_.listValue()->tail;
             currentCallFrame()->arguments_ = tail;
-            currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
             ece_trace("ece_processParameters: setting variable " + currentCallFrame()->currentParameterName_ + " to " +
                       argument.toString());
-            setDatumForName(argument, currentCallFrame()->currentParameterName_);
+            currentCallFrame()->bindLocal(currentCallFrame()->currentParameterName_, argument);
         }
         else
         {
@@ -1756,8 +1771,8 @@ void Kernel::ece_processParameters()
             if (defaultValue.listValue()->isEmpty())
             {
                 // No default value, so the remainder of the arguments become the value.
-                currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
-                setDatumForName(currentCallFrame()->arguments_, currentCallFrame()->currentParameterName_);
+                currentCallFrame()->bindLocal(currentCallFrame()->currentParameterName_,
+                                              currentCallFrame()->arguments_);
                 break;
             }
             else
@@ -1776,10 +1791,9 @@ void Kernel::ece_processParameters()
                     DatumPtr argument = currentCallFrame()->arguments_.listValue()->head;
                     DatumPtr tail = currentCallFrame()->arguments_.listValue()->tail;
                     currentCallFrame()->arguments_ = tail;
-                    currentCallFrame()->setVarAsLocal(currentCallFrame()->currentParameterName_);
                     ece_trace("ece_processParameters: setting variable " + currentCallFrame()->currentParameterName_ +
                               " to " + argument.toString());
-                    setDatumForName(argument, currentCallFrame()->currentParameterName_);
+                    currentCallFrame()->bindLocal(currentCallFrame()->currentParameterName_, argument);
                 }
             }
         }

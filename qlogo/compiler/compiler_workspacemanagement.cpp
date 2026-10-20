@@ -303,6 +303,16 @@ Value *Compiler::generateCopyIfLiteralArray(const DatumPtr &node, unsigned child
     return value;
 }
 
+Value *Compiler::generateMake(const DatumPtr &node, bool makeLocal)
+{
+    CallSite cs(this, node, TypeDatum, TypeDatum);
+    auto [varname, value] = cs.children();
+    varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
+    value = generateCopyIfLiteralArray(node, 1, value);
+    generateCallExtern(setDatumForWord, PaAddr(value), PaAddr(varname), PaBool(CoBool(makeLocal)));
+    return cs.ret(generateVoidRetval(node));
+}
+
 /***DOC MAKE
 MAKE varname value
 
@@ -315,14 +325,7 @@ COD***/
 // CMD MAKE 2 2 2 n
 Value *Compiler::genMake(const DatumPtr &node, TypeMask expected)
 {
-
-    CallSite cs(this, node, TypeDatum, TypeDatum);
-    auto [varname, value] = cs.children();
-    varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
-    value = generateCopyIfLiteralArray(node, 1, value);
-
-    generateCallExtern(setDatumForWord, PaAddr(value), PaAddr(varname));
-    return cs.ret(generateVoidRetval(node));
+    return generateMake(node, false);
 }
 
 /***DOC LOCALMAKE
@@ -335,17 +338,7 @@ COD***/
 // CMD LOCALMAKE 2 2 2 n
 Value *Compiler::genLocalmake(const DatumPtr &node, TypeMask expected)
 {
-
-    CallSite cs(this, node, TypeDatum, TypeDatum);
-    auto [varname, value] = cs.children();
-    varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
-    value = generateCopyIfLiteralArray(node, 1, value);
-
-    Value *localized = generateLocalGlobal(node, std::vector<Value *>{varname},
-                                           stdLocal, "stdLocal", DBG_NAME("localAry"));
-    localized = generateNotFlowControl(localized);
-    generateCallExtern(setDatumForWord, PaAddr(value), PaAddr(varname));
-    return cs.ret(localized);
+    return generateMake(node, true);
 }
 
 Value *Compiler::genFoo(const DatumPtr &node, TypeMask expected)

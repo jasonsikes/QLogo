@@ -194,7 +194,18 @@ class Kernel
     /// @brief Set a value for a variable.
     /// @param aDatum The value to store.
     /// @param name The name of the variable to set.
-    void setDatumForName(const DatumPtr &aDatum, const QString &name);
+    /// @return The previous binding, or nothing() if the name was not present.
+    /// @details One hash probe: assign through the iterator on a hit, insert on
+    /// a miss. MAKE and bindLocal both use this; bindLocal saves the return.
+    DatumPtr setDatumForName(const DatumPtr &aDatum, const QString &name);
+
+    /// @brief Assign to an existing variable in one hash probe.
+    /// @param name The name of the variable to set.
+    /// @param aDatum The value to store.
+    /// @return True if the name was present and updated; false if it was absent.
+    /// @details Does not create a binding. SETFOO uses this so a missing name
+    /// stays "I don't know how".
+    bool setExistingDatumForName(const QString &name, const DatumPtr &aDatum);
 
     /// @brief Return the value of a variable.
     /// @param name The name of the variable to search for.

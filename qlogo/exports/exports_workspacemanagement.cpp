@@ -185,13 +185,12 @@ EXPORTC addr_t stdSetfoo(addr_t eAddr, addr_t astnodeAddr, addr_t valueAddr) noe
     auto *value = reinterpret_cast<Datum *>(valueAddr);
     QString cmd = node->nodeName_.toString(Datum::ToStringFlags_Key);
     QString name = cmd.mid(QObject::tr("SET").size());
-    if (!Kernel::get().doesExist(name))
+    if (!Kernel::get().setExistingDatumForName(name, DatumPtr(value)))
     {
         FCError *err = FCError::noHow(node->nodeName_);
         e->watch(err);
         return reinterpret_cast<addr_t>(err);
     }
-    Kernel::get().setDatumForName(DatumPtr(value), name);
     return reinterpret_cast<addr_t>(node);
 }
 

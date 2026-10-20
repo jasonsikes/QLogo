@@ -119,12 +119,15 @@ size_t CallFrame::evaluationStackSize() const
 
 void CallFrame::setVarAsLocal(const QString &name)
 {
-    if ( ! localVars_.contains(name))
-    {
-        DatumPtr originalValue = Kernel::get().datumForName(name);
-        localVars_.insert(name, originalValue);
-        Kernel::get().setDatumForName(nothing(), name);
-    }
+    if (!localVars_.contains(name))
+        bindLocal(name, nothing());
+}
+
+void CallFrame::bindLocal(const QString &name, const DatumPtr &value)
+{
+    DatumPtr previous = Kernel::get().setDatumForName(value, name);
+    if (!localVars_.contains(name))
+        localVars_.insert(name, previous);
 }
 
 

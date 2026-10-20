@@ -673,6 +673,9 @@ class Compiler
     // Runtime arrays (ARRAY, variables) are left shared.
     llvm::Value *generateCopyIfLiteralArray(const DatumPtr &node, unsigned childIndex, llvm::Value *value);
 
+    // MAKE / LOCALMAKE: evaluate name and value, then setDatumForWord.
+    llvm::Value *generateMake(const DatumPtr &node, bool makeLocal);
+
     // Look up a variable by name.
     llvm::Value *generateLookupVarname(llvm::Value *nameAddr);
 

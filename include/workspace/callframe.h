@@ -110,11 +110,19 @@ struct CallFrame
     /// @return The topmost Evaluator object.
     Evaluator *topEvaluator();
 
-    /// @brief Insert an entry for 'name' in the variables hash. Save the previous value
-    /// of the variable in the localVars hash. Store 'nothing' for the entry if name wasn't
-    /// already present.
+    /// @brief Make 'name' local with no value, like LOCAL.
     /// @param name The name of the variable to insert.
+    /// @details No-op if this frame already localized 'name'. Otherwise the same
+    /// as bindLocal(name, nothing()).
     void setVarAsLocal(const QString &name);
+
+    /// @brief Make 'name' local if it is not already, then store 'value'.
+    /// @param name The name of the variable to bind.
+    /// @param value The value to store.
+    /// @details Saves the previous global binding the first time this frame sees
+    /// 'name'. Writes 'value' once. Duplicate names in this frame keep the
+    /// original saved value.
+    void bindLocal(const QString &name, const DatumPtr &value);
 
     /// @brief End the current procedure by continuing with the given node and parameters.
     /// @param node The ASTNode of the new procedure to continue with.

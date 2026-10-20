@@ -216,14 +216,19 @@ EXPORTC addr_t getWordForBool(addr_t eAddr, bool val) noexcept
     return reinterpret_cast<addr_t>(w);
 }
 
-/// Store the given datum using the given word as a variable name.
+/// MAKE / LOCALMAKE: store the given datum using the given word as a variable name.
 /// @param datumAddr a pointer to a QLogo object which is the value to be stored
 /// @param wordAddr a pointer to a Word object which contains the name of the variable
-EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr) noexcept
+/// @param makeLocal true for LOCALMAKE: localize first, then assign
+EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr, bool makeLocal) noexcept
 {
     auto d = DatumPtr(reinterpret_cast<Datum *>(datumAddr));
     auto *w = reinterpret_cast<Word *>(wordAddr);
-    Kernel::get().setDatumForName(d, w->toString(Datum::ToStringFlags_Key));
+    const QString name = w->toString(Datum::ToStringFlags_Key);
+    if (makeLocal)
+        Kernel::get().currentCallFrame()->bindLocal(name, d);
+    else
+        Kernel::get().setDatumForName(d, name);
 }
 
 /// Create and return Error: "SYSTEM"
