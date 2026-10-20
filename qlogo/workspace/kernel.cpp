@@ -39,12 +39,12 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QFont>
 #include <QIODevice>
+#include <QImage>
 #include <QProcess>
 #include <QTemporaryFile>
 #include <QTextStream>
-#include <QFont>
-#include <QImage>
 #include <cstdlib> // arc4random_uniform()
 #include <iostream>
 
@@ -629,8 +629,7 @@ Datum *Kernel::inputProcedure(ASTNode *node)
 
         Procedures::get().defineProcedure(command, procnameP, textP, sourceText);
 
-        if (!StreamManager::get().programReaderIsTerminal()
-            && specialVarIsTrue(SpecialVars::Id::UnburyOnEdit))
+        if (!StreamManager::get().programReaderIsTerminal() && specialVarIsTrue(SpecialVars::Id::UnburyOnEdit))
         {
             removeName(NameMark::Buried, NameKind::Procedures, procname);
         }
@@ -701,6 +700,7 @@ void Kernel::initVariables()
     DatumPtr version(LOGOVERSION);
     DatumPtr qlogoVersion(QLOGOVERSION);
     DatumPtr trueDatumPtr(QObject::tr("true"));
+    DatumPtr falseDatumPtr(QObject::tr("false"));
 
     setDatumForName(argvBuilder.finishedList(), SpecialVars::name(SpecialVars::Id::Argv));
     setDatumForName(commandLineBuilder.finishedList(), SpecialVars::name(SpecialVars::Id::CommandLine));
@@ -714,6 +714,9 @@ void Kernel::initVariables()
     const QString &unburyOnEdit = SpecialVars::name(SpecialVars::Id::UnburyOnEdit);
     setDatumForName(trueDatumPtr, unburyOnEdit);
     addName(NameMark::Buried, NameKind::Variables, unburyOnEdit);
+    const QString &fullPrintP = SpecialVars::name(SpecialVars::Id::FullPrintP);
+    setDatumForName(falseDatumPtr, fullPrintP);
+    addName(NameMark::Buried, NameKind::Variables, fullPrintP);
     // TODO: Bury these variables:
     // "ARGV"
     // "LOGOPLATFORM"
@@ -1438,7 +1441,8 @@ void Kernel::ece_chainList()
     nextOperation_ = &Kernel::ece_evaluateStack;
 }
 
-namespace {
+namespace
+{
 
 int printLimitFromSpecialVar(SpecialVars::Id id)
 {
@@ -1618,8 +1622,7 @@ void Kernel::ece_exitProcedure()
         }
         // STOP TCO: a value from the continued procedure is command-position
         // output, not this procedure's OUTPUT / .MAYBEOUTPUT.
-        if (currentCallFrame()->demandNothing_ &&
-            (retval.datumValue()->isa_ & Datum::typeDataMask) != 0)
+        if (currentCallFrame()->demandNothing_ && (retval.datumValue()->isa_ & Datum::typeDataMask) != 0)
         {
             retval = DatumPtr(FCError::dontSay(retval));
         }
@@ -1809,7 +1812,8 @@ void Kernel::ece_processParameters()
  * Miscellaneous operations
  ***************************************************/
 
-namespace {
+namespace
+{
 
 /// OUTPUT inside an instruction list arrives as FCReturn. The output itself is the result.
 DatumPtr unwrapInstructionOutput(const DatumPtr &result)
