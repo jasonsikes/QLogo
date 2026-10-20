@@ -696,34 +696,24 @@ void Kernel::initVariables()
         commandLineBuilder.append(DatumPtr(arg));
     }
 
-    DatumPtr platform(LOGOPLATFORM);
-    DatumPtr version(LOGOVERSION);
-    DatumPtr qlogoVersion(QLOGOVERSION);
     DatumPtr trueDatumPtr(QObject::tr("true"));
     DatumPtr falseDatumPtr(QObject::tr("false"));
 
-    setDatumForName(argvBuilder.finishedList(), SpecialVars::name(SpecialVars::Id::Argv));
-    setDatumForName(commandLineBuilder.finishedList(), SpecialVars::name(SpecialVars::Id::CommandLine));
-    setDatumForName(platform, SpecialVars::name(SpecialVars::Id::LogoPlatform));
-    setDatumForName(version, SpecialVars::name(SpecialVars::Id::LogoVersion));
-    setDatumForName(qlogoVersion, SpecialVars::name(SpecialVars::Id::QlogoVersion));
-    setDatumForName(trueDatumPtr, SpecialVars::name(SpecialVars::Id::AllowGetSet));
-    const QString &caseIgnoredP = SpecialVars::name(SpecialVars::Id::CaseIgnoredP);
-    setDatumForName(trueDatumPtr, caseIgnoredP);
-    addName(NameMark::Buried, NameKind::Variables, caseIgnoredP);
-    const QString &unburyOnEdit = SpecialVars::name(SpecialVars::Id::UnburyOnEdit);
-    setDatumForName(trueDatumPtr, unburyOnEdit);
-    addName(NameMark::Buried, NameKind::Variables, unburyOnEdit);
-    const QString &fullPrintP = SpecialVars::name(SpecialVars::Id::FullPrintP);
-    setDatumForName(falseDatumPtr, fullPrintP);
-    addName(NameMark::Buried, NameKind::Variables, fullPrintP);
-    // TODO: Bury these variables:
-    // "ARGV"
-    // "LOGOPLATFORM"
-    // "LOGOVERSION"
-    // "QLOGOVERSION"
-    // "ALLOWGETSET"
-    // "COMMANDLINE"
+    auto setBuriedVar = [this](SpecialVars::Id id, const DatumPtr &value) {
+        const QString &n = SpecialVars::name(id);
+        setDatumForName(value, n);
+        addName(NameMark::Buried, NameKind::Variables, n);
+    };
+
+    setBuriedVar(SpecialVars::Id::Argv, argvBuilder.finishedList());
+    setBuriedVar(SpecialVars::Id::CommandLine, commandLineBuilder.finishedList());
+    setBuriedVar(SpecialVars::Id::LogoPlatform, DatumPtr(LOGOPLATFORM));
+    setBuriedVar(SpecialVars::Id::LogoVersion, DatumPtr(LOGOVERSION));
+    setBuriedVar(SpecialVars::Id::QlogoVersion, DatumPtr(QLOGOVERSION));
+    setBuriedVar(SpecialVars::Id::AllowGetSet, trueDatumPtr);
+    setBuriedVar(SpecialVars::Id::CaseIgnoredP, trueDatumPtr);
+    setBuriedVar(SpecialVars::Id::UnburyOnEdit, trueDatumPtr);
+    setBuriedVar(SpecialVars::Id::FullPrintP, falseDatumPtr);
 }
 
 void Kernel::eraseVar(const QString &name)
