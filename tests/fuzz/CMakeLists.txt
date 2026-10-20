@@ -50,6 +50,23 @@ target_link_options(fuzz_runparser PRIVATE
     -fsanitize=fuzzer,address,undefined
 )
 
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/runparser_corpus"
-    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
+set(_corpus_dir "${CMAKE_CURRENT_BINARY_DIR}/runparser_corpus")
+set(_corpus_stamp "${CMAKE_CURRENT_BINARY_DIR}/runparser_corpus.stamp")
+
+add_custom_command(
+    OUTPUT "${_corpus_stamp}"
+    COMMAND "${Python3_EXECUTABLE}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/split_seeds.py"
+        "${CMAKE_CURRENT_SOURCE_DIR}/seeds.txt"
+        "${_corpus_dir}"
+        "${_corpus_stamp}"
+    DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/seeds.txt"
+        "${CMAKE_CURRENT_SOURCE_DIR}/split_seeds.py"
+    COMMENT "Splitting seeds.txt into runparser_corpus"
+    VERBATIM
 )
+add_custom_target(fuzz_runparser_corpus DEPENDS "${_corpus_stamp}")
+add_dependencies(fuzz_runparser fuzz_runparser_corpus)
