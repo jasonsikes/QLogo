@@ -1,0 +1,5 @@
+trace [[][][list1]]
+pprop "list1 "loop 2
+untrace [[][][list1]]
+pprop "list1 "loop 3
+show gprop "list1 "loop

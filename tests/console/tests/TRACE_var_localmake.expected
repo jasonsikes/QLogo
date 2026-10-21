@@ -1,0 +1,5 @@
+? ? ? > > > t defined
+? Make "n 4 in t
+[localmake "n :n + 1]
+4
+? 3

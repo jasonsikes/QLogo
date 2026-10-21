@@ -309,8 +309,14 @@ Value *Compiler::generateMake(const DatumPtr &node, bool makeLocal)
     auto [varname, value] = cs.children();
     varname = generateFromDatum(Datum::typeWord, node.astnodeValue(), varname);
     value = generateCopyIfLiteralArray(node, 1, value);
-    generateCallExtern(setDatumForWord, PaAddr(value), PaAddr(varname), PaBool(CoBool(makeLocal)));
-    return cs.ret(generateVoidRetval(node));
+    Value *retval = generateCallExtern(
+        setDatumForWord,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(value),
+        PaAddr(varname),
+        PaBool(CoBool(makeLocal)));
+    return cs.ret(generateNotFlowControl(retval));
 }
 
 /***DOC MAKE
@@ -455,8 +461,14 @@ Value *Compiler::genPprop(const DatumPtr &node, TypeMask expected)
     propname = generateFromDatum(Datum::typeWord, node.astnodeValue(), propname);
     value = generateCopyIfLiteralArray(node, 2, value);
 
-    generateCallExtern(stdPprop, PaAddr(plistname), PaAddr(propname), PaAddr(value));
-    return cs.ret(generateVoidRetval(node));
+    Value *retval = generateCallExtern(
+        stdPprop,
+        PaAddr(scaff_->evaluator_),
+        PaAddr(CoAddr(node.astnodeValue())),
+        PaAddr(plistname),
+        PaAddr(propname),
+        PaAddr(value));
+    return cs.ret(generateNotFlowControl(retval));
 }
 
 /***DOC GPROP

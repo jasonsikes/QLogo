@@ -1,0 +1,9 @@
+make "v1 0
+step [[] [v1]]
+to t
+local "v1
+make "v1 "hello
+print :v1
+end
+t
+print :v1

@@ -1,0 +1,6 @@
+to t
+pprop "pl "a 7
+end
+trace [[] [] [pl]]
+t
+show gprop "pl "a

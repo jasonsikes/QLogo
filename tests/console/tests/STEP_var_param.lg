@@ -1,0 +1,10 @@
+make "p1 0
+step [[] [p1]]
+to c1 :p1
+print :p1
+end
+c1 4
+to c10
+(c1 10)
+end
+c10

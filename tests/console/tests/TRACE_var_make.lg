@@ -1,0 +1,5 @@
+trace [[][lobar][]]
+make "lobar 2
+untrace [[][lobar][]]
+make "lobar 3
+show :lobar

@@ -1475,6 +1475,114 @@ void Kernel::stepProcedureLine(const DatumPtr &line)
     StreamManager::get().readTerminalRawline(QObject::tr(" >>> "));
 }
 
+namespace {
+
+QString workspaceTraceArgToString(const DatumPtr &d, int printDepthLimit, int printWidthLimit)
+{
+    Datum *datum = d.datumValue();
+    if (datum->isWord())
+    {
+        Word *w = datum->wordValue();
+        w->numberValue();
+        if (w->numberIsValid)
+            return w->toString(Datum::ToStringFlags_None, printDepthLimit, printWidthLimit);
+        w->boolValue();
+        if (w->boolIsValid)
+            return w->toString(Datum::ToStringFlags_None, printDepthLimit, printWidthLimit);
+        Datum::ToStringFlags flags = Datum::ToStringFlags_Source;
+        if (Kernel::get().specialVarIsTrue(SpecialVars::Id::FullPrintP))
+            flags = static_cast<Datum::ToStringFlags>(flags | Datum::ToStringFlags_FullPrint);
+        return w->toString(flags, printDepthLimit, printWidthLimit);
+    }
+    Datum::ToStringFlags flags = Datum::ToStringFlags_Show;
+    if (Kernel::get().specialVarIsTrue(SpecialVars::Id::FullPrintP))
+        flags = static_cast<Datum::ToStringFlags>(flags | Datum::ToStringFlags_FullPrint);
+    return datum->toString(flags, printDepthLimit, printWidthLimit);
+}
+
+QString quotedWorkspaceName(const DatumPtr &nameWord, int printDepthLimit, int printWidthLimit)
+{
+    Datum::ToStringFlags flags = Datum::ToStringFlags_Source;
+    if (Kernel::get().specialVarIsTrue(SpecialVars::Id::FullPrintP))
+        flags = static_cast<Datum::ToStringFlags>(flags | Datum::ToStringFlags_FullPrint);
+    return nameWord.toString(flags, printDepthLimit, printWidthLimit);
+}
+
+CallFrame *workspaceTraceFrame()
+{
+    if (Kernel::get().callFrameStack_.empty())
+        return nullptr;
+    return &Kernel::get().callFrameStack_.back();
+}
+
+QString workspaceTraceInProcedureSuffix(bool includeLine)
+{
+    CallFrame *cf = workspaceTraceFrame();
+    if (cf == nullptr || !cf->sourceNode_.isASTNode())
+        return {};
+
+    QString suffix = QObject::tr(" in %1").arg(cf->sourceNode_.astnodeValue()->nodeName_.toString());
+    if (includeLine && !cf->isEvaluationStackViewEmpty())
+    {
+        const int printDepthLimit = Kernel::get().printLimitFromSpecialVar(SpecialVars::Id::PrintDepthLimit);
+        const int printWidthLimit = Kernel::get().printLimitFromSpecialVar(SpecialVars::Id::PrintWidthLimit);
+        suffix += QLatin1Char('\n')
+            + cf->topEvaluator()->list_.toString(Datum::ToStringFlags_Show, printDepthLimit, printWidthLimit);
+    }
+    return suffix;
+}
+
+} // namespace
+
+void Kernel::traceMake(const DatumPtr &nameWord, const DatumPtr &value)
+{
+    const QString key = nameWord.toString(Datum::ToStringFlags_Key);
+    if (!containsName(NameMark::Traced, NameKind::Variables, key))
+        return;
+
+    const int printDepthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintDepthLimit);
+    const int printWidthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintWidthLimit);
+    QString output = QObject::tr("Make %1 %2")
+                         .arg(quotedWorkspaceName(nameWord, printDepthLimit, printWidthLimit),
+                              workspaceTraceArgToString(value, printDepthLimit, printWidthLimit));
+    output += workspaceTraceInProcedureSuffix(true);
+    output += QLatin1Char('\n');
+    StreamManager::get().print(output);
+}
+
+void Kernel::tracePprop(const DatumPtr &plistname, const DatumPtr &propname, const DatumPtr &value)
+{
+    const QString key = plistname.toString(Datum::ToStringFlags_Key);
+    if (!containsName(NameMark::Traced, NameKind::PropertyLists, key))
+        return;
+
+    const int printDepthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintDepthLimit);
+    const int printWidthLimit = printLimitFromSpecialVar(SpecialVars::Id::PrintWidthLimit);
+    QString output = QObject::tr("Pprop %1 %2 %3")
+                         .arg(quotedWorkspaceName(plistname, printDepthLimit, printWidthLimit),
+                              workspaceTraceArgToString(propname, printDepthLimit, printWidthLimit),
+                              workspaceTraceArgToString(value, printDepthLimit, printWidthLimit));
+    output += workspaceTraceInProcedureSuffix(true);
+    output += QLatin1Char('\n');
+    StreamManager::get().print(output);
+}
+
+void Kernel::warnSteppedShadow(const QString &name)
+{
+    if (!containsName(NameMark::Stepped, NameKind::Variables, name))
+        return;
+
+    QString output = QObject::tr("%1 shadowed by local in procedure call").arg(name);
+    CallFrame *cf = workspaceTraceFrame();
+    CallFrame *reported = cf;
+    if (cf != nullptr && cf->isReadingArgs_ && callFrameStack_.size() >= 2)
+        reported = &callFrameStack_[callFrameStack_.size() - 2];
+    if (reported != nullptr && reported->sourceNode_.isASTNode())
+        output += QObject::tr(" in %1").arg(reported->sourceNode_.astnodeValue()->nodeName_.toString());
+    output += QLatin1Char('\n');
+    StreamManager::get().printToTerminal(output);
+}
+
 void Kernel::ece_decideEmptyEvaluationStack()
 {
     ece_trace("ece_decideEmptyEvaluationStack");
