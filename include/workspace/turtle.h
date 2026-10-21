@@ -14,8 +14,9 @@
 /// \file
 /// This file contains the declaration of the Turtle class, which maintains
 /// the turtle state. The turtle state includes the turtle's position,
-/// orientation, pen state, and visibility. The turtle's position is represented
-/// by the transformation matrix's translation part. The turtle's orientation
+/// orientation, pen state, and visibility. The turtle's display position is
+/// represented by the transformation matrix's translation part. Logical position
+/// (POS) is that translation divided by the X/Y scale. The turtle's orientation
 /// is represented by the transformation matrix's rotation part. The pen state
 /// is represented by the pen's color, size, and whether it is up or down. The
 /// turtle's visibility is represented by a boolean flag.
@@ -137,7 +138,7 @@ class Turtle
     /// @param angle The angle to rotate the turtle by.
     void rotate(double angle);
 
-    /// @brief Move the turtle forward by a given number of steps.
+    /// @brief Move the turtle forward by a given number of logical steps.
     /// @param steps The number of steps to move the turtle forward.
     /// @return nullptr if successful, otherwise an error.
     Datum *forward(double steps);
@@ -154,23 +155,23 @@ class Turtle
     /// @return The current turtle heading.
     double getHeading() const;
 
-    /// @brief Get the turtle position.
-    /// @return The x and y coordinates of the turtle.
+    /// @brief Get the turtle position in logical coordinates.
+    /// @return The x and y coordinates of the turtle (display translation / scale).
     QPointF getxy() const;
 
-    /// @brief Set the turtle position.
-    /// @param x The new x coordinate of the turtle.
-    /// @param y The new y coordinate of the turtle.
+    /// @brief Set the turtle position from logical coordinates.
+    /// @param x The new logical x coordinate of the turtle.
+    /// @param y The new logical y coordinate of the turtle.
     /// @return nullptr if successful, otherwise an error.
     Datum *setxy(double x, double y);
 
-    /// @brief Set the x coordinate of the turtle.
-    /// @param x The new x coordinate of the turtle.
+    /// @brief Set the logical x coordinate of the turtle.
+    /// @param x The new logical x coordinate of the turtle.
     /// @return nullptr if successful, otherwise an error.
     Datum *setx(double x);
 
-    /// @brief Set the y coordinate of the turtle.
-    /// @param y The new y coordinate of the turtle.
+    /// @brief Set the logical y coordinate of the turtle.
+    /// @param y The new logical y coordinate of the turtle.
     /// @return nullptr if successful, otherwise an error.
     Datum *sety(double y);
 
@@ -230,12 +231,11 @@ class Turtle
     /// @return The X and Y scale factors (width and height).
     QSizeF getScale() const;
 
-    /// @brief Set the scale factors.
+    /// @brief Set the display-space scale factors (scrunch).
     /// @param newScaleX The new X scale factor.
     /// @param newScaleY The new Y scale factor.
-    /// @note The scaling is applied as a ratio relative to the current scale.
-    ///       For example, if the current X scale is 2.0 and newScaleX is 1.0,
-    ///       the transform will be scaled by 0.5 (1.0 / 2.0).
+    /// @note Zero and non-finite factors are ignored. Negative
+    ///       factors flip the corresponding axis.
     void setScale(double newScaleX, double newScaleY);
 
     /// @brief Move the turtle to the home position.

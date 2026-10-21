@@ -157,12 +157,18 @@ EXPORTC double getTurtleTowards(addr_t posAddr) noexcept
 EXPORTC addr_t getScrunch(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    const QSizeF scale = Turtle::get().getScale();
     ListBuilder retvalBuilder;
-    retvalBuilder.append(DatumPtr(1));
-    retvalBuilder.append(DatumPtr(1));
+    retvalBuilder.append(DatumPtr(static_cast<double>(scale.width())));
+    retvalBuilder.append(DatumPtr(static_cast<double>(scale.height())));
     Datum *retval = retvalBuilder.finishedList().datumValue();
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
+}
+
+EXPORTC void setScrunch(double x, double y) noexcept
+{
+    Turtle::get().setScale(x, y);
 }
 
 EXPORTC void setTurtleVisible(uint32_t visible) noexcept
