@@ -46,7 +46,7 @@ class DatumPtr
     /// @brief Convenience constructor for "true" and "false".
     ///
     /// @param b The boolean value to create the DatumPtr for.
-    /// @return A new DatumPtr pointing to a new Word containing the boolean value.
+    /// @return A new DatumPtr pointing to the interned true or false Word.
     explicit DatumPtr(bool b);
 
     /// @brief Convenience constructor for numbers.

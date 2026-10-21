@@ -211,7 +211,7 @@ EXPORTC addr_t getWordForDouble(addr_t eAddr, double val) noexcept
 EXPORTC addr_t getWordForBool(addr_t eAddr, bool val) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *w = new Word(val ? QObject::tr("true") : QObject::tr("false"));
+    auto *w = Word::forBool(val);
     e->watch(w);
 
     return reinterpret_cast<addr_t>(w);
@@ -224,7 +224,8 @@ EXPORTC addr_t getWordForBool(addr_t eAddr, bool val) noexcept
 /// @param wordAddr a pointer to a Word object which contains the name of the variable
 /// @param makeLocal true for LOCALMAKE: localize first, then assign
 /// @return the owning ASTNode, or an Error if a TRACE MAKE line cannot be written
-EXPORTC addr_t setDatumForWord(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr, addr_t wordAddr, bool makeLocal) noexcept
+EXPORTC addr_t
+setDatumForWord(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr, addr_t wordAddr, bool makeLocal) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
