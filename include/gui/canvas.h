@@ -234,11 +234,13 @@ class Canvas : public QWidget
     /// @brief Add a label at the current turtle location.
     ///
     /// @param aText The text to display.
+    /// @note The recorded font height is the logical size times the current
+    /// Y scrunch. LABELSIZE is unaffected.
     void addLabel(const QString &aText);
 
-    /// @brief Set the font size for all future text labels.
+    /// @brief Set the logical font size for all future text labels.
     ///
-    /// @param aSize The new font size.
+    /// @param aSize The new font size (SETLABELHEIGHT / LABELSIZE).
     void setLabelFontSize(qreal aSize);
 
     /// @brief Set the font name for all future text labels.

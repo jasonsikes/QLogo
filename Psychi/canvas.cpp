@@ -239,7 +239,12 @@ void Canvas::addLabel(const QString &aText)
 {
     // The "minus-dy" is because we have to flip the coordinate system when
     // drawing text. This is the most efficient place to do it.
-    Label l(aText, QPointF(turtleMatrix_.dx(), -turtleMatrix_.dy()), labelFont_);
+    // SETLABELHEIGHT is logical; UCBLogo draws at y_scale * height.
+    QFont drawnFont = labelFont_;
+    const qreal logicalSize = labelFont_.pointSizeF();
+    if (logicalSize > 0)
+        drawnFont.setPointSizeF(logicalSize * qAbs(scrunchY_));
+    Label l(aText, QPointF(turtleMatrix_.dx(), -turtleMatrix_.dy()), drawnFont);
     pushLineGroup();
     drawingElementList_.push_back({DrawingElementIDLabel, DrawingElementVariant(l)});
     update();
