@@ -744,14 +744,19 @@ EXPORTC addr_t loadPict(addr_t eAddr, addr_t filenameAddr, addr_t nodeAddr) noex
     return reinterpret_cast<addr_t>(retval);
 }
 
+static Datum *listFromLogicalMousePos(const QVector2D &displayPos)
+{
+    const QSizeF scale = Turtle::get().getScale();
+    ListBuilder retvalBuilder;
+    retvalBuilder.append(DatumPtr(static_cast<double>(displayPos.x() / scale.width())));
+    retvalBuilder.append(DatumPtr(static_cast<double>(displayPos.y() / scale.height())));
+    return retvalBuilder.finishedList().datumValue();
+}
+
 EXPORTC addr_t getMousePos(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    QVector2D position = Config::get().mainInterface()->mousePosition();
-    ListBuilder retvalBuilder;
-    retvalBuilder.append(DatumPtr(position.x()));
-    retvalBuilder.append(DatumPtr(position.y()));
-    Datum *retval = retvalBuilder.finishedList().datumValue();
+    Datum *retval = listFromLogicalMousePos(Config::get().mainInterface()->mousePosition());
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
 }
@@ -759,11 +764,7 @@ EXPORTC addr_t getMousePos(addr_t eAddr) noexcept
 EXPORTC addr_t getClickPos(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    QVector2D position = Config::get().mainInterface()->lastMouseclickPosition();
-    ListBuilder retvalBuilder;
-    retvalBuilder.append(DatumPtr(position.x()));
-    retvalBuilder.append(DatumPtr(position.y()));
-    Datum *retval = retvalBuilder.finishedList().datumValue();
+    Datum *retval = listFromLogicalMousePos(Config::get().mainInterface()->lastMouseclickPosition());
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
 }
