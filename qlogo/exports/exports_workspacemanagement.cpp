@@ -174,6 +174,7 @@ EXPORTC addr_t stdFoo(addr_t eAddr, addr_t astnodeAddr) noexcept
 
 /// SETFOO: assign to the variable named by this command without SET.
 /// The variable must already exist. A missing name is "I don't know how".
+/// A traced variable prints the same MAKE line MAKE would print.
 /// @param eAddr a pointer to the Evaluator object
 /// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param valueAddr the value to store
@@ -183,15 +184,19 @@ EXPORTC addr_t stdSetfoo(addr_t eAddr, addr_t astnodeAddr, addr_t valueAddr) noe
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *value = reinterpret_cast<Datum *>(valueAddr);
+    const QString setPrefix = QObject::tr("SET");
     QString cmd = node->nodeName_.toString(Datum::ToStringFlags_Key);
-    QString name = cmd.mid(QObject::tr("SET").size());
-    if (!Kernel::get().setExistingDatumForName(name, DatumPtr(value)))
-    {
-        FCError *err = FCError::noHow(node->nodeName_);
-        e->watch(err);
-        return reinterpret_cast<addr_t>(err);
-    }
-    return reinterpret_cast<addr_t>(node);
+    QString name = cmd.mid(setPrefix.size());
+    QString shown = node->nodeName_.toString();
+    if (shown.size() >= setPrefix.size())
+        shown = shown.mid(setPrefix.size());
+    else
+        shown = name;
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
+        if (!Kernel::get().setExistingDatumForName(name, DatumPtr(value)))
+            throw FCError::noHow(node->nodeName_);
+        Kernel::get().traceMake(DatumPtr(shown), DatumPtr(value));
+    });
 }
 
 namespace
@@ -293,15 +298,24 @@ QString propertyNameKey(Datum *word)
 
 /// PPROP: add or replace one property. Property-list names are always
 /// case-insensitive. Property names follow CASEIGNOREDP.
+/// A traced property list prints a PPROP assignment line.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param plistnameAddr a word naming the property list
 /// @param propnameAddr a word naming the property
 /// @param valueAddr the value to store
-EXPORTC void stdPprop(addr_t plistnameAddr, addr_t propnameAddr, addr_t valueAddr) noexcept
+/// @return the owning ASTNode, or an Error if a TRACE PPROP line cannot be written
+EXPORTC addr_t stdPprop(addr_t eAddr, addr_t astnodeAddr, addr_t plistnameAddr, addr_t propnameAddr, addr_t valueAddr) noexcept
 {
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *plistname = reinterpret_cast<Datum *>(plistnameAddr);
     auto *propname = reinterpret_cast<Datum *>(propnameAddr);
     auto *value = reinterpret_cast<Datum *>(valueAddr);
-    Kernel::get().plists_.addProperty(propertyListKey(plistname), propertyNameKey(propname), DatumPtr(value));
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
+        Kernel::get().plists_.addProperty(propertyListKey(plistname), propertyNameKey(propname), DatumPtr(value));
+        Kernel::get().tracePprop(DatumPtr(plistname), DatumPtr(propname), DatumPtr(value));
+    });
 }
 
 /// GPROP: output a property value, or the empty list if it is absent.

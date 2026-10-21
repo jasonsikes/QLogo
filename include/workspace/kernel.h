@@ -347,6 +347,29 @@ class Kernel
     /// @note Iteration order is hash order and need not stay the same across runs.
     const QSet<QString> &nameList(NameMark mark, NameKind kind) const;
 
+    /// @brief If @p nameWord is a traced variable, print a MAKE assignment line.
+    /// @details UCBLogo: a message is printed whenever MAKE assigns a traced
+    /// variable. SETFOO and LOCALMAKE use the same assignment path. Inside a
+    /// user procedure the line includes ` in PROC` and the current instruction.
+    /// Throws FCError::fileSystem if the current writer fails.
+    void traceMake(const DatumPtr &nameWord, const DatumPtr &value);
+
+    /// @brief If @p plistname is a traced property list, print a PPROP assignment line.
+    /// @details UCBLogo: a message is printed whenever PPROP gives a traced
+    /// property list a new property. Inside a user procedure the line includes
+    /// ` in PROC` and the current instruction.
+    /// Throws FCError::fileSystem if the current writer fails.
+    void tracePprop(const DatumPtr &plistname, const DatumPtr &propname, const DatumPtr &value);
+
+    /// @brief If @p name is a stepped variable, print the LOCAL shadow warning.
+    /// @details UCBLogo warning 20: `VAR shadowed by local in procedure call`.
+    /// Printed when a procedure input or LOCAL creates a local of that name.
+    /// Stepping a property list is meaningless; this does nothing for plists.
+    /// The warning is not catchable. When the local is created while binding
+    /// inputs, ` in PROC` names the caller; for LOCAL it names the current
+    /// procedure.
+    void warnSteppedShadow(const QString &name);
+
     /// @brief Spaces printed before a TRACE line.
     /// @details stdTraceBegin increments this after printing the enter line.
     /// stdTraceEnd decrements it before printing the exit line. An Evaluator

@@ -121,6 +121,8 @@ void CallFrame::setVarAsLocal(const QString &name)
 {
     if (!localVars_.contains(name))
         bindLocal(name, nothing());
+    else
+        Kernel::get().warnSteppedShadow(name);
 }
 
 void CallFrame::bindLocal(const QString &name, const DatumPtr &value)
@@ -128,6 +130,7 @@ void CallFrame::bindLocal(const QString &name, const DatumPtr &value)
     DatumPtr previous = Kernel::get().setDatumForName(value, name);
     if (!localVars_.contains(name))
         localVars_.insert(name, previous);
+    Kernel::get().warnSteppedShadow(name);
 }
 
 

@@ -1,0 +1,6 @@
+? ? ? > > c1 defined
+? P1 shadowed by local in procedure call
+4
+? > > c10 defined
+? P1 shadowed by local in procedure call in c10
+10

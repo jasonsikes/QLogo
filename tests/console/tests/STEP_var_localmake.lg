@@ -1,0 +1,8 @@
+make "n 3
+step [[] [n]]
+to t
+localmake "n :n + 1
+print :n
+end
+t
+print :n

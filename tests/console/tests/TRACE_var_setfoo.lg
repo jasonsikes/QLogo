@@ -1,0 +1,6 @@
+make "foo 1
+trace [[] [foo] []]
+setfoo 9
+untrace [[] [foo] []]
+setfoo 8
+show :foo

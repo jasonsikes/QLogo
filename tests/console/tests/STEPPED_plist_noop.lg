@@ -1,0 +1,5 @@
+pprop "p "a 1
+step [[][][p]]
+pprop "p "a 2
+show gprop "p "a
+show steppedp [[][][p]]

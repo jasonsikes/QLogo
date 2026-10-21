@@ -218,18 +218,26 @@ EXPORTC addr_t getWordForBool(addr_t eAddr, bool val) noexcept
 }
 
 /// MAKE / LOCALMAKE: store the given datum using the given word as a variable name.
+/// @param eAddr a pointer to the Evaluator object
+/// @param astnodeAddr a pointer to the owning ASTNode object
 /// @param datumAddr a pointer to a QLogo object which is the value to be stored
 /// @param wordAddr a pointer to a Word object which contains the name of the variable
 /// @param makeLocal true for LOCALMAKE: localize first, then assign
-EXPORTC void setDatumForWord(addr_t datumAddr, addr_t wordAddr, bool makeLocal) noexcept
+/// @return the owning ASTNode, or an Error if a TRACE MAKE line cannot be written
+EXPORTC addr_t setDatumForWord(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr, addr_t wordAddr, bool makeLocal) noexcept
 {
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
+    auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto d = DatumPtr(reinterpret_cast<Datum *>(datumAddr));
     auto *w = reinterpret_cast<Word *>(wordAddr);
-    const QString name = w->toString(Datum::ToStringFlags_Key);
-    if (makeLocal)
-        Kernel::get().currentCallFrame()->bindLocal(name, d);
-    else
-        Kernel::get().setDatumForName(d, name);
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
+        const QString name = w->toString(Datum::ToStringFlags_Key);
+        if (makeLocal)
+            Kernel::get().currentCallFrame()->bindLocal(name, d);
+        else
+            Kernel::get().setDatumForName(d, name);
+        Kernel::get().traceMake(DatumPtr(w), d);
+    });
 }
 
 /// Create and return Error: "SYSTEM"

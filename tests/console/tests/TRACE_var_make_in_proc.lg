@@ -1,0 +1,6 @@
+to t
+make "x 2
+end
+trace [[] [x] []]
+t
+show :x

@@ -120,6 +120,11 @@ add_subdirectory("${QLOGO_GUI}")
 add_dependencies("${QLOGO_BIN}" qlogo_library_db qlogo_help_db qlogo_csls)
 add_dependencies("${QLOGO_GUI}" qlogo_library_db qlogo_help_db qlogo_csls)
 
+option(QLOGO_ENABLE_FUZZING "Build libFuzzer targets" OFF)
+if(QLOGO_ENABLE_FUZZING)
+    add_subdirectory(tests/fuzz)
+endif()
+
 file(COPY "${CMAKE_SOURCE_DIR}/tests"
     DESTINATION "${CMAKE_BINARY_DIR}"
 )
