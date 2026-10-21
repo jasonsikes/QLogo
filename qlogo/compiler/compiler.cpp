@@ -1551,7 +1551,8 @@ Value *Compiler::generateWordFromDouble(Value *val)
 
 Value *Compiler::generateWordFromBool(Value *val)
 {
-    return generateCallExtern(getWordForBool, PaAddr(scaff_->evaluator_), PaBool(val));
+    return scaff_->builder_.CreateSelect(
+        val, CoAddr(Word::trueWord()), CoAddr(Word::falseWord()), DBG_NAME("wordFromBool"));
 }
 
 Value *Compiler::generateErrorSystem()

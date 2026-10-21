@@ -204,19 +204,6 @@ EXPORTC addr_t getWordForDouble(addr_t eAddr, double val) noexcept
     return reinterpret_cast<addr_t>(w);
 }
 
-/// Create a QLogo Word object using a bool value
-/// @param eAddr a pointer to the Evaluator object
-/// @param val a value stored as a bool
-/// @return the given value as a QLogo object
-EXPORTC addr_t getWordForBool(addr_t eAddr, bool val) noexcept
-{
-    auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    auto *w = Word::forBool(val);
-    e->watch(w);
-
-    return reinterpret_cast<addr_t>(w);
-}
-
 /// MAKE / LOCALMAKE: store the given datum using the given word as a variable name.
 /// @param eAddr a pointer to the Evaluator object
 /// @param astnodeAddr a pointer to the owning ASTNode object

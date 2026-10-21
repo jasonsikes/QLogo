@@ -75,8 +75,11 @@ class LLJIT;
 llvm::FunctionType *hostExportFunctionType(llvm::LLVMContext &ctx, llvm::StringRef name);
 
 /// uwtable, nounwind, dso_local, ELF nonlazybind, memory effects, and nonnull on evaluator.
-void applyHostExportAttrs(llvm::Function *F, llvm::CallInst *CI, const llvm::AttributeList &abiAttrs,
-                          llvm::StringRef name, llvm::Value *evaluator,
+void applyHostExportAttrs(llvm::Function *F,
+                          llvm::CallInst *CI,
+                          const llvm::AttributeList &abiAttrs,
+                          llvm::StringRef name,
+                          llvm::Value *evaluator,
                           const std::vector<llvm::Value *> &args);
 
 /// Debug name mangler: prefix with enclosing C++ function name.
@@ -102,8 +105,10 @@ struct Scaffold
     // A list of basic blocks that make up the "cold path" of execution.
     QList<llvm::BasicBlock *> coldPathBlocks_;
 
-    Scaffold(const llvm::DataLayout &dataLayout, llvm::TargetMachine *tm,
-             std::string displayName, std::string debugSource);
+    Scaffold(const llvm::DataLayout &dataLayout,
+             llvm::TargetMachine *tm,
+             std::string displayName,
+             std::string debugSource);
     ~Scaffold();
 
     /// @brief True when IR value names should be prefixed with the generator function.
@@ -169,8 +174,7 @@ struct Scaffold
     llvm::AllocaInst *createEntryBlockAlloca(llvm::Type *type, const std::string &name = "");
 
     // Alloca of [count x elemTy] in the entry block (SROA-friendly vs alloca elem, N).
-    llvm::AllocaInst *createEntryBlockArrayAlloca(llvm::Type *elemTy, uint64_t count,
-                                                  const std::string &name = "");
+    llvm::AllocaInst *createEntryBlockArrayAlloca(llvm::Type *elemTy, uint64_t count, const std::string &name = "");
 
     // After TOC / coro prologue prepend a new entry, move every alloca there
     // so they stay static and dominate all uses (including after suspend).
@@ -182,8 +186,8 @@ struct Scaffold
 
     // add one or more basic blocks to the cold path.
     template <typename... Blocks>
-    std::enable_if_t<(std::is_same_v<Blocks, llvm::BasicBlock> && ...)>
-    addColdPathBlocks(Blocks *...blocks) {
+    std::enable_if_t<(std::is_same_v<Blocks, llvm::BasicBlock> && ...)> addColdPathBlocks(Blocks *...blocks)
+    {
         (coldPathBlocks_.append(blocks), ...);
     }
 };
@@ -205,7 +209,10 @@ class Compiler
         bool showCFG = false;
         bool showModuleIR = false;
 
-        bool any() const { return showIR || showCFG || showModuleIR; }
+        bool any() const
+        {
+            return showIR || showCFG || showModuleIR;
+        }
     };
 
   private:
@@ -317,8 +324,10 @@ class Compiler
     // Named-procedure and procedure-text APPLY. builder is buildApplyNamedCall
     // or buildApplyProcedureText. NFC the builder result, then generateCallList
     // or Continuation from inSequenceTail_.
-    llvm::Value *generateApplyBuiltCall(const DatumPtr &node, TypeMask expected,
-                                        llvm::Value *aTemplate, llvm::Value *inputList,
+    llvm::Value *generateApplyBuiltCall(const DatumPtr &node,
+                                        TypeMask expected,
+                                        llvm::Value *aTemplate,
+                                        llvm::Value *inputList,
                                         addr_t (*builder)(addr_t, addr_t, addr_t, addr_t) noexcept,
                                         const char *builderName);
 
@@ -327,16 +336,20 @@ class Compiler
     // Always uses generateCallList (not a continuation) so the slot list can be
     // restored. Returns the list result, including flow control; genApply NFCs
     // after the merge so TRACE end is success-only.
-    llvm::Value *generateApplyExplicitSlot(const DatumPtr &node, TypeMask expected,
-                                           llvm::Value *aTemplate, llvm::Value *inputList);
+    llvm::Value *generateApplyExplicitSlot(const DatumPtr &node,
+                                           TypeMask expected,
+                                           llvm::Value *aTemplate,
+                                           llvm::Value *inputList);
 
     // Generate lambda APPLY. Insert point must be the form's entry block.
     // Binds template names to inputList, runs the template tail, then restores.
     // Always uses generateCallList (not a continuation) so bindings can be
     // restored. Returns the list result, including flow control; genApply NFCs
     // after the merge so TRACE end is success-only.
-    llvm::Value *generateApplyLambda(const DatumPtr &node, TypeMask expected,
-                                     llvm::Value *aTemplate, llvm::Value *inputList);
+    llvm::Value *generateApplyLambda(const DatumPtr &node,
+                                     TypeMask expected,
+                                     llvm::Value *aTemplate,
+                                     llvm::Value *inputList);
 
     // Generate a call to return a value immediately.
     llvm::Value *generateImmediateReturn(llvm::Value *retval);
@@ -381,7 +394,7 @@ class Compiler
     // Generate a call to convert a double to a Word object
     llvm::Value *generateWordFromDouble(llvm::Value *val);
 
-    // Generate a call to convert a boolean to a Word object
+    // Convert a boolean to the interned true or false Word
     llvm::Value *generateWordFromBool(llvm::Value *val);
 
     // Convert a Datum pointer to a number.
@@ -398,8 +411,10 @@ class Compiler
     // Convert a double to an int32. Must be an exact integer that fits in
     // signed or unsigned i32. `extra`, if set, is ANDed into the ERRACT
     // predicate so extra constraints share one trip.
-    llvm::Value *generateInt32FromDouble(ASTNode *parent, llvm::Value *src, bool isSigned,
-                                        const validatorFunction &extra = {});
+    llvm::Value *generateInt32FromDouble(ASTNode *parent,
+                                         llvm::Value *src,
+                                         bool isSigned,
+                                         const validatorFunction &extra = {});
 
     // Shift an i32 by a signed count. Negative count shifts the other way.
     // |count| >= 32 saturates: shl/lshr → 0, ashr → sign fill. Never poison.
@@ -543,7 +558,8 @@ class Compiler
     llvm::Value *generateWrite(const DatumPtr &node, TypeMask expected, bool useShow, bool addWhitespace);
 
     // SHOWIR / SHOWCFG / SHOWMODULEIR. `dumpFn` is the host export that compiles and prints.
-    llvm::Value *generateDumpInstructionList(const DatumPtr &node, TypeMask expected,
+    llvm::Value *generateDumpInstructionList(const DatumPtr &node,
+                                             TypeMask expected,
                                              addr_t (*dumpFn)(addr_t, addr_t, addr_t) noexcept,
                                              const char *dumpFnName);
 
@@ -559,7 +575,9 @@ class Compiler
     // A failure blames the list, not the extracted number.
     // Allocates [size x double] and starts lifetime; caller must endAllocaLifetime
     // after the last use.
-    llvm::AllocaInst *generateNumberAryFromDatum(ASTNode *parent, llvm::Value *src, int32_t size,
+    llvm::AllocaInst *generateNumberAryFromDatum(ASTNode *parent,
+                                                 llvm::Value *src,
+                                                 int32_t size,
                                                  const validatorFunction &elementOk = {});
 
     // Get the tag name from a tag node.
@@ -607,22 +625,34 @@ class Compiler
     std::shared_ptr<CompiledText> compiledTextFromList(List *aList);
 
     /// @brief Timestamp of the last procedure or TRACE change.
-    qint64 lastCodeChangeTimestamp() const { return lastCodeChangeTimestamp_; }
+    qint64 lastCodeChangeTimestamp() const
+    {
+        return lastCodeChangeTimestamp_;
+    }
 
     /// @brief Record DEFINE/COPYDEF/ERASE or TRACE/UNTRACE so lists recompile.
     void noteCodeChange();
 
     /// @brief Set the procedure-body suffix for TAG registration during the next compile.
     /// @param location List whose head is the line being compiled; tail is the remaining body.
-    void setTagLineLocation(const DatumPtr &location) { tagLineLocation_ = location; }
+    void setTagLineLocation(const DatumPtr &location)
+    {
+        tagLineLocation_ = location;
+    }
 
     /// @brief The current TAG registration line location.
     /// @details Nested compiles (library autoload during treeify) must save and
     /// restore this so an inner compile does not drop the outer line.
-    DatumPtr tagLineLocation() const { return tagLineLocation_; }
+    DatumPtr tagLineLocation() const
+    {
+        return tagLineLocation_;
+    }
 
     /// @brief Clear the TAG registration line location after compiling.
-    void clearTagLineLocation() { tagLineLocation_ = nothing(); }
+    void clearTagLineLocation()
+    {
+        tagLineLocation_ = nothing();
+    }
 
     /// @brief Replace the dump request for this object's lifetime, then restore the previous value.
     class DumpScope
@@ -630,12 +660,14 @@ class Compiler
         DumpRequest saved_;
 
       public:
-        explicit DumpScope(const DumpRequest &request)
-            : saved_(Compiler::get().dumpRequest_)
+        explicit DumpScope(const DumpRequest &request) : saved_(Compiler::get().dumpRequest_)
         {
             Compiler::get().dumpRequest_ = request;
         }
-        ~DumpScope() { Compiler::get().dumpRequest_ = saved_; }
+        ~DumpScope()
+        {
+            Compiler::get().dumpRequest_ = saved_;
+        }
         DumpScope(const DumpScope &) = delete;
         DumpScope &operator=(const DumpScope &) = delete;
     };
@@ -656,18 +688,22 @@ class Compiler
     llvm::Value *generateIftruefalse(const DatumPtr &node, TypeMask expected, bool testForTrue);
 
     // generate the common code for ERALL, ERPS, ERNS, and ERPLS.
-    llvm::Value *generateEraseUnburied(const DatumPtr &node, TypeMask expected,
-                                       bool procedures, bool variables, bool plists);
+    llvm::Value *generateEraseUnburied(
+        const DatumPtr &node, TypeMask expected, bool procedures, bool variables, bool plists);
 
     // generate the common code for LOCAL and GLOBAL.
-    llvm::Value *generateLocalGlobal(const DatumPtr &node, TypeMask expected,
+    llvm::Value *generateLocalGlobal(const DatumPtr &node,
+                                     TypeMask expected,
                                      addr_t (*fn)(addr_t, addr_t, addr_t, uint32_t) noexcept,
-                                     const std::string &fnName, const std::string &aryName);
+                                     const std::string &fnName,
+                                     const std::string &aryName);
 
     // stdLocal/stdGlobal for names that are already evaluated. May return an Error.
-    llvm::Value *generateLocalGlobal(const DatumPtr &node, const std::vector<llvm::Value *> &names,
+    llvm::Value *generateLocalGlobal(const DatumPtr &node,
+                                     const std::vector<llvm::Value *> &names,
                                      addr_t (*fn)(addr_t, addr_t, addr_t, uint32_t) noexcept,
-                                     const std::string &fnName, const std::string &aryName);
+                                     const std::string &fnName,
+                                     const std::string &aryName);
 
     // If the child is a genLiteral array, copy it so SETITEM cannot mutate AST.
     // Runtime arrays (ARRAY, variables) are left shared.
@@ -683,8 +719,11 @@ class Compiler
     llvm::Value *generateFputlput(const DatumPtr &node, TypeMask expected, bool isLput);
 
     // WORD / LIST / SENTENCE: allocate children and call concatWord / createList / createSentence.
-    llvm::Value *generateVariadicConstruct(const DatumPtr &node, addr_t (*ctor)(addr_t, addr_t, uint32_t) noexcept,
-                                           const std::string &ctorName, const std::string &aryName, bool requireWords);
+    llvm::Value *generateVariadicConstruct(const DatumPtr &node,
+                                           addr_t (*ctor)(addr_t, addr_t, uint32_t) noexcept,
+                                           const std::string &ctorName,
+                                           const std::string &aryName,
+                                           bool requireWords);
 
     // generate the common comparison for EQUALP and NOTEQUALP.
     llvm::Value *generateEqualpCompare(llvm::Value *thing1, llvm::Value *thing2);
@@ -693,9 +732,7 @@ class Compiler
     llvm::Value *generateSetitem(const DatumPtr &node, TypeMask expected, bool isDangerous);
 
     // generate the common code for OUTPUT, STOP, and .MAYBEOUTPUT.
-    llvm::Value *generateProcedureExit(const DatumPtr &node,
-                                       TypeMask expected,
-                                       TypeMask childExpected);
+    llvm::Value *generateProcedureExit(const DatumPtr &node, TypeMask expected, TypeMask childExpected);
 
     // Shared REPEAT / FOREVER loop. count is the validated trip count, or
     // nullptr for FOREVER. Shadows the process-global repcount. REPEAT
@@ -716,8 +753,8 @@ class Compiler
 
     template <typename Ret, typename... Args>
     llvm::Value *generateCallExternTyped(Ret (*)(Args...) noexcept,
-                                        const std::string &name,
-                                        const std::vector<std::pair<llvm::Type *, llvm::Value *>> &args)
+                                         const std::string &name,
+                                         const std::vector<std::pair<llvm::Type *, llvm::Value *>> &args)
     {
         llvm::LLVMContext &ctx = *scaff_->theContext_;
         llvm::FunctionType *fType = hostExportFunctionType(ctx, name);
@@ -755,16 +792,15 @@ class Compiler
         const bool extI32 = llvm::Triple(scaff_->theModule_->getTargetTriple()).isAArch64();
         llvm::AttributeList attrs = hostExportAttributeList<Ret, Args...>(ctx, extI32);
 
-        llvm::CallInst *CI = scaff_->builder_.CreateCall(
-            calleeF, argsV, cRetType->isVoidTy() ? "" : name + "_result");
-        applyHostExportAttrs(llvm::dyn_cast<llvm::Function>(calleeF.getCallee()), CI, attrs, name,
-                             scaff_->evaluator_, argsV);
+        llvm::CallInst *CI = scaff_->builder_.CreateCall(calleeF, argsV, cRetType->isVoidTy() ? "" : name + "_result");
+        applyHostExportAttrs(
+            llvm::dyn_cast<llvm::Function>(calleeF.getCallee()), CI, attrs, name, scaff_->evaluator_, argsV);
 
         if constexpr (CTypeABI<Ret>::isBool)
             return scaff_->builder_.CreateTrunc(CI, llvm::Type::getInt1Ty(ctx), name + "_i1");
         return CI;
     }
-    
+
 }; // class Compiler
 
 /// @brief Evaluates a gen* node's children and is the future TRACE enter/exit site.
@@ -789,19 +825,16 @@ class CallSite
         compiler_->generateTraceBegin(node_.astnodeValue(), children_);
     }
 
-public:
+  public:
     template <std::size_t M = N, std::enable_if_t<M == 0, int> = 0>
-    CallSite(Compiler *compiler, const DatumPtr &node, TypeMask expectedAll)
-        : compiler_(compiler)
-        , node_(node)
+    CallSite(Compiler *compiler, const DatumPtr &node, TypeMask expectedAll) : compiler_(compiler), node_(node)
     {
         initAll(expectedAll);
     }
 
     template <std::size_t M = N, std::enable_if_t<M == 0, int> = 0>
     CallSite(Compiler *compiler, const DatumPtr &node, const std::vector<TypeMask> &expected)
-        : compiler_(compiler)
-        , node_(node)
+        : compiler_(compiler), node_(node)
     {
         initEach(expected);
     }
@@ -813,9 +846,7 @@ public:
     }
 
     template <typename... Masks, std::size_t M = N, std::enable_if_t<(M == sizeof...(Masks) && M > 0), int> = 0>
-    CallSite(Compiler *compiler, const DatumPtr &node, Masks... masks)
-        : compiler_(compiler)
-        , node_(node)
+    CallSite(Compiler *compiler, const DatumPtr &node, Masks... masks) : compiler_(compiler), node_(node)
     {
         initEach(std::vector<TypeMask>{static_cast<TypeMask>(masks)...});
     }
@@ -879,8 +910,7 @@ CallSite(Compiler *, const DatumPtr &, std::initializer_list<TypeMask>) -> CallS
 template <typename M1, typename M2, typename... Rest>
 CallSite(Compiler *, const DatumPtr &, M1, M2, Rest...) -> CallSite<2 + sizeof...(Rest)>;
 
-#define generateCallExtern(FUNC, ...) \
-generateCallExternTyped(FUNC, #FUNC, {__VA_ARGS__})
+#define generateCallExtern(FUNC, ...) generateCallExternTyped(FUNC, #FUNC, {__VA_ARGS__})
 
 #define TyVoid   (Type::getVoidTy(*scaff_->theContext_))
 #define TyInt8   (Type::getInt8Ty(*scaff_->theContext_))
@@ -891,7 +921,7 @@ generateCallExternTyped(FUNC, #FUNC, {__VA_ARGS__})
 #define TyAddr   (PointerType::get(*scaff_->theContext_, 0))
 #define TyBool   (Type::getInt1Ty(*scaff_->theContext_))
 
-#define CoInt8(VAL)  (ConstantInt::get(*scaff_->theContext_, APInt(8, (uint8_t)(VAL))))
+#define CoInt8(VAL)   (ConstantInt::get(*scaff_->theContext_, APInt(8, (uint8_t)(VAL))))
 #define CoInt16(VAL)  (ConstantInt::get(*scaff_->theContext_, APInt(16, (uint16_t)(VAL))))
 #define CoInt32(VAL)  (ConstantInt::get(*scaff_->theContext_, APInt(32, (uint32_t)(VAL))))
 #define CoInt64(VAL)  (ConstantInt::get(*scaff_->theContext_, APInt(64, (uint64_t)(VAL))))
@@ -899,7 +929,7 @@ generateCallExternTyped(FUNC, #FUNC, {__VA_ARGS__})
 #define CoAddr(VAL)   (ConstantExpr::getIntToPtr(CoInt64(VAL), TyAddr))
 #define CoBool(VAL)   (ConstantInt::get(*scaff_->theContext_, APInt(1, VAL)))
 
-#define PaInt8(VAL)  {TyInt8, (VAL)}
+#define PaInt8(VAL)   {TyInt8, (VAL)}
 #define PaInt16(VAL)  {TyInt16, (VAL)}
 #define PaInt32(VAL)  {TyInt32, (VAL)}
 #define PaInt64(VAL)  {TyInt64, (VAL)}
@@ -909,9 +939,9 @@ generateCallExternTyped(FUNC, #FUNC, {__VA_ARGS__})
 
 #define DBG_NAME(name) (::dbgName(__func__, (name)))
 
-#define CHECK_GRAPHICS_MODE \
-    if (Config::get().hasGUI_ == false) \
-    { \
+#define CHECK_GRAPHICS_MODE                                        \
+    if (Config::get().hasGUI_ == false)                            \
+    {                                                              \
         return generateImmediateReturn(generateErrorNoGraphics()); \
     }
 

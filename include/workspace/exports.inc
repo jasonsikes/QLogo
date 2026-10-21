@@ -24,7 +24,6 @@ JIT_EXPORT(bool, parseDoubleForDatum, (addr_t eAddr, addr_t datumAddr, double *o
 JIT_EXPORT(bool, parseBoolForDatum, (addr_t eAddr, addr_t datumAddr, bool *out))
 JIT_EXPORT(addr_t, getDatumForVarname, (addr_t wordAddr))
 JIT_EXPORT(addr_t, getWordForDouble, (addr_t eAddr, double val))
-JIT_EXPORT(addr_t, getWordForBool, (addr_t eAddr, bool val))
 JIT_EXPORT(addr_t, setDatumForWord, (addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr, addr_t wordAddr, bool makeLocal))
 JIT_EXPORT(addr_t, getErrorSystem, (addr_t eAddr))
 JIT_EXPORT(addr_t, getErrorToplevel, (addr_t eAddr))
