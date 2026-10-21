@@ -224,7 +224,7 @@ Outputs a string that is composed of the most recent git tag, number of commits 
 
 **** ~ARGV~:
 
-A list of every word on the command line used to start qlogo, including the program name. This is similar to ~COMMANDLINE~ which is the list of words on the command line after a hyphen.
+A list of every word on the command line used to start qlogo, including the program name. This is similar to ~COMMAND.LINE~ which is the list of words on the command line after a hyphen.
 
 *** The following commands are slightly different:
 

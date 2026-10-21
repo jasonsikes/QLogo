@@ -1980,12 +1980,12 @@ ARGV							(variable)
 
 	a list of every word on the command line used to start QLogo,
 	including the program name. This is a QLogo extension.
-	See also COMMANDLINE.
+	See also COMMAND.LINE.
 
 COD***/
 
-/***DOC COMMANDLINE
-COMMANDLINE						(variable)
+/***DOC COMMAND.LINE
+COMMAND.LINE						(variable)
 
 	contains any text appearing after a hyphen on the command line
 	used to start Logo. The list is empty if there is no hyphen.

@@ -720,7 +720,7 @@ void Kernel::initVariables()
     // "LOGOVERSION"
     // "QLOGOVERSION"
     // "ALLOWGETSET"
-    // "COMMANDLINE"
+    // "COMMAND.LINE"
 }
 
 void Kernel::eraseVar(const QString &name)
