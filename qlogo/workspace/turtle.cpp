@@ -385,10 +385,13 @@ void Turtle::setScale(double newScaleX, double newScaleY)
         std::abs(newScaleY) <= std::numeric_limits<double>::epsilon())
         return;
 
+    if (newScaleX == scaleX_ && newScaleY == scaleY_)
+        return;
+
     scaleX_ = newScaleX;
     scaleY_ = newScaleY;
 
-    Config::get().mainInterface()->setTurtlePos(&turtleTransform_);
+    Config::get().mainInterface()->setScrunch(scaleX_, scaleY_);
 }
 
 void Turtle::setPenMode(PenModeEnum aPenMode)

@@ -116,6 +116,15 @@ void Canvas::setBounds(qreal x, qreal y)
     update();
 }
 
+void Canvas::setScrunch(qreal x, qreal y)
+{
+    if (scrunchX_ == x && scrunchY_ == y)
+        return;
+    scrunchX_ = x;
+    scrunchY_ = y;
+    update();
+}
+
 void Canvas::setLastWriteInfo()
 {
     Q_ASSERT(drawingElementList_.size() > 0);

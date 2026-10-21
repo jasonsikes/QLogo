@@ -123,6 +123,10 @@ class Canvas : public QWidget
     // Visible vertices on the Y axis range from -boundsY to +boundsY
     qreal boundsY_;
 
+    // Display-space scrunch. Translation in turtleMatrix_ is in display units.
+    qreal scrunchX_ = 1.0;
+    qreal scrunchY_ = 1.0;
+
     QColor foregroundColor_;
     QColor backgroundColor_;
     TurtleWriteInfo currentWriteInfo_;
@@ -323,6 +327,24 @@ class Canvas : public QWidget
     /// @note The origin is always the center of the widget, therefore the
     /// minimum X and Y bounds are the negatives of their maximum values.
     void setBounds(qreal x, qreal y);
+
+    /// @brief Set the display-space scrunch factors.
+    /// @param x The X scale factor.
+    /// @param y The Y scale factor.
+    /// @note Does not restretch already-drawn ink. The turtle icon is redrawn.
+    void setScrunch(qreal x, qreal y);
+
+    /// @brief The current X scrunch factor.
+    qreal scrunchX() const
+    {
+        return scrunchX_;
+    }
+
+    /// @brief The current Y scrunch factor.
+    qreal scrunchY() const
+    {
+        return scrunchY_;
+    }
 
     /// @brief Set whether the view should use the whole widget or a box within.
     ///

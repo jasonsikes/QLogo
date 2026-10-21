@@ -466,6 +466,15 @@ void LogoInterfaceGUI::setBounds(double x, double y)
     message(C_CANVAS_SETBOUNDS) << (qreal)xbound_ << (qreal)ybound_;
 }
 
+void LogoInterfaceGUI::setScrunch(double x, double y)
+{
+    if ((scrunchX_ == x) && (scrunchY_ == y))
+        return;
+    scrunchX_ = x;
+    scrunchY_ = y;
+    message(C_CANVAS_SET_SCRUNCH) << (qreal)scrunchX_ << (qreal)scrunchY_;
+}
+
 void LogoInterfaceGUI::setPensize(qreal aSize)
 {
     if (aSize == penSize_)
