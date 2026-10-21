@@ -1947,7 +1947,7 @@ void Kernel::noteErractReturn(Datum *value, bool fromUser)
     clearErractLoop();
     erractReturned_ = value;
     erractReturnedFromUser_ = fromUser;
-    if (value != nullptr && value->isa_ == Datum::typeWord)
+    if (value != nullptr && value->isWord())
     {
         auto *word = static_cast<Word *>(value);
         double number = word->numberValue();

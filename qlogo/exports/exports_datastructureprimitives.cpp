@@ -14,16 +14,16 @@
 ///
 //===----------------------------------------------------------------------===//
 
+#include "datum_types.h"
+#include "flowcontrol.h"
 #include "interface/logointerface.h"
 #include "interface/textstream.h"
 #include "runparser.h"
 #include "sharedconstants.h"
-#include "workspace/visited.h"
-#include "workspace/exports_internal.h"
-#include "datum_types.h"
-#include "flowcontrol.h"
 #include "workspace/evaluator.h"
+#include "workspace/exports_internal.h"
 #include "workspace/kernel.h"
+#include "workspace/visited.h"
 
 bool isDatumInContainer(VisitedSet &visited, Datum *value, Datum *container);
 
@@ -587,7 +587,7 @@ EXPORTC bool isDatumContainerOrInContainer(addr_t eAddr, addr_t valueAddr, addr_
     auto *container = reinterpret_cast<Datum *>(containerAddr);
 
     // If not a container then there's no container to search.
-    if (container->isa_ == Datum::typeWord)
+    if (container->isWord())
         return false;
 
     // If value and container are the same then it's in the container.
@@ -723,7 +723,7 @@ EXPORTC bool isSubstring(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr) noe
     auto *thing1 = reinterpret_cast<Datum *>(thing1Addr);
     auto *thing2 = reinterpret_cast<Datum *>(thing2Addr);
 
-    if (thing1->isa_ == Datum::typeWord && thing2->isa_ == Datum::typeWord)
+    if (thing1->isWord() && thing2->isWord())
     {
         auto *word1 = reinterpret_cast<Word *>(thing1);
         auto *word2 = reinterpret_cast<Word *>(thing2);
@@ -737,7 +737,7 @@ EXPORTC bool isSubstring(addr_t eAddr, addr_t thing1Addr, addr_t thing2Addr) noe
 EXPORTC bool isNumber(addr_t thingAddr) noexcept
 {
     auto *thing = reinterpret_cast<Datum *>(thingAddr);
-    if (thing->isa_ != Datum::typeWord)
+    if (!thing->isWord())
     {
         return false;
     }
@@ -749,7 +749,7 @@ EXPORTC bool isNumber(addr_t thingAddr) noexcept
 EXPORTC bool isSingleCharWord(addr_t candidateAddr) noexcept
 {
     auto *candidate = reinterpret_cast<Datum *>(candidateAddr);
-    if (candidate->isa_ != Datum::typeWord)
+    if (!candidate->isWord())
     {
         return false;
     }
@@ -909,4 +909,3 @@ EXPORTC addr_t runparseDatum(addr_t eAddr, addr_t wordorlistAddr) noexcept
     e->watch(retval);
     return reinterpret_cast<addr_t>(retval);
 }
-

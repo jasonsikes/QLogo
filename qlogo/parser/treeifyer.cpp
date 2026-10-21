@@ -49,13 +49,13 @@
 #include "astnode.h"
 #include "cmd_strings.h"
 #include "compiler.h"
-#include "interface/logointerface.h"
-#include "interface/textstream.h"
 #include "datum_types.h"
 #include "flowcontrol.h"
-#include "workspace/kernel.h"
+#include "interface/logointerface.h"
+#include "interface/textstream.h"
 #include "op_strings.h"
 #include "runparser.h"
+#include "workspace/kernel.h"
 #include "workspace/procedures.h"
 #include <qdatetime.h>
 #include <qdebug.h>
@@ -147,8 +147,7 @@ DatumPtr Treeifier::treeifyRootExp()
     // and because of tail recursion optimization, we must trampoline the expression when terminating the procedure.
     // Thus, the expression becomes a child of the STOP node.
     // e.g. [PRINT 2+2 STOP] becomes [STOP [PRINT 2+2]]
-    if ((currentToken_.isa() == Datum::typeWord) &&
-        (currentToken_.toString(Datum::ToStringFlags_Key) == cmdStrSTOP()))
+    if (currentToken_.isWord() && (currentToken_.toString(Datum::ToStringFlags_Key) == cmdStrSTOP()))
     {
         auto newNode = DatumPtr(new ASTNode(currentToken_));
         newNode.astnodeValue()->genExpression_ = &Compiler::genStop;
@@ -168,12 +167,10 @@ DatumPtr Treeifier::treeifyRootExp()
 DatumPtr Treeifier::treeifyExp()
 {
     DatumPtr left = treeifySumexp();
-    while ((currentToken_.isa() == Datum::typeWord) && ((currentToken_.toString() == opEqual()) ||
-                                                       (currentToken_.toString() == opNotEqual()) ||
-                                                       (currentToken_.toString() == opGreaterThan()) ||
-                                                       (currentToken_.toString() == opLessThan()) ||
-                                                       (currentToken_.toString() == opGreaterEqual()) ||
-                                                       (currentToken_.toString() == opLessEqual())))
+    while (currentToken_.isWord() &&
+           ((currentToken_.toString() == opEqual()) || (currentToken_.toString() == opNotEqual()) ||
+            (currentToken_.toString() == opGreaterThan()) || (currentToken_.toString() == opLessThan()) ||
+            (currentToken_.toString() == opGreaterEqual()) || (currentToken_.toString() == opLessEqual())))
     {
         DatumPtr op = currentToken_;
         advanceToken();
@@ -228,8 +225,8 @@ DatumPtr Treeifier::treeifyExp()
 DatumPtr Treeifier::treeifySumexp()
 {
     DatumPtr left = treeifyMulexp();
-    while ((currentToken_.isa() == Datum::typeWord) && ((currentToken_.toString() == opPlus()) ||
-                                                       (currentToken_.toString() == opMinus())))
+    while (currentToken_.isWord() &&
+           ((currentToken_.toString() == opPlus()) || (currentToken_.toString() == opMinus())))
     {
         DatumPtr op = currentToken_;
         advanceToken();
@@ -264,9 +261,9 @@ DatumPtr Treeifier::treeifySumexp()
 DatumPtr Treeifier::treeifyMulexp()
 {
     DatumPtr left = treeifyMinusexp();
-    while ((currentToken_.isa() == Datum::typeWord) && ((currentToken_.toString() == opMultiply()) ||
-                                                       (currentToken_.toString() == opDivide()) ||
-                                                       (currentToken_.toString() == opModulo())))
+    while (currentToken_.isWord() &&
+           ((currentToken_.toString() == opMultiply()) || (currentToken_.toString() == opDivide()) ||
+            (currentToken_.toString() == opModulo())))
     {
         DatumPtr op = currentToken_;
         advanceToken();
@@ -306,7 +303,7 @@ DatumPtr Treeifier::treeifyMulexp()
 DatumPtr Treeifier::treeifyMinusexp()
 {
     DatumPtr left = treeifyTermexp();
-    while ((currentToken_.isa() == Datum::typeWord) && ((currentToken_.toString() == opDoubleMinus())))
+    while (currentToken_.isWord() && ((currentToken_.toString() == opDoubleMinus())))
     {
         DatumPtr op = currentToken_;
         advanceToken();
@@ -362,7 +359,7 @@ DatumPtr Treeifier::treeifyTermexp()
     }
 
     // After Nothing, List, and Array, the token must be a Word.
-    Q_ASSERT(currentToken_.isa() == Datum::typeWord);
+    Q_ASSERT(currentToken_.isWord());
 
     // See if it's an open paren
     if (currentToken_.toString() == opOpenParen())
@@ -382,10 +379,8 @@ DatumPtr Treeifier::treeifyTermexp()
                 // A following infix operator after a 0-input procedure is an
                 // expression; `(sum -1 2)` still uses vararg because SUM's
                 // default arity is not 0.
-                DatumPtr peeked =
-                    (listIter_ != EmptyList::instance()) ? DatumPtr(listIter_->head) : nothing();
-                if (isInfixOpToken(peeked) &&
-                    std::get<2>(Procedures::get().astnodeFromCommand(currentToken_)) == 0)
+                DatumPtr peeked = (listIter_ != EmptyList::instance()) ? DatumPtr(listIter_->head) : nothing();
+                if (isInfixOpToken(peeked) && std::get<2>(Procedures::get().astnodeFromCommand(currentToken_)) == 0)
                 {
                     retval = treeifyExp();
                 }
@@ -475,7 +470,7 @@ DatumPtr Treeifier::treeifyCommand(bool isVararg)
     advanceToken();
 
     int countOfChildren = 0;
-    
+
     // Strategy 1: Variable-argument function (e.g., function calls in parentheses)
     // Read all parameters until encountering a closing parenthesis ')'
     if (isVararg)

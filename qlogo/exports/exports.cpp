@@ -14,13 +14,13 @@
 //===----------------------------------------------------------------------===//
 
 #include "astnode.h"
-#include "interface/streammanager.h"
+#include "compiler_types.h"
+#include "datum_types.h"
 #include "flowcontrol.h"
-#include "workspace/kernel.h"
+#include "interface/streammanager.h"
 #include "workspace/evaluator.h"
 #include "workspace/exports_internal.h"
-#include "datum_types.h"
-#include "compiler_types.h"
+#include "workspace/kernel.h"
 #include "workspace/specialvars.h"
 
 #include <QObject>
@@ -45,9 +45,11 @@ EXPORTC void printInt(int32_t p) noexcept
 /// @param datatypeTest true when ERRACT's output can replace the failed expression
 /// @param errorFromOutput builds the next error when ERRACT outputs an unusable datum
 /// @return the replacement value, or an error
-addr_t recoverWithErract(addr_t eAddr, DatumPtr err, DatumPtr rejected,
-    std::function<bool(DatumPtr)> datatypeTest,
-    std::function<DatumPtr(DatumPtr)> errorFromOutput)
+addr_t recoverWithErract(addr_t eAddr,
+                         DatumPtr err,
+                         DatumPtr rejected,
+                         std::function<bool(DatumPtr)> datatypeTest,
+                         std::function<DatumPtr(DatumPtr)> errorFromOutput)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Kernel &kernel = Kernel::get();
@@ -66,8 +68,8 @@ addr_t recoverWithErract(addr_t eAddr, DatumPtr err, DatumPtr rejected,
         kernel.clearErractLoop();
         DatumPtr toplevel = {FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")))};
         e->watch(toplevel.datumValue());
-        return printToTerminalOrError(e, reinterpret_cast<addr_t>(toplevel.datumValue()),
-                                      QObject::tr("Erract loop") + "\n");
+        return printToTerminalOrError(
+            e, reinterpret_cast<addr_t>(toplevel.datumValue()), QObject::tr("Erract loop") + "\n");
     }
     kernel.clearErractReturnGuard();
 
@@ -78,8 +80,8 @@ addr_t recoverWithErract(addr_t eAddr, DatumPtr err, DatumPtr rejected,
             kernel.clearErractLoop();
             DatumPtr toplevel = {FCError::custom(DatumPtr(QObject::tr("TOPLEVEL")))};
             e->watch(toplevel.datumValue());
-            return printToTerminalOrError(e, reinterpret_cast<addr_t>(toplevel.datumValue()),
-                                          QObject::tr("Erract loop") + "\n");
+            return printToTerminalOrError(
+                e, reinterpret_cast<addr_t>(toplevel.datumValue()), QObject::tr("Erract loop") + "\n");
         }
 
         kernel.armErractLoop(static_cast<int>(err.errValue()->code_));
@@ -133,8 +135,7 @@ addr_t recoverWithErract(addr_t eAddr, DatumPtr err, DatumPtr rejected,
 /// outputs a value that passes @p datatypeTest, that value replaces the bad input.
 /// PAUSE prints the error before its prompt. The same error twice, with no line
 /// typed in between, is an ERRACT loop and returns to toplevel.
-addr_t handleBadValue(addr_t eAddr, addr_t parentAddr, DatumPtr value,
-    std::function<bool(DatumPtr)> datatypeTest)
+addr_t handleBadValue(addr_t eAddr, addr_t parentAddr, DatumPtr value, std::function<bool(DatumPtr)> datatypeTest)
 {
     auto *parent = reinterpret_cast<ASTNode *>(parentAddr);
     DatumPtr err = {FCError::doesntLike(parent->nodeName_, DatumPtr(value))};
@@ -152,7 +153,7 @@ EXPORTC bool parseDoubleForDatum(addr_t eAddr, addr_t datumAddr, double *out) no
 {
     Q_UNUSED(eAddr);
     auto *w = reinterpret_cast<Word *>(datumAddr);
-    if (w->isa_ != Datum::typeWord)
+    if (!w->isWord())
     {
         *out = 0.0;
         return false;
@@ -170,7 +171,7 @@ EXPORTC bool parseBoolForDatum(addr_t eAddr, addr_t datumAddr, bool *out) noexce
 {
     Q_UNUSED(eAddr);
     auto *w = reinterpret_cast<Word *>(datumAddr);
-    if (w->isa_ != Datum::typeWord)
+    if (!w->isWord())
     {
         *out = false;
         return false;
@@ -384,8 +385,7 @@ EXPORTC addr_t handleBadDouble(addr_t eAddr, addr_t parentAddr, double value) no
             return word->numberIsValid;
         }
         return false;
-    
-     });
+    });
 }
 
 /// @brief Handle a bad datum value. If ERRACT has a value, run it. Otherwise, return an error.
@@ -396,9 +396,8 @@ EXPORTC addr_t handleBadDouble(addr_t eAddr, addr_t parentAddr, double value) no
 EXPORTC addr_t handleBadDatum(addr_t eAddr, addr_t parentAddr, addr_t valueAddr) noexcept
 {
     auto value = reinterpret_cast<Datum *>(valueAddr);
-    return handleBadValue(eAddr, parentAddr, DatumPtr(value), [](DatumPtr p) {
-        return (p.isa() & Datum::typeDataMask) != 0;
-    });
+    return handleBadValue(
+        eAddr, parentAddr, DatumPtr(value), [](DatumPtr p) { return (p.isa() & Datum::typeDataMask) != 0; });
 }
 
 /// @brief Handle an unbound variable. If ERRACT has a value, run it. Otherwise, return an error.

@@ -17,10 +17,10 @@
 #include "astnode.h"
 #include "compiler.h"
 #include "datum_types.h"
-#include "workspace/exports.inc"
-#include "workspace/kernel.h"
 #include "sharedconstants.h"
 #include "workspace/callframe.h"
+#include "workspace/exports.inc"
+#include "workspace/kernel.h"
 
 using namespace llvm;
 using namespace llvm::orc;
@@ -59,8 +59,11 @@ Value *Compiler::generateSingleCharWordFromDatum(ASTNode *parent, Value *src)
     });
 }
 
-Value *Compiler::generateVariadicConstruct(const DatumPtr &node, addr_t (*ctor)(addr_t, addr_t, uint32_t) noexcept,
-                                           const std::string &ctorName, const std::string &aryName, bool requireWords)
+Value *Compiler::generateVariadicConstruct(const DatumPtr &node,
+                                           addr_t (*ctor)(addr_t, addr_t, uint32_t) noexcept,
+                                           const std::string &ctorName,
+                                           const std::string &aryName,
+                                           bool requireWords)
 {
     CallSite cs(this, node, TypeDatum);
     AllocaInst *ary;
@@ -76,8 +79,8 @@ Value *Compiler::generateVariadicConstruct(const DatumPtr &node, addr_t (*ctor)(
     {
         ary = cs.allocaAry(aryName);
     }
-    Value *retval = generateCallExternTyped(ctor, ctorName,
-                                            {PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(allocaN(ary))});
+    Value *retval =
+        generateCallExternTyped(ctor, ctorName, {PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(allocaN(ary))});
     endAllocaLifetime(ary);
     return cs.ret(retval);
 }
@@ -229,8 +232,7 @@ Value *Compiler::generateFputlput(const DatumPtr &node, TypeMask expected, bool 
     Value *wordThing = generateWordFromDatum(parent, thing);
     auto wordVector = isLput ? std::vector<Value *>{list, wordThing} : std::vector<Value *>{wordThing, list};
     AllocaInst *ary = generateAllocaAry(wordVector, DBG_NAME("wordAry"));
-    Value *wordRetval =
-        generateCallExtern(concatWord, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(allocaN(ary)));
+    Value *wordRetval = generateCallExtern(concatWord, PaAddr(scaff_->evaluator_), PaAddr(ary), PaInt32(allocaN(ary)));
     endAllocaLifetime(ary);
     BasicBlock *wordDoneBB = scaff_->builder_.GetInsertBlock();
     scaff_->builder_.CreateBr(mergeBB);
@@ -398,9 +400,9 @@ Value *Compiler::genFirsts(const DatumPtr &node, TypeMask expected)
     Value *list = cs.child(0);
     list = generateListFromDatum(node.astnodeValue(), list);
     return cs.ret(generateCallExtern(firstsOfList,
-                              PaAddr(scaff_->evaluator_),
-                              PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
-                              PaAddr(list)));
+                                     PaAddr(scaff_->evaluator_),
+                                     PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
+                                     PaAddr(list)));
 }
 /***DOC BUTFIRSTS BFS
 BUTFIRSTS list
@@ -418,9 +420,9 @@ Value *Compiler::genButfirsts(const DatumPtr &node, TypeMask expected)
     Value *list = cs.child(0);
     list = generateListFromDatum(node.astnodeValue(), list);
     return cs.ret(generateCallExtern(butfirstsOfList,
-                              PaAddr(scaff_->evaluator_),
-                              PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
-                              PaAddr(list)));
+                                     PaAddr(scaff_->evaluator_),
+                                     PaAddr(CoAddr(node.astnodeValue()->nodeName_.datumValue())),
+                                     PaAddr(list)));
 }
 /***DOC BUTLAST BL
 BUTLAST wordorlist
@@ -466,8 +468,7 @@ Value *Compiler::genItem(const DatumPtr &node, TypeMask expected)
     scaff_->builder_.CreateStore(CoAddr(0), listItemSlot);
 
     auto validator = [this, listItemSlot, thing](Value *index) {
-        Value *isValid =
-            generateCallExtern(isDatumIndexValid, PaAddr(thing), PaDouble(index), PaAddr(listItemSlot));
+        Value *isValid = generateCallExtern(isDatumIndexValid, PaAddr(thing), PaDouble(index), PaAddr(listItemSlot));
         return scaff_->builder_.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isDatumIndexValidCond"));
     };
     index = generateValidationDouble(node.astnodeValue(), index, validator);
@@ -516,8 +517,7 @@ Value *Compiler::generateSetitem(const DatumPtr &node, TypeMask expected, bool i
     array = generateArrayFromDatum(node.astnodeValue(), array);
 
     auto indexValidator = [this, array](Value *index) {
-        Value *isValid =
-            generateCallExtern(isDatumIndexValid, PaAddr(array), PaDouble(index), PaAddr(CoAddr(0)));
+        Value *isValid = generateCallExtern(isDatumIndexValid, PaAddr(array), PaDouble(index), PaAddr(CoAddr(0)));
         return scaff_->builder_.CreateICmpEQ(isValid, CoBool(true), DBG_NAME("isDatumIndexValidCond"));
     };
     index = generateValidationDouble(node.astnodeValue(), index, indexValidator);
@@ -593,9 +593,7 @@ Value *Compiler::genWordp(const DatumPtr &node, TypeMask expected)
 {
     CallSite cs(this, node, TypeDatum);
     Value *thing = cs.child(0);
-    Value *thingType = generateGetDatumIsa(thing);
-    Value *isType = scaff_->builder_.CreateICmpEQ(thingType, CoInt32(Datum::typeWord), DBG_NAME("isDatumTypeCond"));
-    return cs.ret(isType);
+    return cs.ret(generateIsWord(thing));
 }
 
 /***DOC ARRAYP ARRAY?
@@ -956,11 +954,11 @@ Value *Compiler::genRunparse(const DatumPtr &node, TypeMask expected)
 MDARRAY sizelist					(library procedure)
 (MDARRAY sizelist origin)
 
-	outputs a multi-dimensional array.  The first input must be a list
-	of one or more positive integers.  The second input, if present,
-	must be a single integer that applies to every dimension of the array.
-	Ex: (MDARRAY [3 5] 0) outputs a two-dimensional array whose members
-	range from [0 0] to [2 4].
+    outputs a multi-dimensional array.  The first input must be a list
+    of one or more positive integers.  The second input, if present,
+    must be a single integer that applies to every dimension of the array.
+    Ex: (MDARRAY [3 5] 0) outputs a two-dimensional array whose members
+    range from [0 0] to [2 4].
 
 COD***/
 
@@ -983,8 +981,8 @@ BIL***/
 /***DOC COMBINE
 COMBINE thing1 thing2					(library procedure)
 
-	if thing2 is a word, outputs WORD thing1 thing2.  If thing2 is a list,
-	outputs FPUT thing1 thing2.
+    if thing2 is a word, outputs WORD thing1 thing2.  If thing2 is a list,
+    outputs FPUT thing1 thing2.
 
 COD***/
 
@@ -1003,8 +1001,8 @@ BIL***/
 /***DOC REVERSE
 REVERSE list						(library procedure)
 
-	outputs a list whose members are the members of the input list, in
-	reverse order.
+    outputs a list whose members are the members of the input list, in
+    reverse order.
 
 COD***/
 
@@ -1023,8 +1021,8 @@ BIL***/
 /***DOC GENSYM
 GENSYM							(library procedure)
 
-	outputs a unique word each time it's invoked.  The words are of the
-	form G1, G2, etc.
+    outputs a unique word each time it's invoked.  The words are of the
+    form G1, G2, etc.
 
 
 COD***/
@@ -1045,8 +1043,8 @@ BIL***/
 /***DOC MDITEM
 MDITEM indexlist array					(library procedure)
 
-	outputs the member of the multidimensional "array" selected by
-	the list of numbers "indexlist".
+    outputs the member of the multidimensional "array" selected by
+    the list of numbers "indexlist".
 
 COD***/
 
@@ -1065,7 +1063,7 @@ BIL***/
 /***DOC PICK
 PICK list						(library procedure)
 
-	outputs a randomly chosen member of the input list.
+    outputs a randomly chosen member of the input list.
 
 COD***/
 
@@ -1083,7 +1081,7 @@ BIL***/
 /***DOC REMOVE
 REMOVE thing list					(library procedure)
 
-	outputs a copy of "list" with every member equal to "thing" removed.
+    outputs a copy of "list" with every member equal to "thing" removed.
 
 COD***/
 
@@ -1101,9 +1099,9 @@ BIL***/
 /***DOC REMDUP
 REMDUP list						(library procedure)
 
-	outputs a copy of "list" with duplicate members removed.  If two or
-	more members of the input are equal, the rightmost of those members
-	is the one that remains in the output.
+    outputs a copy of "list" with duplicate members removed.  If two or
+    more members of the input are equal, the rightmost of those members
+    is the one that remains in the output.
 
 COD***/
 
@@ -1121,8 +1119,8 @@ BIL***/
 /***DOC QUOTED
 QUOTED thing						(library procedure)
 
-	outputs its input, if a list; outputs its input with a quotation
-	mark prepended, if a word.
+    outputs its input, if a list; outputs its input with a quotation
+    mark prepended, if a word.
 
 
 COD***/
@@ -1142,8 +1140,8 @@ BIL***/
 /***DOC MDSETITEM
 MDSETITEM indexlist array value				(library procedure)
 
-	command.  Replaces the member of "array" chosen by "indexlist"
-	with the new "value".
+    command.  Replaces the member of "array" chosen by "indexlist"
+    with the new "value".
 
 COD***/
 
@@ -1161,10 +1159,10 @@ BIL***/
 /***DOC PUSH
 PUSH stackname thing					(library procedure)
 
-	command.  Adds the "thing" to the stack that is the value of the
-	variable whose name is "stackname".  This variable must have a list
-	as its value; the initial value should be the empty list.  New
-	members are added at the front of the list.
+    command.  Adds the "thing" to the stack that is the value of the
+    variable whose name is "stackname".  This variable must have a list
+    as its value; the initial value should be the empty list.  New
+    members are added at the front of the list.
 
 COD***/
 
@@ -1182,9 +1180,9 @@ BIL***/
 /***DOC POP
 POP stackname						(library procedure)
 
-	outputs the most recently PUSHed member of the stack that is the
-	value of the variable whose name is "stackname" and removes that
-	member from the stack.
+    outputs the most recently PUSHed member of the stack that is the
+    value of the variable whose name is "stackname" and removes that
+    member from the stack.
 
 COD***/
 
@@ -1205,10 +1203,10 @@ BIL***/
 /***DOC QUEUE
 QUEUE queuename thing					(library procedure)
 
-	command.  Adds the "thing" to the queue that is the value of the
-	variable whose name is "queuename".  This variable must have a list
-	as its value; the initial value should be the empty list.  New
-	members are added at the back of the list.
+    command.  Adds the "thing" to the queue that is the value of the
+    variable whose name is "queuename".  This variable must have a list
+    as its value; the initial value should be the empty list.  New
+    members are added at the back of the list.
 
 COD***/
 
@@ -1226,9 +1224,9 @@ BIL***/
 /***DOC DEQUEUE
 DEQUEUE queuename					(library procedure)
 
-	outputs the least recently QUEUEd member of the queue that is the
-	value of the variable whose name is "queuename" and removes that
-	member from the queue.
+    outputs the least recently QUEUEd member of the queue that is the
+    value of the variable whose name is "queuename" and removes that
+    member from the queue.
 
 COD***/
 

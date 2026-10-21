@@ -122,7 +122,7 @@ class DatumPtr
     /// @return True if the referred Datum is a Word, false otherwise.
     bool isWord() const
     {
-        return datumValue_->isa_ == Datum::typeWord;
+        return (datumValue_->isa_ & Datum::typeWord) != 0;
     }
 
     /// @brief Returns true if the referred Datum is a List, false otherwise.

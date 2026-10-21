@@ -127,7 +127,7 @@ bool DatumPtr::operator!=(const DatumPtr &other) const
 
 Word *DatumPtr::wordValue() const
 {
-    Q_ASSERT(datumValue_->isa_ == Datum::typeWord);
+    Q_ASSERT(datumValue_->isWord());
     return reinterpret_cast<Word *>(datumValue_);
 }
 

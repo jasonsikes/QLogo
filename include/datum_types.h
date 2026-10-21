@@ -92,6 +92,25 @@ class Word : public Datum
     {
         return sourceIsNumber;
     }
+
+    /// @brief Return the interned Word for Logo TRUE ("true").
+    static Word *trueWord();
+
+    /// @brief Return the interned Word for Logo FALSE ("false").
+    static Word *falseWord();
+
+    /// @brief Return the interned Word for the given boolean value.
+    ///
+    /// @param value True to return trueWord(), false to return falseWord().
+    /// @return The interned true or false Word.
+    static Word *forBool(bool value)
+    {
+        return value ? trueWord() : falseWord();
+    }
+
+  private:
+    /// @brief Allocate an interned true or false Word and mark it as a valid boolean.
+    static Word *createInternedBool(bool value);
 };
 
 /// @brief The container that allows efficient read and write access to its elements.
