@@ -17,10 +17,37 @@
 #include "astnode.h"
 #include "compiler.h"
 #include "workspace/exports.inc"
+#include "workspace/kernel.h"
 #include "workspace/procedures.h"
 #include "sharedconstants.h"
 using namespace llvm;
 using namespace llvm::orc;
+
+namespace {
+
+bool isTracedProcedureName(const DatumPtr &name)
+{
+    return Kernel::get().containsName(Kernel::NameMark::Traced,
+                                      Kernel::NameKind::Procedures,
+                                      name.toString(Datum::ToStringFlags_Key));
+}
+
+/// TRACE begin/end are compiled at the call site. A continuation reuses the
+/// caller's frame and never runs that site, so a traced caller or callee
+/// must take the real nested call instead.
+bool tracedProcedureDisablesTco(ASTNode *callee)
+{
+    if (callee != nullptr && isTracedProcedureName(callee->nodeName_))
+        return true;
+    if (Kernel::get().callFrameStack_.empty())
+        return false;
+    CallFrame *cf = Kernel::get().currentCallFrame();
+    if (!cf->sourceNode_.isASTNode())
+        return false;
+    return isTracedProcedureName(cf->sourceNode_.astnodeValue()->nodeName_);
+}
+
+} // namespace
 
 // This is not a user command.
 Value *Compiler::genNoop(const DatumPtr &node, TypeMask expected)
@@ -300,6 +327,16 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node,
             retval = generateNotFlowControl(retval);
             return cs.ret(generateCallExtern(
                 getCtrlReturn, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval)));
+        }
+        if (tracedProcedureDisablesTco(child.astnodeValue()))
+        {
+            // TRACE begin/end live at the call site. A continuation would skip
+            // them, so evaluate the nested call and return its value instead.
+            CallSite cs(this, node, childExpected);
+            Value *retval = cs.child(0);
+            retval = generateCallExtern(
+                getCtrlReturn, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
+            return cs.ret(retval);
         }
         // Else it's a procedure. Generate a tail call to it.
         // Nested AST: CallSite would evaluate the child instead of tail-calling.
