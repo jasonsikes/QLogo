@@ -14,9 +14,9 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "datum_types.h"
 #include "workspace/callframe.h"
 #include "astnode.h"
+#include "datum_types.h"
 #include "workspace/kernel.h"
 #include "workspace/procedures.h"
 
@@ -117,24 +117,23 @@ size_t CallFrame::evaluationStackSize() const
     return Kernel::get().evaluationStack_.size() - evaluationStackStartIndex_;
 }
 
-void CallFrame::setVarAsLocal(const QString &name)
+void CallFrame::setVarAsLocal(Word *name)
 {
-    if (!localVars_.contains(name))
-        bindLocal(name, nothing());
+    Word *atom = name->interned();
+    if (!localVars_.contains(atom))
+        bindLocal(atom, nothing());
     else
-        Kernel::get().warnSteppedShadow(name);
+        Kernel::get().warnSteppedShadow(atom);
 }
 
-void CallFrame::bindLocal(const QString &name, const DatumPtr &value)
+void CallFrame::bindLocal(Word *name, const DatumPtr &value)
 {
-    DatumPtr previous = Kernel::get().setDatumForName(value, name);
-    if (!localVars_.contains(name))
-        localVars_.insert(name, previous);
-    Kernel::get().warnSteppedShadow(name);
+    Word *atom = name->interned();
+    DatumPtr previous = Kernel::get().setDatumForName(value, atom);
+    if (!localVars_.contains(atom))
+        localVars_.insert(atom, previous);
+    Kernel::get().warnSteppedShadow(atom);
 }
-
-
-
 
 /*
 void CallFrameStack::setExplicitSlotList(const DatumPtr &aList)

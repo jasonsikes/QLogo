@@ -14,15 +14,16 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "cmd_strings.h"
-#include "workspace/procedures.h"
-#include "compiler.h"
-#include "workspace/exports_internal.h"
-#include "workspace/kernel.h"
-#include "workspace/specialvars.h"
 #include "astnode.h"
+#include "cmd_strings.h"
+#include "compiler.h"
+#include "datum_types.h"
 #include "flowcontrol.h"
 #include "interface/streammanager.h"
+#include "workspace/exports_internal.h"
+#include "workspace/kernel.h"
+#include "workspace/procedures.h"
+#include "workspace/specialvars.h"
 
 #include <QElapsedTimer>
 #include <QObject>
@@ -83,7 +84,7 @@ QString secondsFromNsecs(qint64 nsecs)
     return text + QLatin1Char('.') + fracStr;
 }
 
-}
+} // namespace
 
 /// RUNTIME: start a timer before the instruction list runs.
 /// Nested RUNTIME calls push another timer so each reports its own elapsed time.
@@ -103,8 +104,7 @@ EXPORTC addr_t stdRuntimeEnd(addr_t eAddr, addr_t astnodeAddr) noexcept
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     Q_ASSERT(!runtimeTimers.isEmpty());
     const qint64 nsecs = runtimeTimers.pop().nsecsElapsed();
-    return printOrError(e, reinterpret_cast<addr_t>(node),
-                        secondsFromNsecs(nsecs) + QObject::tr(" seconds\n"));
+    return printOrError(e, reinterpret_cast<addr_t>(node), secondsFromNsecs(nsecs) + QObject::tr(" seconds\n"));
 }
 
 /// @brief Execute a procedure.
@@ -142,8 +142,8 @@ EXPORTC addr_t getCtrlReturn(addr_t eAddr, addr_t astNodeAddr, addr_t retvalAddr
 /// @param demandNothing true when the tail call is STOP (command position): the
 ///        continued procedure must not output a value.
 /// @return a pointer to the CONTINUATION control object that was generated.
-EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t argAryAddr, uint32_t argCount,
-                                   bool demandNothing) noexcept
+EXPORTC addr_t
+getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t argAryAddr, uint32_t argCount, bool demandNothing) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astNodeAddr);
@@ -157,8 +157,7 @@ EXPORTC addr_t getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t argA
     }
     // Assign the Logo-style linked list to the first element of the parameters QList.
     QList<DatumPtr> args{arguments};
-    auto *control = new FCContinuation(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), nodePtr, args,
-                                       demandNothing);
+    auto *control = new FCContinuation(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), nodePtr, args, demandNothing);
     e->watch(control);
     return reinterpret_cast<addr_t>(control);
 }
@@ -238,11 +237,11 @@ EXPORTC addr_t repcountAddr(void) noexcept
 
 EXPORTC addr_t beginCatch(void) noexcept
 {
-    const QString &erractName = SpecialVars::name(SpecialVars::Id::ErrAct);
+    Word *erractName = SpecialVars::word(SpecialVars::Id::ErrAct);
     Datum *erractValue = Kernel::get().datumForName(erractName).datumValue();
 
     // Save the erract value.
-    if ( (erractValue->isa_ & Datum::typeNothing) == 0)
+    if ((erractValue->isa_ & Datum::typeNothing) == 0)
     {
         erractValue->retainCount_++;
         Kernel::get().setDatumForName(nothing(), erractName);
@@ -253,27 +252,27 @@ EXPORTC addr_t beginCatch(void) noexcept
 EXPORTC addr_t endCatch(addr_t eAddr, addr_t nodeAddr, addr_t errActAddr, addr_t resultAddr, addr_t tagAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
-    const QString &erractName = SpecialVars::name(SpecialVars::Id::ErrAct);
+    Word *erractName = SpecialVars::word(SpecialVars::Id::ErrAct);
     auto *erractValue = reinterpret_cast<Datum *>(errActAddr);
     auto *result = reinterpret_cast<Datum *>(resultAddr);
     auto *tag = reinterpret_cast<Word *>(tagAddr);
 
     // Restore the erract value.
-    if ( (erractValue->isa_ & Datum::typeNothing) == 0)
+    if ((erractValue->isa_ & Datum::typeNothing) == 0)
     {
         DatumPtr erractValuePtr = DatumPtr(erractValue);
         Kernel::get().setDatumForName(erractValuePtr, erractName);
         erractValue->retainCount_--;
     }
 
-    if ( (result->isa_ & Datum::typeError) != 0)
+    if ((result->isa_ & Datum::typeError) != 0)
     {
         auto *err = reinterpret_cast<FCError *>(result);
         QString tagStr = tag->toString(Datum::ToStringFlags_Key);
 
         if ((tagStr == QObject::tr("ERROR")) &&
             (((err->code_ == ErrCode::ERR_NO_CATCH) &&
-                 (err->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("ERROR"))) ||
+              (err->tag().toString(Datum::ToStringFlags_Key) == QObject::tr("ERROR"))) ||
              (err->code_ != ErrCode::ERR_NO_CATCH)))
         {
             e->watch(err);
@@ -388,7 +387,7 @@ EXPORTC int8_t getTemplateForm(addr_t eAddr, addr_t templateAddr) noexcept
     {
         return TemplateFormNamedProcedure; // "sum
     }
-    if (( ! aTemplate->isList()) || (aTemplate->listValue()->isEmpty()))
+    if ((!aTemplate->isList()) || (aTemplate->listValue()->isEmpty()))
     {
         return TemplateFormInvalid;
     }
@@ -396,9 +395,9 @@ EXPORTC int8_t getTemplateForm(addr_t eAddr, addr_t templateAddr) noexcept
     DatumPtr first = aTemplate->listValue()->head;
     if (first.isWord())
     {
-        return TemplateFormExplicitSlot;   // [? * ?]
+        return TemplateFormExplicitSlot; // [? * ?]
     }
-    if (( ! first.isList()) || (aTemplate->listValue()->count() < 2))
+    if ((!first.isList()) || (aTemplate->listValue()->count() < 2))
     {
         return TemplateFormInvalid;
     }
@@ -408,10 +407,10 @@ EXPORTC int8_t getTemplateForm(addr_t eAddr, addr_t templateAddr) noexcept
 
     if (procedureFirst.isList())
     {
-        return TemplateFormProcedureText;  // [[x y] [OUTPUT :x + :y]]
+        return TemplateFormProcedureText; // [[x y] [OUTPUT :x + :y]]
     }
 
-    return TemplateFormLambda;             // [[x y] :x + :y]
+    return TemplateFormLambda; // [[x y] :x + :y]
 }
 
 /// @brief Build a call AST for named-procedure APPLY.
@@ -498,13 +497,13 @@ EXPORTC addr_t getExplicitSlot(addr_t eAddr, addr_t parentAddr, addr_t indexAddr
     }
 
 recover:
-    {
-        addr_t recovered = handleBadDatum(eAddr, parentAddr, indexAddr);
-        DatumPtr result(reinterpret_cast<Datum *>(recovered));
-        if (result.isErr())
-            return recovered;
-        return getExplicitSlot(eAddr, parentAddr, recovered);
-    }
+{
+    addr_t recovered = handleBadDatum(eAddr, parentAddr, indexAddr);
+    DatumPtr result(reinterpret_cast<Datum *>(recovered));
+    if (result.isErr())
+        return recovered;
+    return getExplicitSlot(eAddr, parentAddr, recovered);
+}
 
 bailout:
     e->watch(err);
@@ -582,7 +581,7 @@ EXPORTC addr_t beginApplyLambda(addr_t eAddr, addr_t astNodeAddr, addr_t templat
     ListIterator inputIter = inputs->newIterator();
     while (nameIter.elementExists())
     {
-        QString name = nameIter.element().toString(Datum::ToStringFlags_Key);
+        Word *name = nameIter.element().wordValue()->interned();
         DatumPtr value = inputIter.element();
         ApplyLambdaSavedVar saved;
         saved.name = name;
@@ -603,7 +602,10 @@ EXPORTC addr_t beginApplyLambda(addr_t eAddr, addr_t astNodeAddr, addr_t templat
 /// @param templateAddr a pointer to the procedure-text template list
 /// @param inputlistAddr a pointer to the already-evaluated input list
 /// @return a one-node List whose head is the call AST, or an error
-EXPORTC addr_t buildApplyProcedureText(addr_t eAddr, addr_t astNodeAddr, addr_t templateAddr, addr_t inputlistAddr) noexcept
+EXPORTC addr_t buildApplyProcedureText(addr_t eAddr,
+                                       addr_t astNodeAddr,
+                                       addr_t templateAddr,
+                                       addr_t inputlistAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *who = reinterpret_cast<Datum *>(astNodeAddr);
@@ -619,15 +621,13 @@ EXPORTC addr_t buildApplyProcedureText(addr_t eAddr, addr_t astNodeAddr, addr_t 
     Q_ASSERT(!tmpl->isEmpty() && tmpl->head.isList());
 
     return catchError(e, [&]() -> addr_t {
-        for (List *lineList = tmpl->tail.listValue(); !lineList->isEmpty();
-             lineList = lineList->tail.listValue())
+        for (List *lineList = tmpl->tail.listValue(); !lineList->isEmpty(); lineList = lineList->tail.listValue())
         {
             if (!lineList->head.isList())
                 throw FCError::doesntLike(whoP, lineList->head);
         }
 
-        auto [minParams, defaultParams, maxParams] =
-            Procedures::get().validateParameters(whoP, tmpl->head);
+        auto [minParams, defaultParams, maxParams] = Procedures::get().validateParameters(whoP, tmpl->head);
 
         int countOfChildren = inputlist->listValue()->count();
         if (countOfChildren < minParams)
@@ -678,4 +678,3 @@ EXPORTC void endApplyLambda(void) noexcept
             k.setDatumForName(it->previous, it->name);
     }
 }
-

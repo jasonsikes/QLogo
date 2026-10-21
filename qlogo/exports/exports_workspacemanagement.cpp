@@ -14,19 +14,19 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "workspace/exports_internal.h"
+#include "astnode.h"
 #include "compiler.h"
+#include "compiler_types.h"
 #include "datum_types.h"
+#include "flowcontrol.h"
+#include "interface/streammanager.h"
+#include "sharedconstants.h"
+#include "workspace/callframe.h"
+#include "workspace/exports_internal.h"
 #include "workspace/kernel.h"
 #include "workspace/library.h"
 #include "workspace/procedures.h"
 #include "workspace/specialvars.h"
-#include "astnode.h"
-#include "flowcontrol.h"
-#include "compiler_types.h"
-#include "workspace/callframe.h"
-#include "interface/streammanager.h"
-#include "sharedconstants.h"
 
 #include <QDebug>
 #include <QDir>
@@ -143,7 +143,7 @@ EXPORTC addr_t stdThing(addr_t eAddr, addr_t nameAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *name = reinterpret_cast<Datum *>(nameAddr);
-    DatumPtr val = Kernel::get().datumForName(name->toString(Datum::ToStringFlags_Key));
+    DatumPtr val = Kernel::get().datumForName(name->wordValue());
     if (!val.isNothing())
         return reinterpret_cast<addr_t>(val.datumValue());
 
@@ -162,7 +162,7 @@ EXPORTC addr_t stdFoo(addr_t eAddr, addr_t astnodeAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
-    QString name = node->nodeName_.toString(Datum::ToStringFlags_Key);
+    Word *name = node->nodeName_.wordValue();
     DatumPtr val = Kernel::get().datumForName(name);
     if (!val.isNothing())
         return reinterpret_cast<addr_t>(val.datumValue());
@@ -193,7 +193,7 @@ EXPORTC addr_t stdSetfoo(addr_t eAddr, addr_t astnodeAddr, addr_t valueAddr) noe
     else
         shown = name;
     return catchError(e, reinterpret_cast<addr_t>(node), [&] {
-        if (!Kernel::get().setExistingDatumForName(name, DatumPtr(value)))
+        if (!Kernel::get().setExistingDatumForName(Word::internKey(name), DatumPtr(value)))
             throw FCError::noHow(node->nodeName_);
         Kernel::get().traceMake(DatumPtr(shown), DatumPtr(value));
     });
@@ -205,10 +205,10 @@ namespace
 /// Words, or one list of words. A list combined with other inputs is rejected.
 /// The compiler rejects a top-level array, and rejects a non-word when there is
 /// more than one input. A list of names may still contain a non-word member.
-/// @return Key-form names. Throws before returning if any input is not a word.
-QStringList varNamesFromInputs(const DatumPtr &who, Datum **inputs, uint32_t count)
+/// @return Interned name words. Throws before returning if any input is not a word.
+QList<Word *> varNamesFromInputs(const DatumPtr &who, Datum **inputs, uint32_t count)
 {
-    QStringList names;
+    QList<Word *> names;
     if (count > 1 && inputs[0]->isList())
         throw FCError::doesntLike(who, DatumPtr(inputs[0]));
 
@@ -220,7 +220,7 @@ QStringList varNamesFromInputs(const DatumPtr &who, Datum **inputs, uint32_t cou
             DatumPtr member = iter.element();
             if (!member.isWord())
                 throw FCError::doesntLike(who, member);
-            names.append(member.wordValue()->toString(Datum::ToStringFlags_Key));
+            names.append(member.wordValue()->interned());
         }
         return names;
     }
@@ -229,7 +229,7 @@ QStringList varNamesFromInputs(const DatumPtr &who, Datum **inputs, uint32_t cou
     {
         if (!inputs[i]->isWord())
             throw FCError::doesntLike(who, DatumPtr(inputs[i]));
-        names.append(inputs[i]->toString(Datum::ToStringFlags_Key));
+        names.append(inputs[i]->wordValue()->interned());
     }
     return names;
 }
@@ -250,8 +250,8 @@ EXPORTC addr_t stdGlobal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, ui
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto **inputs = reinterpret_cast<Datum **>(inputsAddr);
     return catchError(e, reinterpret_cast<addr_t>(node), [&] {
-        QStringList names = varNamesFromInputs(node->nodeName_, inputs, count);
-        for (const QString &name : names)
+        QList<Word *> names = varNamesFromInputs(node->nodeName_, inputs, count);
+        for (Word *name : names)
         {
             if (!Kernel::get().doesExist(name))
                 Kernel::get().setDatumForName(nothing(), name);
@@ -272,9 +272,9 @@ EXPORTC addr_t stdLocal(addr_t eAddr, addr_t astnodeAddr, addr_t inputsAddr, uin
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto **inputs = reinterpret_cast<Datum **>(inputsAddr);
     return catchError(e, reinterpret_cast<addr_t>(node), [&] {
-        QStringList names = varNamesFromInputs(node->nodeName_, inputs, count);
+        QList<Word *> names = varNamesFromInputs(node->nodeName_, inputs, count);
         CallFrame *currentFrame = Kernel::get().currentCallFrame();
-        for (const QString &name : names)
+        for (Word *name : names)
             currentFrame->setVarAsLocal(name);
     });
 }
@@ -305,7 +305,8 @@ QString propertyNameKey(Datum *word)
 /// @param propnameAddr a word naming the property
 /// @param valueAddr the value to store
 /// @return the owning ASTNode, or an Error if a TRACE PPROP line cannot be written
-EXPORTC addr_t stdPprop(addr_t eAddr, addr_t astnodeAddr, addr_t plistnameAddr, addr_t propnameAddr, addr_t valueAddr) noexcept
+EXPORTC addr_t
+stdPprop(addr_t eAddr, addr_t astnodeAddr, addr_t plistnameAddr, addr_t propnameAddr, addr_t valueAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
@@ -408,7 +409,7 @@ EXPORTC bool stdDefinedp(addr_t nameAddr) noexcept
 EXPORTC bool stdNamep(addr_t nameAddr) noexcept
 {
     auto *name = reinterpret_cast<Datum *>(nameAddr);
-    DatumPtr val = Kernel::get().datumForName(name->toString(Datum::ToStringFlags_Key));
+    DatumPtr val = Kernel::get().datumForName(name->wordValue());
     return !val.isNothing();
 }
 
@@ -571,7 +572,7 @@ bool keepDefinedProcedure(const QString &name)
 
 bool keepValuedVariable(const QString &name)
 {
-    return !Kernel::get().datumForName(name).isNothing();
+    return !Kernel::get().datumForName(Word::internKey(name)).isNothing();
 }
 
 bool keepPropertyList(const QString &name)
@@ -1018,9 +1019,7 @@ EXPORTC addr_t stdCslsload(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *filename = reinterpret_cast<Datum *>(filenameAddr);
-    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
-        Kernel::get().cslsLoad(DatumPtr(filename));
-    });
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] { Kernel::get().cslsLoad(DatumPtr(filename)); });
 }
 
 /// SAVE: write unburied procedures, variables, and nonempty property lists to
@@ -1084,8 +1083,7 @@ EXPORTC addr_t stdHelp(addr_t eAddr, addr_t astnodeAddr, addr_t nameAddr) noexce
             const QString text = Help::get().helpText(key);
             if (text.isEmpty())
             {
-                output = QObject::tr("Sorry, no help available on %1\n")
-                             .arg(nameP.toString(Datum::ToStringFlags_Show));
+                output = QObject::tr("Sorry, no help available on %1\n").arg(nameP.toString(Datum::ToStringFlags_Show));
             }
             else
             {
@@ -1133,8 +1131,8 @@ EXPORTC addr_t stdEdit(addr_t eAddr, addr_t astnodeAddr, addr_t contentsAddr) no
         DatumPtr contentslist = nothing();
         if (contentsAddr != 0)
         {
-            contentslist = Kernel::get().contentsListFromDatum(
-                node->nodeName_, DatumPtr(reinterpret_cast<Datum *>(contentsAddr)));
+            contentslist =
+                Kernel::get().contentsListFromDatum(node->nodeName_, DatumPtr(reinterpret_cast<Datum *>(contentsAddr)));
         }
         Kernel::get().editContents(contentslist);
     });
@@ -1148,9 +1146,7 @@ EXPORTC addr_t stdEditfile(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *filename = reinterpret_cast<Datum *>(filenameAddr);
-    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
-        Kernel::get().editFile(DatumPtr(filename));
-    });
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] { Kernel::get().editFile(DatumPtr(filename)); });
 }
 
 /// SETEDITOR: store the editor command (a word, or a list of words).
@@ -1192,4 +1188,3 @@ EXPORTC void stdSetcslsloc(addr_t pathAddr) noexcept
     auto *d = reinterpret_cast<Datum *>(pathAddr);
     Config::get().cslsDirectory_ = QDir::cleanPath(d->wordValue()->toString());
 }
-

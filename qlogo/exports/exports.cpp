@@ -53,7 +53,7 @@ addr_t recoverWithErract(addr_t eAddr,
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     Kernel &kernel = Kernel::get();
-    const QString &erractName = SpecialVars::name(SpecialVars::Id::ErrAct);
+    Word *erractName = SpecialVars::word(SpecialVars::Id::ErrAct);
 
     if (kernel.datumForName(erractName).isNothing())
     {
@@ -185,7 +185,7 @@ EXPORTC bool parseBoolForDatum(addr_t eAddr, addr_t datumAddr, bool *out) noexce
 /// @return the stored value as a QLogo object
 EXPORTC addr_t getDatumForVarname(addr_t wordAddr) noexcept
 {
-    auto name = reinterpret_cast<Word *>(wordAddr)->toString(Datum::ToStringFlags_Key);
+    auto *name = reinterpret_cast<Word *>(wordAddr);
     Datum *val = Kernel::get().datumForName(name).datumValue();
 
     return reinterpret_cast<addr_t>(val);
@@ -219,11 +219,10 @@ setDatumForWord(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr, addr_t wordA
     auto d = DatumPtr(reinterpret_cast<Datum *>(datumAddr));
     auto *w = reinterpret_cast<Word *>(wordAddr);
     return catchError(e, reinterpret_cast<addr_t>(node), [&] {
-        const QString name = w->toString(Datum::ToStringFlags_Key);
         if (makeLocal)
-            Kernel::get().currentCallFrame()->bindLocal(name, d);
+            Kernel::get().currentCallFrame()->bindLocal(w, d);
         else
-            Kernel::get().setDatumForName(d, name);
+            Kernel::get().setDatumForName(d, w);
         Kernel::get().traceMake(DatumPtr(w), d);
     });
 }

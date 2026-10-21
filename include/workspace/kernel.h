@@ -33,7 +33,7 @@
 /// @brief One variable snapshot for a lambda APPLY binding.
 struct ApplyLambdaSavedVar
 {
-    QString name;
+    Word *name = nullptr;
     DatumPtr previous;
     bool existed = false;
 };
@@ -188,34 +188,36 @@ class Kernel
 
     /************ variables ************/
 
-    /// @brief The variables hash.
-    QHash<QString, DatumPtr> variables_;
+    /// @brief Variable bindings, keyed by the interned name word.
+    /// @details Keys are Word::interned() pointers. Equal spellings share one key,
+    /// so lookup compares pointers. Procedure names stay QString keys.
+    QHash<Word *, DatumPtr> variables_;
 
     /// @brief Set a value for a variable.
     /// @param aDatum The value to store.
-    /// @param name The name of the variable to set.
+    /// @param name Any word for the variable. Resolved with Word::interned().
     /// @return The previous binding, or nothing() if the name was not present.
     /// @details One hash probe: assign through the iterator on a hit, insert on
     /// a miss. MAKE and bindLocal both use this; bindLocal saves the return.
-    DatumPtr setDatumForName(const DatumPtr &aDatum, const QString &name);
+    DatumPtr setDatumForName(const DatumPtr &aDatum, Word *name);
 
     /// @brief Assign to an existing variable in one hash probe.
-    /// @param name The name of the variable to set.
+    /// @param name Any word for the variable. Resolved with Word::interned().
     /// @param aDatum The value to store.
     /// @return True if the name was present and updated; false if it was absent.
     /// @details Does not create a binding. SETFOO uses this so a missing name
     /// stays "I don't know how".
-    bool setExistingDatumForName(const QString &name, const DatumPtr &aDatum);
+    bool setExistingDatumForName(Word *name, const DatumPtr &aDatum);
 
     /// @brief Return the value of a variable.
-    /// @param name The name of the variable to search for.
+    /// @param name Any word for the variable. Resolved with Word::interned().
     /// @return The stored value associated with 'name' or 'nothing' if the variable is not found.
-    DatumPtr datumForName(const QString &name) const;
+    DatumPtr datumForName(Word *name) const;
 
     /// @brief Return true if value keyed by name exists in the variables hash.
-    /// @param name The name of the variable to search for.
+    /// @param name Any word for the variable. Resolved with Word::interned().
     /// @return True if the variable exists, false otherwise.
-    bool doesExist(const QString &name) const;
+    bool doesExist(Word *name) const;
 
     /// @brief True if the special variable is the word TRUE.
     /// @param id The interpreter-owned variable.
@@ -230,8 +232,8 @@ class Kernel
     int printLimitFromSpecialVar(SpecialVars::Id id) const;
 
     /// @brief Erase name and its value from the variables hash.
-    /// @param name The name of the variable to erase.
-    void eraseVar(const QString &name);
+    /// @param name Any word for the variable. Resolved with Word::interned().
+    void eraseVar(Word *name);
 
     /// @brief Return variable names from the variables hash.
     /// @param unburiedOnly When true, omit buried variables. A variable with no
@@ -368,17 +370,23 @@ class Kernel
     /// The warning is not catchable. When the local is created while binding
     /// inputs, ` in PROC` names the caller; for LOCAL it names the current
     /// procedure.
-    void warnSteppedShadow(const QString &name);
+    void warnSteppedShadow(Word *name);
 
     /// @brief Spaces printed before a TRACE line.
     /// @details stdTraceBegin increments this after printing the enter line.
     /// stdTraceEnd decrements it before printing the exit line. An Evaluator
     /// snapshots the value on construction and restores it if that list
     /// finishes with an error, so a skipped TRACE exit cannot leak indent.
-    int traceDepth() const { return traceDepth_; }
+    int traceDepth() const
+    {
+        return traceDepth_;
+    }
 
     /// @brief Enter a traced call after its begin line has been printed.
-    void incrementTraceDepth() { ++traceDepth_; }
+    void incrementTraceDepth()
+    {
+        ++traceDepth_;
+    }
 
     /// @brief Leave a traced call before its exit line is printed.
     void decrementTraceDepth();
@@ -675,7 +683,10 @@ class Kernel
 
     /// @brief How many times PAUSE has been entered.
     /// @return The pause entry count.
-    uint32_t pauseCount() const { return pauseCount_; }
+    uint32_t pauseCount() const
+    {
+        return pauseCount_;
+    }
 
     /// @brief Ask the next PAUSE to print @p message before its prompt.
     /// @param message The error text to print.

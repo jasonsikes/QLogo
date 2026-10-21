@@ -218,7 +218,7 @@ Kernel::TopLevelResult Kernel::executeTopLevelList(const QString &prompt, bool i
 
 Kernel::TopLevelResult Kernel::runAssignedStartup(const DatumPtr &startupBefore)
 {
-    DatumPtr startup = datumForName(SpecialVars::name(SpecialVars::Id::Startup));
+    DatumPtr startup = datumForName(SpecialVars::word(SpecialVars::Id::Startup));
     if (!startup.isList() || startup.datumValue() == startupBefore.datumValue())
         return TopLevelResult::EndOfInput;
 
@@ -249,7 +249,7 @@ Kernel::TopLevelResult Kernel::runLoadedProgram(const DatumPtr &startupBefore)
 
 Kernel::TopLevelResult Kernel::loadFile(const DatumPtr &filename)
 {
-    DatumPtr startupBefore = datumForName(SpecialVars::name(SpecialVars::Id::Startup));
+    DatumPtr startupBefore = datumForName(SpecialVars::word(SpecialVars::Id::Startup));
     ProgramReadScope scope{filename};
     return runLoadedProgram(startupBefore);
 }
@@ -304,7 +304,7 @@ void Kernel::saveWorkspace(const DatumPtr &filename)
 
 Kernel::TopLevelResult Kernel::loadText(const QString &text)
 {
-    DatumPtr startupBefore = datumForName(SpecialVars::name(SpecialVars::Id::Startup));
+    DatumPtr startupBefore = datumForName(SpecialVars::word(SpecialVars::Id::Startup));
     ProgramReadTextScope scope{text};
     return runLoadedProgram(startupBefore);
 }
@@ -700,9 +700,8 @@ void Kernel::initVariables()
     DatumPtr falseDatumPtr(false);
 
     auto setBuriedVar = [this](SpecialVars::Id id, const DatumPtr &value) {
-        const QString &n = SpecialVars::name(id);
-        setDatumForName(value, n);
-        addName(NameMark::Buried, NameKind::Variables, n);
+        setDatumForName(value, SpecialVars::word(id));
+        addName(NameMark::Buried, NameKind::Variables, SpecialVars::name(id));
     };
 
     setBuriedVar(SpecialVars::Id::Argv, argvBuilder.finishedList());
@@ -716,51 +715,50 @@ void Kernel::initVariables()
     setBuriedVar(SpecialVars::Id::FullPrintP, falseDatumPtr);
 }
 
-void Kernel::eraseVar(const QString &name)
+void Kernel::eraseVar(Word *name)
 {
-    variables_.remove(name);
+    variables_.remove(name->interned());
 }
 
-DatumPtr Kernel::setDatumForName(const DatumPtr &aDatum, const QString &name)
+DatumPtr Kernel::setDatumForName(const DatumPtr &aDatum, Word *name)
 {
-    auto it = variables_.find(name);
+    Word *atom = name->interned();
+    auto it = variables_.find(atom);
     if (it != variables_.end())
     {
         DatumPtr previous = *it;
         *it = aDatum;
         return previous;
     }
-    variables_.insert(name, aDatum);
+    variables_.insert(atom, aDatum);
     return nothing();
 }
 
-bool Kernel::setExistingDatumForName(const QString &name, const DatumPtr &aDatum)
+bool Kernel::setExistingDatumForName(Word *name, const DatumPtr &aDatum)
 {
-    auto it = variables_.find(name);
+    auto it = variables_.find(name->interned());
     if (it == variables_.end())
         return false;
     *it = aDatum;
     return true;
 }
 
-DatumPtr Kernel::datumForName(const QString &name) const
+DatumPtr Kernel::datumForName(Word *name) const
 {
-    auto result = variables_.find(name);
-    if (result != variables_.end())
-    {
+    auto result = variables_.constFind(name->interned());
+    if (result != variables_.cend())
         return *result;
-    }
     return nothing();
 }
 
-bool Kernel::doesExist(const QString &name) const
+bool Kernel::doesExist(Word *name) const
 {
-    return variables_.contains(name);
+    return variables_.contains(name->interned());
 }
 
 bool Kernel::specialVarIsTrue(SpecialVars::Id id) const
 {
-    DatumPtr val = datumForName(SpecialVars::name(id));
+    DatumPtr val = datumForName(SpecialVars::word(id));
     if (!val.isWord())
         return false;
     return val.toString(Datum::ToStringFlags_Key) == QObject::tr("TRUE");
@@ -768,7 +766,7 @@ bool Kernel::specialVarIsTrue(SpecialVars::Id id) const
 
 int Kernel::printLimitFromSpecialVar(SpecialVars::Id id) const
 {
-    DatumPtr val = datumForName(SpecialVars::name(id));
+    DatumPtr val = datumForName(SpecialVars::word(id));
     if (!val.isWord())
         return -1;
     Word *w = val.wordValue();
@@ -781,11 +779,12 @@ int Kernel::printLimitFromSpecialVar(SpecialVars::Id id) const
 DatumPtr Kernel::allVariables(bool unburiedOnly) const
 {
     ListBuilder builder;
-    for (auto &varname : variables_.keys())
+    for (Word *varname : variables_.keys())
     {
-        if (unburiedOnly && containsName(NameMark::Buried, NameKind::Variables, varname))
+        const QString key = varname->toString(Datum::ToStringFlags_Key);
+        if (unburiedOnly && containsName(NameMark::Buried, NameKind::Variables, key))
             continue;
-        builder.append(DatumPtr(varname));
+        builder.append(DatumPtr(key));
     }
     return builder.finishedList();
 }
@@ -1026,8 +1025,9 @@ QString Kernel::printoutFromContentsList(const DatumPtr &contentslist, bool shou
     while (variables.elementExists())
     {
         DatumPtr varnameP = variables.element();
-        const QString varname = varnameP.wordValue()->toString(Datum::ToStringFlags_Key);
-        DatumPtr value = datumForName(varname);
+        Word *var = varnameP.wordValue();
+        const QString varname = var->toString(Datum::ToStringFlags_Key);
+        DatumPtr value = datumForName(var);
         if (value.isNothing())
         {
             if (shouldValidate)
@@ -1073,8 +1073,9 @@ QString Kernel::titlesFromContentsList(const DatumPtr &contentslist) const
     while (variables.elementExists())
     {
         DatumPtr varnameP = variables.element();
-        const QString varname = varnameP.wordValue()->toString(Datum::ToStringFlags_Key);
-        DatumPtr value = datumForName(varname);
+        Word *var = varnameP.wordValue();
+        const QString varname = var->toString(Datum::ToStringFlags_Key);
+        DatumPtr value = datumForName(var);
         if (value.isNothing())
             throw FCError::noValue(varnameP);
         retval += QObject::tr("Make \"%1 %2\n").arg(varname, printoutDatum(value));
@@ -1105,7 +1106,7 @@ void Kernel::eraseFromContentsList(const DatumPtr &contentslist)
     while (variables.elementExists())
     {
         DatumPtr varnameP = variables.element();
-        eraseVar(varnameP.wordValue()->toString(Datum::ToStringFlags_Key));
+        eraseVar(varnameP.wordValue());
     }
 
     ListIterator properties = names.properties->newIterator();
@@ -1294,7 +1295,7 @@ struct EceDepthGuard
 
 DatumPtr Kernel::specialVarInstructionList(SpecialVars::Id id) const
 {
-    DatumPtr val = datumForName(SpecialVars::name(id));
+    DatumPtr val = datumForName(SpecialVars::word(id));
     if (val.isNothing())
         return nothing();
     try
@@ -1436,7 +1437,7 @@ namespace
 
 int printLimitFromSpecialVar(SpecialVars::Id id)
 {
-    DatumPtr val = Kernel::get().datumForName(SpecialVars::name(id));
+    DatumPtr val = Kernel::get().datumForName(SpecialVars::word(id));
     if (!val.isWord())
         return -1;
     Word *w = val.wordValue();
@@ -1562,12 +1563,13 @@ void Kernel::tracePprop(const DatumPtr &plistname, const DatumPtr &propname, con
     StreamManager::get().print(output);
 }
 
-void Kernel::warnSteppedShadow(const QString &name)
+void Kernel::warnSteppedShadow(Word *name)
 {
-    if (!containsName(NameMark::Stepped, NameKind::Variables, name))
+    const QString key = name->interned()->toString(Datum::ToStringFlags_Key);
+    if (!containsName(NameMark::Stepped, NameKind::Variables, key))
         return;
 
-    QString output = QObject::tr("%1 shadowed by local in procedure call").arg(name);
+    QString output = QObject::tr("%1 shadowed by local in procedure call").arg(key);
     CallFrame *cf = workspaceTraceFrame();
     CallFrame *reported = cf;
     if (cf != nullptr && cf->isReadingArgs_ && callFrameStack_.size() >= 2)
@@ -1593,7 +1595,7 @@ void Kernel::ece_decideEmptyEvaluationStack()
     if (currentCallFrame()->isReadingArgs_)
     {
         // We are processing the arguments.
-        if (!currentCallFrame()->currentParameterName_.isEmpty())
+        if (currentCallFrame()->currentParameterName_ != nullptr)
         {
             // We have finished processing a default value for an optional parameter.
             DatumPtr defaultValue = currentCallFrame()->retvalToParent_;
@@ -1606,10 +1608,10 @@ void Kernel::ece_decideEmptyEvaluationStack()
                 nextOperation_ = &Kernel::ece_exitProcedure;
             }
 
-            ece_trace("ece_decideEmptyEvaluationStack: setting variable " + currentCallFrame()->currentParameterName_ +
-                      " to " + defaultValue.toString());
+            ece_trace("ece_decideEmptyEvaluationStack: setting variable " +
+                      currentCallFrame()->currentParameterName_->toString() + " to " + defaultValue.toString());
             currentCallFrame()->bindLocal(currentCallFrame()->currentParameterName_, defaultValue);
-            currentCallFrame()->currentParameterName_.clear();
+            currentCallFrame()->currentParameterName_ = nullptr;
             nextOperation_ = &Kernel::ece_processParameters;
             return;
         }
@@ -1854,19 +1856,19 @@ void Kernel::ece_processParameters()
                 break;
             }
             // A word parameter gets assigned the current argument.
-            currentCallFrame()->currentParameterName_ = parameter.toString(Datum::ToStringFlags_Key);
+            currentCallFrame()->currentParameterName_ = parameter.wordValue()->interned();
             DatumPtr argument = currentCallFrame()->arguments_.listValue()->head;
             DatumPtr tail = currentCallFrame()->arguments_.listValue()->tail;
             currentCallFrame()->arguments_ = tail;
-            ece_trace("ece_processParameters: setting variable " + currentCallFrame()->currentParameterName_ + " to " +
-                      argument.toString());
+            ece_trace("ece_processParameters: setting variable " +
+                      currentCallFrame()->currentParameterName_->toString() + " to " + argument.toString());
             currentCallFrame()->bindLocal(currentCallFrame()->currentParameterName_, argument);
         }
         else
         {
             // This is either a parameter with a default value, or a rest parameter.
             // Either way, the first element is the name of the parameter.
-            currentCallFrame()->currentParameterName_ = parameter.listValue()->head.toString(Datum::ToStringFlags_Key);
+            currentCallFrame()->currentParameterName_ = parameter.listValue()->head.wordValue()->interned();
 
             // The remainder of the list is the default value, if it exists.
             DatumPtr defaultValue = parameter.listValue()->tail;
@@ -1893,8 +1895,8 @@ void Kernel::ece_processParameters()
                     DatumPtr argument = currentCallFrame()->arguments_.listValue()->head;
                     DatumPtr tail = currentCallFrame()->arguments_.listValue()->tail;
                     currentCallFrame()->arguments_ = tail;
-                    ece_trace("ece_processParameters: setting variable " + currentCallFrame()->currentParameterName_ +
-                              " to " + argument.toString());
+                    ece_trace("ece_processParameters: setting variable " +
+                              currentCallFrame()->currentParameterName_->toString() + " to " + argument.toString());
                     currentCallFrame()->bindLocal(currentCallFrame()->currentParameterName_, argument);
                 }
             }
@@ -2004,7 +2006,7 @@ DatumPtr Kernel::runErractInstruction(const DatumPtr &instructionIn)
     try
     {
         CallFrame *frame = currentCallFrame();
-        frame->setVarAsLocal(SpecialVars::name(SpecialVars::Id::ErrAct));
+        frame->setVarAsLocal(SpecialVars::word(SpecialVars::Id::ErrAct));
         if (!instruction.listValue()->isEmpty())
         {
             frame->pushEvaluator(instruction);

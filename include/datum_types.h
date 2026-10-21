@@ -36,6 +36,8 @@ class Word : public Datum
     mutable QString printableString;
     mutable double number;
     mutable bool boolean;
+    /// @brief Canonical variable-name word for this spelling, once resolved.
+    mutable Word *interned_ = nullptr;
     bool sourceIsNumber;
 
     void genRawString() const;
@@ -92,6 +94,22 @@ class Word : public Datum
     {
         return sourceIsNumber;
     }
+
+    /// @brief The one persistent Word for this word's canonical variable name.
+    ///
+    /// @details The first call builds the key string and returns the shared word
+    /// for that spelling. Later calls return the same pointer. "x" and "X"
+    /// resolve to one word. The result stays alive for the session.
+    /// @return The interned name word.
+    Word *interned() const;
+
+    /// @brief The persistent Word for an already-canonical variable name.
+    ///
+    /// @param key The spelling previously used as a variable-table key: the
+    /// uppercased printable form from toString(ToStringFlags_Key), or a
+    /// SpecialVars::name spelling.
+    /// @return The interned name word. The same key returns the same pointer.
+    static Word *internKey(const QString &key);
 
     /// @brief Return the interned Word for Logo TRUE ("true").
     static Word *trueWord();

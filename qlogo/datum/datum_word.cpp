@@ -16,6 +16,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "datum_types.h"
+#include <QHash>
 #include <QObject>
 #include <array>
 #include <qdebug.h>
@@ -268,6 +269,31 @@ Word::Word(double other)
 }
 
 Word::~Word() = default;
+
+Word *Word::internKey(const QString &key)
+{
+    static QHash<QString, Word *> table;
+    const auto found = table.constFind(key);
+    if (found != table.cend())
+        return found.value();
+
+    auto *word = new Word(key);
+    word->isa_ = Datum::typePersistentWord;
+    word->genKeyString();
+    Q_ASSERT(word->keyString == key);
+    word->interned_ = word;
+    table.insert(key, word);
+    return word;
+}
+
+Word *Word::interned() const
+{
+    if (interned_ != nullptr)
+        return interned_;
+    genKeyString();
+    interned_ = internKey(keyString);
+    return interned_;
+}
 
 Word *Word::createInternedBool(bool value)
 {

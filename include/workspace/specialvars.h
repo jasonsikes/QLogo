@@ -21,24 +21,25 @@
 
 #include <QString>
 
-#define QLOGO_SPECIAL_VARS(X)                 \
-    X(AllowGetSet,       "ALLOWGETSET")       \
-    X(CaseIgnoredP,      "CASEIGNOREDP")      \
-    X(Argv,              "ARGV")              \
-    X(CommandLine,       "COMMAND.LINE")       \
-    X(ErrAct,            "ERRACT")            \
-    X(LogoPlatform,      "LOGOPLATFORM")      \
-    X(LogoVersion,       "LOGOVERSION")       \
-    X(QlogoVersion,      "QLOGOVERSION")      \
-    X(ButtonAct,         "BUTTONACT")         \
-    X(FullPrintP,        "FULLPRINTP")        \
-    X(KeyAct,            "KEYACT")            \
-    X(LoadNoisily,       "LOADNOISILY")       \
-    X(PrintDepthLimit,   "PRINTDEPTHLIMIT")   \
-    X(PrintWidthLimit,   "PRINTWIDTHLIMIT")   \
-    X(Startup,           "STARTUP")           \
-    X(UnburyOnEdit,      "UNBURYONEDIT")      \
+class Word;
 
+#define QLOGO_SPECIAL_VARS(X)             \
+    X(AllowGetSet, "ALLOWGETSET")         \
+    X(CaseIgnoredP, "CASEIGNOREDP")       \
+    X(Argv, "ARGV")                       \
+    X(CommandLine, "COMMAND.LINE")        \
+    X(ErrAct, "ERRACT")                   \
+    X(LogoPlatform, "LOGOPLATFORM")       \
+    X(LogoVersion, "LOGOVERSION")         \
+    X(QlogoVersion, "QLOGOVERSION")       \
+    X(ButtonAct, "BUTTONACT")             \
+    X(FullPrintP, "FULLPRINTP")           \
+    X(KeyAct, "KEYACT")                   \
+    X(LoadNoisily, "LOADNOISILY")         \
+    X(PrintDepthLimit, "PRINTDEPTHLIMIT") \
+    X(PrintWidthLimit, "PRINTWIDTHLIMIT") \
+    X(Startup, "STARTUP")                 \
+    X(UnburyOnEdit, "UNBURYONEDIT")
 
 /// @brief Names of variables owned by the interpreter.
 namespace SpecialVars
@@ -57,6 +58,11 @@ enum class Id : int
 /// @param id The special variable.
 /// @return The variable name used in the workspace.
 const QString &name(Id id);
+
+/// @brief Interned name word for @p id.
+/// @param id The special variable.
+/// @return The persistent word used as the variable-table key.
+Word *word(Id id);
 
 } // namespace SpecialVars
 

@@ -14,20 +14,20 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include "interface/streammanager.h"
-#include "interface/logointerface.h"
-#include "interface/textstream.h"
-#include "workspace/exports_internal.h"
-#include <limits>
 #include "astnode.h"
 #include "compiler.h"
 #include "datum_types.h"
+#include "flowcontrol.h"
+#include "interface/logointerface.h"
+#include "interface/streammanager.h"
+#include "interface/textstream.h"
 #include "runparser.h"
+#include "sharedconstants.h"
 #include "workspace/evaluator.h"
+#include "workspace/exports_internal.h"
 #include "workspace/kernel.h"
 #include "workspace/specialvars.h"
-#include "flowcontrol.h"
-#include "sharedconstants.h"
+#include <limits>
 
 #include <QFile>
 #include <QObject>
@@ -80,7 +80,8 @@ EXPORTC addr_t stdWriteDatum(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr,
 /// @param count the number of Datum objects in the array
 /// @param useShow set to true to generate output for SHOW, false for PRINT
 /// @param addWhitespace set to true to add a newline to the end of the output and spaces between datums.
-EXPORTC addr_t stdWriteDatumAry(addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr, uint32_t count, bool useShow, bool addWhitespace) noexcept
+EXPORTC addr_t stdWriteDatumAry(
+    addr_t eAddr, addr_t astnodeAddr, addr_t datumAddr, uint32_t count, bool useShow, bool addWhitespace) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
@@ -207,9 +208,9 @@ EXPORTC addr_t stdCopyright(addr_t eAddr, addr_t astnodeAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
-    QString printString = QStringLiteral(
-        "QLogo and Psychi source Copyright 2017-2026 Jason Sikes\n"
-        "Help and library texts Copyright (C) 1993 by the Regents of the University of California\n");
+    QString printString =
+        QStringLiteral("QLogo and Psychi source Copyright 2017-2026 Jason Sikes\n"
+                       "Help and library texts Copyright (C) 1993 by the Regents of the University of California\n");
     return printOrError(e, reinterpret_cast<addr_t>(node), printString);
 }
 
@@ -454,7 +455,7 @@ EXPORTC addr_t stdClose(addr_t eAddr, addr_t astnodeAddr, addr_t specAddr) noexc
         const QString name = streamNameFromSpec(spec);
         DatumPtr bufferContents = StreamManager::get().close(name, DatumPtr(spec));
         if (!bufferContents.isNothing())
-            Kernel::get().setDatumForName(bufferContents, name);
+            Kernel::get().setDatumForName(bufferContents, Word::internKey(name));
     });
 }
 
@@ -479,9 +480,8 @@ EXPORTC addr_t stdEraseFile(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAdd
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *filename = reinterpret_cast<Datum *>(filenameAddr);
-    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
-        StreamManager::get().eraseFile(filename->wordValue()->toString());
-    });
+    return catchError(
+        e, reinterpret_cast<addr_t>(node), [&] { StreamManager::get().eraseFile(filename->wordValue()->toString()); });
 }
 
 /// DRIBBLE: begin copying terminal I/O to the named file.
@@ -495,9 +495,7 @@ EXPORTC addr_t stdDribble(addr_t eAddr, addr_t astnodeAddr, addr_t filenameAddr)
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto *filename = reinterpret_cast<Datum *>(filenameAddr);
-    return catchError(e, reinterpret_cast<addr_t>(node), [&] {
-        StreamManager::get().dribble(DatumPtr(filename));
-    });
+    return catchError(e, reinterpret_cast<addr_t>(node), [&] { StreamManager::get().dribble(DatumPtr(filename)); });
 }
 
 /// NODRIBBLE: stop dribbling and close the dribble file.
@@ -771,4 +769,3 @@ EXPORTC addr_t stdWait(addr_t eAddr, addr_t astnodeAddr, double sixtieths) noexc
         return reinterpret_cast<addr_t>(node);
     });
 }
-

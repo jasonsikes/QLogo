@@ -18,6 +18,8 @@
 #include "workspace/specialvars.h"
 #undef QLOGO_SPECIAL_VARS_IMPLEMENTATION
 
+#include "datum_types.h"
+
 #include <QObject>
 #include <cstddef>
 
@@ -30,6 +32,15 @@ const QString &SpecialVars::name(Id id)
     };
     static_assert(sizeof(names) / sizeof(names[0]) == static_cast<std::size_t>(Id::Count));
     return names[static_cast<std::size_t>(id)];
+}
+
+Word *SpecialVars::word(Id id)
+{
+    static Word *words[static_cast<std::size_t>(Id::Count)] = {};
+    const auto index = static_cast<std::size_t>(id);
+    if (words[index] == nullptr)
+        words[index] = Word::internKey(name(id));
+    return words[index];
 }
 
 #undef QLOGO_SPECIAL_VARS

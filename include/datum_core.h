@@ -30,7 +30,7 @@ class Datum
         typeWord = 0x00000001,
         typeList = 0x00000002,
         typeArray = 0x00000004,
-        typePersistentWord = 0x00010001, // Singleton interned Word (true/false)
+        typePersistentWord = 0x00010001, // Persistent Word (true/false, interned variable names)
         typeEmptyList = 0x00010002,      // Singleton instance of EmptyList
         typeDataMask = 0x00000007,       // Word + List + Array
         typeWordOrListMask = 0x00000003, // Word + List
