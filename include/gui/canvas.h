@@ -68,7 +68,7 @@ struct Arc
     QRectF rectangle_;
     int startAngle_;
     int spanAngle_;
-    Arc(QPointF center, qreal a, qreal span, qreal radius);
+    Arc(QPointF center, qreal a, qreal span, qreal radiusX, qreal radiusY);
 };
 
 /// @brief A variant type that can hold any of the drawing element types.
@@ -225,8 +225,10 @@ class Canvas : public QWidget
     /// @brief Add an arc using the specified angle and radius.
     ///
     /// @param angle The angle of the arc.
-    /// @param radius The radius of the arc.
-    /// @note the starting angle is the current turtle orientation.
+    /// @param radius The logical radius of the arc.
+    /// @note The starting angle is the current turtle orientation. The
+    /// bounding rectangle is stretched by the current scrunch so a circle
+    /// in logical space is an ellipse in display space.
     void addArc(qreal angle, qreal radius);
 
     /// @brief Add a label at the current turtle location.

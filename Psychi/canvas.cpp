@@ -21,9 +21,9 @@
 #include <QMouseEvent>
 #include <QSvgGenerator>
 
-Arc::Arc(QPointF center, qreal a, qreal span, qreal radius)
+Arc::Arc(QPointF center, qreal a, qreal span, qreal radiusX, qreal radiusY)
 {
-    rectangle_ = QRectF(center.x() - radius, center.y() - radius, radius * 2, radius * 2);
+    rectangle_ = QRectF(center.x() - radiusX, center.y() - radiusY, radiusX * 2, radiusY * 2);
     startAngle_ = (a - 90) * 16;
     spanAngle_ = span * -16;
 }
@@ -261,7 +261,7 @@ void Canvas::addArc(qreal angle, qreal radius)
         a = 180 - a;
     }
 
-    Arc arc(pointFromTurtle(), a, angle, radius);
+    Arc arc(pointFromTurtle(), a, angle, radius * scrunchX_, radius * scrunchY_);
     pushLineGroup();
     drawingElementList_.push_back({DrawingElementIDArc, DrawingElementVariant(arc)});
     update();
