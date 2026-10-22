@@ -39,12 +39,12 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QFont>
 #include <QIODevice>
+#include <QImage>
 #include <QProcess>
 #include <QTemporaryFile>
 #include <QTextStream>
-#include <QFont>
-#include <QImage>
 #include <cstdlib> // arc4random_uniform()
 #include <iostream>
 
@@ -629,8 +629,7 @@ Datum *Kernel::inputProcedure(ASTNode *node)
 
         Procedures::get().defineProcedure(command, procnameP, textP, sourceText);
 
-        if (!StreamManager::get().programReaderIsTerminal()
-            && specialVarIsTrue(SpecialVars::Id::UnburyOnEdit))
+        if (!StreamManager::get().programReaderIsTerminal() && specialVarIsTrue(SpecialVars::Id::UnburyOnEdit))
         {
             removeName(NameMark::Buried, NameKind::Procedures, procname);
         }
@@ -697,30 +696,24 @@ void Kernel::initVariables()
         commandLineBuilder.append(DatumPtr(arg));
     }
 
-    DatumPtr platform(LOGOPLATFORM);
-    DatumPtr version(LOGOVERSION);
-    DatumPtr qlogoVersion(QLOGOVERSION);
     DatumPtr trueDatumPtr(QObject::tr("true"));
+    DatumPtr falseDatumPtr(QObject::tr("false"));
 
-    setDatumForName(argvBuilder.finishedList(), SpecialVars::name(SpecialVars::Id::Argv));
-    setDatumForName(commandLineBuilder.finishedList(), SpecialVars::name(SpecialVars::Id::CommandLine));
-    setDatumForName(platform, SpecialVars::name(SpecialVars::Id::LogoPlatform));
-    setDatumForName(version, SpecialVars::name(SpecialVars::Id::LogoVersion));
-    setDatumForName(qlogoVersion, SpecialVars::name(SpecialVars::Id::QlogoVersion));
-    setDatumForName(trueDatumPtr, SpecialVars::name(SpecialVars::Id::AllowGetSet));
-    const QString &caseIgnoredP = SpecialVars::name(SpecialVars::Id::CaseIgnoredP);
-    setDatumForName(trueDatumPtr, caseIgnoredP);
-    addName(NameMark::Buried, NameKind::Variables, caseIgnoredP);
-    const QString &unburyOnEdit = SpecialVars::name(SpecialVars::Id::UnburyOnEdit);
-    setDatumForName(trueDatumPtr, unburyOnEdit);
-    addName(NameMark::Buried, NameKind::Variables, unburyOnEdit);
-    // TODO: Bury these variables:
-    // "ARGV"
-    // "LOGOPLATFORM"
-    // "LOGOVERSION"
-    // "QLOGOVERSION"
-    // "ALLOWGETSET"
-    // "COMMANDLINE"
+    auto setBuriedVar = [this](SpecialVars::Id id, const DatumPtr &value) {
+        const QString &n = SpecialVars::name(id);
+        setDatumForName(value, n);
+        addName(NameMark::Buried, NameKind::Variables, n);
+    };
+
+    setBuriedVar(SpecialVars::Id::Argv, argvBuilder.finishedList());
+    setBuriedVar(SpecialVars::Id::CommandLine, commandLineBuilder.finishedList());
+    setBuriedVar(SpecialVars::Id::LogoPlatform, DatumPtr(LOGOPLATFORM));
+    setBuriedVar(SpecialVars::Id::LogoVersion, DatumPtr(LOGOVERSION));
+    setBuriedVar(SpecialVars::Id::QlogoVersion, DatumPtr(QLOGOVERSION));
+    setBuriedVar(SpecialVars::Id::AllowGetSet, trueDatumPtr);
+    setBuriedVar(SpecialVars::Id::CaseIgnoredP, trueDatumPtr);
+    setBuriedVar(SpecialVars::Id::UnburyOnEdit, trueDatumPtr);
+    setBuriedVar(SpecialVars::Id::FullPrintP, falseDatumPtr);
 }
 
 void Kernel::eraseVar(const QString &name)
@@ -1438,7 +1431,8 @@ void Kernel::ece_chainList()
     nextOperation_ = &Kernel::ece_evaluateStack;
 }
 
-namespace {
+namespace
+{
 
 int printLimitFromSpecialVar(SpecialVars::Id id)
 {
@@ -1726,8 +1720,7 @@ void Kernel::ece_exitProcedure()
         }
         // STOP TCO: a value from the continued procedure is command-position
         // output, not this procedure's OUTPUT / .MAYBEOUTPUT.
-        if (currentCallFrame()->demandNothing_ &&
-            (retval.datumValue()->isa_ & Datum::typeDataMask) != 0)
+        if (currentCallFrame()->demandNothing_ && (retval.datumValue()->isa_ & Datum::typeDataMask) != 0)
         {
             retval = DatumPtr(FCError::dontSay(retval));
         }
@@ -1917,7 +1910,8 @@ void Kernel::ece_processParameters()
  * Miscellaneous operations
  ***************************************************/
 
-namespace {
+namespace
+{
 
 /// OUTPUT inside an instruction list arrives as FCReturn. The output itself is the result.
 DatumPtr unwrapInstructionOutput(const DatumPtr &result)
