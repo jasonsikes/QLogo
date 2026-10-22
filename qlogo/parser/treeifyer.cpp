@@ -40,7 +40,7 @@
 ///
 /// 5. Terminals (highest precedence)
 ///    - Includes: numbers, literals, quoted words, variable references (:var),
-///      parentheses (for grouping), function calls, lists, arrays
+///      parentheses (for grouping), function calls, lists, arrays, unary minus.
 ///    - Function: treeifyTermexp()
 ///
 //===----------------------------------------------------------------------===//
@@ -444,6 +444,24 @@ DatumPtr Treeifier::treeifyTermexp()
         node.astnodeValue()->produces_ = TypeDatum;
         node.astnodeValue()->addChild(DatumPtr(number));
         advanceToken();
+        return node;
+    }
+
+    // Unary minus binds only to the following term, unlike MINUS which reads a
+    // full expression.
+    if (currentToken_.toString() == opMinus())
+    {
+        DatumPtr op = currentToken_;
+        advanceToken();
+        DatumPtr right = treeifyTermexp();
+
+        auto node = DatumPtr(new ASTNode(op));
+        if (!right.isASTNode())
+            throw FCError::notEnoughInputs(op);
+
+        node.astnodeValue()->genExpression_ = &Compiler::genMinus;
+        node.astnodeValue()->produces_ = TypeReal;
+        node.astnodeValue()->addChild(right);
         return node;
     }
 
