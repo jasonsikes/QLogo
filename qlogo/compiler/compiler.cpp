@@ -225,6 +225,7 @@ std::optional<MemoryEffects> memoryEffectsForHostExport(StringRef name)
                 "isDatumEmpty",
                 "getTestResult",
                 "isValidColor",
+                "isValidPenSize",
                 "isValidPenPattern",
                 "isColorIndexGood",
                 "isContentsList",

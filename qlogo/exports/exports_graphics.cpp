@@ -371,11 +371,6 @@ EXPORTC bool setPalette(double colorIndex, addr_t colorAddr) noexcept
     return true;
 }
 
-EXPORTC void setPenSize(double size) noexcept
-{
-    Turtle::get().setPenSize(size);
-}
-
 namespace
 {
 
@@ -551,7 +546,43 @@ const char *joinWord(Qt::PenJoinStyle join)
     }
 }
 
+/// A positive number, or a list whose first member is a positive number.
+/// Extra list members are ignored.
+bool parsePenSize(Datum *d, double &out)
+{
+    Datum *value = d;
+    if (d->isList())
+    {
+        List *list = d->listValue();
+        if (list->isEmpty())
+            return false;
+        value = list->head.datumValue();
+    }
+    if (!value->isWord())
+        return false;
+    Word *w = value->wordValue();
+    const double v = w->numberValue();
+    if (!w->numberIsValid || !std::isfinite(v) || v <= 0.0)
+        return false;
+    out = v;
+    return true;
+}
+
 } // namespace
+
+EXPORTC bool isValidPenSize(addr_t sizeAddr) noexcept
+{
+    double unused;
+    return parsePenSize(reinterpret_cast<Datum *>(sizeAddr), unused);
+}
+
+EXPORTC void setPenSize(addr_t sizeAddr) noexcept
+{
+    double size;
+    if (!parsePenSize(reinterpret_cast<Datum *>(sizeAddr), size))
+        return;
+    Turtle::get().setPenSize(size);
+}
 
 EXPORTC bool isValidPenPattern(addr_t patternAddr) noexcept
 {

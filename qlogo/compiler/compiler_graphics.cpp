@@ -909,18 +909,22 @@ Value *Compiler::genSetpalette(const DatumPtr &node, TypeMask expected)
 /***DOC SETPENSIZE
 SETPENSIZE size
 
-    sets the thickness of the pen.  The input is a single positive
-    number.
+    sets the thickness of the pen.  The input is either a single positive
+    number or a list whose first member is a positive number (UCBLogo
+    uses a list of two numbers for horizontal and vertical thickness).
+    Additional list members are ignored. The width and height are
+    always the same.
 
 COD***/
 // CMD SETPENSIZE 1 1 1 n
 Value *Compiler::genSetpensize(const DatumPtr &node, TypeMask expected)
 {
     CHECK_GRAPHICS_MODE
-    CallSite cs(this, node, TypeReal);
-    Value *size = cs.child(0);
-    size = generateGTZeroFromDouble(node.astnodeValue(), size);
-    generateCallExtern(setPenSize, PaDouble(size));
+    CallSite cs(this, node, TypeDatum);
+    Value *size = generateValidationDatum(node.astnodeValue(), cs.child(0), [this](Value *candidate) {
+        return generateCallExtern(isValidPenSize, PaAddr(candidate));
+    });
+    generateCallExtern(setPenSize, PaAddr(size));
     return cs.ret(generateVoidRetval(node));
 }
 /***DOC SETPENPATTERN
