@@ -68,7 +68,7 @@ struct Arc
     QRectF rectangle_;
     int startAngle_;
     int spanAngle_;
-    Arc(QPointF center, qreal a, qreal span, qreal radius);
+    Arc(QPointF center, qreal a, qreal span, qreal radiusX, qreal radiusY);
 };
 
 /// @brief A variant type that can hold any of the drawing element types.
@@ -122,6 +122,10 @@ class Canvas : public QWidget
     qreal boundsX_;
     // Visible vertices on the Y axis range from -boundsY to +boundsY
     qreal boundsY_;
+
+    // Display-space scrunch. Translation in turtleMatrix_ is in display units.
+    qreal scrunchX_ = 1.0;
+    qreal scrunchY_ = 1.0;
 
     QColor foregroundColor_;
     QColor backgroundColor_;
@@ -221,18 +225,22 @@ class Canvas : public QWidget
     /// @brief Add an arc using the specified angle and radius.
     ///
     /// @param angle The angle of the arc.
-    /// @param radius The radius of the arc.
-    /// @note the starting angle is the current turtle orientation.
+    /// @param radius The logical radius of the arc.
+    /// @note The starting angle is the current turtle orientation. The
+    /// bounding rectangle is stretched by the current scrunch so a circle
+    /// in logical space is an ellipse in display space.
     void addArc(qreal angle, qreal radius);
 
     /// @brief Add a label at the current turtle location.
     ///
     /// @param aText The text to display.
+    /// @note The recorded font height is the logical size times the current
+    /// Y scrunch. LABELSIZE is unaffected.
     void addLabel(const QString &aText);
 
-    /// @brief Set the font size for all future text labels.
+    /// @brief Set the logical font size for all future text labels.
     ///
-    /// @param aSize The new font size.
+    /// @param aSize The new font size (SETLABELHEIGHT / LABELSIZE).
     void setLabelFontSize(qreal aSize);
 
     /// @brief Set the font name for all future text labels.
@@ -323,6 +331,24 @@ class Canvas : public QWidget
     /// @note The origin is always the center of the widget, therefore the
     /// minimum X and Y bounds are the negatives of their maximum values.
     void setBounds(qreal x, qreal y);
+
+    /// @brief Set the display-space scrunch factors.
+    /// @param x The X scale factor.
+    /// @param y The Y scale factor.
+    /// @note Does not restretch already-drawn ink. The turtle icon is redrawn.
+    void setScrunch(qreal x, qreal y);
+
+    /// @brief The current X scrunch factor.
+    qreal scrunchX() const
+    {
+        return scrunchX_;
+    }
+
+    /// @brief The current Y scrunch factor.
+    qreal scrunchY() const
+    {
+        return scrunchY_;
+    }
 
     /// @brief Set whether the view should use the whole widget or a box within.
     ///

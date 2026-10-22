@@ -89,6 +89,7 @@ enum messageCategory : message_t
     C_CANVAS_SET_PENMODE,           // Set canvas pen mode
     C_CONSOLE_KEY_EVENT,            // Character key while Logo is not reading a line or char
     C_CANVAS_SET_PENPATTERN,        // Set pen style, cap, join, and optional dash pattern
+    C_CANVAS_SET_SCRUNCH,           // Set X and Y scrunch (display scale) factors
 };
 
 /// @brief The configuration for the qlgog/Psychi programs.
@@ -197,7 +198,7 @@ const bool debugBuild_ = false;
 
     /// @brief Logo file to run before the interactive prompt, if any.
     /// @details Empty when no positional script was given before a lone hyphen.
-    /// A hyphen and the words after it are COMMANDLINE, not scripts. Further
+    /// A hyphen and the words after it are COMMAND.LINE, not scripts. Further
     /// positional arguments before the hyphen are not additional scripts.
     QString startupScriptPath_;
 

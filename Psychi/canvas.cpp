@@ -21,9 +21,9 @@
 #include <QMouseEvent>
 #include <QSvgGenerator>
 
-Arc::Arc(QPointF center, qreal a, qreal span, qreal radius)
+Arc::Arc(QPointF center, qreal a, qreal span, qreal radiusX, qreal radiusY)
 {
-    rectangle_ = QRectF(center.x() - radius, center.y() - radius, radius * 2, radius * 2);
+    rectangle_ = QRectF(center.x() - radiusX, center.y() - radiusY, radiusX * 2, radiusY * 2);
     startAngle_ = (a - 90) * 16;
     spanAngle_ = span * -16;
 }
@@ -113,6 +113,15 @@ void Canvas::setBounds(qreal x, qreal y)
     boundsX_ = x;
     boundsY_ = y;
     updateMatrix();
+    update();
+}
+
+void Canvas::setScrunch(qreal x, qreal y)
+{
+    if (scrunchX_ == x && scrunchY_ == y)
+        return;
+    scrunchX_ = x;
+    scrunchY_ = y;
     update();
 }
 
@@ -230,7 +239,12 @@ void Canvas::addLabel(const QString &aText)
 {
     // The "minus-dy" is because we have to flip the coordinate system when
     // drawing text. This is the most efficient place to do it.
-    Label l(aText, QPointF(turtleMatrix_.dx(), -turtleMatrix_.dy()), labelFont_);
+    // SETLABELHEIGHT is logical; UCBLogo draws at y_scale * height.
+    QFont drawnFont = labelFont_;
+    const qreal logicalSize = labelFont_.pointSizeF();
+    if (logicalSize > 0)
+        drawnFont.setPointSizeF(logicalSize * qAbs(scrunchY_));
+    Label l(aText, QPointF(turtleMatrix_.dx(), -turtleMatrix_.dy()), drawnFont);
     pushLineGroup();
     drawingElementList_.push_back({DrawingElementIDLabel, DrawingElementVariant(l)});
     update();
@@ -252,7 +266,7 @@ void Canvas::addArc(qreal angle, qreal radius)
         a = 180 - a;
     }
 
-    Arc arc(pointFromTurtle(), a, angle, radius);
+    Arc arc(pointFromTurtle(), a, angle, radius * scrunchX_, radius * scrunchY_);
     pushLineGroup();
     drawingElementList_.push_back({DrawingElementIDArc, DrawingElementVariant(arc)});
     update();
@@ -451,7 +465,12 @@ void Canvas::elementListDrawTurtle()
     {
         painter->setCompositionMode(QPainter::CompositionMode_SourceOver);
         painter->save();
-        painter->setTransform(turtleMatrix_, true);
+        // Scale the rotated axes in display space (T × S × R). Scaling after
+        const QTransform scrunched(turtleMatrix_.m11() * scrunchX_, turtleMatrix_.m12() * scrunchY_,
+                                   turtleMatrix_.m13(), turtleMatrix_.m21() * scrunchX_,
+                                   turtleMatrix_.m22() * scrunchY_, turtleMatrix_.m23(), turtleMatrix_.dx(),
+                                   turtleMatrix_.dy(), turtleMatrix_.m33());
+        painter->setTransform(scrunched, true);
         painter->setTransform(turtleImageMatrix_, true);
         painter->drawImage(QPointF(0, 0), turtleImage_);
         painter->restore();

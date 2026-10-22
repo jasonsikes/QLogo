@@ -61,6 +61,8 @@ class LogoInterfaceGUI : public LogoInterface
 
     double xbound_ = Config::get().initialBoundX_;
     double ybound_ = Config::get().initialBoundY_;
+    double scrunchX_ = 1.0;
+    double scrunchY_ = 1.0;
     bool canvasIsBounded_ = true;
 
     QVector2D mousePos_ = QVector2D(0, 0);
@@ -216,6 +218,11 @@ class LogoInterfaceGUI : public LogoInterface
     /// @note The X and Y coordinates of the lower left are the negative of the upper-right coordinates.
     /// The origin [0,0] is always in the center of the canvas.
     void setBounds(double x, double y) override;
+
+    /// @brief Sets the canvas scrunch (display-space X and Y scale) factors.
+    /// @param x The X scale factor.
+    /// @param y The Y scale factor.
+    void setScrunch(double x, double y) override;
 
     /// @brief Gets the X coordinate of the upper-right corner of the bounding box.
     /// @return The X coordinate of the upper-right corner of the bounding box.

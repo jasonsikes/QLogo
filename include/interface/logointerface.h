@@ -288,6 +288,18 @@ class LogoInterface : public QObject
         exit(1);
     }
 
+    /// @brief Sets the canvas scrunch (display-space X and Y scale) factors.
+    /// @param x The X scale factor.
+    /// @param y The Y scale factor.
+    /// @note The base method triggers an error message. Subclasses can override this method to
+    /// send the new scale to the graphics window.
+    virtual void setScrunch(double x, double y)
+    {
+        Q_UNUSED(x);
+        Q_UNUSED(y);
+        exit(1);
+    }
+
     /// @brief Returns the x coordinate of the upper right corner of the canvas.
     /// @return The x coordinate of the upper right corner of the canvas.
     /// @note The base method triggers an error message. Subclasses can override this method to

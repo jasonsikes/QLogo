@@ -95,9 +95,9 @@ void processOptions(QCoreApplication *a)
     commandlineParser.addPositionalArgument(
         "script", QCoreApplication::translate(mainString, "Logo file run before the prompt."), "[script]");
 
-    // A lone "-" is UCBLogo's COMMANDLINE delimiter, not an option or a script.
+    // A lone "-" is UCBLogo's COMMAND.LINE delimiter, not an option or a script.
     // Hide it and everything after it from Qt so unknown words there stay in
-    // COMMANDLINE instead of being parsed as options.
+    // COMMAND.LINE instead of being parsed as options.
     QStringList argsForParser = Config::get().ARGV_;
     if (argsForParser.isEmpty())
         argsForParser = a->arguments();

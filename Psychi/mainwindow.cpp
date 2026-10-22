@@ -167,6 +167,8 @@ static QString getMessageTypeName(message_t type)
         return "C_CONSOLE_KEY_EVENT";
     case C_CANVAS_SET_PENPATTERN:
         return "C_CANVAS_SET_PENPATTERN";
+    case C_CANVAS_SET_SCRUNCH:
+        return "C_CANVAS_SET_SCRUNCH";
     default:
         return QString("UNKNOWN(%1)").arg(type);
     }
@@ -494,6 +496,16 @@ static QString serializeMessageData(message_t type, const QByteArray &dataBuffer
             for (qreal dash : dashPattern)
                 yaml << "          - " << dash << "\n";
         }
+        hasData = true;
+        break;
+    }
+    case C_CANVAS_SET_SCRUNCH:
+    {
+        qreal x, y;
+        readStream >> x >> y;
+        yaml << "\n";
+        yaml << "        - " << x << "\n";
+        yaml << "        - " << y << "\n";
         hasData = true;
         break;
     }
@@ -1193,6 +1205,14 @@ void MainWindow::processReadBuffer()
         QList<qreal> dashPattern;
         dataStream >> style >> cap >> join >> dashPattern;
         ui_->mainCanvas->setPenPattern(style, cap, join, dashPattern);
+        break;
+    }
+    case C_CANVAS_SET_SCRUNCH:
+    {
+        qreal x, y;
+        dataStream >> x >> y;
+        ui_->mainCanvas->setScrunch(x, y);
+        introduceCanvas();
         break;
     }
     case C_CANVAS_GET_IMAGE:

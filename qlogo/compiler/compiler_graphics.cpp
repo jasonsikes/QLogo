@@ -310,11 +310,8 @@ Value *Compiler::genTowards(const DatumPtr &node, TypeMask expected)
 /***DOC SCRUNCH
 SCRUNCH
 
-    outputs a list containing two numbers, both '1'.  This primitive is
-    maintained for backward compatibility. QLogo does not use SCRUNCH.
-    SCRUNCH was used by UCBLogo because older monitors had pixels with
-    varying width/height proportions.
-
+    outputs a list containing two numbers, the X and Y scrunch factors,
+    as used by SETSCRUNCH.
 
 COD***/
 // CMD SCRUNCH 0 0 0 d
@@ -612,7 +609,18 @@ Value *Compiler::genSplitscreen(const DatumPtr &node, TypeMask expected)
 /***DOC SETSCRUNCH
 SETSCRUNCH xscale yscale
 
-    In QLogo this does nothing. See SCRUNCH.
+    adjusts the aspect ratio and scaling of the graphics display.  After
+    this command is used, all further turtle motion will be adjusted by
+    multiplying the horizontal and vertical extent of the motion by the
+    two numbers given as inputs.  For example, after
+
+        SETSCRUNCH 2 1
+
+    motion at a heading of 45 degrees will move twice as far horizontally
+    as vertically.  HEADING still reports the logical heading (45), not
+    the visual angle of that motion.  Neither factor may be zero.
+
+    Both scale factors are initially 1.
 
 COD***/
 // CMD SETSCRUNCH 2 2 2 n
@@ -620,6 +628,16 @@ Value *Compiler::genSetscrunch(const DatumPtr &node, TypeMask expected)
 {
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeReal, TypeReal);
+    auto [x, y] = cs.children();
+    auto isFiniteNonzero = [this](Value *val) {
+        Value *notZero = scaff_->builder_.CreateFCmpONE(val, CoDouble(0.0), DBG_NAME("scrunchNZ"));
+        Value *absVal = scaff_->builder_.CreateUnaryIntrinsic(Intrinsic::fabs, val, {}, DBG_NAME("scrunchAbs"));
+        Value *finite = scaff_->builder_.CreateFCmpOLT(absVal, ConstantFP::getInfinity(TyDouble), DBG_NAME("scrunchFinite"));
+        return scaff_->builder_.CreateAnd(notZero, finite, DBG_NAME("scrunchOk"));
+    };
+    x = generateValidationDouble(node.astnodeValue(), x, isFiniteNonzero);
+    y = generateValidationDouble(node.astnodeValue(), y, isFiniteNonzero);
+    generateCallExtern(setScrunch, PaDouble(x), PaDouble(y));
     return cs.ret(generateVoidRetval(node));
 }
 

@@ -104,10 +104,6 @@ This enables multiple colors and fonts on the same console.
 
 Memory is freed the moment a word/list/array is no longer needed. ~GC~ and ~.SETSEGMENTSIZE~ are provided for compatibility, but are no-ops.
 
-*** No scrunching.
-
-UCBLogo provided a scrunch to compensate for older CRT screens with non-square pixels. This enabled turtle operations to maintain consistent physical height-width. The drawback is that some orientation queries are inaccurate. ~SCRUNCH~ and ~SETSCRUNCH~ are no-ops.
-
 *** ~SAVEPICT~ saves a copy of the canvas in the format given by the filename's extension.
 
 For example: ~SAVEPICT "MY_PICTURE.PNG~ will save in PNG format.
@@ -224,7 +220,7 @@ Outputs a string that is composed of the most recent git tag, number of commits 
 
 **** ~ARGV~:
 
-A list of every word on the command line used to start qlogo, including the program name. This is similar to ~COMMANDLINE~ which is the list of words on the command line after a hyphen.
+A list of every word on the command line used to start qlogo, including the program name. This is similar to ~COMMAND.LINE~ which is the list of words on the command line after a hyphen.
 
 *** The following commands are slightly different:
 

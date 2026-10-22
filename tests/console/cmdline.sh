@@ -6,7 +6,7 @@
 #
 # Optional variables:
 #   qlogo_run_dir If set, qlogo is invoked with this as cwd (Windows DLL search)
-#   exe_opts      Extra options prepended for most cases (not COMMANDLINE checks)
+#   exe_opts      Extra options prepended for most cases (not COMMAND.LINE checks)
 #   stop_on_first_failure
 #
 # Mutates: test_count, reported_tests
@@ -112,7 +112,7 @@ run_cmdline_tests() {
         $exe_opts "$(cmdline_script_arg bye.lg)"
     rm -f "$bye_stdin"
 
-    # With no hyphen, COMMANDLINE is empty. ARGV still has the binary and script.
+    # With no hyphen, COMMAND.LINE is empty. ARGV still has the binary and script.
     cmdline_run_case "commandline.lg" "$cmdline_dir/commandline.expected" \
         "$(cmdline_script_arg commandline.lg)"
 
