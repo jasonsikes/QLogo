@@ -20,7 +20,6 @@
 #include "datum_types.h"
 #include "flowcontrol.h"
 #include "workspace/procedures.h"
-#include <QObject>
 #include <qdebug.h>
 
 bool isNotPersistent(Datum *d)
@@ -50,10 +49,8 @@ DatumPtr::DatumPtr(const DatumPtr &other) noexcept
     }
 }
 
-DatumPtr::DatumPtr(bool b)
+DatumPtr::DatumPtr(bool b) : DatumPtr(Word::forBool(b))
 {
-    datumValue_ = new Word(b ? QObject::tr("true") : QObject::tr("false"));
-    ++(datumValue_->retainCount_);
 }
 
 DatumPtr::DatumPtr(double n)
@@ -127,7 +124,7 @@ bool DatumPtr::operator!=(const DatumPtr &other) const
 
 Word *DatumPtr::wordValue() const
 {
-    Q_ASSERT(datumValue_->isa_ == Datum::typeWord);
+    Q_ASSERT(datumValue_->isWord());
     return reinterpret_cast<Word *>(datumValue_);
 }
 

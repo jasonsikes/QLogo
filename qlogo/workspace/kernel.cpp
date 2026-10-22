@@ -696,8 +696,8 @@ void Kernel::initVariables()
         commandLineBuilder.append(DatumPtr(arg));
     }
 
-    DatumPtr trueDatumPtr(QObject::tr("true"));
-    DatumPtr falseDatumPtr(QObject::tr("false"));
+    DatumPtr trueDatumPtr(true);
+    DatumPtr falseDatumPtr(false);
 
     auto setBuriedVar = [this](SpecialVars::Id id, const DatumPtr &value) {
         const QString &n = SpecialVars::name(id);
@@ -1469,7 +1469,8 @@ void Kernel::stepProcedureLine(const DatumPtr &line)
     StreamManager::get().readTerminalRawline(QObject::tr(" >>> "));
 }
 
-namespace {
+namespace
+{
 
 QString workspaceTraceArgToString(const DatumPtr &d, int printDepthLimit, int printWidthLimit)
 {
@@ -1520,8 +1521,8 @@ QString workspaceTraceInProcedureSuffix(bool includeLine)
     {
         const int printDepthLimit = Kernel::get().printLimitFromSpecialVar(SpecialVars::Id::PrintDepthLimit);
         const int printWidthLimit = Kernel::get().printLimitFromSpecialVar(SpecialVars::Id::PrintWidthLimit);
-        suffix += QLatin1Char('\n')
-            + cf->topEvaluator()->list_.toString(Datum::ToStringFlags_Show, printDepthLimit, printWidthLimit);
+        suffix += QLatin1Char('\n') +
+                  cf->topEvaluator()->list_.toString(Datum::ToStringFlags_Show, printDepthLimit, printWidthLimit);
     }
     return suffix;
 }
@@ -2055,7 +2056,7 @@ void Kernel::noteErractReturn(Datum *value, bool fromUser)
     clearErractLoop();
     erractReturned_ = value;
     erractReturnedFromUser_ = fromUser;
-    if (value != nullptr && value->isa_ == Datum::typeWord)
+    if (value != nullptr && value->isWord())
     {
         auto *word = static_cast<Word *>(value);
         double number = word->numberValue();

@@ -16,17 +16,27 @@
 
 #include "compiler.h"
 #include "astnode.h"
+#include "datum_types.h"
+#include "flowcontrol.h"
+#include "interface/streammanager.h"
+#include "op_strings.h"
+#include "sharedconstants.h"
+#include "treeifyer.h"
+#include "workspace/callframe.h"
+#include "workspace/exports.inc"
+#include "workspace/kernel.h"
+#include "workspace/procedures.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringSwitch.h"
 #include "llvm/Analysis/CGSCCPassManager.h"
+#include "llvm/BinaryFormat/Dwarf.h"
 #include "llvm/ExecutionEngine/Orc/AbsoluteSymbols.h"
+#include "llvm/ExecutionEngine/Orc/Debugging/DebuggerSupport.h"
 #include "llvm/ExecutionEngine/Orc/JITTargetMachineBuilder.h"
 #include "llvm/ExecutionEngine/Orc/LLJIT.h"
 #include "llvm/ExecutionEngine/Orc/Mangling.h"
 #include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
-#include "llvm/BinaryFormat/Dwarf.h"
-#include "llvm/ExecutionEngine/Orc/Debugging/DebuggerSupport.h"
 #include "llvm/IR/Argument.h"
 #include "llvm/IR/Attributes.h"
 #include "llvm/IR/CFG.h"
@@ -38,30 +48,20 @@
 #include "llvm/IR/Verifier.h"
 #include "llvm/Passes/OptimizationLevel.h"
 #include "llvm/Support/Error.h"
-#include "llvm/Support/ModRef.h"
 #include "llvm/Support/GraphWriter.h"
+#include "llvm/Support/ModRef.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetMachine.h"
-#include "llvm/Transforms/InstCombine/InstCombine.h"
-#include "llvm/Transforms/Scalar/SROA.h"
 #include "llvm/Transforms/Coroutines/ABI.h"
 #include "llvm/Transforms/Coroutines/CoroCleanup.h"
 #include "llvm/Transforms/Coroutines/CoroEarly.h"
 #include "llvm/Transforms/Coroutines/CoroElide.h"
 #include "llvm/Transforms/Coroutines/CoroSplit.h"
 #include "llvm/Transforms/Coroutines/MaterializationUtils.h"
-#include "flowcontrol.h"
-#include "datum_types.h"
-#include "interface/streammanager.h"
-#include "workspace/exports.inc"
-#include "op_strings.h"
-#include "sharedconstants.h"
-#include "treeifyer.h"
-#include "workspace/callframe.h"
-#include "workspace/kernel.h"
+#include "llvm/Transforms/InstCombine/InstCombine.h"
+#include "llvm/Transforms/Scalar/SROA.h"
 #include <QDateTime>
-#include "workspace/procedures.h"
 #include <algorithm>
 #include <iostream>
 #include <optional>
@@ -144,8 +144,7 @@ std::unique_ptr<LLJIT> createLLJIT(JITTargetMachineBuilder jtmb)
                         .setNotifyCreatedCallback([](llvm::orc::LLJIT &J) -> llvm::Error {
                             if (!J.getTargetTriple().isOSBinFormatCOFF())
                                 return llvm::Error::success();
-                            auto *rtdyld =
-                                llvm::dyn_cast<llvm::orc::RTDyldObjectLinkingLayer>(&J.getObjLinkingLayer());
+                            auto *rtdyld = llvm::dyn_cast<llvm::orc::RTDyldObjectLinkingLayer>(&J.getObjLinkingLayer());
                             if (rtdyld)
                             {
                                 rtdyld->setOverrideObjectFlagsWithResponsibilityFlags(true);
@@ -176,9 +175,12 @@ std::pair<uint64_t, ResourceTrackerSP> addModuleAndLookup(LLJIT &jit, ThreadSafe
     return {symOrErr->getValue(), std::move(rt)};
 }
 
-void registerPassAnalyses(PassBuilder &pb, PassInstrumentationCallbacks &pic,
-                          ModuleAnalysisManager &mam, FunctionAnalysisManager &fam,
-                          LoopAnalysisManager &lam, CGSCCAnalysisManager &cgam,
+void registerPassAnalyses(PassBuilder &pb,
+                          PassInstrumentationCallbacks &pic,
+                          ModuleAnalysisManager &mam,
+                          FunctionAnalysisManager &fam,
+                          LoopAnalysisManager &lam,
+                          CGSCCAnalysisManager &cgam,
                           StandardInstrumentations &si)
 {
     si.registerCallbacks(pic, &mam);
@@ -205,17 +207,41 @@ std::optional<MemoryEffects> memoryEffectsForHostExport(StringRef name)
     using ME = MemoryEffects;
     return StringSwitch<std::optional<ME>>(name)
         .Case("repcountAddr", ME::none())
-        .Cases({"getCountOfList", "isEmpty", "isNumber", "isSingleCharWord", "isVbarred",
-                "isValidOpenSpec", "isValidShellCommand", "getTemplateForm"},
+        .Cases({"getCountOfList",
+                "isEmpty",
+                "isNumber",
+                "isSingleCharWord",
+                "isVbarred",
+                "isValidOpenSpec",
+                "isValidShellCommand",
+                "getTemplateForm"},
                ME::argMemOnly(ModRefInfo::Ref))
-        .Cases({"parseDoubleForDatum", "parseBoolForDatum", "getNumberAryFromList",
-                "isDatumIndexValid"},
+        .Cases({"parseDoubleForDatum", "parseBoolForDatum", "getNumberAryFromList", "isDatumIndexValid"},
                ME::argMemOnly(ModRefInfo::ModRef))
-        .Cases({"cmpDatumToDatum", "isBefore", "isMember", "isSubstring", "isDatumEmpty",
-                "getTestResult", "isValidColor", "isValidPenPattern", "isColorIndexGood", "isContentsList",
-                "isNamedContentsList", "isDefinableProcName", "isDefineText", "stdProcedurep",
-                "stdMacrop", "stdPrimitivep", "stdDefinedp", "stdNamep", "stdPlistp",
-                "stdBuriedp", "stdTracedp", "stdSteppedp", "isTurtleVisible", "isPenDown",
+        .Cases({"cmpDatumToDatum",
+                "isBefore",
+                "isMember",
+                "isSubstring",
+                "isDatumEmpty",
+                "getTestResult",
+                "isValidColor",
+                "isValidPenPattern",
+                "isColorIndexGood",
+                "isContentsList",
+                "isNamedContentsList",
+                "isDefinableProcName",
+                "isDefineText",
+                "stdProcedurep",
+                "stdMacrop",
+                "stdPrimitivep",
+                "stdDefinedp",
+                "stdNamep",
+                "stdPlistp",
+                "stdBuriedp",
+                "stdTracedp",
+                "stdSteppedp",
+                "isTurtleVisible",
+                "isPenDown",
                 "getTurtleHeading"},
                ME::readOnly())
         .Default(std::nullopt);
@@ -250,7 +276,9 @@ struct CCallingConvSwitchABI : coro::SwitchABI
 {
     using SwitchABI::SwitchABI;
 
-    void splitCoroutine(Function &F, coro::Shape &Shape, SmallVectorImpl<Function *> &Clones,
+    void splitCoroutine(Function &F,
+                        coro::Shape &Shape,
+                        SmallVectorImpl<Function *> &Clones,
                         TargetTransformInfo &TTI) override
     {
         SwitchABI::splitCoroutine(F, Shape, Clones, TTI);
@@ -348,8 +376,12 @@ bool skipAllocaLifetime(AllocaInst *ai)
 }
 } // namespace
 
-void applyHostExportAttrs(Function *F, CallInst *CI, const AttributeList &abiAttrs, StringRef name,
-                          Value *evaluator, const std::vector<Value *> &args)
+void applyHostExportAttrs(Function *F,
+                          CallInst *CI,
+                          const AttributeList &abiAttrs,
+                          StringRef name,
+                          Value *evaluator,
+                          const std::vector<Value *> &args)
 {
     LLVMContext &ctx = CI->getContext();
     AttributeList al = abiAttrs;
@@ -404,19 +436,19 @@ static std::string sanitizeIrStem(const std::string &utf8)
         else
             out.push_back('_');
     }
-    if (out.empty() ||
-        !((out.front() >= 'A' && out.front() <= 'Z') || (out.front() >= 'a' && out.front() <= 'z') ||
-          out.front() == '_'))
+    if (out.empty() || !((out.front() >= 'A' && out.front() <= 'Z') || (out.front() >= 'a' && out.front() <= 'z') ||
+                         out.front() == '_'))
         out.insert(out.begin(), '_');
     return out;
 }
 
-Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm,
-                   std::string displayName, std::string debugSource)
+Scaffold::Scaffold(const llvm::DataLayout &dataLayout,
+                   TargetMachine *tm,
+                   std::string displayName,
+                   std::string debugSource)
     : theContext_(std::make_unique<LLVMContext>()), theModule_(std::make_unique<Module>("QLogoJIT", *theContext_)),
-      builder_(IRBuilder<>(*theContext_)), theLAM_(LoopAnalysisManager()),
-      theFAM_(FunctionAnalysisManager()), theCGAM_(CGSCCAnalysisManager()), theMAM_(ModuleAnalysisManager()),
-      thePIC_(PassInstrumentationCallbacks()),
+      builder_(IRBuilder<>(*theContext_)), theLAM_(LoopAnalysisManager()), theFAM_(FunctionAnalysisManager()),
+      theCGAM_(CGSCCAnalysisManager()), theMAM_(ModuleAnalysisManager()), thePIC_(PassInstrumentationCallbacks()),
       theSI_(StandardInstrumentations(*theContext_, /*DebugLogging=*/false)),
       thePB_(tm, PipelineTuningOptions(), std::nullopt, &thePIC_)
 {
@@ -425,17 +457,17 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm,
         theModule_->setTargetTriple(tm->getTargetTriple());
 
     // Itanium layout of Datum: vptr, isa_ (u32), retainCount_ (int), alertOnDelete_ (bool).
-    datumHeaderTy_ = StructType::create(
-        *theContext_,
-        {PointerType::get(*theContext_, 0), Type::getInt32Ty(*theContext_), Type::getInt32Ty(*theContext_),
-         Type::getInt8Ty(*theContext_)},
-        "DatumHeader");
+    datumHeaderTy_ = StructType::create(*theContext_,
+                                        {PointerType::get(*theContext_, 0),
+                                         Type::getInt32Ty(*theContext_),
+                                         Type::getInt32Ty(*theContext_),
+                                         Type::getInt8Ty(*theContext_)},
+                                        "DatumHeader");
     {
         const StructLayout *sl = theModule_->getDataLayout().getStructLayout(datumHeaderTy_);
         const Datum *probe = Datum::notADatum();
         const char *base = reinterpret_cast<const char *>(probe);
-        Q_ASSERT(sl->getElementOffset(1) ==
-                 static_cast<uint64_t>(reinterpret_cast<const char *>(&probe->isa_) - base));
+        Q_ASSERT(sl->getElementOffset(1) == static_cast<uint64_t>(reinterpret_cast<const char *>(&probe->isa_) - base));
         Q_ASSERT(sl->getElementOffset(2) ==
                  static_cast<uint64_t>(reinterpret_cast<const char *>(&probe->retainCount_) - base));
         Q_ASSERT(sl->getElementOffset(3) ==
@@ -443,16 +475,24 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm,
     }
     MDBuilder tbaaMdb(*theContext_);
     MDNode *tbaaRoot = tbaaMdb.createTBAARoot("qlogo");
-    MDNode *isaTbaaTy =
-        tbaaMdb.createTBAATypeNode(tbaaRoot, 4, MDString::get(*theContext_, "datum.isa"));
+    MDNode *isaTbaaTy = tbaaMdb.createTBAATypeNode(tbaaRoot, 4, MDString::get(*theContext_, "datum.isa"));
     isaLoadTbaa_ = tbaaMdb.createTBAAAccessTag(isaTbaaTy, isaTbaaTy, 0, 4, /*IsImmutable=*/true);
     {
         // Sorted isa_ values. Adjacent [v, v+1) pairs must be merged.
         static constexpr uint32_t isaVals[] = {
-            Datum::typeWord,         Datum::typeList,       Datum::typeArray,
-            Datum::typeError,        Datum::typeGoto,       Datum::typeContinuation,
-            Datum::typeReturn,       Datum::typeNothing,    Datum::typeASTNode,
-            Datum::typeProcedure,    Datum::typeEmptyList,  Datum::typeNothingPersistent,
+            Datum::typeWord,
+            Datum::typeList,
+            Datum::typeArray,
+            Datum::typeError,
+            Datum::typeGoto,
+            Datum::typeContinuation,
+            Datum::typeReturn,
+            Datum::typeNothing,
+            Datum::typeASTNode,
+            Datum::typeProcedure,
+            Datum::typePersistentWord,
+            Datum::typeEmptyList,
+            Datum::typeNothingPersistent,
         };
         IntegerType *i32 = Type::getInt32Ty(*theContext_);
         SmallVector<Metadata *, 24> rangeOps;
@@ -556,11 +596,16 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout, TargetMachine *tm,
         source = debugSource;
     file_ = dbg_->createFile(fileName, "<qlogo>", std::nullopt, source);
     dbg_->createCompileUnit(dwarf::DW_LANG_C, file_, "QLogo", true, "", 0);
-    DISubroutineType *fnTyDI =
-        dbg_->createSubroutineType(dbg_->getOrCreateTypeArray({}));
-    sp_ = dbg_->createFunction(
-        file_, displayName, name_, file_, 1, fnTyDI, 1, DINode::FlagPrototyped,
-        DISubprogram::SPFlagDefinition | DISubprogram::SPFlagOptimized);
+    DISubroutineType *fnTyDI = dbg_->createSubroutineType(dbg_->getOrCreateTypeArray({}));
+    sp_ = dbg_->createFunction(file_,
+                               displayName,
+                               name_,
+                               file_,
+                               1,
+                               fnTyDI,
+                               1,
+                               DINode::FlagPrototyped,
+                               DISubprogram::SPFlagDefinition | DISubprogram::SPFlagOptimized);
     theFunction_->setSubprogram(sp_);
 }
 
@@ -661,8 +706,7 @@ void Scaffold::finalizeColdPaths()
                 if (trueCold == falseCold)
                     continue;
                 br->setMetadata(LLVMContext::MD_prof,
-                                trueCold ? mdb.createUnlikelyBranchWeights()
-                                         : mdb.createLikelyBranchWeights());
+                                trueCold ? mdb.createUnlikelyBranchWeights() : mdb.createLikelyBranchWeights());
             }
             else if (auto *sw = dyn_cast<SwitchInst>(term))
             {
@@ -678,8 +722,7 @@ void Scaffold::finalizeColdPaths()
                     weights.push_back(isCold ? coldWeight : hotWeight);
                 }
                 if (anyCold && anyHot)
-                    sw->setMetadata(LLVMContext::MD_prof,
-                                    mdb.createBranchWeights(weights, /*IsExpected=*/true));
+                    sw->setMetadata(LLVMContext::MD_prof, mdb.createBranchWeights(weights, /*IsExpected=*/true));
             }
         }
 
@@ -694,7 +737,6 @@ void Scaffold::finalizeColdPaths()
     for (BasicBlock *block : coldPathBlocks_)
         block->moveAfter(&theFunction_->back());
 }
-
 
 CompiledText::~CompiledText()
 {
@@ -729,7 +771,8 @@ void Compiler::noteCodeChange()
 
 void Compiler::trackCompiledText(const std::shared_ptr<CompiledText> &compiledText)
 {
-    liveCompiledTexts_.erase(std::remove_if(liveCompiledTexts_.begin(), liveCompiledTexts_.end(),
+    liveCompiledTexts_.erase(std::remove_if(liveCompiledTexts_.begin(),
+                                            liveCompiledTexts_.end(),
                                             [](const std::weak_ptr<CompiledText> &w) { return w.expired(); }),
                              liveCompiledTexts_.end());
     liveCompiledTexts_.push_back(compiledText);
@@ -774,7 +817,7 @@ void Compiler::setTagToBlockIdInProcedure(const QList<DatumPtr> &tagList, int32_
     CallFrame *currentFrame = Kernel::get().currentCallFrame();
 
     // If the current frame is not a procedure, there is no need to save the tag names.
-    if ( ! currentFrame->sourceNode_.isASTNode())
+    if (!currentFrame->sourceNode_.isASTNode())
     {
         return;
     }
@@ -800,8 +843,7 @@ void Compiler::setTagToBlockIdInProcedure(const QList<DatumPtr> &tagList, int32_
 
 QString Compiler::jitDisplayName(List *aList) const
 {
-    if (!tagLineLocation_.isNothing() && tagLineLocation_.isList() &&
-        !tagLineLocation_.listValue()->isEmpty() &&
+    if (!tagLineLocation_.isNothing() && tagLineLocation_.isList() && !tagLineLocation_.listValue()->isEmpty() &&
         tagLineLocation_.listValue()->head.datumValue() == aList)
     {
         CallFrame *cf = Kernel::get().currentCallFrame();
@@ -835,12 +877,11 @@ BasicBlock *Compiler::generateTOC(QList<BasicBlock *> blocks, Function *theFunct
     BasicBlock *tocBlock = BasicBlock::Create(*scaff_->theContext_, "Toc", theFunction, blocks[0]);
     scaff_->builder_.SetInsertPoint(tocBlock);
 
-    llvm::SwitchInst *switchInst = scaff_->builder_.CreateSwitch(scaff_->blockId_, blocks[0], static_cast<unsigned>(blocks.size() - 1));
+    llvm::SwitchInst *switchInst =
+        scaff_->builder_.CreateSwitch(scaff_->blockId_, blocks[0], static_cast<unsigned>(blocks.size() - 1));
     for (unsigned i = 1; i < blocks.size(); ++i)
     {
-        switchInst->addCase(llvm::cast<llvm::ConstantInt>(
-                                ConstantInt::get(scaff_->blockId_->getType(), i)),
-                            blocks[i]);
+        switchInst->addCase(llvm::cast<llvm::ConstantInt>(ConstantInt::get(scaff_->blockId_->getType(), i)), blocks[i]);
     }
 
     // Coroutine prologue was inserted before the body entry; redirect it to Toc so execution
@@ -857,7 +898,9 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
 {
     const DumpRequest dump = dumpRequest_;
     const std::string display = jitDisplayName(aList).toUtf8().toStdString();
-    Scaffold compilerScaffolding(lljit_->getDataLayout(), targetMachine_.get(), display,
+    Scaffold compilerScaffolding(lljit_->getDataLayout(),
+                                 targetMachine_.get(),
+                                 display,
                                  aList->toString(Datum::ToStringFlags_Source, 4, 80).toUtf8().toStdString());
     compilerScaffolding.mangleNames_ = dump.any();
 
@@ -865,7 +908,10 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
     {
         Compiler &compiler;
         Scaffold *saved;
-        ~RestoreScaff() { compiler.scaff_ = saved; }
+        ~RestoreScaff()
+        {
+            compiler.scaff_ = saved;
+        }
     } restore{*this, scaff_};
     scaff_ = &compilerScaffolding;
 
@@ -921,7 +967,8 @@ std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QLi
             {
                 // If this is the last node, accept any Datum return type.
                 // Otherwise, expect that nothing is returned.
-                if (!parsedList.last().isEmpty() && node == parsedList.last().last()) {
+                if (!parsedList.last().isEmpty() && node == parsedList.last().last())
+                {
                     returnTypeRequest = TypeDN;
                     // Also, set the inSequenceTail_ flag so that the child will know it can generate a tail call.
                     node.astnodeValue()->inSequenceTail_ = true;
@@ -1164,8 +1211,7 @@ Value *Compiler::generateDoubleFromDatum(ASTNode *parent, Value *src)
     beginAllocaLifetime(out);
     Value *retval = nullptr;
     auto realTest = [this, &retval, out](Value *src) {
-        Value *ok = generateCallExtern(parseDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(src),
-                                       PaAddr(out));
+        Value *ok = generateCallExtern(parseDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(src), PaAddr(out));
         retval = scaff_->builder_.CreateLoad(TyDouble, out, DBG_NAME("doubleVal"));
         return ok;
     };
@@ -1180,10 +1226,9 @@ Value *Compiler::generateBoolFromDatum(ASTNode *parent, Value *src)
     beginAllocaLifetime(out);
     Value *retval = nullptr;
     auto boolTest = [this, &retval, out](Value *src) {
-        Value *ok = generateCallExtern(parseBoolForDatum, PaAddr(scaff_->evaluator_), PaAddr(src),
-                                       PaAddr(out));
-        retval = scaff_->builder_.CreateTrunc(scaff_->builder_.CreateLoad(TyInt8, out, DBG_NAME("boolI8")),
-                                              TyBool, DBG_NAME("boolVal"));
+        Value *ok = generateCallExtern(parseBoolForDatum, PaAddr(scaff_->evaluator_), PaAddr(src), PaAddr(out));
+        retval = scaff_->builder_.CreateTrunc(
+            scaff_->builder_.CreateLoad(TyInt8, out, DBG_NAME("boolI8")), TyBool, DBG_NAME("boolVal"));
         return ok;
     };
     generateValidationDatum(parent, src, boolTest);
@@ -1237,7 +1282,8 @@ Value *Compiler::generateNotFlowControl(Value *src)
     scaff_->addColdPathBlocks(isFlowBB);
 
     Value *dType = generateGetDatumIsa(src);
-    Value *flowMask = scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
+    Value *flowMask =
+        scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeFlowControlMask), DBG_NAME("flowControlMask"));
     Value *isFlow = scaff_->builder_.CreateICmpNE(flowMask, CoInt32(0), DBG_NAME("isFlowTest"));
     scaff_->builder_.CreateCondBr(isFlow, isFlowBB, notFlowBB);
 
@@ -1291,37 +1337,32 @@ Value *Compiler::generateIsWordOrEmptyList(Value *src)
 
 Value *Compiler::generateWordOrEmptyListFromDatum(ASTNode *parent, Value *src)
 {
-    return generateValidationDatum(parent, src, [this](Value *candidate) {
-        return generateIsWordOrEmptyList(candidate);
-    });
+    return generateValidationDatum(
+        parent, src, [this](Value *candidate) { return generateIsWordOrEmptyList(candidate); });
 }
 
 Value *Compiler::generateContentsListFromDatum(ASTNode *parent, Value *src)
 {
-    return generateValidationDatum(parent, src, [this](Value *candidate) {
-        return generateCallExtern(isContentsList, PaAddr(candidate));
-    });
+    return generateValidationDatum(
+        parent, src, [this](Value *candidate) { return generateCallExtern(isContentsList, PaAddr(candidate)); });
 }
 
 Value *Compiler::generateNamedContentsListFromDatum(ASTNode *parent, Value *src)
 {
-    return generateValidationDatum(parent, src, [this](Value *candidate) {
-        return generateCallExtern(isNamedContentsList, PaAddr(candidate));
-    });
+    return generateValidationDatum(
+        parent, src, [this](Value *candidate) { return generateCallExtern(isNamedContentsList, PaAddr(candidate)); });
 }
 
 Value *Compiler::generateDefinableProcNameFromDatum(ASTNode *parent, Value *src)
 {
-    return generateValidationDatum(parent, src, [this](Value *candidate) {
-        return generateCallExtern(isDefinableProcName, PaAddr(candidate));
-    });
+    return generateValidationDatum(
+        parent, src, [this](Value *candidate) { return generateCallExtern(isDefinableProcName, PaAddr(candidate)); });
 }
 
 Value *Compiler::generateDefineTextFromDatum(ASTNode *parent, Value *src)
 {
-    return generateValidationDatum(parent, src, [this](Value *candidate) {
-        return generateCallExtern(isDefineText, PaAddr(candidate));
-    });
+    return generateValidationDatum(
+        parent, src, [this](Value *candidate) { return generateCallExtern(isDefineText, PaAddr(candidate)); });
 }
 
 Value *Compiler::generateWordFromDatum(ASTNode *parent, Value *src)
@@ -1427,18 +1468,19 @@ Value *Compiler::ensureCoroutineFrame()
     // Coroutine frame: id -> size -> alloc -> begin
     // llvm.coro.id(i32 align, ptr promise, ptr coroutine, ptr info) -> token
     Function *coroIdFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_id);
-    scaff_->coroutineToken_ = scaff_->builder_.CreateCall(
-        coroIdFn, {CoInt32(0), CoAddr(0), CoAddr(0), CoAddr(0)}, DBG_NAME("id"));
+    scaff_->coroutineToken_ =
+        scaff_->builder_.CreateCall(coroIdFn, {CoInt32(0), CoAddr(0), CoAddr(0), CoAddr(0)}, DBG_NAME("id"));
     Value *coroutineCallToken = scaff_->coroutineToken_;
 
     Function *coroSizeFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_size, {TyInt32});
     Value *coroutineSize = scaff_->builder_.CreateCall(coroSizeFn, {}, DBG_NAME("size"));
 
-    Function *coroAlignFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_align, {TyInt32});
+    Function *coroAlignFn =
+        Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_align, {TyInt32});
     Value *coroutineAlign = scaff_->builder_.CreateCall(coroAlignFn, {}, DBG_NAME("align"));
 
-    Value *coroutineAlloc = generateCallExtern(
-        q_malloc, PaAddr(scaff_->evaluator_), PaInt32(coroutineSize), PaInt32(coroutineAlign));
+    Value *coroutineAlloc =
+        generateCallExtern(q_malloc, PaAddr(scaff_->evaluator_), PaInt32(coroutineSize), PaInt32(coroutineAlign));
 
     Function *coroBeginFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_begin);
     auto *coroBeginCall = cast<CallInst>(
@@ -1494,7 +1536,8 @@ Value *Compiler::genExecProcedure(const DatumPtr &node, TypeMask expected)
     AllocaInst *paramAry = cs.allocaAry(DBG_NAME("paramAry"));
     Value *vAstnodeValue = CoAddr(node.astnodeValue());
     Value *vParamArySize = CoInt32(node.astnodeValue()->countOfChildren());
-    generateCallExtern(beginProcedure, PaAddr(scaff_->evaluator_), PaAddr(vAstnodeValue), PaAddr(paramAry), PaInt32(vParamArySize));
+    generateCallExtern(
+        beginProcedure, PaAddr(scaff_->evaluator_), PaAddr(vAstnodeValue), PaAddr(paramAry), PaInt32(vParamArySize));
     endAllocaLifetime(paramAry);
 
     generateCoroSuspend();
@@ -1508,7 +1551,8 @@ Value *Compiler::generateWordFromDouble(Value *val)
 
 Value *Compiler::generateWordFromBool(Value *val)
 {
-    return generateCallExtern(getWordForBool, PaAddr(scaff_->evaluator_), PaBool(val));
+    return scaff_->builder_.CreateSelect(
+        val, CoAddr(Word::trueWord()), CoAddr(Word::falseWord()), DBG_NAME("wordFromBool"));
 }
 
 Value *Compiler::generateErrorSystem()
@@ -1558,8 +1602,7 @@ Value *Compiler::generateErrorNoOutput(Value *x, ASTNode *y)
 Value *Compiler::generateRecoverDidntOutput(Value *who, ASTNode *parent)
 {
     Value *vY = CoAddr(parent->nodeName_.datumValue());
-    Value *handlerResult =
-        generateCallExtern(handleDidntOutput, PaAddr(scaff_->evaluator_), PaAddr(who), PaAddr(vY));
+    Value *handlerResult = generateCallExtern(handleDidntOutput, PaAddr(scaff_->evaluator_), PaAddr(who), PaAddr(vY));
     return generateNotFlowControl(handlerResult);
 }
 
@@ -1639,8 +1682,7 @@ void Compiler::endAllocaLifetime(AllocaInst *ai)
 
 AllocaInst *Compiler::generateAllocaAry(const std::vector<llvm::Value *> &values, const std::string &name)
 {
-    AllocaInst *retval =
-        scaff_->createEntryBlockArrayAlloca(TyAddr, values.size(), name);
+    AllocaInst *retval = scaff_->createEntryBlockArrayAlloca(TyAddr, values.size(), name);
     beginAllocaLifetime(retval);
     for (size_t i = 0; i < values.size(); ++i)
     {
@@ -1674,10 +1716,10 @@ void Compiler::generateTraceBegin(ASTNode *node, const std::vector<Value *> &chi
     Value *ary = boxed.empty() ? static_cast<Value *>(CoAddr(0))
                                : static_cast<Value *>(generateAllocaAry(boxed, DBG_NAME("traceAry")));
     Value *begin = generateCallExtern(stdTraceBegin,
-                                     PaAddr(scaff_->evaluator_),
-                                     PaAddr(CoAddr(node)),
-                                     PaAddr(ary),
-                                     PaInt32(CoInt32(static_cast<int32_t>(boxed.size()))));
+                                      PaAddr(scaff_->evaluator_),
+                                      PaAddr(CoAddr(node)),
+                                      PaAddr(ary),
+                                      PaInt32(CoInt32(static_cast<int32_t>(boxed.size()))));
     if (auto *traceAry = dyn_cast<AllocaInst>(ary))
         endAllocaLifetime(traceAry);
     generateNotFlowControl(begin);
@@ -1689,10 +1731,8 @@ void Compiler::generateTraceEnd(ASTNode *node, Value *result)
     if (!Kernel::get().containsName(Kernel::NameMark::Traced, Kernel::NameKind::Procedures, key))
         return;
 
-    Value *end = generateCallExtern(stdTraceEnd,
-                                   PaAddr(scaff_->evaluator_),
-                                   PaAddr(CoAddr(node)),
-                                   PaAddr(generateDatumForTrace(result)));
+    Value *end = generateCallExtern(
+        stdTraceEnd, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node)), PaAddr(generateDatumForTrace(result)));
     generateNotFlowControl(end);
 }
 
@@ -1712,7 +1752,9 @@ std::vector<Value *> Compiler::generateChildren(ASTNode *node, std::vector<TypeM
     return retval;
 }
 
-AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent, Value *src, int32_t size,
+AllocaInst *Compiler::generateNumberAryFromDatum(ASTNode *parent,
+                                                 Value *src,
+                                                 int32_t size,
                                                  const validatorFunction &elementOk)
 {
     Value *vSize = CoInt32(size);
@@ -1820,17 +1862,17 @@ Value *Compiler::generateValidationDouble(ASTNode *parent, Value *src, const val
 
     // The number is bad. Call handleBadDouble and maybe retry with the result.
     scaff_->builder_.SetInsertPoint(erractBB);
-    Value *handlerResult = generateCallExtern(handleBadDouble, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(parent)), PaDouble(candidate));
+    Value *handlerResult =
+        generateCallExtern(handleBadDouble, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(parent)), PaDouble(candidate));
     handlerResult = generateNotFlowControl(handlerResult);
 
     AllocaInst *out = scaff_->createEntryBlockAlloca(TyDouble, DBG_NAME("retryDoubleOut"));
     beginAllocaLifetime(out);
-    Value *numberIsValid = generateCallExtern(parseDoubleForDatum, PaAddr(scaff_->evaluator_),
-                                              PaAddr(handlerResult), PaAddr(out));
+    Value *numberIsValid =
+        generateCallExtern(parseDoubleForDatum, PaAddr(scaff_->evaluator_), PaAddr(handlerResult), PaAddr(out));
     Value *dVal = scaff_->builder_.CreateLoad(TyDouble, out, DBG_NAME("retryDouble"));
     endAllocaLifetime(out);
-    dVal = scaff_->builder_.CreateSelect(numberIsValid, dVal, ConstantFP::getNaN(TyDouble),
-                                         DBG_NAME("retryOrNaN"));
+    dVal = scaff_->builder_.CreateSelect(numberIsValid, dVal, ConstantFP::getNaN(TyDouble), DBG_NAME("retryOrNaN"));
     candidate->addIncoming(dVal, scaff_->builder_.GetInsertBlock());
     scaff_->builder_.CreateBr(validateBB);
 
@@ -1860,7 +1902,8 @@ Value *Compiler::generateValidationDatum(ASTNode *parent, Value *src, const vali
 
     // The datum is bad. Call handleBadDatum and maybe retry with the result.
     scaff_->builder_.SetInsertPoint(erractBB);
-    Value *handlerResult = generateCallExtern(handleBadDatum, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(parent)), PaAddr(candidate));
+    Value *handlerResult =
+        generateCallExtern(handleBadDatum, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(parent)), PaAddr(candidate));
     handlerResult = generateNotFlowControl(handlerResult);
     candidate->addIncoming(handlerResult, scaff_->builder_.GetInsertBlock());
     scaff_->builder_.CreateBr(validateBB);
@@ -1879,7 +1922,7 @@ void Compiler::generateReturn(Value *retval)
 void Compiler::generateWrapup()
 {
     scaff_->builder_.SetInsertPoint(scaff_->mainBailoutBB_);
- 
+
     if (scaff_->coroutineHandle_)
     {
         scaff_->builder_.CreateStore(ConstantPointerNull::get(TyAddr), scaff_->coroutineHandle_);
@@ -1888,7 +1931,8 @@ void Compiler::generateWrapup()
         scaff_->builder_.SetInsertPoint(scaff_->cleanupBB_);
         //   %mem = call ptr @llvm.coro.free(token %id, ptr %hdl)
         Function *coroFreeFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_free);
-        Value *memToFree = scaff_->builder_.CreateCall(coroFreeFn, {scaff_->coroutineToken_, scaff_->coroutineHandle_}, DBG_NAME("mem"));
+        Value *memToFree = scaff_->builder_.CreateCall(
+            coroFreeFn, {scaff_->coroutineToken_, scaff_->coroutineHandle_}, DBG_NAME("mem"));
         //   Only free when allocation was dynamic (mem non-null); skip when allocation was elided.
         Value *needFree = scaff_->builder_.CreateICmpNE(memToFree, CoAddr(0), DBG_NAME("needFree"));
         BasicBlock *dynFreeBB = BasicBlock::Create(*scaff_->theContext_, "cleanup.free", scaff_->theFunction_);
@@ -1904,7 +1948,8 @@ void Compiler::generateWrapup()
         scaff_->builder_.SetInsertPoint(scaff_->suspendBB_);
         //   call void @llvm.coro.end(ptr %hdl, i1 false, token none)
         Function *coroEndFn = Intrinsic::getOrInsertDeclaration(scaff_->theModule_.get(), Intrinsic::coro_end);
-        scaff_->builder_.CreateCall(coroEndFn, {scaff_->coroutineHandle_, CoBool(false), ConstantTokenNone::get(*scaff_->theContext_)});
+        scaff_->builder_.CreateCall(
+            coroEndFn, {scaff_->coroutineHandle_, CoBool(false), ConstantTokenNone::get(*scaff_->theContext_)});
         //   ret ptr %hdl
         scaff_->builder_.CreateRet(scaff_->coroutineHandle_);
     }
@@ -1931,47 +1976,46 @@ Value *Compiler::generateGetDatumIsa(Value *objAddr)
     return load;
 }
 
-
 /***DOC ALLOWGETSET
 ALLOWGETSET						(variable)
 
-	if TRUE, indicates that an attempt to use a procedure that doesn't
-	exist should be taken as an implicit getter or setter procedure
-	(setter if the first three letters of the name are SET) for a variable
-	of the same name (without the SET if appropriate).
+    if TRUE, indicates that an attempt to use a procedure that doesn't
+    exist should be taken as an implicit getter or setter procedure
+    (setter if the first three letters of the name are SET) for a variable
+    of the same name (without the SET if appropriate).
 
 COD***/
 
 /***DOC BUTTONACT
 BUTTONACT						(variable)
 
-	if nonempty, should be an instruction list that will be evaluated
-	whenever a mouse button is pressed.  Note that the user may have
-	released the button before the instructions are evaluated.  BUTTON
-	will still output which button was most recently pressed.  CLICKPOS
-	will output the position of the mouse cursor at the moment the
-	button was pressed; this may be different from MOUSEPOS if the
-	user moves the mouse after clicking.
+    if nonempty, should be an instruction list that will be evaluated
+    whenever a mouse button is pressed.  Note that the user may have
+    released the button before the instructions are evaluated.  BUTTON
+    will still output which button was most recently pressed.  CLICKPOS
+    will output the position of the mouse cursor at the moment the
+    button was pressed; this may be different from MOUSEPOS if the
+    user moves the mouse after clicking.
 
-	Note that it's possible for the user to press a button during the
-	evaluation of the instruction list.  If this would confuse your
-	program, prevent it by temporarily setting BUTTONACT to the empty
-	list.  One easy way to do that is the following:
+    Note that it's possible for the user to press a button during the
+    evaluation of the instruction list.  If this would confuse your
+    program, prevent it by temporarily setting BUTTONACT to the empty
+    list.  One easy way to do that is the following:
 
-		make "buttonact [button.action]
+        make "buttonact [button.action]
 
-		to button.action [:buttonact []]
-		... ; whatever you want the button to do
-		end
+        to button.action [:buttonact []]
+        ... ; whatever you want the button to do
+        end
 
 COD***/
 
 /***DOC CASEIGNOREDP
 CASEIGNOREDP						(variable)
 
-	if TRUE, indicates that lower case and upper case letters should be
-	considered equal by EQUALP, BEFOREP, MEMBERP, etc.  Logo initially
-	makes this variable TRUE, and buries it.
+    if TRUE, indicates that lower case and upper case letters should be
+    considered equal by EQUALP, BEFOREP, MEMBERP, etc.  Logo initially
+    makes this variable TRUE, and buries it.
 
 COD***/
 
@@ -1979,74 +2023,73 @@ COD***/
 ARGV							(variable)
 
 	a list of every word on the command line used to start QLogo,
-	including the program name. This is a QLogo extension.
-	See also COMMAND.LINE.
+	including the program name. See also COMMAND.LINE.
 
 COD***/
 
 /***DOC COMMAND.LINE
 COMMAND.LINE						(variable)
 
-	contains any text appearing after a hyphen on the command line
-	used to start Logo. The list is empty if there is no hyphen.
+    contains any text appearing after a hyphen on the command line
+    used to start Logo. The list is empty if there is no hyphen.
 
 COD***/
 
 /***DOC ERRACT
 ERRACT							(variable)
 
-	an instructionlist that will be run in the event of an error.
-	Typically has the value [PAUSE] to allow interactive debugging.
+    an instructionlist that will be run in the event of an error.
+    Typically has the value [PAUSE] to allow interactive debugging.
 
 COD***/
 
 /***DOC FULLPRINTP
 FULLPRINTP						(variable)
 
-	if TRUE, then words that were created using backslash or vertical bar
-	(to include characters that would otherwise not be treated as part of
-	a word) are printed with the backslashes or vertical bars shown, so
-	that the printed result could be re-read by Logo to produce the same
-	value.  If FULLPRINTP is TRUE then the empty word (however it was
-	created) prints as ||.  (Otherwise it prints as nothing at all.)
+    if TRUE, then words that were created using backslash or vertical bar
+    (to include characters that would otherwise not be treated as part of
+    a word) are printed with the backslashes or vertical bars shown, so
+    that the printed result could be re-read by Logo to produce the same
+    value.  If FULLPRINTP is TRUE then the empty word (however it was
+    created) prints as ||.  (Otherwise it prints as nothing at all.)
 
 COD***/
 
 /***DOC KEYACT
 KEYACT							(variable)
 
-	if nonempty, should be an instruction list that will be evaluated
-	whenever a key is pressed on the keyboard.  The instruction list
-	can use READCHAR to find out what key was pressed.  Note that only
-	keys that produce characters qualify; pressing SHIFT or CONTROL
-	alone will not cause KEYACT to be evaluated.
+    if nonempty, should be an instruction list that will be evaluated
+    whenever a key is pressed on the keyboard.  The instruction list
+    can use READCHAR to find out what key was pressed.  Note that only
+    keys that produce characters qualify; pressing SHIFT or CONTROL
+    alone will not cause KEYACT to be evaluated.
 
-	Note that it's possible for the user to press a key during the
-	evaluation of the instruction list.  If this would confuse your
-	program, prevent it by temporarily setting KEYACT to the empty
-	list.  One easy way to do that is the following:
+    Note that it's possible for the user to press a key during the
+    evaluation of the instruction list.  If this would confuse your
+    program, prevent it by temporarily setting KEYACT to the empty
+    list.  One easy way to do that is the following:
 
-		make "keyact [key.action]
+        make "keyact [key.action]
 
-		to key.action [:keyact []]
-		... ; whatever you want the key to do
-		end
+        to key.action [:keyact []]
+        ... ; whatever you want the key to do
+        end
 
 COD***/
 
 /***DOC LOADNOISILY
 LOADNOISILY						(variable)
 
-	if TRUE, prints the names of procedures defined when loading
-	from a file (including the temporary file made by EDIT).
+    if TRUE, prints the names of procedures defined when loading
+    from a file (including the temporary file made by EDIT).
 
 COD***/
 
 /***DOC LOGOPLATFORM
 LOGOPLATFORM						(variable)
 
-	one of the following words: wxWidgets, X11, Windows, or
-	Unix-Nographics.
+    one of the following words: wxWidgets, X11, Windows, or
+    Unix-Nographics.
 
 
 
@@ -2055,49 +2098,49 @@ COD***/
 /***DOC LOGOVERSION
 LOGOVERSION						(variable)
 
-	a real number indicating the Logo version number, e.g., 5.5
+    a real number indicating the Logo version number, e.g., 5.5
 
 COD***/
 
 /***DOC QLOGOVERSION
 QLOGOVERSION						(variable)
 
-	a string indicating the QLogo version in three parts, separated by
-	hyphens. The first part is the latest git tag. The second part is the number
-	number of commits since the latest tag. The third part is the commit
-	hash.
+    a string indicating the QLogo version in three parts, separated by
+    hyphens. The first part is the latest git tag. The second part is the number
+    number of commits since the latest tag. The third part is the commit
+    hash.
 
 COD***/
 
 /***DOC PRINTDEPTHLIMIT
 PRINTDEPTHLIMIT						(variable)
 
-	if a nonnegative integer, indicates the maximum depth of sublist
-	structure that will be printed by PRINT, etc.
+    if a nonnegative integer, indicates the maximum depth of sublist
+    structure that will be printed by PRINT, etc.
 
 COD***/
 
 /***DOC PRINTWIDTHLIMIT
 PRINTWIDTHLIMIT						(variable)
 
-	if a nonnegative integer, indicates the maximum number of members
-	in any one list that will be printed by PRINT, etc.
+    if a nonnegative integer, indicates the maximum number of members
+    in any one list that will be printed by PRINT, etc.
 
 COD***/
 
 /***DOC STARTUP
 STARTUP							(variable)
 
-	if assigned a list value in a file loaded by LOAD, that value is
-	run as an instructionlist after the loading.
+    if assigned a list value in a file loaded by LOAD, that value is
+    run as an instructionlist after the loading.
 
 COD***/
 
 /***DOC UNBURYONEDIT
 UNBURYONEDIT						(variable)
 
-	if TRUE, causes any procedure defined during EDIT or LOAD to be
-	unburied, so that it will be saved by a later SAVE.  Files that
-	want to define and bury procedures must do it in that order.
+    if TRUE, causes any procedure defined during EDIT or LOAD to be
+    unburied, so that it will be saved by a later SAVE.  Files that
+    want to define and bury procedures must do it in that order.
 
 COD***/

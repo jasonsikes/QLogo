@@ -46,7 +46,7 @@ class DatumPtr
     /// @brief Convenience constructor for "true" and "false".
     ///
     /// @param b The boolean value to create the DatumPtr for.
-    /// @return A new DatumPtr pointing to a new Word containing the boolean value.
+    /// @return A new DatumPtr pointing to the interned true or false Word.
     explicit DatumPtr(bool b);
 
     /// @brief Convenience constructor for numbers.
@@ -122,7 +122,7 @@ class DatumPtr
     /// @return True if the referred Datum is a Word, false otherwise.
     bool isWord() const
     {
-        return datumValue_->isa_ == Datum::typeWord;
+        return (datumValue_->isa_ & Datum::typeWord) != 0;
     }
 
     /// @brief Returns true if the referred Datum is a List, false otherwise.

@@ -269,6 +269,27 @@ Word::Word(double other)
 
 Word::~Word() = default;
 
+Word *Word::createInternedBool(bool value)
+{
+    auto *w = new Word(value ? QObject::tr("true") : QObject::tr("false"));
+    w->isa_ = Datum::typePersistentWord;
+    w->boolIsValid = true;
+    w->boolean = value;
+    return w;
+}
+
+Word *Word::trueWord()
+{
+    static Word *instance = createInternedBool(true);
+    return instance;
+}
+
+Word *Word::falseWord()
+{
+    static Word *instance = createInternedBool(false);
+    return instance;
+}
+
 void Word::genRawString() const
 {
     if (rawString.isNull())
