@@ -244,7 +244,7 @@ void Canvas::addLabel(const QString &aText)
     const qreal logicalSize = labelFont_.pointSizeF();
     if (logicalSize > 0)
         drawnFont.setPointSizeF(logicalSize * qAbs(scrunchY_));
-    Label l(aText, QPointF(turtleMatrix_.dx(), -turtleMatrix_.dy()), drawnFont);
+    Label l(aText, QPointF(turtleMatrix_.dx(), (logicalSize * -2) - turtleMatrix_.dy()), drawnFont);
     pushLineGroup();
     drawingElementList_.push_back({DrawingElementIDLabel, DrawingElementVariant(l)});
     update();
@@ -466,10 +466,15 @@ void Canvas::elementListDrawTurtle()
         painter->setCompositionMode(QPainter::CompositionMode_SourceOver);
         painter->save();
         // Scale the rotated axes in display space (T × S × R). Scaling after
-        const QTransform scrunched(turtleMatrix_.m11() * scrunchX_, turtleMatrix_.m12() * scrunchY_,
-                                   turtleMatrix_.m13(), turtleMatrix_.m21() * scrunchX_,
-                                   turtleMatrix_.m22() * scrunchY_, turtleMatrix_.m23(), turtleMatrix_.dx(),
-                                   turtleMatrix_.dy(), turtleMatrix_.m33());
+        const QTransform scrunched(turtleMatrix_.m11() * scrunchX_,
+                                   turtleMatrix_.m12() * scrunchY_,
+                                   turtleMatrix_.m13(),
+                                   turtleMatrix_.m21() * scrunchX_,
+                                   turtleMatrix_.m22() * scrunchY_,
+                                   turtleMatrix_.m23(),
+                                   turtleMatrix_.dx(),
+                                   turtleMatrix_.dy(),
+                                   turtleMatrix_.m33());
         painter->setTransform(scrunched, true);
         painter->setTransform(turtleImageMatrix_, true);
         painter->drawImage(QPointF(0, 0), turtleImage_);
