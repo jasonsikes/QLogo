@@ -233,6 +233,7 @@ stringToCmd.insert(StringConstants::cmdStrFENCE(), Cmd_t{&Compiler::genFence, 0,
 stringToCmd.insert(StringConstants::cmdStrBOUNDS(), Cmd_t{&Compiler::genBounds, 0, 0, 0, TypeD});
 stringToCmd.insert(StringConstants::cmdStrSETBOUNDS(), Cmd_t{&Compiler::genSetbounds, 2, 2, 2, TypeN});
 stringToCmd.insert(StringConstants::cmdStrFILLED(), Cmd_t{&Compiler::genFilled, 2, 2, 2, TypeN});
+stringToCmd.insert(StringConstants::cmdStrFILL(), Cmd_t{&Compiler::genFill, 0, 0, 0, TypeN});
 stringToCmd.insert(StringConstants::cmdStrLABEL(), Cmd_t{&Compiler::genLabel, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrSETLABELHEIGHT(), Cmd_t{&Compiler::genSetlabelheight, 1, 1, 1, TypeN});
 stringToCmd.insert(StringConstants::cmdStrSETLABELFONT(), Cmd_t{&Compiler::genSetlabelfont, 1, 1, 1, TypeN});

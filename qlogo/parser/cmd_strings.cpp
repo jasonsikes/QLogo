@@ -5,7 +5,6 @@
 #include "cmd_strings.h"
 #include <QObject>
 
-
 const QString &StringConstants::cmdStrARCTAN()
 {
     static const QString str = QObject::tr("ARCTAN");
@@ -1386,6 +1385,12 @@ const QString &StringConstants::cmdStrFILLED()
     return str;
 }
 
+const QString &StringConstants::cmdStrFILL()
+{
+    static const QString str = QObject::tr("FILL");
+    return str;
+}
+
 const QString &StringConstants::cmdStrLABEL()
 {
     static const QString str = QObject::tr("LABEL");
@@ -2147,5 +2152,3 @@ const QString &StringConstants::cmdStr_dot_SETSEGMENTSIZE()
     static const QString str = QObject::tr(".SETSEGMENTSIZE");
     return str;
 }
-
-

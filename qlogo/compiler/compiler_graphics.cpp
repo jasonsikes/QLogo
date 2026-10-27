@@ -501,6 +501,19 @@ Value *Compiler::genFilled(const DatumPtr &node, TypeMask expected)
     return cs.ret(generateNotFlowControl(result));
 }
 
+/***DOC FILL
+FILL
+
+    command.  Not implemented.  Accepted for compatibility and does nothing.
+
+COD***/
+// CMD FILL 0 0 0 n
+Value *Compiler::genFill(const DatumPtr &node, TypeMask expected)
+{
+    CallSite cs(this, node, TypeNothing);
+    return cs.ret(generateVoidRetval(node));
+}
+
 /***DOC LABEL
 LABEL text
 
@@ -632,7 +645,8 @@ Value *Compiler::genSetscrunch(const DatumPtr &node, TypeMask expected)
     auto isFiniteNonzero = [this](Value *val) {
         Value *notZero = scaff_->builder_.CreateFCmpONE(val, CoDouble(0.0), DBG_NAME("scrunchNZ"));
         Value *absVal = scaff_->builder_.CreateUnaryIntrinsic(Intrinsic::fabs, val, {}, DBG_NAME("scrunchAbs"));
-        Value *finite = scaff_->builder_.CreateFCmpOLT(absVal, ConstantFP::getInfinity(TyDouble), DBG_NAME("scrunchFinite"));
+        Value *finite =
+            scaff_->builder_.CreateFCmpOLT(absVal, ConstantFP::getInfinity(TyDouble), DBG_NAME("scrunchFinite"));
         return scaff_->builder_.CreateAnd(notZero, finite, DBG_NAME("scrunchOk"));
     };
     x = generateValidationDouble(node.astnodeValue(), x, isFiniteNonzero);
@@ -971,7 +985,7 @@ SETPENPATTERN pattern
     style word.
 
     At most one cap style, one join style, and one dash style (or
-    sublist) may be given. 
+    sublist) may be given.
 
 COD***/
 // CMD SETPENPATTERN 1 1 1 n

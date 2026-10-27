@@ -134,9 +134,7 @@ The original purpose of the command was to enable text to be visible on projecto
 
 **** ~FILL~:
 
-One of the user interface principles for QLogo is that the canvas should be device resolution-independent. When the QLogo window is resized or the separator between the text and the graphics is moved then the graphics will be redrawn with the new dimensions.
-
-The Flood Fill algorithm depends on specific pixels which means that what is filled can change significantly depending on the size of the canvas. ~FILLED~ is still available.
+One of the user interface principles for QLogo is that the canvas should be device resolution-independent. When the QLogo window is resized or the separator between the text and the graphics is moved then the graphics will be redrawn with the new dimensions. The resulting canvas may have different openings and closures which will cause the flood fill algorithm to draw something completely different. In QLogo, ~FILL~ is accepted for compatibility but does nothing.
 
 **** ~EPSPICT~:
 

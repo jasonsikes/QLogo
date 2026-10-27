@@ -238,6 +238,7 @@ const QString &cmdStrFENCE();
 const QString &cmdStrBOUNDS();
 const QString &cmdStrSETBOUNDS();
 const QString &cmdStrFILLED();
+const QString &cmdStrFILL();
 const QString &cmdStrLABEL();
 const QString &cmdStrSETLABELHEIGHT();
 const QString &cmdStrSETLABELFONT();
@@ -367,4 +368,3 @@ const QString &cmdStrGC();
 const QString &cmdStr_dot_SETSEGMENTSIZE();
 } // namespace StringConstants
 #endif // CMD_STRINGS_H
-

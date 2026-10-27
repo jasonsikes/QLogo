@@ -180,6 +180,7 @@ llvm::Value *genFence(const DatumPtr &node, TypeMask expected);
 llvm::Value *genBounds(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSetbounds(const DatumPtr &node, TypeMask expected);
 llvm::Value *genFilled(const DatumPtr &node, TypeMask expected);
+llvm::Value *genFill(const DatumPtr &node, TypeMask expected);
 llvm::Value *genLabel(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSetlabelheight(const DatumPtr &node, TypeMask expected);
 llvm::Value *genSetlabelfont(const DatumPtr &node, TypeMask expected);
