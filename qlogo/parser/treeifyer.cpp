@@ -166,6 +166,15 @@ DatumPtr Treeifier::treeifyRootExp()
 /// @return AST node representing the comparison expression.
 DatumPtr Treeifier::treeifyExp()
 {
+    if (depth_ >= kMaxTreeifyDepth)
+        throw FCError::stackOverflow();
+    ++depth_;
+    struct DepthGuard
+    {
+        Treeifier *t;
+        ~DepthGuard() { --t->depth_; }
+    } depthGuard{this};
+
     DatumPtr left = treeifySumexp();
     while (currentToken_.isWord() &&
            ((currentToken_.toString() == opEqual()) || (currentToken_.toString() == opNotEqual()) ||

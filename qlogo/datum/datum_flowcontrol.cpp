@@ -206,6 +206,11 @@ FCError *FCError::parenNf()
     return new FCError(ERR_PAREN_NF, message);
 }
 
+FCError *FCError::stackOverflow()
+{
+    return new FCError(ERR_STACK_OVERFLOW, QObject::tr("Stack overflow"));
+}
+
 FCError *FCError::isPrimitive(const DatumPtr &x)
 {
     QString message = QObject::tr("%1 is a primitive").arg(x.toString(Datum::ToStringFlags_Show));

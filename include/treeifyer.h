@@ -33,6 +33,8 @@ class Treeifier
 
     void advanceToken();
     List *listIter_;
+    int depth_ = 0;
+    static constexpr int kMaxTreeifyDepth = 256;
 
     DatumPtr treeifyRootExp();
     DatumPtr treeifyExp();

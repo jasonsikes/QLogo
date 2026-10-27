@@ -387,6 +387,9 @@ struct FCError : public FlowControl
     /// @brief Create an error object for a closing parenthesis not found when expected during parsing.
     static FCError *parenNf();
 
+    /// @brief Create an error object for C++ or Logo stack overflow.
+    static FCError *stackOverflow();
+
     /// @brief Create an error object for trying to manipulate a primitive.
     /// @param x The primitive that is being manipulated.
     static FCError *isPrimitive(const DatumPtr &x);
