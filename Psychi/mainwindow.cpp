@@ -662,9 +662,7 @@ int MainWindow::startLogo()
 
 #ifdef Q_OS_WIN
     logoProcess->setCreateProcessArgumentsModifier(
-        [](QProcess::CreateProcessArguments *args) {
-            args->flags |= CREATE_NO_WINDOW;
-        });
+        [](QProcess::CreateProcessArguments *args) { args->flags |= CREATE_NO_WINDOW; });
 #endif
 
     connect(
@@ -737,8 +735,7 @@ message_t interruptKindForKey(const QKeyEvent *keyEvent, bool copyHasSelection)
     if (keyEvent->matches(QKeySequence::Quit))
         return S_SYSTEM;
 #ifndef Q_OS_MACOS
-    if (isPhysicalControlHeld(keyEvent) &&
-        (keyEvent->key() == Qt::Key_Q || keyEvent->key() == Qt::Key_Backslash))
+    if (isPhysicalControlHeld(keyEvent) && (keyEvent->key() == Qt::Key_Q || keyEvent->key() == Qt::Key_Backslash))
         return S_SYSTEM;
 #endif
     if (isPhysicalControlHeld(keyEvent) && keyEvent->key() == Qt::Key_Z)
@@ -1291,11 +1288,13 @@ void MainWindow::mousereleasedSlot()
 
 void MainWindow::sendCharSlot(QChar c)
 {
+    windowMode_ = windowMode_noWait;
     message(C_CONSOLE_CHAR_READ) << c;
 }
 
 void MainWindow::sendRawlineSlot(const QString &line)
 {
+    windowMode_ = windowMode_noWait;
     message(C_CONSOLE_RAWLINE_READ) << line;
 }
 
