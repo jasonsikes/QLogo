@@ -1,0 +1,5 @@
+show runparse runparse "-:a
+make "ymax 20
+print run "-:ymax
+for [y -:ymax 0 10] [print :y]
+print 2 * 5 |--| 2

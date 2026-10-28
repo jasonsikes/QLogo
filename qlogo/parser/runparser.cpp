@@ -17,9 +17,9 @@
 
 #include "runparser.h"
 #include "QtCore/qiodevice.h"
+#include "datum_types.h"
 #include "interface/logointerface.h"
 #include "interface/textstream.h"
-#include "datum_types.h"
 #include "op_strings.h"
 #include <qdatetime.h>
 #include <qdebug.h>
@@ -36,7 +36,8 @@ void Runparser::runparseSpecialchars()
     {
         QChar c = *runparseCIter_;
         // there are some cases where special chars are combined
-        if (((retval == opLessThan()) && (c == '=')) || ((retval == opLessThan()) && (c == '>')) || ((retval == opGreaterThan()) && (c == '=')))
+        if (((retval == opLessThan()) && (c == '=')) || ((retval == opLessThan()) && (c == '>')) ||
+            ((retval == opGreaterThan()) && (c == '=')))
         {
             retval += c;
             ++runparseCIter_;
@@ -72,6 +73,26 @@ void Runparser::runparseString()
     runparseBuilder_->append(DatumPtr(retval, isRunparseSourceSpecial_));
 }
 
+static Word *minusTightWord()
+{
+    static Word *word = [] {
+        auto *created = new Word(opDoubleMinus());
+        created->isa_ = Datum::typePersistentWord;
+        return created;
+    }();
+    return word;
+}
+
+/// True for the canonical tight-minus token, or for |--| which names that operator.
+static bool isMinusTight(Word *word)
+{
+    if (word == minusTightWord())
+        return true;
+    if (!word->isForeverSpecial)
+        return false;
+    return word->toString(Datum::ToStringFlags_Raw) == opDoubleMinus();
+}
+
 /// @brief Check if a minus sign at the start of a word should be treated as
 ///        a potential negative number or unary minus operator.
 /// @param c The current character (should be '-').
@@ -79,7 +100,10 @@ void Runparser::runparseString()
 /// @param wordBegin The beginning of the word being parsed.
 /// @param word The full word being parsed.
 /// @return True if we should attempt to parse a negative number or unary minus.
-static bool shouldParseMinusAtWordStart(QChar c, QString::iterator iter, QString::iterator wordBegin, const QString &word)
+static bool shouldParseMinusAtWordStart(QChar c,
+                                        QString::iterator iter,
+                                        QString::iterator wordBegin,
+                                        const QString &word)
 {
     // Only process minus signs
     if (c != '-')
@@ -118,16 +142,15 @@ DatumPtr Runparser::tryParseNegativeNumber()
 }
 
 /// @brief Parse a unary minus operator (MINUS function).
-/// @details This outputs "0" followed by "--" to represent the binary minus
-///          operation with highest precedence. The "--" operator will be handled by the treeifier as
-///          subtraction, so "0 -- x" effectively becomes "MINUS x".
+/// @details This outputs "0" followed by the canonical tight-minus word to represent
+///          subtraction at the highest precedence. The treeifier reads that word as
+///          subtraction, so "0 -- x" effectively becomes "MINUS x". A later runparse
+///          recognizes the same word and does not scan it again.
 /// @note This function advances the iterator past the minus sign.
 void Runparser::parseUnaryMinus()
 {
-    // Output "0" and "--" to represent unary minus
-    // The treeifier will interpret this as: 0 - x, which is equivalent to MINUS x
     runparseBuilder_->append(DatumPtr(opNumberZero()));
-    runparseBuilder_->append(DatumPtr(opDoubleMinus()));
+    runparseBuilder_->append(DatumPtr(minusTightWord()));
     ++runparseCIter_;
 }
 
@@ -334,8 +357,15 @@ DatumPtr Runparser::doRunparse(DatumPtr src)
         DatumPtr element = iter.element();
         if (element.isWord())
         {
-            QString oldWord = element.wordValue()->toString(Datum::ToStringFlags_Raw);
-            isRunparseSourceSpecial_ = element.wordValue()->isForeverSpecial;
+            Word *word = element.wordValue();
+            if (isMinusTight(word))
+            {
+                runparseBuilder_->append(DatumPtr(minusTightWord()));
+                continue;
+            }
+
+            QString oldWord = word->toString(Datum::ToStringFlags_Raw);
+            isRunparseSourceSpecial_ = word->isForeverSpecial;
 
             runparseCIter_ = oldWord.begin();
             runparseCEnd_ = oldWord.end();
