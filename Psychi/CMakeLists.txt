@@ -60,6 +60,10 @@ target_link_libraries("${QLOGO_GUI}" PRIVATE
     Qt6::Sql
 )
 
+# qlogo opens the SQLite databases. Name the driver here so Qt's deploy tools
+# copy it into the Psychi bundle, where that qlogo binary can load it.
+qt_import_plugins("${QLOGO_GUI}" INCLUDE Qt6::QSQLiteDriverPlugin)
+
 if(APPLE)
   set_target_properties("${QLOGO_GUI}" PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER jason.qlogo.org
@@ -89,6 +93,7 @@ if(WIN32)
       "${WINDEPLOYQT_EXECUTABLE}"
       "$<IF:$<CONFIG:Debug>,--debug,--release>"
       --no-translations
+      --include-plugins qsqlite
       "$<TARGET_FILE:${QLOGO_GUI}>"
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
       "${QLOGO_CSLS_SRC}"

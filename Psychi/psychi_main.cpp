@@ -6,7 +6,6 @@
 
 #include "gui/mainwindow.h"
 #include <QApplication>
-#include <QSqlDatabase>
 
 int main(int argc, char *argv[])
 {
@@ -16,13 +15,4 @@ int main(int argc, char *argv[])
     w.show();
 
     return a.exec();
-}
-
-// This code isn't actually executed. It's to compel the linker to include the
-// SQL stuff for the qlogo binary into the MacOS bundle.
-// cppcheck-suppress unusedFunction
-void ignoreMe()
-{
-    auto driver = new QSqlDatabase();
-    delete driver;
 }
