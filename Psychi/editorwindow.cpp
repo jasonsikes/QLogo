@@ -31,10 +31,7 @@ EditorWindow::EditorWindow(QWidget *parent) : QMainWindow(parent), ui_(std::make
 {
     ui_->setupUi(this);
 
-    Qt::WindowFlags flags = windowFlags();
-    Qt::WindowFlags closeFlag = Qt::WindowCloseButtonHint;
-    flags = flags & (~closeFlag);
-    setWindowFlags(flags);
+    setWindowFlag(Qt::WindowCloseButtonHint, false);
 
     connect(ui_->acceptButton, &QPushButton::clicked, this, &EditorWindow::acceptChanges);
     connect(ui_->revertButton, &QPushButton::clicked, this, &EditorWindow::revertChanges);
