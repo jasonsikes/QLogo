@@ -65,6 +65,8 @@ class MainWindow : public QMainWindow
     bool hasShownCanvas_ = false;
     EditorWindow *editWindow_ = nullptr;
     QTimer *waitTimer_ = nullptr;
+    // A direct member, not a child of this window. Parenting it would destroy it twice.
+    QProcess logoProcess_;
 
     int startLogo();
     void beginReadRawlineWithPrompt(const QString &prompt);

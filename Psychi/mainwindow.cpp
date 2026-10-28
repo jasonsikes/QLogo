@@ -40,9 +40,6 @@
 #include <windows.h>
 #endif
 
-/// @brief a pointer to the qlogo process.
-static QProcess *logoProcess;
-
 QProcess *ProcessMessageWriter::process_ = nullptr;
 
 qint64 ProcessMessageWriter::write(const QByteArray &buffer)
@@ -59,6 +56,7 @@ void sendMessage(message_t header, const Args &...args)
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainWindow)
 {
+    ProcessMessageWriter::process_ = &logoProcess_;
     ui_->setupUi(this);
 
     windowMode_ = windowMode_noWait;
@@ -77,6 +75,7 @@ void MainWindow::show()
 
 MainWindow::~MainWindow()
 {
+    ProcessMessageWriter::process_ = nullptr;
     delete ui_;
 }
 
@@ -115,20 +114,19 @@ int MainWindow::startLogo()
     QStringList arguments;
     arguments << "--Psychi";
 
-    logoProcess = new QProcess(this);
-    ProcessMessageWriter::process_ = logoProcess;
-
 #ifdef Q_OS_WIN
-    logoProcess->setCreateProcessArgumentsModifier(
+    logoProcess_.setCreateProcessArgumentsModifier(
         [](QProcess::CreateProcessArguments *args) { args->flags |= CREATE_NO_WINDOW; });
 #endif
 
-    connect(
-        logoProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &MainWindow::processFinished);
+    connect(&logoProcess_,
+            QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            this,
+            &MainWindow::processFinished);
 
-    connect(logoProcess, &QProcess::readyReadStandardOutput, this, &MainWindow::readStandardOutput);
+    connect(&logoProcess_, &QProcess::readyReadStandardOutput, this, &MainWindow::readStandardOutput);
 
-    connect(logoProcess, &QProcess::readyReadStandardError, this, &MainWindow::readStandardError);
+    connect(&logoProcess_, &QProcess::readyReadStandardError, this, &MainWindow::readStandardError);
 
     connect(ui_->mainConsole, &Console::sendRawlineSignal, this, &MainWindow::sendRawlineSlot);
 
@@ -142,20 +140,20 @@ int MainWindow::startLogo()
 
     connect(ui_->mainCanvas, &Canvas::sendMouseReleasedSignal, this, &MainWindow::mousereleasedSlot);
 
-    logoProcess->start(command, arguments);
+    logoProcess_.start(command, arguments);
     return 0;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    qint64 pid = logoProcess->processId();
+    qint64 pid = logoProcess_.processId();
     // Tell the process to die, then ignore.
     // Because when the process dies another signal will be sent to close the application.
     if (pid > 0)
     {
         sendMessage(S_SYSTEM);
 
-        logoProcess->closeWriteChannel();
+        logoProcess_.closeWriteChannel();
 
         event->ignore();
     }
@@ -206,7 +204,7 @@ message_t interruptKindForKey(const QKeyEvent *keyEvent, bool copyHasSelection)
 
 bool MainWindow::maybeSendInterrupt(QKeyEvent *keyEvent)
 {
-    if (logoProcess == nullptr || logoProcess->processId() <= 0)
+    if (logoProcess_.processId() <= 0)
         return false;
 
     const bool copyHasSelection = ui_->mainConsole->textCursor().hasSelection();
@@ -222,7 +220,7 @@ bool MainWindow::maybeSendKeyEvent(QKeyEvent *keyEvent)
 {
     if (windowMode_ != windowMode_noWait)
         return false;
-    if (logoProcess == nullptr || logoProcess->processId() <= 0)
+    if (logoProcess_.processId() <= 0)
         return false;
     const QString text = keyEvent->text();
     if (text.isEmpty())
@@ -355,17 +353,17 @@ void MainWindow::readStandardOutput()
         // and we can start a new one.
         if (readBuffer_.size() == readBufferLen_)
         {
-            int readResult = logoProcess->read(reinterpret_cast<char *>(&datalen), sizeof(qint64));
+            int readResult = logoProcess_.read(reinterpret_cast<char *>(&datalen), sizeof(qint64));
             if (readResult != sizeof(qint64))
                 return;
             readBufferLen_ = datalen;
-            readBuffer_ = logoProcess->read(readBufferLen_);
+            readBuffer_ = logoProcess_.read(readBufferLen_);
         }
         else
         {
             // We are appending the incoming message to the buffer.
             qint64 remain = readBufferLen_ - readBuffer_.size();
-            QByteArray post = logoProcess->read(remain);
+            QByteArray post = logoProcess_.read(remain);
             Q_ASSERT(!post.isEmpty());
             readBuffer_.append(post);
         }
@@ -400,9 +398,9 @@ struct MessageDispatch
         window.initialize();
     }
 
-    static void closePipe(MainWindow &, QDataStream &)
+    static void closePipe(MainWindow &window, QDataStream &)
     {
-        logoProcess->closeWriteChannel();
+        window.logoProcess_.closeWriteChannel();
     }
 
     static void setScreenMode(MainWindow &window, QDataStream &stream)
@@ -746,7 +744,7 @@ void MainWindow::setSplitterforMode(ScreenModeEnum mode)
 
 void MainWindow::readStandardError()
 {
-    QByteArray ary = logoProcess->readAllStandardError();
+    QByteArray ary = logoProcess_.readAllStandardError();
     qInfo() << "stderr: " << QString(ary);
 }
 
