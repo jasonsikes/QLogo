@@ -41,6 +41,8 @@ class EditorWindow : public QMainWindow
     bool eventFilter(QObject *watched, QEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
     void finish(bool accepted);
+    void acceptChanges();
+    void revertChanges();
 
   public:
     /// @brief Constructor.
@@ -75,18 +77,6 @@ class EditorWindow : public QMainWindow
     /// @param accepted True if the user saved, false if they reverted or closed.
     /// @param text The edited text if saved; empty if reverted.
     void editingHasEndedSignal(bool accepted, const QString &text);
-
-  public slots:
-
-    /// @brief Accept the changes.
-    ///
-    /// This function is called when the user accepts the changes to the text.
-    void acceptChanges();
-
-    /// @brief Revert the changes.
-    ///
-    /// This function is called when the user cancels the editing.
-    void revertChanges();
 };
 
 #endif // EDITORWINDOW_H
