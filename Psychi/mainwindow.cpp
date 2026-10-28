@@ -54,7 +54,7 @@ void sendMessage(message_t header, const Args &...args)
     (msg << ... << args);
 }
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(std::make_unique<Ui::MainWindow>())
 {
     ProcessMessageWriter::process_ = &logoProcess_;
     ui_->setupUi(this);
@@ -73,11 +73,7 @@ void MainWindow::show()
     startLogo();
 }
 
-MainWindow::~MainWindow()
-{
-    ProcessMessageWriter::process_ = nullptr;
-    delete ui_;
-}
+MainWindow::~MainWindow() = default;
 
 QString MainWindow::findQlogoExe()
 {
@@ -307,7 +303,7 @@ void MainWindow::openEditorWindow(const QString &title, const QString &startingT
 {
     if (editWindow_ == nullptr)
     {
-        editWindow_ = new EditorWindow;
+        editWindow_ = new EditorWindow(this);
 
         connect(editWindow_, &EditorWindow::editingHasEndedSignal, this, &MainWindow::editingHasEndedSlot);
     }

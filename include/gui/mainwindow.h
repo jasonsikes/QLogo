@@ -23,6 +23,7 @@
 #include <QMainWindow>
 #include <QProcess>
 #include <QTimer>
+#include <memory>
 
 class Canvas;
 class Console;
@@ -56,7 +57,7 @@ class MainWindow : public QMainWindow
         windowMode_waitForRawline,
     };
 
-    Ui::MainWindow *ui_;
+    std::unique_ptr<Ui::MainWindow> ui_;
 
     QByteArray readBuffer_;
     qint64 readBufferLen_ = 0;
@@ -67,6 +68,15 @@ class MainWindow : public QMainWindow
     QTimer *waitTimer_ = nullptr;
     // A direct member, not a child of this window. Parenting it would destroy it twice.
     QProcess logoProcess_;
+    // Declared last so it is destroyed first and the writer pointer does not outlive logoProcess_.
+    struct ClearProcessPointer
+    {
+        ~ClearProcessPointer()
+        {
+            ProcessMessageWriter::process_ = nullptr;
+        }
+    };
+    ClearProcessPointer clearProcessPointer_;
 
     int startLogo();
     void beginReadRawlineWithPrompt(const QString &prompt);

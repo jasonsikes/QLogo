@@ -19,6 +19,7 @@
 
 #include <QMainWindow>
 #include <QTextCharFormat>
+#include <memory>
 
 class QCloseEvent;
 
@@ -35,7 +36,7 @@ class EditorWindow : public QMainWindow
 {
     Q_OBJECT
 
-    Ui::EditorWindow *ui_;
+    std::unique_ptr<Ui::EditorWindow> ui_;
     bool ended_ = false;
     bool eventFilter(QObject *watched, QEvent *event) override;
     void closeEvent(QCloseEvent *event) override;

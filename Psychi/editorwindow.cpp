@@ -27,7 +27,7 @@ const QKeySequence::StandardKey revertChangesKey = QKeySequence::Close;
 /// @brief The key sequence for saving changes.
 const QKeySequence::StandardKey saveChangesKey = QKeySequence::Save;
 
-EditorWindow::EditorWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::EditorWindow)
+EditorWindow::EditorWindow(QWidget *parent) : QMainWindow(parent), ui_(std::make_unique<Ui::EditorWindow>())
 {
     ui_->setupUi(this);
 
@@ -41,10 +41,7 @@ EditorWindow::EditorWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::E
     ui_->plainTextEdit->installEventFilter(this);
 }
 
-EditorWindow::~EditorWindow()
-{
-    delete ui_;
-}
+EditorWindow::~EditorWindow() = default;
 
 void EditorWindow::setContents(const QString &startingText)
 {
