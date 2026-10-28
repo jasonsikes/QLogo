@@ -493,7 +493,7 @@ void Canvas::updateMatrix()
 {
     // Set coordinate system so that background box fits in widget and fills
     // without stretching.
-    qreal widgetHWRatio = (qreal)height() / (qreal)width();
+    qreal widgetHWRatio = static_cast<qreal>(height()) / static_cast<qreal>(width());
     qreal boundsHWRatio = boundsY_ / boundsX_;
     qreal hwRatio;
     if (widgetHWRatio > boundsHWRatio)

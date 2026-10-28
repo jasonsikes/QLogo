@@ -276,7 +276,7 @@ void MainWindow::initialize()
     ui_->mainCanvas->setLabelFontName(family);
     setSplitterforMode(initScreenMode);
 
-    sendMessage(W_INITIALIZE, QFontDatabase::families(), family, (double)pointSize);
+    sendMessage(W_INITIALIZE, QFontDatabase::families(), family, static_cast<double>(pointSize));
 }
 
 void MainWindow::fileDialogModal()
@@ -715,7 +715,7 @@ void MainWindow::processReadBuffer()
 
 void MainWindow::setSplitterforMode(ScreenModeEnum mode)
 {
-    float canvasSize, consoleSize;
+    float canvasSize = 0;
     switch (mode)
     {
     case initScreenMode:
@@ -734,8 +734,8 @@ void MainWindow::setSplitterforMode(ScreenModeEnum mode)
     QList<int> sizes = ui_->splitter->sizes();
     float splitterSize = sizes[0] + sizes[1];
     canvasSize = canvasSize * splitterSize;
-    consoleSize = splitterSize - canvasSize;
-    ui_->splitter->setSizes(QList<int>() << (int)canvasSize << (int)consoleSize);
+    const float consoleSize = splitterSize - canvasSize;
+    ui_->splitter->setSizes({qRound(canvasSize), qRound(consoleSize)});
 }
 
 void MainWindow::readStandardError()
