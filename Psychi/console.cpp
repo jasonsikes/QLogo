@@ -89,16 +89,14 @@ void Console::standout()
 void Console::printString(const QString &text)
 {
     // Because STANDOUT requires characters added to strings, we have to
-    // handle them here.
-    QStringList stringList = text.split(Config::get().escapeChar_);
-    for (auto i = stringList.begin(); i != stringList.end(); ++i)
+    // handle them here. The escape character toggles standout between pieces.
+    bool betweenPieces = false;
+    for (const QString &piece : text.split(Config::get().escapeChar_))
     {
-
-        if (i != stringList.begin())
-        {
+        if (betweenPieces)
             standout();
-        }
-        writeTextFragment(*i);
+        betweenPieces = true;
+        writeTextFragment(piece);
     }
     ensureCursorVisible();
 }
