@@ -17,15 +17,13 @@
 
 #include "gui/console.h"
 #include "sharedconstants.h"
-#include <QDebug>
 #include <QFontDatabase>
 #include <QKeyEvent>
-#include <QMenu>
 #include <QMimeData>
 #include <QTextBlock>
 
 Console::Console(QWidget *parent)
-    : QTextEdit(parent), consoleMode_(consoleModeNoWait), beginningOfRawline_(0),
+    : QTextEdit(parent), consoleMode_(consoleMode_t::consoleModeNoWait), beginningOfRawline_(0),
       lineInputHistoryScrollingCurrentIndex_(0)
 {
     textFormat_.setForeground(QBrush(QWidget::palette().color(QPalette::Text)));
@@ -129,7 +127,7 @@ void Console::setTextFontColor(QColor foreground, QColor background)
 
 void Console::requestRawlineWithPrompt(const QString &prompt)
 {
-    consoleMode_ = consoleModeWaitingForRawline;
+    consoleMode_ = consoleMode_t::consoleModeWaitingForRawline;
     moveCursor(QTextCursor::End);
     printString(prompt);
     beginningOfRawline_ = textCursor().position();
@@ -146,7 +144,7 @@ void Console::requestRawlineWithPrompt(const QString &prompt)
 
 void Console::requestChar()
 {
-    consoleMode_ = consoleModeWaitingForChar;
+    consoleMode_ = consoleMode_t::consoleModeWaitingForChar;
 
     insertNextCharFromQueue();
 }
@@ -203,10 +201,10 @@ void Console::keyPressEvent(QKeyEvent *event)
     // filter so they reach qlogo as S_TOPLEVEL, S_PAUSE, or S_SYSTEM.
     switch (consoleMode_)
     {
-    case consoleModeWaitingForRawline:
+    case consoleMode_t::consoleModeWaitingForRawline:
         processLineModeKeyPressEvent(event);
         break;
-    case consoleModeWaitingForChar:
+    case consoleMode_t::consoleModeWaitingForChar:
         processCharModeKeyPressEvent(event);
         break;
     default:
@@ -219,7 +217,7 @@ void Console::processCharModeKeyPressEvent(QKeyEvent *event)
     QString t = event->text();
     if (t.length() > 0)
     {
-        consoleMode_ = consoleModeNoWait;
+        consoleMode_ = consoleMode_t::consoleModeNoWait;
         if (t.length() > 1)
         {
             keyQueue_.push_back(t.sliced(1));
@@ -323,7 +321,7 @@ void Console::processLineModeKeyPressEvent(QKeyEvent *event)
     // Send the raw line to the interpreter
     if (event->matches(QKeySequence::InsertLineSeparator) || event->matches(QKeySequence::InsertParagraphSeparator))
     {
-        consoleMode_ = consoleModeNoWait;
+        consoleMode_ = consoleMode_t::consoleModeNoWait;
         QString block = tc.block().text();
         QString line = block.right(block.size() - beginningOfRawlineInBlock);
         QTextCursor endCursor = textCursor();
@@ -393,7 +391,7 @@ void Console::insertNextLineFromQueue()
         ensureCursorVisible();
         if (!keyQueue_.isEmpty() && keyQueue_[0] == u'\n')
         {
-            consoleMode_ = consoleModeNoWait;
+            consoleMode_ = consoleMode_t::consoleModeNoWait;
             QString block = document()->lastBlock().text();
             QString line = block.right(block.size() - beginningOfRawlineInBlock);
             tc.movePosition(QTextCursor::End);
@@ -409,7 +407,7 @@ void Console::insertNextCharFromQueue()
 {
     if (!keyQueue_.isEmpty())
     {
-        consoleMode_ = consoleModeNoWait;
+        consoleMode_ = consoleMode_t::consoleModeNoWait;
         QChar c = keyQueue_[0];
         keyQueue_ = keyQueue_.sliced(1);
         emit sendCharSignal(c);

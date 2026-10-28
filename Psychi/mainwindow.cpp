@@ -29,9 +29,7 @@
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QMessageBox>
-#include <QScrollBar>
 #include <QTextCursor>
-#include <QThread>
 #include <QTimer>
 #include <array>
 #include <limits>
@@ -59,7 +57,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(std::make_uni
     ProcessMessageWriter::process_ = &logoProcess_;
     ui_->setupUi(this);
 
-    windowMode_ = windowMode_noWait;
+    windowMode_ = windowMode_t::windowMode_noWait;
 
     ui_->mainConsole->installEventFilter(this);
     ui_->mainCanvas->installEventFilter(this);
@@ -214,7 +212,7 @@ bool MainWindow::maybeSendInterrupt(QKeyEvent *keyEvent)
 
 bool MainWindow::maybeSendKeyEvent(QKeyEvent *keyEvent)
 {
-    if (windowMode_ != windowMode_noWait)
+    if (windowMode_ != windowMode_t::windowMode_noWait)
         return false;
     if (logoProcess_.processId() <= 0)
         return false;
@@ -746,13 +744,13 @@ void MainWindow::readStandardError()
 
 void MainWindow::beginReadRawlineWithPrompt(const QString &prompt)
 {
-    windowMode_ = windowMode_waitForRawline;
+    windowMode_ = windowMode_t::windowMode_waitForRawline;
     ui_->mainConsole->requestRawlineWithPrompt(prompt);
 }
 
 void MainWindow::beginReadChar()
 {
-    windowMode_ = windowMode_waitForChar;
+    windowMode_ = windowMode_t::windowMode_waitForChar;
     ui_->mainConsole->requestChar();
 }
 
@@ -773,13 +771,13 @@ void MainWindow::mousereleasedSlot()
 
 void MainWindow::sendCharSlot(QChar c)
 {
-    windowMode_ = windowMode_noWait;
+    windowMode_ = windowMode_t::windowMode_noWait;
     sendMessage(C_CONSOLE_CHAR_READ, c);
 }
 
 void MainWindow::sendRawlineSlot(const QString &line)
 {
-    windowMode_ = windowMode_noWait;
+    windowMode_ = windowMode_t::windowMode_noWait;
     sendMessage(C_CONSOLE_RAWLINE_READ, line);
 }
 

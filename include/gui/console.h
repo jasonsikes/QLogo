@@ -25,7 +25,7 @@ class Console : public QTextEdit
     Q_OBJECT
 
   protected:
-    enum consoleMode_t
+    enum class consoleMode_t
     {
         consoleModeNoWait,
         consoleModeWaitingForChar,

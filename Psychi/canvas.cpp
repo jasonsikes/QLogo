@@ -232,7 +232,7 @@ const QColor &Canvas::colorForCurrentPenmode()
 
 void Canvas::setLabelFontName(const QString &name)
 {
-    labelFont_.setFamily(name);
+    labelFont_.setFamilies(QStringList(name));
 }
 
 void Canvas::setLabelFontSize(qreal aSize)

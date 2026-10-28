@@ -50,7 +50,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-    enum windowMode_t
+    enum class windowMode_t
     {
         windowMode_noWait,
         windowMode_waitForChar,
