@@ -222,7 +222,7 @@ void Console::processCharModeKeyPressEvent(QKeyEvent *event)
         consoleMode_ = consoleModeNoWait;
         if (t.length() > 1)
         {
-            keyQueue_.push_back(t.right(t.length() - 1));
+            keyQueue_.push_back(t.sliced(1));
         }
         emit sendCharSignal(t[0]);
     }
@@ -379,19 +379,19 @@ void Console::replaceLineWithHistoryIndex(int newIndex)
 
 void Console::insertNextLineFromQueue()
 {
-    if (keyQueue_.size() > 0)
+    if (!keyQueue_.isEmpty())
     {
-        int loc = keyQueue_.indexOf("\n");
+        qsizetype loc = keyQueue_.indexOf(u'\n');
         if (loc < 0)
             loc = keyQueue_.size();
 
         QTextCursor tc = textCursor();
         tc.movePosition(QTextCursor::End);
-        tc.insertText(keyQueue_.left(loc));
+        tc.insertText(keyQueue_.sliced(0, loc));
         setTextCursor(tc);
-        keyQueue_ = keyQueue_.right(keyQueue_.size() - loc);
+        keyQueue_ = keyQueue_.sliced(loc);
         ensureCursorVisible();
-        if ((keyQueue_.size() > 0) && (keyQueue_[0] == '\n'))
+        if (!keyQueue_.isEmpty() && keyQueue_[0] == u'\n')
         {
             consoleMode_ = consoleModeNoWait;
             QString block = document()->lastBlock().text();
@@ -399,7 +399,7 @@ void Console::insertNextLineFromQueue()
             tc.movePosition(QTextCursor::End);
             tc.insertBlock();
             setTextCursor(tc);
-            keyQueue_ = keyQueue_.right(keyQueue_.size() - 1);
+            keyQueue_ = keyQueue_.sliced(1);
             commitRawline(line);
         }
     }
@@ -407,11 +407,11 @@ void Console::insertNextLineFromQueue()
 
 void Console::insertNextCharFromQueue()
 {
-    if (keyQueue_.size() > 0)
+    if (!keyQueue_.isEmpty())
     {
         consoleMode_ = consoleModeNoWait;
         QChar c = keyQueue_[0];
-        keyQueue_ = keyQueue_.right(keyQueue_.size() - 1);
+        keyQueue_ = keyQueue_.sliced(1);
         emit sendCharSignal(c);
     }
 }
