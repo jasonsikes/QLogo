@@ -21,6 +21,17 @@
 #include <QMouseEvent>
 #include <QSvgGenerator>
 
+namespace
+{
+template <class... Ts>
+struct Overload : Ts...
+{
+    using Ts::operator()...;
+};
+template <class... Ts>
+Overload(Ts...) -> Overload<Ts...>;
+} // namespace
+
 Arc::Arc(QPointF center, qreal a, qreal span, qreal radiusX, qreal radiusY)
 {
     rectangle_ = QRectF(center.x() - radiusX, center.y() - radiusY, radiusX * 2, radiusY * 2);
@@ -47,7 +58,7 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent)
 
 void Canvas::initDrawingElementList()
 {
-    drawingElementList_.push_back({DrawingElementIDTurtle, DrawingElementVariant(currentWriteInfo_)});
+    drawingElementList_.emplace_back(currentWriteInfo_);
     if (penIsDown_)
         lineGroup_.push_back(pointFromTurtle());
 }
@@ -101,7 +112,7 @@ void Canvas::pushLineGroup()
 {
     if (lineGroup_.size() > 1)
     {
-        drawingElementList_.push_back({DrawingElementIDPolyline, DrawingElementVariant(lineGroup_)});
+        drawingElementList_.emplace_back(lineGroup_);
         lineGroup_.clear();
         if (penIsDown_)
             lineGroup_.push_back(pointFromTurtle());
@@ -127,19 +138,13 @@ void Canvas::setScrunch(qreal x, qreal y)
 
 void Canvas::setLastWriteInfo()
 {
-    Q_ASSERT(drawingElementList_.size() > 0);
-    int lastElementID = drawingElementList_.last().elementID_;
+    Q_ASSERT(!drawingElementList_.isEmpty());
     // If the last drawing element is not a TurtleWriteInfo, then create it and
     // push it onto the list.
-    if (lastElementID != DrawingElementIDTurtle)
-    {
-        drawingElementList_.push_back({DrawingElementIDTurtle, DrawingElementVariant(currentWriteInfo_)});
-    }
+    if (!std::holds_alternative<TurtleWriteInfo>(drawingElementList_.last()))
+        drawingElementList_.emplace_back(currentWriteInfo_);
     else
-    {
-        // replace the drawing element at the end of the list.
-        std::get<TurtleWriteInfo>(drawingElementList_.last().element_) = currentWriteInfo_;
-    }
+        std::get<TurtleWriteInfo>(drawingElementList_.last()) = currentWriteInfo_;
 }
 
 void Canvas::setPenIsDown(bool aPenIsDown)
@@ -246,7 +251,7 @@ void Canvas::addLabel(const QString &aText)
         drawnFont.setPointSizeF(logicalSize * qAbs(scrunchY_));
     Label l(aText, QPointF(turtleMatrix_.dx(), (logicalSize * -2) - turtleMatrix_.dy()), drawnFont);
     pushLineGroup();
-    drawingElementList_.push_back({DrawingElementIDLabel, DrawingElementVariant(l)});
+    drawingElementList_.emplace_back(l);
     update();
 }
 
@@ -268,7 +273,7 @@ void Canvas::addArc(qreal angle, qreal radius)
 
     Arc arc(pointFromTurtle(), a, angle, radius * scrunchX_, radius * scrunchY_);
     pushLineGroup();
-    drawingElementList_.push_back({DrawingElementIDArc, DrawingElementVariant(arc)});
+    drawingElementList_.emplace_back(arc);
     update();
 }
 
@@ -374,28 +379,16 @@ void Canvas::drawCanvas()
 
     elementListDrawBackgroundImage();
 
-    for (auto &drawCommand : drawingElementList_)
+    for (const auto &drawCommand : drawingElementList_)
     {
-        switch (drawCommand.elementID_)
-        {
-        case DrawingElementIDLabel:
-            elementListDrawLabel(std::get<Label>(drawCommand.element_));
-            break;
-        case DrawingElementIDTurtle:
-            elementListSetWriteInfo(std::get<TurtleWriteInfo>(drawCommand.element_));
-            break;
-        case DrawingElementIDPolyline:
-            elementListDrawPolyline(std::get<QPolygonF>(drawCommand.element_));
-            break;
-        case DrawingElementIDPolygon:
-            elementListDrawPolygon(std::get<Polygon>(drawCommand.element_));
-            break;
-        case DrawingElementIDArc:
-            elementListDrawArc(std::get<Arc>(drawCommand.element_));
-            break;
-        default:
-            Q_ASSERT(false);
-        }
+        std::visit(Overload{
+                       [this](const Label &label) { elementListDrawLabel(label); },
+                       [this](const TurtleWriteInfo &info) { elementListSetWriteInfo(info); },
+                       [this](const QPolygonF &polyline) { elementListDrawPolyline(polyline); },
+                       [this](const Polygon &polygon) { elementListDrawPolygon(polygon); },
+                       [this](const Arc &arc) { elementListDrawArc(arc); },
+                   },
+                   drawCommand);
     }
 
     // Draw the in-progress line group.
@@ -545,8 +538,7 @@ void Canvas::endPolygon()
     if (polygonGroup_.size() >= 3)
     {
         pushLineGroup();
-        drawingElementList_.push_back(
-            {DrawingElementIDPolygon, DrawingElementVariant(Polygon({polygonColor_, polygonGroup_}))});
+        drawingElementList_.emplace_back(Polygon{polygonColor_, polygonGroup_});
     }
     polygonGroup_.clear();
     isConstructingPolygon_ = false;

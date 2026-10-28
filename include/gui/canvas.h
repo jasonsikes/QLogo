@@ -23,6 +23,7 @@
 #include <QStaticText>
 #include <QVariant>
 #include <QWidget>
+#include <variant>
 
 class MainWindow;
 
@@ -37,7 +38,8 @@ struct Label
     /// @param aText The text to display.
     /// @param aPosition The position to display the text.
     /// @param aFont The font to use for the text.
-    Label(const QString &aText, QPointF aPosition, const QFont &aFont) : text_(aText), position_(aPosition), font_(aFont)
+    Label(const QString &aText, QPointF aPosition, const QFont &aFont)
+        : text_(aText), position_(aPosition), font_(aFont)
     {
     }
 };
@@ -81,23 +83,6 @@ struct Arc
 /// - Arc - An arc.
 using DrawingElementVariant = std::variant<Label, Polygon, TurtleWriteInfo, QPolygonF, Arc>;
 
-/// @brief An ID for each type of drawing element.
-enum DrawingElementID
-{
-    DrawingElementIDLabel,
-    DrawingElementIDPolygon,
-    DrawingElementIDTurtle,
-    DrawingElementIDPolyline,
-    DrawingElementIDArc
-};
-
-/// The variant structure for the individual drawing elements.
-struct DrawingElement
-{
-    DrawingElementID elementID_;
-    DrawingElementVariant element_;
-};
-
 /// @brief The canvas widget, the main widget for the turtle graphics.
 ///
 /// This widget is responsible for drawing the turtle and the elements that the
@@ -134,7 +119,7 @@ class Canvas : public QWidget
     bool penIsDown_ = true;
 
     // The main data structure for all of the drawn elements on the canvas.
-    QList<DrawingElement> drawingElementList_;
+    QList<DrawingElementVariant> drawingElementList_;
 
     // The currently-constructing line sequence.
     QPolygonF lineGroup_;
@@ -273,8 +258,7 @@ class Canvas : public QWidget
     /// @param dashPattern Dash lengths used only when style is Qt::CustomDashLine.
     ///        An odd-length list is accepted; the first length is reused as the
     ///        missing gap when the pattern repeats.
-    void setPenPattern(Qt::PenStyle style, Qt::PenCapStyle cap, Qt::PenJoinStyle join,
-                       const QList<qreal> &dashPattern);
+    void setPenPattern(Qt::PenStyle style, Qt::PenCapStyle cap, Qt::PenJoinStyle join, const QList<qreal> &dashPattern);
 
     /// @brief Set the background color.
     ///
