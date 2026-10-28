@@ -28,6 +28,7 @@ class Canvas;
 class Console;
 class EditorWindow;
 class QKeyEvent;
+struct MessageDispatch;
 
 namespace Ui
 {
@@ -86,6 +87,8 @@ class MainWindow : public QMainWindow
     void startWaitTimer(qint32 msecs);
 
     void processReadBuffer();
+
+    friend struct MessageDispatch;
 
   protected:
     void closeEvent(QCloseEvent *event) override;

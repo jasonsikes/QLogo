@@ -33,6 +33,8 @@
 #include <QTextCursor>
 #include <QThread>
 #include <QTimer>
+#include <array>
+#include <limits>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -373,277 +375,343 @@ void MainWindow::readStandardOutput()
     }
 }
 
-void MainWindow::processReadBuffer()
+/// @brief Inbound pipe handlers, indexed by message_t.
+///
+/// Slots with no handler are messages Psychi sends, or codes it does not know.
+struct MessageDispatch
 {
-    QDataStream dataStream = QDataStream(readBuffer_);
-    message_t header;
+    using Handler = void (*)(MainWindow &window, QDataStream &stream);
 
-    dataStream >> header;
+    static constexpr std::size_t count = static_cast<std::size_t>(std::numeric_limits<message_t>::max()) + 1;
 
-    switch (header)
+    static void zero(MainWindow &, QDataStream &)
     {
-    case W_ZERO:
         // This only exists to help catch errors.
         qInfo() << "Zero!";
-        break;
-    case W_INITIALIZE:
-    {
-        initialize();
-        break;
     }
-    case W_CLOSE_PIPE:
+
+    static void initialize(MainWindow &window, QDataStream &)
+    {
+        window.initialize();
+    }
+
+    static void closePipe(MainWindow &, QDataStream &)
     {
         logoProcess->closeWriteChannel();
-        break;
     }
-    case W_SET_SCREENMODE:
+
+    static void setScreenMode(MainWindow &window, QDataStream &stream)
     {
         ScreenModeEnum newMode;
-        dataStream >> newMode;
-        setSplitterforMode(newMode);
-        break;
+        stream >> newMode;
+        window.setSplitterforMode(newMode);
     }
-    case W_FILE_DIALOG_GET_PATH:
+
+    static void fileDialog(MainWindow &window, QDataStream &)
     {
-        fileDialogModal();
-        break;
+        window.fileDialogModal();
     }
-    case W_TIMER_START:
+
+    static void timerStart(MainWindow &window, QDataStream &stream)
     {
         qint32 msecs;
-        dataStream >> msecs;
-        startWaitTimer(msecs);
-        break;
+        stream >> msecs;
+        window.startWaitTimer(msecs);
     }
-    case C_CONSOLE_PRINT_STRING:
+
+    static void printString(MainWindow &window, QDataStream &stream)
     {
         QString text;
-        dataStream >> text;
-        ui_->mainConsole->printString(text);
-        break;
+        stream >> text;
+        window.ui_->mainConsole->printString(text);
     }
-    case C_CONSOLE_SET_FONT_NAME:
+
+    static void setConsoleFontName(MainWindow &window, QDataStream &stream)
     {
         QString name;
-        dataStream >> name;
-        ui_->mainConsole->setTextFontName(name);
-        break;
+        stream >> name;
+        window.ui_->mainConsole->setTextFontName(name);
     }
-    case C_CONSOLE_SET_FONT_SIZE:
+
+    static void setConsoleFontSize(MainWindow &window, QDataStream &stream)
     {
         qreal aSize;
-        dataStream >> aSize;
-        ui_->mainConsole->setTextFontSize(aSize);
-        break;
+        stream >> aSize;
+        window.ui_->mainConsole->setTextFontSize(aSize);
     }
-    case C_CONSOLE_REQUEST_LINE:
+
+    static void requestLine(MainWindow &window, QDataStream &stream)
     {
         QString prompt;
-        dataStream >> prompt;
-        beginReadRawlineWithPrompt(prompt);
-        break;
+        stream >> prompt;
+        window.beginReadRawlineWithPrompt(prompt);
     }
-    case C_CONSOLE_REQUEST_CHAR:
-        beginReadChar();
-        break;
-    case C_CONSOLE_BEGIN_EDIT_TEXT:
+
+    static void requestChar(MainWindow &window, QDataStream &)
+    {
+        window.beginReadChar();
+    }
+
+    static void beginEditText(MainWindow &window, QDataStream &stream)
     {
         QString title;
         QString startingText;
-        dataStream >> title >> startingText;
-        openEditorWindow(title, startingText);
-        break;
+        stream >> title >> startingText;
+        window.openEditorWindow(title, startingText);
     }
-    case C_CONSOLE_TEXT_CURSOR_POS:
+
+    static void textCursorPos(MainWindow &window, QDataStream &)
     {
-        sendConsoleCursorPosition();
-        break;
+        window.sendConsoleCursorPosition();
     }
-    case C_CONSOLE_SET_TEXT_CURSOR_POS:
+
+    static void setTextCursorPos(MainWindow &window, QDataStream &stream)
     {
         int row, col;
-        dataStream >> row >> col;
-        ui_->mainConsole->setTextCursorPosition(row, col);
-        break;
+        stream >> row >> col;
+        window.ui_->mainConsole->setTextCursorPosition(row, col);
     }
-    case C_CONSOLE_SET_CURSOR_MODE:
+
+    static void setCursorMode(MainWindow &window, QDataStream &stream)
     {
         bool mode;
-        dataStream >> mode;
-        ui_->mainConsole->setOverwriteMode(mode);
-        break;
+        stream >> mode;
+        window.ui_->mainConsole->setOverwriteMode(mode);
     }
-    case C_CONSOLE_SET_TEXT_COLOR:
+
+    static void setTextColor(MainWindow &window, QDataStream &stream)
     {
         QColor foreground;
         QColor background;
-        dataStream >> foreground >> background;
-        ui_->mainConsole->setTextFontColor(foreground, background);
-        break;
+        stream >> foreground >> background;
+        window.ui_->mainConsole->setTextFontColor(foreground, background);
     }
-    case C_CONSOLE_CLEAR_SCREEN_TEXT:
-        ui_->mainConsole->setPlainText("");
-        break;
-    case C_CANVAS_UPDATE_TURTLE_POS:
+
+    static void clearScreenText(MainWindow &window, QDataStream &)
+    {
+        window.ui_->mainConsole->setPlainText("");
+    }
+
+    static void updateTurtlePos(MainWindow &window, QDataStream &stream)
     {
         QTransform matrix;
-        dataStream >> matrix;
-        ui_->mainCanvas->setTurtleMatrix(matrix);
-        introduceCanvas();
-        break;
+        stream >> matrix;
+        window.ui_->mainCanvas->setTurtleMatrix(matrix);
+        window.introduceCanvas();
     }
-    case C_CANVAS_SET_TURTLE_IS_VISIBLE:
+
+    static void setTurtleIsVisible(MainWindow &window, QDataStream &stream)
     {
         bool isVisible;
-        dataStream >> isVisible;
-        ui_->mainCanvas->setTurtleIsVisible(isVisible);
-        introduceCanvas();
-        break;
+        stream >> isVisible;
+        window.ui_->mainCanvas->setTurtleIsVisible(isVisible);
+        window.introduceCanvas();
     }
-    case C_CANVAS_EMIT_VERTEX:
+
+    static void emitVertex(MainWindow &window, QDataStream &)
     {
-        ui_->mainCanvas->emitVertex();
-        introduceCanvas();
-        break;
+        window.ui_->mainCanvas->emitVertex();
+        window.introduceCanvas();
     }
-    case C_CANVAS_SET_FOREGROUND_COLOR:
-    {
-        QColor color;
-        dataStream >> color;
-        ui_->mainCanvas->setForegroundColor(color);
-        introduceCanvas();
-        break;
-    }
-    case C_CANVAS_SET_BACKGROUND_COLOR:
+
+    static void setForegroundColor(MainWindow &window, QDataStream &stream)
     {
         QColor color;
-        dataStream >> color;
-        ui_->mainCanvas->setBackgroundColor(color);
-        introduceCanvas();
-        break;
+        stream >> color;
+        window.ui_->mainCanvas->setForegroundColor(color);
+        window.introduceCanvas();
     }
-    case C_CANVAS_SET_BACKGROUND_IMAGE:
+
+    static void setBackgroundColor(MainWindow &window, QDataStream &stream)
+    {
+        QColor color;
+        stream >> color;
+        window.ui_->mainCanvas->setBackgroundColor(color);
+        window.introduceCanvas();
+    }
+
+    static void setBackgroundImage(MainWindow &window, QDataStream &stream)
     {
         QImage image;
-        dataStream >> image;
-        ui_->mainCanvas->setBackgroundImage(image);
-        introduceCanvas();
-        break;
+        stream >> image;
+        window.ui_->mainCanvas->setBackgroundImage(image);
+        window.introduceCanvas();
     }
-    case C_CANVAS_BEGIN_POLYGON:
+
+    static void beginPolygon(MainWindow &window, QDataStream &stream)
     {
         QColor color;
-        dataStream >> color;
-        ui_->mainCanvas->beginPolygon(color);
-        break;
+        stream >> color;
+        window.ui_->mainCanvas->beginPolygon(color);
     }
-    case C_CANVAS_END_POLYGON:
+
+    static void endPolygon(MainWindow &window, QDataStream &)
     {
-        ui_->mainCanvas->endPolygon();
-        break;
+        window.ui_->mainCanvas->endPolygon();
     }
-    case C_CANVAS_CLEAR_SCREEN:
-        ui_->mainCanvas->clearScreen();
-        introduceCanvas();
-        break;
-    case C_CANVAS_SETBOUNDS:
+
+    static void clearScreen(MainWindow &window, QDataStream &)
+    {
+        window.ui_->mainCanvas->clearScreen();
+        window.introduceCanvas();
+    }
+
+    static void setBounds(MainWindow &window, QDataStream &stream)
     {
         qreal x, y;
-        dataStream >> x >> y;
-        ui_->mainCanvas->setBounds(x, y);
-        break;
+        stream >> x >> y;
+        window.ui_->mainCanvas->setBounds(x, y);
     }
-    case C_CANVAS_SET_IS_BOUNDED:
+
+    static void setIsBounded(MainWindow &window, QDataStream &stream)
     {
         bool isBounded;
-        dataStream >> isBounded;
-        ui_->mainCanvas->setIsBounded(isBounded);
-        break;
+        stream >> isBounded;
+        window.ui_->mainCanvas->setIsBounded(isBounded);
     }
-    case C_CANVAS_SET_FONT_NAME:
+
+    static void setLabelFontName(MainWindow &window, QDataStream &stream)
     {
         QString name;
-        dataStream >> name;
-        ui_->mainCanvas->setLabelFontName(name);
-        break;
+        stream >> name;
+        window.ui_->mainCanvas->setLabelFontName(name);
     }
-    case C_CANVAS_SET_FONT_SIZE:
+
+    static void setLabelFontSize(MainWindow &window, QDataStream &stream)
     {
         qreal aSize;
-        dataStream >> aSize;
-        ui_->mainCanvas->setLabelFontSize(aSize);
-        break;
+        stream >> aSize;
+        window.ui_->mainCanvas->setLabelFontSize(aSize);
     }
-    case C_CANVAS_DRAW_LABEL:
+
+    static void drawLabel(MainWindow &window, QDataStream &stream)
     {
         QString aString;
-        dataStream >> aString;
-        ui_->mainCanvas->addLabel(aString);
-        introduceCanvas();
-        break;
+        stream >> aString;
+        window.ui_->mainCanvas->addLabel(aString);
+        window.introduceCanvas();
     }
-    case C_CANVAS_DRAW_ARC:
+
+    static void drawArc(MainWindow &window, QDataStream &stream)
     {
         qreal angle;
         qreal radius;
-        dataStream >> angle >> radius;
-        ui_->mainCanvas->addArc(angle, radius);
-        introduceCanvas();
-        break;
+        stream >> angle >> radius;
+        window.ui_->mainCanvas->addArc(angle, radius);
+        window.introduceCanvas();
     }
-    case C_CANVAS_SET_PENSIZE:
+
+    static void setPensize(MainWindow &window, QDataStream &stream)
     {
         qreal newSize;
-        dataStream >> newSize;
-        ui_->mainCanvas->setPensize(newSize);
-        break;
+        stream >> newSize;
+        window.ui_->mainCanvas->setPensize(newSize);
     }
-    case C_CANVAS_SET_PENMODE:
+
+    static void setPenmode(MainWindow &window, QDataStream &stream)
     {
         PenModeEnum newMode;
-        dataStream >> newMode;
-        ui_->mainCanvas->setPenmode(newMode);
-        break;
+        stream >> newMode;
+        window.ui_->mainCanvas->setPenmode(newMode);
     }
-    case C_CANVAS_SET_PENUPDOWN:
+
+    static void setPenUpDown(MainWindow &window, QDataStream &stream)
     {
         bool penIsDown;
-        dataStream >> penIsDown;
-        ui_->mainCanvas->setPenIsDown(penIsDown);
-        break;
+        stream >> penIsDown;
+        window.ui_->mainCanvas->setPenIsDown(penIsDown);
     }
-    case C_CANVAS_SET_PENPATTERN:
+
+    static void setPenPattern(MainWindow &window, QDataStream &stream)
     {
         Qt::PenStyle style;
         Qt::PenCapStyle cap;
         Qt::PenJoinStyle join;
         QList<qreal> dashPattern;
-        dataStream >> style >> cap >> join >> dashPattern;
-        ui_->mainCanvas->setPenPattern(style, cap, join, dashPattern);
-        break;
+        stream >> style >> cap >> join >> dashPattern;
+        window.ui_->mainCanvas->setPenPattern(style, cap, join, dashPattern);
     }
-    case C_CANVAS_SET_SCRUNCH:
+
+    static void setScrunch(MainWindow &window, QDataStream &stream)
     {
         qreal x, y;
-        dataStream >> x >> y;
-        ui_->mainCanvas->setScrunch(x, y);
-        introduceCanvas();
-        break;
+        stream >> x >> y;
+        window.ui_->mainCanvas->setScrunch(x, y);
+        window.introduceCanvas();
     }
-    case C_CANVAS_GET_IMAGE:
+
+    static void getImage(MainWindow &window, QDataStream &)
     {
-        sendCanvasImage();
-        break;
+        window.sendCanvasImage();
     }
-    case C_CANVAS_GET_SVG:
+
+    static void getSvg(MainWindow &window, QDataStream &)
     {
-        sendCanvasSvg();
-        break;
+        window.sendCanvasSvg();
     }
-    default:
+
+    static const std::array<Handler, count> &handlers()
+    {
+        static const std::array<Handler, count> table = [] {
+            std::array<Handler, count> handlers{};
+            handlers[W_ZERO] = zero;
+            handlers[W_INITIALIZE] = initialize;
+            handlers[W_CLOSE_PIPE] = closePipe;
+            handlers[W_SET_SCREENMODE] = setScreenMode;
+            handlers[W_FILE_DIALOG_GET_PATH] = fileDialog;
+            handlers[W_TIMER_START] = timerStart;
+            handlers[C_CONSOLE_PRINT_STRING] = printString;
+            handlers[C_CONSOLE_SET_FONT_NAME] = setConsoleFontName;
+            handlers[C_CONSOLE_SET_FONT_SIZE] = setConsoleFontSize;
+            handlers[C_CONSOLE_REQUEST_LINE] = requestLine;
+            handlers[C_CONSOLE_REQUEST_CHAR] = requestChar;
+            handlers[C_CONSOLE_BEGIN_EDIT_TEXT] = beginEditText;
+            handlers[C_CONSOLE_TEXT_CURSOR_POS] = textCursorPos;
+            handlers[C_CONSOLE_SET_TEXT_CURSOR_POS] = setTextCursorPos;
+            handlers[C_CONSOLE_SET_CURSOR_MODE] = setCursorMode;
+            handlers[C_CONSOLE_SET_TEXT_COLOR] = setTextColor;
+            handlers[C_CONSOLE_CLEAR_SCREEN_TEXT] = clearScreenText;
+            handlers[C_CANVAS_UPDATE_TURTLE_POS] = updateTurtlePos;
+            handlers[C_CANVAS_SET_TURTLE_IS_VISIBLE] = setTurtleIsVisible;
+            handlers[C_CANVAS_EMIT_VERTEX] = emitVertex;
+            handlers[C_CANVAS_SET_FOREGROUND_COLOR] = setForegroundColor;
+            handlers[C_CANVAS_SET_BACKGROUND_COLOR] = setBackgroundColor;
+            handlers[C_CANVAS_SET_BACKGROUND_IMAGE] = setBackgroundImage;
+            handlers[C_CANVAS_BEGIN_POLYGON] = beginPolygon;
+            handlers[C_CANVAS_END_POLYGON] = endPolygon;
+            handlers[C_CANVAS_CLEAR_SCREEN] = clearScreen;
+            handlers[C_CANVAS_SETBOUNDS] = setBounds;
+            handlers[C_CANVAS_SET_IS_BOUNDED] = setIsBounded;
+            handlers[C_CANVAS_SET_FONT_NAME] = setLabelFontName;
+            handlers[C_CANVAS_SET_FONT_SIZE] = setLabelFontSize;
+            handlers[C_CANVAS_DRAW_LABEL] = drawLabel;
+            handlers[C_CANVAS_DRAW_ARC] = drawArc;
+            handlers[C_CANVAS_SET_PENSIZE] = setPensize;
+            handlers[C_CANVAS_SET_PENMODE] = setPenmode;
+            handlers[C_CANVAS_SET_PENUPDOWN] = setPenUpDown;
+            handlers[C_CANVAS_SET_PENPATTERN] = setPenPattern;
+            handlers[C_CANVAS_SET_SCRUNCH] = setScrunch;
+            handlers[C_CANVAS_GET_IMAGE] = getImage;
+            handlers[C_CANVAS_GET_SVG] = getSvg;
+            return handlers;
+        }();
+        return table;
+    }
+};
+
+void MainWindow::processReadBuffer()
+{
+    QDataStream dataStream(readBuffer_);
+    message_t header;
+    dataStream >> header;
+
+    const MessageDispatch::Handler handler = MessageDispatch::handlers()[header];
+    if (handler == nullptr)
+    {
         qInfo() << "was not expecting" << header;
-        break;
+        return;
     }
+    handler(*this, dataStream);
 }
 
 void MainWindow::setSplitterforMode(ScreenModeEnum mode)
