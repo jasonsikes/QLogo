@@ -131,26 +131,23 @@ class Canvas : public QWidget
 
     QImage backgroundImage_;
 
-    // The QPainter object. This is only valid during the paintEvent().
-    QPainter *painter;
-
     // The current label drawing font
     QFont labelFont_;
 
     void initDrawingElementList();
     void initTurtleImage();
 
-    void drawCanvas();
+    void drawCanvas(QPainter &painter);
 
-    void elementListSetWriteInfo(const TurtleWriteInfo &info);
-    void elementListDrawBoundedBackground();
-    void elementListDrawUnboundedBackground();
-    void elementListDrawBackgroundImage();
-    void elementListDrawTurtle();
-    void elementListDrawPolyline(const QPolygonF &);
-    void elementListDrawPolygon(const Polygon &p);
-    void elementListDrawLabel(const Label &);
-    void elementListDrawArc(const Arc &a);
+    void elementListSetWriteInfo(QPainter &painter, const TurtleWriteInfo &info);
+    void elementListDrawBoundedBackground(QPainter &painter);
+    void elementListDrawUnboundedBackground(QPainter &painter);
+    void elementListDrawBackgroundImage(QPainter &painter);
+    void elementListDrawTurtle(QPainter &painter);
+    void elementListDrawPolyline(QPainter &painter, const QPolygonF &);
+    void elementListDrawPolygon(QPainter &painter, const Polygon &p);
+    void elementListDrawLabel(QPainter &painter, const Label &);
+    void elementListDrawArc(QPainter &painter, const Arc &a);
 
     const QColor &colorForCurrentPenmode();
 
