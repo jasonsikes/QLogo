@@ -83,10 +83,16 @@ class Console : public QTextEdit
     /// @brief Request a character from the user
     void requestChar();
 
+    /// @brief The cursor's row and column in the console grid.
+    struct CursorPosition
+    {
+        int row;
+        int col;
+    };
+
     /// @brief Get the cursor position
-    /// @param row The row of the cursor
-    /// @param col The column of the cursor
-    void getCursorPos(int &row, int &col);
+    /// @return The row and column of the cursor
+    CursorPosition getCursorPos() const;
 
     /// @brief Set the cursor position
     /// @param row The row of the cursor

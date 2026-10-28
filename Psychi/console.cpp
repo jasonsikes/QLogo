@@ -153,11 +153,10 @@ void Console::requestChar()
     insertNextCharFromQueue();
 }
 
-void Console::getCursorPos(int &row, int &col)
+Console::CursorPosition Console::getCursorPos() const
 {
-    QTextCursor tc = textCursor();
-    row = tc.blockNumber();
-    col = tc.positionInBlock();
+    const QTextCursor tc = textCursor();
+    return {tc.blockNumber(), tc.positionInBlock()};
 }
 
 // Set the cursor position.

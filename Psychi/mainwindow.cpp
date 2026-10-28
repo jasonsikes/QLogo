@@ -785,9 +785,7 @@ void MainWindow::sendRawlineSlot(const QString &line)
 
 void MainWindow::sendConsoleCursorPosition()
 {
-    int row = 0;
-    int col = 0;
-    ui_->mainConsole->getCursorPos(row, col);
+    const auto [row, col] = ui_->mainConsole->getCursorPos();
     sendMessage(C_CONSOLE_TEXT_CURSOR_POS, row, col);
 }
 
