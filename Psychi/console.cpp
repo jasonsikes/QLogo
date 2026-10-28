@@ -171,8 +171,10 @@ void Console::setTextCursorPosition(int row, int col)
     int countOfRows = document()->blockCount();
     while (countOfRows <= row)
     {
-        moveCursor(QTextCursor::End);
-        textCursor().insertBlock();
+        QTextCursor tc = textCursor();
+        tc.movePosition(QTextCursor::End);
+        tc.insertBlock();
+        setTextCursor(tc);
         ++countOfRows;
     }
 
@@ -324,8 +326,10 @@ void Console::processLineModeKeyPressEvent(QKeyEvent *event)
         consoleMode_ = consoleModeNoWait;
         QString block = tc.block().text();
         QString line = block.right(block.size() - beginningOfRawlineInBlock);
-        moveCursor(QTextCursor::End);
-        textCursor().insertBlock();
+        QTextCursor endCursor = textCursor();
+        endCursor.movePosition(QTextCursor::End);
+        endCursor.insertBlock();
+        setTextCursor(endCursor);
         commitRawline(line);
         return;
     }
@@ -381,17 +385,20 @@ void Console::insertNextLineFromQueue()
         if (loc < 0)
             loc = keyQueue_.size();
 
-        moveCursor(QTextCursor::End);
-        textCursor().insertText(keyQueue_.left(loc));
+        QTextCursor tc = textCursor();
+        tc.movePosition(QTextCursor::End);
+        tc.insertText(keyQueue_.left(loc));
+        setTextCursor(tc);
         keyQueue_ = keyQueue_.right(keyQueue_.size() - loc);
-        moveCursor(QTextCursor::End);
         ensureCursorVisible();
         if ((keyQueue_.size() > 0) && (keyQueue_[0] == '\n'))
         {
             consoleMode_ = consoleModeNoWait;
             QString block = document()->lastBlock().text();
             QString line = block.right(block.size() - beginningOfRawlineInBlock);
-            textCursor().insertBlock();
+            tc.movePosition(QTextCursor::End);
+            tc.insertBlock();
+            setTextCursor(tc);
             keyQueue_ = keyQueue_.right(keyQueue_.size() - 1);
             commitRawline(line);
         }
