@@ -50,7 +50,12 @@ qint64 ProcessMessageWriter::write(const QByteArray &buffer)
     return process_->write(buffer);
 }
 
-#define message(X) (MessageTemplate<ProcessMessageWriter>(X))
+template <typename... Args>
+void sendMessage(message_t header, const Args &...args)
+{
+    MessageTemplate<ProcessMessageWriter> msg(header);
+    (msg << ... << args);
+}
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainWindow)
 {
@@ -148,7 +153,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     // Because when the process dies another signal will be sent to close the application.
     if (pid > 0)
     {
-        message(S_SYSTEM);
+        sendMessage(S_SYSTEM);
 
         logoProcess->closeWriteChannel();
 
@@ -209,7 +214,7 @@ bool MainWindow::maybeSendInterrupt(QKeyEvent *keyEvent)
     if (kind == W_ZERO)
         return false;
 
-    message(kind);
+    sendMessage(kind);
     return true;
 }
 
@@ -226,7 +231,7 @@ bool MainWindow::maybeSendKeyEvent(QKeyEvent *keyEvent)
     {
         if (c.isNull())
             continue;
-        message(C_CONSOLE_KEY_EVENT) << c;
+        sendMessage(C_CONSOLE_KEY_EVENT, c);
     }
     return true;
 }
@@ -277,14 +282,14 @@ void MainWindow::initialize()
     ui_->mainCanvas->setLabelFontName(family);
     setSplitterforMode(initScreenMode);
 
-    message(W_INITIALIZE) << QFontDatabase::families() << family << (double)pointSize;
+    sendMessage(W_INITIALIZE, QFontDatabase::families(), family, (double)pointSize);
 }
 
 void MainWindow::fileDialogModal()
 {
     QString startingDir = QDir::homePath();
     QString filePath = QFileDialog::getOpenFileName(this, tr("Choose file"), startingDir);
-    message(W_FILE_DIALOG_GET_PATH) << filePath;
+    sendMessage(W_FILE_DIALOG_GET_PATH, filePath);
 }
 
 void MainWindow::startWaitTimer(qint32 msecs)
@@ -293,7 +298,7 @@ void MainWindow::startWaitTimer(qint32 msecs)
     {
         waitTimer_ = new QTimer(this);
         waitTimer_->setSingleShot(true);
-        connect(waitTimer_, &QTimer::timeout, this, [this]() { message(W_TIMER_END); });
+        connect(waitTimer_, &QTimer::timeout, this, [this]() { sendMessage(W_TIMER_END); });
     }
     // Restarting cancels a timer left running after WAIT returned early for
     // BUTTONACT/KEYACT.
@@ -318,7 +323,7 @@ void MainWindow::openEditorWindow(const QString &title, const QString &startingT
 
 void MainWindow::editingHasEndedSlot(bool accepted, const QString &text)
 {
-    message(C_CONSOLE_END_EDIT_TEXT) << accepted << text;
+    sendMessage(C_CONSOLE_END_EDIT_TEXT, accepted, text);
 }
 
 void MainWindow::introduceCanvas()
@@ -759,29 +764,29 @@ void MainWindow::beginReadChar()
 
 void MainWindow::mouseclickedSlot(QPointF position, int buttonID)
 {
-    message(C_CANVAS_MOUSE_BUTTON_DOWN) << position << buttonID;
+    sendMessage(C_CANVAS_MOUSE_BUTTON_DOWN, position, buttonID);
 }
 
 void MainWindow::mousemovedSlot(QPointF position)
 {
-    message(C_CANVAS_MOUSE_MOVED) << position;
+    sendMessage(C_CANVAS_MOUSE_MOVED, position);
 }
 
 void MainWindow::mousereleasedSlot()
 {
-    message(C_CANVAS_MOUSE_BUTTON_UP);
+    sendMessage(C_CANVAS_MOUSE_BUTTON_UP);
 }
 
 void MainWindow::sendCharSlot(QChar c)
 {
     windowMode_ = windowMode_noWait;
-    message(C_CONSOLE_CHAR_READ) << c;
+    sendMessage(C_CONSOLE_CHAR_READ, c);
 }
 
 void MainWindow::sendRawlineSlot(const QString &line)
 {
     windowMode_ = windowMode_noWait;
-    message(C_CONSOLE_RAWLINE_READ) << line;
+    sendMessage(C_CONSOLE_RAWLINE_READ, line);
 }
 
 void MainWindow::sendConsoleCursorPosition()
@@ -789,19 +794,19 @@ void MainWindow::sendConsoleCursorPosition()
     int row = 0;
     int col = 0;
     ui_->mainConsole->getCursorPos(row, col);
-    message(C_CONSOLE_TEXT_CURSOR_POS) << row << col;
+    sendMessage(C_CONSOLE_TEXT_CURSOR_POS, row, col);
 }
 
 void MainWindow::sendCanvasImage()
 {
     QImage image(ui_->mainCanvas->getImage());
-    message(C_CANVAS_GET_IMAGE) << image;
+    sendMessage(C_CANVAS_GET_IMAGE, image);
 }
 
 void MainWindow::sendCanvasSvg()
 {
     QByteArray svg = ui_->mainCanvas->getSvg();
-    message(C_CANVAS_GET_SVG) << svg;
+    sendMessage(C_CANVAS_GET_SVG, svg);
 }
 
 void MainWindow::splitterHasMovedSlot(int, int)
