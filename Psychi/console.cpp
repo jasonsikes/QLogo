@@ -24,9 +24,10 @@
 #include <QMimeData>
 #include <QTextBlock>
 
-Console::Console(QWidget *parent) : QTextEdit(parent)
+Console::Console(QWidget *parent)
+    : QTextEdit(parent), consoleMode_(consoleModeNoWait), beginningOfRawline_(0),
+      lineInputHistoryScrollingCurrentIndex_(0)
 {
-    consoleMode_ = consoleModeNoWait;
     textFormat_.setForeground(QBrush(QWidget::palette().color(QPalette::Text)));
     QFont mono = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     mono.setStyleHint(QFont::Monospace);
@@ -133,7 +134,7 @@ void Console::requestRawlineWithPrompt(const QString &prompt)
     consoleMode_ = consoleModeWaitingForRawline;
     moveCursor(QTextCursor::End);
     printString(prompt);
-    beginningOfRawline = textCursor().position();
+    beginningOfRawline_ = textCursor().position();
     beginningOfRawlineInBlock = textCursor().positionInBlock();
     // Open a scratch slot for this prompt. commitRawline() never leaves a
     // blank slot behind, so a trailing blank means the previous prompt was
@@ -248,7 +249,7 @@ void Console::processLineModeKeyPressEvent(QKeyEvent *event)
 
     // These will only work if the cursor and anchor are
     // strictly after the prompt:
-    if ((tc.position() > beginningOfRawline) && (tc.anchor() > beginningOfRawline) &&
+    if ((tc.position() > beginningOfRawline_) && (tc.anchor() > beginningOfRawline_) &&
         ((eventKey == Qt::Key_Backspace) || event->matches(QKeySequence::MoveToPreviousChar)))
     {
         QTextEdit::keyPressEvent(event);
@@ -257,7 +258,7 @@ void Console::processLineModeKeyPressEvent(QKeyEvent *event)
 
     // These will only work if the cursor and anchor are
     // on or after the prompt:
-    if ((tc.position() >= beginningOfRawline) && (tc.anchor() >= beginningOfRawline))
+    if ((tc.position() >= beginningOfRawline_) && (tc.anchor() >= beginningOfRawline_))
     {
         if (event->matches(QKeySequence::MoveToPreviousLine))
         {
@@ -291,14 +292,14 @@ void Console::processLineModeKeyPressEvent(QKeyEvent *event)
 
     // The cursor keys will move the cursor to the beginning of the line
     // if either cursor or anchor are before the start of line
-    if ((tc.position() < beginningOfRawline) || (tc.anchor() < beginningOfRawline))
+    if ((tc.position() < beginningOfRawline_) || (tc.anchor() < beginningOfRawline_))
     {
         int pos = tc.position();
         int anc = tc.anchor();
         if (anc > pos)
             pos = anc;
-        if (pos < beginningOfRawline)
-            pos = beginningOfRawline;
+        if (pos < beginningOfRawline_)
+            pos = beginningOfRawline_;
         if (event->matches(QKeySequence::MoveToNextChar) || event->matches(QKeySequence::MoveToNextLine) ||
             event->matches(QKeySequence::MoveToPreviousLine) || event->matches(QKeySequence::MoveToPreviousChar))
         {
@@ -345,8 +346,7 @@ void Console::commitRawline(const QString &line)
     if (!lineInputHistory_.isEmpty())
     {
         const bool blank = line.trimmed().isEmpty();
-        const bool repeat =
-            lineInputHistory_.size() >= 2 && lineInputHistory_[lineInputHistory_.size() - 2] == line;
+        const bool repeat = lineInputHistory_.size() >= 2 && lineInputHistory_[lineInputHistory_.size() - 2] == line;
         if (blank || repeat)
             lineInputHistory_.removeLast();
         else
@@ -369,7 +369,7 @@ void Console::replaceLineWithHistoryIndex(int newIndex)
     // Now replace the line with that at newIndex
     historyLine = lineInputHistory_[newIndex];
     QTextCursor cursor = textCursor();
-    cursor.setPosition(beginningOfRawline);
+    cursor.setPosition(beginningOfRawline_);
     cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
     cursor.removeSelectedText();
     cursor.insertText(historyLine);

@@ -32,7 +32,7 @@ class Console : public QTextEdit
         consoleModeWaitingForRawline,
     };
     consoleMode_t consoleMode_;
-    int beginningOfRawline;
+    int beginningOfRawline_;
     int beginningOfRawlineInBlock;
 
     // Line input history
@@ -50,7 +50,7 @@ class Console : public QTextEdit
     void applyFont(const QFont &font);
 
     // Key press events
-    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *event) override;
     void processLineModeKeyPressEvent(QKeyEvent *event);
     void processCharModeKeyPressEvent(QKeyEvent *);
     void processNoWaitKeyPressEvent(QKeyEvent *event);
@@ -62,7 +62,7 @@ class Console : public QTextEdit
 
     void insertNextLineFromQueue();
     void insertNextCharFromQueue();
-    void insertFromMimeData(const QMimeData *source) Q_DECL_OVERRIDE;
+    void insertFromMimeData(const QMimeData *source) override;
 
   public:
     /// @brief Constructor
