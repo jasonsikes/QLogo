@@ -39,7 +39,7 @@ struct Label
     /// @param aPosition The position to display the text.
     /// @param aFont The font to use for the text.
     Label(const QString &aText, QPointF aPosition, const QFont &aFont)
-        : text_(aText), position_(aPosition), font_(aFont)
+        : position_(aPosition), text_(aText), font_(aFont)
     {
     }
 };
