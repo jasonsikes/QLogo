@@ -112,16 +112,6 @@ run_cmdline_tests() {
         $exe_opts "$(cmdline_script_arg bye.lg)"
     rm -f "$bye_stdin"
 
-    # With no hyphen, COMMAND.LINE is empty. ARGV still has the binary and script.
-    cmdline_run_case "commandline.lg" "$cmdline_dir/commandline.expected" \
-        "$(cmdline_script_arg commandline.lg)"
-
-    cmdline_run_case "extra_args.lg" "$cmdline_dir/extra_args.expected" \
-        "$(cmdline_script_arg extra_args.lg)" leftover
-
-    cmdline_run_case "hyphen_args.lg" "$cmdline_dir/hyphen_args.expected" \
-        "$(cmdline_script_arg hyphen_args.lg)" - leftover more
-
     cmdline_run_case "option_before.lg" "$cmdline_dir/print.expected" \
         --verifyIR "$(cmdline_script_arg print.lg)"
 

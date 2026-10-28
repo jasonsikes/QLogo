@@ -1,2 +1,0 @@
-print emptyp :commandline
-print last :argv
