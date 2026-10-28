@@ -62,7 +62,7 @@ void EditorWindow::show()
 {
     QMainWindow::show();
 
-    QTimer::singleShot(0, ui_->plainTextEdit, SLOT(setFocus()));
+    QTimer::singleShot(0, ui_->plainTextEdit, [edit = ui_->plainTextEdit] { edit->setFocus(); });
 }
 
 void EditorWindow::finish(bool accepted)
