@@ -434,8 +434,7 @@ void Canvas::elementListDrawPolyline(QPainter &painter, const QPolygonF &polyLin
 
 void Canvas::elementListDrawPolygon(QPainter &painter, const Polygon &p) const
 {
-    static QPen noPen = QPen();
-    noPen.setStyle(Qt::NoPen);
+    const QPen noPen(Qt::NoPen);
 
     QPen pen = painter.pen();
     painter.setPen(noPen);

@@ -108,7 +108,7 @@ class Console : public QTextEdit
 
     /// @brief Get the font
     /// @return The font
-    const QTextCharFormat getFont()
+    QTextCharFormat getFont()
     {
         return textFormat_;
     }
