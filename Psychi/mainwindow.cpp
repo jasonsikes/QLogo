@@ -343,13 +343,13 @@ void MainWindow::readStandardOutput()
 {
     qint64 datalen;
 
-    forever
+    for (;;)
     {
         // If a message is complete then it was already sent,
         // and we can start a new one.
         if (readBuffer_.size() == readBufferLen_)
         {
-            int readResult = logoProcess_.read(reinterpret_cast<char *>(&datalen), sizeof(qint64));
+            qint64 readResult = logoProcess_.read(reinterpret_cast<char *>(&datalen), sizeof(qint64));
             if (readResult != sizeof(qint64))
                 return;
             readBufferLen_ = datalen;

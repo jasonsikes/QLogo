@@ -127,12 +127,6 @@ class MainWindow : public QMainWindow
     /// @brief Show the main window.
     void show();
 
-    /// @brief Handle a mouse button being pressed.
-    ///
-    /// @param position The position of the mouse button.
-    /// @param buttonID The ID of the button.
-    void mouseButtonWasPressed(QVector2D position, int buttonID);
-
   public slots:
 
     /// @brief Handle the standard output of the QLogo process.
