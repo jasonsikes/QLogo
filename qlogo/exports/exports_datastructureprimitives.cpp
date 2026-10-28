@@ -144,10 +144,8 @@ static bool areDatumsEqual(VisitedMap &visited, Datum *d1, Datum *d2, Qt::CaseSe
 {
     if (d1 == d2)
         return true;
-    if (d1->isa_ != d2->isa_)
-        return false;
 
-    if (d1->isWord())
+    if (d1->isWord() && d2->isWord())
     {
         Word *w1 = d1->wordValue();
         Word *w2 = d2->wordValue();
@@ -156,7 +154,11 @@ static bool areDatumsEqual(VisitedMap &visited, Datum *d1, Datum *d2, Qt::CaseSe
 
         return w1->toString().compare(w2->toString(), cs) == 0;
     }
-    else if (d1->isList())
+
+    if (d1->isa_ != d2->isa_)
+        return false;
+
+    if (d1->isList())
     {
         // If we have seen this list before,
         if (visited.contains(d1))

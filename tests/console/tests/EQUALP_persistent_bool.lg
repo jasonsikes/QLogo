@@ -1,0 +1,7 @@
+show equalp "true not "false
+show equalp "false not "true
+show equalp "TRUE not "false
+show equalp "true "true
+show notequalp "true not "false
+show equalp (list "true) (list not "false)
+show equalp "true not "true
