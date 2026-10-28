@@ -319,11 +319,13 @@ void Canvas::setBackgroundImage(const QImage &image)
 
 QImage Canvas::getImage() const
 {
-    QImage retval(boundsX_ * 2, boundsY_ * 2, QImage::Format_ARGB32_Premultiplied);
+    const int imageWidth = qRound(boundsX_ * 2);
+    const int imageHeight = qRound(boundsY_ * 2);
+    QImage retval(imageWidth, imageHeight, QImage::Format_ARGB32_Premultiplied);
 
     QPainter imagePainter(&retval);
     retval.fill(backgroundColor_);
-    imagePainter.translate(boundsX_, boundsY_);
+    imagePainter.translate(imageWidth / 2.0, imageHeight / 2.0);
     imagePainter.scale(1, -1);
 
     drawCanvas(imagePainter);
