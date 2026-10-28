@@ -137,17 +137,17 @@ class Canvas : public QWidget
     void initDrawingElementList();
     void initTurtleImage();
 
-    void drawCanvas(QPainter &painter);
+    void drawCanvas(QPainter &painter) const;
 
-    void elementListSetWriteInfo(QPainter &painter, const TurtleWriteInfo &info);
-    void elementListDrawBoundedBackground(QPainter &painter);
-    void elementListDrawUnboundedBackground(QPainter &painter);
-    void elementListDrawBackgroundImage(QPainter &painter);
-    void elementListDrawTurtle(QPainter &painter);
-    void elementListDrawPolyline(QPainter &painter, const QPolygonF &);
-    void elementListDrawPolygon(QPainter &painter, const Polygon &p);
-    void elementListDrawLabel(QPainter &painter, const Label &);
-    void elementListDrawArc(QPainter &painter, const Arc &a);
+    void elementListSetWriteInfo(QPainter &painter, const TurtleWriteInfo &info) const;
+    void elementListDrawBoundedBackground(QPainter &painter) const;
+    void elementListDrawUnboundedBackground(QPainter &painter) const;
+    void elementListDrawBackgroundImage(QPainter &painter) const;
+    void elementListDrawTurtle(QPainter &painter) const;
+    void elementListDrawPolyline(QPainter &painter, const QPolygonF &) const;
+    void elementListDrawPolygon(QPainter &painter, const Polygon &p) const;
+    void elementListDrawLabel(QPainter &painter, const Label &) const;
+    void elementListDrawArc(QPainter &painter, const Arc &a) const;
 
     const QColor &colorForCurrentPenmode();
 
@@ -275,12 +275,12 @@ class Canvas : public QWidget
     /// @brief Redraw the canvas onto an image object and return it.
     ///
     /// @return The image of the canvas.
-    QImage getImage();
+    QImage getImage() const;
 
     /// @brief Draw the canvas onto an SVG object string and return it.
     ///
     /// @return The SVG string of the canvas.
-    QByteArray getSvg();
+    QByteArray getSvg() const;
 
     /// @brief Clears the screen and removes all painting elements from the paintList.
     void clearScreen();
@@ -290,7 +290,7 @@ class Canvas : public QWidget
     /// @return The maximum X bound
     /// @note The origin is always the center of the widget, therefore the
     /// minimum X bound is negative of the maximum.
-    qreal xbound()
+    qreal xbound() const
     {
         return boundsX_;
     }
@@ -300,7 +300,7 @@ class Canvas : public QWidget
     /// @return The maximum Y bound
     /// @note The origin is always the center of the widget, therefore the
     /// minimum Y bound is negative of the maximum.
-    qreal ybound()
+    qreal ybound() const
     {
         return boundsY_;
     }
@@ -347,7 +347,7 @@ class Canvas : public QWidget
     ///
     /// @return True if the canvas is drawn "bounded". See setIsBounded() for
     /// more details.
-    bool isBounded()
+    bool isBounded() const
     {
         return canvasIsBounded_;
     }

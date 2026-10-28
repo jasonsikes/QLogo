@@ -317,7 +317,7 @@ void Canvas::setBackgroundImage(const QImage &image)
     update();
 }
 
-QImage Canvas::getImage()
+QImage Canvas::getImage() const
 {
     QImage retval(boundsX_ * 2, boundsY_ * 2, QImage::Format_ARGB32_Premultiplied);
 
@@ -331,7 +331,7 @@ QImage Canvas::getImage()
     return retval;
 }
 
-QByteArray Canvas::getSvg()
+QByteArray Canvas::getSvg() const
 {
     QByteArray retval;
     QBuffer bufferStream(&retval);
@@ -369,7 +369,7 @@ void Canvas::paintEvent(QPaintEvent *event)
     drawCanvas(eventPainter);
 }
 
-void Canvas::drawCanvas(QPainter &painter)
+void Canvas::drawCanvas(QPainter &painter) const
 {
     painter.setRenderHint(QPainter::Antialiasing, false);
     painter.setRenderHint(QPainter::TextAntialiasing, false);
@@ -394,19 +394,19 @@ void Canvas::drawCanvas(QPainter &painter)
     elementListDrawTurtle(painter);
 }
 
-void Canvas::elementListDrawUnboundedBackground(QPainter &painter)
+void Canvas::elementListDrawUnboundedBackground(QPainter &painter) const
 {
     painter.fillRect(rect(), backgroundColor_);
 }
 
-void Canvas::elementListDrawBoundedBackground(QPainter &painter)
+void Canvas::elementListDrawBoundedBackground(QPainter &painter) const
 {
     QRectF rect(-boundsX_, -boundsY_, 2 * boundsX_, 2 * boundsY_);
     painter.setClipRect(rect);
     painter.fillRect(rect, backgroundColor_);
 }
 
-void Canvas::elementListDrawBackgroundImage(QPainter &painter)
+void Canvas::elementListDrawBackgroundImage(QPainter &painter) const
 {
     if (backgroundImage_.isNull())
         return;
@@ -418,7 +418,7 @@ void Canvas::elementListDrawBackgroundImage(QPainter &painter)
     painter.scale(1, -1);
 }
 
-void Canvas::elementListDrawLabel(QPainter &painter, const Label &label)
+void Canvas::elementListDrawLabel(QPainter &painter, const Label &label) const
 {
     painter.setFont(label.font_);
 
@@ -427,12 +427,12 @@ void Canvas::elementListDrawLabel(QPainter &painter, const Label &label)
     painter.scale(1, -1);
 }
 
-void Canvas::elementListDrawPolyline(QPainter &painter, const QPolygonF &polyLine)
+void Canvas::elementListDrawPolyline(QPainter &painter, const QPolygonF &polyLine) const
 {
     painter.drawPolyline(polyLine);
 }
 
-void Canvas::elementListDrawPolygon(QPainter &painter, const Polygon &p)
+void Canvas::elementListDrawPolygon(QPainter &painter, const Polygon &p) const
 {
     static QPen noPen = QPen();
     noPen.setStyle(Qt::NoPen);
@@ -444,12 +444,12 @@ void Canvas::elementListDrawPolygon(QPainter &painter, const Polygon &p)
     painter.setPen(pen);
 }
 
-void Canvas::elementListDrawArc(QPainter &painter, const Arc &a)
+void Canvas::elementListDrawArc(QPainter &painter, const Arc &a) const
 {
     painter.drawArc(a.rectangle_, a.startAngle_, a.spanAngle_);
 }
 
-void Canvas::elementListDrawTurtle(QPainter &painter)
+void Canvas::elementListDrawTurtle(QPainter &painter) const
 {
     if (turtleIsVisible_)
     {
@@ -473,7 +473,7 @@ void Canvas::elementListDrawTurtle(QPainter &painter)
 }
 
 // The pen controls composition mode, color, size, style, cap, and join.
-void Canvas::elementListSetWriteInfo(QPainter &painter, const TurtleWriteInfo &info)
+void Canvas::elementListSetWriteInfo(QPainter &painter, const TurtleWriteInfo &info) const
 {
     painter.setPen(info.pen_);
     painter.setCompositionMode(info.composingMode_);
