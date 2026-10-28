@@ -1606,6 +1606,7 @@ void Kernel::ece_decideEmptyEvaluationStack()
                 currentCallFrame()->retvalToParent_ =
                     DatumPtr(FCError::badDefault(currentCallFrame()->currentArgument_));
                 nextOperation_ = &Kernel::ece_exitProcedure;
+                return;
             }
 
             ece_trace("ece_decideEmptyEvaluationStack: setting variable " +

@@ -1,0 +1,5 @@
+to tp [:bad 5 5] [:later 9]
+print :later
+end
+tp
+print "after
