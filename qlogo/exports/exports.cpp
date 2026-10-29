@@ -181,12 +181,16 @@ EXPORTC bool parseBoolForDatum(addr_t eAddr, addr_t datumAddr, bool *out) noexce
 }
 
 /// Lookup the var name and return the value as a QLogo object (Word, List, etc)
+/// @param eAddr a pointer to the Evaluator object context.
 /// @param wordAddr a pointer to a Word object which contains the name of the variable
 /// @return the stored value as a QLogo object
-EXPORTC addr_t getDatumForVarname(addr_t wordAddr) noexcept
+EXPORTC addr_t getDatumForVarname(addr_t eAddr, addr_t wordAddr) noexcept
 {
+    auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *name = reinterpret_cast<Word *>(wordAddr);
     Datum *val = Kernel::get().datumForName(name).datumValue();
+    if ((val->isa_ & Datum::typeDataMask) != 0)
+        e->watch(val);
 
     return reinterpret_cast<addr_t>(val);
 }

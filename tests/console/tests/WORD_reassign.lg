@@ -1,0 +1,16 @@
+to clobber
+make "color (word "Z ")
+output "Q
+end
+to boom
+make "color (word "A ")
+output (word :color clobber)
+end
+print boom
+
+to nodup :number :colors
+if :number = 0 [output "]
+make "color word first :colors "
+output word :color (nodup :number-1 butfirst :colors)
+end
+print nodup 4 "ROYGBV

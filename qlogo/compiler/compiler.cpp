@@ -218,32 +218,13 @@ std::optional<MemoryEffects> memoryEffectsForHostExport(StringRef name)
                ME::argMemOnly(ModRefInfo::Ref))
         .Cases({"parseDoubleForDatum", "parseBoolForDatum", "getNumberAryFromList", "isDatumIndexValid"},
                ME::argMemOnly(ModRefInfo::ModRef))
-        .Cases({"cmpDatumToDatum",
-                "isBefore",
-                "isMember",
-                "isSubstring",
-                "isDatumEmpty",
-                "getTestResult",
-                "isValidColor",
-                "isValidPenSize",
-                "isValidPenPattern",
-                "isColorIndexGood",
-                "isContentsList",
-                "isNamedContentsList",
-                "isDefinableProcName",
-                "isDefineText",
-                "stdProcedurep",
-                "stdMacrop",
-                "stdPrimitivep",
-                "stdDefinedp",
-                "stdNamep",
-                "stdPlistp",
-                "stdBuriedp",
-                "stdTracedp",
-                "stdSteppedp",
-                "isTurtleVisible",
-                "isPenDown",
-                "getTurtleHeading"},
+        .Cases({"cmpDatumToDatum",     "isBefore",         "isMember",       "isSubstring",
+                "isDatumEmpty",        "getTestResult",    "isValidColor",   "isValidPenSize",
+                "isValidPenPattern",   "isColorIndexGood", "isContentsList", "isNamedContentsList",
+                "isDefinableProcName", "isDefineText",     "stdProcedurep",  "stdMacrop",
+                "stdPrimitivep",       "stdDefinedp",      "stdNamep",       "stdPlistp",
+                "stdBuriedp",          "stdTracedp",       "stdSteppedp",    "isTurtleVisible",
+                "isPenDown",           "getTurtleHeading"},
                ME::readOnly())
         .Default(std::nullopt);
 }
@@ -1418,7 +1399,7 @@ Value *Compiler::generateVoidRetval(const DatumPtr &node)
 
 Value *Compiler::generateLookupVarname(Value *nameAddr)
 {
-    Value *lookedUp = generateCallExtern(getDatumForVarname, PaAddr(nameAddr));
+    Value *lookedUp = generateCallExtern(getDatumForVarname, PaAddr(scaff_->evaluator_), PaAddr(nameAddr));
     BasicBlock *lookupBB = scaff_->builder_.GetInsertBlock();
     BasicBlock *noValueBB = scaff_->createBasicBlock(DBG_NAME("NoValue"));
     BasicBlock *hasValueBB = scaff_->createBasicBlock(DBG_NAME("hasValue"));
@@ -2023,8 +2004,8 @@ COD***/
 /***DOC ARGV
 ARGV							(variable)
 
-	a list of every word on the command line used to start QLogo,
-	including the program name. See also COMMAND.LINE.
+    a list of every word on the command line used to start QLogo,
+    including the program name. See also COMMAND.LINE.
 
 COD***/
 
