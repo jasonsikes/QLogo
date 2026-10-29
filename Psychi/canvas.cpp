@@ -30,6 +30,36 @@ struct Overload : Ts...
 };
 template <class... Ts>
 Overload(Ts...) -> Overload<Ts...>;
+
+/// Paint a turtle stroke.
+///
+/// QPainter::drawPolyline leaves no pixels when every vertex is the same
+/// point. Logo still inks that stroke: FD 0, and SETPOS of the current
+/// position, deposit a dot the size of the pen. drawLine paints the pen
+/// cap there (a square for SQUARECAP, a circle for ROUNDCAP, nothing for
+/// FLATCAP). A stroke that actually moves is drawn as a polyline.
+void drawStroke(QPainter &painter, const QPolygonF &polyLine)
+{
+    if (polyLine.size() >= 2)
+    {
+        const QPointF origin = polyLine.first();
+        bool hasLength = false;
+        for (const QPointF &point : polyLine)
+        {
+            if (point != origin)
+            {
+                hasLength = true;
+                break;
+            }
+        }
+        if (!hasLength)
+        {
+            painter.drawLine(origin, origin);
+            return;
+        }
+    }
+    painter.drawPolyline(polyLine);
+}
 } // namespace
 
 Arc::Arc(QPointF center, qreal a, qreal span, qreal radiusX, qreal radiusY)
@@ -391,7 +421,7 @@ void Canvas::drawCanvas(QPainter &painter) const
     }
 
     // Draw the in-progress line group.
-    painter.drawPolyline(lineGroup_);
+    drawStroke(painter, lineGroup_);
 
     elementListDrawTurtle(painter);
 }
@@ -431,7 +461,7 @@ void Canvas::elementListDrawLabel(QPainter &painter, const Label &label) const
 
 void Canvas::elementListDrawPolyline(QPainter &painter, const QPolygonF &polyLine) const
 {
-    painter.drawPolyline(polyLine);
+    drawStroke(painter, polyLine);
 }
 
 void Canvas::elementListDrawPolygon(QPainter &painter, const Polygon &p) const
