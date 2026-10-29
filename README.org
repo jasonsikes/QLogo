@@ -212,6 +212,12 @@ GUI only. Presents a modal file dialog so the user can select a file. Outputs th
 
 Outputs the directory ~EDIT~ uses for its temporary file. See ~SETTEMPLOC~.
 
+*** ~FMOUSEPOS~ and ~FCLICKPOS~:
+
+Since QLogo's canvas can have an arbitrary size it is possible that floating point accuracy is required. These two commands are similar to UCBLogo's ~MOUSEPOS~ and ~CLICKPOS~ except that they report their values with floating-point precision.
+
+For compatibility, ~MOUSEPOS~ and ~CLICKPOS~ are provided as library functions.
+
 **** ~QLOGOVERSION~
 
 Outputs a string that is composed of the most recent git tag, number of commits since that tag, and the most recent git commit hash.

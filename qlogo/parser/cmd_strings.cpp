@@ -1685,15 +1685,15 @@ const QString &StringConstants::cmdStrLOADPICT()
     return str;
 }
 
-const QString &StringConstants::cmdStrMOUSEPOS()
+const QString &StringConstants::cmdStrFMOUSEPOS()
 {
-    static const QString str = QObject::tr("MOUSEPOS");
+    static const QString str = QObject::tr("FMOUSEPOS");
     return str;
 }
 
-const QString &StringConstants::cmdStrCLICKPOS()
+const QString &StringConstants::cmdStrFCLICKPOS()
 {
-    static const QString str = QObject::tr("CLICKPOS");
+    static const QString str = QObject::tr("FCLICKPOS");
     return str;
 }
 

@@ -1194,33 +1194,34 @@ Value *Compiler::genLoadpict(const DatumPtr &node, TypeMask expected)
 }
 // MOUSE QUERIES
 
-/***DOC MOUSEPOS
-MOUSEPOS
+/***DOC FMOUSEPOS
+FMOUSEPOS
 
     outputs the coordinates of the mouse, provided that it's within the
-    graphics window, in turtle coordinates.  If the mouse is outside the
-    graphics window, then the last position within the window is returned.
-    Exception:  If a mouse button is pressed within the graphics window
-    and held while the mouse is dragged outside the window, the mouse's
-    position is returned as if the window were big enough to include it.
+    graphics window, in floating-point turtle coordinates.  If the mouse
+    is outside the graphics window, then the last position within the
+    graphics window is returned. Exception:  If a mouse button is pressed
+    within the graphics window and held while the mouse is dragged outside
+    the window, the mouse's position is returned as if the window were
+    big enough to include it.
 
 COD***/
-// CMD MOUSEPOS 0 0 0 d
+// CMD FMOUSEPOS 0 0 0 d
 Value *Compiler::genMousepos(const DatumPtr &node, TypeMask expected)
 {
     CHECK_GRAPHICS_MODE
     CallSite cs(this, node, TypeNothing);
     return cs.ret(generateCallExtern(getMousePos, PaAddr(scaff_->evaluator_)));
 }
-/***DOC CLICKPOS
-CLICKPOS
+/***DOC FCLICKPOS
+FCLICKPOS
 
     outputs the coordinates that the mouse was at when a mouse button
     was most recently pushed, provided that that position was within the
-    graphics window, in turtle coordinates.
+    graphics window, in floating-point turtle coordinates.
 
 COD***/
-// CMD CLICKPOS 0 0 0 d
+// CMD FCLICKPOS 0 0 0 d
 Value *Compiler::genClickpos(const DatumPtr &node, TypeMask expected)
 {
     CHECK_GRAPHICS_MODE
@@ -1345,5 +1346,55 @@ op (list (ifelse pendownp ["pendown] ["penup]) ~
 end
 
 bury [pen]
+
+BIL***/
+
+/***DOC MOUSEPOS
+MOUSEPOS							(library procedure)
+
+    outputs the coordinates of the mouse, provided that it's within the
+    graphics window, in integer turtle coordinates.  If the mouse is outside the
+    graphics window, then the last position within the window is returned.
+    Exception:  If a mouse button is pressed
+    within the graphics window and held while the mouse is dragged outside
+    the window, the mouse's position is returned as if the window were
+    big enough to include it.
+
+    For floating-point coordinates, see FMOUSEPOS.
+
+COD***/
+
+/***LIB MOUSEPOS
+;;; -*- logo -*-
+
+to mousepos
+localmake "pos fmousepos
+output list round first :pos round last :pos
+end
+
+bury [mousepos]
+
+BIL***/
+
+/***DOC CLICKPOS
+CLICKPOS							(library procedure)
+
+    outputs the coordinates that the mouse was at when a mouse button
+    was most recently pushed, provided that that position was within the
+    graphics window, in integer turtle coordinates.
+
+    For floating-point coordinates, see FCLICKPOS.
+
+COD***/
+
+/***LIB CLICKPOS
+;;; -*- logo -*-
+
+to clickpos
+localmake "pos fclickpos
+output list round first :pos round last :pos
+end
+
+bury [clickpos]
 
 BIL***/
