@@ -27,6 +27,7 @@ Console::Console(QWidget *parent)
       lineInputHistoryScrollingCurrentIndex_(0)
 {
     textFormat_.setForeground(QBrush(QWidget::palette().color(QPalette::Text)));
+    setOverwriteMode(true);
     QFont mono = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     mono.setStyleHint(QFont::Monospace);
     mono.setFixedPitch(true);
