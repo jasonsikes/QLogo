@@ -115,12 +115,11 @@ class Config
     Config &operator=(Config &&) = delete;
 
 #ifdef DEBUG
-const bool debugBuild_ = true;
+    const bool debugBuild_ = true;
 #else
-const bool debugBuild_ = false;
+    const bool debugBuild_ = false;
 #endif
-    
-    
+
     /// @brief Get the singleton instance of the Config class.
     /// @return The singleton instance of the Config class.
     static Config &get()
@@ -132,7 +131,10 @@ const bool debugBuild_ = false;
     /// The escape character is the separator between Console messages and
     /// Console control characters. Currently, the only control is switching
     /// STANDOUT modes.
-    const QChar escapeChar_ = QChar(27);
+    ///
+    /// ASCII 1 (SOH) is not in the raw-to-printable map, so printing leaves it
+    /// unchanged and the console can strip it.
+    const QChar escapeChar_ = QChar(1);
 
     /// @brief The escape string is the escape character as a string.
     const QString escapeString_ = QString(escapeChar_);

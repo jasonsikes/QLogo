@@ -135,7 +135,7 @@ class LogoInterfaceCurses : public LogoInterface
     /// @brief True if a complete line is waiting on the terminal (LINEP / LINE?).
     bool lineQueueHasLine() override;
 
-    /// @brief Wraps a string in STANDOUT markers (ESC). Printing toggles A_REVERSE.
+    /// @brief Wraps a string in STANDOUT markers (ASCII 1). Printing toggles A_REVERSE.
     /// @param src The string to mark.
     /// @return The marked string.
     QString addStandoutToString(const QString &src) override;
