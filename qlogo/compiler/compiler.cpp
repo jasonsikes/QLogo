@@ -458,7 +458,7 @@ Scaffold::Scaffold(const llvm::DataLayout &dataLayout,
     MDBuilder tbaaMdb(*theContext_);
     MDNode *tbaaRoot = tbaaMdb.createTBAARoot("qlogo");
     MDNode *isaTbaaTy = tbaaMdb.createTBAATypeNode(tbaaRoot, 4, MDString::get(*theContext_, "datum.isa"));
-    isaLoadTbaa_ = tbaaMdb.createTBAAAccessTag(isaTbaaTy, isaTbaaTy, 0, 4, /*IsImmutable=*/true);
+    isaLoadTbaa_ = tbaaMdb.createTBAAAccessTag(isaTbaaTy, isaTbaaTy, 0, 4, /*IsImmutable=*/false);
     {
         // Sorted isa_ values. Adjacent [v, v+1) pairs must be merged.
         static constexpr uint32_t isaVals[] = {
@@ -1951,7 +1951,6 @@ Value *Compiler::generateGetDatumIsa(Value *objAddr)
     Value *isaAddr = scaff_->builder_.CreateStructGEP(scaff_->datumHeaderTy_, objAddr, 1, DBG_NAME("isaAddr"));
     LoadInst *load = scaff_->builder_.CreateAlignedLoad(TyInt32, isaAddr, Align(4), DBG_NAME("isaLoad"));
     MDNode *empty = MDNode::get(*scaff_->theContext_, {});
-    load->setMetadata(LLVMContext::MD_invariant_load, empty);
     load->setMetadata(LLVMContext::MD_noundef, empty);
     load->setMetadata(LLVMContext::MD_range, scaff_->isaLoadRange_);
     load->setMetadata(LLVMContext::MD_tbaa, scaff_->isaLoadTbaa_);

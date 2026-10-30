@@ -1,0 +1,11 @@
+; The MAKE line is still running when DEFINE recompiles that same line.
+to inner :n
+if :n = 0 [output "ok]
+define "scratch [[] [output "x]]
+output outer :n - 1
+end
+to outer :n
+make "result inner :n
+output :result
+end
+print outer 1

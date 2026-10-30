@@ -1,13 +1,14 @@
 #include "workspace/evaluator.h"
-#include "datum_types.h"
-#include "workspace/kernel.h"
-#include "workspace/specialvars.h"
 #include "compiler.h"
+#include "datum_types.h"
 #include "flowcontrol.h"
 #include "runparser.h"
+#include "workspace/kernel.h"
+#include "workspace/specialvars.h"
 #include <QObject>
 
-namespace {
+namespace
+{
 
 bool retvalIsError(Datum *retval)
 {
@@ -69,10 +70,7 @@ Datum *normalizeListToRun(Evaluator &e, Datum *&aList)
 } // namespace
 
 Evaluator::Evaluator(CallFrame *aOwningFrame, const DatumPtr &aList)
-    : owningFrame_(aOwningFrame)
-    , list_(aList)
-    , startingList_(aList)
-    , traceDepthAtEntry_(Kernel::get().traceDepth())
+    : owningFrame_(aOwningFrame), list_(aList), startingList_(aList), traceDepthAtEntry_(Kernel::get().traceDepth())
 {
 }
 
@@ -152,6 +150,8 @@ bool Evaluator::exec(int32_t jumpLocation)
     if (coroFrameIsComplete(handle_))
     {
         destroyCoroFrame(handle_);
+        if (retvalToParent_ != nullptr)
+            watch(retvalToParent_);
         compiledText_.reset();
         finishTraceDepth(*this);
         return true;
