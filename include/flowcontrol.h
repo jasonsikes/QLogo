@@ -93,7 +93,9 @@ struct FCContinuation : public FlowControl
     /// .MAYBEOUTPUT leave this false so a value is the caller's output.
     bool demandNothing_ = false;
 
-    FCContinuation(const DatumPtr &aSourceNode, const DatumPtr &aProcedure, const QList<DatumPtr> &aParams,
+    FCContinuation(const DatumPtr &aSourceNode,
+                   const DatumPtr &aProcedure,
+                   const QList<DatumPtr> &aParams,
                    bool demandNothing = false)
     {
         isa_ = Datum::typeContinuation;
@@ -234,6 +236,11 @@ struct FCError : public FlowControl
         Q_ASSERT(dataAry_.size() == 5);
         return dataAry_[3];
     }
+
+    /// @brief True when @ref line was taken from an instruction list.
+    /// @details The line slot defaults to the empty list. That default is not printed
+    /// with the error message. An instruction that was actually empty still is.
+    bool lineCaptured_ = false;
 
     /// @brief The procedure where the error occurred.
     DatumPtr &procedure()
@@ -408,7 +415,6 @@ struct FCError : public FlowControl
     /// @brief Create an error object for a file that cannot be opened.
     /// @param x The file that cannot be opened.
     static FCError *cantOpen(const DatumPtr &x);
-
 
     /// @brief Return a string suitable for the PRINT command
     ///

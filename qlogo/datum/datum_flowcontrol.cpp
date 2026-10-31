@@ -29,6 +29,11 @@ void FCError::commonInit()
 {
     Kernel *k = &Kernel::get();
 
+    // ERROR's procedure and line members are the empty list when this error is
+    // not inside a procedure, or when no instruction line was running.
+    procedure() = emptyList();
+    line() = emptyList();
+
     // If the error is a bad default expression, don't report the procedure
     // or line. There is also no procedure when an error is created before
     // the interpreter has a call frame (e.g. a missing startup script).
@@ -39,7 +44,10 @@ void FCError::commonInit()
         {
             procedure() = cf->sourceNode_.astnodeValue()->nodeName_;
             if (!cf->isEvaluationStackViewEmpty())
+            {
                 line() = cf->topEvaluator()->list_;
+                lineCaptured_ = true;
+            }
         }
     }
     k->currentError_ = DatumPtr(this);
@@ -243,10 +251,10 @@ FCError *FCError::cantOpen(const DatumPtr &x)
 QString FCError::toString(ToStringFlags, int, int, VisitedSet *) const
 {
     QString retval = message().toString();
-    if (!procedure().isNothing())
+    if (procedure().isWord())
     {
         retval = QString("%1 in %2").arg(retval, procedure().toString());
-        if (!line().isNothing())
+        if (lineCaptured_)
             retval += QLatin1Char('\n') + line().toString(ToStringFlags_Show);
     }
     return retval;

@@ -1784,9 +1784,13 @@ void Kernel::ece_expandMacroReturn(const DatumPtr &value)
         sourceLine = emptyList();
 
     // Create the error before popping so commonInit names this procedure.
+    // The evaluation stack is empty here, so the line slot is still the empty list.
     auto macroError = [&](FCError *err) {
-        if (err->line().isNothing())
+        if (!err->lineCaptured_)
+        {
             err->line() = sourceLine;
+            err->lineCaptured_ = true;
+        }
         ece_trace("ece_expandMacroReturn: popping macro frame");
         callFrameStack_.pop_back();
         ece_resumeCaller(DatumPtr(err));
