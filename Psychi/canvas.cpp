@@ -279,7 +279,7 @@ void Canvas::addLabel(const QString &aText)
     const qreal logicalSize = labelFont_.pointSizeF();
     if (logicalSize > 0)
         drawnFont.setPointSizeF(logicalSize * qAbs(scrunchY_));
-    Label l(aText, QPointF(turtleMatrix_.dx(), (logicalSize * -2) - turtleMatrix_.dy()), drawnFont);
+    Label l(aText, QPointF(turtleMatrix_.dx(), (logicalSize * -1) - turtleMatrix_.dy()), drawnFont);
     pushLineGroup();
     drawingElementList_.emplace_back(l);
     update();
