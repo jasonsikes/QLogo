@@ -1,5 +1,0 @@
-make "t "io
-openread [t -50]
-setread "t
-show readword
-closeall
