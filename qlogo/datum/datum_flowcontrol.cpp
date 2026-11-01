@@ -50,28 +50,9 @@ void FCError::commonInit()
         if (cf->sourceNode_.isASTNode())
         {
             procedure() = cf->sourceNode_.astnodeValue()->nodeName_;
-            if (blameCaller)
+            if (Evaluator *ev = cf->topOwnEvaluator())
             {
-                // The caller's evaluators sit below this frame. The topmost one
-                // is the instruction line that invoked the throwing procedure.
-                // topEvaluator() is the global top, which is this frame's line.
-                const std::size_t frameStart = k->currentCallFrame()->evaluationStackStartIndex_;
-                std::size_t index = frameStart;
-                while (index > cf->evaluationStackStartIndex_)
-                {
-                    --index;
-                    Evaluator &ev = k->evaluationStack_[index];
-                    if (ev.owningFrame_ == cf)
-                    {
-                        line() = ev.list_;
-                        lineCaptured_ = true;
-                        break;
-                    }
-                }
-            }
-            else if (!cf->isEvaluationStackViewEmpty())
-            {
-                line() = cf->topEvaluator()->list_;
+                line() = ev->list_;
                 lineCaptured_ = true;
             }
         }

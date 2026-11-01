@@ -126,9 +126,16 @@ struct CallFrame
     /// @return The size of the evaluation stack.
     size_t evaluationStackSize() const;
 
-    /// @brief Return the topmost Evaluator object.
+    /// @brief Return the topmost Evaluator object on the global stack.
+    /// @details This is the current frame's top evaluator. A caller frame still
+    /// has its own evaluators below the callee; use topOwnEvaluator() for those.
     /// @return The topmost Evaluator object.
     Evaluator *topEvaluator();
+
+    /// @brief Return the top evaluator owned by this frame, or nullptr if it has none.
+    /// @details Evaluators for this frame run from its start index up to the next
+    /// frame's start index, or to the end of the stack when this frame is current.
+    Evaluator *topOwnEvaluator();
 
     /// @brief Make 'name' local with no value, like LOCAL.
     /// @param name Any word for the variable. Stored under Word::interned().

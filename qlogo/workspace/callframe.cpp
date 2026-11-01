@@ -99,6 +99,23 @@ Evaluator *CallFrame::topEvaluator()
     return &(Kernel::get().evaluationStack_.back());
 }
 
+Evaluator *CallFrame::topOwnEvaluator()
+{
+    Kernel &kernel = Kernel::get();
+    std::size_t end = kernel.evaluationStack_.size();
+    for (std::size_t i = 0; i + 1 < kernel.callFrameStack_.size(); ++i)
+    {
+        if (&kernel.callFrameStack_[i] == this)
+        {
+            end = kernel.callFrameStack_[i + 1].evaluationStackStartIndex_;
+            break;
+        }
+    }
+    if (end <= evaluationStackStartIndex_ || end > kernel.evaluationStack_.size())
+        return nullptr;
+    return &kernel.evaluationStack_[end - 1];
+}
+
 bool CallFrame::isEvaluationStackViewEmpty() const
 {
     return evaluationStackStartIndex_ == Kernel::get().evaluationStack_.size();
