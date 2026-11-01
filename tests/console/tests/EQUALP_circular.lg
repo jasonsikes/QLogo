@@ -1,0 +1,26 @@
+make "a [a b c [d e f]]
+make "b [a b c [d e f]]
+.setfirst :a :a
+.setfirst :b :b
+show :a=:b
+make "c [a b c [d e g]]
+.setfirst :c :c
+show :a=:c
+make "only [a b c [d e f]]
+show :a=:only
+make "d [a b c]
+make "e [a b c]
+.setbf :d :d
+.setbf :e :e
+show :d=:e
+make "f [z b c]
+.setbf :f :f
+show :d=:f
+make "g [[x] y]
+make "h [[z] y]
+.setfirst first :g :g
+.setfirst first :h :h
+show :g=:h
+make "i [[x] q]
+.setfirst first :i :i
+show :g=:i

@@ -172,9 +172,12 @@ static bool areDatumsEqual(VisitedMap &visited, Datum *d1, Datum *d2, Qt::CaseSe
 
         while (l1 != EmptyList::instance() && l2 != EmptyList::instance())
         {
+            if (visited.contains(l1))
+                return visited.get(l1) == l2;
+            visited.add(l1, l2);
+
             if (!areDatumsEqual(visited, l1->head.datumValue(), l2->head.datumValue(), cs))
                 return false;
-            visited.add(l1, l2);
             l1 = l1->tail.listValue();
             l2 = l2->tail.listValue();
         }
