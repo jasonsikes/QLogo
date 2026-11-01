@@ -73,10 +73,11 @@ struct CallFrame
     bool allowNothing_ = false;
 
     /// @brief True when the caller of this procedure requires a value.
-    /// @details Set from the call site in beginProcedure. .MAYBEOUTPUT uses it so a
-    /// missing input is "didn't output to .maybeoutput" inside this procedure when
-    /// the caller wants a value, and acts as STOP when the caller does not.
-    /// A STOP tail call clears it. Other continuations leave it unchanged.
+    /// @details Set when the frame is entered, from beginProcedure or from a nested
+    /// continuation. .MAYBEOUTPUT uses it so a missing input is "didn't output to
+    /// .maybeoutput" inside this procedure when the caller wants a value, and acts
+    /// as STOP when the caller does not. A STOP tail call clears it. Other
+    /// same-frame continuations leave it unchanged.
     bool outputRequired_ = false;
 
     /// @brief This frame realizes a continuation that a parent evaluator is waiting on.
@@ -156,6 +157,18 @@ struct CallFrame
     /// @param arguments The linked list of arguments to apply to the new node.
     /// @param demandNothing If true, OR demandNothing_ onto the frame (STOP TCO).
     void applyContinuation(ASTNode *node, const DatumPtr &arguments, bool demandNothing);
+
+    /// @brief Record the output contract of a tail call on this frame.
+    /// @param demandNothing STOP. Sticks on, and clears outputRequired_.
+    /// @param allowNothing STOP or .MAYBEOUTPUT. A missing value is allowed. Sticks on.
+    /// @param nested This frame was just created for a continuation a parent evaluator
+    /// is waiting on. Sets nestedContinuation_, outputSource_, and outputRequired_.
+    /// A same-frame tail call passes false and leaves those as they were.
+    /// @param callerRequiresValue The value for outputRequired_ when @p nested is true
+    /// and this is not STOP. Same rule as beginProcedure.
+    /// @param outputSource OUTPUT, STOP, or .MAYBEOUTPUT. Stored when @p nested is true.
+    void installContinuation(
+        bool demandNothing, bool allowNothing, bool nested, bool callerRequiresValue, const DatumPtr &outputSource);
 
     /// @brief return true if the evaluation stack is empty.
     /// @return True if the evaluation stack is empty, false otherwise.

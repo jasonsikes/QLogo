@@ -1248,19 +1248,26 @@ bool frameOnLastBodyLine(const CallFrame &frame)
     return lines->tail.isList() && lines->tail.listValue()->isEmpty();
 }
 
+/// What beginProcedure stores in outputRequired_. @p parent is the frame that is
+/// current while the call is entered. InheritIfLastLine copies that frame's
+/// requirement only on its last line. A nested continuation uses the same rule:
+/// it is another procedure entry, and the waiting frame is @p parent.
+bool resolveCallerRequiresValue(OutputRequired outputRequired, const CallFrame *parent)
+{
+    if (outputRequired == OutputRequired::RequireValue)
+        return true;
+    if (outputRequired == OutputRequired::InheritIfLastLine && parent != nullptr)
+        return parent->outputRequired_ && frameOnLastBodyLine(*parent);
+    return false;
+}
+
 } // namespace
 
 void Kernel::beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount, OutputRequired outputRequired)
 {
     ece_trace("beginProcedure: " + node->nodeName_.toString());
-    bool callerRequiresValue = false;
-    if (outputRequired == OutputRequired::RequireValue)
-        callerRequiresValue = true;
-    else if (outputRequired == OutputRequired::InheritIfLastLine && !callFrameStack_.empty())
-    {
-        const CallFrame &parent = callFrameStack_.back();
-        callerRequiresValue = parent.outputRequired_ && frameOnLastBodyLine(parent);
-    }
+    const CallFrame *parent = callFrameStack_.empty() ? nullptr : &callFrameStack_.back();
+    const bool callerRequiresValue = resolveCallerRequiresValue(outputRequired, parent);
     callFrameStack_.emplace_back(node, paramAry, paramCount);
     callFrameStack_.back().outputRequired_ = callerRequiresValue;
     nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
@@ -1741,13 +1748,15 @@ void Kernel::ece_popEvaluator()
         DatumPtr outputSource = continuation->sourceNode_;
 
         cf->retvalToParent_ = nothing();
+        // The child is a procedure entry. OUTPUT and .MAYBEOUTPUT inherit the
+        // waiting procedure's output requirement the way beginProcedure does.
+        // STOP passes AcceptNothing; installContinuation clears the flag.
+        const bool callerRequiresValue = resolveCallerRequiresValue(
+            demandNothing ? OutputRequired::AcceptNothing : OutputRequired::InheritIfLastLine, cf);
         callFrameStack_.emplace_back(procedure, static_cast<Datum **>(nullptr), static_cast<uint32_t>(0));
         CallFrame *child = currentCallFrame();
         child->arguments_ = arguments;
-        child->demandNothing_ = demandNothing;
-        child->allowNothing_ = allowNothing;
-        child->nestedContinuation_ = true;
-        child->outputSource_ = outputSource;
+        child->installContinuation(demandNothing, allowNothing, true, callerRequiresValue, outputSource);
         ece_trace("ece_popEvaluator: nested continuation " + procedure->nodeName_.toString());
         nextOperation_ = &Kernel::ece_processParameters;
         return;

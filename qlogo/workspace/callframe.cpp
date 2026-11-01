@@ -82,16 +82,28 @@ void CallFrame::applyContinuation(ASTNode *node, const DatumPtr &arguments, bool
     // The continued procedure has not run a body line yet.
     lastBodyLine_ = nothing();
     // isMacroCall_ and the splice flags stay as they were for the original call.
-    // demandNothing_ only turns on: STOP TCO after OUTPUT TCO still forbids a value.
-    // STOP also drops outputRequired_: the continued procedure must not output.
-    // nestedContinuation_, allowNothing_, outputRequired_ (unless cleared here),
-    // and outputSource_ stay as well: a tail call inside a nested OUTPUT/STOP
-    // still reports to the waiting evaluator.
+    // The output contract is sticky: this is the same frame, not a new entry.
+    installContinuation(demandNothing, false, false, false, nothing());
+}
+
+void CallFrame::installContinuation(
+    bool demandNothing, bool allowNothing, bool nested, bool callerRequiresValue, const DatumPtr &outputSource)
+{
+    // demandNothing_ only turns on: STOP after OUTPUT still forbids a value.
     if (demandNothing)
-    {
         demandNothing_ = true;
-        outputRequired_ = false;
+    if (allowNothing)
+        allowNothing_ = true;
+    if (nested)
+    {
+        // New procedure entry. The waiting procedure's output requirement is
+        // this procedure's, unless STOP cleared it below.
+        nestedContinuation_ = true;
+        outputSource_ = outputSource;
+        outputRequired_ = callerRequiresValue;
     }
+    if (demandNothing_)
+        outputRequired_ = false;
 }
 
 Evaluator *CallFrame::topEvaluator()

@@ -1,0 +1,5 @@
+? > > leaf defined
+? > > mid defined
+? hello
+print didn't output to .maybeoutput in leaf
+[.maybeoutput print "hello]

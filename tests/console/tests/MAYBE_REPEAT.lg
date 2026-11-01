@@ -1,0 +1,7 @@
+to leaf
+.maybeoutput print "hello
+end
+to mid
+repeat 1 [.maybeoutput leaf]
+end
+print mid
