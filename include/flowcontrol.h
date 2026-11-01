@@ -93,16 +93,21 @@ struct FCContinuation : public FlowControl
     /// .MAYBEOUTPUT leave this false so a value is the caller's output.
     bool demandNothing_ = false;
 
+    /// @brief True when no output from the continued procedure is acceptable.
+    bool allowNothing_ = false;
+
     FCContinuation(const DatumPtr &aSourceNode,
                    const DatumPtr &aProcedure,
                    const QList<DatumPtr> &aParams,
-                   bool demandNothing = false)
+                   bool demandNothing = false,
+                   bool allowNothing = false)
     {
         isa_ = Datum::typeContinuation;
         data_ = aProcedure;
         dataAry_ = aParams;
         sourceNode_ = aSourceNode;
         demandNothing_ = demandNothing;
+        allowNothing_ = allowNothing;
     }
 
     /// @brief The procedure to continue.

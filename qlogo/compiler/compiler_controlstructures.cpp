@@ -342,16 +342,24 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node, TypeMask expected, 
         // STOP (no TypeDatum in childExpected) still TCO's so `walk :n-1 stop`
         // does not grow the stack, but demandNothing forbids the callee's
         // output from becoming this procedure's output (.MAYBEOUTPUT does not).
+        // allowNothing is STOP and .MAYBEOUTPUT: a missing value is not an error.
+        // When this continuation is the result of a nested list (CATCH, REPEAT,
+        // RUN, ...), the evaluator runs it as its own frame so the waiting
+        // command still sees a throw or OUTPUT.
         Value *childAddr = CoAddr(child.astnodeValue());
+        Value *sourceAddr = CoAddr(node.astnodeValue());
 
         AllocaInst *ary = generateChildrenAlloca(child.astnodeValue(), TypeDatum, DBG_NAME("childAry"));
         Value *demandNothing = CoBool((childExpected & TypeDatum) == 0);
+        Value *allowNothing = CoBool((childExpected & TypeNothing) != 0);
         Value *retObj = generateCallExtern(getCtrlContinuation,
                                            PaAddr(scaff_->evaluator_),
                                            PaAddr(childAddr),
                                            PaAddr(ary),
                                            PaInt32(allocaN(ary)),
-                                           PaBool(demandNothing));
+                                           PaBool(demandNothing),
+                                           PaAddr(sourceAddr),
+                                           PaBool(allowNothing));
         endAllocaLifetime(ary);
         return retObj;
     }

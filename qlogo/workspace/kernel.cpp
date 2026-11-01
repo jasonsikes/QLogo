@@ -1641,6 +1641,51 @@ void Kernel::ece_decideEmptyEvaluationStack()
     nextOperation_ = &Kernel::ece_evaluateStack;
 }
 
+namespace
+{
+
+bool producedNoValue(const DatumPtr &value)
+{
+    return (value.isa() & Datum::typeUnboundMask) != 0;
+}
+
+/// Outcome of a tail call that a parent evaluator is still waiting on.
+/// An error passes through. A value becomes OUTPUT from the waiting procedure.
+/// STOP and .MAYBEOUTPUT may produce no value; OUTPUT may not.
+/// When @p missingOutput is set, the caller creates the "didn't output" error
+/// after this frame is popped, so the error is located in the waiting procedure.
+DatumPtr resultForNestedContinuation(CallFrame *cf, bool *missingOutput, DatumPtr *who, DatumPtr *toWhom)
+{
+    *missingOutput = false;
+    const DatumPtr raw = cf->retvalToParent_;
+    if (raw.isErr())
+        return raw;
+
+    const DatumPtr source = cf->outputSource_.isASTNode() ? cf->outputSource_ : cf->sourceNode_;
+    auto asReturn = [&](const DatumPtr &value) { return DatumPtr(new FCReturn(source, value)); };
+
+    DatumPtr value = raw;
+    if (raw.isa() == Datum::typeReturn)
+        value = static_cast<FCReturn *>(raw.flowControlValue())->returnValue();
+
+    if (producedNoValue(value))
+    {
+        if (cf->demandNothing_ || cf->allowNothing_)
+            return asReturn(nothing());
+        *missingOutput = true;
+        *who = cf->sourceNode_.isASTNode() ? cf->sourceNode_.astnodeValue()->nodeName_ : cf->sourceNode_;
+        *toWhom = source.isASTNode() ? source.astnodeValue()->nodeName_ : source;
+        return nothing();
+    }
+
+    if (cf->demandNothing_ && (value.isa() & Datum::typeDataMask) != 0)
+        return DatumPtr(FCError::dontSay(value));
+
+    return asReturn(value);
+}
+
+} // namespace
+
 void Kernel::ece_popEvaluator()
 {
     ece_trace("ece_popEvaluator");
@@ -1656,6 +1701,28 @@ void Kernel::ece_popEvaluator()
               retvalSourceList_.toString());
 
     cf->popEvaluator();
+
+    if (cf->evaluationStackSize() > 0 && cf->retvalToParent_.isa() == Datum::typeContinuation)
+    {
+        auto *continuation = static_cast<FCContinuation *>(cf->retvalToParent_.flowControlValue());
+        auto *procedure = continuation->procedure().astnodeValue();
+        DatumPtr arguments = continuation->params().first();
+        const bool demandNothing = continuation->demandNothing_;
+        const bool allowNothing = continuation->allowNothing_;
+        DatumPtr outputSource = continuation->sourceNode_;
+
+        cf->retvalToParent_ = nothing();
+        callFrameStack_.emplace_back(procedure, static_cast<Datum **>(nullptr), static_cast<uint32_t>(0));
+        CallFrame *child = currentCallFrame();
+        child->arguments_ = arguments;
+        child->demandNothing_ = demandNothing;
+        child->allowNothing_ = allowNothing;
+        child->nestedContinuation_ = true;
+        child->outputSource_ = outputSource;
+        ece_trace("ece_popEvaluator: nested continuation " + procedure->nodeName_.toString());
+        nextOperation_ = &Kernel::ece_processParameters;
+        return;
+    }
 
     if (cf->evaluationStackSize() > 0)
     {
@@ -1686,6 +1753,29 @@ void Kernel::ece_exitProcedure()
 
     // There shouldn't be any remaining evaluators on the evaluation stack.
     Q_ASSERT(currentCallFrame()->evaluationStackSize() == 0);
+
+    // A continuation that was demoted to its own frame reports to the evaluator
+    // that was waiting when the continuation was created. Tail calls inside that
+    // frame stay here (typeContinuation / typeGoto). Macros still expand.
+    CallFrame *frame = currentCallFrame();
+    if (frame->nestedContinuation_ && !frame->isMacroCall_)
+    {
+        const Datum::DatumType kind = frame->retvalToParent_.isa();
+        if (kind != Datum::typeContinuation && kind != Datum::typeGoto)
+        {
+            bool missingOutput = false;
+            DatumPtr who;
+            DatumPtr toWhom;
+            DatumPtr result = resultForNestedContinuation(frame, &missingOutput, &who, &toWhom);
+            ece_trace("ece_exitProcedure nested continuation");
+            callFrameStack_.pop_back();
+            if (missingOutput)
+                result = DatumPtr(FCError::didntOutput(who, toWhom));
+            currentCallFrame()->topEvaluator()->watch(result);
+            ece_resumeCaller(result);
+            return;
+        }
+    }
 
     // retval_ contains the result of the procedure.
     switch (currentCallFrame()->retvalToParent_.isa())

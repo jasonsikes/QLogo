@@ -83,6 +83,8 @@ void CallFrame::applyContinuation(ASTNode *node, const DatumPtr &arguments, bool
     lastBodyLine_ = nothing();
     // isMacroCall_ and the splice flags stay as they were for the original call.
     // demandNothing_ only turns on: STOP TCO after OUTPUT TCO still forbids a value.
+    // nestedContinuation_, allowNothing_, and outputSource_ stay as well: a tail
+    // call inside a nested OUTPUT/STOP still reports to the waiting evaluator.
     if (demandNothing)
         demandNothing_ = true;
 }

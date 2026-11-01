@@ -136,17 +136,27 @@ EXPORTC addr_t getCtrlReturn(addr_t eAddr, addr_t astNodeAddr, addr_t retvalAddr
 
 /// @brief Create and return a CONTINUATION control object.
 /// @param eAddr a pointer to the Evaluator object context.
-/// @param astNodeAddr a pointer to the ASTNode which is the source node of the CONTINUATION.
-/// @param paramAryAddr a pointer to an array of pointers to Datum objects which are the parameters to the CONTINUATION.
-/// @param paramCount the number of parameters to the CONTINUATION.
+/// @param astNodeAddr the procedure call to tail-call.
+/// @param argAryAddr a pointer to an array of pointers to Datum objects which are the inputs.
+/// @param argCount the number of inputs.
 /// @param demandNothing true when the tail call is STOP (command position): the
 ///        continued procedure must not output a value.
+/// @param sourceNodeAddr OUTPUT, STOP, or .MAYBEOUTPUT. The procedure to run is
+///        astNodeAddr; this node is the command that tail-called it.
+/// @param allowNothing true for STOP and .MAYBEOUTPUT, where the continued
+///        procedure may produce no value. OUTPUT leaves this false.
 /// @return a pointer to the CONTINUATION control object that was generated.
-EXPORTC addr_t
-getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t argAryAddr, uint32_t argCount, bool demandNothing) noexcept
+EXPORTC addr_t getCtrlContinuation(addr_t eAddr,
+                                   addr_t astNodeAddr,
+                                   addr_t argAryAddr,
+                                   uint32_t argCount,
+                                   bool demandNothing,
+                                   addr_t sourceNodeAddr,
+                                   bool allowNothing) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astNodeAddr);
+    auto *sourceNode = reinterpret_cast<ASTNode *>(sourceNodeAddr);
     auto **argAry = reinterpret_cast<Datum **>(argAryAddr);
     auto nodePtr = DatumPtr(node);
 
@@ -157,7 +167,7 @@ getCtrlContinuation(addr_t eAddr, addr_t astNodeAddr, addr_t argAryAddr, uint32_
     }
     // Assign the Logo-style linked list to the first element of the parameters QList.
     QList<DatumPtr> args{arguments};
-    auto *control = new FCContinuation(DatumPtr(reinterpret_cast<Datum *>(astNodeAddr)), nodePtr, args, demandNothing);
+    auto *control = new FCContinuation(DatumPtr(sourceNode), nodePtr, args, demandNothing, allowNothing);
     e->watch(control);
     return reinterpret_cast<addr_t>(control);
 }
@@ -314,9 +324,9 @@ EXPORTC addr_t callPause(addr_t eAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     return catchError(e, [&]() -> addr_t {
-        Datum *retval = Kernel::get().pause().datumValue();
+        DatumPtr retval = Kernel::get().pause();
         e->watch(retval);
-        return reinterpret_cast<addr_t>(retval);
+        return reinterpret_cast<addr_t>(retval.datumValue());
     });
 }
 

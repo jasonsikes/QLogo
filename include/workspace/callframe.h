@@ -69,6 +69,19 @@ struct CallFrame
     /// frame. A value that would become the caller's output is "You don't say".
     bool demandNothing_ = false;
 
+    /// @brief True when no output is acceptable from this frame.
+    bool allowNothing_ = false;
+
+    /// @brief This frame realizes a continuation that a parent evaluator is waiting on.
+    /// @details A tail call inside CATCH, REPEAT, RUN, or any other nested list must
+    /// not replace the waiting procedure. The frame's result is delivered back to
+    /// that evaluator. Preserved across applyContinuation.
+    bool nestedContinuation_ = false;
+
+    /// @brief OUTPUT, STOP, or .MAYBEOUTPUT node that created a nested continuation.
+    /// @details Used as the source of the FCReturn delivered to the waiting evaluator.
+    DatumPtr outputSource_;
+
     /// @brief The current argument being processed (currentParameterName_ and optional default value).
     DatumPtr currentArgument_;
 
