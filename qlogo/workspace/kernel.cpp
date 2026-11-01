@@ -1696,6 +1696,9 @@ DatumPtr resultForNestedContinuation(CallFrame *cf, bool *missingOutput, DatumPt
 
     if (producedNoValue(value))
     {
+        // STOP sets both flags. OUTPUT sets neither, then a later STOP tail call
+        // turns on demandNothing_ and leaves allowNothing_ false. Either flag
+        // means a missing value is the continued procedure's STOP.
         if (cf->demandNothing_ || cf->allowNothing_)
             return asReturn(nothing());
         *missingOutput = true;
