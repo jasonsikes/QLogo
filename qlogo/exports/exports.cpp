@@ -356,13 +356,38 @@ EXPORTC addr_t getErrorNoGraphics(addr_t eAddr) noexcept
 /// @param eAddr a pointer to the Evaluator object context.
 /// @param tagAddr a pointer to the Datum object which is the tag of the error.
 /// @param outputAddr a pointer to the Datum object which is the output of the error.
+///        For THROW "ERROR this is the message, not a value for CATCH to output.
 /// @return a pointer to the Error object that was generated.
 EXPORTC addr_t getErrorCustom(addr_t eAddr, addr_t tagAddr, addr_t outputAddr) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *tag = reinterpret_cast<Datum *>(tagAddr);
     auto *output = reinterpret_cast<Datum *>(outputAddr);
-    FCError *err = FCError::custom(DatumPtr(tag), nothing(), DatumPtr(output));
+    DatumPtr tagPtr(tag);
+    DatumPtr outputPtr(output);
+    DatumPtr message = nothing();
+
+    // (THROW "ERROR message) uses the second input as the error text (code 35).
+    // CATCH "ERROR does not output it. A non-word is stored as its print form,
+    // one word that may contain spaces.
+    if ((outputPtr.isa() & Datum::typeNothing) == 0 &&
+        tagPtr.toString(Datum::ToStringFlags_Key) == QObject::tr("ERROR"))
+    {
+        if (outputPtr.isWord())
+        {
+            message = outputPtr;
+        }
+        else
+        {
+            QString text = outputPtr.toString(Datum::ToStringFlags_None);
+            if (text.isNull())
+                text = QStringLiteral("");
+            message = DatumPtr(new Word(text));
+        }
+        outputPtr = nothing();
+    }
+
+    FCError *err = FCError::custom(tagPtr, message, outputPtr);
     e->watch(err);
     return reinterpret_cast<addr_t>(err);
 }

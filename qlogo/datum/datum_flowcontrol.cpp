@@ -40,10 +40,36 @@ void FCError::commonInit()
     if (code_ != ERR_BAD_DEFAULT_EXPRESSION && !k->callFrameStack_.empty())
     {
         CallFrame *cf = k->currentCallFrame();
+        // (THROW "ERROR message) is reported where the throwing procedure was
+        // invoked, so a user procedure can look like a primitive. One-input
+        // THROW "ERROR stays on the THROW line.
+        const bool blameCaller = code_ == ERR_CUSTOM_THROW && k->callFrameStack_.size() >= 2;
+        if (blameCaller)
+            cf = &k->callFrameStack_[k->callFrameStack_.size() - 2];
+
         if (cf->sourceNode_.isASTNode())
         {
             procedure() = cf->sourceNode_.astnodeValue()->nodeName_;
-            if (!cf->isEvaluationStackViewEmpty())
+            if (blameCaller)
+            {
+                // The caller's evaluators sit below this frame. The topmost one
+                // is the instruction line that invoked the throwing procedure.
+                // topEvaluator() is the global top, which is this frame's line.
+                const std::size_t frameStart = k->currentCallFrame()->evaluationStackStartIndex_;
+                std::size_t index = frameStart;
+                while (index > cf->evaluationStackStartIndex_)
+                {
+                    --index;
+                    Evaluator &ev = k->evaluationStack_[index];
+                    if (ev.owningFrame_ == cf)
+                    {
+                        line() = ev.list_;
+                        lineCaptured_ = true;
+                        break;
+                    }
+                }
+            }
+            else if (!cf->isEvaluationStackViewEmpty())
             {
                 line() = cf->topEvaluator()->list_;
                 lineCaptured_ = true;
