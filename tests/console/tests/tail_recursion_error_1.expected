@@ -1,0 +1,5 @@
+? > > foo defined
+? > > baz defined
+? 3
+print didn't output to output in foo
+[output print 3]
