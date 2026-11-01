@@ -449,6 +449,13 @@ static bool isNonEmptyWordOrList(Datum *d)
     return false;
 }
 
+static bool canMapFirstOrButfirst(Datum *d, bool butfirst)
+{
+    if (!butfirst && d->isArray())
+        return true;
+    return isNonEmptyWordOrList(d);
+}
+
 static addr_t mapFirstOrButfirstOverList(addr_t eAddr, addr_t parentNameAddr, addr_t listAddr, bool butfirst)
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
@@ -460,7 +467,7 @@ static addr_t mapFirstOrButfirstOverList(addr_t eAddr, addr_t parentNameAddr, ad
     {
         DatumPtr member = it.element();
         Datum *d = member.datumValue();
-        if (!isNonEmptyWordOrList(d))
+        if (!canMapFirstOrButfirst(d, butfirst))
         {
             FCError *err = FCError::doesntLike(DatumPtr(parentName), member);
             e->watch(err);

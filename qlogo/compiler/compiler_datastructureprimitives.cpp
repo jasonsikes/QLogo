@@ -389,8 +389,17 @@ Value *Compiler::genButfirst(const DatumPtr &node, TypeMask expected)
 /***DOC FIRSTS
 FIRSTS list
 
-    outputs a list of the first items of the members of its input, which
-    must be a list of lists or a list of words.
+        outputs a list containing the FIRST of each member of the input
+        list.  It is an error if any member of the input list is empty.
+        (The input itself may be empty, in which case the output is also
+        empty.)  This could be written as
+
+                to firsts :list
+                output map "first :list
+                end
+
+        but is provided as a primitive in order to speed up the iteration
+        tools MAP, MAP.SE, and FOREACH.
 
 COD***/
 // CMD FIRSTS 1 1 1 d
