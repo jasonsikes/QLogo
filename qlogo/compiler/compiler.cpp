@@ -1604,7 +1604,6 @@ Value *Compiler::generateMaybeoutputResult(ASTNode *parent, Value *child)
 {
     BasicBlock *srcBB = scaff_->builder_.GetInsertBlock();
     BasicBlock *nothingBB = scaff_->createBasicBlock(DBG_NAME("maybeNothing"));
-    BasicBlock *stopBB = scaff_->createBasicBlock(DBG_NAME("maybeStop"));
     BasicBlock *errBB = scaff_->createBasicBlock(DBG_NAME("maybeErr"));
     BasicBlock *joinBB = scaff_->createBasicBlock(DBG_NAME("maybeJoin"));
     scaff_->addColdPathBlocks(errBB);
@@ -1616,20 +1615,17 @@ Value *Compiler::generateMaybeoutputResult(ASTNode *parent, Value *child)
 
     scaff_->builder_.SetInsertPoint(nothingBB);
     Value *required = generateCallExtern(procedureOutputRequired);
-    scaff_->builder_.CreateCondBr(required, errBB, stopBB);
+    scaff_->builder_.CreateCondBr(required, errBB, joinBB);
 
     scaff_->builder_.SetInsertPoint(errBB);
     Value *recovered = generateRecoverDidntOutput(child, parent);
     BasicBlock *recoveredBB = scaff_->builder_.GetInsertBlock();
     scaff_->builder_.CreateBr(joinBB);
 
-    scaff_->builder_.SetInsertPoint(stopBB);
-    scaff_->builder_.CreateBr(joinBB);
-
     scaff_->builder_.SetInsertPoint(joinBB);
     PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 3, DBG_NAME("maybeResult"));
     retval->addIncoming(child, srcBB);
-    retval->addIncoming(child, stopBB);
+    retval->addIncoming(child, nothingBB);
     retval->addIncoming(recovered, recoveredBB);
     return retval;
 }

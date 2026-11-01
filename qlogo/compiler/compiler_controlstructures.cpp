@@ -305,42 +305,35 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node, TypeMask expected, 
     {
         DatumPtr child = node.astnodeValue()->childAtIndex(0);
         DatumPtr proc = child.astnodeValue()->procedure_;
+        // .MAYBEOUTPUT accepts a value or no value. The tail-call path below
+        // leaves that decision to the continued procedure.
+        const bool maybeOutput = (childExpected & TypeDN) == TypeDN;
+        auto controlledReturn = [&](Value *retval) -> Value * {
+            if (maybeOutput)
+                retval = generateMaybeoutputResult(node.astnodeValue(), retval);
+            return generateCallExtern(
+                getCtrlReturn, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
+        };
         if (proc.isNothing())
         {
             // It's a primitive, not a procedure. Generate a call to it.
             // Then generate a return of the value.
             CallSite cs(this, node, childExpected);
-            Value *retval = cs.child(0);
-            if ((childExpected & TypeNothing) != 0 && (childExpected & TypeDatum) != 0)
-                retval = generateMaybeoutputResult(node.astnodeValue(), retval);
-
-            retval = generateCallExtern(
-                getCtrlReturn, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
-            return cs.ret(retval);
+            return cs.ret(controlledReturn(cs.child(0)));
         }
         if (proc.datumValue()->isa_ == Datum::typeProcedure && proc.procedureValue()->isMacro_)
         {
             // A macro must not be tail-called. Its output list is evaluated in this
             // procedure, and that result is what OUTPUT returns.
             CallSite cs(this, node, childExpected);
-            Value *retval = cs.child(0);
-            retval = generateNotFlowControl(retval);
-            if ((childExpected & TypeNothing) != 0 && (childExpected & TypeDatum) != 0)
-                retval = generateMaybeoutputResult(node.astnodeValue(), retval);
-            return cs.ret(generateCallExtern(
-                getCtrlReturn, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval)));
+            return cs.ret(controlledReturn(generateNotFlowControl(cs.child(0))));
         }
         if (tracedProcedureDisablesTco(child.astnodeValue()))
         {
             // TRACE begin/end live at the call site. A continuation would skip
             // them, so evaluate the nested call and return its value instead.
             CallSite cs(this, node, childExpected);
-            Value *retval = cs.child(0);
-            if ((childExpected & TypeNothing) != 0 && (childExpected & TypeDatum) != 0)
-                retval = generateMaybeoutputResult(node.astnodeValue(), retval);
-            retval = generateCallExtern(
-                getCtrlReturn, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
-            return cs.ret(retval);
+            return cs.ret(controlledReturn(cs.child(0)));
         }
         // Else it's a procedure. Generate a tail call to it.
         // Nested AST: CallSite would evaluate the child instead of tail-calling.
