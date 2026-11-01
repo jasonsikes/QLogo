@@ -142,6 +142,8 @@ Kernel::TopLevelResult Kernel::finishTopLevelResult(const DatumPtr &resultIn, bo
 
     if (result.isErr())
     {
+        currentError_ = nothing();
+
         FCError *e = result.errValue();
         if (e->tag().isWord() && (e->code_ == ErrCode::ERR_NO_CATCH))
         {
