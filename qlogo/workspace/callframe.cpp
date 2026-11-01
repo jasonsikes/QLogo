@@ -69,7 +69,8 @@ CallFrame::~CallFrame()
 }
 
 // TODO: create a common initialization function for this and the constructor.
-void CallFrame::applyContinuation(ASTNode *node, const DatumPtr &arguments, bool demandNothing)
+void CallFrame::applyContinuation(
+    ASTNode *node, const DatumPtr &arguments, bool demandNothing, bool allowNothing, const DatumPtr &commandNode)
 {
     DatumPtr body = node->procedure_;
     sourceNode_ = DatumPtr(node);
@@ -83,7 +84,7 @@ void CallFrame::applyContinuation(ASTNode *node, const DatumPtr &arguments, bool
     lastBodyLine_ = nothing();
     // isMacroCall_ and the splice flags stay as they were for the original call.
     // The output contract is sticky: this is the same frame, not a new entry.
-    installContinuation(demandNothing, false, false, false, nothing());
+    installContinuation(demandNothing, allowNothing, false, false, commandNode);
 }
 
 void CallFrame::installContinuation(
@@ -97,10 +98,15 @@ void CallFrame::installContinuation(
     if (nested)
     {
         // New procedure entry. The waiting procedure's output requirement is
-        // this procedure's, unless STOP cleared it below.
+        // this procedure's, unless STOP cleared it below. The command node stays
+        // across later tail calls so the waiting evaluator still receives it.
         nestedContinuation_ = true;
         outputSource_ = outputSource;
         outputRequired_ = callerRequiresValue;
+    }
+    else if (!nestedContinuation_ && outputSource.isASTNode())
+    {
+        outputSource_ = outputSource;
     }
     if (demandNothing_)
         outputRequired_ = false;

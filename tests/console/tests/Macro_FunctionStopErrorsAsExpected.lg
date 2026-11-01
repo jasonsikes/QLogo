@@ -1,0 +1,23 @@
+;; Not strictly a macro test; but, the functionality to handle this error
+;; is closely related to the functionality to catch a macro directly
+;; calling stop
+
+TO Tests.Macro._StopFunction
+  STOP
+END
+
+TO Tests.Macro._CallStopFunction
+  OUTPUT Tests.Macro._StopFunction
+END
+
+TO Tests.Macro.FunctionStopErrorsAsExpected
+  CATCH "Error [ Tests.Macro._CallStopFunction ]
+  LOCALMAKE "err ERROR
+  show :err ;; shows empty list
+
+  ; Should say "%p didn't output to %p"
+  OUTPUT WORD RUN [NOT EMPTY? :err] ~
+              RUN [FIRST :err ]
+END
+
+show Tests.Macro.FunctionStopErrorsAsExpected

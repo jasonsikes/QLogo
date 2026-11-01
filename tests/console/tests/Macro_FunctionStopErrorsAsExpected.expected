@@ -1,0 +1,5 @@
+? ? ? ? ? > > Tests.Macro._StopFunction defined
+? ? > > Tests.Macro._CallStopFunction defined
+? ? > > > > > > ~ > Tests.Macro.FunctionStopErrorsAsExpected defined
+? ? [5 Tests.Macro._StopFunction didn't output to OUTPUT Tests.Macro._StopFunction []]
+true5

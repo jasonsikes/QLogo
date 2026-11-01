@@ -86,8 +86,12 @@ struct CallFrame
     /// that evaluator. Preserved across applyContinuation.
     bool nestedContinuation_ = false;
 
-    /// @brief OUTPUT, STOP, or .MAYBEOUTPUT node that created a nested continuation.
-    /// @details Used as the source of the FCReturn delivered to the waiting evaluator.
+    /// @brief OUTPUT, STOP, or .MAYBEOUTPUT node of the continuation this frame is running.
+    /// @details For a nested frame, this is the source of the FCReturn delivered to the
+    /// waiting evaluator and is not replaced by a later tail call. For a same-frame
+    /// tail call, this is the latest command. Together with demandNothing_ and
+    /// allowNothing_ it is the continuation's output contract: OUTPUT leaves both
+    /// flags clear, so a missing value is "didn't output".
     DatumPtr outputSource_;
 
     /// @brief The current argument being processed (currentParameterName_ and optional default value).
@@ -156,17 +160,22 @@ struct CallFrame
     /// @param node The ASTNode of the new procedure to continue with.
     /// @param arguments The linked list of arguments to apply to the new node.
     /// @param demandNothing If true, OR demandNothing_ onto the frame (STOP TCO).
-    void applyContinuation(ASTNode *node, const DatumPtr &arguments, bool demandNothing);
+    /// @param allowNothing STOP or .MAYBEOUTPUT. OUTPUT passes false: the continued
+    /// procedure must produce a value.
+    /// @param commandNode OUTPUT, STOP, or .MAYBEOUTPUT. Remembered when this is OUTPUT.
+    void applyContinuation(
+        ASTNode *node, const DatumPtr &arguments, bool demandNothing, bool allowNothing, const DatumPtr &commandNode);
 
     /// @brief Record the output contract of a tail call on this frame.
     /// @param demandNothing STOP. Sticks on, and clears outputRequired_.
     /// @param allowNothing STOP or .MAYBEOUTPUT. A missing value is allowed. Sticks on.
     /// @param nested This frame was just created for a continuation a parent evaluator
-    /// is waiting on. Sets nestedContinuation_, outputSource_, and outputRequired_.
-    /// A same-frame tail call passes false and leaves those as they were.
+    /// is waiting on. Sets nestedContinuation_ and outputRequired_. outputSource_ then
+    /// stays put across later tail calls.
     /// @param callerRequiresValue The value for outputRequired_ when @p nested is true
     /// and this is not STOP. Same rule as beginProcedure.
-    /// @param outputSource OUTPUT, STOP, or .MAYBEOUTPUT. Stored when @p nested is true.
+    /// @param outputSource OUTPUT, STOP, or .MAYBEOUTPUT. Stored for a new nested frame,
+    /// and for a same-frame tail call that is not already nested.
     void installContinuation(
         bool demandNothing, bool allowNothing, bool nested, bool callerRequiresValue, const DatumPtr &outputSource);
 
