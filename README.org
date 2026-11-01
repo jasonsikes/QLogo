@@ -10,17 +10,15 @@ Redistribution and use in source and binary forms, with or without modification,
 
 ** About
 
+This project builds two programs: QLogo and Psychi.
+
 *** QLogo
 
-*QLogo* is an interpreter for the UCBLogo language written in C++ using Qt and LLVM. It mimics the UCBLogo interpreter developed by Brian Harvey, et al. at U.C. Berkeley.
+*QLogo* is a compiler/interpreter for the UCBLogo language written in C++ using Qt and LLVM. It mimics very closely the UCBLogo interpreter developed by Brian Harvey, et al. at U.C. Berkeley.
 
-You can find more information about the UCBLogo language using the UCBLogo Manual here:
+You can find more information about the UCBLogo language by reading the UCBLogo Manual here:
 
 http://people.eecs.berkeley.edu/~bh/usermanual
-
-The QLogo interpreter is _incomplete_. For an *actual working* UCBLogo interpreter see:
-
-https://github.com/jrincayc/ucblogo-code
 
 *** Psychi
 
@@ -30,8 +28,8 @@ https://github.com/jrincayc/ucblogo-code
 
 At this time I am developing and testing QLogo on the following systems:
 
-- Linux (Fedora 43 using Qt 6.10 and LLVM 21), and
-- macOS (Tahoe on Silicon, using LLVM 21 and Qt 6.10 provided by MacPorts), and
+- Linux (Fedora 44 using Qt 6.11 and LLVM 22), and
+- macOS (Tahoe on Silicon, using LLVM 22 and Qt 6.12 provided by MacPorts), and
 - Windows
   - Windows 11 for ARM (although Windows 11 for x86_64 should also work fine)
   - Visual Studio C++
@@ -51,10 +49,10 @@ To the best of my memory, you will need the following packages:
 - CMake
 - Make
 - C++ development packages
-- Qt6 development packages, at least 6.5. Qt6 is big; your distribution may make some of the components "optional". Make sure you have:
+- Qt6 development packages; your distribution may make some of the components "optional". Make sure you have:
   - The Qt6 SQLite development package
   - The Qt6 SVG development package.
-- LLVM development packages, at least version 21.
+- LLVM development packages, at least version 22.
 
 After you have downloaded the QLogo source code, "cd" into the source directory and issue the following commands.
 
@@ -76,7 +74,7 @@ and the graphical user interface with the turtle can be found at:
 
 ** More about QLogo
 
-QLogo aims to imitate, as much as I find reasonable, the UCBLogo programming language and user interface. 
+QLogo aims to imitate, to a great extent, the UCBLogo programming language and user interface. 
 
 ** Here are the nuances; they are small (I hope):
 
@@ -97,8 +95,6 @@ QLogo aims to imitate, as much as I find reasonable, the UCBLogo programming lan
 This enables multiple colors and fonts on the same console.
   
 *** QLogo will look for and automatically load ~startup.lg~ in the user's home directory. It will not search for it in any other path.
-
-~qlogo file.lg~ runs that file as Logo instructions and then presents the prompt.
 
 *** Garbage collection is on-the-fly.
 
@@ -218,13 +214,13 @@ Since QLogo's canvas can have an arbitrary size it is possible that floating poi
 
 For compatibility, ~MOUSEPOS~ and ~CLICKPOS~ are provided as library functions.
 
-**** ~QLOGOVERSION~
+**** ~:QLOGOVERSION~
 
-Outputs a string that is composed of the most recent git tag, number of commits since that tag, and the most recent git commit hash.
+A special variable that contains a string composed of the most recent git tag, number of commits since that tag, and the most recent git commit hash.
 
-**** ~ARGV~:
+**** ~:ARGV~:
 
-A list of every word on the command line used to start qlogo, including the program name. This is similar to ~COMMAND.LINE~ which is the list of words on the command line after a hyphen.
+A special variable that contains a list of every word on the command line used to start qlogo, including the program name. This is similar to ~COMMAND.LINE~ which is the list of words on the command line after a hyphen.
 
 *** The following commands are slightly different:
 
@@ -236,10 +232,6 @@ When using the Word form of ~LPUT~ and ~FPUT~, there is no single-character limi
 
 On the command-line interface ~SETCURSOR~ is a no-op and ~CURSOR~ outputs ~[0 0]~.
 
-**** ~WAIT~:
-
-On the command-line interface QLogo flushes stdout and sleeps in-process. In Psychi, WAIT sends a timer-start message and yields until Psychi replies that the timer fired, so mouse, keyboard, and other UI events keep being handled during the delay.
-
 **** ~SETTEXTCOLOR~ and ~SETTC~:
 
 On the command-line interface this is a no-op. A parenthesized call with one input changes only the foreground color. Colors use the same five forms as ~SETPENCOLOR~.
@@ -250,7 +242,13 @@ On the command-line interface ~SETTEXTSIZE~, ~INCREASEFONT~, ~DECREASEFONT~, and
 
 **** ~OPENWRITE~ character buffers:
 
-As in UCBLogo, ~OPENWRITE~ accepts a list, which names a character buffer. QLogo identifies the buffer by the variable named in the first element rather than by list identity (~.EQ~). Any further members are ignored. After, for example, `OPENWRITE [FOO]`, the commands `SETWRITE [FOO]` and `SETWRITE "FOO` have identical meanings.
+As in UCBLogo, ~OPENWRITE~ accepts a list, which names a character buffer. QLogo identifies the buffer by the variable named in the first element rather than by list identity (~.EQ~). After, for example, `OPENWRITE [FOO 200]`, the commands `SETWRITE [FOO]` and `SETWRITE "FOO` have identical meanings.
 
-UCBLogo may use the second list element as the buffer size, but QLogo has no size limit.
+UCBLogo may use the second list element as the buffer size, but QLogo has no size limit so the size parameter is ignored. So in QLogo these two commands are equivalent:
+
+~OPENWRITE [FOO]~
+
+and
+
+~OPENWRITE [FOO 200]
 
