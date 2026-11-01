@@ -1518,20 +1518,17 @@ Value *Compiler::genExecProcedure(const DatumPtr &node, TypeMask expected)
     AllocaInst *paramAry = cs.allocaAry(DBG_NAME("paramAry"));
     Value *vAstnodeValue = CoAddr(node.astnodeValue());
     Value *vParamArySize = CoInt32(node.astnodeValue()->countOfChildren());
-    // 1: caller requires a value. 2: tail of a line; inherit when this is the
-    // last body line of a procedure whose caller required a value. 0: a missing
-    // value is acceptable (command position).
-    int32_t outputRequiredMode = 0;
+    OutputRequired outputRequired = OutputRequired::AcceptNothing;
     if ((expected & TypeNothing) == 0)
-        outputRequiredMode = 1;
+        outputRequired = OutputRequired::RequireValue;
     else if (ast->inSequenceTail_ && (expected & ~TypeNothing) != 0)
-        outputRequiredMode = 2;
+        outputRequired = OutputRequired::InheritIfLastLine;
     generateCallExtern(beginProcedure,
                        PaAddr(scaff_->evaluator_),
                        PaAddr(vAstnodeValue),
                        PaAddr(paramAry),
                        PaInt32(vParamArySize),
-                       PaInt32(CoInt32(outputRequiredMode)));
+                       PaInt32(CoInt32(static_cast<int32_t>(outputRequired))));
     endAllocaLifetime(paramAry);
 
     generateCoroSuspend();

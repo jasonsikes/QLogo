@@ -433,10 +433,8 @@ class Kernel
     /// @param node The ASTNode that holds the command, the procedure name and parameters.
     /// @param paramAry The parameters to apply to the procedure.
     /// @param paramCount The number of parameters to the procedure.
-    /// @param outputRequiredMode 1 if the caller requires a value, 2 if this call is
-    /// the tail of a line and should copy the caller's requirement when that line is
-    /// the procedure's last line, 0 if a missing value is acceptable.
-    void beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount, int outputRequiredMode);
+    /// @param outputRequired See OutputRequired.
+    void beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount, OutputRequired outputRequired);
 
     /// @brief Get the current call frame.
     CallFrame *currentCallFrame();

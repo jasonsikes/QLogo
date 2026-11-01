@@ -1250,19 +1250,19 @@ bool frameOnLastBodyLine(const CallFrame &frame)
 
 } // namespace
 
-void Kernel::beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount, int outputRequiredMode)
+void Kernel::beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount, OutputRequired outputRequired)
 {
     ece_trace("beginProcedure: " + node->nodeName_.toString());
-    bool outputRequired = false;
-    if (outputRequiredMode == 1)
-        outputRequired = true;
-    else if (outputRequiredMode == 2 && !callFrameStack_.empty())
+    bool callerRequiresValue = false;
+    if (outputRequired == OutputRequired::RequireValue)
+        callerRequiresValue = true;
+    else if (outputRequired == OutputRequired::InheritIfLastLine && !callFrameStack_.empty())
     {
         const CallFrame &parent = callFrameStack_.back();
-        outputRequired = parent.outputRequired_ && frameOnLastBodyLine(parent);
+        callerRequiresValue = parent.outputRequired_ && frameOnLastBodyLine(parent);
     }
     callFrameStack_.emplace_back(node, paramAry, paramCount);
-    callFrameStack_.back().outputRequired_ = outputRequired;
+    callFrameStack_.back().outputRequired_ = callerRequiresValue;
     nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
 }
 

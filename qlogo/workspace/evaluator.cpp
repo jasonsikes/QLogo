@@ -201,9 +201,9 @@ Datum *Evaluator::runListAfterCurrentList(Datum *aList)
     }
 }
 
-void Evaluator::beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount, int outputRequiredMode)
+void Evaluator::beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount, OutputRequired outputRequired)
 {
-    Kernel::get().beginProcedure(node, paramAry, paramCount, outputRequiredMode);
+    Kernel::get().beginProcedure(node, paramAry, paramCount, outputRequired);
 }
 
 Datum *Evaluator::watch(const DatumPtr &d)

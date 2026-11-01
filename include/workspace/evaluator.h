@@ -25,6 +25,18 @@
 
 class CallFrame;
 
+/// @brief How a procedure call decides whether its caller requires a value.
+/// @details The JIT passes this as an int. The numeric values are the ABI.
+enum class OutputRequired : int
+{
+    /// Command position. A missing value is acceptable.
+    AcceptNothing = 0,
+    /// The caller requires a value.
+    RequireValue = 1,
+    /// Tail of a line. Inherit the caller's requirement when this is the procedure's last line.
+    InheritIfLastLine = 2,
+};
+
 /// @brief The Evaluator object handles the evaluation of a list.
 ///
 /// The evaluator handles the evaluation of a list. It provides support functionality
@@ -107,8 +119,8 @@ struct Evaluator
     /// @param node The ASTNode of the procedure to push.
     /// @param paramAry The parameters to apply to the procedure.
     /// @param paramCount The number of parameters to apply.
-    /// @param outputRequiredMode See Kernel::beginProcedure.
-    void beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount, int outputRequiredMode);
+    /// @param outputRequired See OutputRequired.
+    void beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount, OutputRequired outputRequired);
 
     /// @brief Keep @p d alive until this evaluation ends.
     /// @return the given pointer (pass-through).

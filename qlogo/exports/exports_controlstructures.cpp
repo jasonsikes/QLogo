@@ -112,16 +112,14 @@ EXPORTC addr_t stdRuntimeEnd(addr_t eAddr, addr_t astnodeAddr) noexcept
 /// @param astnodeAddr a pointer to the ASTNode object which is the procedure to execute.
 /// @param paramAryAddr a pointer to an array of pointers to Datum objects which are the parameters to the procedure.
 /// @param paramCount the number of parameters to the procedure.
-/// @param outputRequiredMode 1 when the caller requires a value, 2 when the call is
-/// the tail of a line and should inherit that requirement from a last body line,
-/// 0 when a missing value is acceptable.
+/// @param outputRequiredMode An OutputRequired value. The JIT ABI is the enum's int.
 EXPORTC void beginProcedure(
     addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAddr, uint32_t paramCount, int32_t outputRequiredMode) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto **paramAry = reinterpret_cast<Datum **>(paramAryAddr);
-    e->beginProcedure(node, paramAry, paramCount, outputRequiredMode);
+    e->beginProcedure(node, paramAry, paramCount, static_cast<OutputRequired>(outputRequiredMode));
 }
 
 /// @brief True when the current procedure's caller requires a value.
