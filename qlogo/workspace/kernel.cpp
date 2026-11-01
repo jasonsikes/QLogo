@@ -1233,10 +1233,36 @@ Kernel::~Kernel()
  * ECE operations
  ***************************************************/
 
-void Kernel::beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount)
+namespace
+{
+
+/// True when the procedure body line now running is the last line of that body.
+/// runningSourceList_ still includes the current line until the line finishes.
+bool frameOnLastBodyLine(const CallFrame &frame)
+{
+    if (!frame.sourceNode_.isASTNode() || !frame.runningSourceList_.isList())
+        return false;
+    List *lines = frame.runningSourceList_.listValue();
+    if (lines->isEmpty())
+        return false;
+    return lines->tail.isList() && lines->tail.listValue()->isEmpty();
+}
+
+} // namespace
+
+void Kernel::beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount, int outputRequiredMode)
 {
     ece_trace("beginProcedure: " + node->nodeName_.toString());
+    bool outputRequired = false;
+    if (outputRequiredMode == 1)
+        outputRequired = true;
+    else if (outputRequiredMode == 2 && !callFrameStack_.empty())
+    {
+        const CallFrame &parent = callFrameStack_.back();
+        outputRequired = parent.outputRequired_ && frameOnLastBodyLine(parent);
+    }
     callFrameStack_.emplace_back(node, paramAry, paramCount);
+    callFrameStack_.back().outputRequired_ = outputRequired;
     nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;
 }
 

@@ -1,0 +1,4 @@
+? > > maybePrint defined
+? hello
+print didn't output to .maybeoutput in maybePrint
+[.maybeoutput print "hello]

@@ -57,8 +57,8 @@ struct Evaluator
     /// @brief The return value of this evaluation.
     Datum *retvalToParent_ = Datum::notADatum();
 
-    /// @brief Result of the most recently run sub-list (explicit control: push list, suspend, driver runs it, resume, pop).
-    /// Used by getLastEvaluationResult() after a coroutine suspend/resume for RUN/list call.
+    /// @brief Result of the most recently run sub-list (explicit control: push list, suspend, driver runs it, resume,
+    /// pop). Used by getLastEvaluationResult() after a coroutine suspend/resume for RUN/list call.
     DatumPtr retvalFromChild_;
 
     /// @brief TRACE indent when this evaluator was created.
@@ -107,7 +107,8 @@ struct Evaluator
     /// @param node The ASTNode of the procedure to push.
     /// @param paramAry The parameters to apply to the procedure.
     /// @param paramCount The number of parameters to apply.
-    void beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount);
+    /// @param outputRequiredMode See Kernel::beginProcedure.
+    void beginProcedure(ASTNode *node, Datum **paramAry, uint32_t paramCount, int outputRequiredMode);
 
     /// @brief Keep @p d alive until this evaluation ends.
     /// @return the given pointer (pass-through).

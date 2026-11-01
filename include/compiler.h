@@ -734,6 +734,11 @@ class Compiler
     // generate the common code for OUTPUT, STOP, and .MAYBEOUTPUT.
     llvm::Value *generateProcedureExit(const DatumPtr &node, TypeMask expected, TypeMask childExpected);
 
+    /// .MAYBEOUTPUT's input may produce nothing. When this procedure's caller
+    /// requires a value, that missing output is an error naming this node.
+    /// Otherwise the nothing result is returned unchanged.
+    llvm::Value *generateMaybeoutputResult(ASTNode *parent, llvm::Value *child);
+
     // Shared REPEAT / FOREVER loop. count is the validated trip count, or
     // nullptr for FOREVER. Shadows the process-global repcount. REPEAT
     // returns void or the last iteration's datum; FOREVER only returns

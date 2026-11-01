@@ -1,0 +1,8 @@
+to maybePrint
+.maybeoutput print "hello
+end
+to wrapper
+maybePrint
+output "ok
+end
+print wrapper

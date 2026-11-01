@@ -72,6 +72,13 @@ struct CallFrame
     /// @brief True when no output is acceptable from this frame.
     bool allowNothing_ = false;
 
+    /// @brief True when the caller of this procedure requires a value.
+    /// @details Set from the call site in beginProcedure. .MAYBEOUTPUT uses it so a
+    /// missing input is "didn't output to .maybeoutput" inside this procedure when
+    /// the caller wants a value, and acts as STOP when the caller does not.
+    /// A STOP tail call clears it. Other continuations leave it unchanged.
+    bool outputRequired_ = false;
+
     /// @brief This frame realizes a continuation that a parent evaluator is waiting on.
     /// @details A tail call inside CATCH, REPEAT, RUN, or any other nested list must
     /// not replace the waiting procedure. The frame's result is delivered back to

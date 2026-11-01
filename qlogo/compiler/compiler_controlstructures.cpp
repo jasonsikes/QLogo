@@ -311,6 +311,8 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node, TypeMask expected, 
             // Then generate a return of the value.
             CallSite cs(this, node, childExpected);
             Value *retval = cs.child(0);
+            if ((childExpected & TypeNothing) != 0 && (childExpected & TypeDatum) != 0)
+                retval = generateMaybeoutputResult(node.astnodeValue(), retval);
 
             retval = generateCallExtern(
                 getCtrlReturn, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
@@ -323,6 +325,8 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node, TypeMask expected, 
             CallSite cs(this, node, childExpected);
             Value *retval = cs.child(0);
             retval = generateNotFlowControl(retval);
+            if ((childExpected & TypeNothing) != 0 && (childExpected & TypeDatum) != 0)
+                retval = generateMaybeoutputResult(node.astnodeValue(), retval);
             return cs.ret(generateCallExtern(
                 getCtrlReturn, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval)));
         }
@@ -332,6 +336,8 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node, TypeMask expected, 
             // them, so evaluate the nested call and return its value instead.
             CallSite cs(this, node, childExpected);
             Value *retval = cs.child(0);
+            if ((childExpected & TypeNothing) != 0 && (childExpected & TypeDatum) != 0)
+                retval = generateMaybeoutputResult(node.astnodeValue(), retval);
             retval = generateCallExtern(
                 getCtrlReturn, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(retval));
             return cs.ret(retval);
@@ -341,8 +347,10 @@ Value *Compiler::generateProcedureExit(const DatumPtr &node, TypeMask expected, 
         // Arguments are always boxed Datum pointers (the alloca is TyAddr).
         // STOP (no TypeDatum in childExpected) still TCO's so `walk :n-1 stop`
         // does not grow the stack, but demandNothing forbids the callee's
-        // output from becoming this procedure's output (.MAYBEOUTPUT does not).
-        // allowNothing is STOP and .MAYBEOUTPUT: a missing value is not an error.
+        // output from becoming this procedure's output. .MAYBEOUTPUT does not
+        // set demandNothing. A missing value from its input is an error only
+        // when the caller required a value; that check is in the inline paths
+        // above. allowNothing stays set so a tail-called procedure may stop.
         // When this continuation is the result of a nested list (CATCH, REPEAT,
         // RUN, ...), the evaluator runs it as its own frame so the waiting
         // command still sees a throw or OUTPUT.

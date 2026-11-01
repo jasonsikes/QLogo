@@ -112,12 +112,26 @@ EXPORTC addr_t stdRuntimeEnd(addr_t eAddr, addr_t astnodeAddr) noexcept
 /// @param astnodeAddr a pointer to the ASTNode object which is the procedure to execute.
 /// @param paramAryAddr a pointer to an array of pointers to Datum objects which are the parameters to the procedure.
 /// @param paramCount the number of parameters to the procedure.
-EXPORTC void beginProcedure(addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAddr, uint32_t paramCount) noexcept
+/// @param outputRequiredMode 1 when the caller requires a value, 2 when the call is
+/// the tail of a line and should inherit that requirement from a last body line,
+/// 0 when a missing value is acceptable.
+EXPORTC void beginProcedure(
+    addr_t eAddr, addr_t astnodeAddr, addr_t paramAryAddr, uint32_t paramCount, int32_t outputRequiredMode) noexcept
 {
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *node = reinterpret_cast<ASTNode *>(astnodeAddr);
     auto **paramAry = reinterpret_cast<Datum **>(paramAryAddr);
-    e->beginProcedure(node, paramAry, paramCount);
+    e->beginProcedure(node, paramAry, paramCount, outputRequiredMode);
+}
+
+/// @brief True when the current procedure's caller requires a value.
+/// @details .MAYBEOUTPUT uses this to turn a missing input into "didn't output".
+EXPORTC bool procedureOutputRequired(void) noexcept
+{
+    Kernel &kernel = Kernel::get();
+    if (kernel.callFrameStack_.empty())
+        return false;
+    return kernel.currentCallFrame()->outputRequired_;
 }
 
 /// @brief Create and return a RETURN control object.

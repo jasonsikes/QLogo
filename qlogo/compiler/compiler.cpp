@@ -1518,8 +1518,20 @@ Value *Compiler::genExecProcedure(const DatumPtr &node, TypeMask expected)
     AllocaInst *paramAry = cs.allocaAry(DBG_NAME("paramAry"));
     Value *vAstnodeValue = CoAddr(node.astnodeValue());
     Value *vParamArySize = CoInt32(node.astnodeValue()->countOfChildren());
-    generateCallExtern(
-        beginProcedure, PaAddr(scaff_->evaluator_), PaAddr(vAstnodeValue), PaAddr(paramAry), PaInt32(vParamArySize));
+    // 1: caller requires a value. 2: tail of a line; inherit when this is the
+    // last body line of a procedure whose caller required a value. 0: a missing
+    // value is acceptable (command position).
+    int32_t outputRequiredMode = 0;
+    if ((expected & TypeNothing) == 0)
+        outputRequiredMode = 1;
+    else if (ast->inSequenceTail_ && (expected & ~TypeNothing) != 0)
+        outputRequiredMode = 2;
+    generateCallExtern(beginProcedure,
+                       PaAddr(scaff_->evaluator_),
+                       PaAddr(vAstnodeValue),
+                       PaAddr(paramAry),
+                       PaInt32(vParamArySize),
+                       PaInt32(CoInt32(outputRequiredMode)));
     endAllocaLifetime(paramAry);
 
     generateCoroSuspend();
@@ -1586,6 +1598,40 @@ Value *Compiler::generateRecoverDidntOutput(Value *who, ASTNode *parent)
     Value *vY = CoAddr(parent->nodeName_.datumValue());
     Value *handlerResult = generateCallExtern(handleDidntOutput, PaAddr(scaff_->evaluator_), PaAddr(who), PaAddr(vY));
     return generateNotFlowControl(handlerResult);
+}
+
+Value *Compiler::generateMaybeoutputResult(ASTNode *parent, Value *child)
+{
+    BasicBlock *srcBB = scaff_->builder_.GetInsertBlock();
+    BasicBlock *nothingBB = scaff_->createBasicBlock(DBG_NAME("maybeNothing"));
+    BasicBlock *stopBB = scaff_->createBasicBlock(DBG_NAME("maybeStop"));
+    BasicBlock *errBB = scaff_->createBasicBlock(DBG_NAME("maybeErr"));
+    BasicBlock *joinBB = scaff_->createBasicBlock(DBG_NAME("maybeJoin"));
+    scaff_->addColdPathBlocks(errBB);
+
+    Value *dType = generateGetDatumIsa(child);
+    Value *dataMask = scaff_->builder_.CreateAnd(dType, CoInt32(Datum::typeDataMask), DBG_NAME("dataTypeMask"));
+    Value *isData = scaff_->builder_.CreateICmpNE(dataMask, CoInt32(0), DBG_NAME("isDataTest"));
+    scaff_->builder_.CreateCondBr(isData, joinBB, nothingBB);
+
+    scaff_->builder_.SetInsertPoint(nothingBB);
+    Value *required = generateCallExtern(procedureOutputRequired);
+    scaff_->builder_.CreateCondBr(required, errBB, stopBB);
+
+    scaff_->builder_.SetInsertPoint(errBB);
+    Value *recovered = generateRecoverDidntOutput(child, parent);
+    BasicBlock *recoveredBB = scaff_->builder_.GetInsertBlock();
+    scaff_->builder_.CreateBr(joinBB);
+
+    scaff_->builder_.SetInsertPoint(stopBB);
+    scaff_->builder_.CreateBr(joinBB);
+
+    scaff_->builder_.SetInsertPoint(joinBB);
+    PHINode *retval = scaff_->builder_.CreatePHI(TyAddr, 3, DBG_NAME("maybeResult"));
+    retval->addIncoming(child, srcBB);
+    retval->addIncoming(child, stopBB);
+    retval->addIncoming(recovered, recoveredBB);
+    return retval;
 }
 
 Value *Compiler::generateErrorNotEnoughInputs(ASTNode *x)
