@@ -1286,11 +1286,11 @@ bool Kernel::consumePendingSignal(DatumPtr *resultOut)
         return false;
     case toplevelSignal:
         if (resultOut != nullptr)
-            *resultOut = DatumPtr(FCError::custom(DatumPtr(QObject::tr("TOPLEVEL"))));
+            *resultOut = DatumPtr(FCError::fromThrow(DatumPtr(QObject::tr("TOPLEVEL"))));
         return true;
     case systemSignal:
         if (resultOut != nullptr)
-            *resultOut = DatumPtr(FCError::custom(DatumPtr(QObject::tr("SYSTEM"))));
+            *resultOut = DatumPtr(FCError::fromThrow(DatumPtr(QObject::tr("SYSTEM"))));
         return true;
     case pauseSignal:
     {

@@ -303,12 +303,14 @@ struct FCError : public FlowControl
         commonInit();
     }
 
-    /// @brief Create an error object for a custom error.
-    /// @param tag The tag of the error. Can be used with `CATCH tag` and/or `SYSTEM/TOPLEVEL/PAUSE` to handle the
-    /// error.
-    /// @param message An optional message to accompany the error.
-    /// @param output An optional output to accompany the error.
-    static FCError *custom(const DatumPtr &tag, DatumPtr message = nothing(), const DatumPtr &output = nothing());
+    /// @brief Create the error object for THROW.
+    /// @param tag The throw tag.
+    /// @param second The optional second input. For THROW "ERROR this is the message
+    /// text, and CATCH "ERROR does not output it. A non-word is stored as its print
+    /// form, one word that may contain spaces. For any other tag, CATCH outputs it.
+    /// @details One-input THROW "ERROR is code 21. Two-input THROW "ERROR is code 35.
+    /// Any other tag with no matching CATCH is code 14.
+    static FCError *fromThrow(const DatumPtr &tag, const DatumPtr &second = nothing());
 
     /// @brief Create an error object for a fatal internal error.
     /// @details This is an error so bad that it cannot be caught.

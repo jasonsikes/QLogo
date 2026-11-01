@@ -60,27 +60,20 @@ void FCError::commonInit()
     k->currentError_ = DatumPtr(this);
 }
 
-FCError *FCError::custom(const DatumPtr &tag, DatumPtr message, const DatumPtr &output)
+FCError *FCError::fromThrow(const DatumPtr &tag, const DatumPtr &second)
 {
-    ErrCode code;
     if (tag.toString(ToStringFlags_Key) == QObject::tr("ERROR"))
     {
-        if (message.isNothing())
-        {
-            code = ERR_THROW;
-            message = DatumPtr(QObject::tr("Throw \"Error"));
-        }
-        else
-        {
-            code = ERR_CUSTOM_THROW;
-        }
+        if (second.isNothing())
+            return new FCError(ERR_THROW, QObject::tr("Throw \"Error"), tag, nothing());
+
+        // The second input is the message, not a value for CATCH "ERROR to output.
+        DatumPtr message = second.isWord() ? second : DatumPtr(new Word(second.toString(ToStringFlags_None)));
+        return new FCError(ERR_CUSTOM_THROW, message, tag, nothing());
     }
-    else
-    {
-        code = ERR_NO_CATCH;
-        message = DatumPtr(QObject::tr("Can't find catch tag for %1").arg(tag.toString(Datum::ToStringFlags_Show)));
-    }
-    return new FCError(code, message, tag, output);
+
+    QString message = QObject::tr("Can't find catch tag for %1").arg(tag.toString(Datum::ToStringFlags_Show));
+    return new FCError(ERR_NO_CATCH, message, tag, second);
 }
 
 FCError *FCError::fatalInternal()

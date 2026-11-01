@@ -347,7 +347,7 @@ EXPORTC addr_t generateContinue(addr_t eAddr, addr_t outputAddr) noexcept
     auto *e = reinterpret_cast<Evaluator *>(eAddr);
     auto *output = reinterpret_cast<Datum *>(outputAddr);
 
-    FCError *err = FCError::custom(DatumPtr(QObject::tr("PAUSE")), nothing(), DatumPtr(output));
+    FCError *err = FCError::fromThrow(DatumPtr(QObject::tr("PAUSE")), DatumPtr(output));
     e->watch(err);
     return reinterpret_cast<addr_t>(err);
 }
