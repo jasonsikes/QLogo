@@ -238,7 +238,9 @@ On the command-line interface this is a no-op. A parenthesized call with one inp
 
 **** ~SETTEXTSIZE~, ~TEXTSIZE~, ~INCREASEFONT~, ~DECREASEFONT~, ~SETFONT~, ~SETTEXTFONT~, ~TEXTFONT~ and ~FONT~:
 
-On the command-line interface ~SETTEXTSIZE~, ~INCREASEFONT~, ~DECREASEFONT~, and ~SETFONT~ are no-ops; ~TEXTSIZE~ outputs ~12~ and ~FONT~ outputs the empty word. ~INCREASEFONT~ and ~DECREASEFONT~ change the point size by 2; ~DECREASEFONT~ will not go below 2. ~SETFONT~ and ~FONT~ apply to the text and edit windows, not the turtle canvas. ~SETTEXTFONT~ and ~TEXTFONT~ are synonyms for ~SETFONT~ and ~FONT~, respectively.
+On the command-line interface ~SETTEXTSIZE~, ~INCREASEFONT~, ~DECREASEFONT~, and ~SETFONT~ are no-ops; ~TEXTSIZE~ outputs ~12~ and ~FONT~ outputs the empty word. ~INCREASEFONT~ and ~DECREASEFONT~ change the point size by 2; ~DECREASEFONT~ will not go below 2. ~SETTEXTFONT~ and ~TEXTFONT~ are synonyms for ~SETFONT~ and ~FONT~, respectively.
+
+~SETFONT~ and ~FONT~ apply to the text and edit windows, not the turtle canvas. For the canvas use ~SETLABELFONT~ and ~LABELFONT~.
 
 **** ~OPENWRITE~ character buffers:
 
