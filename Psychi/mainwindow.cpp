@@ -26,9 +26,12 @@
 #include <QFileDialog>
 #include <QFontDatabase>
 #include <QFontInfo>
+#include <QFontMetrics>
+#include <QGuiApplication>
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QMessageBox>
+#include <QScreen>
 #include <QTextCursor>
 #include <QTimer>
 #include <array>
@@ -258,23 +261,84 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
     return QMainWindow::eventFilter(watched, event);
 }
 
-void MainWindow::initialize()
+namespace
 {
-    const QFontInfo fontInfo(ui_->mainConsole->font());
-    const QString family = fontInfo.family();
-    qreal pointSize = fontInfo.pointSizeF();
+/// True when Latin letters and the space share one advance.
+///
+/// setFixedPitch() can give i and W the same width on a proportional face
+/// while the space stays narrow. That face is not monospace.
+bool fontIsMonospace(const QFont &font)
+{
+    const QFontMetrics metrics(font);
+    if (!metrics.inFont(u'i') || !metrics.inFont(u'W') || !metrics.inFont(u' '))
+        return false;
+    const int width = metrics.horizontalAdvance(u'i');
+    return width > 0 && width == metrics.horizontalAdvance(u'W') && width == metrics.horizontalAdvance(u'M') &&
+           width == metrics.horizontalAdvance(u' ');
+}
+
+QFont withMonospaceHint(QFont font)
+{
+    font.setStyleHint(QFont::Monospace);
+    font.setFixedPitch(true);
+    return font;
+}
+} // namespace
+
+QFont MainWindow::defaultFont()
+{
+    // Some platform themes name a proportional face as the fixed font.
+    // Keep it only when the space advance matches the letters.
+    QFont font = withMonospaceHint(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    if (!fontIsMonospace(font))
+        font = withMonospaceHint(QFont(QStringLiteral("monospace")));
+
+    if (!fontIsMonospace(font))
+    {
+        const QStringList families = QFontDatabase::families();
+        for (const QString &family : families)
+        {
+            QFont candidate = withMonospaceHint(QFont(family));
+            if (fontIsMonospace(candidate))
+            {
+                font = candidate;
+                break;
+            }
+        }
+    }
+
+    QFontInfo info(font);
+    if (!info.family().isEmpty())
+    {
+        QFont pinned = font;
+        pinned.setFamilies(QStringList(info.family()));
+        if (fontIsMonospace(pinned))
+            font = pinned;
+    }
+
+    info = QFontInfo(font);
+    qreal pointSize = info.pointSizeF();
     if (pointSize <= 0)
     {
-        const int pixels = fontInfo.pixelSize();
-        const qreal dpi = ui_->mainConsole->logicalDpiY();
+        const int pixels = info.pixelSize();
+        qreal dpi = 0;
+        if (const QScreen *screen = QGuiApplication::primaryScreen())
+            dpi = screen->logicalDotsPerInchY();
         if (pixels > 0 && dpi > 0)
             pointSize = pixels * 72.0 / dpi;
     }
-    ui_->mainCanvas->setLabelFontSize(pointSize);
-    ui_->mainCanvas->setLabelFontName(family);
+    if (pointSize > 0)
+        font.setPointSizeF(pointSize);
+    return font;
+}
+
+void MainWindow::initialize()
+{
+    const QFont font = defaultFont();
+    const QFontInfo fontInfo(font);
     setSplitterforMode(initScreenMode);
 
-    sendMessage(W_INITIALIZE, QFontDatabase::families(), family, static_cast<double>(pointSize));
+    sendMessage(W_INITIALIZE, QFontDatabase::families(), fontInfo.family(), static_cast<double>(font.pointSizeF()));
 }
 
 void MainWindow::fileDialogModal()

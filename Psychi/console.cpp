@@ -16,8 +16,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "gui/console.h"
+#include "gui/mainwindow.h"
 #include "sharedconstants.h"
-#include <QFontDatabase>
 #include <QKeyEvent>
 #include <QMimeData>
 #include <QTextBlock>
@@ -28,10 +28,7 @@ Console::Console(QWidget *parent)
 {
     textFormat_.setForeground(QBrush(QWidget::palette().color(QPalette::Text)));
     setOverwriteMode(true);
-    QFont mono = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-    mono.setStyleHint(QFont::Monospace);
-    mono.setFixedPitch(true);
-    applyFont(mono);
+    applyFont(MainWindow::defaultFont());
 }
 
 void Console::applyFont(const QFont &font)

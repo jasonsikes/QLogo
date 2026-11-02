@@ -15,6 +15,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "gui/canvas.h"
+#include "gui/mainwindow.h"
 #include "sharedconstants.h"
 #include <QBuffer>
 #include <QColor>
@@ -82,6 +83,7 @@ Canvas::Canvas(QWidget *parent) : QWidget(parent)
     currentWriteInfo_.composingMode_ = QPainter::CompositionMode_SourceOver;
     turtleMatrix_ = QTransform();
     turtleIsVisible_ = true;
+    labelFont_ = MainWindow::defaultFont();
     initDrawingElementList();
     initTurtleImage();
 }

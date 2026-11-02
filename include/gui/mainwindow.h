@@ -20,6 +20,7 @@
 #include "sharedconstants.h"
 #include <QDataStream>
 #include <QEvent>
+#include <QFont>
 #include <QMainWindow>
 #include <QProcess>
 #include <QTimer>
@@ -120,6 +121,9 @@ class MainWindow : public QMainWindow
     ///
     /// @param parent The Qt parent widget.
     explicit MainWindow(QWidget *parent = nullptr);
+
+    /// @brief System monospace font for the console and canvas labels.
+    static QFont defaultFont();
 
     /// @brief Destructor.
     ~MainWindow() override;
