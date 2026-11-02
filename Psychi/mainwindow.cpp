@@ -52,7 +52,7 @@ template <typename... Args>
 void sendMessage(message_t header, const Args &...args)
 {
     MessageTemplate<ProcessMessageWriter> msg(header);
-    (msg << ... << args);
+    (void)(msg << ... << args);
 }
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(std::make_unique<Ui::MainWindow>())
