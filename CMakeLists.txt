@@ -13,16 +13,6 @@ set(QLOGO_LIB qlogo_library.db)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-if (CMAKE_BUILD_TYPE)
-    if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        if(APPLE)
-            set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
-        endif()
-    elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        # add_compile_definitions(QLOGO_DEBUG) # Temporarily commented out while I run profiler
-    endif()
-endif()
-
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
