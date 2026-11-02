@@ -72,19 +72,21 @@ CallFrame::~CallFrame()
 void CallFrame::applyContinuation(
     ASTNode *node, const DatumPtr &arguments, bool demandNothing, bool allowNothing, const DatumPtr &commandNode)
 {
+    DatumPtr args = arguments;
+    DatumPtr outputSource = commandNode;
     DatumPtr body = node->procedure_;
     sourceNode_ = DatumPtr(node);
     retvalToParent_ = nothing();
     runningSourceList_ = body.procedureValue()->instructionList_.listValue()->tail;
 
     parameters_ = body.procedureValue()->instructionList_.listValue()->head;
-    arguments_ = arguments;
+    arguments_ = args;
     isReadingArgs_ = true;
     // The continued procedure has not run a body line yet.
     lastBodyLine_ = nothing();
     // isMacroCall_ and the splice flags stay as they were for the original call.
     // The output contract is sticky: this is the same frame, not a new entry.
-    installContinuation(demandNothing, allowNothing, false, false, commandNode);
+    installContinuation(demandNothing, allowNothing, false, false, outputSource);
 }
 
 void CallFrame::installContinuation(
