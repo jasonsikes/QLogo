@@ -29,7 +29,7 @@ You can find more information about the UCBLogo language by reading the UCBLogo 
 At this time I am developing and testing QLogo on the following systems:
 
 - Linux (Fedora 44 using Qt 6.11 and LLVM 22), and
-- macOS (Tahoe on Silicon, using LLVM 22 and Qt 6.12 provided by MacPorts), and
+- macOS (Tahoe on Silicon, using LLVM 21 and Qt 6.12 provided by MacPorts), and
 - Windows
   - Windows 11 for ARM (although Windows 11 for x86_64 should also work fine)
   - Visual Studio C++
@@ -52,7 +52,7 @@ To the best of my memory, you will need the following packages:
 - Qt6 development packages; your distribution may make some of the components "optional". Make sure you have:
   - The Qt6 SQLite development package
   - The Qt6 SVG development package.
-- LLVM development packages, at least version 22.
+- LLVM development packages, at least version 21.
 
 After you have downloaded the QLogo source code, "cd" into the source directory and issue the following commands.
 
