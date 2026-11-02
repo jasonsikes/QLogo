@@ -204,33 +204,46 @@ void runOptimizationPipeline(Module &M, PassBuilder &pb, ModuleAnalysisManager &
     mpm.run(M, mam);
 }
 
+template <typename T, typename Value>
+StringSwitch<T> &stringSwitchCases(StringSwitch<T> &sw,
+                                   std::initializer_list<StringLiteral> names,
+                                   Value &&value)
+{
+    for (StringLiteral name : names)
+        sw.Case(name, value);
+    return sw;
+}
+
 /// Conservative memory effects for host exports. Unlisted names stay unknown.
 /// Do not mark I/O, RNG, or allocating constructors; wrong effects miscompile.
 std::optional<MemoryEffects> memoryEffectsForHostExport(StringRef name)
 {
     using ME = MemoryEffects;
-    return StringSwitch<std::optional<ME>>(name)
-        .Case("repcountAddr", ME::none())
-        .Cases({"getCountOfList",
-                "isEmpty",
-                "isNumber",
-                "isSingleCharWord",
-                "isVbarred",
-                "isValidOpenSpec",
-                "isValidShellCommand",
-                "getTemplateForm"},
-               ME::argMemOnly(ModRefInfo::Ref))
-        .Cases({"parseDoubleForDatum", "parseBoolForDatum", "getNumberAryFromList", "isDatumIndexValid"},
-               ME::argMemOnly(ModRefInfo::ModRef))
-        .Cases({"cmpDatumToDatum",     "isBefore",         "isMember",       "isSubstring",
-                "isDatumEmpty",        "getTestResult",    "isValidColor",   "isValidPenSize",
-                "isValidPenPattern",   "isColorIndexGood", "isContentsList", "isNamedContentsList",
-                "isDefinableProcName", "isDefineText",     "stdProcedurep",  "stdMacrop",
-                "stdPrimitivep",       "stdDefinedp",      "stdNamep",       "stdPlistp",
-                "stdBuriedp",          "stdTracedp",       "stdSteppedp",    "isTurtleVisible",
-                "isPenDown",           "getTurtleHeading"},
-               ME::readOnly())
-        .Default(std::nullopt);
+    StringSwitch<std::optional<ME>> sw(name);
+    sw.Case("repcountAddr", ME::none());
+    stringSwitchCases(sw,
+                      {"getCountOfList",
+                       "isEmpty",
+                       "isNumber",
+                       "isSingleCharWord",
+                       "isVbarred",
+                       "isValidOpenSpec",
+                       "isValidShellCommand",
+                       "getTemplateForm"},
+                      ME::argMemOnly(ModRefInfo::Ref));
+    stringSwitchCases(sw,
+                      {"parseDoubleForDatum", "parseBoolForDatum", "getNumberAryFromList", "isDatumIndexValid"},
+                      ME::argMemOnly(ModRefInfo::ModRef));
+    stringSwitchCases(sw,
+                      {"cmpDatumToDatum",     "isBefore",         "isMember",       "isSubstring",
+                       "isDatumEmpty",        "getTestResult",    "isValidColor",   "isValidPenSize",
+                       "isValidPenPattern",   "isColorIndexGood", "isContentsList", "isNamedContentsList",
+                       "isDefinableProcName", "isDefineText",     "stdProcedurep",  "stdMacrop",
+                       "stdPrimitivep",       "stdDefinedp",      "stdNamep",       "stdPlistp",
+                       "stdBuriedp",          "stdTracedp",       "stdSteppedp",    "isTurtleVisible",
+                       "isPenDown",           "getTurtleHeading"},
+                      ME::readOnly());
+    return sw.Default(std::nullopt);
 }
 
 /// Clones are invoked through C function pointers (LLVMCoroFrameHeader).

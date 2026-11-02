@@ -86,10 +86,12 @@ if(MSVC)
   fix_llvm_windows_dia_sdk()
 endif()
 
-if(LLVM_PACKAGE_VERSION VERSION_LESS 22)
+if(LLVM_PACKAGE_VERSION VERSION_LESS 21)
   message(FATAL_ERROR
-    "LLVM 22 or newer is required (found ${LLVM_PACKAGE_VERSION} at ${LLVM_DIR})")
+    "LLVM 21 or newer is required (found ${LLVM_PACKAGE_VERSION} at ${LLVM_DIR})")
 endif()
+
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 
 set(LLVM_DEFINITIONS_CLEANED)
 foreach(def ${LLVM_DEFINITIONS})
