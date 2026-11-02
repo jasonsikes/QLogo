@@ -1,0 +1,89 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: QLogo
+Upstream-Contact: Jason Sikes <sikes@qlogo.org>
+Source: https://www.qlogo.org
+
+Comment:
+ QLogo and Psychi are BSD-3-Clause.
+ The help documentation and the Logo library are GPL-3.0-only.
+ Those two works are built into qlogo_help.db and qlogo_library.db.
+ The generated databases are GPL-3.0-only.
+ .
+ Help text is each /***DOC ... COD***/ block in qlogo/compiler/compiler*.cpp.
+ Logo library procedures are each /***LIB ... BIL***/ block in those same
+ files, and the programs in csls/. Both derive from UCBLogo by Brian Harvey.
+
+Files: *
+Copyright: 2017-2026 Jason Sikes
+License: BSD-3-Clause
+
+Files: LICENSES/GPL-3.0-only.txt
+Copyright: 2007 Free Software Foundation, Inc.
+License: Verbatim
+Comment:
+ The license text itself. Everyone is permitted to copy and distribute
+ verbatim copies. Changing it is not allowed.
+
+Files: org.qlogo.Psychi.metainfo.xml
+Copyright: 2017-2026 Jason Sikes
+License: CC0-1.0
+
+Files: csls/*
+Copyright: Brian Harvey and the Regents of the University of California
+License: GPL-3.0-only
+Comment:
+ Logo programs from the Computer Science Logo Style library, as shipped
+ with UCBLogo, with later modifications.
+
+Files: qlogo/compiler/compiler*.cpp
+Copyright: 2017-2026 Jason Sikes
+           Brian Harvey and the Regents of the University of California
+License: BSD-3-Clause and GPL-3.0-only
+Comment:
+ The C++ implementation in these files is BSD-3-Clause.
+ The /***DOC ... COD***/ help text and the /***LIB ... BIL***/ Logo
+ library procedures embedded in them are GPL-3.0-only.
+
+License: BSD-3-Clause
+ Copyright (c) 2017-2026 Jason Sikes
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ .
+ 1. Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+ .
+ 2. Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+ .
+ 3. Neither the name of the copyright holder nor the names of its contributors
+    may be used to endorse or promote products derived from this software
+    without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
+
+License: GPL-3.0-only
+ The GNU General Public License, version 3 only.
+ The complete text is in LICENSES/GPL-3.0-only.txt and at
+ https://www.gnu.org/licenses/gpl-3.0.txt
+ .
+ This is version 3 only. Later versions of the GPL do not apply.
+
+License: CC0-1.0
+ Creative Commons Zero 1.0 Universal.
+ https://creativecommons.org/publicdomain/zero/1.0/
+
+License: Verbatim
+ Everyone is permitted to copy and distribute verbatim copies of this
+ license document, but changing it is not allowed.

@@ -1,0 +1,21 @@
+.TH PSYCHI 1 "November 2, 2026" "QLogo @PROJECT_VERSION@" "User Commands"
+.SH NAME
+Psychi \- graphical terminal for QLogo
+.SH SYNOPSIS
+.B Psychi
+.SH DESCRIPTION
+.B Psychi
+is the graphical terminal for the QLogo interpreter.
+It provides a command line, a text editor, and a turtle graphics window.
+.B Psychi
+runs
+.BR qlogo (1)
+to execute Logo programs.
+.SH SEE ALSO
+.BR qlogo (1)
+.SH COPYRIGHT
+Copyright 2017-2026 Jason Sikes.
+Psychi is licensed under the BSD 3-Clause license.
+The help documentation and the Logo library used by
+.B qlogo
+are licensed under version 3 of the GNU General Public License.

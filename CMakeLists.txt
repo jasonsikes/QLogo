@@ -180,8 +180,27 @@ elseif(UNIX AND NOT APPLE)
     )
 endif()
 
+configure_file(doc/qlogo.1.in qlogo.1 @ONLY)
+configure_file(doc/psychi.1.in psychi.1 @ONLY)
+
+if(UNIX)
+    install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/qlogo.1"
+        "${CMAKE_CURRENT_BINARY_DIR}/psychi.1"
+        DESTINATION "${CMAKE_INSTALL_MANDIR}/man1"
+    )
+    install(FILES
+        "${CMAKE_SOURCE_DIR}/LICENSE"
+        "${CMAKE_SOURCE_DIR}/COPYRIGHT"
+        DESTINATION "${CMAKE_INSTALL_DOCDIR}"
+    )
+    install(FILES "${CMAKE_SOURCE_DIR}/LICENSES/GPL-3.0-only.txt"
+        DESTINATION "${CMAKE_INSTALL_DOCDIR}/LICENSES"
+    )
+endif()
+
 if(UNIX AND NOT APPLE)
-    install(FILES "${QLOGO_GUI}.desktop"
+    install(FILES "org.qlogo.Psychi.desktop"
         DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
     )
 
@@ -189,7 +208,7 @@ if(UNIX AND NOT APPLE)
         DESTINATION "${CMAKE_INSTALL_DATADIR}/icons"
     )
 
-    install(FILES "${QLOGO_GUI}.appdata.xml"
+    install(FILES "org.qlogo.Psychi.metainfo.xml"
         DESTINATION "${CMAKE_INSTALL_DATADIR}/metainfo"
     )
 endif()

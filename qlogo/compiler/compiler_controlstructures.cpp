@@ -6,6 +6,10 @@
 // modification, are permitted under the conditions specified in the
 // license found in the LICENSE file in the project root.
 //
+// The /***DOC ... COD***/ help text and the /***LIB ... BIL***/ Logo
+// library procedures in this file are licensed separately under the
+// GNU General Public License, version 3 only. See the COPYRIGHT file.
+//
 //===----------------------------------------------------------------------===//
 ///
 /// \file

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.qlogo.Psychi</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>BSD-3-Clause AND GPL-3.0-only</project_license>
+
+  <name>Psychi</name>
+  <summary>UCBLogo-compatible interpreter using Qt</summary>
+  <description>
+    <p>
+      A modern graphical environment for the QLogo interpreter, with a command line,
+      a text editor, and a turtle graphics window. QLogo follows the UCBLogo
+      language developed by Brian Harvey at the University of California,
+      Berkeley.
+    </p>
+  </description>
+  <launchable type="desktop-id">org.qlogo.Psychi.desktop</launchable>
+  <provides>
+    <binary>Psychi</binary>
+    <binary>qlogo</binary>
+  </provides>
+
+  <url type="homepage">https://www.qlogo.org</url>
+  <url type="help">https://people.eecs.berkeley.edu/~bh/usermanual</url>
+  <update_contact>sikes@qlogo.org</update_contact>
+
+  <developer id="org.qlogo">
+    <name>Jason Sikes</name>
+  </developer>
+
+  <categories>
+    <category>Development</category>
+    <category>IDE</category>
+  </categories>
+  <keywords>
+    <keyword>logo</keyword>
+    <keyword>qlogo</keyword>
+    <keyword>turtle</keyword>
+    <keyword>ucblogo</keyword>
+  </keywords>
+  <languages>
+    <lang percentage="100">en</lang>
+  </languages>
+
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="0.98" date="2026-10-17"/>
+  </releases>
+</component>

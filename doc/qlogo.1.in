@@ -1,0 +1,94 @@
+.TH QLOGO 1 "November 2, 2026" "QLogo @PROJECT_VERSION@" "User Commands"
+.SH NAME
+qlogo \- UCBLogo-compatible Logo interpreter
+.SH SYNOPSIS
+.B qlogo
+[\fIOPTION\fR]... [\fISCRIPT\fR] [\fB\-\fR [\fIARGUMENT\fR...]]
+.SH DESCRIPTION
+.B qlogo
+is a compiler and interpreter for the UCBLogo language.
+An optional
+.I SCRIPT
+is run before the prompt.
+Words after a lone
+.B \-
+are placed in the Logo variable
+.B COMMAND.LINE
+and are not parsed as options.
+.PP
+On a terminal,
+.B qlogo
+uses a text interface.
+Redirected input and output use a plain stream instead.
+Inside the language, the
+.B HELP
+command prints documentation for a primitive or library procedure.
+.SH OPTIONS
+.TP
+.BR \-h ", " \-\-help
+Show a short help message and exit.
+.TP
+.BR \-v ", " \-\-version
+Show the version and exit.
+.TP
+.BI \-\-libloc " file"
+Read the standard library from
+.I file
+instead of the installed library database.
+.TP
+.BI \-\-helploc " file"
+Read help text from
+.I file
+instead of the installed help database.
+.TP
+.BI \-\-cslsloc " directory"
+Read Computer Science Logo Style programs from
+.I directory
+instead of the installed
+.B csls
+directory.
+The
+.B CSLS
+environment variable sets the same path when this option is absent.
+.TP
+.B \-\-tui
+Use the text interface.
+This requires a terminal, and it is the default when both standard input
+and standard output are terminals.
+.TP
+.B \-\-no\-tui
+Use the plain stream interface even on a terminal.
+.TP
+.B \-\-Psychi
+Reserved for the
+.BR psychi (1)
+graphical environment.
+Do not use it from a terminal.
+.TP
+.BR \-\-verifyIR ", " \-\-showCON ", " \-\-traceEvaluator
+Print interpreter debugging information.
+.SH FILES
+.TP
+.I $HOME/startup.lg
+Logo file loaded automatically at startup, if it exists.
+.TP
+.I @CMAKE_INSTALL_FULL_DATADIR@/qlogo/qlogo_library.db
+Standard library. Licensed under the GNU General Public License, version 3 only.
+.TP
+.I @CMAKE_INSTALL_FULL_DATADIR@/qlogo/qlogo_help.db
+Help text shown by
+.BR HELP .
+Licensed under the GNU General Public License, version 3 only.
+.TP
+.I @CMAKE_INSTALL_FULL_DATADIR@/qlogo/csls/
+Logo programs loaded by the
+.B CSLSLOAD
+command.
+Licensed under the GNU General Public License, version 3 only.
+.SH SEE ALSO
+.BR psychi (1)
+.SH COPYRIGHT
+Copyright 2017-2026 Jason Sikes.
+The interpreter is licensed under the BSD 3-Clause license.
+The help documentation and the Logo library are licensed under
+version 3 of the GNU General Public License.
