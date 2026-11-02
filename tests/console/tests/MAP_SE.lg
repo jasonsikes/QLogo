@@ -1,0 +1,8 @@
+show map.se [list ? ?] [a b c]
+show (map.se [word ?1 ?2] [a b] [1 2])
+show map.se [[x] map.se [list :x ?] [1 2]] [a b]
+show map.se [ifelse equalp ? 2 [[]] [(list ?)]] [1 2 3 2]
+show map.se [[row] map.se [(list ?)] :row] [[a b] [] [c d]]
+show map.se [[row] map.se [[cell] ifelse equalp :cell 0 [[]] [(list :cell)]] :row] [[1 0 2] [0] [3]]
+show map.se [(list ?)] []
+show map.se [(list ?)] "ab

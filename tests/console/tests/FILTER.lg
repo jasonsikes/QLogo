@@ -1,0 +1,9 @@
+show filter [not equalp ? 2] [1 2 3 2 4]
+show filter [greaterp ? 2] map [? * 2] [1 2 3]
+show map [[row] filter [greaterp ? 2] :row] [[1 2 3] [4 0 5] [1]]
+show filter [memberp ? "aeiou] "elephant
+show filter [[x] not emptyp filter [greaterp ? :x] [1 2 3 4]] [1 2 3 4]
+show filter [emptyp ?rest] [a b c]
+show filter [? > 0] []
+show filter [[row] greaterp count filter [greaterp ? 1] :row 0] [[1 2] [0 0] [3]]
+show map [[row] filter [not equalp remainder ? 2 0] :row] [[1 2 3 4] [8] [5 6]]

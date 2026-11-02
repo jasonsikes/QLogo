@@ -1,0 +1,13 @@
+to boxes
+for [i 1 2] [for [j 1 :i] [print (se :i :j)]]
+end
+boxes
+make "i "outer
+for [i 1 3] [for [j 1 2] [print (se :i :j)]]
+print :i
+for [i 1 2] [for [i 10 11] [print :i] print (se "after :i)]
+print :i
+for [i 3 1] [for [j 1 :i] [print (se :i :j)]]
+for [i 0 4 2] [for [j 0 :i 2] [print (se :i :j)]]
+for [i 1 2] [for [j 5 1 1] [print "skipped] print (se "ran :i)]
+for [i 1 2] [for [j 1 2] [for [k 1 2] [print (se :i :j :k)]]]

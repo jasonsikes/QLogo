@@ -1,0 +1,7 @@
+show transfer [] [sentence ?out ?in] [a b c]
+show transfer [equalp ?in "c] [sentence ?out ?in] [a b c d]
+show map [[row] transfer [] [sentence ?out ?in] :row] [[a b] [c] []]
+show transfer [] [lput (se # ?in) ?out] [a b c]
+show transfer [] [sentence ?out transfer [] [lput ?in ?out] ?in] [[a b] [c d]]
+show transfer [equalp count ?out 2] [sentence ?out ?in] [a b c d]
+show transfer [] [sentence ?out ifelse listp ?in [transfer [] [lput ?in ?out] ?in] [(list ?in)]] [a [b c] d]

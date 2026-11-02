@@ -1,0 +1,9 @@
+show find [greaterp ? 3] [1 2 3 4 5]
+show find [greaterp ? 9] [1 2 3]
+show map [[row] find [greaterp ? 2] :row] [[1 2] [1 4] [0]]
+show find [equalp ? "c] "abcde
+show find [emptyp ?rest] [a b c]
+show find [equalp first ? "b] [[a 1] [b 2] [c 3]]
+show find [[x] not emptyp find [equalp ? product :x :x] [1 4 9 10]] [0 1 2 3 5]
+show find [[row] equalp find [greaterp ? 5] :row 9] [[1 2] [4 9] [9 1]]
+show find [equalp ? "a] "

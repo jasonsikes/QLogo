@@ -1,0 +1,8 @@
+show reduce "sum [1 2 3 4]
+show reduce "sum [10]
+show map [[row] reduce "sum :row] [[1 2] [3 4 5] [10]]
+show reduce [word ?2 ?1] "abc
+show map [[n] reduce "product iseq 1 :n] iseq 1 4
+show reduce [[a b] ifelse greaterp :a :b [:a] [:b]] map [[row] reduce "sum :row] [[1 2] [10] [3 4]]
+show reduce [sentence ?1 ?2] [[a b] [c] [d e]]
+show map [[row] reduce [word ?2 ?1] :row] [ab xy]

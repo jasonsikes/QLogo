@@ -1,0 +1,9 @@
+make "i 1
+until [:i > 2] [make "j 1 until [:j > 2] [print (se :i :j) make "j :j + 1] make "i :i + 1]
+print :i
+make "i 5
+until [:i > 2] [print "nope]
+print "skipped
+make "i 1
+until [:i > 2] [make "j 1 until [:j > :i] [make "k 1 until [:k > :j] [print (se :i :j :k) make "k :k + 1] make "j :j + 1] make "i :i + 1]
+print :i

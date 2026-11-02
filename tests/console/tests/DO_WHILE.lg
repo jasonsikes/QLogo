@@ -1,0 +1,10 @@
+make "i 1
+do.while [make "j 1 do.while [print (se :i :j) make "j :j + 1] [:j <= 2] make "i :i + 1] [:i <= 2]
+print :i
+make "n 5
+do.while [print "once make "n :n + 1] [:n < 3]
+print :n
+make "a 0
+make "b 0
+do.while [do.while [make "b :b + 1 print (se :a :b)] [:b < 2] make "a :a + 1] [:a < 2]
+print (se :a :b)

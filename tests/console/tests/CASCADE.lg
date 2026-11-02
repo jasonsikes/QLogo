@@ -1,0 +1,13 @@
+show cascade 5 [lput # ?] []
+show cascade 5 [# * ?] 1
+show cascade 0 [sum ? 1] 5
+show cascade [equalp first ? "i] [bf ?] "spring
+show cascade 3 [cascade 2 [sentence ? #] ?] []
+show (cascade 4 [? * 2] 1 [word "n ?])
+show (cascade 4 [?1 + ?2] 1 [?1] 0)
+show (cascade 4 [?1 + ?2] 1 [?1] 0 [?1 + ?2])
+to fib :n
+output (cascade :n [?1 + ?2] 1 [?1] 0)
+end
+show map "fib iseq 1 6
+show cascade 3 [cascade 3 [lput # ?] ?] []

@@ -1,0 +1,14 @@
+to scan :rows
+foreach :rows [foreach ? [print (se # ?)]]
+end
+scan [[x y] [z]]
+foreach [1 2] [localmake "outer ? foreach [a b] [print (se :outer ?)]]
+foreach [1 2] [localmake "i ? foreach [a b] [localmake "j ? foreach [8 9] [print (se :i :j ?)]]]
+foreach [a b] [localmake "oi # localmake "ov ? foreach [1 2] [print (se :oi :ov # ?)]]
+foreach [a b c] [show (list # ? ?rest)]
+(foreach [1 2 3] [a b c] [print (se # ?1 ?2)])
+(foreach "ab "12 [print (word ?1 ?2)])
+foreach "hi [print (se # ?)]
+foreach [a b] [repeat 2 [print (list ? repcount #)]]
+foreach [] [print "no]
+print "none

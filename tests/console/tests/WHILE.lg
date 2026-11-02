@@ -1,0 +1,14 @@
+to grid
+make "i 1
+while [:i <= 2] [make "j 1 while [:j <= 2] [print (se :i :j) make "j :j + 1] make "i :i + 1]
+end
+grid
+print :i
+make "i 1
+while [:i <= 2] [make "j 5 while [:j < :i] [print "inner] print (se "ran :i) make "i :i + 1]
+make "i 9
+while [:i < 1] [print "nope]
+print "skipped
+make "i 1
+while [:i <= 2] [make "j 1 while [:j <= 2] [make "k 1 while [:k <= :i] [print (se :i :j :k) make "k :k + 1] make "j :j + 1] make "i :i + 1]
+print :i
