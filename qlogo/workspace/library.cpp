@@ -30,15 +30,19 @@
 /// @brief Find a data file or directory next to the library and help databases.
 /// @param name The file or directory name to search for.
 /// @returns The path if found, or an empty string.
-/// @note Candidates, in order:
-/// - The share directory relative to wherever the app binary is. (Linux)
-/// - The Resources directory relative to wherever the app binary is. (macOS)
-/// - The same directory as the app binary. (Windows)
+/// @note Candidates, in order, relative to the real executable:
+/// - ../share/qlogo/ (Linux, and a qlogo binary installed in bin/)
+/// - ../Resources/ (macOS, qlogo inside Psychi.app)
+/// - the same directory (Windows)
 QString findDataPath(const QString &name)
 {
-    QStringList candidates;
+    const QString launchedPath = QCoreApplication::applicationFilePath();
+    const QString resolvedPath = QFileInfo(launchedPath).canonicalFilePath();
     QString appDir = QCoreApplication::applicationDirPath();
+    if (!resolvedPath.isEmpty())
+        appDir = QFileInfo(resolvedPath).absolutePath();
 
+    QStringList candidates;
     candidates << QDir::cleanPath(appDir + "/../share/qlogo/" + name);
     candidates << QDir::cleanPath(appDir + "/../Resources/" + name);
     candidates << QDir::cleanPath(appDir + "/" + name);

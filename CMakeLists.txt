@@ -129,11 +129,52 @@ file(COPY "${CMAKE_SOURCE_DIR}/tests"
     DESTINATION "${CMAKE_BINARY_DIR}"
 )
 
-install(TARGETS "${QLOGO_GUI}" "${QLOGO_BIN}"
-    BUNDLE DESTINATION .
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    RESOURCE DESTINATION ${CMAKE_INSTALL_DATADIR}
-)
+if(APPLE)
+    # Psychi.app lives in <prefix>/Applications. qlogo is copied into
+    # Contents/MacOS by QLogoBundleCp; bin/qlogo is a symlink to that copy.
+    install(TARGETS "${QLOGO_GUI}"
+        BUNDLE DESTINATION Applications
+    )
+
+    # The link text depends on the bindir's depth, not on the prefix, so
+    # `cmake --install --prefix` still points at the bundle.
+    if(IS_ABSOLUTE "${CMAKE_INSTALL_BINDIR}")
+        file(RELATIVE_PATH QLOGO_BIN_SYMLINK_TARGET
+            "${CMAKE_INSTALL_BINDIR}"
+            "${CMAKE_INSTALL_PREFIX}/Applications/${QLOGO_GUI}.app/Contents/MacOS/${QLOGO_BIN}")
+    else()
+        file(RELATIVE_PATH QLOGO_BIN_SYMLINK_TARGET
+            "/${CMAKE_INSTALL_BINDIR}"
+            "/Applications/${QLOGO_GUI}.app/Contents/MacOS/${QLOGO_BIN}")
+    endif()
+
+    install(CODE "
+        set(_root \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}\")
+        set(_bindir \"\${_root}/${CMAKE_INSTALL_BINDIR}\")
+        set(_bundle_qlogo \"\${_root}/Applications/${QLOGO_GUI}.app/Contents/MacOS/${QLOGO_BIN}\")
+        if(NOT EXISTS \"\${_bundle_qlogo}\")
+            message(FATAL_ERROR
+                \"qlogo is missing from the installed Psychi bundle: \${_bundle_qlogo}\")
+        endif()
+        file(MAKE_DIRECTORY \"\${_bindir}\")
+        file(REMOVE \"\${_bindir}/${QLOGO_BIN}\")
+        file(CREATE_LINK
+            \"${QLOGO_BIN_SYMLINK_TARGET}\"
+            \"\${_bindir}/${QLOGO_BIN}\"
+            SYMBOLIC
+            RESULT _qlogo_link_result)
+        if(NOT _qlogo_link_result EQUAL 0)
+            message(FATAL_ERROR
+                \"Could not symlink qlogo into \${_bindir}: \${_qlogo_link_result}\")
+        endif()
+    ")
+else()
+    install(TARGETS "${QLOGO_GUI}" "${QLOGO_BIN}"
+        BUNDLE DESTINATION .
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        RESOURCE DESTINATION ${CMAKE_INSTALL_DATADIR}
+    )
+endif()
 
 if(WIN32)
     install(FILES "${QLOGO_HELP_DB}" "${QLOGO_LIB_DB}"
@@ -148,7 +189,7 @@ elseif(UNIX AND NOT APPLE)
         DESTINATION "${CMAKE_INSTALL_DATADIR}"
     )
 endif()
-# On macOS the DBs live in the Psychi.app bundle
+
 if(UNIX AND NOT APPLE)
     install(FILES "${QLOGO_GUI}.desktop"
         DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
