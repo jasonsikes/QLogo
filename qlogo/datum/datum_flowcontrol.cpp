@@ -79,7 +79,7 @@ FCError *FCError::fromThrow(const DatumPtr &tag, const DatumPtr &second)
 FCError *FCError::fatalInternal()
 {
     auto *err = new FCError(ERR_FATAL_INTERNAL, QObject::tr("Fatal internal error"));
-    qFatal("%s\n", err->toString().toStdString().c_str());
+    qFatal("%s\n", err->toString().toUtf8().constData());
     return err;
 }
 

@@ -424,6 +424,16 @@ FunctionType *hostExportFunctionType(LLVMContext &ctx, StringRef name)
     throw FCError::fatalInternal();
 }
 
+// QByteArray::toStdString() allocates the std::string inside Qt6Core. This
+// executable then frees it so that it doesn't crash in operator delete when
+// the text is long enough to be on the heap.
+static std::string utf8StdString(const QByteArray &utf8)
+{
+    if (utf8.isEmpty())
+        return {};
+    return std::string(utf8.constData(), static_cast<size_t>(utf8.size()));
+}
+
 static std::string sanitizeIrStem(const std::string &utf8)
 {
     std::string out;
@@ -896,11 +906,10 @@ BasicBlock *Compiler::generateTOC(QList<BasicBlock *> blocks, Function *theFunct
 std::shared_ptr<CompiledText> Compiler::generateFunctionPtrFromASTList(QList<QList<DatumPtr>> parsedList, List *aList)
 {
     const DumpRequest dump = dumpRequest_;
-    const std::string display = jitDisplayName(aList).toUtf8().toStdString();
-    Scaffold compilerScaffolding(lljit_->getDataLayout(),
-                                 targetMachine_.get(),
-                                 display,
-                                 aList->toString(Datum::ToStringFlags_Source, 4, 80).toUtf8().toStdString());
+    const std::string display = utf8StdString(jitDisplayName(aList).toUtf8());
+    const std::string debugSource =
+        utf8StdString(aList->toString(Datum::ToStringFlags_Source, 4, 80).toUtf8());
+    Scaffold compilerScaffolding(lljit_->getDataLayout(), targetMachine_.get(), display, debugSource);
     compilerScaffolding.mangleNames_ = dump.any();
 
     struct RestoreScaff

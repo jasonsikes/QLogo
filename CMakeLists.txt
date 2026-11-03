@@ -64,7 +64,7 @@ set(_qt_host_env_args)
 if(WIN32)
     get_target_property(_qt_host_qmake Qt6::qmake IMPORTED_LOCATION)
     get_filename_component(_qt_host_bin "${_qt_host_qmake}" DIRECTORY)
-    list(APPEND _qt_host_env_args "PATH=${_qt_host_bin};$ENV{PATH}")
+    set(_qt_host_env_args "PATH=${_qt_host_bin}")
 endif()
 
 add_custom_command(

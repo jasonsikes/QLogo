@@ -89,7 +89,7 @@ if(WIN32)
   add_custom_command(TARGET "${QLOGO_GUI}" POST_BUILD
     COMMAND
       "${CMAKE_COMMAND}" -E env
-      "PATH=${_psychi_qt_bin_dir};$ENV{PATH}"
+      "PATH=${_psychi_qt_bin_dir};$ENV{SystemRoot}\\System32;$ENV{SystemRoot}"
       "${WINDEPLOYQT_EXECUTABLE}"
       "$<IF:$<CONFIG:Debug>,--debug,--release>"
       --no-translations

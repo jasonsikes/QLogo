@@ -2297,14 +2297,14 @@ void bt()
             std::cerr << "frame " << i << ": REPL Base" << std::endl;
         else if (frame->sourceNode_.isASTNode() && frame->sourceNode_.astnodeValue()->countOfChildren() > 0)
             std::cerr << "frame " << i << ": "
-                      << frame->sourceNode_.astnodeValue()->nodeName_.toString(Datum::ToStringFlags_Key).toStdString()
+                      << frame->sourceNode_.astnodeValue()->nodeName_.toString(Datum::ToStringFlags_Key).toUtf8().constData()
                       << std::endl;
         else
             std::cerr << "frame " << i << ": ?" << std::endl;
         for (size_t j = 0; j < frame->evaluationStackSize(); ++j)
         {
             Evaluator *ev = frame->evaluatorAtIndex(j);
-            std::cerr << "  list: " << ev->list_.toString(Datum::ToStringFlags_Show).toStdString() << std::endl;
+            std::cerr << "  list: " << ev->list_.toString(Datum::ToStringFlags_Show).toUtf8().constData() << std::endl;
         }
     }
 }
