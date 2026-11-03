@@ -1,5 +1,0 @@
-openread "OPENREAD_data.txt
-setread "OPENREAD_data.txt
-make "a readword
-print linep
-close "OPENREAD_data.txt

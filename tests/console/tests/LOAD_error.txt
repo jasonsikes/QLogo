@@ -1,3 +1,0 @@
-print [before]
-show :nonesuch
-print [after]

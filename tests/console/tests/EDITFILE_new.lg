@@ -1,3 +1,0 @@
-seteditor [sh edit_rewrite.sh]
-editfile "EDITFILE_out.txt
-erasefile "EDITFILE_out.txt

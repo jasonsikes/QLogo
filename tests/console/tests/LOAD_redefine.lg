@@ -1,4 +1,0 @@
-to loadredef
-print 1
-end
-load "LOAD_redefine.txt

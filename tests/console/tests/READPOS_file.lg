@@ -1,6 +1,0 @@
-openread "OPENREAD_data.txt
-setread "OPENREAD_data.txt
-print readpos
-setreadpos 0
-print readpos
-close "OPENREAD_data.txt

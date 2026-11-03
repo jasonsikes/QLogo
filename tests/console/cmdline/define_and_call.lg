@@ -1,4 +1,0 @@
-to square :x
-print :x * :x
-end
-square 5

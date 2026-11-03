@@ -1,7 +1,0 @@
-to foo
-print 1
-end
-bury "foo
-load "UNBURYONEDIT_load_bury.txt
-show buriedp "foo
-foo

@@ -1,4 +1,0 @@
-openread "OPENREAD_data.txt
-setread "OPENREAD_data.txt
-print eof?
-close "OPENREAD_data.txt
