@@ -6,7 +6,6 @@ cslsload "streams
 to master [:numsquares 4] [:dup.ok "false] [:mysecret "true]
 ; Mastermind game program.
 ; Program is controlled by mouse clicks or keystrokes.
-if :LogoPlatform = "Windows [maximize.window "true]
 window
 if :LogoPlatform = "wxWidgets [localmake "fontsize labelsize]
 localmake "colors "ROYGBV

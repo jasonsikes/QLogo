@@ -15,7 +15,6 @@
 cslsload "buttons
 
 to mines
-if :LogoPlatform = "Windows [maximize.window "true]
 localmake "inference "false
 localmake "newnmines 100
 localmake "newsize 15

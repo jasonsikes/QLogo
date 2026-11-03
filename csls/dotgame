@@ -2,7 +2,6 @@
 
 to dotgame :size
 ; Connect-the-dots game.  Input is the number of dots on each side.
-if :LogoPlatform = "Windows [maximize.window "true]
 ht cs
 setpc 7
 setpensize [6 6]
