@@ -39,6 +39,9 @@
 
 #ifdef Q_OS_WIN
 #include <windows.h>
+
+// We use std::max later to generate a table of message handlers.
+#undef max
 #endif
 
 QProcess *ProcessMessageWriter::process_ = nullptr;
