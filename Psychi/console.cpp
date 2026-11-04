@@ -27,7 +27,7 @@ Console::Console(QWidget *parent)
       lineInputHistoryScrollingCurrentIndex_(0)
 {
     textFormat_.setForeground(QBrush(QWidget::palette().color(QPalette::Text)));
-    setOverwriteMode(true);
+    setOverwriteMode(false);
     applyFont(MainWindow::defaultFont());
 }
 
@@ -43,26 +43,25 @@ void Console::applyFont(const QFont &font)
 void Console::writeTextFragment(const QString &text)
 {
     QTextCursor tc = textCursor();
-    // If we are overwriting, delete the previous text before inserting
-    if (overwriteMode())
+    // Delete the previous text before inserting
+
+    int len = text.length();
+    int pos = tc.positionInBlock();
+    int lineLen = tc.block().length() - 1; // minus one for "newline"
+    if (pos < lineLen)
     {
-        int len = text.length();
-        int pos = tc.positionInBlock();
-        int lineLen = tc.block().length() - 1; // minus one for "newline"
-        if (pos < lineLen)
+        if ((pos + len) > lineLen)
         {
-            if ((pos + len) > lineLen)
-            {
-                tc.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
-                tc.removeSelectedText();
-            }
-            else if (len > 0)
-            {
-                tc.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, len);
-                tc.removeSelectedText();
-            }
+            tc.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+            tc.removeSelectedText();
+        }
+        else if (len > 0)
+        {
+            tc.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, len);
+            tc.removeSelectedText();
         }
     }
+
     tc.setCharFormat(textFormat_);
     tc.insertText(text);
 }
