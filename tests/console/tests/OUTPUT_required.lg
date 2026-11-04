@@ -1,0 +1,12 @@
+to bare
+1 + 2
+end
+show bare
+to mid
+1 + 2
+print "after
+end
+mid
+show apply [[a b] [ifelse :a > :b [:a] [:b]]] [4 5]
+show apply [[a b] [output ifelse :a > :b [:a] [:b]]] [4 5]
+show reduce [[a b] [ifelse :a > :b [:a] [:b]]] [1 2 3 4 5]

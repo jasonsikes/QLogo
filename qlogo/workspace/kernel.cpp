@@ -1658,6 +1658,19 @@ void Kernel::ece_decideEmptyEvaluationStack()
         }
     }
 
+    if ((currentCallFrame()->retvalToParent_.isa() & Datum::typeDataMask) != 0)
+    {
+        FCError *err = FCError::dontSay(currentCallFrame()->retvalToParent_);
+        if (currentCallFrame()->lastBodyLine_.isList())
+        {
+            err->line() = currentCallFrame()->lastBodyLine_;
+            err->lineCaptured_ = true;
+        }
+        currentCallFrame()->retvalToParent_ = DatumPtr(err);
+        nextOperation_ = &Kernel::ece_exitProcedure;
+        return;
+    }
+
     // If there is a flow control instruction, or we have reached the end of the procedure, we need to handle it.
     if (currentCallFrame()->retvalToParent_.isFlowControl() ||
         currentCallFrame()->runningSourceList_.listValue()->isEmpty())
@@ -2056,6 +2069,7 @@ void Kernel::ece_processParameters()
     }
 
     currentCallFrame()->isReadingArgs_ = false;
+    currentCallFrame()->retvalToParent_ = nothing();
 
     // We have processed all the parameters, so we can move to the first line of the procedure.
     nextOperation_ = &Kernel::ece_decideEmptyEvaluationStack;

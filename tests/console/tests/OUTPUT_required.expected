@@ -1,0 +1,11 @@
+? > > bare defined
+? You don't say what to do with 3 in bare
+[1 + 2]
+? > > > mid defined
+? You don't say what to do with 3 in mid
+[1 + 2]
+? You don't say what to do with 5 in apply
+[ifelse :a > :b [:a] [:b]]
+? 5
+? You don't say what to do with 5 in apply
+[ifelse :a > :b [:a] [:b]]
