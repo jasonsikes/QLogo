@@ -151,6 +151,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     // Because when the process dies another signal will be sent to close the application.
     if (pid > 0)
     {
+        userRequestedClose_ = true;
         sendMessage(S_SYSTEM);
 
         logoProcess_.closeWriteChannel();
@@ -395,7 +396,7 @@ void MainWindow::introduceCanvas()
 
 void MainWindow::processFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    if (exitStatus != QProcess::NormalExit)
+    if (exitStatus != QProcess::NormalExit && !userRequestedClose_)
     {
         QMessageBox msgBox;
         msgBox.setText(tr("qlogo has reached an unstable state and will be terminated."));

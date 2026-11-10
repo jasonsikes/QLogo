@@ -65,6 +65,7 @@ class MainWindow : public QMainWindow
 
     windowMode_t windowMode_;
     bool hasShownCanvas_ = false;
+    bool userRequestedClose_ = false;
     EditorWindow *editWindow_ = nullptr;
     QTimer *waitTimer_ = nullptr;
     // A direct member, not a child of this window. Parenting it would destroy it twice.
