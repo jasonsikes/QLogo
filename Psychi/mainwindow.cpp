@@ -71,6 +71,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(std::make_uni
 
 void MainWindow::show()
 {
+    setSplitterforMode(initScreenMode);
+
     QMainWindow::show();
     ui_->mainConsole->setFocus();
 
@@ -799,6 +801,8 @@ void MainWindow::setSplitterforMode(ScreenModeEnum mode)
     }
     QList<int> sizes = ui_->splitter->sizes();
     float splitterSize = sizes[0] + sizes[1];
+    if (splitterSize <= 0)
+        splitterSize = 1000;
     canvasSize = canvasSize * splitterSize;
     const float consoleSize = splitterSize - canvasSize;
     ui_->splitter->setSizes({qRound(canvasSize), qRound(consoleSize)});
