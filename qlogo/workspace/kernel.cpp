@@ -1300,12 +1300,18 @@ bool Kernel::consumePendingSignal(DatumPtr *resultOut)
             *resultOut = DatumPtr(FCError::fromThrow(DatumPtr(QObject::tr("SYSTEM"))));
         return true;
     case pauseSignal:
-    {
-        DatumPtr paused = pause();
-        if (resultOut != nullptr)
-            *resultOut = paused;
-        return true;
-    }
+        if (stepPromptActive_)
+        {
+            if (resultOut != nullptr)
+                *resultOut = DatumPtr(FCError::fromThrow(DatumPtr(QObject::tr("PAUSE"))));
+            return true;
+        }
+        {
+            DatumPtr paused = pause();
+            if (resultOut != nullptr)
+                *resultOut = paused;
+            return true;
+        }
     }
     if (resultOut != nullptr)
         *resultOut = nothing();
@@ -1502,7 +1508,40 @@ void Kernel::stepProcedureLine(const DatumPtr &line)
     QString output(traceDepth(), QLatin1Char(' '));
     output += line.toString(Datum::ToStringFlags_Show, printDepthLimit, printWidthLimit);
     StreamManager::get().printToTerminal(output);
-    StreamManager::get().readTerminalRawline(QObject::tr(" >>> "));
+    stepPromptActive_ = true;
+    try
+    {
+        StreamManager::get().readTerminalRawline(QObject::tr(" >>> "));
+    }
+    catch (FCError *err)
+    {
+        // The read consumed the interrupt and threw before this line was pushed.
+        // Put the signal back. The caller pushes the line, and ece_evaluateStack
+        // handles it with the line on the stack.
+        const QString tag = err->tag().toString(Datum::ToStringFlags_Key);
+        SignalsEnum_t signal;
+        if (tag == QObject::tr("TOPLEVEL"))
+            signal = toplevelSignal;
+        else if (tag == QObject::tr("SYSTEM"))
+            signal = systemSignal;
+        else if (tag == QObject::tr("PAUSE"))
+            signal = pauseSignal;
+        else
+        {
+            stepPromptActive_ = false;
+            throw;
+        }
+        // fromThrow stored this error before the line was pushed. Drop it.
+        // TOPLEVEL and SYSTEM build a new one at the safepoint; PAUSE does not.
+        currentError_ = nothing();
+        LogoInterface::noteSignal(signal);
+    }
+    catch (...)
+    {
+        stepPromptActive_ = false;
+        throw;
+    }
+    stepPromptActive_ = false;
 }
 
 namespace

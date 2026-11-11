@@ -104,6 +104,9 @@ class Kernel
     /// @brief Nested runECE() depth. Zero at the ? prompt while waiting for a line.
     int eceDepth_ = 0;
 
+    /// @brief True while the step prompt is waiting for a line.
+    bool stepPromptActive_ = false;
+
     /// @brief Shared BUTTONACT/KEYACT splice slot (UCBLogo eval_buttonact).
     DatumPtr pendingAct_;
 
