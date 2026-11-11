@@ -1430,7 +1430,7 @@ void Kernel::ece_evaluateStack()
             currentCallFrame()->jumpLocation_ = 0;
             if (currentCallFrame()->evaluationStackSize() > 0)
             {
-                currentEvaluator()->retvalToParent_ = signalResult.datumValue();
+                currentEvaluator()->retvalToParent_ = currentEvaluator()->watch(signalResult);
                 nextOperation_ = &Kernel::ece_popEvaluator;
             }
             else
