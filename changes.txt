@@ -1,3 +1,12 @@
+Version 1.01 - Jason Sikes
+ * Allow the builder to set 'qlogoversion' special variable explicitly
+   using -DQLOGO_VERSION=...
+ * User-initiated closure of Psychi no longer shows "unstable" pop-up.
+ * Fixed crashes caused by interrupts during stepping.
+ * Fixed crash caused by TOPLEVEL within PAUSE.
+ * Psychi now shows main window with console maximized instead of showing
+   part of canvas and then hiding it.
+
 Version 1.0 - Jason Sikes - 2026 Nov 02
  * There are so many changes since the last release, I decided
    to just start fresh instead of trying to list them.
