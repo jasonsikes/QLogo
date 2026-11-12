@@ -1,3 +1,6 @@
+Version X - Jason Sikes
+ * A PREFIX value of [<empty list>] now means the user's "Documents" directory.
+
 Version 1.01 - Jason Sikes
  * Allow the builder to set 'qlogoversion' special variable explicitly
    using -DQLOGO_VERSION=...

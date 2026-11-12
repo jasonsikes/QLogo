@@ -96,14 +96,13 @@ Value *Compiler::generateWrite(const DatumPtr &node, TypeMask expected, bool use
     CallSite cs(this, node, TypeDatum);
     AllocaInst *ary = cs.allocaAry(DBG_NAME("writeAry"));
 
-    Value *retval = generateCallExtern(
-        stdWriteDatumAry,
-        PaAddr(scaff_->evaluator_),
-        PaAddr(CoAddr(node.astnodeValue())),
-        PaAddr(ary),
-        PaInt32(allocaN(ary)),
-        PaBool(CoBool(useShow)),
-        PaBool(CoBool(addWhitespace)));
+    Value *retval = generateCallExtern(stdWriteDatumAry,
+                                       PaAddr(scaff_->evaluator_),
+                                       PaAddr(CoAddr(node.astnodeValue())),
+                                       PaAddr(ary),
+                                       PaInt32(allocaN(ary)),
+                                       PaBool(CoBool(useShow)),
+                                       PaBool(CoBool(addWhitespace)));
     endAllocaLifetime(ary);
     return cs.ret(generateNotFlowControl(retval));
 }
@@ -250,20 +249,19 @@ COD***/
 Value *Compiler::genCopyright(const DatumPtr &node, TypeMask expected)
 {
     CallSite cs(this, node, TypeNothing);
-    Value *retval = generateCallExtern(
-        stdCopyright, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())));
+    Value *retval = generateCallExtern(stdCopyright, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())));
     return cs.ret(generateNotFlowControl(retval));
 }
 
-Value *Compiler::generateDumpInstructionList(const DatumPtr &node, TypeMask expected,
-                                            addr_t (*dumpFn)(addr_t, addr_t, addr_t) noexcept,
-                                            const char *dumpFnName)
+Value *Compiler::generateDumpInstructionList(const DatumPtr &node,
+                                             TypeMask expected,
+                                             addr_t (*dumpFn)(addr_t, addr_t, addr_t) noexcept,
+                                             const char *dumpFnName)
 {
     Q_ASSERT(expected && TypeNothing);
     Value *list = generateChild(node.astnodeValue(), 0, TypeDatum);
     Value *retval = generateCallExternTyped(
-        dumpFn, dumpFnName,
-        {PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(list)});
+        dumpFn, dumpFnName, {PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(list)});
     return generateNotFlowControl(retval);
 }
 
@@ -350,8 +348,8 @@ Value *Compiler::genShell(const DatumPtr &node, TypeMask expected)
 
     const bool hasWordflag = children.size() == 2;
 
-    Value *retval = generateCallExtern(
-        stdShell, PaAddr(scaff_->evaluator_), PaAddr(command), PaBool(CoBool(hasWordflag)));
+    Value *retval =
+        generateCallExtern(stdShell, PaAddr(scaff_->evaluator_), PaAddr(command), PaBool(CoBool(hasWordflag)));
     return cs.ret(generateNotFlowControl(retval));
 }
 
@@ -365,7 +363,7 @@ SETPREFIX string
     and the filename entered by the user.  On Windows, either a forward
     slash or backslash can be used as a separator character.  The input
     to SETPREFIX must be a word, unless it is the empty list, to indicate
-    that there should be no prefix.
+    that the the prefix is the user's default documents directory.
 
 COD***/
 // CMD SETPREFIX 1 1 1 n
@@ -482,9 +480,8 @@ Value *Compiler::generateIsValidOpenSpec(Value *src)
 
 Value *Compiler::generateOpenSpecFromDatum(ASTNode *parent, Value *src)
 {
-    return generateValidationDatum(parent, src, [this](Value *candidate) {
-        return generateIsValidOpenSpec(candidate);
-    });
+    return generateValidationDatum(
+        parent, src, [this](Value *candidate) { return generateIsValidOpenSpec(candidate); });
 }
 
 Value *Compiler::generateOpen(const DatumPtr &node, TypeMask expected, int32_t mode)
@@ -498,11 +495,7 @@ Value *Compiler::generateOpen(const DatumPtr &node, TypeMask expected, int32_t m
         spec = generateFromDatum(Datum::typeWord, node.astnodeValue(), spec);
 
     Value *retval = generateCallExtern(
-        stdOpen,
-        PaAddr(scaff_->evaluator_),
-        PaAddr(CoAddr(node.astnodeValue())),
-        PaAddr(spec),
-        PaInt32(CoInt32(mode)));
+        stdOpen, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(spec), PaInt32(CoInt32(mode)));
     return cs.ret(generateNotFlowControl(retval));
 }
 
@@ -521,11 +514,8 @@ Value *Compiler::genClose(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeDatum);
     Value *spec = generateOpenSpecFromDatum(node.astnodeValue(), cs.child(0));
 
-    Value *retval = generateCallExtern(
-        stdClose,
-        PaAddr(scaff_->evaluator_),
-        PaAddr(CoAddr(node.astnodeValue())),
-        PaAddr(spec));
+    Value *retval =
+        generateCallExtern(stdClose, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(spec));
     return cs.ret(generateNotFlowControl(retval));
 }
 
@@ -561,10 +551,7 @@ Value *Compiler::genErasefile(const DatumPtr &node, TypeMask expected)
     filename = generateFromDatum(Datum::typeWord, node.astnodeValue(), filename);
 
     Value *retval = generateCallExtern(
-        stdEraseFile,
-        PaAddr(scaff_->evaluator_),
-        PaAddr(CoAddr(node.astnodeValue())),
-        PaAddr(filename));
+        stdEraseFile, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(filename));
     return cs.ret(generateNotFlowControl(retval));
 }
 
@@ -588,10 +575,7 @@ Value *Compiler::genDribble(const DatumPtr &node, TypeMask expected)
     filename = generateFromDatum(Datum::typeWord, node.astnodeValue(), filename);
 
     Value *retval = generateCallExtern(
-        stdDribble,
-        PaAddr(scaff_->evaluator_),
-        PaAddr(CoAddr(node.astnodeValue())),
-        PaAddr(filename));
+        stdDribble, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(filename));
     return cs.ret(generateNotFlowControl(retval));
 }
 
@@ -628,11 +612,8 @@ Value *Compiler::genSetread(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeDatum);
     Value *spec = generateWordOrEmptyListFromDatum(node.astnodeValue(), cs.child(0));
 
-    Value *retval = generateCallExtern(
-        stdSetRead,
-        PaAddr(scaff_->evaluator_),
-        PaAddr(CoAddr(node.astnodeValue())),
-        PaAddr(spec));
+    Value *retval =
+        generateCallExtern(stdSetRead, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(spec));
     return cs.ret(generateNotFlowControl(retval));
 }
 
@@ -678,11 +659,8 @@ Value *Compiler::genSetwrite(const DatumPtr &node, TypeMask expected)
     };
     spec = generateValidationDatum(node.astnodeValue(), spec, validator);
 
-    Value *retval = generateCallExtern(
-        stdSetWrite,
-        PaAddr(scaff_->evaluator_),
-        PaAddr(CoAddr(node.astnodeValue())),
-        PaAddr(spec));
+    Value *retval =
+        generateCallExtern(stdSetWrite, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaAddr(spec));
     return cs.ret(generateNotFlowControl(retval));
 }
 
@@ -809,11 +787,11 @@ Value *Compiler::genKeyp(const DatumPtr &node, TypeMask expected)
 LINEP
 LINE?
 
-	predicate, outputs TRUE if there is a line waiting to be
-	read from the read stream.  If the read stream is a file, this
-	is equivalent to NOT EOFP.  If the read stream is the terminal,
-	then typed characters will be displayed and may be edited until
-	the return key is pressed.
+    predicate, outputs TRUE if there is a line waiting to be
+    read from the read stream.  If the read stream is a file, this
+    is equivalent to NOT EOFP.  If the read stream is the terminal,
+    then typed characters will be displayed and may be edited until
+    the return key is pressed.
 
 COD***/
 // CMD LINEP 0 0 0 b
@@ -849,9 +827,9 @@ SETCURSOR vector
     cursor is moved to the requested position.  In the GUI the text
     console may scroll to reveal the requested position if it was
     previously outside of the viewing area. For example,
-    
+
         ? setcursor [0 0]
-    
+
     Will move the cursor to the very first line of the console window,
     scrolling up to reveal it, if necessary. This command also forces the
     immediate printing of any buffered characters.
@@ -1080,16 +1058,16 @@ Value *Compiler::genWait(const DatumPtr &node, TypeMask expected)
     CallSite cs(this, node, TypeReal);
     Value *time = cs.child(0);
     time = generateNotNegativeFromDouble(node.astnodeValue(), time);
-    Value *retval = generateCallExtern(
-        stdWait, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaDouble(time));
+    Value *retval =
+        generateCallExtern(stdWait, PaAddr(scaff_->evaluator_), PaAddr(CoAddr(node.astnodeValue())), PaDouble(time));
     return cs.ret(generateNotFlowControl(retval));
 }
 
 /***DOC CLOSEALL
 CLOSEALL						(library procedure)
 
-	command.  Closes all open files.  Abbreviates
-	FOREACH ALLOPEN [CLOSE ?]
+    command.  Closes all open files.  Abbreviates
+    FOREACH ALLOPEN [CLOSE ?]
 
 COD***/
 
@@ -1108,8 +1086,8 @@ BIL***/
 FILEP filename
 FILE? filename						(library procedure)
 
-	predicate, outputs TRUE if a file of the specified name exists
-	and can be read, FALSE otherwise.
+    predicate, outputs TRUE if a file of the specified name exists
+    and can be read, FALSE otherwise.
 
 
 COD***/

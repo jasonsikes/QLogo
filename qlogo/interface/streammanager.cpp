@@ -16,14 +16,15 @@
 //===----------------------------------------------------------------------===//
 
 #include "interface/streammanager.h"
-#include "interface/logointerface.h"
-#include "interface/textstream.h"
 #include "datum_types.h"
 #include "flowcontrol.h"
+#include "interface/logointerface.h"
+#include "interface/textstream.h"
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QIODevice>
+#include <QStandardPaths>
 #include <QTextStream>
 
 /// @brief One open stream: a file or an in-memory character buffer, the
@@ -57,9 +58,7 @@ static QIODevice::OpenMode flagsForMode(OpenMode mode)
 }
 
 StreamManager::StreamManager()
-    : terminalStream_(new TextStream(nullptr))
-    , dribbleFile_(nullptr)
-    , dribbleStream_(nullptr)
+    : terminalStream_(new TextStream(nullptr)), dribbleFile_(nullptr), dribbleStream_(nullptr)
 {
     // Every role starts pointed at the terminal.
     istreamRead_ = terminalStream_;
@@ -602,10 +601,8 @@ QString StreamManager::filepathForFilename(const DatumPtr &filenameP) const
     if (QFileInfo(filename).isAbsolute())
         return filename;
 
-    if (filePrefix_.isWord())
-    {
-        QString prefix = filePrefix_.wordValue()->toString();
-        return prefix + QDir::separator() + filename;
-    }
-    return filename;
+    QString prefix = (filePrefix_.isWord()) ? filePrefix_.wordValue()->toString()
+                                            : QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+
+    return prefix + QDir::separator() + filename;
 }
