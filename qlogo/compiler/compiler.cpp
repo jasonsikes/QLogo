@@ -2011,7 +2011,11 @@ Value *Compiler::generateGetDatumIsa(Value *objAddr)
     Q_ASSERT(objAddr->getType()->isPointerTy());
 
     OperandBundleDef nonnull("nonnull", ArrayRef<Value *>{objAddr});
+#if LLVM_VERSION_MAJOR >= 23
+    scaff_->builder_.CreateAssumption(nonnull);
+#else
     scaff_->builder_.CreateAssumption(ConstantInt::getTrue(*scaff_->theContext_), nonnull);
+#endif
 
     Value *isaAddr = scaff_->builder_.CreateStructGEP(scaff_->datumHeaderTy_, objAddr, 1, DBG_NAME("isaAddr"));
     LoadInst *load = scaff_->builder_.CreateAlignedLoad(TyInt32, isaAddr, Align(4), DBG_NAME("isaLoad"));
